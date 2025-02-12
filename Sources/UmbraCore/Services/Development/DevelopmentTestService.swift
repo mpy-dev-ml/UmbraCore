@@ -280,6 +280,10 @@ public final class DevelopmentTestService: BaseSandboxedService {
             )
         }
     }
+
+    private func generateTestData() throws -> TestData {
+        // ... 
+    }
 }
 
 // MARK: - DevelopmentError

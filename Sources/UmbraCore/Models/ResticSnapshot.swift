@@ -43,7 +43,8 @@ public final class ResticSnapshot: NSObject,
     NSSecureCoding,
     Codable,
     Identifiable,
-    Equatable, Hashable {
+    Equatable,
+    Hashable {
     // MARK: Lifecycle
 
     /// Creates a new snapshot instance
@@ -297,24 +298,16 @@ public final class ResticSnapshot: NSObject,
 
     // MARK: - NSObject
 
-    /// Checks if two snapshots are equal
-    /// - Parameter object: The object to compare with
-    /// - Returns: True if the snapshots are equal
-    override public func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? ResticSnapshot else { return false }
-        return id == other.id
-    }
-
-    // MARK: - Equatable
-
-    /// Equality operator for ResticSnapshot
     /// Compares:
     /// - Same snapshot ID
     /// - Same repository ID
     ///
     /// Note: Other properties don't affect equality
-    public static func == (lhs: ResticSnapshot, rhs: ResticSnapshot) -> Bool {
-        lhs.isEqual(rhs)
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? ResticSnapshot else {
+            return false
+        }
+        return id == other.id && repositoryId == other.repositoryId
     }
 
     // MARK: - NSSecureCoding
