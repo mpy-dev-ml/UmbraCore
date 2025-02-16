@@ -108,7 +108,6 @@ let package = Package(
         .target(
             name: "ErrorHandling",
             dependencies: [
-                "Logging",
                 .product(name: "Logging", package: "swift-log")
             ],
             path: "Sources/ErrorHandling"
