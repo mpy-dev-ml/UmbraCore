@@ -1,5 +1,6 @@
 @_exported import Core
-@_exported import Security
+@_exported import SecurityTypes
+@_exported import UmbraSecurity
 @_exported import Logging
 @_exported import UmbraLogging
 @_exported import ResticCLIHelper
@@ -10,12 +11,12 @@
 @_exported import Autocomplete
 
 // Re-export main types and protocols
-public typealias SecurityProvider = Core.SecurityProvider
-public typealias SecurityService = Security.SecurityService
+public typealias SecurityProvider = SecurityTypes.SecurityProvider
+public typealias SecurityService = UmbraSecurity.SecurityService
 public typealias LoggingService = Logging.LoggingService
 
 // Export error types
-public typealias SecurityError = Core.SecurityError
+public typealias SecurityError = SecurityTypes.SecurityError
 public typealias LoggingError = Logging.LoggingError
 
 // Export logging types

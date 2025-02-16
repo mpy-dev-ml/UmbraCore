@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(
             name: "UmbraCore",
-            targets: ["UmbraCore"]
+            targets: ["UmbraCore", "Core", "SecurityTypes", "UmbraSecurity", "Logging"]
         ),
     ],
     dependencies: [],
@@ -17,21 +17,28 @@ let package = Package(
         // Core module containing shared protocols and types
         .target(
             name: "Core",
-            dependencies: [],
+            dependencies: ["SecurityTypes"],
             path: "Sources/Core"
+        ),
+        
+        // Security types module containing protocols and error types
+        .target(
+            name: "SecurityTypes",
+            dependencies: [],
+            path: "Sources/SecurityTypes"
         ),
         
         // Security module for sandbox and security-scoped resource handling
         .target(
-            name: "Security",
-            dependencies: ["Core"],
-            path: "Sources/Security"
+            name: "UmbraSecurity",
+            dependencies: ["SecurityTypes", "Core"],
+            path: "Sources/UmbraSecurity"
         ),
         
         // Logging module for system-wide logging
         .target(
             name: "Logging",
-            dependencies: ["Core", "Security"],
+            dependencies: ["Core", "UmbraSecurity"],
             path: "Sources/Logging"
         ),
         
@@ -40,7 +47,8 @@ let package = Package(
             name: "UmbraCore",
             dependencies: [
                 "Core",
-                "Security",
+                "SecurityTypes",
+                "UmbraSecurity",
                 "Logging"
             ],
             path: "Sources/UmbraCore"
@@ -53,9 +61,14 @@ let package = Package(
             path: "Tests/CoreTests"
         ),
         .testTarget(
-            name: "SecurityTests",
-            dependencies: ["Security"],
-            path: "Tests/SecurityTests"
+            name: "SecurityTypesTests",
+            dependencies: ["SecurityTypes"],
+            path: "Tests/SecurityTypesTests"
+        ),
+        .testTarget(
+            name: "UmbraSecurityTests",
+            dependencies: ["UmbraSecurity"],
+            path: "Tests/UmbraSecurityTests"
         ),
         .testTarget(
             name: "LoggingTests",

@@ -1,6 +1,5 @@
 import Foundation
 import Core
-import Logging
 
 /// Service for managing logging operations
 @MainActor public final class LoggingService: LoggingProtocol {
@@ -19,7 +18,7 @@ import Logging
     
     /// Initialize with a security service
     /// - Parameter securityProvider: Security provider to use for file operations
-    public init(securityProvider: any SecurityProvider = SecurityService.shared) {
+    public init(securityProvider: any SecurityProvider) {
         self.securityProvider = securityProvider
     }
     
