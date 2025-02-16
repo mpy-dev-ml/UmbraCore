@@ -14,7 +14,7 @@ let package = Package(
                 "Repositories",
                 "Snapshots",
                 "Config",
-                "Logging",
+                "UmbraLogging",
                 "ErrorHandling",
                 "Autocomplete"
             ]
@@ -30,7 +30,7 @@ let package = Package(
             name: "ResticCLIHelper",
             dependencies: [
                 "ErrorHandling",
-                "Logging",
+                "UmbraLogging",
                 .product(name: "Logging", package: "swift-log")
             ],
             path: "Sources/ResticCLIHelper"
@@ -51,6 +51,7 @@ let package = Package(
                 "ResticCLIHelper",
                 "Config",
                 "ErrorHandling",
+                "UmbraLogging",
                 .product(name: "Logging", package: "swift-log")
             ],
             path: "Sources/Repositories"
@@ -71,6 +72,7 @@ let package = Package(
                 "ResticCLIHelper",
                 "Repositories",
                 "ErrorHandling",
+                "UmbraLogging",
                 .product(name: "Logging", package: "swift-log")
             ],
             path: "Sources/Snapshots"
@@ -89,6 +91,7 @@ let package = Package(
             name: "Config",
             dependencies: [
                 "ErrorHandling",
+                "UmbraLogging",
                 .product(name: "Logging", package: "swift-log")
             ],
             path: "Sources/Config"
@@ -102,18 +105,18 @@ let package = Package(
             path: "Tests/ConfigTests"
         ),
 
-        // MARK: - Logging
+        // MARK: - UmbraLogging
         .target(
-            name: "Logging",
+            name: "UmbraLogging",
             dependencies: [
                 .product(name: "Logging", package: "swift-log")
             ],
             path: "Sources/Logging"
         ),
         .testTarget(
-            name: "LoggingTests",
+            name: "UmbraLoggingTests",
             dependencies: [
-                "Logging",
+                "UmbraLogging",
                 .product(name: "Testing", package: "swift-testing")
             ],
             path: "Tests/LoggingTests"
@@ -123,6 +126,7 @@ let package = Package(
         .target(
             name: "ErrorHandling",
             dependencies: [
+                "UmbraLogging",
                 .product(name: "Logging", package: "swift-log")
             ],
             path: "Sources/ErrorHandling"
@@ -143,6 +147,7 @@ let package = Package(
                 "Repositories",
                 "Snapshots",
                 "ErrorHandling",
+                "UmbraLogging",
                 .product(name: "Logging", package: "swift-log")
             ],
             path: "Sources/Autocomplete"
