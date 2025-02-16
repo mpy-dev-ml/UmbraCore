@@ -37,7 +37,10 @@ let package = Package(
         ),
         .testTarget(
             name: "ResticCLIHelperTests",
-            dependencies: ["ResticCLIHelper"],
+            dependencies: [
+                "ResticCLIHelper",
+                .product(name: "Testing", package: "swift-testing")
+            ],
             path: "Tests/ResticCLIHelperTests"
         ),
 
@@ -54,7 +57,10 @@ let package = Package(
         ),
         .testTarget(
             name: "RepositoriesTests",
-            dependencies: ["Repositories"],
+            dependencies: [
+                "Repositories",
+                .product(name: "Testing", package: "swift-testing")
+            ],
             path: "Tests/RepositoriesTests"
         ),
 
@@ -71,7 +77,10 @@ let package = Package(
         ),
         .testTarget(
             name: "SnapshotsTests",
-            dependencies: ["Snapshots"],
+            dependencies: [
+                "Snapshots",
+                .product(name: "Testing", package: "swift-testing")
+            ],
             path: "Tests/SnapshotsTests"
         ),
 
@@ -86,7 +95,10 @@ let package = Package(
         ),
         .testTarget(
             name: "ConfigTests",
-            dependencies: ["Config"],
+            dependencies: [
+                "Config",
+                .product(name: "Testing", package: "swift-testing")
+            ],
             path: "Tests/ConfigTests"
         ),
 
@@ -100,7 +112,10 @@ let package = Package(
         ),
         .testTarget(
             name: "LoggingTests",
-            dependencies: ["Logging"],
+            dependencies: [
+                "Logging",
+                .product(name: "Testing", package: "swift-testing")
+            ],
             path: "Tests/LoggingTests"
         ),
 
@@ -114,7 +129,10 @@ let package = Package(
         ),
         .testTarget(
             name: "ErrorHandlingTests",
-            dependencies: ["ErrorHandling"],
+            dependencies: [
+                "ErrorHandling",
+                .product(name: "Testing", package: "swift-testing")
+            ],
             path: "Tests/ErrorHandlingTests"
         ),
 
@@ -131,7 +149,10 @@ let package = Package(
         ),
         .testTarget(
             name: "AutocompleteTests",
-            dependencies: ["Autocomplete"],
+            dependencies: [
+                "Autocomplete",
+                .product(name: "Testing", package: "swift-testing")
+            ],
             path: "Tests/AutocompleteTests"
         )
     ]
