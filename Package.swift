@@ -4,161 +4,68 @@ import PackageDescription
 let package = Package(
     name: "UmbraCore",
     platforms: [
-        .macOS(.v14) // Support only macOS 14+
+        .macOS(.v14)
     ],
     products: [
         .library(
             name: "UmbraCore",
-            targets: [
-                "ResticCLIHelper",
-                "Repositories",
-                "Snapshots",
-                "Config",
-                "UmbraLogging",
-                "ErrorHandling",
-                "Autocomplete"
-            ]
-        )
+            targets: ["UmbraCore"]
+        ),
     ],
-    dependencies: [
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.6.2"),
-        .package(url: "https://github.com/apple/swift-testing.git", branch: "main")
-    ],
+    dependencies: [],
     targets: [
-        // MARK: - ResticCLIHelper
+        // Core module containing shared protocols and types
         .target(
-            name: "ResticCLIHelper",
-            dependencies: [
-                "ErrorHandling",
-                "UmbraLogging",
-                .product(name: "Logging", package: "swift-log")
-            ],
-            path: "Sources/ResticCLIHelper"
+            name: "Core",
+            dependencies: [],
+            path: "Sources/Core"
         ),
-        .testTarget(
-            name: "ResticCLIHelperTests",
-            dependencies: [
-                "ResticCLIHelper",
-                .product(name: "Testing", package: "swift-testing")
-            ],
-            path: "Tests/ResticCLIHelperTests"
-        ),
-
-        // MARK: - Repositories
+        
+        // Security module for sandbox and security-scoped resource handling
         .target(
-            name: "Repositories",
-            dependencies: [
-                "ResticCLIHelper",
-                "Config",
-                "ErrorHandling",
-                "UmbraLogging",
-                .product(name: "Logging", package: "swift-log")
-            ],
-            path: "Sources/Repositories"
+            name: "Security",
+            dependencies: ["Core"],
+            path: "Sources/Security"
         ),
-        .testTarget(
-            name: "RepositoriesTests",
-            dependencies: [
-                "Repositories",
-                .product(name: "Testing", package: "swift-testing")
-            ],
-            path: "Tests/RepositoriesTests"
-        ),
-
-        // MARK: - Snapshots
+        
+        // Logging module for system-wide logging
         .target(
-            name: "Snapshots",
-            dependencies: [
-                "ResticCLIHelper",
-                "Repositories",
-                "ErrorHandling",
-                "UmbraLogging",
-                .product(name: "Logging", package: "swift-log")
-            ],
-            path: "Sources/Snapshots"
-        ),
-        .testTarget(
-            name: "SnapshotsTests",
-            dependencies: [
-                "Snapshots",
-                .product(name: "Testing", package: "swift-testing")
-            ],
-            path: "Tests/SnapshotsTests"
-        ),
-
-        // MARK: - Config
-        .target(
-            name: "Config",
-            dependencies: [
-                "ErrorHandling",
-                "UmbraLogging",
-                .product(name: "Logging", package: "swift-log")
-            ],
-            path: "Sources/Config"
-        ),
-        .testTarget(
-            name: "ConfigTests",
-            dependencies: [
-                "Config",
-                .product(name: "Testing", package: "swift-testing")
-            ],
-            path: "Tests/ConfigTests"
-        ),
-
-        // MARK: - UmbraLogging
-        .target(
-            name: "UmbraLogging",
-            dependencies: [
-                .product(name: "Logging", package: "swift-log")
-            ],
+            name: "Logging",
+            dependencies: ["Core", "Security"],
             path: "Sources/Logging"
         ),
-        .testTarget(
-            name: "UmbraLoggingTests",
+        
+        // Main module that re-exports all components
+        .target(
+            name: "UmbraCore",
             dependencies: [
-                "UmbraLogging",
-                .product(name: "Testing", package: "swift-testing")
+                "Core",
+                "Security",
+                "Logging"
             ],
+            path: "Sources/UmbraCore"
+        ),
+        
+        // Test targets
+        .testTarget(
+            name: "CoreTests",
+            dependencies: ["Core"],
+            path: "Tests/CoreTests"
+        ),
+        .testTarget(
+            name: "SecurityTests",
+            dependencies: ["Security"],
+            path: "Tests/SecurityTests"
+        ),
+        .testTarget(
+            name: "LoggingTests",
+            dependencies: ["Logging"],
             path: "Tests/LoggingTests"
         ),
-
-        // MARK: - ErrorHandling
-        .target(
-            name: "ErrorHandling",
-            dependencies: [
-                "UmbraLogging",
-                .product(name: "Logging", package: "swift-log")
-            ],
-            path: "Sources/ErrorHandling"
-        ),
         .testTarget(
-            name: "ErrorHandlingTests",
-            dependencies: [
-                "ErrorHandling",
-                .product(name: "Testing", package: "swift-testing")
-            ],
-            path: "Tests/ErrorHandlingTests"
+            name: "UmbraCoreTests",
+            dependencies: ["UmbraCore"],
+            path: "Tests/UmbraCoreTests"
         ),
-
-        // MARK: - Autocomplete
-        .target(
-            name: "Autocomplete",
-            dependencies: [
-                "Repositories",
-                "Snapshots",
-                "ErrorHandling",
-                "UmbraLogging",
-                .product(name: "Logging", package: "swift-log")
-            ],
-            path: "Sources/Autocomplete"
-        ),
-        .testTarget(
-            name: "AutocompleteTests",
-            dependencies: [
-                "Autocomplete",
-                .product(name: "Testing", package: "swift-testing")
-            ],
-            path: "Tests/AutocompleteTests"
-        )
     ]
 )
