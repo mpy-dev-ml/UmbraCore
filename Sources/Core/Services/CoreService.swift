@@ -1,10 +1,9 @@
-import Foundation
 import SecurityTypes
 
 /// Core service that manages application-wide functionality
 @MainActor public final class CoreService {
     /// Shared instance
-    public static let shared = CoreService()
+    public static let shared = CoreService(securityProvider: MockSecurityProvider())
     
     /// Security provider for managing security-scoped resources
     private let securityProvider: any SecurityProvider

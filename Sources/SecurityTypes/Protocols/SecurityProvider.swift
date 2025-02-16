@@ -1,40 +1,84 @@
-import Foundation
-
-/// Protocol defining security-related operations
+/// Protocol defining security-related operations for managing secure resource access
 public protocol SecurityProvider: Sendable {
-    /// Create a security-scoped bookmark for a URL
-    /// - Parameter url: URL to create bookmark for
-    /// - Returns: Bookmark data
-    /// - Throws: SecurityError if bookmark creation fails
-    func createBookmark(for url: URL) async throws -> Data
+    // MARK: - Bookmark Management
     
-    /// Resolve a security-scoped bookmark
+    /// Create a security-scoped bookmark for a URL
+    /// - Parameter path: File system path to create bookmark for
+    /// - Returns: Bookmark data that can be persisted
+    /// - Throws: SecurityError if bookmark creation fails
+    func createBookmark(forPath path: String) async throws -> [UInt8]
+    
+    /// Resolve a previously created security-scoped bookmark
     /// - Parameter bookmarkData: Bookmark data to resolve
-    /// - Returns: Resolved URL
+    /// - Returns: Tuple containing resolved path and whether bookmark is stale
     /// - Throws: SecurityError if bookmark resolution fails
-    func resolveBookmark(_ bookmarkData: Data) async throws -> URL
+    func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool)
+    
+    // MARK: - Resource Access Control
     
     /// Start accessing a security-scoped resource
-    /// - Parameter url: URL of the resource to access
+    /// - Parameter path: Path to the resource to access
     /// - Returns: A boolean indicating if access was granted
-    /// - Throws: SecurityError if access fails
-    func startAccessing(_ url: URL) async throws -> Bool
+    /// - Throws: SecurityError if access fails or is denied
+    func startAccessing(path: String) async throws -> Bool
     
     /// Stop accessing a security-scoped resource
-    /// - Parameter url: URL of the resource to stop accessing
-    func stopAccessing(_ url: URL) async
+    /// - Parameter path: Path to the resource to stop accessing
+    /// - Note: This method should be called in a defer block after startAccessing
+    func stopAccessing(path: String) async
+    
+    /// Stop accessing all security-scoped resources
+    /// - Note: This is typically called during cleanup or when the app is terminating
+    func stopAccessingAllResources() async
+    
+    // MARK: - Scoped Access Operations
     
     /// Perform an operation with security-scoped resource access
     /// - Parameters:
-    ///   - url: URL of the resource to access
+    ///   - path: Path to the resource to access
     ///   - operation: Operation to perform while resource is accessible
     /// - Returns: Result of the operation
     /// - Throws: SecurityError if access fails, or any error thrown by the operation
+    /// - Note: This method handles starting and stopping access automatically
     func withSecurityScopedAccess<T>(
-        to url: URL,
+        to path: String,
         perform operation: () async throws -> T
     ) async throws -> T
     
-    /// Stop accessing all security-scoped resources
-    func stopAccessingAllResources() async
+    // MARK: - Bookmark Persistence
+    
+    /// Save a bookmark to persistent storage
+    /// - Parameters:
+    ///   - bookmarkData: Bookmark data to save
+    ///   - identifier: Unique identifier for the bookmark
+    /// - Throws: SecurityError if saving fails
+    func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws
+    
+    /// Load a bookmark from persistent storage
+    /// - Parameter identifier: Unique identifier for the bookmark
+    /// - Returns: Saved bookmark data
+    /// - Throws: SecurityError if loading fails or bookmark doesn't exist
+    func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8]
+    
+    /// Delete a bookmark from persistent storage
+    /// - Parameter identifier: Unique identifier for the bookmark to delete
+    /// - Throws: SecurityError if deletion fails
+    func deleteBookmark(withIdentifier identifier: String) async throws
+    
+    // MARK: - Status and Validation
+    
+    /// Check if a path is currently being accessed
+    /// - Parameter path: Path to check
+    /// - Returns: True if the path is currently being accessed
+    func isAccessing(path: String) async -> Bool
+    
+    /// Validate a bookmark's data
+    /// - Parameter bookmarkData: Bookmark data to validate
+    /// - Returns: True if the bookmark data is valid
+    /// - Throws: SecurityError if validation fails
+    func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool
+    
+    /// Get all currently accessed resource paths
+    /// - Returns: Set of paths that are currently being accessed
+    func getAccessedPaths() async -> Set<String>
 }

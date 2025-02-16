@@ -1,12 +1,12 @@
-import Foundation
 import Core
+import SecurityTypes
 
 /// Service for managing logging operations
 @MainActor public final class LoggingService: LoggingProtocol {
     // MARK: - Properties
     
     /// Shared instance with default security service
-    public static let shared = LoggingService()
+    public static let shared = LoggingService(securityProvider: MockSecurityProvider())
     
     /// The security service to use for file operations
     private let securityProvider: any SecurityProvider
@@ -24,12 +24,12 @@ import Core
     
     // MARK: - Logging Operations
     
-    /// Initialize the logger with a file URL
-    /// - Parameter fileURL: URL to log file
+    /// Initialize the logger with a file path
+    /// - Parameter path: Path to log file
     /// - Throws: LoggingError if initialization fails
-    public func initialize(with fileURL: URL) async throws {
-        try await securityProvider.withSecurityScopedAccess(to: fileURL) {
-            logger = try Logger(fileURL: fileURL)
+    public func initialize(with path: String) async throws {
+        try await securityProvider.withSecurityScopedAccess(to: path) {
+            logger = try Logger(path: path)
         }
     }
     

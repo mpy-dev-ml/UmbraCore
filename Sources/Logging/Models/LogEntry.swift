@@ -1,16 +1,14 @@
-import Foundation
 import Logging
-import os
 
 /// A log entry containing message and metadata
 @frozen public struct LogEntry: Sendable, Identifiable {
     // MARK: - Properties
     
     /// Unique identifier
-    public let id: UUID
+    public let id: String
     
-    /// Timestamp when the log entry was created
-    public let timestamp: Date
+    /// Timestamp when the log entry was created (seconds since epoch)
+    public let timestamp: Int
     
     /// Log level
     public let level: Logging.Logger.Level
@@ -49,10 +47,10 @@ import os
     
     // MARK: - Initialization
     
-    /// Initialize a new log entry
+    /// Initialize a log entry
     /// - Parameters:
-    ///   - id: Entry identifier (default: random UUID)
-    ///   - timestamp: Entry timestamp (default: current time)
+    ///   - id: Unique identifier
+    ///   - timestamp: Timestamp in seconds since epoch
     ///   - level: Log level
     ///   - message: Log message
     ///   - metadata: Optional metadata
@@ -60,14 +58,14 @@ import os
     ///   - function: Source function
     ///   - line: Source line
     public init(
-        id: UUID = UUID(),
-        timestamp: Date = Date(),
+        id: String = UUID().uuidString,
+        timestamp: Int = Int(time(nil)),
         level: Logging.Logger.Level,
         message: String,
         metadata: Logging.Logger.Metadata? = nil,
-        file: String,
-        function: String,
-        line: Int
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line
     ) {
         self.id = id
         self.timestamp = timestamp
@@ -79,54 +77,47 @@ import os
         self.line = line
     }
     
-    // MARK: - JSON Encoding
-    
-    /// Convert log entry to dictionary
-    /// - Returns: Dictionary representation of the log entry
-    public func toDictionary() -> [String: Any] {
-        var dict: [String: Any] = [
-            "id": id.uuidString,
-            "timestamp": ISO8601DateFormatter().string(from: timestamp),
-            "level": level.rawValue,
-            "message": message,
-            "file": file,
-            "function": function,
-            "line": line
-        ]
+    /// Create a copy of this entry with updated metadata
+    /// - Parameter metadata: New metadata to merge with existing
+    /// - Returns: New log entry with updated metadata
+    public func with(metadata: Logging.Logger.Metadata) -> LogEntry {
+        var newMetadata = self.metadata ?? [:]
+        metadata.forEach { newMetadata[$0.key] = $0.value }
         
-        if let metadata = metadata {
-            dict["metadata"] = metadata.mapValues { "\($0)" }
-        }
-        
-        return dict
+        return LogEntry(
+            id: id,
+            timestamp: timestamp,
+            level: level,
+            message: message,
+            metadata: newMetadata,
+            file: file,
+            function: function,
+            line: line
+        )
     }
     
-    /// Convert log entry to JSON data
-    /// - Returns: JSON data representation of the log entry
-    public func toJSON() throws -> Data {
-        let dict = toDictionary()
-        return try JSONSerialization.data(withJSONObject: dict)
-    }
-    
-    /// Convert log entry to JSON string
-    /// - Returns: JSON string representation of the log entry
-    public func toJSONString() throws -> String {
-        let data = try toJSON()
-        guard let string = String(data: data, encoding: .utf8) else {
-            throw NSError(domain: "LogEntry", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert JSON data to string"])
-        }
-        return string
+    /// Create a copy of this entry with a new message
+    /// - Parameter message: New message
+    /// - Returns: New log entry with updated message
+    public func with(message: String) -> LogEntry {
+        LogEntry(
+            id: id,
+            timestamp: timestamp,
+            level: level,
+            message: message,
+            metadata: metadata,
+            file: file,
+            function: function,
+            line: line
+        )
     }
 }
 
 // MARK: - CustomStringConvertible
 extension LogEntry: CustomStringConvertible {
     public var description: String {
-        let dateFormatter = ISO8601DateFormatter()
-        dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        
         return """
-            [\(dateFormatter.string(from: timestamp))][\(level)] \(message)
+            [\(timestamp)][\(level)] \(message)
             Source: \(sourceLocation)
             \(metadata?.isEmpty == false ? "Metadata: \(metadata!)" : "")
             """
