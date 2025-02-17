@@ -3,26 +3,14 @@ title: UmbraCore Documentation
 description: Documentation for the UmbraCore secure backup programme
 url: "https://mpy-dev-ml.github.io"
 baseurl: "/UmbraCore"
-
-# Build settings
-remote_theme: mpy-dev-ml/umbra-docs-theme
-markdown: kramdown
-highlighter: rouge
+source: "."
 
 # Theme settings
-doks:
-  color_theme: blue
-  header:
-    logo:
-      text: UmbraCore
-      image: false
-    nav:
-      - name: Docs
-        url: /docs/
-      - name: API
-        url: /api/
-      - name: GitHub
-        url: https://github.com/mpy-dev-ml/UmbraCore
+remote_theme: mpy-dev-ml/umbra-docs-theme
+theme_color: blue
+
+markdown: kramdown
+highlighter: rouge
 
 # Plugin settings
 plugins:
