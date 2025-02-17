@@ -25,3 +25,11 @@ swift_deps.from_package(
 )
 
 use_repo(swift_deps, "swift_package", "swiftpkg_cryptoswift", "swiftpkg_swiftybeaver", "swift_deps_info")
+
+# Swift platform configuration
+swift_platform = use_extension("@rules_swift//swift:extensions.bzl", "swift_platform")
+swift_platform.host_platform(
+    name = "host_platform",
+    macos_minimum_version = "14.0",
+)
+use_repo(swift_platform, "host_platform")

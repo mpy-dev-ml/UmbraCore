@@ -1,4 +1,5 @@
 load("@gazelle//:def.bzl", "gazelle", "gazelle_binary")
+load("@rules_swift//swift:swift.bzl", "swift_binary", "swift_library")
 
 # Ignore the `.build` folder from Swift package manager
 # gazelle:exclude .build
@@ -20,4 +21,20 @@ gazelle(
         "-swift_dependency_index=$(location @swift_deps_info//:swift_deps_index)",
     ],
     gazelle = ":gazelle_bin",
+)
+
+# Swift toolchain configuration
+swift_library(
+    name = "UmbraCore",
+    srcs = [],
+    module_name = "UmbraCore",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/Core",
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+        "//Sources/UmbraLogging",
+        "@swiftpkg_cryptoswift//:CryptoSwift",
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    ],
 )
