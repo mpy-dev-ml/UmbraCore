@@ -1,28 +1,28 @@
-import Darwin.POSIX
+import Foundation
 import SecurityTypes
 
-/// Protocol for providing path-based security operations
+/// Protocol for URL-based operations
 public protocol URLProvider: Sendable {
-    /// Creates bookmark data for a path
-    /// - Parameter path: The path to create a bookmark for
-    /// - Returns: The bookmark data as bytes
+    /// Create a bookmark for a path
+    /// - Parameter path: Path to create bookmark for
+    /// - Returns: Bookmark data
     /// - Throws: SecurityError if bookmark creation fails
-    func createBookmark(forPath path: String) async throws -> [UInt8]
+    func createBookmark(forPath path: String) async throws -> Data
 
-    /// Resolves bookmark data to a path
-    /// - Parameter bookmarkData: The bookmark data to resolve
-    /// - Returns: A tuple containing the resolved path and whether the bookmark is stale
+    /// Resolve a bookmark to a path
+    /// - Parameter bookmarkData: Bookmark data to resolve
+    /// - Returns: Tuple containing resolved path and whether bookmark is stale
     /// - Throws: SecurityError if bookmark resolution fails
     func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool)
 
-    /// Starts security-scoped access to a path
-    /// - Parameter path: The path to access
-    /// - Returns: True if access was granted, false otherwise
-    /// - Throws: SecurityError if access cannot be started
+    /// Start accessing a path
+    /// - Parameter path: Path to access
+    /// - Returns: True if access was granted
+    /// - Throws: SecurityError if access fails
     func startAccessing(path: String) async throws -> Bool
 
-    /// Stops security-scoped access to a path
-    /// - Parameter path: The path to stop accessing
+    /// Stop accessing a path
+    /// - Parameter path: Path to stop accessing
     func stopAccessing(path: String) async
 
     /// Checks if a path is currently being accessed
@@ -35,40 +35,54 @@ public protocol URLProvider: Sendable {
     func getAccessedPaths() async -> [String]
 }
 
-/// Default implementation for paths
-public struct PathURLProvider: URLProvider {
-    /// Initialize a new path provider
+/// Default implementation of URLProvider using Foundation
+public actor PathURLProvider: URLProvider {
     public init() {}
 
-    public func createBookmark(forPath path: String) async throws -> [UInt8] {
-        // For now, just use the path bytes as a bookmark
-        Array(path.utf8)
+    public func createBookmark(forPath path: String) async throws -> Data {
+        guard let url = URL(string: path) else {
+            throw SecurityError.invalidData(reason: "Invalid path: \(path)")
+        }
+
+        return try url.bookmarkData(
+            options: .withSecurityScope,
+            includingResourceValuesForKeys: nil,
+            relativeTo: nil
+        )
     }
 
     public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        // For now, just convert bytes back to path
-        let path = String(decoding: bookmarkData, as: UTF8.self)
-        return (path, false)
+        var isStale = false
+        let url = try URL(
+            resolvingBookmarkData: Data(bookmarkData),
+            options: .withSecurityScope,
+            relativeTo: nil,
+            bookmarkDataIsStale: &isStale
+        )
+        return (url.path, isStale)
     }
 
     public func startAccessing(path: String) async throws -> Bool {
-        // Check if the path exists and is readable
-        var statInfo = stat()
-        if lstat(path, &statInfo) == 0 {
+        guard let url = URL(string: path) else {
+            throw SecurityError.invalidData(reason: "Invalid path: \(path)")
+        }
+
+        if url.startAccessingSecurityScopedResource() {
             return true
         } else {
-            throw SecurityError.accessDenied(path: path)
+            throw SecurityError.accessDenied(reason: "Failed to access: \(path)")
         }
     }
 
     public func stopAccessing(path: String) async {
-        // No-op for now
+        guard let url = URL(string: path) else { return }
+        url.stopAccessingSecurityScopedResource()
     }
 
     public func isAccessing(path: String) async -> Bool {
         // Check if the path exists and is readable
-        var statInfo = stat()
-        return lstat(path, &statInfo) == 0
+        guard let url = URL(string: path) else { return false }
+        return url.startAccessingSecurityScopedResource()
     }
 
     public func getAccessedPaths() async -> [String] {

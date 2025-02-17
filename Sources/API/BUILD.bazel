@@ -1,0 +1,14 @@
+load("@rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "API",
+    srcs = glob(["**/*.swift"]),
+    module_name = "UmbraAPI",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/Services/SecurityUtils",
+        "//Sources/UmbraCore",
+        "//Sources/UmbraLogging",
+    ],
+)

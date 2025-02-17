@@ -67,3 +67,9 @@ build_report.json
 .idea/
 *.swp
 *.swo
+
+# Bazel specific
+/bazel-*
+/spm-build/
+/spm-cache/
+MODULE.bazel.lock

@@ -1,0 +1,19 @@
+load("@rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "CryptoTypes",
+    srcs = [
+        "Models/SecureStorageData.swift",
+        "Protocols/CryptoServiceProtocol.swift",
+        "Services/CredentialManager.swift",
+        "Services/CryptoService.swift",
+        "Types/CryptoConfiguration.swift",
+        "Types/CryptoError.swift",
+    ],
+    module_name = "CryptoTypes",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecurityTypes",
+        "@swiftpkg_cryptoswift//:CryptoSwift",
+    ],
+)

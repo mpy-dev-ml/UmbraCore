@@ -1,0 +1,21 @@
+load("@rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "ErrorHandling",
+    srcs = [
+        "Extensions/Error+Context.swift",
+        "Models/CommonError.swift",
+        "Models/CoreError.swift",
+        "Models/ErrorContext.swift",
+        "Models/ServiceErrorTypes.swift",
+        "Protocols/ErrorHandlingProtocol.swift",
+        "Protocols/ErrorReporting.swift",
+        "Protocols/ServiceErrorProtocol.swift",
+    ],
+    module_name = "ErrorHandling",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/UmbraLogging",
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    ],
+)

@@ -1,0 +1,8 @@
+load("@rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "ResticCLIHelper",
+    srcs = ["Protocols/ResticCLIHelperProtocol.swift"],
+    module_name = "ResticCLIHelper",
+    visibility = ["//visibility:public"],
+)

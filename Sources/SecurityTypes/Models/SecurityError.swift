@@ -1,7 +1,7 @@
 import Foundation
 
 /// Errors that can occur during security operations
-@frozen public enum SecurityError: LocalizedError, Sendable {
+@frozen public enum SecurityError: LocalizedError, Sendable, Equatable {
     /// Invalid data error
     case invalidData(reason: String)
     /// Item not found error
@@ -32,7 +32,7 @@ import Foundation
         case .bookmarkResolutionFailed(let reason):
             return "Failed to resolve bookmark: \(reason)"
         case .bookmarkNotFound(let path):
-            return "Bookmark not found for path: \(path)"
+            return "Bookmark not found: \(path)"
         }
     }
 }

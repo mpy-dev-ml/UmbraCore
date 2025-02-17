@@ -1,0 +1,27 @@
+module(
+    name = "umbracore",
+    version = "1.0.0",
+)
+
+bazel_dep(name = "rules_swift", version = "2.2.0")
+bazel_dep(name = "gazelle", version = "0.41.0")
+bazel_dep(name = "rules_swift_package_manager", version = "0.45.0")
+
+git_override(
+    module_name = "rules_swift_package_manager",
+    commit = "d91c62800e26352a7f11a5ea320cf21c6a9c8408",  # v0.45.0
+    remote = "https://github.com/cgrindel/rules_swift_package_manager.git",
+)
+
+swift_deps = use_extension(
+    "@rules_swift_package_manager//:extensions.bzl",
+    "swift_deps",
+)
+
+swift_deps.from_package(
+    resolved = "//:Package.resolved",
+    swift = "//:Package.swift",
+    declare_swift_deps_info = True,
+)
+
+use_repo(swift_deps, "swift_package", "swiftpkg_cryptoswift", "swiftpkg_swiftybeaver", "swift_deps_info")

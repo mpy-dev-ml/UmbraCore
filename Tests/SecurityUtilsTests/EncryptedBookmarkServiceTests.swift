@@ -1,82 +1,72 @@
 @testable import CryptoTypes
 @testable import SecurityTypes
-@testable import UmbraCore
 @testable import UmbraCrypto
-import UmbraMocks
+@testable import UmbraMocks
 @testable import UmbraSecurityUtils
 import XCTest
 
 final class EncryptedBookmarkServiceTests: XCTestCase {
-    var cryptoService: CryptoService!
+    var cryptoService: CryptoServiceProtocol!
     var bookmarkService: SecurityBookmarkService!
     var credentialManager: CredentialManager!
     var encryptedBookmarkService: EncryptedBookmarkService!
     var mockKeychain: MockKeychain!
     var testFileURL: URL!
     var testFileData: String!
+    var testDirectory: URL!
 
     override func setUp() async throws {
+        // Create test directory
+        let tempDir = URL(fileURLWithPath: NSTemporaryDirectory())
+        testDirectory = tempDir.appendingPathComponent("UmbraSecurityTests", isDirectory: true)
+        try FileManager.default.createDirectory(at: testDirectory, withIntermediateDirectories: true)
+        
         // Create test file
-        let tempDir = FileManager.default.temporaryDirectory
-        testFileURL = tempDir.appendingPathComponent("test_file.txt")
+        testFileURL = URL(fileURLWithPath: testDirectory.path).appendingPathComponent("test_file.txt")
         testFileData = "Test file content"
         try testFileData.write(to: testFileURL, atomically: true, encoding: .utf8)
+        
+        // Set file permissions
+        try FileManager.default.setAttributes([
+            .posixPermissions: 0o644
+        ], ofItemAtPath: testFileURL.path)
 
-        // Initialize services
-        cryptoService = CryptoService(config: .default)
-        bookmarkService = SecurityBookmarkService()
+        // Set up services
         mockKeychain = MockKeychain()
-        credentialManager = CredentialManager(
-            cryptoService: cryptoService,
-            keychain: mockKeychain,
-            config: .default
-        )
+        cryptoService = CryptoService()
+        credentialManager = CredentialManager(cryptoService: cryptoService, keychain: mockKeychain)
+        bookmarkService = SecurityBookmarkService()
         encryptedBookmarkService = EncryptedBookmarkService(
             cryptoService: cryptoService,
             bookmarkService: bookmarkService,
-            credentialManager: credentialManager,
-            config: .default
+            credentialManager: credentialManager
         )
     }
 
     override func tearDown() async throws {
-        try? FileManager.default.removeItem(at: testFileURL)
-        try? await credentialManager.removeSecureData(identifier: "test_bookmark")
-        await mockKeychain.reset()
+        try? FileManager.default.removeItem(at: testDirectory)
+        testFileURL = nil
+        testFileData = nil
     }
 
-    func testCreateAndResolveBookmark() async throws {
-        try await encryptedBookmarkService.createEncryptedBookmark(for: testFileURL, identifier: "test_bookmark")
+    func testBookmarkManagement() async throws {
+        // Create and save encrypted bookmark
+        let identifier = "test_bookmark"
+        try await encryptedBookmarkService.saveBookmark(for: testFileURL, withIdentifier: identifier)
 
-        let hasBookmark = try await encryptedBookmarkService.hasBookmark(identifier: "test_bookmark")
-        XCTAssertTrue(hasBookmark, "Bookmark should exist after creation")
+        // Resolve bookmark
+        let resolvedURL = try await encryptedBookmarkService.resolveBookmark(withIdentifier: identifier)
+        XCTAssertEqual(resolvedURL.path, testFileURL.path)
 
-        let (resolvedURL, isStale) = try await encryptedBookmarkService.resolveEncryptedBookmark("test_bookmark")
-        XCTAssertEqual(resolvedURL.path, testFileURL.path, "Resolved URL should match original")
-        XCTAssertFalse(isStale, "Bookmark should not be stale")
-    }
+        // Delete bookmark
+        try await encryptedBookmarkService.deleteBookmark(withIdentifier: identifier)
 
-    func testBookmarkRemoval() async throws {
-        try await encryptedBookmarkService.createEncryptedBookmark(for: testFileURL, identifier: "test_bookmark")
-
-        let hasBookmark = try await encryptedBookmarkService.hasBookmark(identifier: "test_bookmark")
-        XCTAssertTrue(hasBookmark, "Bookmark should exist before removal")
-
-        try await encryptedBookmarkService.removeBookmark(identifier: "test_bookmark")
-
-        let hasBookmarkAfterRemoval = try await encryptedBookmarkService.hasBookmark(identifier: "test_bookmark")
-        XCTAssertFalse(hasBookmarkAfterRemoval, "Bookmark should not exist after removal")
-    }
-
-    func testNonexistentBookmark() async throws {
-        let hasBookmark = try await encryptedBookmarkService.hasBookmark(identifier: "nonexistent")
-        XCTAssertFalse(hasBookmark, "Nonexistent bookmark should return false")
-
+        // Verify deletion
         do {
-            _ = try await encryptedBookmarkService.resolveEncryptedBookmark("nonexistent")
-            XCTFail("Expected error to be thrown")
-        } catch {
-            XCTAssertTrue(error is CryptoError)
+            _ = try await encryptedBookmarkService.resolveBookmark(withIdentifier: identifier)
+            XCTFail("Expected error resolving deleted bookmark")
+        } catch let error as SecurityError {
+            XCTAssertEqual(error.localizedDescription, "Bookmark not found: \(identifier)")
         }
     }
 }

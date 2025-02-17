@@ -1,60 +1,87 @@
 import Foundation
 import SecurityTypes
 
-/// Service for managing security bookmarks and access to security-scoped resources
+/// Service for managing security-scoped bookmarks
 public actor SecurityBookmarkService {
     private let urlProvider: URLProvider
-    private var accessedPaths: Set<String>
+    private var activeResources: Set<URL>
 
     /// Initialize a new security bookmark service
     /// - Parameter urlProvider: Provider for URL operations
     public init(urlProvider: URLProvider = PathURLProvider()) {
         self.urlProvider = urlProvider
-        self.accessedPaths = []
+        self.activeResources = []
     }
 
-    /// Create a bookmark for a URL
+    /// Create a security-scoped bookmark for a URL
     /// - Parameter url: URL to create bookmark for
     /// - Returns: Bookmark data
     /// - Throws: SecurityError if bookmark creation fails
     public func createBookmark(for url: URL) async throws -> Data {
-        let bookmarkBytes = try await urlProvider.createBookmark(forPath: url.path)
-        return Data(bookmarkBytes)
+        // Ensure we have a file URL
+        let fileURL = url.isFileURL ? url : URL(fileURLWithPath: url.path)
+        
+        // Start accessing the resource before creating bookmark
+        guard fileURL.startAccessingSecurityScopedResource() else {
+            throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
+        }
+        defer { fileURL.stopAccessingSecurityScopedResource() }
+        
+        // Create bookmark
+        let bookmarkData = try fileURL.bookmarkData(
+            options: .withSecurityScope,
+            includingResourceValuesForKeys: nil,
+            relativeTo: nil
+        )
+        return bookmarkData
     }
 
-    /// Resolve a bookmark to a URL
+    /// Resolve a security-scoped bookmark
     /// - Parameter bookmarkData: Bookmark data to resolve
     /// - Returns: Tuple containing resolved URL and whether bookmark is stale
     /// - Throws: SecurityError if bookmark resolution fails
     public func resolveBookmark(_ bookmarkData: Data) async throws -> (url: URL, isStale: Bool) {
-        let result = try await urlProvider.resolveBookmark(Array(bookmarkData))
-        return (url: URL(fileURLWithPath: result.path), isStale: result.isStale)
+        var isStale = false
+        let url = try URL(
+            resolvingBookmarkData: bookmarkData,
+            options: .withSecurityScope,
+            relativeTo: nil,
+            bookmarkDataIsStale: &isStale
+        )
+        return (url, isStale)
     }
 
     /// Perform an operation with security-scoped access to a URL
     /// - Parameters:
     ///   - url: URL to access
     ///   - operation: Operation to perform while URL is accessible
-    /// - Throws: SecurityError if access cannot be started
+    /// - Returns: Result of the operation
+    /// - Throws: SecurityError if access fails
     public func withSecurityScopedAccess<T>(to url: URL, operation: () async throws -> T) async throws -> T {
-        guard try await urlProvider.startAccessing(path: url.path) else {
-            throw SecurityError.accessDenied(path: url.path)
+        // Ensure we have a file URL
+        let fileURL = url.isFileURL ? url : URL(fileURLWithPath: url.path)
+        
+        // Start accessing the resource
+        guard fileURL.startAccessingSecurityScopedResource() else {
+            throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
         }
-
-        accessedPaths.insert(url.path)
+        
+        // Track the active resource
+        activeResources.insert(fileURL)
+        
         defer {
-            Task {
-                await urlProvider.stopAccessing(path: url.path)
-                accessedPaths.remove(url.path)
-            }
+            fileURL.stopAccessingSecurityScopedResource()
+            activeResources.remove(fileURL)
         }
-
+        
         return try await operation()
     }
 
-    /// Get all paths currently being accessed
-    /// - Returns: Array of paths currently being accessed
-    public func getAccessedPaths() -> [String] {
-        Array(accessedPaths)
+    /// Stop accessing all security-scoped resources
+    public func stopAccessingAllResources() {
+        for url in activeResources {
+            url.stopAccessingSecurityScopedResource()
+        }
+        activeResources.removeAll()
     }
 }

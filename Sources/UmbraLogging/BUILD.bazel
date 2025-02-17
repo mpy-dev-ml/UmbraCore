@@ -1,0 +1,13 @@
+load("@rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "UmbraLogging",
+    srcs = [
+        "LogEntry.swift",
+        "Logger.swift",
+        "LoggingProtocol.swift",
+    ],
+    module_name = "UmbraLogging",
+    visibility = ["//visibility:public"],
+    deps = ["@swiftpkg_swiftybeaver//:SwiftyBeaver"],
+)

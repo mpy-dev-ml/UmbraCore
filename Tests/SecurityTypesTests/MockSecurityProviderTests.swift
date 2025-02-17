@@ -1,33 +1,61 @@
-@testable import SecurityTypes
 import XCTest
+@testable import SecurityTypes
 
 final class MockSecurityProviderTests: XCTestCase {
-    var provider: MockSecurityProvider!
+    var provider: DefaultSecurityProvider!
+    var testFileURL: URL!
+    var testFileData: String!
 
     override func setUp() async throws {
-        provider = MockSecurityProvider()
+        provider = DefaultSecurityProvider()
+        
+        // Create test file
+        let tempDir = FileManager.default.temporaryDirectory
+        testFileURL = tempDir.appendingPathComponent("test_file.txt")
+        testFileData = "Test content"
+        try testFileData.write(to: testFileURL, atomically: true, encoding: .utf8)
     }
 
     override func tearDown() async throws {
+        try? FileManager.default.removeItem(at: testFileURL)
+        await provider.stopAccessingAllResources()
         provider = nil
     }
 
     func testBookmarkOperations() async throws {
-        let path = "/test/path"
-        let identifier = "test-bookmark"
-
-        // Create and save bookmark
-        let bookmarkData = try await provider.createBookmark(forPath: path)
-        try await provider.saveBookmark(bookmarkData, withIdentifier: identifier)
-
-        // Load and validate bookmark
-        let loadedData = try await provider.loadBookmark(withIdentifier: identifier)
-        XCTAssertEqual(loadedData, bookmarkData)
+        // Create bookmark
+        let bookmarkData = try await provider.createBookmark(forPath: testFileURL.path)
+        XCTAssertFalse(bookmarkData.isEmpty)
 
         // Resolve bookmark
-        let (resolvedPath, isStale) = try await provider.resolveBookmark(loadedData)
-        XCTAssertEqual(resolvedPath, path)
+        let (resolvedPath, isStale) = try await provider.resolveBookmark(bookmarkData)
+        XCTAssertEqual(resolvedPath, testFileURL.path)
         XCTAssertFalse(isStale)
+    }
+
+    func testSecurityScopedAccess() async throws {
+        // Start accessing
+        let success = try await provider.startAccessing(path: testFileURL.path)
+        XCTAssertTrue(success)
+        
+        let isAccessing = await provider.isAccessing(path: testFileURL.path)
+        XCTAssertTrue(isAccessing)
+
+        // Stop accessing
+        await provider.stopAccessing(path: testFileURL.path)
+        let isStopped = await provider.isAccessing(path: testFileURL.path)
+        XCTAssertFalse(isStopped)
+    }
+
+    func testBookmarkStorage() async throws {
+        // Create and save bookmark
+        let identifier = "test_bookmark"
+        let bookmarkData = try await provider.createBookmark(forPath: testFileURL.path)
+        try await provider.saveBookmark(bookmarkData, withIdentifier: identifier)
+
+        // Load bookmark
+        let loadedData = try await provider.loadBookmark(withIdentifier: identifier)
+        XCTAssertEqual(loadedData, bookmarkData)
 
         // Delete bookmark
         try await provider.deleteBookmark(withIdentifier: identifier)
@@ -35,72 +63,45 @@ final class MockSecurityProviderTests: XCTestCase {
         // Verify deletion
         do {
             _ = try await provider.loadBookmark(withIdentifier: identifier)
-            XCTFail("Expected bookmarkNotFound error")
-        } catch SecurityError.bookmarkNotFound {
-            // Expected error
+            XCTFail("Expected error loading deleted bookmark")
+        } catch let error as SecurityError {
+            XCTAssertEqual(error.localizedDescription, "Bookmark not found: \(identifier)")
         }
-    }
-
-    func testAccessOperations() async throws {
-        let path = "/test/path"
-
-        // Start accessing
-        let accessGranted = try await provider.startAccessing(path: path)
-        XCTAssertTrue(accessGranted)
-
-        // Check access
-        let isAccessing = await provider.isAccessing(path: path)
-        XCTAssertTrue(isAccessing)
-
-        // Get accessed paths
-        let accessedPaths = await provider.getAccessedPaths()
-        XCTAssertTrue(accessedPaths.contains(path))
-
-        // Stop accessing
-        await provider.stopAccessing(path: path)
-        let isStillAccessing = await provider.isAccessing(path: path)
-        XCTAssertFalse(isStillAccessing)
-    }
-
-    func testWithSecurityScopedAccess() async throws {
-        let path = "/test/path"
-        var operationExecuted = false
-
-        try await provider.withSecurityScopedAccess(to: path) {
-            operationExecuted = true
-            let isAccessing = await provider.isAccessing(path: path)
-            XCTAssertTrue(isAccessing)
-        }
-
-        XCTAssertTrue(operationExecuted)
-        let isStillAccessing = await provider.isAccessing(path: path)
-        XCTAssertFalse(isStillAccessing)
     }
 
     func testStopAccessingAllResources() async throws {
-        let paths = ["/test/path1", "/test/path2", "/test/path3"]
-
-        // Start accessing multiple paths
-        for path in paths {
-            _ = try await provider.startAccessing(path: path)
+        // Create test files
+        let tempDir = FileManager.default.temporaryDirectory
+        let testFile1 = tempDir.appendingPathComponent("test1.txt")
+        let testFile2 = tempDir.appendingPathComponent("test2.txt")
+        try "Test 1".write(to: testFile1, atomically: true, encoding: .utf8)
+        try "Test 2".write(to: testFile2, atomically: true, encoding: .utf8)
+        defer {
+            try? FileManager.default.removeItem(at: testFile1)
+            try? FileManager.default.removeItem(at: testFile2)
         }
 
-        // Verify all paths are being accessed
-        for path in paths {
-            let isAccessing = await provider.isAccessing(path: path)
-            XCTAssertTrue(isAccessing)
-        }
+        // Start accessing both files
+        let success1 = try await provider.startAccessing(path: testFile1.path)
+        XCTAssertTrue(success1)
+        let success2 = try await provider.startAccessing(path: testFile2.path)
+        XCTAssertTrue(success2)
+        
+        let paths = await provider.getAccessedPaths()
+        XCTAssertEqual(paths.count, 2)
+        XCTAssertTrue(paths.contains(testFile1.path))
+        XCTAssertTrue(paths.contains(testFile2.path))
 
-        // Stop accessing all resources
+        // Stop accessing all
         await provider.stopAccessingAllResources()
+        let finalPaths = await provider.getAccessedPaths()
+        XCTAssertTrue(finalPaths.isEmpty)
+    }
 
-        // Verify no paths are being accessed
-        for path in paths {
-            let isAccessing = await provider.isAccessing(path: path)
-            XCTAssertFalse(isAccessing)
+    func testWithSecurityScopedAccess() async throws {
+        let content = try await provider.withSecurityScopedAccess(to: testFileURL.path) {
+            try String(contentsOf: testFileURL, encoding: .utf8)
         }
-
-        let accessedPaths = await provider.getAccessedPaths()
-        XCTAssertTrue(accessedPaths.isEmpty)
+        XCTAssertEqual(content, testFileData)
     }
 }
