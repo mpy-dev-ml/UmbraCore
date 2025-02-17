@@ -1,20 +1,26 @@
 import XCTest
-@testable import UmbraCore
+@testable import CryptoTypes
 import SecurityTypes
 import UmbraMocks
 
 final class CredentialManagerTests: XCTestCase {
     var mockKeychain: MockKeychain!
+    var mockCryptoService: MockCryptoService!
     var credentialManager: CredentialManager!
     
     override func setUp() async throws {
         mockKeychain = MockKeychain()
-        credentialManager = CredentialManager(keychain: mockKeychain)
+        mockCryptoService = MockCryptoService()
+        credentialManager = CredentialManager(
+            cryptoService: mockCryptoService,
+            keychain: mockKeychain
+        )
     }
     
     override func tearDown() async throws {
         await mockKeychain.reset()
         credentialManager = nil
+        mockCryptoService = nil
     }
     
     func testCredentialStorage() async throws {
@@ -22,7 +28,7 @@ final class CredentialManagerTests: XCTestCase {
         let identifier = "test_id"
         
         try await credentialManager.store(credential: testCredential, withIdentifier: identifier)
-        let storedCredential = try await credentialManager.retrieve(withIdentifier: identifier)
+        let storedCredential: String = try await credentialManager.retrieve(withIdentifier: identifier)
         XCTAssertEqual(storedCredential, testCredential, "Retrieved credential should match stored credential")
     }
     
@@ -34,31 +40,43 @@ final class CredentialManagerTests: XCTestCase {
         try await credentialManager.delete(withIdentifier: identifier)
         
         do {
-            _ = try await credentialManager.retrieve(withIdentifier: identifier)
+            let _: String = try await credentialManager.retrieve(withIdentifier: identifier)
             XCTFail("Should throw error for deleted credential")
+        } catch let error as CryptoError {
+            if case .keyNotFound = error {
+                // Expected error
+            } else {
+                XCTFail("Error should be CryptoError.keyNotFound, got \(error)")
+            }
         } catch {
-            XCTAssertTrue(error is SecurityError, "Error should be a SecurityError")
+            XCTFail("Error should be CryptoError.keyNotFound, got \(error)")
         }
     }
     
     func testCredentialUpdate() async throws {
-        let identifier = "test_id"
-        let originalCredential = "original_credential"
+        let testCredential = "test_credential"
         let updatedCredential = "updated_credential"
+        let identifier = "test_id"
         
-        try await credentialManager.store(credential: originalCredential, withIdentifier: identifier)
+        try await credentialManager.store(credential: testCredential, withIdentifier: identifier)
         try await credentialManager.store(credential: updatedCredential, withIdentifier: identifier)
         
-        let retrievedCredential = try await credentialManager.retrieve(withIdentifier: identifier)
+        let retrievedCredential: String = try await credentialManager.retrieve(withIdentifier: identifier)
         XCTAssertEqual(retrievedCredential, updatedCredential, "Retrieved credential should match updated credential")
     }
     
     func testNonexistentCredential() async throws {
         do {
-            _ = try await credentialManager.retrieve(withIdentifier: "nonexistent")
+            let _: String = try await credentialManager.retrieve(withIdentifier: "nonexistent")
             XCTFail("Should throw error for nonexistent credential")
+        } catch let error as CryptoError {
+            if case .keyNotFound = error {
+                // Expected error
+            } else {
+                XCTFail("Error should be CryptoError.keyNotFound, got \(error)")
+            }
         } catch {
-            XCTAssertTrue(error is SecurityError, "Error should be a SecurityError")
+            XCTFail("Error should be CryptoError.keyNotFound, got \(error)")
         }
     }
     

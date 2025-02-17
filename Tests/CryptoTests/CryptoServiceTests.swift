@@ -1,5 +1,4 @@
 import XCTest
-@testable import UmbraCrypto
 @testable import CryptoTypes
 import CryptoSwift
 
@@ -15,7 +14,7 @@ final class CryptoServiceTests: XCTestCase {
     func testEncryptionDecryption() async throws {
         let originalData = "Test data for encryption".data(using: .utf8)!
         let key = try await cryptoService.generateSecureRandomKey(length: config.keyLength / 8)
-        let iv = try await cryptoService.generateSecureRandomKey(length: config.ivLength)
+        let iv = try await cryptoService.generateSecureRandomKey(length: 12) // GCM requires 12 bytes
         
         let encrypted = try await cryptoService.encrypt(originalData, using: key, iv: iv)
         XCTAssertNotEqual(encrypted, originalData, "Encrypted data should be different from original")
@@ -27,12 +26,13 @@ final class CryptoServiceTests: XCTestCase {
     func testKeyDerivation() async throws {
         let password = "test_password"
         let salt = try await cryptoService.generateSecureRandomKey(length: config.saltLength)
-        let key1 = try await cryptoService.deriveKey(from: password, salt: salt, iterations: 1000)
-        let key2 = try await cryptoService.deriveKey(from: password, salt: salt, iterations: 1000)
+        let iterations = config.minimumPBKDF2Iterations
+        let key1 = try await cryptoService.deriveKey(from: password, salt: salt, iterations: iterations)
+        let key2 = try await cryptoService.deriveKey(from: password, salt: salt, iterations: iterations)
         
         XCTAssertEqual(key1, key2, "Same password and salt should produce same key")
         
-        let differentKey = try await cryptoService.deriveKey(from: "different_password", salt: salt, iterations: 1000)
+        let differentKey = try await cryptoService.deriveKey(from: "different_password", salt: salt, iterations: iterations)
         XCTAssertNotEqual(key1, differentKey, "Different passwords should produce different keys")
     }
     
@@ -63,7 +63,7 @@ final class CryptoServiceTests: XCTestCase {
     func testInvalidKeyLength() async throws {
         let data = "Test data".data(using: .utf8)!
         let invalidKey = "short".data(using: .utf8)!
-        let iv = try await cryptoService.generateSecureRandomKey(length: config.ivLength)
+        let iv = try await cryptoService.generateSecureRandomKey(length: 12) // GCM requires 12 bytes
         
         do {
             _ = try await cryptoService.encrypt(data, using: invalidKey, iv: iv)

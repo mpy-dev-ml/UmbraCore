@@ -22,6 +22,10 @@ import Foundation
     case randomGenerationFailed(reason: String)
     /// Key not found
     case keyNotFound(identifier: String)
+    /// Key already exists
+    case keyExists(identifier: String)
+    /// Keychain operation failed
+    case keychainError(status: OSStatus)
     
     public var errorDescription: String? {
         switch self {
@@ -45,6 +49,10 @@ import Foundation
             return "Random number generation failed: \(reason)"
         case .keyNotFound(let identifier):
             return "Key not found: \(identifier)"
+        case .keyExists(let identifier):
+            return "Key already exists: \(identifier)"
+        case .keychainError(let status):
+            return "Keychain operation failed with status: \(status)"
         }
     }
 }

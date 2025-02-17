@@ -35,9 +35,9 @@ let package = Package(
         .target(
             name: "UmbraMocks",
             dependencies: [
-                "SecurityTypes"
-            ],
-            path: "Sources/Mocks"
+                "SecurityTypes",
+                "CryptoTypes"
+            ]
         ),
         
         // Logging Feature
@@ -64,14 +64,14 @@ let package = Package(
         
         // Tests
         .testTarget(
-            name: "CoreTests",
+            name: "CryptoTests",
             dependencies: [
-                "UmbraCore",
+                "CryptoTypes",
                 "UmbraMocks"
             ]
         ),
         .testTarget(
-            name: "CryptoTests",
+            name: "CoreTests",
             dependencies: [
                 "UmbraCore",
                 "UmbraMocks"

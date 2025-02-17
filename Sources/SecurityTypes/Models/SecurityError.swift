@@ -1,7 +1,7 @@
 import Foundation
 
 /// Errors that can occur during security operations
-public enum SecurityError: LocalizedError {
+@frozen public enum SecurityError: LocalizedError, Sendable {
     /// Invalid data error
     case invalidData(reason: String)
     /// Item not found error

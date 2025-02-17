@@ -47,13 +47,16 @@ final class URLSecurityTests: XCTestCase {
     }
     
     func testInvalidBookmark() async throws {
-        let invalidData: [UInt8] = [0, 1, 2, 3]
+        let invalidData: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFF] // Invalid UTF-8 sequence
         
         do {
             _ = try await mockSecurityProvider.resolveBookmark(invalidData)
             XCTFail("Should throw error for invalid bookmark data")
-        } catch {
-            XCTAssertTrue(error is SecurityError)
+        } catch let error as SecurityError {
+            guard case .bookmarkResolutionFailed = error else {
+                XCTFail("Expected bookmarkResolutionFailed error")
+                return
+            }
         }
     }
     
@@ -62,7 +65,7 @@ final class URLSecurityTests: XCTestCase {
         let isValidBookmark = try await mockSecurityProvider.validateBookmark(validData)
         XCTAssertTrue(isValidBookmark, "Valid bookmark should pass validation")
         
-        let invalidData: [UInt8] = [0, 1, 2, 3]
+        let invalidData: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFF] // Invalid UTF-8 sequence
         let isInvalidBookmark = try await mockSecurityProvider.validateBookmark(invalidData)
         XCTAssertFalse(isInvalidBookmark, "Invalid bookmark should fail validation")
     }

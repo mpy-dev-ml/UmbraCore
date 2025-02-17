@@ -1,9 +1,9 @@
 import Foundation
-import CryptoTypes
+import SecurityTypes
 import CryptoSwift
 
 /// A service providing cryptographic operations using CryptoSwift
-public actor CryptoService: CryptoServiceProtocol {
+public final class CryptoService: CryptoServiceProtocol {
     private let config: CryptoConfiguration
     
     public init(config: CryptoConfiguration = .default) {
@@ -25,7 +25,7 @@ public actor CryptoService: CryptoServiceProtocol {
             )
         }
         
-        let aes = try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
+        let aes = try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes, mode: .combined))
         let encrypted = try aes.encrypt(data.bytes)
         return Data(encrypted)
     }
@@ -45,7 +45,7 @@ public actor CryptoService: CryptoServiceProtocol {
             )
         }
         
-        let aes = try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
+        let aes = try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes, mode: .combined))
         let decrypted = try aes.decrypt(data.bytes)
         return Data(decrypted)
     }
