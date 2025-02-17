@@ -16,7 +16,7 @@ import Foundation
     case bookmarkResolutionFailed(reason: String)
     /// Bookmark not found
     case bookmarkNotFound(path: String)
-    
+
     public var errorDescription: String? {
         switch self {
         case .invalidData(let reason):

@@ -4,25 +4,25 @@ import Foundation
 public struct ErrorContext {
     /// The source of the error (e.g., module name, class name)
     public let source: String
-    
+
     /// Operation being performed when the error occurred
     public let operation: String
-    
+
     /// Additional details about the error
     public let details: String?
-    
+
     /// Underlying error if any
     public let underlyingError: Error?
-    
+
     /// File where the error occurred
     public let file: String
-    
+
     /// Line number where the error occurred
     public let line: Int
-    
+
     /// Function where the error occurred
     public let function: String
-    
+
     public init(
         source: String,
         operation: String,

@@ -10,7 +10,7 @@ public enum UmbraAPI {
     ) async throws {
         // Initialize components here
     }
-    
+
     /// Create an encrypted security-scoped bookmark for the given URL
     public static func createEncryptedBookmark(
         for url: URL,
@@ -18,7 +18,7 @@ public enum UmbraAPI {
     ) async throws {
         // Delegate to SecurityUtils
     }
-    
+
     /// Resolve an encrypted security-scoped bookmark
     public static func resolveEncryptedBookmark(
         _ identifier: String
@@ -26,7 +26,7 @@ public enum UmbraAPI {
         // Delegate to SecurityUtils
         fatalError("Not implemented")
     }
-    
+
     /// Encrypt data using the default configuration
     public static func encrypt(
         _ data: Data,
@@ -35,7 +35,7 @@ public enum UmbraAPI {
         // Delegate to SecurityUtils
         fatalError("Not implemented")
     }
-    
+
     /// Decrypt data using the default configuration
     public static func decrypt(
         _ data: Data,

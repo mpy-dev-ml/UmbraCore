@@ -5,12 +5,12 @@ import SecurityTypes
 public actor MockKeychain: SecureStorageProvider {
     /// Storage for mock keychain data
     private var storage: [String: Data]
-    
+
     /// Initialize a new mock keychain
     public init() {
         self.storage = [:]
     }
-    
+
     /// Save data to the mock keychain
     /// - Parameters:
     ///   - data: Data to save
@@ -18,7 +18,7 @@ public actor MockKeychain: SecureStorageProvider {
     public func save(_ data: Data, forKey key: String) async throws {
         storage[key] = data
     }
-    
+
     /// Load data from the mock keychain
     /// - Parameter key: Key to load data for
     /// - Returns: The stored data
@@ -28,7 +28,7 @@ public actor MockKeychain: SecureStorageProvider {
         }
         return data
     }
-    
+
     /// Delete data from the mock keychain
     /// - Parameter key: Key to delete data for
     public func delete(forKey key: String) async throws {
@@ -36,7 +36,7 @@ public actor MockKeychain: SecureStorageProvider {
             throw SecurityError.itemNotFound(key: key)
         }
     }
-    
+
     /// Reset the mock keychain
     public func reset() async {
         storage.removeAll()

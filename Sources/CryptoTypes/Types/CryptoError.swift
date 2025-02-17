@@ -26,7 +26,7 @@ import Foundation
     case keyExists(identifier: String)
     /// Keychain operation failed
     case keychainError(status: OSStatus)
-    
+
     public var errorDescription: String? {
         switch self {
         case .invalidKeyLength(let expected, let got):

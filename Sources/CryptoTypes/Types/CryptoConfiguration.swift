@@ -10,7 +10,7 @@ import Foundation
     public let saltLength: Int
     /// Minimum number of iterations for PBKDF2
     public let minimumPBKDF2Iterations: Int
-    
+
     public init(
         keyLength: Int = 256,
         ivLength: Int = 12,
@@ -22,7 +22,7 @@ import Foundation
         self.saltLength = saltLength
         self.minimumPBKDF2Iterations = minimumPBKDF2Iterations
     }
-    
+
     /// Default configuration
     public static let `default` = CryptoConfiguration()
 }

@@ -6,7 +6,7 @@
 public enum UmbraCore {
     /// Version of UmbraCore
     public static let version = "1.0.0"
-    
+
     /// Initialize UmbraCore with default configuration
     public static func initialize() {
         // Initialize core services

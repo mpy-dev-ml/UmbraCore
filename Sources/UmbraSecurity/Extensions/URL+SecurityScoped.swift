@@ -14,7 +14,7 @@ extension URL {
             throw SecurityError.bookmarkCreationFailed(path: path)
         }
     }
-    
+
     /// Resolve a security-scoped bookmark to a URL
     /// - Parameter bookmarkData: The bookmark data to resolve
     /// - Returns: A tuple containing the resolved URL and whether the bookmark is stale
@@ -31,18 +31,18 @@ extension URL {
             throw SecurityError.bookmarkResolutionFailed(path: "Unknown")
         }
     }
-    
+
     /// Start accessing a security-scoped resource
     /// - Returns: true if access was granted, false otherwise
     public func startSecurityScopedAccess() -> Bool {
         startAccessingSecurityScopedResource()
     }
-    
+
     /// Stop accessing a security-scoped resource
     public func stopSecurityScopedAccess() {
         stopAccessingSecurityScopedResource()
     }
-    
+
     /// Perform an operation with security-scoped access to this URL
     /// - Parameter operation: The operation to perform while the resource is accessible
     /// - Returns: The result of the operation

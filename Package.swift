@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(
             name: "UmbraCore",
-            targets: ["UmbraCore"]),
+            targets: ["UmbraCore"])
     ],
     dependencies: [
         .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", .upToNextMajor(from: "2.1.1")),
@@ -21,7 +21,7 @@ let package = Package(
             name: "SecurityTypes",
             dependencies: []
         ),
-        
+
         // Core Crypto Types
         .target(
             name: "CryptoTypes",
@@ -30,7 +30,7 @@ let package = Package(
                 "CryptoSwift"
             ]
         ),
-        
+
         // Mock Implementations
         .target(
             name: "UmbraMocks",
@@ -39,7 +39,7 @@ let package = Package(
                 "CryptoTypes"
             ]
         ),
-        
+
         // Logging Feature
         .target(
             name: "UmbraLogging",
@@ -50,7 +50,7 @@ let package = Package(
             ],
             path: "Sources/Features/Logging"
         ),
-        
+
         // Main Library
         .target(
             name: "UmbraCore",
@@ -61,7 +61,7 @@ let package = Package(
                 "UmbraMocks"
             ]
         ),
-        
+
         // Tests
         .testTarget(
             name: "CryptoTests",

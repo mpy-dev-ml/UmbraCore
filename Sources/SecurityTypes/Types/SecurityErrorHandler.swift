@@ -4,17 +4,17 @@ import Foundation
 public actor SecurityErrorHandler {
     /// Maximum number of retry attempts for recoverable errors
     private let maxRetryAttempts: Int
-    
+
     /// Map to track error counts by context
     private var errorCounts: [String: Int]
-    
+
     /// Initialize a new SecurityErrorHandler
     /// - Parameter maxRetryAttempts: Maximum number of retry attempts for recoverable errors
     public init(maxRetryAttempts: Int = 3) {
         self.maxRetryAttempts = maxRetryAttempts
         self.errorCounts = [:]
     }
-    
+
     /// Handle a security error and determine if it should be retried
     /// - Parameters:
     ///   - error: The error to handle
@@ -37,18 +37,18 @@ public actor SecurityErrorHandler {
             return false
         }
     }
-    
+
     /// Reset error counts for all contexts
     public func reset() {
         errorCounts.removeAll()
     }
-    
+
     /// Reset error count for a specific context
     /// - Parameter context: The context to reset
     public func resetContext(_ context: String) {
         errorCounts.removeValue(forKey: context)
     }
-    
+
     /// Get the current error count for a context
     /// - Parameter context: The context to check
     /// - Returns: Number of errors recorded for the context

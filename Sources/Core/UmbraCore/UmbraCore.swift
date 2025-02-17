@@ -4,15 +4,15 @@ import Foundation
 public enum UmbraCore {
     /// The current version of the UmbraCore framework
     public static let version = "1.0.0"
-    
+
     /// Configuration options for the UmbraCore framework
     public struct Configuration {
         /// Whether to use verbose logging
         public var verboseLogging: Bool
-        
+
         /// The default security level for cryptographic operations
         public var defaultSecurityLevel: SecurityLevel
-        
+
         public init(
             verboseLogging: Bool = false,
             defaultSecurityLevel: SecurityLevel = .high
@@ -21,7 +21,7 @@ public enum UmbraCore {
             self.defaultSecurityLevel = defaultSecurityLevel
         }
     }
-    
+
     /// Security levels for cryptographic operations
     @frozen public enum SecurityLevel: Sendable {
         /// High security - suitable for sensitive data
@@ -30,7 +30,7 @@ public enum UmbraCore {
         case medium
         /// Low security - suitable for non-sensitive data or testing
         case low
-        
+
         /// Recommended key length in bits for this security level
         public var recommendedKeyLength: Int {
             switch self {
@@ -39,7 +39,7 @@ public enum UmbraCore {
             case .low: return 128
             }
         }
-        
+
         /// Recommended number of PBKDF2 iterations for this security level
         public var recommendedPBKDF2Iterations: Int {
             switch self {
@@ -55,10 +55,10 @@ public enum UmbraCore {
 public protocol UmbraError: LocalizedError {
     /// The error domain
     var domain: String { get }
-    
+
     /// Whether this error is recoverable
     var isRecoverable: Bool { get }
-    
+
     /// Additional error context, if any
     var context: [String: Any] { get }
 }

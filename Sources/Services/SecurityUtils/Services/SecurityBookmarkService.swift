@@ -5,14 +5,14 @@ import SecurityTypes
 public actor SecurityBookmarkService {
     private let urlProvider: URLProvider
     private var accessedPaths: Set<String>
-    
+
     /// Initialize a new security bookmark service
     /// - Parameter urlProvider: Provider for URL operations
     public init(urlProvider: URLProvider = PathURLProvider()) {
         self.urlProvider = urlProvider
         self.accessedPaths = []
     }
-    
+
     /// Create a bookmark for a URL
     /// - Parameter url: URL to create bookmark for
     /// - Returns: Bookmark data
@@ -21,7 +21,7 @@ public actor SecurityBookmarkService {
         let bookmarkBytes = try await urlProvider.createBookmark(forPath: url.path)
         return Data(bookmarkBytes)
     }
-    
+
     /// Resolve a bookmark to a URL
     /// - Parameter bookmarkData: Bookmark data to resolve
     /// - Returns: Tuple containing resolved URL and whether bookmark is stale
@@ -30,7 +30,7 @@ public actor SecurityBookmarkService {
         let result = try await urlProvider.resolveBookmark(Array(bookmarkData))
         return (url: URL(fileURLWithPath: result.path), isStale: result.isStale)
     }
-    
+
     /// Perform an operation with security-scoped access to a URL
     /// - Parameters:
     ///   - url: URL to access
@@ -40,7 +40,7 @@ public actor SecurityBookmarkService {
         guard try await urlProvider.startAccessing(path: url.path) else {
             throw SecurityError.accessDenied(path: url.path)
         }
-        
+
         accessedPaths.insert(url.path)
         defer {
             Task {
@@ -48,10 +48,10 @@ public actor SecurityBookmarkService {
                 accessedPaths.remove(url.path)
             }
         }
-        
+
         return try await operation()
     }
-    
+
     /// Get all paths currently being accessed
     /// - Returns: Array of paths currently being accessed
     public func getAccessedPaths() -> [String] {

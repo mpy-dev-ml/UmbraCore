@@ -4,7 +4,7 @@ import XCTest
 final class UmbraCoreTests: XCTestCase {
     func testModuleImports() {
         // Test that we can access types from all modules
-        let _ = SecurityService.shared
-        let _ = LoggingService.shared
+        _ = SecurityService.shared
+        _ = LoggingService.shared
     }
 }

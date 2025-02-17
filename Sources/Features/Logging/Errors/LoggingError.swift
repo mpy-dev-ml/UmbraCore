@@ -5,22 +5,22 @@ import SecurityTypes
 public enum LoggingError: LocalizedError {
     /// Failed to initialize logging
     case initializationFailed(reason: String)
-    
+
     /// Failed to write to log file
     case writeError(reason: String)
-    
+
     /// Failed to read from log file
     case readError(reason: String)
-    
+
     /// Failed to create log directory
     case directoryCreationFailed(path: String)
-    
+
     /// Failed to access log file
     case accessDenied(path: String)
-    
+
     /// Invalid log file path
     case invalidPath(path: String)
-    
+
     public var errorDescription: String? {
         switch self {
         case .initializationFailed(let reason):

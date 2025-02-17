@@ -5,12 +5,12 @@ public protocol LoggingProtocol: Sendable {
     /// - Parameter path: Path to log file
     /// - Throws: LoggingError if initialization fails
     func initialize(with path: String) async throws
-    
+
     /// Log an entry
     /// - Parameter entry: Entry to log
     /// - Throws: LoggingError if logging fails
     func log(_ entry: LogEntry) async throws
-    
+
     /// Stop logging and cleanup resources
     func stop() async
 }

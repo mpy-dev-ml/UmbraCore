@@ -40,7 +40,7 @@ public enum ServiceErrorType: String, Sendable, CaseIterable {
     case permission = "Permission"
     /// Unknown errors
     case unknown = "Unknown"
-    
+
     /// User-friendly description of the error type
     public var description: String {
         switch self {

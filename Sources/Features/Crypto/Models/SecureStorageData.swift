@@ -12,10 +12,10 @@ import Foundation
     public let timestamp: Date
     /// Version of the encryption format
     public let version: Int
-    
+
     /// Current version of the storage format
     public static let currentVersion = 1
-    
+
     /// Initialises new secure storage data
     /// - Parameters:
     ///   - encryptedData: The encrypted data

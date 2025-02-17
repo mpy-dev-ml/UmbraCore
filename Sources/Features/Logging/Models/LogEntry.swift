@@ -11,33 +11,33 @@ public enum LogLevel: String, Sendable {
 /// A log entry with message and metadata
 public struct LogEntry: Sendable, Identifiable {
     // MARK: - Properties
-    
+
     /// Unique identifier
     public let id: String
-    
+
     /// Timestamp when the log entry was created (seconds since epoch)
     public let timestamp: Int
-    
+
     /// Log level
     public let level: LogLevel
-    
+
     /// Log message
     public let message: String
-    
+
     /// Optional metadata
     public let metadata: [String: String]?
-    
+
     /// Source file
     public let file: String
-    
+
     /// Source function
     public let function: String
-    
+
     /// Source line
     public let line: Int
-    
+
     // MARK: - Computed Properties
-    
+
     /// Formatted message including metadata
     public var formattedMessage: String {
         var result = message
@@ -47,14 +47,14 @@ public struct LogEntry: Sendable, Identifiable {
         }
         return result
     }
-    
+
     /// Source location string
     public var sourceLocation: String {
         "\(file):\(line) - \(function)"
     }
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize a log entry
     /// - Parameters:
     ///   - id: Unique identifier
@@ -84,14 +84,14 @@ public struct LogEntry: Sendable, Identifiable {
         self.function = function
         self.line = line
     }
-    
+
     /// Create a copy of this entry with updated metadata
     /// - Parameter metadata: New metadata to merge with existing
     /// - Returns: New log entry with updated metadata
     public func with(metadata: [String: String]) -> LogEntry {
         var newMetadata = self.metadata ?? [:]
         metadata.forEach { newMetadata[$0.key] = $0.value }
-        
+
         return LogEntry(
             id: id,
             timestamp: timestamp,
@@ -103,7 +103,7 @@ public struct LogEntry: Sendable, Identifiable {
             line: line
         )
     }
-    
+
     /// Create a copy of this entry with a new message
     /// - Parameter message: New message
     /// - Returns: New log entry with updated message
