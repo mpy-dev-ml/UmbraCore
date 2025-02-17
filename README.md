@@ -12,9 +12,9 @@ A Swift library that extends and adapts [Restic](https://restic.net) for macOS a
 
 ## Core Applications
 UmbraCore powers several macOS backup management tools:
-- ResticBar (macOS menu bar app)
+- ResticBar (macOS menu bar app for developers)
 - Rbx (VS Code extension)
-- Rbum (consumer GUI)
+- Rbum (user friendly GUI)
 
 ## Current Status
 
@@ -38,7 +38,7 @@ UmbraCore powers several macOS backup management tools:
 
 ## Overview
 
-UmbraCore is organized into several modular components:
+UmbraCore is organised into distinct modular components:
 
 ### ResticCLIHelper
 Handles direct interaction with the Restic command-line interface:
@@ -48,7 +48,7 @@ Handles direct interaction with the Restic command-line interface:
 
 ### Repositories
 Manages Restic repository operations:
-- Repository initialization and validation
+- Repository initialisation and validation
 - Credential management
 - Health checks and maintenance
 
@@ -118,7 +118,7 @@ Comprehensive error handling system with structured logging and recovery strateg
 
 ## Security
 
-UmbraCore prioritizes security and follows best practices to ensure the integrity of your data.
+UmbraCore prioritises security and follows best practices to ensure the integrity of your data.
 
 ### Security Scanning
 
@@ -161,26 +161,41 @@ UmbraCore uses Snyk to scan for known vulnerabilities and ensure the security of
 - Network Operations (June 2025)
 - State Management (June-July 2025)
 
-### Phase 3: Enhancement & Optimization (Q3 2025)
+### Phase 3: Enhancement & Optimisation (Q3 2025)
 - Statistics & Analytics (July 2025)
 - Health Monitoring (August 2025)
 - Event System (August-September 2025)
-- Cache Optimization (September 2025)
+- Cache Optimisation (September 2025)
 
 For detailed feature plans and implementation guidelines, see our [Development Roadmap](ROADMAP.md).
+
+## Documentation
+
+The complete documentation for UmbraCore is available at [https://mpy-dev-ml.github.io/UmbraCore](https://mpy-dev-ml.github.io/UmbraCore). This includes:
+
+- Getting Started Guide
+- API Documentation
+- Security Guidelines
+- Performance Optimisation Guide
+- Thread Safety Guide
+- Error Handling Guide
+- Logging Guide
+
+The documentation is built using Jekyll and hosted on GitHub Pages. To build the documentation locally:
+
+1. Navigate to the `docs` directory
+2. Install dependencies: `bundle install`
+3. Start the local server: `bundle exec jekyll serve`
+4. Visit `http://localhost:4000/UmbraCore`
 
 ## Dependencies
 
 ### External
-- [Restic](https://restic.net) - Fast, secure backup program
+- [Restic](https://restic.net) - Fast, secure backup programme
 - [SwiftyBeaver](https://swiftybeaver.com) - Sophisticated logging system
 - [CryptoSwift](https://cryptoswift.io) - Comprehensive cryptography framework
 
 For more information about our dependencies and acknowledgments, see our [Acknowledgments](docs/ACKNOWLEDGMENTS.md) page.
-
-## Documentation
-
-Comprehensive documentation is available in the [Wiki](https://github.com/mpy-dev-ml/UmbraCore/wiki).
 
 ## Contributing
 
