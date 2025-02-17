@@ -2,10 +2,14 @@
 title: UmbraCore Documentation
 description: Documentation for the UmbraCore backup management library
 url: "https://mpy-dev-ml.github.io"
+baseurl: "/UmbraCore"
+
+# Build settings
+remote_theme: h-enk/doks
+markdown: kramdown
 
 # Theme settings
 doks:
-    baseurl: /UmbraCore
     color_theme: blue # Available themes: blue (default), green, purple, red and yellow
     header:
         logo:
@@ -32,16 +36,12 @@ doks:
             - network_name: github
               profile_url: 'https://github.com/mpy-dev-ml/UmbraCore'
 
-# SASS settings
-sass:
-    sass_dir: ./doks-theme/_sass
-    style: :compressed
-
-# Jekyll settings
-layouts_dir: ./doks-theme/_layouts
-includes_dir: ./doks-theme/_includes
-exclude: [ 'README.md', 'CHANGELOG.md' ]
-permalink: /:title/
+# Plugin settings
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-remote-theme
 
 # Search settings
 search_enabled: true
