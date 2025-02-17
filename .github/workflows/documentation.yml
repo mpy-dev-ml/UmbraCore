@@ -35,6 +35,7 @@ jobs:
         sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
         sudo xcodebuild -license accept
         xcrun --show-sdk-path
+        echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> $GITHUB_ENV
     
     - name: Set up Swift
       uses: swift-actions/setup-swift@v1
@@ -49,13 +50,13 @@ jobs:
         
     - name: Install dependencies
       env:
-        LDFLAGS: "-L$(brew --prefix openssl@3)/lib"
-        CPPFLAGS: "-I$(brew --prefix openssl@3)/include"
-        PKG_CONFIG_PATH: "$(brew --prefix openssl@3)/lib/pkgconfig"
+        LDFLAGS: "-L${{ env.OPENSSL_ROOT_DIR }}/lib"
+        CPPFLAGS: "-I${{ env.OPENSSL_ROOT_DIR }}/include"
+        PKG_CONFIG_PATH: "${{ env.OPENSSL_ROOT_DIR }}/lib/pkgconfig"
       run: |
         cd docs
-        bundle config build.eventmachine --with-cppflags="-I$(brew --prefix openssl@3)/include"
-        bundle config build.thin --with-cppflags="-I$(brew --prefix openssl@3)/include"
+        bundle config build.eventmachine --with-cppflags="-I${{ env.OPENSSL_ROOT_DIR }}/include"
+        bundle config build.thin --with-cppflags="-I${{ env.OPENSSL_ROOT_DIR }}/include"
         bundle config build.nokogiri --use-system-libraries
         bundle install
         gem install jazzy
