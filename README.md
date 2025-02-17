@@ -6,6 +6,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-Latest-blue.svg)](https://mpy-dev-ml.github.io/UmbraCore/)
 [![Platform](https://img.shields.io/badge/Platform-macOS%2014%2B-lightgrey.svg)](https://github.com/mpy-dev-ml/UmbraCore)
 [![Swift](https://img.shields.io/badge/Swift-6.0.3-orange.svg)](https://swift.org)
+[![Known Vulnerabilities](https://snyk.io/test/github/mpy-dev-ml/UmbraCore/badge.svg)](https://snyk.io/test/github/mpy-dev-ml/UmbraCore)
 
 A Swift library that extends and adapts [Restic](https://restic.net) for macOS application developers. UmbraCore provides a type-safe, Swift-native interface to Restic's powerful backup capabilities.
 
@@ -114,6 +115,14 @@ Comprehensive error handling system with structured logging and recovery strateg
 ### Features
 - **Crypto**: Advanced cryptographic features
 - **Logging**: Advanced logging capabilities
+
+## Security
+
+UmbraCore prioritizes security and follows best practices to ensure the integrity of your data.
+
+### Security Scanning
+
+UmbraCore uses Snyk to scan for known vulnerabilities and ensure the security of its dependencies.
 
 ## Integration Roadmap
 
