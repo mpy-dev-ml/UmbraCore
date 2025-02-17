@@ -1,44 +1,49 @@
 # Site settings
 title: UmbraCore Documentation
-description: Documentation for the UmbraCore secure backup programme
-url: "https://mpy-dev-ml.github.io"
+description: Documentation for the UmbraCore Swift Package
+url: ""
 baseurl: "/UmbraCore"
 
-# Theme settings
-remote_theme: just-the-docs/just-the-docs
+# Build settings
+markdown: kramdown
+theme: jekyll-theme-minimal
 
 # Plugin settings
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
-  - jekyll-remote-theme
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - .sass-cache/
+  - .jekyll-cache/
+  - setup_theme.sh
 
 # Collections
 collections:
-  docs:
-    permalink: /:collection/:path/
-    output: true
   guides:
-    permalink: /:collection/:path/
     output: true
+    permalink: /:collection/:path/
+  api:
+    output: true
+    permalink: /:collection/:path/
+  contributing:
+    output: true
+    permalink: /:collection/:path/
+  security:
+    output: true
+    permalink: /:collection/:path/
 
-# Default layouts
+# Defaults
 defaults:
   - scope:
       path: ""
-      type: docs
     values:
       layout: default
-      nav_order: 1
-  - scope:
-      path: "guides"
-    values:
-      nav_order: 2
-  - scope:
-      path: "api"
-    values:
-      nav_order: 3
-  - scope:
-      path: "security"
-    values:
-      nav_order: 4
