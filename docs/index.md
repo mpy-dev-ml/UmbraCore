@@ -1,7 +1,7 @@
 ---
 layout: homepage
 title: UmbraCore Documentation
-description: A Swift library for Restic backup management
+description: Documentation for the UmbraCore secure backup programme
 permalink: /
 ---
 
@@ -40,20 +40,20 @@ dependencies: [
 
 ## Documentation Sections
 
-### [Getting Started](getting-started)
-Learn how to integrate UmbraCore into your project and start using its features.
+### Getting Started
+[Learn how to integrate UmbraCore into your project and start using its features.](getting-started)
 
-### [Architecture Guide](guides/architecture)
-Understand UmbraCore's design principles and component architecture.
+### Architecture Guide
+[Understand UmbraCore's design principles and component architecture.](guides/architecture)
 
-### [API Documentation](api)
-Detailed API reference for all UmbraCore components.
+### API Documentation
+[Detailed API reference for all UmbraCore components.](api)
 
-### [Security Guidelines](security/guidelines)
-Learn about UmbraCore's security features and best practices.
+### Security Guidelines
+[Learn about UmbraCore's security features and best practices.](security/guidelines)
 
-### [Contributing Guide](contributing)
-Join the UmbraCore community and contribute to its development.
+### Contributing Guide
+[Join the UmbraCore community and contribute to its development.](contributing)
 
 ## Support
 
@@ -64,6 +64,6 @@ If you find UmbraCore useful, please consider:
 3. Starring us on [GitHub](https://github.com/mpy-dev-ml/UmbraCore)
 4. Sharing your experience with others
 
-## License
+## Licence
 
-UmbraCore is available under the MIT license. See the [LICENSE](https://github.com/mpy-dev-ml/UmbraCore/blob/main/LICENSE) file for more info.
+UmbraCore is available under the MIT licence. See the [LICENCE](LICENCE) file for more info.
