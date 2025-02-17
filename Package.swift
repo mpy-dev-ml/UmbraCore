@@ -22,6 +22,10 @@ let package = Package(
         .library(
             name: "UmbraBookmarkService",
             targets: ["UmbraBookmarkService"]
+        ),
+        .library(
+            name: "UmbraKeychainService",
+            targets: ["UmbraKeychainService"]
         )
     ],
     dependencies: [
@@ -34,6 +38,7 @@ let package = Package(
             dependencies: [
                 "UmbraXPC",
                 "UmbraBookmarkService",
+                "UmbraKeychainService",
                 "SwiftyBeaver"
             ]
         ),
@@ -59,6 +64,13 @@ let package = Package(
                 "UmbraXPC"
             ]
         ),
+        .target(
+            name: "UmbraKeychainService",
+            dependencies: [
+                "UmbraXPC",
+                "CryptoSwift"
+            ]
+        ),
         .testTarget(
             name: "UmbraCoreTests",
             dependencies: ["UmbraCore"]
@@ -70,6 +82,13 @@ let package = Package(
         .testTarget(
             name: "BookmarkTests",
             dependencies: ["UmbraBookmarkService"]
+        ),
+        .testTarget(
+            name: "KeychainTests",
+            dependencies: ["UmbraKeychainService"],
+            resources: [
+                .process("UmbraKeychainService.entitlements")
+            ]
         )
     ]
 )
