@@ -30,6 +30,8 @@ jobs:
       run: |
         brew update
         brew install gcc
+        xcode-select --install || true
+        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
     
     - name: Set up Swift
       uses: swift-actions/setup-swift@v1
@@ -45,6 +47,8 @@ jobs:
     - name: Install dependencies
       run: |
         cd docs
+        bundle config build.eventmachine --with-cppflags=-I$(brew --prefix openssl)/include
+        bundle config build.thin --with-cppflags=-I$(brew --prefix openssl)/include
         bundle install
         gem install jazzy
         
