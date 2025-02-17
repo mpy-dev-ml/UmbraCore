@@ -5,7 +5,7 @@ url: "https://mpy-dev-ml.github.io"
 baseurl: "/UmbraCore"
 
 # Build settings
-theme: doks-theme
+remote_theme: mpy-dev-ml/themeforest
 markdown: kramdown
 highlighter: rouge
 
@@ -24,57 +24,53 @@ doks:
       - name: GitHub
         url: https://github.com/mpy-dev-ml/UmbraCore
 
-# SASS settings
-sass:
-    sass_dir: ../../themeforest/doks-theme/_sass
-    style: :compressed
-
-# Jekyll settings
-layouts_dir: ../../themeforest/doks-theme/_layouts
-includes_dir: ../../themeforest/doks-theme/_includes
-exclude: [ 'README.md', 'CHANGELOG.md', 'Gemfile', 'Gemfile.lock', 'node_modules', 'vendor', '.git', '.github' ]
-permalink: /:title/
-
 # Plugin settings
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
+  - jekyll-remote-theme
   - jekyll-paginate
 
 # Search settings
-search_enabled: true
-heading_anchors: true
+search:
+  enabled: true
+  label: Search
 
-# Aux links for the upper right navigation
-aux_links:
-  "UmbraCore on GitHub":
-    - "https://github.com/mpy-dev-ml/UmbraCore"
-
-# Collections for organizing documentation
+# Collections
 collections:
+  docs:
+    permalink: /:collection/:path/
+    output: true
   guides:
-    output: true
     permalink: /:collection/:path/
-  api:
     output: true
-    permalink: /:collection/:path/
 
-# Default YAML front matter
+# Defaults
 defaults:
   - scope:
       path: ""
-      type: guides
+      type: docs
     values:
-      layout: default
+      layout: docs
+      nav_order: 1
+  - scope:
+      path: "guides"
+    values:
       nav_order: 2
   - scope:
-      path: ""
-      type: api
+      path: "api"
     values:
-      layout: default
       nav_order: 3
   - scope:
       path: "security"
     values:
       nav_order: 4
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .git
+  - .github
