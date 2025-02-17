@@ -5,19 +5,43 @@ url: "https://mpy-dev-ml.github.io"
 baseurl: "/UmbraCore"
 
 # Theme settings
-remote_theme: just-the-docs/just-the-docs
+theme: just-the-docs
+remote_theme: pmarsceill/just-the-docs
+
+# Color scheme
+color_scheme: light
 
 # Build settings
 markdown: kramdown
-highlighter: rouge
+kramdown:
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+# Search settings
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 3
+  preview_words_before: 5
+  preview_words_after: 10
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false
 
 # Plugin settings
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
-  - jekyll-sitemap
   - jekyll-remote-theme
-  - jekyll-paginate
+
+# Aux links for the upper right navigation
+aux_links:
+  "UmbraCore on GitHub":
+    - "//github.com/mpy-dev-ml/UmbraCore"
+
+# Makes Aux links open in a new tab
+aux_links_new_tab: true
 
 # Collections
 collections:
@@ -28,13 +52,13 @@ collections:
     permalink: /:collection/:path/
     output: true
 
-# Defaults
+# Default layouts
 defaults:
   - scope:
       path: ""
       type: docs
     values:
-      layout: page
+      layout: default
       nav_order: 1
   - scope:
       path: "guides"
