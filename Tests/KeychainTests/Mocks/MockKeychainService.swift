@@ -4,11 +4,11 @@ import Foundation
 @objc final class MockKeychainService: NSObject, KeychainXPCProtocol {
     private var storage: [String: Data] = [:]
     private let queue = DispatchQueue(label: "com.umbracore.mock-keychain", attributes: .concurrent)
-    
+
     private func key(account: String, service: String, accessGroup: String?) -> String {
         [service, account, accessGroup].compactMap { $0 }.joined(separator: "_")
     }
-    
+
     func addItem(account: String, service: String, accessGroup: String?, data: Data, reply: @escaping (Error?) -> Void) {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
@@ -21,7 +21,7 @@ import Foundation
             reply(nil)
         }
     }
-    
+
     func updateItem(account: String, service: String, accessGroup: String?, data: Data, reply: @escaping (Error?) -> Void) {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
@@ -34,7 +34,7 @@ import Foundation
             reply(nil)
         }
     }
-    
+
     func retrieveItem(account: String, service: String, accessGroup: String?, reply: @escaping (Data?, Error?) -> Void) {
         queue.async { [weak self] in
             guard let self = self else { return }
@@ -46,7 +46,7 @@ import Foundation
             reply(data, nil)
         }
     }
-    
+
     func containsItem(account: String, service: String, accessGroup: String?, reply: @escaping (Bool, Error?) -> Void) {
         queue.async { [weak self] in
             guard let self = self else { return }
@@ -54,7 +54,7 @@ import Foundation
             reply(self.storage[key] != nil, nil)
         }
     }
-    
+
     func removeItem(account: String, service: String, accessGroup: String?, reply: @escaping (Error?) -> Void) {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
@@ -67,14 +67,14 @@ import Foundation
             reply(nil)
         }
     }
-    
+
     func removeAllItems(reply: @escaping (Error?) -> Void) {
         queue.async(flags: .barrier) { [weak self] in
             self?.storage.removeAll()
             reply(nil)
         }
     }
-    
+
     // Test helper methods
     func reset() {
         queue.async(flags: .barrier) { [weak self] in

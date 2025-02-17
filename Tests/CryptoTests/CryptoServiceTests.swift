@@ -1,6 +1,6 @@
-import XCTest
-@testable import CryptoTypes
 import CryptoSwift
+@testable import CryptoTypes
+import XCTest
 
 final class CryptoServiceTests: XCTestCase {
     var cryptoService: CryptoService!

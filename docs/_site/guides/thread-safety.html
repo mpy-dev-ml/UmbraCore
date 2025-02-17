@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Thread Safety Guide | UmbraCore Documentation</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Thread Safety Guide" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Learn about thread safety in UmbraCore" />
+<meta property="og:description" content="Learn about thread safety in UmbraCore" />
+<link rel="canonical" href="/UmbraCore/guides/thread-safety.html" />
+<meta property="og:url" content="/UmbraCore/guides/thread-safety.html" />
+<meta property="og:site_name" content="UmbraCore Documentation" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Thread Safety Guide" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Learn about thread safety in UmbraCore","headline":"Thread Safety Guide","url":"/UmbraCore/guides/thread-safety.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/UmbraCore/assets/css/style.css?v=">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/UmbraCore/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1><a href="/UmbraCore/">UmbraCore Documentation</a></h1>
+
+        
+
+        <p>Documentation for the UmbraCore Swift Package</p>
+
+        
+
+        
+
+        
+      </header>
+      <section>
+
+      <div class="row">
+    <div class="col-md-4">
+        <div class="docs-nav">
+            <h3>Documentation</h3>
+            <ul>
+                <li >
+                    <a href="/UmbraCore/getting-started">Getting Started</a>
+                </li>
+                <li class="active">
+                    <a href="/UmbraCore/guides">Guides</a>
+                    
+                    <ul>
+                        <li><a href="/UmbraCore/guides/architecture">Architecture</a></li>
+                        <li><a href="/UmbraCore/guides/thread-safety">Thread Safety</a></li>
+                        <li><a href="/UmbraCore/guides/error-handling">Error Handling</a></li>
+                        <li><a href="/UmbraCore/guides/performance">Performance</a></li>
+                        <li><a href="/UmbraCore/guides/keychain">Keychain Service</a></li>
+                        <li><a href="/UmbraCore/guides/crypto">Crypto Service</a></li>
+                        <li><a href="/UmbraCore/guides/bookmarks">Bookmark Service</a></li>
+                        <li><a href="/UmbraCore/guides/logging">Logging</a></li>
+                        <li><a href="/UmbraCore/guides/xpc">XPC Service</a></li>
+                    </ul>
+                    
+                </li>
+                <li >
+                    <a href="/UmbraCore/api">API Documentation</a>
+                </li>
+                <li >
+                    <a href="/UmbraCore/security">Security</a>
+                </li>
+                <li >
+                    <a href="/UmbraCore/contributing">Contributing</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="docs-content">
+            <h1 id="thread-safety-in-umbracore">Thread Safety in UmbraCore</h1>
+
+<h2 id="overview">Overview</h2>
+<p>UmbraCore is designed to be thread-safe by default. All public APIs can be safely called from multiple threads concurrently. This guide explains our thread safety guarantees and best practices.</p>
+
+<h2 id="core-principles">Core Principles</h2>
+
+<h3 id="1-actor-based-services">1. Actor-Based Services</h3>
+<p>All core services in UmbraCore use Swift’s actor system to ensure thread safety:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">actor</span> <span class="kt">KeychainService</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">cache</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">Data</span><span class="p">]</span> <span class="o">=</span> <span class="p">[:]</span>
+    
+    <span class="kd">func</span> <span class="nf">store</span><span class="p">(</span><span class="n">_</span> <span class="nv">data</span><span class="p">:</span> <span class="kt">Data</span><span class="p">,</span> <span class="n">forKey</span> <span class="nv">key</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="p">{</span>
+        <span class="c1">// Thread-safe access to cache</span>
+        <span class="n">cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">try</span> <span class="k">await</span> <span class="nf">persistToKeychain</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="2-immutable-state">2. Immutable State</h3>
+<p>We prefer immutable state to minimize synchronization needs:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">BackupConfig</span> <span class="p">{</span>
+    <span class="c1">// Immutable properties</span>
+    <span class="k">let</span> <span class="nv">sourcePath</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="k">let</span> <span class="nv">destinationPath</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="k">let</span> <span class="nv">excludePatterns</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span>
+    
+    <span class="c1">// Instead of mutating, create new instance</span>
+    <span class="kd">func</span> <span class="nf">withExcludePattern</span><span class="p">(</span><span class="n">_</span> <span class="nv">pattern</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">BackupConfig</span> <span class="p">{</span>
+        <span class="k">var</span> <span class="nv">patterns</span> <span class="o">=</span> <span class="n">excludePatterns</span>
+        <span class="n">patterns</span><span class="o">.</span><span class="nf">append</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kt">BackupConfig</span><span class="p">(</span>
+            <span class="nv">sourcePath</span><span class="p">:</span> <span class="n">sourcePath</span><span class="p">,</span>
+            <span class="nv">destinationPath</span><span class="p">:</span> <span class="n">destinationPath</span><span class="p">,</span>
+            <span class="nv">excludePatterns</span><span class="p">:</span> <span class="n">patterns</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="3-synchronized-collections">3. Synchronized Collections</h3>
+<p>When mutable state is necessary, we use synchronized collections:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">actor</span> <span class="kt">CacheManager</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">cache</span> <span class="o">=</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">Any</span><span class="p">]()</span>
+    <span class="kd">private</span> <span class="k">let</span> <span class="nv">queue</span> <span class="o">=</span> <span class="kt">DispatchQueue</span><span class="p">(</span><span class="nv">label</span><span class="p">:</span> <span class="s">"com.umbracore.cache"</span><span class="p">)</span>
+    
+    <span class="kd">func</span> <span class="nf">set</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Any</span><span class="p">,</span> <span class="n">forKey</span> <span class="nv">key</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">queue</span><span class="o">.</span><span class="n">sync</span> <span class="p">{</span> <span class="n">cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span> <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="kd">func</span> <span class="nf">get</span><span class="p">(</span><span class="n">_</span> <span class="nv">key</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Any</span><span class="p">?</span> <span class="p">{</span>
+        <span class="n">queue</span><span class="o">.</span><span class="n">sync</span> <span class="p">{</span> <span class="n">cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="best-practices">Best Practices</h2>
+
+<h3 id="1-asyncawait-usage">1. Async/Await Usage</h3>
+<p>Always use async/await for asynchronous operations:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Good</span>
+<span class="kd">func</span> <span class="nf">backupFiles</span><span class="p">()</span> <span class="k">async</span> <span class="k">throws</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="k">await</span> <span class="nf">prepareBackup</span><span class="p">()</span>
+    <span class="k">try</span> <span class="k">await</span> <span class="nf">performBackup</span><span class="p">()</span>
+    <span class="k">try</span> <span class="k">await</span> <span class="nf">cleanup</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="c1">// Avoid</span>
+<span class="kd">func</span> <span class="nf">backupFiles</span><span class="p">(</span><span class="nv">completion</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">prepareBackup</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
+        <span class="k">guard</span> <span class="n">error</span> <span class="o">==</span> <span class="kc">nil</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nf">completion</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+        <span class="c1">// Callback hell continues...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="2-resource-access">2. Resource Access</h3>
+<p>Use proper resource access patterns:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">actor</span> <span class="kt">ResourceManager</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">isLocked</span> <span class="o">=</span> <span class="kc">false</span>
+    
+    <span class="kd">func</span> <span class="nf">acquireResource</span><span class="p">()</span> <span class="k">async</span> <span class="k">throws</span> <span class="p">{</span>
+        <span class="k">guard</span> <span class="o">!</span><span class="n">isLocked</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="kt">ResourceError</span><span class="o">.</span><span class="n">alreadyLocked</span>
+        <span class="p">}</span>
+        <span class="n">isLocked</span> <span class="o">=</span> <span class="kc">true</span>
+    <span class="p">}</span>
+    
+    <span class="kd">func</span> <span class="nf">releaseResource</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">isLocked</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="3-shared-state">3. Shared State</h3>
+<p>Minimize shared state, use message passing:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">actor</span> <span class="kt">BackupCoordinator</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">activeBackups</span><span class="p">:</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">UUID</span><span class="o">&gt;</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="kd">func</span> <span class="nf">startBackup</span><span class="p">()</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">UUID</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">id</span> <span class="o">=</span> <span class="kt">UUID</span><span class="p">()</span>
+        <span class="n">activeBackups</span><span class="o">.</span><span class="nf">insert</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">id</span>
+    <span class="p">}</span>
+    
+    <span class="kd">func</span> <span class="nf">completeBackup</span><span class="p">(</span><span class="n">_</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">UUID</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">activeBackups</span><span class="o">.</span><span class="nf">remove</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="common-patterns">Common Patterns</h2>
+
+<h3 id="1-double-checked-locking">1. Double-Checked Locking</h3>
+<p>For expensive initialization:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">actor</span> <span class="kt">ConfigurationManager</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">config</span><span class="p">:</span> <span class="kt">Configuration</span><span class="p">?</span>
+    
+    <span class="kd">func</span> <span class="nf">getConfiguration</span><span class="p">()</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Configuration</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nv">existing</span> <span class="o">=</span> <span class="n">config</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">existing</span>
+        <span class="p">}</span>
+        
+        <span class="k">let</span> <span class="nv">loaded</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="nf">loadConfiguration</span><span class="p">()</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">loaded</span>
+        <span class="k">return</span> <span class="n">loaded</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="2-reader-writer-pattern">2. Reader-Writer Pattern</h3>
+<p>For concurrent read access:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">actor</span> <span class="kt">DatabaseManager</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">isWriting</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">activeReaders</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="kd">func</span> <span class="nf">read</span><span class="p">()</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Data</span> <span class="p">{</span>
+        <span class="k">while</span> <span class="n">isWriting</span> <span class="p">{</span>
+            <span class="k">try</span> <span class="k">await</span> <span class="kt">Task</span><span class="o">.</span><span class="nf">sleep</span><span class="p">(</span><span class="nv">nanoseconds</span><span class="p">:</span> <span class="mi">100_000</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">activeReaders</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">defer</span> <span class="p">{</span> <span class="n">activeReaders</span> <span class="o">-=</span> <span class="mi">1</span> <span class="p">}</span>
+        <span class="k">return</span> <span class="k">try</span> <span class="nf">getData</span><span class="p">()</span>
+    <span class="p">}</span>
+    
+    <span class="kd">func</span> <span class="nf">write</span><span class="p">(</span><span class="n">_</span> <span class="nv">data</span><span class="p">:</span> <span class="kt">Data</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="p">{</span>
+        <span class="k">while</span> <span class="n">activeReaders</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="k">try</span> <span class="k">await</span> <span class="kt">Task</span><span class="o">.</span><span class="nf">sleep</span><span class="p">(</span><span class="nv">nanoseconds</span><span class="p">:</span> <span class="mi">100_000</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">isWriting</span> <span class="o">=</span> <span class="kc">true</span>
+        <span class="k">defer</span> <span class="p">{</span> <span class="n">isWriting</span> <span class="o">=</span> <span class="kc">false</span> <span class="p">}</span>
+        <span class="k">try</span> <span class="k">await</span> <span class="nf">writeData</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="3-task-management">3. Task Management</h3>
+<p>For concurrent operations:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">BackupTask</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">executeParallel</span><span class="p">(</span><span class="n">_</span> <span class="nv">operations</span><span class="p">:</span> <span class="p">[</span><span class="kt">Operation</span><span class="p">])</span> <span class="k">async</span> <span class="k">throws</span> <span class="p">{</span>
+        <span class="k">try</span> <span class="k">await</span> <span class="nf">withThrowingTaskGroup</span><span class="p">(</span><span class="nv">of</span><span class="p">:</span> <span class="kt">Void</span><span class="o">.</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span> <span class="n">group</span> <span class="k">in</span>
+            <span class="k">for</span> <span class="n">operation</span> <span class="k">in</span> <span class="n">operations</span> <span class="p">{</span>
+                <span class="n">group</span><span class="o">.</span><span class="n">addTask</span> <span class="p">{</span>
+                    <span class="k">try</span> <span class="k">await</span> <span class="n">operation</span><span class="o">.</span><span class="nf">execute</span><span class="p">()</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">try</span> <span class="k">await</span> <span class="n">group</span><span class="o">.</span><span class="nf">waitForAll</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<h3 id="1-deadlock-prevention">1. Deadlock Prevention</h3>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">actor</span> <span class="kt">Service</span> <span class="p">{</span>
+    <span class="c1">// Avoid nested actor calls</span>
+    <span class="kd">func</span> <span class="nf">operation1</span><span class="p">()</span> <span class="k">async</span> <span class="p">{</span>
+        <span class="k">await</span> <span class="nf">operation2</span><span class="p">()</span> <span class="c1">// Could deadlock if not careful</span>
+    <span class="p">}</span>
+    
+    <span class="kd">func</span> <span class="nf">operation2</span><span class="p">()</span> <span class="k">async</span> <span class="p">{</span>
+        <span class="c1">// Implementation</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Better approach</span>
+<span class="kd">actor</span> <span class="kt">Service</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">operation1</span><span class="p">()</span> <span class="k">async</span> <span class="p">{</span>
+        <span class="c1">// Execute independently</span>
+        <span class="k">try</span> <span class="k">await</span> <span class="kt">Task</span><span class="o">.</span><span class="nf">sleep</span><span class="p">(</span><span class="nv">nanoseconds</span><span class="p">:</span> <span class="mi">100_000</span><span class="p">)</span>
+        <span class="k">await</span> <span class="nf">operation2</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="2-race-condition-detection">2. Race Condition Detection</h3>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">actor</span> <span class="kt">StateManager</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">state</span><span class="p">:</span> <span class="kt">State</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">version</span><span class="p">:</span> <span class="kt">UInt64</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="kd">func</span> <span class="nf">modify</span><span class="p">(</span><span class="n">_</span> <span class="nv">change</span><span class="p">:</span> <span class="p">(</span><span class="kt">State</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">State</span><span class="p">)</span> <span class="k">async</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">currentVersion</span> <span class="o">=</span> <span class="n">version</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="nf">change</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        
+        <span class="c1">// Detect concurrent modifications</span>
+        <span class="k">guard</span> <span class="n">version</span> <span class="o">==</span> <span class="n">currentVersion</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="kt">ConcurrencyError</span><span class="o">.</span><span class="n">stateModified</span>
+        <span class="p">}</span>
+        <span class="n">version</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="3-performance-issues">3. Performance Issues</h3>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">actor</span> <span class="kt">PerformanceOptimized</span> <span class="p">{</span>
+    <span class="c1">// Batch operations to reduce actor hops</span>
+    <span class="kd">func</span> <span class="nf">batchOperation</span><span class="p">(</span><span class="n">_</span> <span class="nv">items</span><span class="p">:</span> <span class="p">[</span><span class="kt">Item</span><span class="p">])</span> <span class="k">async</span> <span class="p">{</span>
+        <span class="c1">// Single actor hop for batch</span>
+        <span class="n">items</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="nf">process</span><span class="p">(</span><span class="nv">$0</span><span class="p">)</span> <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="c1">// Avoid frequent actor hops</span>
+    <span class="kd">private</span> <span class="kd">func</span> <span class="nf">process</span><span class="p">(</span><span class="n">_</span> <span class="nv">item</span><span class="p">:</span> <span class="kt">Item</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Local processing</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="testing">Testing</h2>
+
+<h3 id="1-concurrency-testing">1. Concurrency Testing</h3>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">testConcurrentAccess</span><span class="p">()</span> <span class="k">async</span> <span class="k">throws</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">service</span> <span class="o">=</span> <span class="kt">SharedService</span><span class="p">()</span>
+    
+    <span class="k">try</span> <span class="k">await</span> <span class="nf">withThrowingTaskGroup</span><span class="p">(</span><span class="nv">of</span><span class="p">:</span> <span class="kt">Void</span><span class="o">.</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span> <span class="n">group</span> <span class="k">in</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="k">in</span> <span class="mi">0</span><span class="o">..&lt;</span><span class="mi">100</span> <span class="p">{</span>
+            <span class="n">group</span><span class="o">.</span><span class="n">addTask</span> <span class="p">{</span>
+                <span class="k">try</span> <span class="k">await</span> <span class="n">service</span><span class="o">.</span><span class="nf">operation</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">try</span> <span class="k">await</span> <span class="n">group</span><span class="o">.</span><span class="nf">waitForAll</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="2-race-condition-testing">2. Race Condition Testing</h3>
+<p>```swift
+func testRaceConditions() async throws {
+    let service = SharedService()</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>async let operation1 = service.modify()
+async let operation2 = service.modify()
+
+// This should handle concurrent modifications gracefully
+try await [operation1, operation2] }
+</code></pre></div></div>
+
+        </div>
+    </div>
+</div>
+
+
+      </section>
+      <footer>
+        
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="/UmbraCore/assets/js/scale.fix.js"></script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 import Foundation
-import XCTest
 @testable import UmbraKeychainService
+import XCTest
 
 enum XPCError: Error {
     case serviceNotResponsive

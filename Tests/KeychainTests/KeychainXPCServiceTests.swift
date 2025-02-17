@@ -1,5 +1,5 @@
-import XCTest
 @testable import UmbraKeychainService
+import XCTest
 
 final class KeychainXPCServiceTests: XCTestCase {
     private var proxy: (any KeychainXPCProtocol)!

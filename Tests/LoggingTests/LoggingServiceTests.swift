@@ -1,6 +1,6 @@
-import XCTest
-@testable import UmbraLogging
 @testable import SecurityTypes
+@testable import UmbraLogging
+import XCTest
 
 final class LoggingServiceTests: XCTestCase {
     private var loggingService: LoggingService!

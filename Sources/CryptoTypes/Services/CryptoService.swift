@@ -1,6 +1,6 @@
+import CryptoSwift
 import Foundation
 import SecurityTypes
-import CryptoSwift
 
 /// A service providing cryptographic operations using CryptoSwift
 public final class CryptoService: CryptoServiceProtocol {

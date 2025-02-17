@@ -1,5 +1,5 @@
-import XCTest
 @testable import UmbraBookmarkService
+import XCTest
 
 final class BookmarkServiceTests: XCTestCase {
     var bookmarkService: BookmarkService!

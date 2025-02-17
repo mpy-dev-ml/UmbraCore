@@ -1,7 +1,7 @@
-import Foundation
-import UmbraXPC
 import CryptoSwift
+import Foundation
 import Security
+import UmbraXPC
 
 extension Data {
     static func random(count: Int) -> Data {
@@ -117,7 +117,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
 
-        guard credential.count > 0 else {
+        guard !credential.isEmpty else {
             throw XPCError.invalidRequest(message: "Credential data cannot be empty")
         }
 

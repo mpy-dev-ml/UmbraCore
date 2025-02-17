@@ -1,6 +1,6 @@
-import XCTest
-@testable import Security
 @testable import Core
+@testable import Security
+import XCTest
 
 @MainActor
 final class SecurityServiceTests: XCTestCase {

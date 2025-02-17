@@ -15,7 +15,7 @@ import Foundation
         keyLength: Int = 256,
         ivLength: Int = 12,
         saltLength: Int = 32,
-        minimumPBKDF2Iterations: Int = 10000
+        minimumPBKDF2Iterations: Int = 10_000
     ) {
         self.keyLength = keyLength
         self.ivLength = ivLength

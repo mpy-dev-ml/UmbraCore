@@ -1,6 +1,6 @@
 import Foundation
-import SwiftyBeaver
 import SecurityTypes
+import SwiftyBeaver
 
 /// A logging service implementation using SwiftyBeaver
 public actor SwiftyBeaverLoggingService: LoggingProtocol {

@@ -1,7 +1,7 @@
-import XCTest
-@testable import UmbraCore
 import SecurityTypes
+@testable import UmbraCore
 import UmbraMocks
+import XCTest
 
 final class URLSecurityTests: XCTestCase {
     var mockSecurityProvider: MockSecurityProvider!

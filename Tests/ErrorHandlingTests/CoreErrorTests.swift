@@ -1,5 +1,5 @@
-import Testing
 @testable import ErrorHandling
+import Testing
 
 @Suite("CoreError Tests")
 struct CoreErrorTests {

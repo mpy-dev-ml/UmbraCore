@@ -1,5 +1,5 @@
-import Testing
 @testable import ErrorHandling
+import Testing
 
 final class CommonErrorTests {
     func testErrorDescriptions() {

@@ -1,5 +1,5 @@
-import SecurityTypes
 import Darwin.POSIX
+import SecurityTypes
 
 /// Protocol for providing path-based security operations
 public protocol URLProvider: Sendable {

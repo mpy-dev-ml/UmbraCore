@@ -1,5 +1,5 @@
-import XCTest
 @testable import UmbraKeychainService
+import XCTest
 
 final class KeychainServiceTests: XCTestCase {
     private var proxy: (any KeychainXPCProtocol)!
@@ -63,13 +63,13 @@ final class KeychainServiceTests: XCTestCase {
 
     func testDuplicateItem() async throws {
         let testData = "test_data".data(using: .utf8)!
-        
+
         // Add item first time
         try await proxy.addItem(account: "testAccount",
                               service: "com.umbracore.tests",
                               accessGroup: nil as String?,
                               data: testData)
-        
+
         // Try to add same item again
         do {
             try await proxy.addItem(account: "testAccount",
@@ -85,24 +85,24 @@ final class KeychainServiceTests: XCTestCase {
     func testUpdateItem() async throws {
         let initialData = "initial_data".data(using: .utf8)!
         let updatedData = "updated_data".data(using: .utf8)!
-        
+
         // Add initial item
         try await proxy.addItem(account: "testAccount",
                               service: "com.umbracore.tests",
                               accessGroup: nil as String?,
                               data: initialData)
-        
+
         // Update item
         try await proxy.updateItem(account: "testAccount",
                                  service: "com.umbracore.tests",
                                  accessGroup: nil as String?,
                                  data: updatedData)
-        
+
         // Verify update
         let retrievedData = try await proxy.retrieveItem(account: "testAccount",
                                                         service: "com.umbracore.tests",
                                                         accessGroup: nil as String?)
-        
+
         XCTAssertEqual(updatedData, retrievedData)
     }
 }

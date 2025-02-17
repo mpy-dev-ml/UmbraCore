@@ -1,6 +1,6 @@
-import XCTest
-@testable import UmbraXPC
 @testable import UmbraCryptoService
+@testable import UmbraXPC
+import XCTest
 
 @available(macOS 14.0, *)
 final class CryptoXPCServiceTests: XCTestCase {

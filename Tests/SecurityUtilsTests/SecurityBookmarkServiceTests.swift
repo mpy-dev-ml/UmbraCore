@@ -1,6 +1,6 @@
-import XCTest
-@testable import UmbraCore
 import SecurityTypes
+@testable import UmbraCore
+import XCTest
 
 final class SecurityBookmarkServiceTests: XCTestCase {
     var bookmarkService: SecurityBookmarkService!

@@ -1,5 +1,5 @@
-import XCTest
 @testable import SecurityTypes
+import XCTest
 
 final class MockSecurityProviderTests: XCTestCase {
     var provider: MockSecurityProvider!

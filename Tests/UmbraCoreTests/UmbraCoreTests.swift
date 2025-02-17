@@ -1,5 +1,5 @@
-import XCTest
 @testable import UmbraCore
+import XCTest
 
 final class UmbraCoreTests: XCTestCase {
     func testExample() throws {
