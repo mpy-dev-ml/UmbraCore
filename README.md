@@ -59,6 +59,87 @@ Intelligent command completion:
 - Path completion
 - Repository-aware completions
 
+## Project Architecture
+
+### Core Libraries
+
+#### SecurityTypes
+Base security primitives and protocols with no external dependencies.
+
+#### CryptoTypes
+Cryptographic operations and types, built on SecurityTypes and CryptoSwift.
+
+#### UmbraLogging
+Centralised logging infrastructure using SwiftyBeaver.
+
+### Service Layer
+
+#### UmbraKeychainService
+Secure keychain operations with comprehensive error handling.
+
+#### UmbraCryptoService
+Cryptographic operations service with XPC integration.
+
+#### UmbraBookmarkService
+File system bookmark management service.
+
+#### UmbraXPC
+XPC communication infrastructure ensuring secure inter-process communication.
+
+### Error Handling
+Comprehensive error handling system with structured logging and recovery strategies.
+
+### Features
+- **Crypto**: Advanced cryptographic features
+- **Logging**: Advanced logging capabilities
+
+## Dependencies
+
+### External
+- **CryptoSwift** (v1.8.0+): Cryptographic operations
+- **SwiftyBeaver** (v2.0.0+): Logging infrastructure
+
+### Internal Dependency Graph
+```
+SecurityTypes
+    ↑
+    |
+CryptoTypes ← CryptoSwift
+    ↑
+    |
+UmbraLogging ← SwiftyBeaver
+    ↑
+    |
+UmbraXPC
+    ↑
+    |
+    ├── UmbraKeychainService
+    ├── UmbraCryptoService
+    └── UmbraBookmarkService
+```
+
+## Key Design Patterns
+
+1. **XPC Service Pattern**
+   - Secure inter-process communication
+   - Async/await support
+   - Service boundaries
+
+2. **Protocol-Oriented Design**
+   - Heavy protocol usage
+   - Clear service boundaries
+   - Testable interfaces
+
+3. **Error Handling Pattern**
+   - Structured error types
+   - Comprehensive error context
+   - Logging integration
+
+4. **Service Layer Pattern**
+   - Clear separation of concerns
+   - Modular design
+   - Independent service scaling
+
 ## Installation
 
 Add UmbraCore to your Swift package:

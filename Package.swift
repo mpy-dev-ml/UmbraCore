@@ -34,8 +34,22 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "SecurityTypes",
+            dependencies: []
+        ),
+        .target(
+            name: "CryptoTypes",
+            dependencies: ["SecurityTypes", "CryptoSwift"]
+        ),
+        .target(
+            name: "UmbraLogging",
+            dependencies: ["SwiftyBeaver"]
+        ),
+        .target(
             name: "UmbraCore",
             dependencies: [
+                "SecurityTypes",
+                "CryptoTypes",
                 "UmbraXPC",
                 "UmbraBookmarkService",
                 "UmbraKeychainService",
@@ -85,7 +99,10 @@ let package = Package(
         ),
         .testTarget(
             name: "KeychainTests",
-            dependencies: ["UmbraKeychainService"],
+            dependencies: [
+                "UmbraKeychainService",
+                "UmbraXPC"
+            ],
             resources: [
                 .process("UmbraKeychainService.entitlements")
             ]

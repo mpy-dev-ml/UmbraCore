@@ -2,120 +2,191 @@ import Foundation
 
 /// XPC service for secure keychain operations
 @objc public protocol KeychainXPCProtocol {
-    func addItem(_ data: Data,
-                 account: String,
-                 service: String,
-                 accessGroup: String?,
-                 accessibility: String,
-                 flags: Int,
-                 withReply reply: @escaping (Error?) -> Void)
+    /// Add a new item to the keychain
+    func addItem(account: String,
+                service: String,
+                accessGroup: String?,
+                data: Data,
+                reply: @escaping @Sendable (Error?) -> Void)
 
-    func readItem(account: String,
-                  service: String,
-                  accessGroup: String?,
-                  withReply reply: @escaping (Data?, Error?) -> Void)
+    /// Update an existing item in the keychain
+    func updateItem(account: String,
+                   service: String,
+                   accessGroup: String?,
+                   data: Data,
+                   reply: @escaping @Sendable (Error?) -> Void)
 
-    func updateItem(_ data: Data,
-                    account: String,
-                    service: String,
-                    accessGroup: String?,
-                    withReply reply: @escaping (Error?) -> Void)
+    /// Remove an item from the keychain
+    func removeItem(account: String,
+                   service: String,
+                   accessGroup: String?,
+                   reply: @escaping @Sendable (Error?) -> Void)
 
-    func deleteItem(account: String,
-                    service: String,
-                    accessGroup: String?,
-                    withReply reply: @escaping (Error?) -> Void)
+    /// Check if an item exists in the keychain
+    func containsItem(account: String,
+                     service: String,
+                     accessGroup: String?,
+                     reply: @escaping @Sendable (Bool, Error?) -> Void)
+
+    /// Retrieve an item from the keychain
+    func retrieveItem(account: String,
+                     service: String,
+                     accessGroup: String?,
+                     reply: @escaping @Sendable (Data?, Error?) -> Void)
+}
+
+extension KeychainXPCProtocol {
+    func addItem(account: String,
+                service: String,
+                accessGroup: String?,
+                data: Data) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            addItem(account: account,
+                   service: service,
+                   accessGroup: accessGroup,
+                   data: data) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    func updateItem(account: String,
+                   service: String,
+                   accessGroup: String?,
+                   data: Data) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            updateItem(account: account,
+                      service: service,
+                      accessGroup: accessGroup,
+                      data: data) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    func removeItem(account: String,
+                   service: String,
+                   accessGroup: String?) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            removeItem(account: account,
+                      service: service,
+                      accessGroup: accessGroup) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
 
     func containsItem(account: String,
-                      service: String,
-                      accessGroup: String?,
-                      withReply reply: @escaping (Bool, Error?) -> Void)
+                     service: String,
+                     accessGroup: String?) async -> Bool {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
+            containsItem(account: account,
+                        service: service,
+                        accessGroup: accessGroup) { exists, _ in
+                continuation.resume(returning: exists)
+            }
+        }
+    }
+
+    func retrieveItem(account: String,
+                     service: String,
+                     accessGroup: String?) async throws -> Data {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
+            retrieveItem(account: account,
+                        service: service,
+                        accessGroup: accessGroup) { data, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let data = data {
+                    continuation.resume(returning: data)
+                } else {
+                    continuation.resume(throwing: KeychainError.invalidData)
+                }
+            }
+        }
+    }
 }
 
 final class KeychainXPCService: NSObject {
     private(set) var listener: NSXPCListener
-    private let queue = DispatchQueue(label: "com.umbracore.keychain.service",
-                                    qos: .userInitiated)
-    private let startupSemaphore = DispatchSemaphore(value: 0)
-    private var isRunning = false
     private let exportedObject: KeychainXPCProtocol
-    private var activeConnections = Set<NSXPCConnection>()
-    private let connectionQueue = DispatchQueue(label: "com.umbracore.keychain.service.connections",
-                                              qos: .userInitiated)
+    private let startupSemaphore = DispatchSemaphore(value: 0)
+
+    private let stateQueue = DispatchQueue(label: "com.umbracore.xpc.state")
+    private var _isStarted = false
+
+    private var isStarted: Bool {
+        get { stateQueue.sync { _isStarted } }
+        set { stateQueue.sync { _isStarted = newValue } }
+    }
 
     override init() {
-        listener = NSXPCListener.anonymous()
-        exportedObject = KeychainXPCImplementation()
+        self.listener = NSXPCListener.anonymous()
+        self.exportedObject = KeychainXPCImplementation()
         super.init()
-        listener.delegate = self
+        self.listener.delegate = self
     }
 
     func start() {
-        queue.async { [weak self] in
-            guard let self = self else { return }
-            guard !self.isRunning else { return }
-
-            self.listener.resume()
-            self.isRunning = true
-            self.startupSemaphore.signal()
-        }
+        guard !isStarted else { return }
+        isStarted = true
+        listener.resume()
+        startupSemaphore.signal()
     }
 
     func stop() {
-        queue.async { [weak self] in
-            guard let self = self else { return }
-            guard self.isRunning else { return }
-
-            // Invalidate all active connections
-            self.connectionQueue.sync {
-                for connection in self.activeConnections {
-                    connection.invalidate()
-                }
-                self.activeConnections.removeAll()
-            }
-
-            self.listener.suspend()
-            self.isRunning = false
-        }
+        guard isStarted else { return }
+        isStarted = false
+        listener.invalidate()
     }
 
     func waitForStartup(timeout: TimeInterval) -> Bool {
         return startupSemaphore.wait(timeout: .now() + timeout) == .success
     }
-
-    private func handleConnectionError(_ connection: NSXPCConnection) {
-        connectionQueue.async { [weak self] in
-            self?.activeConnections.remove(connection)
-        }
-    }
 }
 
 extension KeychainXPCService: NSXPCListenerDelegate {
-    func listener(_ listener: NSXPCListener,
-                 shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
-        // Configure the connection
+    func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
+        // This is called on the main thread by XPC
+        guard isStarted else { return false }
+
         newConnection.exportedInterface = NSXPCInterface(with: KeychainXPCProtocol.self)
         newConnection.exportedObject = exportedObject
-
-        // Set up error handling
-        newConnection.invalidationHandler = { [weak self, weak newConnection] in
-            guard let connection = newConnection else { return }
-            self?.handleConnectionError(connection)
-        }
-
-        newConnection.interruptionHandler = { [weak self, weak newConnection] in
-            guard let connection = newConnection else { return }
-            self?.handleConnectionError(connection)
-        }
-
-        // Track the connection
-        _ = connectionQueue.sync {
-            activeConnections.insert(newConnection)
-        }
-
-        // Resume the connection
         newConnection.resume()
 
         return true
+    }
+}
+
+private final class AtomicBool {
+    private var _value: Bool
+    private let lock = NSLock()
+
+    init(_ value: Bool) {
+        self._value = value
+    }
+
+    var value: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return _value
+    }
+
+    func setValue(_ newValue: Bool) {
+        lock.lock()
+        defer { lock.unlock() }
+        _value = newValue
     }
 }

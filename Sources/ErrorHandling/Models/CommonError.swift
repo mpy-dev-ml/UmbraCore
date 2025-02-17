@@ -1,5 +1,6 @@
 import Foundation
-import Logging
+import SwiftyBeaver
+import UmbraLogging
 
 /// Common error types used across the UmbraCore framework
 public enum CommonError: LocalizedError, Equatable {

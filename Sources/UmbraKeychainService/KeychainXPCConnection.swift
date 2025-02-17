@@ -85,95 +85,42 @@ final class KeychainXPCConnection {
     }
 }
 
-// MARK: - Async Extensions
-extension KeychainXPCProtocol {
-    func addItem(_ data: Data,
-                 account: String,
-                 service: String,
-                 accessGroup: String?,
-                 accessibility: String,
-                 flags: Int) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            addItem(data,
-                   account: account,
-                   service: service,
-                   accessGroup: accessGroup,
-                   accessibility: accessibility,
-                   flags: flags) { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                }
-            }
-        }
+// MARK: - KeychainXPCProtocol Implementation
+extension KeychainXPCConnection: KeychainXPCProtocol {
+    func addItem(account: String,
+                service: String,
+                accessGroup: String?,
+                data: Data,
+                reply: @escaping @Sendable (Error?) -> Void) {
+        // Implementation
     }
 
-    func readItem(account: String,
-                  service: String,
-                  accessGroup: String?) async throws -> Data {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-            readItem(account: account,
-                    service: service,
-                    accessGroup: accessGroup) { data, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else if let data = data {
-                    continuation.resume(returning: data)
-                } else {
-                    continuation.resume(throwing: KeychainError.itemNotFound)
-                }
-            }
-        }
-    }
-
-    func updateItem(_ data: Data,
-                   account: String,
+    func updateItem(account: String,
                    service: String,
-                   accessGroup: String?) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            updateItem(data,
-                      account: account,
-                      service: service,
-                      accessGroup: accessGroup) { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                }
-            }
-        }
+                   accessGroup: String?,
+                   data: Data,
+                   reply: @escaping @Sendable (Error?) -> Void) {
+        // Implementation
     }
 
-    func deleteItem(account: String,
+    func removeItem(account: String,
                    service: String,
-                   accessGroup: String?) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            deleteItem(account: account,
-                      service: service,
-                      accessGroup: accessGroup) { error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                }
-            }
-        }
+                   accessGroup: String?,
+                   reply: @escaping @Sendable (Error?) -> Void) {
+        // Implementation
     }
 
     func containsItem(account: String,
                      service: String,
-                     accessGroup: String?) async throws -> Bool {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
-            containsItem(account: account,
-                        service: service,
-                        accessGroup: accessGroup) { exists, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume(returning: exists)
-                }
-            }
-        }
+                     accessGroup: String?,
+                     reply: @escaping @Sendable (Bool, Error?) -> Void) {
+        // Implementation
+    }
+
+    func retrieveItem(account: String,
+                     service: String,
+                     accessGroup: String?,
+                     reply: @escaping @Sendable (Data?, Error?) -> Void) {
+        // Implementation
     }
 }
