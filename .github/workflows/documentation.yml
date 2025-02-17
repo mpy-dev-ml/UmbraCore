@@ -22,6 +22,8 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      BUNDLE_FORCE_RUBY_PLATFORM: "1"
     
     steps:
     - uses: actions/checkout@v4
@@ -36,6 +38,8 @@ jobs:
         sudo xcodebuild -license accept
         xcrun --show-sdk-path
         echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> $GITHUB_ENV
+        echo "BUNDLE_BUILD__EVENTMACHINE=--with-opt-dir=$(brew --prefix openssl@3)" >> $GITHUB_ENV
+        echo "BUNDLE_BUILD__THIN=--with-opt-dir=$(brew --prefix openssl@3)" >> $GITHUB_ENV
     
     - name: Set up Swift
       uses: swift-actions/setup-swift@v1
@@ -56,10 +60,9 @@ jobs:
         PKG_CONFIG_PATH: "${{ env.OPENSSL_ROOT_DIR }}/lib/pkgconfig"
       run: |
         cd docs
-        gem install bigdecimal -v 3.1.4 --platform ruby
-        bundle config build.eventmachine --with-opt-dir=${{ env.OPENSSL_ROOT_DIR }}
-        bundle config build.thin --with-opt-dir=${{ env.OPENSSL_ROOT_DIR }}
-        bundle install
+        bundle config set --local path 'vendor/bundle'
+        bundle config set force_ruby_platform true
+        bundle install --jobs 4 --retry 3
         gem install jazzy
         
     - name: Generate API Documentation
