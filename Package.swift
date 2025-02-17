@@ -18,6 +18,10 @@ let package = Package(
         .library(
             name: "UmbraCryptoService",
             targets: ["UmbraCryptoService"]
+        ),
+        .library(
+            name: "UmbraBookmarkService",
+            targets: ["UmbraBookmarkService"]
         )
     ],
     dependencies: [
@@ -29,6 +33,7 @@ let package = Package(
             name: "UmbraCore",
             dependencies: [
                 "UmbraXPC",
+                "UmbraBookmarkService",
                 "SwiftyBeaver"
             ]
         ),
@@ -48,6 +53,12 @@ let package = Package(
                 "Resources/UmbraCryptoService.entitlements"
             ]
         ),
+        .target(
+            name: "UmbraBookmarkService",
+            dependencies: [
+                "UmbraXPC"
+            ]
+        ),
         .testTarget(
             name: "UmbraCoreTests",
             dependencies: ["UmbraCore"]
@@ -55,6 +66,10 @@ let package = Package(
         .testTarget(
             name: "XPCTests",
             dependencies: ["UmbraXPC", "UmbraCryptoService"]
+        ),
+        .testTarget(
+            name: "BookmarkTests",
+            dependencies: ["UmbraBookmarkService"]
         )
     ]
 )
