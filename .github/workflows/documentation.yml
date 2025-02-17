@@ -20,6 +20,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Install Xcode Command Line Tools
+      run: |
+        xcode-select --install || true
+        sudo xcode-select --switch /Applications/Xcode.app
+    
     - name: Set up Swift
       uses: swift-actions/setup-swift@v1
       with:
