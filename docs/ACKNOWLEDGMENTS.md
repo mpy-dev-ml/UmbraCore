@@ -7,12 +7,12 @@ nav_order: 9
 
 # Acknowledgments
 
-UmbraCore stands on the shoulders of giants. We're deeply grateful to the following open-source projects and their maintainers:
+UmbraCore stands on the shoulders of open-source giants. We're deeply grateful to the following open-source projects and their maintainers:
 
 ## Core Dependencies
 
 ### [Restic](https://restic.net)
-Restic is the backbone of UmbraCore's backup capabilities. It's a modern backup program that provides:
+Restic is the backbone of UmbraCore's backup capabilities. It's a modern backup program written in Go which provides:
 - Fast, secure, and efficient backups
 - Deduplication
 - Encryption
