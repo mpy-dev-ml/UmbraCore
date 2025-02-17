@@ -1,6 +1,6 @@
 ---
-layout: home
-title: UmbraCore Documentation
+layout: default
+title: Home
 nav_order: 1
 description: Documentation for the UmbraCore secure backup programme
 permalink: /
