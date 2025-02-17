@@ -1,9 +1,44 @@
 name: Documentation
 
+# This workflow handles the generation and deployment of UmbraCore's documentation
+# Key components:
+# 1. API documentation using Jazzy
+# 2. Static site generation with Jekyll
+# 3. Deployment to GitHub Pages
+
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'Sources/**/*.swift'
+      - '.github/workflows/documentation.yml'
+      - '.github/workflows/shared-setup.yml'
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with debug logging enabled'
+        required: false
+        default: false
+      swift_version:
+        type: choice
+        description: 'Swift version to use'
+        options:
+          - '5.9.2'
+          - '5.9.1'
+          - '5.9.0'
+        default: '5.9.2'
+        required: true
+      ruby_version:
+        type: choice
+        description: 'Ruby version to use'
+        options:
+          - '3.2'
+          - '3.1'
+          - '3.0'
+        default: '3.2'
+        required: true
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -11,53 +46,69 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
+# Ensure we don't have multiple deployments running at once
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
+  setup:
+    strategy:
+      matrix:
+        include:
+          - swift: ${{ inputs.swift_version || '5.9.2' }}
+            ruby: ${{ inputs.ruby_version || '3.2' }}
+      fail-fast: false
+    uses: ./.github/workflows/shared-setup.yml
+    with:
+      ruby-version: ${{ matrix.ruby }}
+      swift-version: ${{ matrix.swift }}
+    secrets: inherit
+
   build-documentation:
+    needs: setup
     runs-on: macos-14
+    timeout-minutes: 30
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     env:
       BUNDLE_FORCE_RUBY_PLATFORM: "1"
+      RUNNER_DEBUG: ${{ inputs.debug_enabled }}
     
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Install Development Tools
-      run: |
-        brew update
-        brew install gcc openssl@3
-        sudo rm -rf /Library/Developer/CommandLineTools
-        sudo xcode-select --install || true
-        sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-        sudo xcodebuild -license accept
-        xcrun --show-sdk-path
-        echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> $GITHUB_ENV
-        echo "BUNDLE_BUILD__EVENTMACHINE=--with-opt-dir=$(brew --prefix openssl@3)" >> $GITHUB_ENV
-        echo "BUNDLE_BUILD__THIN=--with-opt-dir=$(brew --prefix openssl@3)" >> $GITHUB_ENV
-    
-    - name: Set up Swift
-      uses: swift-actions/setup-swift@v1
       with:
-        swift-version: "5.9.2"
+        fetch-depth: 0
     
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
+    # Cache Swift packages to speed up builds
+    # Note: actions/cache@v3 is the latest stable version as of 2025-02
+    - name: Cache Swift packages
+      uses: actions/cache@v3
       with:
-        ruby-version: '3.2'
-        bundler-cache: false
-        working-directory: docs
+        path: .build
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}-${{ matrix.swift }}
+        restore-keys: |
+          ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}-
+          ${{ runner.os }}-spm-
+    
+    # Cache Ruby gems to speed up documentation generation
+    - name: Cache Ruby gems
+      uses: actions/cache@v3
+      with:
+        path: docs/vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('docs/Gemfile.lock') }}-${{ matrix.ruby }}
+        restore-keys: |
+          ${{ runner.os }}-gems-${{ hashFiles('docs/Gemfile.lock') }}-
+          ${{ runner.os }}-gems-
         
     - name: Install dependencies
+      id: install-deps
+      timeout-minutes: 10
       env:
-        LDFLAGS: "-L${{ env.OPENSSL_ROOT_DIR }}/lib"
-        CPPFLAGS: "-I${{ env.OPENSSL_ROOT_DIR }}/include"
-        PKG_CONFIG_PATH: "${{ env.OPENSSL_ROOT_DIR }}/lib/pkgconfig"
+        LDFLAGS: "-L${{ needs.setup.outputs.openssl-root }}/lib"
+        CPPFLAGS: "-I${{ needs.setup.outputs.openssl-root }}/include"
+        PKG_CONFIG_PATH: "${{ needs.setup.outputs.openssl-root }}/lib/pkgconfig"
       run: |
         cd docs
         bundle config set --local path 'vendor/bundle'
@@ -66,6 +117,8 @@ jobs:
         gem install jazzy
         
     - name: Generate API Documentation
+      id: generate-api-docs
+      timeout-minutes: 10
       run: |
         jazzy \
           --author "mpy-dev-ml" \
@@ -76,10 +129,12 @@ jobs:
           --module UmbraCore \
           --theme apple \
           --swift-build-tool spm \
-          --build-tool-arguments -Xswiftc,-swift-version,-Xswiftc,5.9.2 \
+          --build-tool-arguments -Xswiftc,-swift-version,-Xswiftc,${{ matrix.swift }} \
           --output docs/api
           
     - name: Build Jekyll site
+      id: build-site
+      timeout-minutes: 10
       run: |
         cd docs
         bundle exec jekyll build --baseurl /UmbraCore
@@ -92,7 +147,14 @@ jobs:
       uses: actions/upload-pages-artifact@v3
       with:
         path: docs/_site
+        retention-days: 7
         
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
+      
+    - name: Post-deployment cleanup
+      if: always()
+      run: |
+        rm -rf .build/repositories
+        rm -rf docs/vendor/bundle
