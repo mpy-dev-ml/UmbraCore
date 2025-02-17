@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test macOS
+    runs-on: macos-14
+    strategy:
+      matrix:
+        xcode: ['15.2']
+        config: ['debug', 'release']
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Select Xcode ${{ matrix.xcode }}
+      run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      
+    - name: Build and Test
+      run: |
+        swift build -c ${{ matrix.config }}
+        swift test -c ${{ matrix.config }} --enable-code-coverage
+        
+    - name: Generate Coverage Report
+      run: |
+        xcrun llvm-cov export -format="lcov" .build/${{ matrix.config }}/UmbraCorePackageTests.xctest/Contents/MacOS/UmbraCorePackageTests -instr-profile .build/${{ matrix.config }}/codecov/default.profdata > coverage.lcov
+        
+    - name: Upload Coverage Report
+      uses: codecov/codecov-action@v3
+      with:
+        file: coverage.lcov
+        fail_ci_if_error: true
+
+  lint:
+    name: SwiftLint
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: SwiftLint
+      run: |
+        brew install swiftlint
+        swiftlint --strict
+
+  security:
+    name: Security Scan
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Dependencies
+      run: brew install snyk
+
+    - name: Snyk Security Scan
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: snyk test --all-projects
+
+  docs:
+    name: Documentation
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Generate Documentation
+      run: |
+        brew install sourcekitten
+        sourcekitten doc -- -workspace UmbraCore.xcworkspace -scheme UmbraCore > docs.json
+        
+    - name: Deploy Documentation
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs
