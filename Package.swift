@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version:5.9
 import PackageDescription
 
 let package = Package(
@@ -9,73 +9,52 @@ let package = Package(
     products: [
         .library(
             name: "UmbraCore",
-            targets: ["UmbraCore"])
+            targets: ["UmbraCore"]
+        ),
+        .library(
+            name: "UmbraXPC",
+            targets: ["UmbraXPC"]
+        ),
+        .library(
+            name: "UmbraCryptoService",
+            targets: ["UmbraCryptoService"]
+        )
     ],
     dependencies: [
-        .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", .upToNextMajor(from: "2.1.1")),
-        .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", .upToNextMajor(from: "1.8.4"))
+        .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0"),
+        .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", from: "2.0.0"),
     ],
     targets: [
-        // Core Security Types
-        .target(
-            name: "SecurityTypes",
-            dependencies: []
-        ),
-
-        // Core Crypto Types
-        .target(
-            name: "CryptoTypes",
-            dependencies: [
-                "SecurityTypes",
-                "CryptoSwift"
-            ]
-        ),
-
-        // Mock Implementations
-        .target(
-            name: "UmbraMocks",
-            dependencies: [
-                "SecurityTypes",
-                "CryptoTypes"
-            ]
-        ),
-
-        // Logging Feature
-        .target(
-            name: "UmbraLogging",
-            dependencies: [
-                "SecurityTypes",
-                "UmbraMocks",
-                "SwiftyBeaver"
-            ],
-            path: "Sources/Features/Logging"
-        ),
-
-        // Main Library
         .target(
             name: "UmbraCore",
             dependencies: [
-                "SecurityTypes",
-                "CryptoTypes",
-                "UmbraLogging",
-                "UmbraMocks"
+                "UmbraXPC",
+                "SwiftyBeaver"
             ]
         ),
-
-        // Tests
-        .testTarget(
-            name: "CryptoTests",
+        .target(
+            name: "UmbraXPC",
+            dependencies: [],
+            path: "Sources/XPC/Core"
+        ),
+        .target(
+            name: "UmbraCryptoService",
             dependencies: [
-                "CryptoTypes",
-                "UmbraMocks"
+                "UmbraXPC",
+                "CryptoSwift"
+            ],
+            exclude: [
+                "Resources/Info.plist",
+                "Resources/UmbraCryptoService.entitlements"
             ]
         ),
         .testTarget(
-            name: "CoreTests",
-            dependencies: [
-                "UmbraCore",
-                "UmbraMocks"
-            ]
+            name: "UmbraCoreTests",
+            dependencies: ["UmbraCore"]
+        ),
+        .testTarget(
+            name: "XPCTests",
+            dependencies: ["UmbraXPC", "UmbraCryptoService"]
         )
     ]
 )
