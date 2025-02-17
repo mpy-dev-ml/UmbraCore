@@ -172,49 +172,27 @@ For detailed feature plans and implementation guidelines, see our [Development R
 ## Dependencies
 
 ### External
-- **CryptoSwift** (v1.8.0+): Cryptographic operations
-- **SwiftyBeaver** (v2.0.0+): Logging infrastructure
+- [Restic](https://restic.net) - Fast, secure backup program
+- [SwiftyBeaver](https://swiftybeaver.com) - Sophisticated logging system
+- [CryptoSwift](https://cryptoswift.io) - Comprehensive cryptography framework
 
-### Internal Dependency Graph
-```
-SecurityTypes
-    ↑
-    |
-CryptoTypes ← CryptoSwift
-    ↑
-    |
-UmbraLogging ← SwiftyBeaver
-    ↑
-    |
-UmbraXPC
-    ↑
-    |
-    ├── UmbraKeychainService
-    ├── UmbraCryptoService
-    └── UmbraBookmarkService
-```
+For more information about our dependencies and acknowledgments, see our [Acknowledgments](docs/ACKNOWLEDGMENTS.md) page.
 
-## Key Design Patterns
+## Documentation
 
-1. **XPC Service Pattern**
-   - Secure inter-process communication
-   - Async/await support
-   - Service boundaries
+Comprehensive documentation is available in the [Wiki](https://github.com/mpy-dev-ml/UmbraCore/wiki).
 
-2. **Protocol-Oriented Design**
-   - Heavy protocol usage
-   - Clear service boundaries
-   - Testable interfaces
+## Contributing
 
-3. **Error Handling Pattern**
-   - Structured error types
-   - Comprehensive error context
-   - Logging integration
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-4. **Service Layer Pattern**
-   - Clear separation of concerns
-   - Modular design
-   - Independent service scaling
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support Restic
+
+If you find UmbraCore useful, please consider [supporting the Restic project](https://github.com/sponsors/fd0).
 
 ## Installation
 
@@ -246,20 +224,3 @@ let snapshot = try await repo.createSnapshot(
 let snapshots = try await repo.listSnapshots(
     matching: .init(tags: ["documents"])
 )
-```
-
-## Documentation
-
-Comprehensive documentation is available in the [Wiki](https://github.com/mpy-dev-ml/UmbraCore/wiki).
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support Restic
-
-If you find UmbraCore useful, please consider [supporting the Restic project](https://github.com/sponsors/fd0).
