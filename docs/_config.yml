@@ -3,12 +3,11 @@ title: UmbraCore Documentation
 description: Documentation for the UmbraCore secure backup programme
 url: "https://mpy-dev-ml.github.io"
 baseurl: "/UmbraCore"
-source: "."
 
 # Theme settings
-remote_theme: mpy-dev-ml/umbra-docs-theme@v0.1.0
-theme_color: blue
+remote_theme: mpy-dev-ml/umbra-docs-theme@v0.1.1
 
+# Build settings
 markdown: kramdown
 highlighter: rouge
 
@@ -19,11 +18,6 @@ plugins:
   - jekyll-sitemap
   - jekyll-remote-theme
   - jekyll-paginate
-
-# Search settings
-search:
-  enabled: true
-  label: Search
 
 # Collections
 collections:
