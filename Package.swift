@@ -2,79 +2,153 @@
 import PackageDescription
 
 let package = Package(
-    name: "UmbraCore",
+    name: "umbracore",
     platforms: [
         .macOS(.v14)
     ],
     products: [
         .library(
             name: "UmbraCore",
-            targets: ["UmbraCore"]),
+            targets: ["UmbraCore", "SecurityTypes", "CryptoTypes", "UmbraMocks"]
+        )
+    ],
+    dependencies: [
+        .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", from: "2.0.0"),
+        .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0")
     ],
     targets: [
+        // MARK: - Core Layer
+        .target(
+            name: "UmbraCore",
+            dependencies: ["SecurityTypes", "CryptoTypes"],
+            path: "Sources/Core/UmbraCore"
+        ),
         .target(
             name: "SecurityTypes",
             dependencies: [],
-            path: "Sources/SecurityTypes"
+            path: "Sources/Core/SecurityTypes"
         ),
         .target(
-            name: "SecurityUtils",
-            dependencies: ["SecurityTypes"],
-            path: "Sources/SecurityUtils"
+            name: "CryptoTypes",
+            dependencies: [],
+            path: "Sources/Core/CryptoTypes"
         ),
+        
+        // MARK: - Feature Layer
         .target(
-            name: "Core",
-            dependencies: ["SecurityTypes"],
-            path: "Sources/Core"
-        ),
-        .target(
-            name: "UmbraSecurity",
-            dependencies: ["SecurityTypes", "Core", "SecurityUtils"],
-            path: "Sources/UmbraSecurity"
-        ),
-        .target(
-            name: "Logging",
-            dependencies: ["Core"],
-            path: "Sources/Logging"
-        ),
-        .target(
-            name: "UmbraCore",
+            name: "UmbraLogging",
             dependencies: [
-                "Core",
-                "UmbraSecurity",
-                "Logging"
+                "UmbraCore",
+                .product(name: "SwiftyBeaver", package: "SwiftyBeaver")
             ],
-            path: "Sources/UmbraCore"
+            path: "Sources/Features/Logging",
+            exclude: ["README.md"]
         ),
-        .testTarget(
-            name: "SecurityTypesTests",
-            dependencies: ["SecurityTypes"],
-            path: "Tests/SecurityTypesTests"
+        .target(
+            name: "UmbraCrypto",
+            dependencies: [
+                "UmbraCore",
+                "CryptoTypes",
+                .product(name: "CryptoSwift", package: "CryptoSwift")
+            ],
+            path: "Sources/Features/Crypto"
         ),
-        .testTarget(
-            name: "SecurityUtilsTests",
-            dependencies: ["SecurityUtils"],
-            path: "Tests/SecurityUtilsTests"
+        
+        // MARK: - Services Layer
+        .target(
+            name: "UmbraSecurityUtils",
+            dependencies: [
+                "UmbraCore",
+                "SecurityTypes",
+                "UmbraCrypto",
+                "UmbraLogging"
+            ],
+            path: "Sources/Services/SecurityUtils"
         ),
+        
+        // MARK: - API Layer
+        .target(
+            name: "UmbraAPI",
+            dependencies: [
+                "UmbraCore",
+                "UmbraSecurityUtils"
+            ],
+            path: "Sources/API"
+        ),
+        
+        // MARK: - Testing Support
+        .target(
+            name: "UmbraMocks",
+            dependencies: [
+                "SecurityTypes",
+                "CryptoTypes"
+            ],
+            path: "Sources/Mocks"
+        ),
+        
+        // MARK: - Tests
         .testTarget(
             name: "CoreTests",
-            dependencies: ["Core"],
+            dependencies: [
+                "UmbraCore",
+                "UmbraMocks"
+            ],
             path: "Tests/CoreTests"
         ),
         .testTarget(
-            name: "UmbraSecurityTests",
-            dependencies: ["UmbraSecurity"],
-            path: "Tests/UmbraSecurityTests"
+            name: "CryptoTests",
+            dependencies: [
+                "UmbraCrypto",
+                "UmbraMocks"
+            ],
+            path: "Tests/CryptoTests"
+        ),
+        .testTarget(
+            name: "SecurityUtilsTests",
+            dependencies: [
+                "UmbraSecurityUtils",
+                "UmbraMocks"
+            ],
+            path: "Tests/SecurityUtilsTests"
         ),
         .testTarget(
             name: "LoggingTests",
-            dependencies: ["Logging"],
+            dependencies: [
+                "UmbraLogging"
+            ],
             path: "Tests/LoggingTests"
         ),
         .testTarget(
+            name: "SecurityTypesTests",
+            dependencies: [
+                "SecurityTypes",
+                "UmbraMocks"
+            ],
+            path: "Tests/SecurityTypesTests"
+        ),
+        .testTarget(
+            name: "ErrorHandlingTests",
+            dependencies: [
+                "UmbraCore",
+                "SecurityTypes"
+            ],
+            path: "Tests/ErrorHandlingTests"
+        ),
+        .testTarget(
             name: "UmbraCoreTests",
-            dependencies: ["UmbraCore"],
+            dependencies: [
+                "UmbraCore",
+                "UmbraMocks"
+            ],
             path: "Tests/UmbraCoreTests"
+        ),
+        .testTarget(
+            name: "UmbraSecurityTests",
+            dependencies: [
+                "UmbraSecurityUtils",
+                "UmbraMocks"
+            ],
+            path: "Tests/UmbraSecurityTests"
         )
     ]
 )
