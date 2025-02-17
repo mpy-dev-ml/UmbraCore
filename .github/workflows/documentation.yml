@@ -129,7 +129,7 @@ jobs:
           --module UmbraCore \
           --theme apple \
           --swift-build-tool spm \
-          --build-tool-arguments -Xswiftc,-swift-version,${{ matrix.swift }} \
+          --build-tool-arguments -Xswiftc,-swift-version,-Xswiftc,5.9 \
           --output docs/api
           
     - name: Build Jekyll site
