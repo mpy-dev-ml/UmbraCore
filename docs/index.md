@@ -59,7 +59,7 @@ dependencies: [
 
 If you find UmbraCore useful, please consider:
 
-1. [Contributing](CONTRIBUTING.md) to the project
+1. [Contributing](contributing) to the project
 2. [Supporting Restic](https://github.com/sponsors/fd0)
 3. Starring us on [GitHub](https://github.com/mpy-dev-ml/UmbraCore)
 4. Sharing your experience with others

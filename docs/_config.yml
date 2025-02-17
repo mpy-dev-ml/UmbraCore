@@ -5,7 +5,7 @@ url: "https://mpy-dev-ml.github.io"
 baseurl: "/UmbraCore"
 
 # Theme settings
-remote_theme: mpy-dev-ml/umbra-docs-theme@v0.1.6
+remote_theme: just-the-docs/just-the-docs
 
 # Build settings
 markdown: kramdown
@@ -34,7 +34,7 @@ defaults:
       path: ""
       type: docs
     values:
-      layout: docs
+      layout: page
       nav_order: 1
   - scope:
       path: "guides"
