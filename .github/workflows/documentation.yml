@@ -46,18 +46,20 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.2'
-        bundler-cache: true
+        bundler-cache: false
         
     - name: Install dependencies
       env:
         LDFLAGS: "-L${{ env.OPENSSL_ROOT_DIR }}/lib"
         CPPFLAGS: "-I${{ env.OPENSSL_ROOT_DIR }}/include"
         PKG_CONFIG_PATH: "${{ env.OPENSSL_ROOT_DIR }}/lib/pkgconfig"
+        BUNDLE_BUILD__EVENTMACHINE: "--with-cppflags=-I${{ env.OPENSSL_ROOT_DIR }}/include"
+        BUNDLE_BUILD__THIN: "--with-cppflags=-I${{ env.OPENSSL_ROOT_DIR }}/include"
       run: |
         cd docs
-        bundle config build.eventmachine --with-cppflags="-I${{ env.OPENSSL_ROOT_DIR }}/include"
-        bundle config build.thin --with-cppflags="-I${{ env.OPENSSL_ROOT_DIR }}/include"
-        bundle config build.nokogiri --use-system-libraries
+        gem update --system
+        gem install bundler
+        bundle config set --local path 'vendor/bundle'
         bundle install
         gem install jazzy
         
