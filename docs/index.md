@@ -1,8 +1,7 @@
 ---
-layout: default
-title: Home
-nav_order: 1
-description: "UmbraCore documentation - A Swift library for Restic backup management"
+layout: homepage
+title: UmbraCore Documentation
+description: A Swift library for Restic backup management
 permalink: /
 ---
 
@@ -14,13 +13,15 @@ permalink: /
 
 UmbraCore is a Swift library that extends and adapts [Restic](https://restic.net) for macOS application developers. It provides a type-safe, Swift-native interface to Restic's powerful backup capabilities.
 
-## Quick Links
+## Quick Start
 
-- [Getting Started](getting-started)
-- [Architecture Guide](guides/architecture)
-- [API Documentation](api)
-- [Security Guidelines](security/guidelines)
-- [Contributing Guide](contributing)
+Add UmbraCore as a dependency in your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/mpy-dev-ml/UmbraCore.git", from: "1.0.0")
+]
+```
 
 ## Core Features
 
@@ -37,15 +38,31 @@ UmbraCore is a Swift library that extends and adapts [Restic](https://restic.net
 - Swift 6.0.3+
 - Xcode 15.2+
 
-## Installation
+## Documentation Sections
 
-Add UmbraCore as a dependency in your `Package.swift`:
+### [Getting Started](getting-started)
+Learn how to integrate UmbraCore into your project and start using its features.
 
-```swift
-dependencies: [
-    .package(url: "https://github.com/mpy-dev-ml/UmbraCore.git", from: "1.0.0")
-]
-```
+### [Architecture Guide](guides/architecture)
+Understand UmbraCore's design principles and component architecture.
+
+### [API Documentation](api)
+Detailed API reference for all UmbraCore components.
+
+### [Security Guidelines](security/guidelines)
+Learn about UmbraCore's security features and best practices.
+
+### [Contributing Guide](contributing)
+Join the UmbraCore community and contribute to its development.
+
+## Support
+
+If you find UmbraCore useful, please consider:
+
+1. [Contributing](CONTRIBUTING.md) to the project
+2. [Supporting Restic](https://github.com/sponsors/fd0)
+3. Starring us on [GitHub](https://github.com/mpy-dev-ml/UmbraCore)
+4. Sharing your experience with others
 
 ## License
 

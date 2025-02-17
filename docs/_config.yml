@@ -1,23 +1,56 @@
-remote_theme: just-the-docs/just-the-docs
-
 # Site settings
 title: UmbraCore Documentation
 description: Documentation for the UmbraCore backup management library
-baseurl: "/UmbraCore"
 url: "https://mpy-dev-ml.github.io"
 
 # Theme settings
+doks:
+    baseurl: /UmbraCore
+    color_theme: blue # Available themes: blue (default), green, purple, red and yellow
+    header:
+        logo:
+            text: UmbraCore
+            image: # Add logo later if needed
+        nav:
+            - item_name: Getting Started
+              item_url: '/getting-started'
+            - item_name: Guides
+              item_url: '/guides'
+            - item_name: API
+              item_url: '/api'
+            - item_name: Security
+              item_url: '/security'
+            - item_name: Contributing
+              item_url: '/contributing'
+    footer:
+        content:
+            logo:
+                text: UmbraCore
+                image: # Add logo later if needed
+            copyright: Copyright &copy; 2025 mpy-dev-ml. Distributed under the MIT license.
+        social_list:
+            - network_name: github
+              profile_url: 'https://github.com/mpy-dev-ml/UmbraCore'
+
+# SASS settings
+sass:
+    sass_dir: ./doks-theme/_sass
+    style: :compressed
+
+# Jekyll settings
+layouts_dir: ./doks-theme/_layouts
+includes_dir: ./doks-theme/_includes
+exclude: [ 'README.md', 'CHANGELOG.md' ]
+permalink: /:title/
+
+# Search settings
 search_enabled: true
 heading_anchors: true
-color_scheme: dark
 
 # Aux links for the upper right navigation
 aux_links:
   "UmbraCore on GitHub":
     - "https://github.com/mpy-dev-ml/UmbraCore"
-
-# Footer content
-footer_content: "Copyright &copy; 2025 mpy-dev-ml. Distributed under the MIT license."
 
 # Collections for organizing documentation
 collections:

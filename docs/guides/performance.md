@@ -1,6 +1,7 @@
 ---
-layout: default
+layout: docs
 title: Performance Optimisation Guide
+description: Learn about performance optimisation in UmbraCore
 nav_order: 8
 parent: Guides
 ---
@@ -367,4 +368,3 @@ class LoadTests: XCTestCase {
         }
     }
 }
-```

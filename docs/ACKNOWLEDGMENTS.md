@@ -1,6 +1,7 @@
 ---
-layout: default
+layout: docs
 title: Acknowledgments
+description: Acknowledging the open source projects that make UmbraCore possible
 nav_order: 9
 ---
 

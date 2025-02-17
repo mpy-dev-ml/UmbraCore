@@ -1,6 +1,7 @@
 ---
-layout: default
+layout: docs
 title: Thread Safety Guide
+description: Learn about thread safety in UmbraCore
 nav_order: 6
 parent: Guides
 ---
@@ -288,4 +289,3 @@ func testRaceConditions() async throws {
     // This should handle concurrent modifications gracefully
     try await [operation1, operation2]
 }
-```

@@ -1,6 +1,7 @@
 ---
-layout: default
+layout: docs
 title: Error Handling Guide
+description: Learn about error handling in UmbraCore
 nav_order: 7
 parent: Guides
 ---
@@ -335,4 +336,3 @@ func testErrorContext() async throws {
         XCTAssertNotNil(context.operationId)
     }
 }
-```
