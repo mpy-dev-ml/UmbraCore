@@ -8,6 +8,21 @@ UmbraCore powers several macOS backup management tools:
 - Rbx (VS Code extension)
 - Rbum (consumer GUI)
 
+## Current Status
+
+### Implemented Features
+- Secure keychain operations with XPC service
+- Comprehensive error handling and logging
+- Thread-safe operations
+- SwiftyBeaver logging integration
+- Modular architecture
+- Extensive test coverage
+
+### In Progress
+- SSH key management
+- Cloud provider credentials
+- Repository password handling
+
 ## Requirements
 - macOS 14.0+
 - Xcode 15.0+
@@ -92,6 +107,51 @@ Comprehensive error handling system with structured logging and recovery strateg
 ### Features
 - **Crypto**: Advanced cryptographic features
 - **Logging**: Advanced logging capabilities
+
+## Integration Roadmap
+
+### Phase 1: Core Foundation (Q1 2025)
+#### 1.1 Restic Command Framework (March 2025)
+- Command execution system
+- Output parsing
+- Error handling
+- Process management
+- Command queuing
+
+#### 1.2 Security Layer (March-April 2025)
+- ✓ Keychain integration
+- ✓ XPC service implementation
+- SSH key management
+- Cloud provider credentials
+- Repository password handling
+
+#### 1.3 Configuration System (April 2025)
+- Configuration file format
+- Validation system
+- Migration support
+- Default configurations
+- Configuration versioning
+
+#### 1.4 Progress Monitoring (April-May 2025)
+- Progress reporting protocol
+- Status updates system
+- Metrics collection
+- Event dispatching
+- Cancellation support
+
+### Phase 2: Advanced Features (Q2 2025)
+- Repository Management (May 2025)
+- Scheduling System (May-June 2025)
+- Network Operations (June 2025)
+- State Management (June-July 2025)
+
+### Phase 3: Enhancement & Optimization (Q3 2025)
+- Statistics & Analytics (July 2025)
+- Health Monitoring (August 2025)
+- Event System (August-September 2025)
+- Cache Optimization (September 2025)
+
+For detailed feature plans and implementation guidelines, see our [Development Roadmap](ROADMAP.md).
 
 ## Dependencies
 
