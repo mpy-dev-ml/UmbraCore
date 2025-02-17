@@ -5,7 +5,7 @@ url: "https://mpy-dev-ml.github.io"
 baseurl: "/UmbraCore"
 
 # Theme settings
-remote_theme: mpy-dev-ml/umbra-docs-theme@v0.1.1
+remote_theme: mpy-dev-ml/umbra-docs-theme@v0.1.2
 
 # Build settings
 markdown: kramdown
