@@ -5,189 +5,188 @@ import Security
 public actor KeychainService: KeychainServiceProtocol {
     private let xpcService: KeychainXPCService?
     private let accessGroup: String?
-    
-    public init(enableXPC: Bool = false, accessGroup: String? = nil) {
+
+    public init(enableXPC: Bool = true, accessGroup: String? = nil) {
         self.xpcService = enableXPC ? KeychainXPCService() : nil
         self.accessGroup = accessGroup
+
+        if enableXPC {
+            self.xpcService?.start()
+
+            // Wait for XPC service to start
+            if let service = self.xpcService, !service.waitForStartup(timeout: 5.0) {
+                print("Warning: XPC service failed to start, falling back to direct keychain access")
+            }
+        }
     }
-    
+
+    deinit {
+        xpcService?.stop()
+    }
+
     public func addItem(_ data: Data,
                        account: String,
                        service: String,
-                       accessGroup: String?,
+                       accessGroup: String? = nil,
                        accessibility: CFString = kSecAttrAccessibleWhenUnlocked,
                        flags: SecAccessControlCreateFlags = []) async throws {
-        // Create query dictionary
-        let query: [String: Any] = [
+        // Create SecAccessControl
+        var error: Unmanaged<CFError>?
+        guard let access = SecAccessControlCreateWithFlags(
+            kCFAllocatorDefault,
+            accessibility,
+            flags,
+            &error
+        ) else {
+            if let error = error?.takeRetainedValue() {
+                print("Failed to create access control: \(error)")
+            }
+            throw KeychainError.unexpectedStatus(errSecParam)
+        }
+
+        // Create query with access control
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
             kSecAttrService as String: service,
             kSecValueData as String: data,
-            kSecAttrAccessible as String: accessibility
+            kSecAttrAccessControl as String: access
         ]
-        
-        let status = SecItemAdd(query as CFDictionary, nil)
-        guard status != errSecDuplicateItem else {
-            throw KeychainError.duplicateItem
+
+        // Add access group if specified
+        if let accessGroup = accessGroup ?? self.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
         }
-        guard status == errSecSuccess else {
-            throw KeychainError.unhandledError(status: status)
+
+        // Try to add the item
+        let status = SecItemAdd(query as CFDictionary, nil)
+
+        switch status {
+        case errSecSuccess:
+            return
+        case errSecDuplicateItem:
+            throw KeychainError.duplicateItem
+        default:
+            throw KeychainError.unexpectedStatus(status)
         }
     }
-    
+
     public func updateItem(_ data: Data,
                          account: String,
                          service: String,
-                         accessGroup: String?) async throws {
-        let query: [String: Any] = [
+                         accessGroup: String? = nil) async throws {
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
             kSecAttrService as String: service
         ]
-        
+
+        if let accessGroup = accessGroup ?? self.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+
         let attributes: [String: Any] = [
             kSecValueData as String: data
         ]
-        
-        let status = SecItemUpdate(query as CFDictionary,
-                                 attributes as CFDictionary)
-        
-        guard status != errSecItemNotFound else {
+
+        let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+        if status == errSecItemNotFound {
             throw KeychainError.itemNotFound
         }
         guard status == errSecSuccess else {
-            throw KeychainError.unhandledError(status: status)
+            // Handle common error cases
+            switch status {
+            case errSecMissingEntitlement:
+                throw KeychainError.unexpectedStatus(status)
+            case errSecDecode:
+                throw KeychainError.invalidData
+            default:
+                throw KeychainError.unexpectedStatus(status)
+            }
         }
     }
-    
+
     public func deleteItem(account: String,
                          service: String,
-                         accessGroup: String?) async throws {
-        let query: [String: Any] = [
+                         accessGroup: String? = nil) async throws {
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
             kSecAttrService as String: service
         ]
-        
+
+        if let accessGroup = accessGroup ?? self.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+
         let status = SecItemDelete(query as CFDictionary)
-        guard status == errSecSuccess || status == errSecItemNotFound else {
-            throw KeychainError.unhandledError(status: status)
+        if status == errSecItemNotFound {
+            return // Item already deleted, no need to throw
+        }
+        guard status == errSecSuccess else {
+            // Handle common error cases
+            switch status {
+            case errSecMissingEntitlement:
+                throw KeychainError.unexpectedStatus(status)
+            default:
+                throw KeychainError.unexpectedStatus(status)
+            }
         }
     }
-    
+
     public func readItem(account: String,
                        service: String,
-                       accessGroup: String?) async throws -> Data {
-        let query: [String: Any] = [
+                       accessGroup: String? = nil) async throws -> Data {
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
             kSecAttrService as String: service,
             kSecReturnData as String: true
         ]
-        
+
+        if let accessGroup = accessGroup ?? self.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        
-        guard status != errSecItemNotFound else {
+
+        if status == errSecItemNotFound {
             throw KeychainError.itemNotFound
         }
         guard status == errSecSuccess else {
-            throw KeychainError.unhandledError(status: status)
+            // Handle common error cases
+            switch status {
+            case errSecMissingEntitlement:
+                throw KeychainError.unexpectedStatus(status)
+            case errSecDecode:
+                throw KeychainError.invalidData
+            default:
+                throw KeychainError.unexpectedStatus(status)
+            }
         }
-        
+
         guard let data = result as? Data else {
-            throw KeychainError.invalidDataFormat
+            throw KeychainError.invalidData
         }
-        
+
         return data
     }
-    
+
     public func containsItem(account: String,
                           service: String,
-                          accessGroup: String?) async -> Bool {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: account,
-            kSecAttrService as String: service,
-            kSecReturnData as String: false
-        ]
-        
-        let status = SecItemCopyMatching(query as CFDictionary, nil)
-        return status == errSecSuccess
-    }
-}
-
-/// XPC service for keychain operations
-private final class KeychainXPCService: NSObject, KeychainServiceXPCProtocol, NSXPCListenerDelegate {
-    private let listener: NSXPCListener
-    private let service: KeychainService
-    
-    override init() {
-        self.listener = NSXPCListener(machServiceName: "com.umbracore.keychain")
-        self.service = KeychainService(enableXPC: false)
-        super.init()
-        self.listener.delegate = self
-        self.listener.resume()
-    }
-    
-    // MARK: - NSXPCListenerDelegate
-    
-    func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
-        newConnection.exportedInterface = NSXPCInterface(with: KeychainServiceXPCProtocol.self)
-        newConnection.exportedObject = self
-        newConnection.resume()
-        return true
-    }
-    
-    // MARK: - KeychainServiceXPCProtocol
-    
-    func addItem(_ data: Data,
-                account: String,
-                service: String,
-                accessGroup: String?,
-                accessibility: String,
-                flags: UInt) async throws {
-        let cfAccessibility = accessibility as CFString
-        let secFlags = SecAccessControlCreateFlags(rawValue: flags)
-        try await self.service.addItem(data,
-                                     account: account,
-                                     service: service,
-                                     accessGroup: accessGroup,
-                                     accessibility: cfAccessibility,
-                                     flags: secFlags)
-    }
-    
-    func updateItem(_ data: Data,
-                   account: String,
-                   service: String,
-                   accessGroup: String?) async throws {
-        try await self.service.updateItem(data,
-                                        account: account,
-                                        service: service,
-                                        accessGroup: accessGroup)
-    }
-    
-    func deleteItem(account: String,
-                   service: String,
-                   accessGroup: String?) async throws {
-        try await self.service.deleteItem(account: account,
-                                        service: service,
-                                        accessGroup: accessGroup)
-    }
-    
-    func readItem(account: String,
-                 service: String,
-                 accessGroup: String?) async throws -> Data {
-        try await self.service.readItem(account: account,
-                                      service: service,
-                                      accessGroup: accessGroup)
-    }
-    
-    func containsItem(account: String,
-                     service: String,
-                     accessGroup: String?) async -> Bool {
-        await self.service.containsItem(account: account,
-                                      service: service,
-                                      accessGroup: accessGroup)
+                          accessGroup: String? = nil) async -> Bool {
+        do {
+            _ = try await readItem(account: account,
+                                service: service,
+                                accessGroup: accessGroup)
+            return true
+        } catch KeychainError.itemNotFound {
+            return false
+        } catch {
+            // Log other errors but return false
+            print("Warning: Error checking keychain item: \(error)")
+            return false
+        }
     }
 }

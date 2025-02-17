@@ -9,7 +9,7 @@ import Foundation
         case connection
         case invalidRequest
     }
-    
+
     case serviceError(category: Category, underlying: Error, message: String)
     case connectionError(message: String)
     case invalidRequest(message: String)
@@ -17,7 +17,7 @@ import Foundation
     case timeout(operation: String)
     case securityValidationFailed(reason: String)
     case serviceUnavailable(name: String)
-    
+
     /// Whether this error is potentially recoverable
     public var isRecoverable: Bool {
         switch self {
@@ -34,7 +34,7 @@ import Foundation
             return false
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
         case .serviceError(let category, let error, let message):
@@ -53,7 +53,7 @@ import Foundation
             return "[Service] \(name) is unavailable"
         }
     }
-    
+
     public var localizedDescription: String {
         switch self {
         case .serviceError(let category, let error, let message):

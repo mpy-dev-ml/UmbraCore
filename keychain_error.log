@@ -16,7 +16,7 @@ public enum KeychainError: LocalizedError {
     case xpcConnectionInterrupted
     /// XPC connection was invalidated
     case xpcConnectionInvalid
-
+    
     public var errorDescription: String? {
         switch self {
         case .itemNotFound:
@@ -35,7 +35,7 @@ public enum KeychainError: LocalizedError {
             return "XPC connection was invalidated"
         }
     }
-
+    
     public var recoverySuggestion: String? {
         switch self {
         case .itemNotFound:

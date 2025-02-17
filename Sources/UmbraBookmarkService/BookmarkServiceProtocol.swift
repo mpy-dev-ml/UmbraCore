@@ -9,7 +9,7 @@ import Foundation
     /// - Returns: The bookmark data
     /// - Throws: BookmarkError if creation fails
     func createBookmark(for url: URL, options: URL.BookmarkCreationOptions) async throws -> Data
-    
+
     /// Resolve a security-scoped bookmark to a URL
     /// - Parameters:
     ///   - bookmarkData: The bookmark data to resolve
@@ -17,16 +17,16 @@ import Foundation
     /// - Returns: The resolved URL and whether the bookmark is stale
     /// - Throws: BookmarkError if resolution fails
     func resolveBookmark(_ bookmarkData: Data, options: URL.BookmarkResolutionOptions) async throws -> (URL, Bool)
-    
+
     /// Start accessing a security-scoped resource
     /// - Parameter url: The URL of the resource to access
     /// - Throws: BookmarkError if access cannot be started
     func startAccessing(_ url: URL) async throws
-    
+
     /// Stop accessing a security-scoped resource
     /// - Parameter url: The URL of the resource to stop accessing
     func stopAccessing(_ url: URL) async
-    
+
     /// Check if a URL is currently being accessed
     /// - Parameter url: The URL to check
     /// - Returns: true if the URL is being accessed, false otherwise

@@ -3,20 +3,20 @@ import Foundation
 /// Access control options for keychain items
 public struct KeychainAccessOptions: OptionSet, Sendable {
     public let rawValue: UInt
-    
+
     public init(rawValue: UInt) {
         self.rawValue = rawValue
     }
-    
+
     /// Item data can only be accessed while the device is unlocked
     public static let whenUnlocked = KeychainAccessOptions(rawValue: 1 << 0)
-    
+
     /// Item data can only be accessed once per unlock
     public static let whenPasscodeSetThisDeviceOnly = KeychainAccessOptions(rawValue: 1 << 1)
-    
+
     /// Item data can only be accessed while the application is in the foreground
     public static let accessibleWhenUnlockedThisDeviceOnly = KeychainAccessOptions(rawValue: 1 << 2)
-    
+
     /// Item data cannot be synchronized to other devices
     public static let thisDeviceOnly = KeychainAccessOptions(rawValue: 1 << 3)
 }
@@ -38,7 +38,7 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
                  accessGroup: String?,
                  accessibility: String,
                  flags: UInt) async throws
-    
+
     /// Update an existing keychain item
     /// - Parameters:
     ///   - data: New data to store
@@ -50,7 +50,7 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
                    account: String,
                    service: String,
                    accessGroup: String?) async throws
-    
+
     /// Delete an item from the keychain
     /// - Parameters:
     ///   - account: Account identifier
@@ -60,7 +60,7 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
     func deleteItem(account: String,
                    service: String,
                    accessGroup: String?) async throws
-    
+
     /// Read an item from the keychain
     /// - Parameters:
     ///   - account: Account identifier
@@ -71,7 +71,7 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
     func readItem(account: String,
                  service: String,
                  accessGroup: String?) async throws -> Data
-    
+
     /// Check if an item exists in the keychain
     /// - Parameters:
     ///   - account: Account identifier
@@ -100,7 +100,7 @@ public protocol KeychainServiceProtocol: Actor {
                  accessGroup: String?,
                  accessibility: CFString,
                  flags: SecAccessControlCreateFlags) async throws
-    
+
     /// Update an existing keychain item
     /// - Parameters:
     ///   - data: New data to store
@@ -112,7 +112,7 @@ public protocol KeychainServiceProtocol: Actor {
                    account: String,
                    service: String,
                    accessGroup: String?) async throws
-    
+
     /// Delete an item from the keychain
     /// - Parameters:
     ///   - account: Account identifier
@@ -122,7 +122,7 @@ public protocol KeychainServiceProtocol: Actor {
     func deleteItem(account: String,
                    service: String,
                    accessGroup: String?) async throws
-    
+
     /// Read an item from the keychain
     /// - Parameters:
     ///   - account: Account identifier
@@ -133,7 +133,7 @@ public protocol KeychainServiceProtocol: Actor {
     func readItem(account: String,
                  service: String,
                  accessGroup: String?) async throws -> Data
-    
+
     /// Check if an item exists in the keychain
     /// - Parameters:
     ///   - account: Account identifier
