@@ -1,1 +1,7 @@
 common --enable_bzlmod
+
+# Coverage configuration
+coverage --experimental_generate_llvm_lcov
+coverage --combined_report=lcov
+coverage --instrumentation_filter=//Sources/...
+coverage --test_env=LCOV_MERGER=/usr/bin/true

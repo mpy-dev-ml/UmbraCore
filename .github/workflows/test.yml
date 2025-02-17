@@ -1,0 +1,43 @@
+name: Test & Coverage
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test & Coverage
+    runs-on: macos-14
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Bazel
+      uses: bazelbuild/setup-bazelisk@v2
+    
+    - name: Mount Bazel Cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/bazel
+          ~/.cache/bazel-repo
+        key: ${{ runner.os }}-bazel-${{ hashFiles('.bazelrc', '.bazelversion', 'MODULE.bazel') }}
+        restore-keys: |
+          ${{ runner.os }}-bazel-
+    
+    - name: Test with Coverage
+      run: |
+        bazel coverage //...
+        
+    - name: Generate Coverage Report
+      run: |
+        find -L "$(bazel info output_path)/_coverage/_coverage_report.dat" -name "coverage.dat" -exec cp {} coverage.dat \;
+        
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: coverage.dat
+        fail_ci_if_error: true
+        verbose: true
