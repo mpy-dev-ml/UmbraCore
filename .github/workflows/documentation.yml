@@ -56,6 +56,7 @@ jobs:
         PKG_CONFIG_PATH: "${{ env.OPENSSL_ROOT_DIR }}/lib/pkgconfig"
       run: |
         cd docs
+        gem install bigdecimal -v 3.1.4 --platform ruby
         bundle config build.eventmachine --with-opt-dir=${{ env.OPENSSL_ROOT_DIR }}
         bundle config build.thin --with-opt-dir=${{ env.OPENSSL_ROOT_DIR }}
         bundle install
