@@ -17,23 +17,6 @@ public actor MockURLProvider: SecurityProvider {
         return mockBookmark
     }
     
-    public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
-        bookmarks[identifier] = bookmarkData
-    }
-    
-    public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
-        guard let bookmark = bookmarks[identifier] else {
-            throw SecurityError.bookmarkNotFound(path: identifier)
-        }
-        return bookmark
-    }
-    
-    public func deleteBookmark(withIdentifier identifier: String) async throws {
-        guard bookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityError.bookmarkNotFound(path: identifier)
-        }
-    }
-    
     public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
         let mockBookmark = String(decoding: bookmarkData, as: UTF8.self)
         guard mockBookmark.hasPrefix("MockBookmark:") else {
@@ -41,6 +24,23 @@ public actor MockURLProvider: SecurityProvider {
         }
         let path = String(mockBookmark.dropFirst("MockBookmark:".count))
         return (path: path, isStale: false)
+    }
+    
+    public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
+        bookmarks[identifier] = bookmarkData
+    }
+    
+    public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
+        guard let bookmarkData = bookmarks[identifier] else {
+            throw SecurityError.bookmarkNotFound(path: identifier)
+        }
+        return bookmarkData
+    }
+    
+    public func deleteBookmark(withIdentifier identifier: String) async throws {
+        guard bookmarks.removeValue(forKey: identifier) != nil else {
+            throw SecurityError.bookmarkNotFound(path: identifier)
+        }
     }
     
     public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
@@ -60,8 +60,16 @@ public actor MockURLProvider: SecurityProvider {
         accessedPaths.remove(path)
     }
     
-    public func getAccessedPaths() async -> [String] {
-        Array(accessedPaths)
+    public func stopAccessingAllResources() async {
+        accessedPaths.removeAll()
+    }
+    
+    public func isAccessing(path: String) async -> Bool {
+        accessedPaths.contains(path)
+    }
+    
+    public func getAccessedPaths() async -> Set<String> {
+        accessedPaths
     }
     
     public func withSecurityScopedAccess<T>(to path: String, perform operation: () async throws -> T) async throws -> T {

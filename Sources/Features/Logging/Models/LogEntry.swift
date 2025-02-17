@@ -1,18 +1,15 @@
-import Darwin
+import Foundation
 
-/// Log level
-@frozen public enum LogLevel: String, Sendable {
-    case trace
-    case debug
-    case info
-    case notice
-    case warning
-    case error
-    case critical
+/// Log level for entries
+public enum LogLevel: String, Sendable {
+    case debug = "DEBUG"
+    case info = "INFO"
+    case warning = "WARNING"
+    case error = "ERROR"
 }
 
-/// A log entry containing message and metadata
-@frozen public struct LogEntry: Sendable, Identifiable {
+/// A log entry with message and metadata
+public struct LogEntry: Sendable, Identifiable {
     // MARK: - Properties
     
     /// Unique identifier
@@ -70,7 +67,7 @@ import Darwin
     ///   - line: Source line
     public init(
         id: String = String(Int.random(in: 0..<Int.max)),
-        timestamp: Int = Int(time(nil)),
+        timestamp: Int = Int(Date().timeIntervalSince1970),
         level: LogLevel,
         message: String,
         metadata: [String: String]? = nil,
@@ -128,7 +125,7 @@ import Darwin
 extension LogEntry: CustomStringConvertible {
     public var description: String {
         return """
-            [\(timestamp)][\(level)] \(message)
+            [\(timestamp)][\(level.rawValue)] \(message)
             Source: \(sourceLocation)
             \(metadata?.isEmpty == false ? "Metadata: \(metadata!)" : "")
             """

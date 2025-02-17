@@ -1,62 +1,40 @@
 import Foundation
-import UmbraCore
+import SecurityTypes
 
 /// Errors that can occur during logging operations
-public enum LoggingError: UmbraError, Equatable {
-    /// The logging service has not been initialized
-    case notInitialized
-    /// The log entry is invalid (e.g., empty message)
-    case invalidEntry
-    /// Failed to write to the log file
-    case writeFailure(Error)
+public enum LoggingError: LocalizedError {
+    /// Failed to initialize logging
+    case initializationFailed(reason: String)
+    
+    /// Failed to write to log file
+    case writeError(reason: String)
+    
+    /// Failed to read from log file
+    case readError(reason: String)
+    
+    /// Failed to create log directory
+    case directoryCreationFailed(path: String)
+    
+    /// Failed to access log file
+    case accessDenied(path: String)
+    
+    /// Invalid log file path
+    case invalidPath(path: String)
     
     public var errorDescription: String? {
         switch self {
-        case .notInitialized:
-            return "Logging service has not been initialized"
-        case .invalidEntry:
-            return "Invalid log entry: message cannot be empty"
-        case .writeFailure(let error):
-            return "Failed to write to log file: \(error.localizedDescription)"
-        }
-    }
-    
-    public var domain: String {
-        return "dev.mpy.UmbraCore.Logging"
-    }
-    
-    public var isRecoverable: Bool {
-        switch self {
-        case .notInitialized:
-            return true
-        case .invalidEntry:
-            return true
-        case .writeFailure:
-            return false
-        }
-    }
-    
-    public var context: [String: Any] {
-        switch self {
-        case .notInitialized:
-            return [:]
-        case .invalidEntry:
-            return [:]
-        case .writeFailure(let error):
-            return ["underlyingError": error]
-        }
-    }
-    
-    public static func == (lhs: LoggingError, rhs: LoggingError) -> Bool {
-        switch (lhs, rhs) {
-        case (.notInitialized, .notInitialized):
-            return true
-        case (.invalidEntry, .invalidEntry):
-            return true
-        case (.writeFailure(let lhsError), .writeFailure(let rhsError)):
-            return lhsError.localizedDescription == rhsError.localizedDescription
-        default:
-            return false
+        case .initializationFailed(let reason):
+            return "Failed to initialize logging: \(reason)"
+        case .writeError(let reason):
+            return "Failed to write to log file: \(reason)"
+        case .readError(let reason):
+            return "Failed to read from log file: \(reason)"
+        case .directoryCreationFailed(let path):
+            return "Failed to create log directory at path: \(path)"
+        case .accessDenied(let path):
+            return "Access denied to log file at path: \(path)"
+        case .invalidPath(let path):
+            return "Invalid log file path: \(path)"
         }
     }
 }

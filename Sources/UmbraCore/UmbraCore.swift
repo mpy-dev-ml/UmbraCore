@@ -1,19 +1,29 @@
-@_exported import Core
 @_exported import SecurityTypes
-@_exported import UmbraSecurity
-@_exported import Logging
+@_exported import CryptoTypes
+@_exported import UmbraLogging
+
+/// Main entry point for UmbraCore functionality
+public enum UmbraCore {
+    /// Version of UmbraCore
+    public static let version = "1.0.0"
+    
+    /// Initialize UmbraCore with default configuration
+    public static func initialize() {
+        // Initialize core services
+    }
+}
 
 // Re-export main types and protocols
 public typealias SecurityProvider = SecurityTypes.SecurityProvider
-public typealias SecurityService = UmbraSecurity.SecurityService
-public typealias LoggingService = Logging.LoggingService
-
-// Export error types
 public typealias SecurityError = SecurityTypes.SecurityError
-public typealias LoggingError = Logging.LoggingError
 
-// Export logging types
-public typealias LogEntry = Logging.LogEntry
+// Re-export logging types
+public typealias LogEntry = UmbraLogging.LogEntry
+public typealias LogLevel = UmbraLogging.LogLevel
+public typealias LoggingError = UmbraLogging.LoggingError
+public typealias LoggingProtocol = UmbraLogging.LoggingProtocol
+public typealias LoggingService = UmbraLogging.LoggingService
 
-// Export protocols
-public typealias LoggingProtocol = Logging.LoggingProtocol
+// Re-export crypto types
+public typealias CryptoError = CryptoTypes.CryptoError
+public typealias CryptoServiceProtocol = CryptoTypes.CryptoServiceProtocol
