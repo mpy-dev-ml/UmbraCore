@@ -1,5 +1,12 @@
 # UmbraCore
 
+[![CI](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/ci.yml/badge.svg)](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/mpy-dev-ml/UmbraCore/branch/main/graph/badge.svg)](https://codecov.io/gh/mpy-dev-ml/UmbraCore)
+[![SwiftLint](https://img.shields.io/badge/SwiftLint-Passing-brightgreen.svg)](https://github.com/mpy-dev-ml/UmbraCore/actions)
+[![Documentation](https://img.shields.io/badge/Documentation-Latest-blue.svg)](https://mpy-dev-ml.github.io/UmbraCore/)
+[![Platform](https://img.shields.io/badge/Platform-macOS%2014%2B-lightgrey.svg)](https://github.com/mpy-dev-ml/UmbraCore)
+[![Swift](https://img.shields.io/badge/Swift-6.0.3-orange.svg)](https://swift.org)
+
 A Swift library that extends and adapts [Restic](https://restic.net) for macOS application developers. UmbraCore provides a type-safe, Swift-native interface to Restic's powerful backup capabilities.
 
 ## Core Applications
