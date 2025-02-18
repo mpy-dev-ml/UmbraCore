@@ -1,19 +1,17 @@
-load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
-swift_test(
-    name = "CoreTests",
+swift_library(
+    name = "UmbraMocks",
     srcs = glob(["**/*.swift"]),
-    module_name = "CoreTests",
+    module_name = "UmbraMocks",
+    visibility = ["//visibility:public"],
     deps = [
-        "//Sources/UmbraCore",
         "//Sources/SecurityTypes",
         "//Sources/CryptoTypes",
-        "//Sources/UmbraMocks",
     ],
     copts = [
         "-strict-concurrency=complete",
         "-warn-concurrency",
         "-enable-actor-data-race-checks",
     ],
-    tags = ["core"],
 )
