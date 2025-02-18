@@ -25,7 +25,6 @@ playground.xcworkspace
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
-Package.resolved
 
 # macOS
 .DS_Store
