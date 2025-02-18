@@ -6,6 +6,9 @@ module(
 bazel_dep(name = "rules_swift", version = "2.2.0")
 bazel_dep(name = "gazelle", version = "0.41.0")
 bazel_dep(name = "rules_swift_package_manager", version = "0.45.0")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "platforms", version = "0.0.8")
+bazel_dep(name = "rules_bazel_integration_test", version = "0.21.0")
 
 git_override(
     module_name = "rules_swift_package_manager",
