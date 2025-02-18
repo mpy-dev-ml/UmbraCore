@@ -1,0 +1,14 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "UmbraCore",
+    srcs = glob(["**/*.swift"]),
+    module_name = "UmbraCore",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+        "//Sources/XPC/Core:UmbraXPC",
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    ],
+)
