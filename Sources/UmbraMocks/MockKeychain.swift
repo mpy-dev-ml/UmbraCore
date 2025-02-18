@@ -20,6 +20,11 @@ public actor MockKeychain: SecureStorageProvider {
         return data
     }
 
+    public func loadWithMetadata(forKey key: String) async throws -> (data: Data, metadata: [String: String]?) {
+        let data = try await load(forKey: key)
+        return (data: data, metadata: metadata[key])
+    }
+
     public func delete(forKey key: String) async throws {
         guard storage.removeValue(forKey: key) != nil else {
             throw CryptoError.keyNotFound(identifier: key)
@@ -49,5 +54,13 @@ public actor MockKeychain: SecureStorageProvider {
             storage.removeAll()
             metadata.removeAll()
         }
+    }
+
+    public func exists(forKey key: String) async -> Bool {
+        storage[key] != nil
+    }
+
+    public func allKeys() async throws -> [String] {
+        Array(storage.keys)
     }
 }

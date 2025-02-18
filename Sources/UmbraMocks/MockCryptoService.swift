@@ -1,5 +1,6 @@
 import Foundation
 import CryptoTypes
+import CryptoTypes.Protocols
 
 public final class MockCryptoService: CryptoServiceProtocol {
     private var encryptedData: [String: Data] = [:]

@@ -42,12 +42,16 @@ public actor MockSecurityProvider: SecurityProvider {
         accessedPaths.removeAll()
     }
 
-    public func withSecurityScopedAccess<T>(to path: String, perform operation: () async throws -> T) async throws -> T {
+    public func withSecurityScopedAccess<T: Sendable>(to path: String, perform operation: () async throws -> T) async throws -> T {
         let success = try await startAccessing(path: path)
         guard success else {
-            throw SecurityError.accessDenied(reason: "Failed to start accessing \(path)")
+            throw SecurityError.accessDenied(path: path)
         }
-        defer { Task { await stopAccessing(path: path) } }
+        defer {
+            Task {
+                try? await stopAccessing(path: path)
+            }
+        }
         return try await operation()
     }
 
