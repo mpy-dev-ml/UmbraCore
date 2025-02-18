@@ -19,13 +19,15 @@ import Foundation
     /// Authentication failed
     case authenticationFailed(reason: String)
     /// Random number generation failed
-    case randomGenerationFailed(reason: String)
+    case randomGenerationFailed(status: OSStatus)
     /// Key not found
     case keyNotFound(identifier: String)
     /// Key already exists
     case keyExists(identifier: String)
     /// Keychain operation failed
     case keychainError(status: OSStatus)
+    /// Invalid key data
+    case invalidKey(reason: String)
 
     public var errorDescription: String? {
         switch self {
@@ -45,14 +47,16 @@ import Foundation
             return "Key derivation failed: \(reason)"
         case .authenticationFailed(let reason):
             return "Authentication failed: \(reason)"
-        case .randomGenerationFailed(let reason):
-            return "Random number generation failed: \(reason)"
+        case .randomGenerationFailed(let status):
+            return "Random number generation failed: \(status)"
         case .keyNotFound(let identifier):
             return "Key not found: \(identifier)"
         case .keyExists(let identifier):
             return "Key already exists: \(identifier)"
         case .keychainError(let status):
             return "Keychain operation failed with status: \(status)"
+        case .invalidKey(let reason):
+            return "Invalid key: \(reason)"
         }
     }
 }

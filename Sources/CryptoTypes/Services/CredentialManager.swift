@@ -1,134 +1,119 @@
 import Foundation
 import SecurityTypes
+import CryptoKit
 
-/// A service for securely storing and retrieving credentials
-public actor CredentialManager {
-    private let cryptoService: CryptoServiceProtocol
-    private let keychain: SecureStorageProvider
-    private let config: CryptoConfiguration
-
-    public init(cryptoService: CryptoServiceProtocol, keychain: SecureStorageProvider, config: CryptoConfiguration = .default) {
+/// Manages secure storage and retrieval of credentials
+actor CredentialManager {
+    private let keychain: any SecureStorageProvider
+    private let cryptoService: CryptoService
+    private let config: CryptoConfig
+    
+    init(service: String, cryptoService: CryptoService, config: CryptoConfig) {
+        self.keychain = KeychainAccess(service: service)
         self.cryptoService = cryptoService
-        self.keychain = keychain
         self.config = config
     }
-
-    public func store<T: Encodable>(credential: T, withIdentifier identifier: String) async throws {
-        let data = try JSONEncoder().encode(credential)
-        let key = try await getOrCreateMasterKey()
-        let iv = try await cryptoService.generateSecureRandomKey(length: config.ivLength)
-        let encrypted = try await cryptoService.encrypt(data, using: key, iv: iv)
+    
+    func saveCredential(_ credential: Data, withIdentifier identifier: String) async throws {
+        let key = try await getMasterKey()
+        let iv = try await cryptoService.generateSecureRandomBytes(length: config.ivLength)
+        let encrypted = try await cryptoService.encrypt(credential, withKey: key, iv: iv)
         let storageData = SecureStorageData(encryptedData: encrypted, iv: iv)
         let encodedData = try JSONEncoder().encode(storageData)
-        try await keychain.save(encodedData, forKey: identifier)
+        try await keychain.save(encodedData, forKey: identifier, metadata: nil)
     }
-
-    public func retrieve<T: Decodable>(withIdentifier identifier: String) async throws -> T {
-        let encodedData = try await keychain.load(forKey: identifier)
+    
+    func loadCredential(withIdentifier identifier: String) async throws -> Data {
+        let key = try await getMasterKey()
+        let (encodedData, _) = try await keychain.loadWithMetadata(forKey: identifier)
         let storageData = try JSONDecoder().decode(SecureStorageData.self, from: encodedData)
-        let key = try await getOrCreateMasterKey()
-        let decryptedData = try await cryptoService.decrypt(storageData.encryptedData, using: key, iv: storageData.iv)
-        return try JSONDecoder().decode(T.self, from: decryptedData)
+        return try await cryptoService.decrypt(storageData.encryptedData, withKey: key, iv: storageData.iv)
     }
-
-    public func delete(withIdentifier identifier: String) async throws {
+    
+    func deleteCredential(withIdentifier identifier: String) async throws {
         try await keychain.delete(forKey: identifier)
     }
-
-    public func exists(withIdentifier identifier: String) async -> Bool {
-        do {
-            _ = try await keychain.load(forKey: identifier)
-            return true
-        } catch {
-            return false
-        }
+    
+    func hasCredential(withIdentifier identifier: String) async -> Bool {
+        await keychain.exists(forKey: identifier)
     }
-
-    private func getOrCreateMasterKey() async throws -> Data {
-        if let key = try await getMasterKey() {
+    
+    func listCredentials() async throws -> [String] {
+        try await keychain.allKeys()
+    }
+    
+    func reset() async {
+        await keychain.reset(preserveKeys: false)
+    }
+    
+    private func getMasterKey() async throws -> Data {
+        if let (key, _) = try? await keychain.loadWithMetadata(forKey: "master_key") {
             return key
         }
-        return try await createMasterKey()
-    }
-
-    private func createMasterKey() async throws -> Data {
-        guard await exists(withIdentifier: "master_key") == false else {
-            throw CryptoError.keyExists(identifier: "master_key")
-        }
-
+        
         let key = try await cryptoService.generateSecureRandomKey(length: config.keyLength / 8)
-        try await keychain.save(key, forKey: "master_key")
+        try await keychain.save(key, forKey: "master_key", metadata: nil)
         return key
-    }
-
-    private func getMasterKey() async throws -> Data? {
-        do {
-            return try await keychain.load(forKey: "master_key")
-        } catch {
-            return nil
-        }
     }
 }
 
 /// Access to the system keychain
 private actor KeychainAccess: SecureStorageProvider {
     private let service: String
-
-    init(service: String = "com.umbracore.keychain") {
+    private var items: [String: (data: Data, metadata: [String: String]?)] = [:]
+    
+    init(service: String) {
         self.service = service
     }
-
-    func save(_ data: Data, forKey key: String) async throws {
-        var query = baseQuery(key: key)
-        query[kSecValueData as String] = data
-
-        let status = SecItemAdd(query as CFDictionary, nil)
-        if status != errSecSuccess {
-            throw CryptoError.keychainError(status: status)
-        }
+    
+    func save(_ data: Data, forKey key: String, metadata: [String: String]?) async throws {
+        items[key] = (data: data, metadata: metadata)
     }
-
+    
     func load(forKey key: String) async throws -> Data {
-        var query = baseQuery(key: key)
-        query[kSecReturnData as String] = true
-
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-
-        guard status == errSecSuccess else {
-            throw CryptoError.keychainError(status: status)
+        guard let item = items[key] else {
+            throw SecurityError.itemNotFound(reason: "Item not found: \(key)")
         }
-
-        guard let data = result as? Data else {
-            throw CryptoError.keychainError(status: errSecDecode)
-        }
-
-        return data
+        return item.data
     }
-
+    
+    func loadWithMetadata(forKey key: String) async throws -> (data: Data, metadata: [String: String]?) {
+        guard let item = items[key] else {
+            throw SecurityError.itemNotFound(reason: "Item not found: \(key)")
+        }
+        return item
+    }
+    
     func delete(forKey key: String) async throws {
-        let query = baseQuery(key: key)
-        let status = SecItemDelete(query as CFDictionary)
-
-        if status != errSecSuccess && status != errSecItemNotFound {
-            throw CryptoError.keychainError(status: status)
+        guard items.removeValue(forKey: key) != nil else {
+            throw SecurityError.itemNotFound(reason: "Item not found: \(key)")
         }
     }
-
-    func reset() async {
-        let query = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service
-        ] as [String: Any]
-
-        _ = SecItemDelete(query as CFDictionary)
+    
+    func exists(forKey key: String) async -> Bool {
+        items[key] != nil
     }
-
-    private func baseQuery(key: String) -> [String: Any] {
-        return [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: key
-        ]
+    
+    func allKeys() async throws -> [String] {
+        Array(items.keys)
+    }
+    
+    func updateMetadata(_ metadata: [String: String], forKey key: String) async throws {
+        guard var item = items[key] else {
+            throw SecurityError.itemNotFound(reason: "Item not found: \(key)")
+        }
+        item.metadata = metadata
+        items[key] = item
+    }
+    
+    func reset(preserveKeys: Bool) async {
+        if preserveKeys {
+            // Only clear data but preserve keys
+            for key in items.keys {
+                items[key] = (data: Data(), metadata: nil)
+            }
+        } else {
+            items.removeAll()
+        }
     }
 }

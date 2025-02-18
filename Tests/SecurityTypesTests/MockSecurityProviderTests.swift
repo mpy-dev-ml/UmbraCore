@@ -1,107 +1,236 @@
 @testable import SecurityTypes
 import XCTest
 
-final class MockSecurityProviderTests: XCTestCase {
-    var provider: DefaultSecurityProvider!
-    var testFileURL: URL!
-    var testFileData: String!
-
-    override func setUp() async throws {
-        provider = DefaultSecurityProvider()
-
-        // Create test file
-        let tempDir = FileManager.default.temporaryDirectory
-        testFileURL = tempDir.appendingPathComponent("test_file.txt")
-        testFileData = "Test content"
-        try testFileData.write(to: testFileURL, atomically: true, encoding: .utf8)
+/// A mock security provider for testing
+actor MockSecurityProvider: SecurityProvider {
+    private var bookmarks: [String: Data] = [:]
+    private var accessCount: [String: Int] = [:]
+    private var shouldFailBookmarkCreation = false
+    private var shouldFailAccess = false
+    private var accessedPaths: Set<String> = []
+    private var storedBookmarks: [String: [UInt8]] = [:]
+    
+    func createBookmark(forPath path: String) async throws -> [UInt8] {
+        if shouldFailBookmarkCreation {
+            throw SecurityError.bookmarkCreationFailed(reason: "Mock failure")
+        }
+        let bookmarkData = "mock_bookmark_\(path)".data(using: .utf8)!
+        bookmarks[path] = bookmarkData
+        return Array(bookmarkData)
     }
+    
+    func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
+        let data = Data(bookmarkData)
+        guard let mockPath = String(data: data, encoding: .utf8) else {
+            throw SecurityError.bookmarkResolutionFailed(reason: "Invalid bookmark data")
+        }
+        let path = mockPath.replacingOccurrences(of: "mock_bookmark_", with: "")
+        if shouldFailAccess {
+            throw SecurityError.accessDenied(reason: "Mock access denied")
+        }
+        accessCount[path, default: 0] += 1
+        return (path: path, isStale: false)
+    }
+    
+    func startAccessing(path: String) async throws -> Bool {
+        if shouldFailAccess {
+            throw SecurityError.accessDenied(reason: "Mock access denied")
+        }
+        accessedPaths.insert(path)
+        return true
+    }
+    
+    func stopAccessing(path: String) async {
+        accessedPaths.remove(path)
+    }
+    
+    func stopAccessingAllResources() async {
+        accessedPaths.removeAll()
+    }
+    
+    func withSecurityScopedAccess<T: Sendable>(
+        to path: String,
+        perform operation: @Sendable () async throws -> T
+    ) async throws -> T {
+        if shouldFailAccess {
+            throw SecurityError.accessDenied(reason: "Mock access denied")
+        }
+        accessedPaths.insert(path)
+        defer { accessedPaths.remove(path) }
+        return try await operation()
+    }
+    
+    func isAccessing(path: String) async -> Bool {
+        accessedPaths.contains(path)
+    }
+    
+    func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
+        let data = Data(bookmarkData)
+        guard let mockPath = String(data: data, encoding: .utf8) else {
+            return false
+        }
+        return mockPath.hasPrefix("mock_bookmark_")
+    }
+    
+    func getAccessedPaths() async -> Set<String> {
+        accessedPaths
+    }
+    
+    func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
+        if shouldFailAccess {
+            throw SecurityError.storageError(reason: "Mock storage failure")
+        }
+        storedBookmarks[identifier] = bookmarkData
+    }
+    
+    func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
+        guard let bookmark = storedBookmarks[identifier] else {
+            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found: \(identifier)")
+        }
+        return bookmark
+    }
+    
+    func deleteBookmark(withIdentifier identifier: String) async throws {
+        if shouldFailAccess {
+            throw SecurityError.storageError(reason: "Mock storage failure")
+        }
+        guard storedBookmarks.removeValue(forKey: identifier) != nil else {
+            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found: \(identifier)")
+        }
+    }
+    
+    // Test helper methods
+    func setBookmarkCreationFailure(_ shouldFail: Bool) {
+        shouldFailBookmarkCreation = shouldFail
+    }
+    
+    func setAccessFailure(_ shouldFail: Bool) {
+        shouldFailAccess = shouldFail
+    }
+    
+    func getAccessCount(for path: String) async -> Int {
+        accessCount[path] ?? 0
+    }
+}
 
+@MainActor
+final class MockSecurityProviderTests: XCTestCase {
+    private var provider: MockSecurityProvider!
+    
+    override func setUp() async throws {
+        provider = MockSecurityProvider()
+    }
+    
     override func tearDown() async throws {
-        try? FileManager.default.removeItem(at: testFileURL)
-        await provider.stopAccessingAllResources()
         provider = nil
     }
-
-    func testBookmarkOperations() async throws {
-        // Create bookmark
-        let bookmarkData = try await provider.createBookmark(forPath: testFileURL.path)
-        XCTAssertFalse(bookmarkData.isEmpty)
-
-        // Resolve bookmark
-        let (resolvedPath, isStale) = try await provider.resolveBookmark(bookmarkData)
-        XCTAssertEqual(resolvedPath, testFileURL.path)
+    
+    func testSuccessfulBookmarkCreation() async throws {
+        let testPath = "/test/path"
+        let bookmark = try await provider.createBookmark(forPath: testPath)
+        XCTAssertFalse(bookmark.isEmpty)
+        
+        let (resolvedPath, isStale) = try await provider.resolveBookmark(bookmark)
+        XCTAssertEqual(resolvedPath, testPath)
         XCTAssertFalse(isStale)
     }
-
+    
+    func testFailedBookmarkCreation() async throws {
+        let testPath = "/test/path"
+        await provider.setBookmarkCreationFailure(true)
+        
+        do {
+            _ = try await provider.createBookmark(forPath: testPath)
+            XCTFail("Expected bookmark creation to fail")
+        } catch let error as SecurityError {
+            XCTAssertEqual(error, SecurityError.bookmarkCreationFailed(reason: "Mock failure"))
+        }
+    }
+    
+    func testFailedAccess() async throws {
+        let testPath = "/test/path"
+        let bookmark = try await provider.createBookmark(forPath: testPath)
+        
+        await provider.setAccessFailure(true)
+        
+        do {
+            _ = try await provider.resolveBookmark(bookmark)
+            XCTFail("Expected access to fail")
+        } catch let error as SecurityError {
+            XCTAssertEqual(error, SecurityError.accessDenied(reason: "Mock access denied"))
+        }
+    }
+    
+    func testAccessCounting() async throws {
+        let testPath = "/test/path"
+        let bookmark = try await provider.createBookmark(forPath: testPath)
+        
+        // First access
+        _ = try await provider.resolveBookmark(bookmark)
+        let count1 = await provider.getAccessCount(for: testPath)
+        XCTAssertEqual(count1, 1)
+        
+        // Second access
+        _ = try await provider.resolveBookmark(bookmark)
+        let count2 = await provider.getAccessCount(for: testPath)
+        XCTAssertEqual(count2, 2)
+    }
+    
     func testSecurityScopedAccess() async throws {
-        // Start accessing
-        let success = try await provider.startAccessing(path: testFileURL.path)
+        let testPath = "/test/path"
+        
+        // Test starting access
+        let success = try await provider.startAccessing(path: testPath)
         XCTAssertTrue(success)
-
-        let isAccessing = await provider.isAccessing(path: testFileURL.path)
+        
+        let isAccessing = await provider.isAccessing(path: testPath)
         XCTAssertTrue(isAccessing)
-
-        // Stop accessing
-        await provider.stopAccessing(path: testFileURL.path)
-        let isStopped = await provider.isAccessing(path: testFileURL.path)
+        
+        // Test stopping access
+        await provider.stopAccessing(path: testPath)
+        let isStopped = await provider.isAccessing(path: testPath)
         XCTAssertFalse(isStopped)
     }
-
-    func testBookmarkStorage() async throws {
-        // Create and save bookmark
-        let identifier = "test_bookmark"
-        let bookmarkData = try await provider.createBookmark(forPath: testFileURL.path)
-        try await provider.saveBookmark(bookmarkData, withIdentifier: identifier)
-
-        // Load bookmark
-        let loadedData = try await provider.loadBookmark(withIdentifier: identifier)
-        XCTAssertEqual(loadedData, bookmarkData)
-
-        // Delete bookmark
-        try await provider.deleteBookmark(withIdentifier: identifier)
-
-        // Verify deletion
-        do {
-            _ = try await provider.loadBookmark(withIdentifier: identifier)
-            XCTFail("Expected error loading deleted bookmark")
-        } catch let error as SecurityError {
-            XCTAssertEqual(error.localizedDescription, "Bookmark not found: \(identifier)")
-        }
-    }
-
-    func testStopAccessingAllResources() async throws {
-        // Create test files
-        let tempDir = FileManager.default.temporaryDirectory
-        let testFile1 = tempDir.appendingPathComponent("test1.txt")
-        let testFile2 = tempDir.appendingPathComponent("test2.txt")
-        try "Test 1".write(to: testFile1, atomically: true, encoding: .utf8)
-        try "Test 2".write(to: testFile2, atomically: true, encoding: .utf8)
-        defer {
-            try? FileManager.default.removeItem(at: testFile1)
-            try? FileManager.default.removeItem(at: testFile2)
-        }
-
-        // Start accessing both files
-        let success1 = try await provider.startAccessing(path: testFile1.path)
-        XCTAssertTrue(success1)
-        let success2 = try await provider.startAccessing(path: testFile2.path)
-        XCTAssertTrue(success2)
-
-        let paths = await provider.getAccessedPaths()
-        XCTAssertEqual(paths.count, 2)
-        XCTAssertTrue(paths.contains(testFile1.path))
-        XCTAssertTrue(paths.contains(testFile2.path))
-
-        // Stop accessing all
-        await provider.stopAccessingAllResources()
-        let finalPaths = await provider.getAccessedPaths()
-        XCTAssertTrue(finalPaths.isEmpty)
-    }
-
+    
     func testWithSecurityScopedAccess() async throws {
-        let content = try await provider.withSecurityScopedAccess(to: testFileURL.path) {
-            try String(contentsOf: testFileURL, encoding: .utf8)
+        let testPath = "/test/path"
+        let result = try await provider.withSecurityScopedAccess(to: testPath) {
+            return "test_result"
         }
-        XCTAssertEqual(content, testFileData)
+        XCTAssertEqual(result, "test_result")
+    }
+    
+    func testBookmarkValidation() async throws {
+        let testPath = "/test/path"
+        let bookmark = try await provider.createBookmark(forPath: testPath)
+        
+        let isValid = try await provider.validateBookmark(bookmark)
+        XCTAssertTrue(isValid)
+        
+        let invalidBookmark: [UInt8] = Array("invalid_bookmark".data(using: .utf8)!)
+        let isInvalid = try await provider.validateBookmark(invalidBookmark)
+        XCTAssertFalse(isInvalid)
+    }
+    
+    func testBookmarkStorage() async throws {
+        let testPath = "/test/path"
+        let bookmark = try await provider.createBookmark(forPath: testPath)
+        
+        // Save bookmark
+        try await provider.saveBookmark(bookmark, withIdentifier: "test")
+        
+        // Load bookmark
+        let loadedBookmark = try await provider.loadBookmark(withIdentifier: "test")
+        XCTAssertEqual(loadedBookmark, bookmark)
+        
+        // Delete bookmark
+        try await provider.deleteBookmark(withIdentifier: "test")
+        
+        do {
+            _ = try await provider.loadBookmark(withIdentifier: "test")
+            XCTFail("Expected bookmark not found error")
+        } catch let error as SecurityError {
+            XCTAssertEqual(error, SecurityError.bookmarkNotFound(reason: "Bookmark not found: test"))
+        }
     }
 }

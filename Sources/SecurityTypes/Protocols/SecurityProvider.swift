@@ -40,9 +40,9 @@ public protocol SecurityProvider: Sendable {
     /// - Returns: Result of the operation
     /// - Throws: SecurityError if access fails, or any error thrown by the operation
     /// - Note: This method handles starting and stopping access automatically
-    func withSecurityScopedAccess<T>(
+    func withSecurityScopedAccess<T: Sendable>(
         to path: String,
-        perform operation: () async throws -> T
+        perform operation: @Sendable () async throws -> T
     ) async throws -> T
 
     // MARK: - Bookmark Persistence
@@ -55,13 +55,13 @@ public protocol SecurityProvider: Sendable {
     func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws
 
     /// Load a bookmark from persistent storage
-    /// - Parameter identifier: Unique identifier for the bookmark
-    /// - Returns: Saved bookmark data
-    /// - Throws: SecurityError if loading fails or bookmark doesn't exist
+    /// - Parameter identifier: Identifier of the bookmark to load
+    /// - Returns: The stored bookmark data
+    /// - Throws: SecurityError if loading fails or bookmark not found
     func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8]
 
     /// Delete a bookmark from persistent storage
-    /// - Parameter identifier: Unique identifier for the bookmark to delete
+    /// - Parameter identifier: Identifier of the bookmark to delete
     /// - Throws: SecurityError if deletion fails
     func deleteBookmark(withIdentifier identifier: String) async throws
 

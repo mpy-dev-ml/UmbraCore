@@ -8,5 +8,7 @@ swift_library(
     deps = [
         "//Sources/XPC/Core:UmbraXPC",
         "@swiftpkg_cryptoswift//:CryptoSwift",
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+        "//Sources/UmbraLogging",
     ],
 )

@@ -1,8 +1,15 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
+# SecurityTypes: Core security primitives and protocols
+# No external dependencies, pure Swift implementation
 swift_library(
     name = "SecurityTypes",
     srcs = glob(["**/*.swift"]),
     module_name = "SecurityTypes",
     visibility = ["//visibility:public"],
+    copts = [
+        "-strict-concurrency=complete",  # Full concurrency checking
+        "-warn-concurrency",  # Warn about potential concurrency issues
+        "-enable-actor-data-race-checks",  # Runtime checks for actor data races
+    ],
 )
