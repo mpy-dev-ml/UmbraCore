@@ -58,12 +58,20 @@ jobs:
           --cpu=darwin_arm64 \
           --apple_platform_type=macos
 
-    - name: Run Tests
+    - name: Run Core Tests
       run: |
         bazel test //... \
-          --cpu=darwin_arm64 \
-          --apple_platform_type=macos \
-          --test_output=errors
+          --test_tag_filters=core,-security,-requires_keychain \
+          --test_output=errors \
+          --verbose_failures
+
+    - name: Run Security Tests
+      run: |
+        bazel test //... \
+          --test_tag_filters=security,-requires_keychain \
+          --test_env=UMBRA_TEST_ROOT \
+          --test_output=errors \
+          --verbose_failures
 
     - name: Generate Coverage Report
       run: |
