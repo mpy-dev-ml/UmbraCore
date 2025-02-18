@@ -5,4 +5,5 @@ swift_library(
     srcs = glob(["**/*.swift"]),
     module_name = "SecurityTypes",
     visibility = ["//visibility:public"],
+    deps = [],
 )

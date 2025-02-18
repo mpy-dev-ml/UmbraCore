@@ -1,8 +1,6 @@
 common --enable_bzlmod
 
 # Build settings
-build --local_ram_resources=HOST_RAM*.75
-build --local_cpu_resources=HOST_CPUS-1
 build --verbose_failures
 build --show_progress_rate_limit=5
 
