@@ -8,6 +8,7 @@ swift_test(
     deps = [
         "//Sources/SecurityUtils",
         "//Sources/SecurityTypes",
+        "//Sources/UmbraBookmarkService",
         "//Sources/Mocks",
     ],
 )
