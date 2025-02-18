@@ -8,10 +8,16 @@ UmbraCore is designed as a modular Swift library that provides a type-safe inter
 ### 1. Security Layer
 - `SecurityTypes`: Base security primitives
 - `CryptoTypes`: Cryptographic operations
+  - Uses Apple's CryptoKit for hardware-backed security
+  - Provides core cryptographic primitives
+  - Handles secure key generation and management
 - `UmbraKeychainService`: Secure credential storage
 
 ### 2. Service Layer
 - `UmbraCryptoService`: Encryption/decryption operations
+  - Uses CryptoSwift for XPC service operations
+  - Platform-independent implementation
+  - Handles cross-process cryptographic operations
 - `UmbraBookmarkService`: File system bookmark management
 - `UmbraXPC`: Inter-process communication
 
@@ -49,6 +55,27 @@ enum KeychainError: Error {
     case accessDenied(String)
 }
 ```
+
+## Cryptographic Architecture
+The framework employs a dual-library approach for cryptographic operations:
+
+1. **CryptoKit (Main App Context)**
+   - Hardware-backed security on Apple platforms
+   - Used in `DefaultCryptoService`
+   - Handles core cryptographic operations
+   - Optimal security for main app operations
+
+2. **CryptoSwift (XPC Service Context)**
+   - Platform-independent implementation
+   - Used in `CryptoXPCService`
+   - Enables reliable cross-process encryption
+   - Provides necessary flexibility for XPC operations
+
+This split architecture ensures:
+- Maximum security through hardware backing where available
+- Reliable cross-process cryptographic operations
+- Clear separation of concerns between contexts
+- Consistent cryptographic operations in each context
 
 ## Threading Model
 - All services are thread-safe

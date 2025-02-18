@@ -4,6 +4,15 @@ import CryptoTypes_Types
 import CryptoTypes_Protocols
 
 /// Default implementation of CryptoService using CryptoKit
+///
+/// This implementation leverages Apple's CryptoKit framework to provide hardware-backed
+/// cryptographic operations for the main app context. It is designed to:
+/// - Utilize hardware security features when available
+/// - Provide optimal security for main app operations
+/// - Handle secure key generation and core cryptographic functions
+///
+/// Note: This implementation is specifically for the main app context and should not
+/// be used directly in XPC services. For XPC cryptographic operations, use CryptoXPCService.
 public actor DefaultCryptoServiceImpl: CryptoService {
     public init() {}
     

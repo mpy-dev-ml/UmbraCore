@@ -3,6 +3,7 @@ import Foundation
 import Security
 import UmbraXPC
 
+/// Extension to generate random data using SecRandomCopyBytes
 extension Data {
     static func random(count: Int) -> Data {
         var bytes = [UInt8](repeating: 0, count: count)
@@ -11,6 +12,17 @@ extension Data {
     }
 }
 
+/// XPC service for cryptographic operations
+///
+/// This service uses CryptoSwift to provide platform-independent cryptographic
+/// operations across process boundaries. It is specifically designed for:
+/// - Cross-process encryption/decryption via XPC
+/// - Platform-independent cryptographic operations
+/// - Flexible implementation for XPC service requirements
+///
+/// Note: This implementation uses CryptoSwift instead of CryptoKit to ensure
+/// reliable cross-process operations. For main app cryptographic operations,
+/// use DefaultCryptoService which provides hardware-backed security.
 @available(macOS 14.0, *)
 @MainActor
 public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
