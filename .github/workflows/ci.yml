@@ -29,7 +29,6 @@ jobs:
       run: |
         echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> $GITHUB_ENV
         echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
-        sudo xcode-select -s $DEVELOPER_DIR
         xcrun --sdk macosx --show-sdk-path
 
     - name: Configure Bazel
@@ -100,7 +99,7 @@ jobs:
       run: |
         echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> $GITHUB_ENV
         echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
-        sudo xcode-select -s $DEVELOPER_DIR
+        xcrun --sdk macosx --show-sdk-path
 
     - name: Build Release Artifacts
       run: |
