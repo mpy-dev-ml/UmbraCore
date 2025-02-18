@@ -2,7 +2,12 @@ load("@rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
     name = "BookmarkTests",
-    srcs = ["BookmarkServiceTests.swift"],
+    srcs = glob(["**/*.swift"]),
     module_name = "BookmarkTests",
-    deps = ["//Sources/UmbraBookmarkService"],
+    tags = ["security"],
+    deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/SecurityUtils",
+        "//Sources/Mocks",
+    ],
 )
