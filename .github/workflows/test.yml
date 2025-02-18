@@ -9,104 +9,40 @@ on:
 jobs:
   build-and-test:
     name: Build & Test
-    runs-on: macos-14
+    runs-on: [self-hosted, macOS, ARM64]
     
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Setup Bazel
-      uses: bazelbuild/setup-bazelisk@v2
-      
-    - name: Configure Bazel Cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/bazel
-          ~/.cache/bazel-repo
-          ~/.cache/bazel-disk
-        key: ${{ runner.os }}-bazel-${{ hashFiles('.bazelrc', '.bazelversion', 'MODULE.bazel') }}
-        restore-keys: |
-          ${{ runner.os }}-bazel-
     
     - name: Build
       run: |
         bazel build //... --show_progress_rate_limit=5
       
     - name: Run Tests
-      continue-on-error: true
       run: |
         bazel test //... --test_output=errors
 
-  core-coverage:
+  coverage:
     needs: build-and-test
-    runs-on: macos-14
+    runs-on: [self-hosted, macOS, ARM64]
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Setup Bazel
-      uses: bazelbuild/setup-bazelisk@v2
-      
-    - name: Configure Bazel Cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/bazel
-          ~/.cache/bazel-repo
-          ~/.cache/bazel-disk
-        key: ${{ runner.os }}-bazel-${{ hashFiles('.bazelrc', '.bazelversion', 'MODULE.bazel') }}
-        restore-keys: |
-          ${{ runner.os }}-bazel-
           
-    - name: Generate Core Coverage
+    - name: Generate Coverage
       run: |
-        bazel coverage //Sources/Core/... //Sources/SecurityTypes/... //Sources/CryptoTypes/... \
-          --test_output=errors
+        bazel coverage //... \
+          --test_output=errors \
+          --experimental_generate_llvm_lcov \
+          --combined_report=lcov
         
-    - name: Process Core Coverage
+    - name: Process Coverage Report
       run: |
         find -L "$(bazel info output_path)/_coverage/_coverage_report.dat" \
-          -name "coverage.dat" -exec cp {} core-coverage.dat \;
+          -name "coverage.dat" -exec cp {} coverage.dat \;
         
-    - name: Upload Core Coverage
+    - name: Upload Coverage
       uses: codecov/codecov-action@v3
       with:
-        files: core-coverage.dat
-        flags: core
+        files: coverage.dat
         fail_ci_if_error: false
-
-  feature-coverage:
-    needs: build-and-test
-    runs-on: macos-14
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Bazel
-      uses: bazelbuild/setup-bazelisk@v2
-      
-    - name: Configure Bazel Cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/bazel
-          ~/.cache/bazel-repo
-          ~/.cache/bazel-disk
-        key: ${{ runner.os }}-bazel-${{ hashFiles('.bazelrc', '.bazelversion', 'MODULE.bazel') }}
-        restore-keys: |
-          ${{ runner.os }}-bazel-
-          
-    - name: Generate Feature Coverage
-      run: |
-        bazel coverage //Sources/Features/... //Sources/Services/... \
-          --test_output=errors
-        
-    - name: Process Feature Coverage
-      run: |
-        find -L "$(bazel info output_path)/_coverage/_coverage_report.dat" \
-          -name "coverage.dat" -exec cp {} feature-coverage.dat \;
-        
-    - name: Upload Feature Coverage
-      uses: codecov/codecov-action@v3
-      with:
-        files: feature-coverage.dat
-        flags: features
-        fail_ci_if_error: false
+        verbose: true
