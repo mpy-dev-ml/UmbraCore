@@ -19,6 +19,10 @@ jobs:
         uname -a
         swift --version
         bazel --version
+        
+    - name: Resolve Dependencies
+      run: |
+        swift package resolve
       
     - name: Build
       run: |
@@ -33,6 +37,10 @@ jobs:
     runs-on: [self-hosted, macOS, ARM64]
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Resolve Dependencies
+      run: |
+        swift package resolve
           
     - name: Generate Coverage
       run: |
