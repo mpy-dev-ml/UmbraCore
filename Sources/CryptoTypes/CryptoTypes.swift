@@ -11,3 +11,6 @@ public enum CryptoTypes {
         // Initialize crypto services
     }
 }
+
+// Export core protocols
+@_exported import struct Foundation.Data

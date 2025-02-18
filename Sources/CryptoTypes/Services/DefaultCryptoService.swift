@@ -1,7 +1,6 @@
 import Foundation
 import CryptoKit
-import CryptoTypes_Types
-import CryptoTypes_Protocols
+import CryptoTypes
 
 /// Default implementation of CryptoService using CryptoKit
 ///

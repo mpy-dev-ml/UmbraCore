@@ -1,8 +1,7 @@
 import Foundation
 import SecurityTypes
 import CryptoKit
-import CryptoTypes_Types
-import CryptoTypes_Protocols
+import CryptoTypes
 
 /// Manages secure storage and retrieval of credentials
 actor CredentialManager {
