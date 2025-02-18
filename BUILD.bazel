@@ -1,0 +1,29 @@
+load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+# Ignore the Swift build folder
+# gazelle:exclude .build
+
+gazelle_binary(
+    name = "gazelle_bin",
+    languages = [
+        "@rules_swift_package_manager//gazelle",
+    ],
+)
+
+gazelle(
+    name = "update_build_files",
+    gazelle = ":gazelle_bin",
+)
+
+# Main library target
+swift_library(
+    name = "UmbraCore",
+    srcs = glob(["Sources/UmbraCore/**/*.swift"]),
+    deps = [
+        "@swiftybeaver//:SwiftyBeaver",
+        "@cryptoswift//:CryptoSwift",
+    ],
+    module_name = "UmbraCore",
+    visibility = ["//visibility:public"],
+)

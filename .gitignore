@@ -68,8 +68,14 @@ build_report.json
 *.swp
 *.swo
 
-# Bazel specific
+# Bazel
 /bazel-*
+/deps.json
+/deps_index.json
+/swift_deps.json
 /spm-build/
 /spm-cache/
 MODULE.bazel.lock
+user.bazelrc
+.bazel/
+.bazelrc.user
