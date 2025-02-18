@@ -20,12 +20,12 @@ final class EncryptedBookmarkServiceTests: XCTestCase {
         let tempDir = URL(fileURLWithPath: NSTemporaryDirectory())
         testDirectory = tempDir.appendingPathComponent("UmbraSecurityTests", isDirectory: true)
         try FileManager.default.createDirectory(at: testDirectory, withIntermediateDirectories: true)
-        
+
         // Create test file
         testFileURL = URL(fileURLWithPath: testDirectory.path).appendingPathComponent("test_file.txt")
         testFileData = "Test file content"
         try testFileData.write(to: testFileURL, atomically: true, encoding: .utf8)
-        
+
         // Set file permissions
         try FileManager.default.setAttributes([
             .posixPermissions: 0o644

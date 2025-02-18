@@ -20,13 +20,13 @@ public actor SecurityBookmarkService {
     public func createBookmark(for url: URL) async throws -> Data {
         // Ensure we have a file URL
         let fileURL = url.isFileURL ? url : URL(fileURLWithPath: url.path)
-        
+
         // Start accessing the resource before creating bookmark
         guard fileURL.startAccessingSecurityScopedResource() else {
             throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
         }
         defer { fileURL.stopAccessingSecurityScopedResource() }
-        
+
         // Create bookmark
         let bookmarkData = try fileURL.bookmarkData(
             options: .withSecurityScope,
@@ -60,20 +60,20 @@ public actor SecurityBookmarkService {
     public func withSecurityScopedAccess<T>(to url: URL, operation: () async throws -> T) async throws -> T {
         // Ensure we have a file URL
         let fileURL = url.isFileURL ? url : URL(fileURLWithPath: url.path)
-        
+
         // Start accessing the resource
         guard fileURL.startAccessingSecurityScopedResource() else {
             throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
         }
-        
+
         // Track the active resource
         activeResources.insert(fileURL)
-        
+
         defer {
             fileURL.stopAccessingSecurityScopedResource()
             activeResources.remove(fileURL)
         }
-        
+
         return try await operation()
     }
 

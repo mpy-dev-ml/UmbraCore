@@ -10,7 +10,7 @@ final class SecurityServiceTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         securityProvider = await SecurityService.shared
-        
+
         // Create test file
         testFileURL = FileManager.default.temporaryDirectory.appendingPathComponent("test_file.txt")
         try "Test content".write(to: testFileURL, atomically: true, encoding: .utf8)
@@ -37,7 +37,7 @@ final class SecurityServiceTests: XCTestCase {
         // Start accessing
         let success = try await securityProvider.startAccessing(path: testFileURL.path)
         XCTAssertTrue(success)
-        
+
         let isAccessing = await securityProvider.isAccessing(path: testFileURL.path)
         XCTAssertTrue(isAccessing)
 

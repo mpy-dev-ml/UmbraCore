@@ -1,5 +1,5 @@
-import XCTest
 @testable import SecurityTypes
+import XCTest
 
 final class MockSecurityProviderTests: XCTestCase {
     var provider: DefaultSecurityProvider!
@@ -8,7 +8,7 @@ final class MockSecurityProviderTests: XCTestCase {
 
     override func setUp() async throws {
         provider = DefaultSecurityProvider()
-        
+
         // Create test file
         let tempDir = FileManager.default.temporaryDirectory
         testFileURL = tempDir.appendingPathComponent("test_file.txt")
@@ -37,7 +37,7 @@ final class MockSecurityProviderTests: XCTestCase {
         // Start accessing
         let success = try await provider.startAccessing(path: testFileURL.path)
         XCTAssertTrue(success)
-        
+
         let isAccessing = await provider.isAccessing(path: testFileURL.path)
         XCTAssertTrue(isAccessing)
 
@@ -86,7 +86,7 @@ final class MockSecurityProviderTests: XCTestCase {
         XCTAssertTrue(success1)
         let success2 = try await provider.startAccessing(path: testFile2.path)
         XCTAssertTrue(success2)
-        
+
         let paths = await provider.getAccessedPaths()
         XCTAssertEqual(paths.count, 2)
         XCTAssertTrue(paths.contains(testFile1.path))

@@ -3,66 +3,53 @@ import XCTest
 @testable import UmbraKeychainService
 
 /// Helper class for managing XPC service lifecycle in tests
+@MainActor
 final class XPCServiceHelper {
     private static var service: KeychainXPCService?
-    private static let queue = DispatchQueue(label: "com.umbracore.keychain.test")
     private static let timeout: TimeInterval = 5.0
     
-    static func startService() {
-        queue.sync {
-            guard service == nil else { return }
-            service = KeychainXPCService()
-            service?.start()
-            
-            // Wait for service to be ready
-            let startTime = Date()
-            while !isServiceReady() {
-                if Date().timeIntervalSince(startTime) > timeout {
-                    XCTFail("XPC service failed to start within \(timeout) seconds")
-                    return
-                }
-                Thread.sleep(forTimeInterval: 0.1)
+    static func startService() async throws {
+        guard service == nil else { return }
+        service = KeychainXPCService()
+        service?.start()
+        
+        // Wait for service to be ready
+        let startTime = Date()
+        while !await isServiceReady() {
+            if Date().timeIntervalSince(startTime) > timeout {
+                throw XPCError.serviceUnavailable(reason: "XPC service failed to start within \(timeout) seconds")
             }
+            try await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
         }
     }
     
-    static func stopService() {
-        queue.sync {
-            service?.stop()
-            service = nil
-            
-            // Wait for service to fully stop
-            let startTime = Date()
-            while service != nil {
-                if Date().timeIntervalSince(startTime) > timeout {
-                    XCTFail("XPC service failed to stop within \(timeout) seconds")
-                    return
-                }
-                Thread.sleep(forTimeInterval: 0.1)
+    static func stopService() async throws {
+        service?.stop()
+        service = nil
+        
+        // Wait for service to fully stop
+        let startTime = Date()
+        while service != nil {
+            if Date().timeIntervalSince(startTime) > timeout {
+                throw XPCError.serviceUnavailable(reason: "XPC service failed to stop within \(timeout) seconds")
             }
+            try await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
         }
     }
     
-    private static func isServiceReady() -> Bool {
+    private static func isServiceReady() async -> Bool {
         let connection = KeychainXPCConnection()
         defer { connection.disconnect() }
         
         do {
             let proxy = try connection.connect()
             
-            // Try a simple operation
-            let semaphore = DispatchSemaphore(value: 0)
-            var isReady = false
-            
-            proxy.containsItem(account: "test",
-                             service: "test",
-                             accessGroup: nil) { _, error in
-                isReady = error == nil
-                semaphore.signal()
-            }
-            
-            _ = semaphore.wait(timeout: .now() + 1.0)
-            return isReady
+            // Try a simple operation to verify service is ready
+            return try await proxy.containsItem(
+                account: "test",
+                service: "test",
+                accessGroup: nil
+            ).error == nil
         } catch {
             return false
         }
@@ -73,14 +60,10 @@ final class XPCServiceHelper {
         defer { connection.disconnect() }
         
         let proxy = try connection.connect()
-        let semaphore = DispatchSemaphore(value: 0)
-        
-        proxy.deleteItem(account: "testAccount",
-                        service: "com.umbracore.tests",
-                        accessGroup: nil) { error in
-            semaphore.signal()
-        }
-        
-        _ = semaphore.wait(timeout: .now() + 1.0)
+        try await proxy.deleteItem(
+            account: "testAccount",
+            service: "com.umbracore.tests",
+            accessGroup: nil
+        )
     }
 }

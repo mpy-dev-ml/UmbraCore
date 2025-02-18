@@ -1,8 +1,10 @@
-import XCTest
-import SecurityUtils
 import SecurityTypes
+import SecurityUtils
 import UmbraBookmarkService
+import XCTest
 
+@available(macOS 13.0, *)
+@objcMembers
 final class BookmarkServiceTests: XCTestCase {
     var bookmarkService: BookmarkService!
     var tempFileURL: URL!

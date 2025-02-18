@@ -10,4 +10,9 @@ swift_test(
         "//Sources/SecurityTypes",
         "//Sources/Mocks",
     ],
+    swiftc_opts = [
+        "-Xfrontend",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+    ],
 )
