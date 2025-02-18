@@ -1,5 +1,4 @@
 import CryptoTypes
-import CryptoTypes.Types
 import Foundation
 import SecurityTypes
 
