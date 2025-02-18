@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 env:
-  BAZEL_VERSION: 6.4.0
+  BAZEL_VERSION: 8.1.0
   DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
@@ -39,6 +39,9 @@ jobs:
         build --apple_platform_type=macos
         build --macos_minimum_os=13.0
         build --host_macos_minimum_os=13.0
+        build --features=swift.use_global_module_cache
+        build --features=swift.enable_batch_mode
+        build --features=swift.enable_concurrency_checking
         test --test_output=errors
         EOF
 
