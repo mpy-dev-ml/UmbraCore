@@ -6,8 +6,8 @@ swift_test(
     module_name = "BookmarkTests",
     tags = ["security"],
     deps = [
-        "//Sources/SecurityTypes",
         "//Sources/SecurityUtils",
+        "//Sources/SecurityTypes",
         "//Sources/Mocks",
     ],
 )

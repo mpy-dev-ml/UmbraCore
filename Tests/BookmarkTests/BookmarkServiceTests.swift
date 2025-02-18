@@ -1,4 +1,4 @@
-@testable import UmbraBookmarkService
+@testable import SecurityUtils
 import XCTest
 
 final class BookmarkServiceTests: XCTestCase {
@@ -80,5 +80,10 @@ final class BookmarkServiceTests: XCTestCase {
                 XCTFail("Unexpected error type: \(error)")
             }
         }
+    }
+
+    func testBookmarkOperations() async throws {
+        // Test will be implemented with SecurityUtils
+        XCTAssertEqual(SecurityUtils.version, "1.0.0")
     }
 }
