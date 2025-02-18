@@ -8,7 +8,6 @@ swift_library(
     deps = [
         "//Sources/SecurityTypes",
         "//Sources/CryptoTypes",
-        "//Sources/CryptoTypes/Protocols",
     ],
     copts = [
         "-strict-concurrency=complete",
