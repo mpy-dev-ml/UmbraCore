@@ -38,6 +38,10 @@ let package = Package(
             dependencies: []
         ),
         .target(
+            name: "SecurityUtils",
+            dependencies: ["SecurityTypes"]
+        ),
+        .target(
             name: "CryptoTypes",
             dependencies: ["SecurityTypes", "CryptoSwift"]
         ),
@@ -95,7 +99,7 @@ let package = Package(
         ),
         .testTarget(
             name: "BookmarkTests",
-            dependencies: ["UmbraBookmarkService"]
+            dependencies: ["UmbraBookmarkService", "SecurityUtils"]
         ),
         .testTarget(
             name: "KeychainTests",
