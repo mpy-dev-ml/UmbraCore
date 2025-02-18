@@ -9,6 +9,8 @@ on:
 
 env:
   BAZEL_VERSION: 6.4.0
+  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+  SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
 jobs:
   build-and-test:
@@ -25,12 +27,21 @@ jobs:
       with:
         version: ${{ env.BAZEL_VERSION }}
 
+    - name: Configure Build Environment
+      run: |
+        echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> $GITHUB_ENV
+        echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
+        sudo xcode-select -s $DEVELOPER_DIR
+        xcrun --sdk macosx --show-sdk-path
+
     - name: Configure Bazel
       run: |
         cat > .bazelrc.local << EOF
         build --verbose_failures
         build --cpu=darwin_arm64
         build --apple_platform_type=macos
+        build --macos_minimum_os=13.0
+        build --host_macos_minimum_os=13.0
         test --test_output=errors
         EOF
 
@@ -47,18 +58,21 @@ jobs:
     - name: Build
       run: |
         bazel build //... \
-          --cpu=darwin_arm64
+          --cpu=darwin_arm64 \
+          --apple_platform_type=macos
 
     - name: Run Tests
       run: |
         bazel test //... \
           --cpu=darwin_arm64 \
+          --apple_platform_type=macos \
           --test_output=errors
 
     - name: Generate Coverage Report
       run: |
         bazel coverage //... \
           --cpu=darwin_arm64 \
+          --apple_platform_type=macos \
           --combined_report=lcov \
           --instrumentation_filter="^//Sources" \
           --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main
@@ -86,10 +100,17 @@ jobs:
       with:
         version: ${{ env.BAZEL_VERSION }}
 
+    - name: Configure Build Environment
+      run: |
+        echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> $GITHUB_ENV
+        echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
+        sudo xcode-select -s $DEVELOPER_DIR
+
     - name: Build Release Artifacts
       run: |
         bazel build //... \
           --cpu=darwin_arm64 \
+          --apple_platform_type=macos \
           --compilation_mode=opt
 
     - name: Create GitHub Release
