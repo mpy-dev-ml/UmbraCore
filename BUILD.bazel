@@ -18,22 +18,3 @@ gazelle(
     name = "update_build_files",
     gazelle = ":gazelle_bin",
 )
-
-# Main library target
-swift_library(
-    name = "UmbraCore",
-    srcs = glob(["Sources/UmbraCore/**/*.swift"]),
-    module_name = "UmbraCore",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//Sources/SecurityTypes",
-        "//Sources/CryptoTypes",
-        "//Sources/CryptoTypes/Types",
-        "//Sources/CryptoTypes/Protocols",
-        "//Sources/CryptoTypes/Services",
-        "//Sources/XPC/Core:UmbraXPC",
-        "//Sources/UmbraBookmarkService",
-        "//Sources/UmbraKeychainService",
-        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
-    ],
-)
