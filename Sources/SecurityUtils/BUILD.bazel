@@ -1,0 +1,11 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "SecurityUtils",
+    srcs = glob(["**/*.swift"]),
+    module_name = "SecurityUtils",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecurityTypes",
+    ],
+)

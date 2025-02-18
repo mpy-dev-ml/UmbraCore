@@ -1,0 +1,70 @@
+{
+  "modules" : [
+    {
+      "package_identity" : "cryptoswift",
+      "label" : "@cryptoswift\/\/:Sources",
+      "remote" : {
+        "remote" : "https:\/\/github.com\/krzyzanowskim\/CryptoSwift.git",
+        "commit" : "",
+        "version" : "1.8.0"
+      },
+      "srcs" : [
+        "Sources\/**\/*.swift"
+      ],
+      "product_memberships" : [
+        "CryptoSwift"
+      ],
+      "name" : "CryptoSwift",
+      "module_name" : "CryptoSwift",
+      "c99name" : "cryptoswift",
+      "src_type" : "swift",
+      "deps" : [
+
+      ]
+    },
+    {
+      "label" : "@swiftybeaver\/\/:Sources",
+      "remote" : {
+        "remote" : "https:\/\/github.com\/SwiftyBeaver\/SwiftyBeaver.git",
+        "commit" : "",
+        "version" : "2.0.0"
+      },
+      "c99name" : "swiftybeaver",
+      "src_type" : "swift",
+      "name" : "SwiftyBeaver",
+      "package_identity" : "swiftybeaver",
+      "deps" : [
+
+      ],
+      "srcs" : [
+        "Sources\/**\/*.swift"
+      ],
+      "product_memberships" : [
+        "SwiftyBeaver"
+      ],
+      "module_name" : "SwiftyBeaver"
+    }
+  ],
+  "products" : [
+    {
+      "label" : "@cryptoswift\/\/:Sources",
+      "type" : "library",
+      "targets" : [
+        "CryptoSwift"
+      ],
+      "name" : "CryptoSwift",
+      "identity" : "CryptoSwift",
+      "package_identity" : "cryptoswift"
+    },
+    {
+      "name" : "SwiftyBeaver",
+      "targets" : [
+        "SwiftyBeaver"
+      ],
+      "label" : "@swiftybeaver\/\/:Sources",
+      "identity" : "SwiftyBeaver",
+      "type" : "library",
+      "package_identity" : "swiftybeaver"
+    }
+  ]
+}
