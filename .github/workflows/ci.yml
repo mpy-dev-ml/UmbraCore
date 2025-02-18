@@ -31,6 +31,9 @@ jobs:
         disk-cache: true
         os: macos
         platform: arm64
+        cache-path: ~/.cache/bazel
+        cache-repo-path: ~/.cache/bazel-repo
+        bazelrc-path: .bazelrc.local
 
     - name: Configure Build Environment
       run: |
@@ -119,6 +122,9 @@ jobs:
         disk-cache: true
         os: macos
         platform: arm64
+        cache-path: ~/.cache/bazel
+        cache-repo-path: ~/.cache/bazel-repo
+        bazelrc-path: .bazelrc.local
 
     - name: Configure Build Environment
       run: |
