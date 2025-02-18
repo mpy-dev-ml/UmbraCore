@@ -6,9 +6,6 @@ swift_test(
     module_name = "CryptoTypesTests",
     deps = [
         "//Sources/CryptoTypes",
-        "//Sources/CryptoTypes/Services",
-        "//Sources/CryptoTypes/Protocols",
-        "//Sources/CryptoTypes/Types",
         "//Sources/SecurityTypes",
         "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
