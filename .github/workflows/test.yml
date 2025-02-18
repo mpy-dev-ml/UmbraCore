@@ -14,6 +14,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: System Info
+      run: |
+        uname -a
+        swift --version
+        bazel --version
+      
     - name: Build
       run: |
         bazel build //... --show_progress_rate_limit=5
