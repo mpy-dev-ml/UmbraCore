@@ -1,5 +1,5 @@
-import CryptoTypes
 import Foundation
+import CryptoTypes
 
 public final class MockCryptoService: CryptoServiceProtocol {
     private var encryptedData: [String: Data] = [:]
