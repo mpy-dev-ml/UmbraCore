@@ -10,4 +10,5 @@ swift_test(
         "-warn-concurrency",
         "-enable-actor-data-race-checks",
     ],
+    tags = ["security"],
 )

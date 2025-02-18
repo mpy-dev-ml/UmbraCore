@@ -12,4 +12,5 @@ swift_test(
         "//Sources/SecurityTypes",
         "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
+    tags = ["security"],
 )
