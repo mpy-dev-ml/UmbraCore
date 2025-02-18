@@ -24,8 +24,6 @@ jobs:
 
     - name: Setup Bazel
       uses: bazelbuild/setup-bazelisk@v2
-      with:
-        bazelisk-version: ${{ env.BAZEL_VERSION }}
 
     - name: Configure Build Environment
       run: |
@@ -97,8 +95,6 @@ jobs:
 
     - name: Setup Bazel
       uses: bazelbuild/setup-bazelisk@v2
-      with:
-        bazelisk-version: ${{ env.BAZEL_VERSION }}
 
     - name: Configure Build Environment
       run: |
