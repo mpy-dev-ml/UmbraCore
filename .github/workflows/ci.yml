@@ -1,33 +1,102 @@
-name: CI
+name: CI/CD
 
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
 
+env:
+  BAZEL_VERSION: 6.4.0
+
 jobs:
   build-and-test:
-    runs-on: macos-latest
-
+    name: Build and Test
+    runs-on: [self-hosted, macOS, ARM64]
+    
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
-    - name: Set up Bazel
+    - name: Setup Bazel
       uses: bazelbuild/setup-bazelisk@v2
+      with:
+        version: ${{ env.BAZEL_VERSION }}
+
+    - name: Configure Bazel
+      run: |
+        cat > .bazelrc.local << EOF
+        build --verbose_failures
+        build --cpu=darwin_arm64
+        build --apple_platform_type=macos
+        test --test_output=errors
+        EOF
+
+    - name: Mount Bazel Cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/bazel
+          ~/.cache/bazelisk
+        key: ${{ runner.os }}-arm64-bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'WORKSPACE') }}
+        restore-keys: |
+          ${{ runner.os }}-arm64-bazel-
 
     - name: Build
-      run: bazel build //...
+      run: |
+        bazel build //... \
+          --cpu=darwin_arm64
 
-    - name: Test with Coverage
+    - name: Run Tests
+      run: |
+        bazel test //... \
+          --cpu=darwin_arm64 \
+          --test_output=errors
+
+    - name: Generate Coverage Report
       run: |
         bazel coverage //... \
+          --cpu=darwin_arm64 \
           --combined_report=lcov \
+          --instrumentation_filter="^//Sources" \
           --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main
 
-    - name: Upload coverage to Codecov
+    - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
         files: bazel-out/_coverage/_coverage_report.dat
         fail_ci_if_error: true
         verbose: true
+
+  release:
+    name: Create Release
+    needs: build-and-test
+    runs-on: [self-hosted, macOS, ARM64]
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Setup Bazel
+      uses: bazelbuild/setup-bazelisk@v2
+      with:
+        version: ${{ env.BAZEL_VERSION }}
+
+    - name: Build Release Artifacts
+      run: |
+        bazel build //... \
+          --cpu=darwin_arm64 \
+          --compilation_mode=opt
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          bazel-bin/**/*
+        draft: false
+        prerelease: false
+        generate_release_notes: true
