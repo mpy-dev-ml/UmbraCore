@@ -1,4 +1,6 @@
 @_exported import CryptoTypes
+@_exported import CryptoTypes_Types
+@_exported import CryptoTypes_Protocols
 @_exported import SecurityTypes
 @_exported import UmbraLogging
 
@@ -25,5 +27,5 @@ public typealias LoggingProtocol = UmbraLogging.LoggingProtocol
 public typealias LoggingService = UmbraLogging.LoggingService
 
 // Re-export crypto types
-public typealias CryptoError = CryptoTypes.CryptoError
-public typealias CryptoServiceProtocol = CryptoTypes.CryptoServiceProtocol
+public typealias CryptoError = CryptoTypes_Types.CryptoError
+public typealias CryptoService = CryptoTypes_Protocols.CryptoService

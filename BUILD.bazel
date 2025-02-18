@@ -28,6 +28,9 @@ swift_library(
     deps = [
         "//Sources/SecurityTypes",
         "//Sources/CryptoTypes",
+        "//Sources/CryptoTypes/Types",
+        "//Sources/CryptoTypes/Protocols",
+        "//Sources/CryptoTypes/Services",
         "//Sources/XPC/Core:UmbraXPC",
         "//Sources/UmbraBookmarkService",
         "//Sources/UmbraKeychainService",

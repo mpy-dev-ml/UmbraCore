@@ -1,0 +1,15 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+
+swift_test(
+    name = "CryptoTypesTests",
+    srcs = glob(["**/*.swift"]),
+    module_name = "CryptoTypesTests",
+    deps = [
+        "//Sources/CryptoTypes",
+        "//Sources/CryptoTypes/Services",
+        "//Sources/CryptoTypes/Protocols",
+        "//Sources/CryptoTypes/Types",
+        "//Sources/SecurityTypes",
+        "@swiftpkg_cryptoswift//:CryptoSwift",
+    ],
+)
