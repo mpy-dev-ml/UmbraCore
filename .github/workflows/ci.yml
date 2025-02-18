@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Bazel
+      uses: bazelbuild/setup-bazelisk@v2
+
+    - name: Build
+      run: bazel build //...
+
+    - name: Test with Coverage
+      run: |
+        bazel coverage //... \
+          --combined_report=lcov \
+          --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: bazel-out/_coverage/_coverage_report.dat
+        fail_ci_if_error: true
+        verbose: true
