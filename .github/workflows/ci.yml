@@ -23,21 +23,24 @@ jobs:
         fetch-depth: 0
         clean: true
 
-    - name: Mount Bazel Cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/bazel
-          ~/.cache/bazelisk
-        key: ${{ runner.os }}-arm64-bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'WORKSPACE') }}
-        restore-keys: |
-          ${{ runner.os }}-arm64-bazel-
-
     - name: Configure Build Environment
       run: |
         echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> $GITHUB_ENV
         echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
         xcrun --sdk macosx --show-sdk-path
+
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@0.8.0
+      with:
+        version: 8.1.0
+        setup-bazel-rc: true
+        repository-cache: true
+        disk-cache: true
+        os: macos
+        platform: arm64
+        cache-path: ~/.cache/bazel
+        cache-repo-path: ~/.cache/bazel-repo
+        bazelrc-path: .bazelrc.local
 
     - name: Configure Bazel
       run: |
@@ -52,13 +55,6 @@ jobs:
         build --features=swift.enable_concurrency_checking
         test --test_output=errors
         EOF
-
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
-      with:
-        bazelisk-version: ${{ env.BAZEL_VERSION }}
-        disk-cache: true
-        repository-cache: true
 
     - name: Build
       run: |
@@ -109,21 +105,24 @@ jobs:
         fetch-depth: 0
         clean: true
 
-    - name: Mount Bazel Cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/bazel
-          ~/.cache/bazelisk
-        key: ${{ runner.os }}-arm64-bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'WORKSPACE') }}
-        restore-keys: |
-          ${{ runner.os }}-arm64-bazel-
-
     - name: Configure Build Environment
       run: |
         echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> $GITHUB_ENV
         echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
         xcrun --sdk macosx --show-sdk-path
+
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@0.8.0
+      with:
+        version: 8.1.0
+        setup-bazel-rc: true
+        repository-cache: true
+        disk-cache: true
+        os: macos
+        platform: arm64
+        cache-path: ~/.cache/bazel
+        cache-repo-path: ~/.cache/bazel-repo
+        bazelrc-path: .bazelrc.local
 
     - name: Configure Bazel
       run: |
@@ -138,13 +137,6 @@ jobs:
         build --features=swift.enable_concurrency_checking
         test --test_output=errors
         EOF
-
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
-      with:
-        bazelisk-version: ${{ env.BAZEL_VERSION }}
-        disk-cache: true
-        repository-cache: true
 
     - name: Build Release Artifacts
       run: |
