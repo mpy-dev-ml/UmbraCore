@@ -5,6 +5,9 @@ swift_library(
     srcs = glob(["**/*.swift"]),
     module_name = "Core",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecurityTypes",
+    ],
     copts = [
         "-strict-concurrency=complete",
         "-warn-concurrency",
