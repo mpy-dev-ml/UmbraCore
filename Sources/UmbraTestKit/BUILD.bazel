@@ -1,9 +1,12 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "UmbraMocks",
-    srcs = glob(["**/*.swift"]),
-    module_name = "UmbraMocks",
+    name = "UmbraTestKit",
+    testonly = True,
+    srcs = glob([
+        "**/*.swift",
+    ]),
+    module_name = "UmbraTestKit",
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/SecurityTypes",
