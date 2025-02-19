@@ -1,9 +1,8 @@
-name: CI/CD
+name: Build & Test
 
 on:
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
 
@@ -13,21 +12,19 @@ env:
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
 jobs:
-  build-and-test:
-    name: Build and Test
-    runs-on: [self-hosted, macOS, ARM64]
-    
+  core-tests:
+    name: Core Tests
+    runs-on: self-hosted
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0
         clean: true
 
-    - name: Configure Build Environment
+    - name: System Info
       run: |
-        echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> $GITHUB_ENV
-        echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
-        xcrun --sdk macosx --show-sdk-path
+        uname -a
+        swift --version
+        bazel --version
 
     - name: Setup Bazel
       uses: bazel-contrib/setup-bazel@0.8.0
@@ -43,86 +40,71 @@ jobs:
         echo "build --features=swift.use_global_module_cache" >> .bazelrc
         echo "build --features=swift.enable_batch_mode" >> .bazelrc
         echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
+        echo "build --verbose_failures" >> .bazelrc
 
     - name: Build
-      run: |
-        bazel build //...
+      run: bazel build //...
 
-    - name: Run Core Tests
+    - name: Run Tests
+      run: bazel test //...
+
+  security-tests:
+    name: Security Tests
+    needs: core-tests
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        clean: true
+
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@0.8.0
+      with:
+        bazelrc: .bazelrc
+        version: ${{ env.BAZEL_VERSION }}
+
+    - name: Configure Bazel
       run: |
-        bazel test //... \
-          --test_tag_filters=core,-security,-requires_keychain \
-          --test_output=errors \
-          --verbose_failures
+        echo "build --cpu=darwin_arm64" >> .bazelrc
+        echo "build --apple_platform_type=macos" >> .bazelrc
+        echo "build --macos_minimum_os=13.0" >> .bazelrc
+        echo "build --features=swift.use_global_module_cache" >> .bazelrc
+        echo "build --features=swift.enable_batch_mode" >> .bazelrc
+        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
+        echo "build --verbose_failures" >> .bazelrc
 
     - name: Run Security Tests
-      run: |
-        bazel test //... \
-          --test_tag_filters=security,-requires_keychain \
-          --test_env=UMBRA_TEST_ROOT \
-          --test_output=errors \
-          --verbose_failures
+      run: bazel test //... --test_tag_filters=security
 
-    - name: Generate Coverage Report
-      run: |
-        bazel coverage //... \
-          --cpu=darwin_arm64 \
-          --apple_platform_type=macos \
-          --combined_report=lcov \
-          --instrumentation_filter="^//Sources" \
-          --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main
+  coverage:
+    name: Coverage
+    needs: [core-tests, security-tests]
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        clean: true
 
-    - name: Upload Coverage to Codecov
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@0.8.0
+      with:
+        bazelrc: .bazelrc
+        version: ${{ env.BAZEL_VERSION }}
+
+    - name: Configure Bazel
+      run: |
+        echo "build --cpu=darwin_arm64" >> .bazelrc
+        echo "build --apple_platform_type=macos" >> .bazelrc
+        echo "build --macos_minimum_os=13.0" >> .bazelrc
+        echo "build --features=swift.use_global_module_cache" >> .bazelrc
+        echo "build --features=swift.enable_batch_mode" >> .bazelrc
+        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
+        echo "build --verbose_failures" >> .bazelrc
+
+    - name: Generate Coverage
+      run: bazel coverage //...
+
+    - name: Upload Coverage
       uses: codecov/codecov-action@v3
       with:
         files: bazel-out/_coverage/_coverage_report.dat
-        fail_ci_if_error: true
-        verbose: true
-
-  release:
-    name: Create Release
-    needs: build-and-test
-    runs-on: [self-hosted, macOS, ARM64]
-    if: startsWith(github.ref, 'refs/tags/')
-    
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        clean: true
-
-    - name: Configure Build Environment
-      run: |
-        echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> $GITHUB_ENV
-        echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
-        xcrun --sdk macosx --show-sdk-path
-
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
-      with:
-        bazelrc: .bazelrc
-        version: ${{ env.BAZEL_VERSION }}
-
-    - name: Configure Bazel
-      run: |
-        echo "build --cpu=darwin_arm64" >> .bazelrc
-        echo "build --apple_platform_type=macos" >> .bazelrc
-        echo "build --macos_minimum_os=13.0" >> .bazelrc
-        echo "build --features=swift.use_global_module_cache" >> .bazelrc
-        echo "build --features=swift.enable_batch_mode" >> .bazelrc
-        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
-
-    - name: Build Release Artifacts
-      run: |
-        bazel build //... \
-          --cpu=darwin_arm64 \
-          --apple_platform_type=macos \
-          --compilation_mode=opt
-
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          bazel-bin/**/*
-        draft: false
-        prerelease: false
