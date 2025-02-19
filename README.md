@@ -1,10 +1,16 @@
 # UmbraCore
 
+[![CI](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/ci.yml/badge.svg)](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/ci.yml)
+[![CD](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/cd.yml/badge.svg)](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/cd.yml)
 [![codecov](https://codecov.io/gh/mpy-dev-ml/UmbraCore/branch/main/graph/badge.svg)](https://codecov.io/gh/mpy-dev-ml/UmbraCore)
 [![Documentation](https://img.shields.io/badge/Documentation-Latest-blue.svg)](https://mpy-dev-ml.github.io/UmbraCore/)
+
 [![Platform](https://img.shields.io/badge/Platform-macOS%2014%2B-lightgrey.svg)](https://github.com/mpy-dev-ml/UmbraCore)
-[![Build](https://img.shields.io/badge/Build-Bazel-43A047.svg)](https://bazel.build)
 [![Swift](https://img.shields.io/badge/Swift-5.9.2-orange.svg)](https://swift.org)
+[![Build](https://img.shields.io/badge/Build-Bazel%208.1.0-43A047.svg)](https://bazel.build)
+
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mpy-dev-ml_UmbraCore&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=mpy-dev-ml_UmbraCore)
+[![Maintainability](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/maintainability)](https://codeclimate.com/github/mpy-dev-ml/UmbraCore)
 [![Known Vulnerabilities](https://snyk.io/test/github/mpy-dev-ml/UmbraCore/badge.svg)](https://snyk.io/test/github/mpy-dev-ml/UmbraCore)
 
 A Swift library that extends and adapts [Restic](https://restic.net) for macOS application developers. UmbraCore provides a type-safe, Swift-native interface to Restic's powerful backup capabilities.

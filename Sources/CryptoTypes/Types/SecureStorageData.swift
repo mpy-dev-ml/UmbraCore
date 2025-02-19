@@ -6,7 +6,7 @@ public struct SecureStorageData: Codable {
     public let encryptedData: Data
     /// The initialization vector used for encryption
     public let iv: Data
-    
+
     /// Initialize a new secure storage data structure
     /// - Parameters:
     ///   - encryptedData: The encrypted data

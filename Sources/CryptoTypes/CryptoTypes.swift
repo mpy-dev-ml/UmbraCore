@@ -5,7 +5,7 @@
 public enum CryptoTypes {
     /// Version of the CryptoTypes module
     public static let version = "1.0.0"
-    
+
     /// Initialize CryptoTypes with default configuration
     public static func initialize() {
         // Initialize crypto services

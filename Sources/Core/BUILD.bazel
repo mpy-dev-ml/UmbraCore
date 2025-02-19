@@ -1,0 +1,13 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "Core",
+    srcs = glob(["**/*.swift"]),
+    module_name = "Core",
+    visibility = ["//visibility:public"],
+    copts = [
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+)
