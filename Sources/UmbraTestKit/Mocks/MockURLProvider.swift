@@ -32,14 +32,14 @@ public actor MockURLProvider: SecurityProvider {
 
     public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
         guard let bookmarkData = bookmarks[identifier] else {
-            throw SecurityError.bookmarkNotFound(path: identifier)
+            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found for identifier: \(identifier)")
         }
         return bookmarkData
     }
 
     public func deleteBookmark(withIdentifier identifier: String) async throws {
         guard bookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityError.bookmarkNotFound(path: identifier)
+            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found for identifier: \(identifier)")
         }
     }
 
@@ -72,7 +72,7 @@ public actor MockURLProvider: SecurityProvider {
         accessedPaths
     }
 
-    public func withSecurityScopedAccess<T>(to path: String, perform operation: () async throws -> T) async throws -> T {
+    public func withSecurityScopedAccess<T: Sendable>(to path: String, perform operation: () async throws -> T) async throws -> T {
         _ = try await startAccessing(path: path)
         defer { Task { await stopAccessing(path: path) } }
         return try await operation()

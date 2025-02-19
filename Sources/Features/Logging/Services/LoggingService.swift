@@ -1,6 +1,6 @@
 import Foundation
 import SecurityTypes
-import UmbraMocks
+import UmbraTestKit
 
 /// Service for managing log files with security-scoped bookmarks
 public actor LoggingService {

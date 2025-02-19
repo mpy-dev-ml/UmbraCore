@@ -11,7 +11,3 @@ public enum UmbraCore {
         // Initialize core services
     }
 }
-
-// Re-export main types and protocols
-public typealias SecurityProvider = SecurityTypes.SecurityProvider
-public typealias SecurityError = SecurityTypes.SecurityError

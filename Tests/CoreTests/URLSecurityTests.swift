@@ -1,6 +1,6 @@
 import SecurityTypes
 @testable import UmbraCore
-import UmbraMocks
+import UmbraTestKit
 import XCTest
 
 final class URLSecurityTests: XCTestCase {

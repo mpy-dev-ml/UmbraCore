@@ -1,7 +1,7 @@
 import CryptoTypes
 import Foundation
 
-public final class MockCryptoService: CryptoServiceProtocol {
+public actor MockCryptoService: CryptoServiceProtocol {
     private var encryptedData: [String: Data] = [:]
     private var decryptedData: [String: Data] = [:]
 
@@ -9,14 +9,14 @@ public final class MockCryptoService: CryptoServiceProtocol {
 
     public func encrypt(_ data: Data, using key: Data, iv: Data) async throws -> Data {
         // Simple mock implementation - just store the data with its key
-        let identifier = key.base64EncodedString()
+        let identifier = "\(key.base64EncodedString()):\(iv.base64EncodedString())"
         encryptedData[identifier] = data
         return data
     }
 
     public func decrypt(_ data: Data, using key: Data, iv: Data) async throws -> Data {
         // Simple mock implementation - retrieve stored data for key
-        let identifier = key.base64EncodedString()
+        let identifier = "\(key.base64EncodedString()):\(iv.base64EncodedString())"
         if let storedData = decryptedData[identifier] {
             return storedData
         }
@@ -43,12 +43,12 @@ public final class MockCryptoService: CryptoServiceProtocol {
     }
 
     // Test helper methods
-    public func setDecryptedData(_ data: Data, forKey key: Data) {
-        let identifier = key.base64EncodedString()
+    public func setDecryptedData(_ data: Data, forKey key: Data, iv: Data) async {
+        let identifier = "\(key.base64EncodedString()):\(iv.base64EncodedString())"
         decryptedData[identifier] = data
     }
 
-    public func reset() {
+    public func reset() async {
         encryptedData.removeAll()
         decryptedData.removeAll()
     }

@@ -1,21 +1,20 @@
 import CryptoKit
-import CryptoTypes
 import Foundation
 import SecurityTypes
 
 /// Manages secure storage and retrieval of credentials
-actor CredentialManager {
+public actor CredentialManager {
     private let keychain: any SecureStorageProvider
     private let cryptoService: CryptoService
     private let config: CryptoConfig
 
-    init(service: String, cryptoService: CryptoService, config: CryptoConfig) {
+    public init(service: String, cryptoService: CryptoService, config: CryptoConfig) {
         self.keychain = KeychainAccess(service: service)
         self.cryptoService = cryptoService
         self.config = config
     }
 
-    func saveCredential(_ credential: Data, withIdentifier identifier: String) async throws {
+    public func store(credential: Data, withIdentifier identifier: String) async throws {
         let key = try await getMasterKey()
         let iv = try await cryptoService.generateSecureRandomBytes(length: config.ivLength)
         let encrypted = try await cryptoService.encrypt(credential, withKey: key, iv: iv)
@@ -24,26 +23,26 @@ actor CredentialManager {
         try await keychain.save(encodedData, forKey: identifier, metadata: nil)
     }
 
-    func loadCredential(withIdentifier identifier: String) async throws -> Data {
+    public func retrieve(withIdentifier identifier: String) async throws -> Data {
         let key = try await getMasterKey()
         let (encodedData, _) = try await keychain.loadWithMetadata(forKey: identifier)
         let storageData = try JSONDecoder().decode(SecureStorageData.self, from: encodedData)
         return try await cryptoService.decrypt(storageData.encryptedData, withKey: key, iv: storageData.iv)
     }
 
-    func deleteCredential(withIdentifier identifier: String) async throws {
+    public func delete(withIdentifier identifier: String) async throws {
         try await keychain.delete(forKey: identifier)
     }
 
-    func hasCredential(withIdentifier identifier: String) async -> Bool {
+    public func hasCredential(withIdentifier identifier: String) async -> Bool {
         await keychain.exists(forKey: identifier)
     }
 
-    func listCredentials() async throws -> [String] {
+    public func listCredentials() async throws -> [String] {
         try await keychain.allKeys()
     }
 
-    func reset() async {
+    public func reset() async {
         await keychain.reset(preserveKeys: false)
     }
 
@@ -65,6 +64,14 @@ private actor KeychainAccess: SecureStorageProvider {
 
     init(service: String) {
         self.service = service
+    }
+
+    public func store(data: Data, forKey key: String) async throws {
+        try await save(data, forKey: key, metadata: nil)
+    }
+
+    public func retrieve(forKey key: String) async throws -> Data? {
+        try await load(forKey: key)
     }
 
     func save(_ data: Data, forKey key: String, metadata: [String: String]?) async throws {

@@ -57,7 +57,10 @@ public actor SecurityBookmarkService {
     ///   - operation: Operation to perform while URL is accessible
     /// - Returns: Result of the operation
     /// - Throws: SecurityError if access fails
-    public func withSecurityScopedAccess<T>(to url: URL, operation: () async throws -> T) async throws -> T {
+    public func withSecurityScopedAccess<T: Sendable>(
+        to url: URL,
+        operation: @Sendable () async throws -> T
+    ) async throws -> T {
         // Ensure we have a file URL
         let fileURL = url.isFileURL ? url : URL(fileURLWithPath: url.path)
 

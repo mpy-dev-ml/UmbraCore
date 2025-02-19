@@ -6,9 +6,8 @@ swift_library(
     module_name = "API",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/Core",
+        "//Sources/UmbraCore",
         "//Sources/Services",
-        "//Sources/Repositories",
         "//Sources/SecurityTypes",
     ],
     copts = [

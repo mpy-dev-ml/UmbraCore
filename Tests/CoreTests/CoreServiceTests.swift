@@ -1,6 +1,6 @@
 import SecurityTypes
 @testable import UmbraCore
-import UmbraMocks
+import UmbraTestKit
 import XCTest
 
 actor CoreService {
@@ -30,7 +30,10 @@ actor CoreService {
         try await securityProvider.deleteBookmark(withIdentifier: identifier)
     }
 
-    func withSecurityScopedAccess<T>(to path: String, perform operation: () async throws -> T) async throws -> T {
+    func withSecurityScopedAccess<T: Sendable>(
+        to path: String,
+        perform operation: @Sendable () async throws -> T
+    ) async throws -> T {
         try await securityProvider.withSecurityScopedAccess(to: path, perform: operation)
     }
 }

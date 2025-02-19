@@ -1,19 +1,14 @@
-load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
-swift_test(
+# TestSupport is now just a wrapper around UmbraTestKit
+# All test utilities have been moved to UmbraTestKit
+swift_library(
     name = "TestSupport",
-    srcs = glob([
-        "**/*.swift",
-    ]),
+    testonly = True,
+    srcs = ["TestSupport.swift"],
     module_name = "TestSupport",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/SecurityTypes",
         "//Sources/UmbraTestKit",
-    ],
-    copts = [
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
     ],
 )

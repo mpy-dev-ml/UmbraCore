@@ -6,9 +6,9 @@ swift_library(
     module_name = "Services",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/Core",
-        "//Sources/Config",
-        "//Sources/ErrorHandling",
+        "//Sources/UmbraCore",
+        "//Sources/CryptoTypes",
+        "//Sources/SecurityTypes",
     ],
     copts = [
         "-strict-concurrency=complete",

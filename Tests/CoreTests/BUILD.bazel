@@ -2,18 +2,17 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
     name = "CoreTests",
-    srcs = glob(["**/*.swift"]),
+    srcs = glob([
+        "**/*.swift",
+    ]),
     module_name = "CoreTests",
     deps = [
         "//Sources/UmbraCore",
-        "//Sources/SecurityTypes",
-        "//Sources/CryptoTypes",
-        "//Sources/UmbraMocks",
+        "//Sources/UmbraTestKit",
     ],
     copts = [
         "-strict-concurrency=complete",
         "-warn-concurrency",
         "-enable-actor-data-race-checks",
     ],
-    tags = ["core"],
 )
