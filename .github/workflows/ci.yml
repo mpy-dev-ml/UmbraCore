@@ -23,18 +23,15 @@ jobs:
         fetch-depth: 0
         clean: true
 
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
+    - name: Mount Bazel Cache
+      uses: actions/cache@v3
       with:
-        version: 8.1.0
-        setup-bazel-rc: true
-        repository-cache: true
-        disk-cache: true
-        os: macos
-        platform: arm64
-        cache-path: ~/.cache/bazel
-        cache-repo-path: ~/.cache/bazel-repo
-        bazelrc-path: .bazelrc.local
+        path: |
+          ~/.cache/bazel
+          ~/.cache/bazelisk
+        key: ${{ runner.os }}-arm64-bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'WORKSPACE') }}
+        restore-keys: |
+          ${{ runner.os }}-arm64-bazel-
 
     - name: Configure Build Environment
       run: |
@@ -56,15 +53,12 @@ jobs:
         test --test_output=errors
         EOF
 
-    - name: Mount Bazel Cache
-      uses: actions/cache@v3
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@0.8.0
       with:
-        path: |
-          ~/.cache/bazel
-          ~/.cache/bazelisk
-        key: ${{ runner.os }}-arm64-bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'WORKSPACE') }}
-        restore-keys: |
-          ${{ runner.os }}-arm64-bazel-
+        bazelisk-version: ${{ env.BAZEL_VERSION }}
+        disk-cache: true
+        repository-cache: true
 
     - name: Build
       run: |
@@ -115,24 +109,42 @@ jobs:
         fetch-depth: 0
         clean: true
 
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
+    - name: Mount Bazel Cache
+      uses: actions/cache@v3
       with:
-        version: 8.1.0
-        setup-bazel-rc: true
-        repository-cache: true
-        disk-cache: true
-        os: macos
-        platform: arm64
-        cache-path: ~/.cache/bazel
-        cache-repo-path: ~/.cache/bazel-repo
-        bazelrc-path: .bazelrc.local
+        path: |
+          ~/.cache/bazel
+          ~/.cache/bazelisk
+        key: ${{ runner.os }}-arm64-bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'WORKSPACE') }}
+        restore-keys: |
+          ${{ runner.os }}-arm64-bazel-
 
     - name: Configure Build Environment
       run: |
         echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> $GITHUB_ENV
         echo "SDKROOT=$SDKROOT" >> $GITHUB_ENV
         xcrun --sdk macosx --show-sdk-path
+
+    - name: Configure Bazel
+      run: |
+        cat > .bazelrc.local << EOF
+        build --verbose_failures
+        build --cpu=darwin_arm64
+        build --apple_platform_type=macos
+        build --macos_minimum_os=13.0
+        build --host_macos_minimum_os=13.0
+        build --features=swift.use_global_module_cache
+        build --features=swift.enable_batch_mode
+        build --features=swift.enable_concurrency_checking
+        test --test_output=errors
+        EOF
+
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@0.8.0
+      with:
+        bazelisk-version: ${{ env.BAZEL_VERSION }}
+        disk-cache: true
+        repository-cache: true
 
     - name: Build Release Artifacts
       run: |
