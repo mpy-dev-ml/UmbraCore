@@ -32,35 +32,21 @@ jobs:
     - name: Setup Bazel
       uses: bazel-contrib/setup-bazel@0.8.0
       with:
-        version: 8.1.0
-        setup-bazel-rc: true
-        repository-cache: true
-        disk-cache: true
-        os: macos
-        platform: arm64
-        cache-path: ~/.cache/bazel
-        cache-repo-path: ~/.cache/bazel-repo
-        bazelrc-path: .bazelrc.local
+        bazelrc: .bazelrc
+        version: ${{ env.BAZEL_VERSION }}
 
     - name: Configure Bazel
       run: |
-        cat > .bazelrc.local << EOF
-        build --verbose_failures
-        build --cpu=darwin_arm64
-        build --apple_platform_type=macos
-        build --macos_minimum_os=13.0
-        build --host_macos_minimum_os=13.0
-        build --features=swift.use_global_module_cache
-        build --features=swift.enable_batch_mode
-        build --features=swift.enable_concurrency_checking
-        test --test_output=errors
-        EOF
+        echo "build --cpu=darwin_arm64" >> .bazelrc
+        echo "build --apple_platform_type=macos" >> .bazelrc
+        echo "build --macos_minimum_os=13.0" >> .bazelrc
+        echo "build --features=swift.use_global_module_cache" >> .bazelrc
+        echo "build --features=swift.enable_batch_mode" >> .bazelrc
+        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
 
     - name: Build
       run: |
-        bazel build //... \
-          --cpu=darwin_arm64 \
-          --apple_platform_type=macos
+        bazel build //...
 
     - name: Run Core Tests
       run: |
@@ -114,29 +100,17 @@ jobs:
     - name: Setup Bazel
       uses: bazel-contrib/setup-bazel@0.8.0
       with:
-        version: 8.1.0
-        setup-bazel-rc: true
-        repository-cache: true
-        disk-cache: true
-        os: macos
-        platform: arm64
-        cache-path: ~/.cache/bazel
-        cache-repo-path: ~/.cache/bazel-repo
-        bazelrc-path: .bazelrc.local
+        bazelrc: .bazelrc
+        version: ${{ env.BAZEL_VERSION }}
 
     - name: Configure Bazel
       run: |
-        cat > .bazelrc.local << EOF
-        build --verbose_failures
-        build --cpu=darwin_arm64
-        build --apple_platform_type=macos
-        build --macos_minimum_os=13.0
-        build --host_macos_minimum_os=13.0
-        build --features=swift.use_global_module_cache
-        build --features=swift.enable_batch_mode
-        build --features=swift.enable_concurrency_checking
-        test --test_output=errors
-        EOF
+        echo "build --cpu=darwin_arm64" >> .bazelrc
+        echo "build --apple_platform_type=macos" >> .bazelrc
+        echo "build --macos_minimum_os=13.0" >> .bazelrc
+        echo "build --features=swift.use_global_module_cache" >> .bazelrc
+        echo "build --features=swift.enable_batch_mode" >> .bazelrc
+        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
 
     - name: Build Release Artifacts
       run: |
