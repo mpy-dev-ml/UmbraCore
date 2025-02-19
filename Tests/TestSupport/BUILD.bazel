@@ -1,0 +1,19 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+
+swift_test(
+    name = "TestSupport",
+    srcs = glob([
+        "**/*.swift",
+    ]),
+    module_name = "TestSupport",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/UmbraTestKit",
+    ],
+    copts = [
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+)
