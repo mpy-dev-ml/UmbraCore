@@ -78,7 +78,7 @@
 ///
 /// # Usage Example
 /// ```swift
-/// let helper = ResticCLIHelper()
+/// let helper = ResticCLIHelper(resticPath: "/usr/local/bin/restic")
 /// 
 /// let result = try await helper.execute(
 ///     BackupCommand(
@@ -107,12 +107,74 @@
 /// - Command queuing
 /// - Output synchronisation
 /// - Resource management
-public enum ResticCLIHelper {
+import Foundation
+
+/// Main class for interacting with the Restic CLI
+public final class ResticCLIHelper {
     /// Current version of the ResticCLIHelper module
     public static let version = "1.0.0"
     
-    /// Initialise ResticCLIHelper with default configuration
-    public static func initialise() {
-        // Configure CLI helper system
+    /// Path to the Restic executable
+    private let resticPath: String
+    
+    /// Queue for serialising command execution
+    private let executionQueue: DispatchQueue
+    
+    /// Initialise ResticCLIHelper
+    /// - Parameter resticPath: Path to the Restic executable
+    public init(resticPath: String = "/usr/local/bin/restic") {
+        self.resticPath = resticPath
+        self.executionQueue = DispatchQueue(label: "com.umbracore.restic-cli-helper")
+    }
+    
+    /// Execute a Restic command
+    /// - Parameter command: The command to execute
+    /// - Returns: The command output
+    /// - Throws: ResticError if the command fails
+    public func execute(_ command: ResticCommand) async throws -> String {
+        // Validate the command
+        try command.validate()
+        
+        // Create process
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: resticPath)
+        process.arguments = [command.commandName] + command.arguments
+        process.environment = ProcessInfo.processInfo.environment.merging(
+            command.environment,
+            uniquingKeysWith: { _, new in new }
+        )
+        
+        // Set up pipes for output
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
+        
+        // Execute the command
+        return try await withCheckedThrowingContinuation { continuation in
+            self.executionQueue.async {
+                do {
+                    try process.run()
+                    process.waitUntilExit()
+                    
+                    let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+                    let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                    
+                    if process.terminationStatus != 0 {
+                        let errorOutput = String(data: errorData, encoding: .utf8) ?? "Unknown error"
+                        continuation.resume(throwing: ResticError.executionFailed(errorOutput))
+                        return
+                    }
+                    
+                    if let output = String(data: outputData, encoding: .utf8) {
+                        continuation.resume(returning: output)
+                    } else {
+                        continuation.resume(throwing: ResticError.outputParsingFailed("Could not decode command output"))
+                    }
+                } catch {
+                    continuation.resume(throwing: ResticError.executionFailed(error.localizedDescription))
+                }
+            }
+        }
     }
 }
