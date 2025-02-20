@@ -8,28 +8,30 @@ actor MockSecurityProvider: SecurityProvider {
     private var shouldFailBookmarkCreation = false
     private var shouldFailAccess = false
     private var accessedPaths: Set<String> = []
-    private var storedBookmarks: [String: [UInt8]] = [:]
 
     func createBookmark(forPath path: String) async throws -> [UInt8] {
         if shouldFailBookmarkCreation {
             throw SecurityError.bookmarkCreationFailed(reason: "Mock failure")
         }
-        let bookmarkData = "mock_bookmark_\(path)".data(using: .utf8)!
-        bookmarks[path] = bookmarkData
-        return Array(bookmarkData)
+        
+        // Create a simple bookmark data
+        let bookmarkData = [UInt8](path.utf8)
+        bookmarks[path] = Data(bookmarkData)
+        return bookmarkData
     }
 
     func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        let data = Data(bookmarkData)
-        guard let mockPath = String(data: data, encoding: .utf8) else {
-            throw SecurityError.bookmarkResolutionFailed(reason: "Invalid bookmark data")
-        }
-        let path = mockPath.replacingOccurrences(of: "mock_bookmark_", with: "")
         if shouldFailAccess {
-            throw SecurityError.accessDenied(reason: "Mock access denied")
+            throw SecurityError.accessDenied(reason: "Access denied")
         }
-        accessCount[path, default: 0] += 1
-        return (path: path, isStale: false)
+        
+        // Find the path by matching bookmark data
+        if let path = bookmarks.first(where: { $0.value == Data(bookmarkData) })?.key {
+            accessCount[path, default: 0] += 1
+            return (path: path, isStale: false)
+        }
+        
+        throw SecurityError.bookmarkResolutionFailed(reason: "Invalid bookmark data")
     }
 
     func startAccessing(path: String) async throws -> Bool {
@@ -53,23 +55,22 @@ actor MockSecurityProvider: SecurityProvider {
         perform operation: @Sendable () async throws -> T
     ) async throws -> T {
         if shouldFailAccess {
-            throw SecurityError.accessDenied(reason: "Mock access denied")
+            throw SecurityError.accessDenied(reason: "Access denied to \(path)")
         }
+        
+        // Check if we have a bookmark for this path
+        if bookmarks[path] == nil {
+            throw SecurityError.accessDenied(reason: "No bookmark found for \(path)")
+        }
+        
         accessedPaths.insert(path)
         defer { accessedPaths.remove(path) }
         return try await operation()
     }
 
-    func isAccessing(path: String) async -> Bool {
-        accessedPaths.contains(path)
-    }
-
     func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
-        let data = Data(bookmarkData)
-        guard let mockPath = String(data: data, encoding: .utf8) else {
-            return false
-        }
-        return mockPath.hasPrefix("mock_bookmark_")
+        // Check if this bookmark exists in our storage
+        return bookmarks.values.contains(Data(bookmarkData))
     }
 
     func getAccessedPaths() async -> Set<String> {
@@ -80,23 +81,39 @@ actor MockSecurityProvider: SecurityProvider {
         if shouldFailAccess {
             throw SecurityError.storageError(reason: "Mock storage failure")
         }
-        storedBookmarks[identifier] = bookmarkData
+        bookmarks[identifier] = Data(bookmarkData)
     }
 
     func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
-        guard let bookmark = storedBookmarks[identifier] else {
+        guard let bookmark = bookmarks[identifier] else {
             throw SecurityError.bookmarkNotFound(reason: "Bookmark not found: \(identifier)")
         }
-        return bookmark
+        return Array(bookmark)
+    }
+
+    func storeBookmarkData(_ bookmarkData: [UInt8], forPath path: String) async throws {
+        if shouldFailAccess {
+            throw SecurityError.storageError(reason: "Mock storage failure")
+        }
+        bookmarks[path] = Data(bookmarkData)
+    }
+
+    func getBookmarkData(forPath path: String) async throws -> [UInt8] {
+        guard let bookmark = bookmarks[path] else {
+            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found: \(path)")
+        }
+        return Array(bookmark)
+    }
+
+    func isAccessing(path: String) async -> Bool {
+        accessedPaths.contains(path)
     }
 
     func deleteBookmark(withIdentifier identifier: String) async throws {
         if shouldFailAccess {
-            throw SecurityError.storageError(reason: "Mock storage failure")
+            throw SecurityError.storageError(reason: "Mock deletion failure")
         }
-        guard storedBookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found: \(identifier)")
-        }
+        bookmarks.removeValue(forKey: identifier)
     }
 
     // Test helper methods
@@ -157,7 +174,7 @@ final class MockSecurityProviderTests: XCTestCase {
             _ = try await provider.resolveBookmark(bookmark)
             XCTFail("Expected access to fail")
         } catch let error as SecurityError {
-            XCTAssertEqual(error, SecurityError.accessDenied(reason: "Mock access denied"))
+            XCTAssertEqual(error, SecurityError.accessDenied(reason: "Access denied"))
         }
     }
 
@@ -194,10 +211,19 @@ final class MockSecurityProviderTests: XCTestCase {
 
     func testWithSecurityScopedAccess() async throws {
         let testPath = "/test/path"
+        
+        // Create and store a bookmark first
+        let bookmark = try await provider.createBookmark(forPath: testPath)
+        try await provider.storeBookmarkData(bookmark, forPath: testPath)
+        
         let result = try await provider.withSecurityScopedAccess(to: testPath) {
             return "test_result"
         }
         XCTAssertEqual(result, "test_result")
+        
+        // Verify access was properly stopped
+        let isAccessing = await provider.isAccessing(path: testPath)
+        XCTAssertFalse(isAccessing)
     }
 
     func testBookmarkValidation() async throws {

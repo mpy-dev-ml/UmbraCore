@@ -1,72 +1,81 @@
-import SecurityTypes
+@testable import SecurityTypes
 @testable import UmbraCore
-import UmbraTestKit
+@testable import UmbraTestKit
 import XCTest
 
-final class URLSecurityTests: XCTestCase {
+@MainActor
+final class URLSecurityTests: XCTestCase, @unchecked Sendable {
     var mockSecurityProvider: MockSecurityProvider!
-    var testFileURL: URL!
-    var testFileData: String!
+    var urlSecurity: URLSecurity!
+    let testFileURL = URL(fileURLWithPath: "/test/file.txt")
 
     override func setUp() async throws {
-        // Create a temporary test file
-        let tempDir = FileManager.default.temporaryDirectory
-        testFileURL = tempDir.appendingPathComponent("test_file.txt")
-        testFileData = "Test file content"
-        try testFileData.write(to: testFileURL, atomically: true, encoding: .utf8)
-
-        // Initialize mock provider
         mockSecurityProvider = MockSecurityProvider()
+        urlSecurity = URLSecurity(securityProvider: mockSecurityProvider)
     }
 
     override func tearDown() async throws {
-        try? FileManager.default.removeItem(at: testFileURL)
-        await mockSecurityProvider.reset()
+        mockSecurityProvider = nil
+        urlSecurity = nil
+        try await super.tearDown()
     }
 
-    func testBookmarkCreationAndResolution() async throws {
-        let bookmarkData = try await mockSecurityProvider.createBookmark(forPath: testFileURL.path)
-        XCTAssertFalse(bookmarkData.isEmpty, "Bookmark data should not be empty")
+    func testBookmarkOperations() async throws {
+        let bookmarkData = Data("test".utf8)
 
-        let (resolvedPath, isStale) = try await mockSecurityProvider.resolveBookmark(bookmarkData)
-        XCTAssertEqual(resolvedPath, testFileURL.path, "Resolved path should match original")
-        XCTAssertFalse(isStale, "Bookmark should not be stale")
+        // Store bookmark
+        try await urlSecurity.storeBookmark([UInt8](bookmarkData), for: testFileURL)
+
+        // Verify bookmark is stored
+        let storedData = try await mockSecurityProvider.getBookmarkData(forPath: testFileURL.path)
+        XCTAssertEqual([UInt8](storedData), [UInt8](bookmarkData), "Stored bookmark data should match original")
+
+        // Delete bookmark
+        try await urlSecurity.deleteBookmark(for: testFileURL)
+
+        // Verify bookmark was deleted
+        do {
+            _ = try await mockSecurityProvider.getBookmarkData(forPath: testFileURL.path)
+            XCTFail("Expected error when getting deleted bookmark")
+        } catch {
+            // Expected error
+        }
     }
 
     func testSecurityScopedAccess() async throws {
-        try await mockSecurityProvider.withSecurityScopedAccess(to: testFileURL.path) {
-            let content = try String(contentsOf: testFileURL, encoding: .utf8)
-            XCTAssertEqual(content, testFileData, "Should be able to read file content")
+        let testURL = URL(fileURLWithPath: "/test/path")
+        
+        // First create and store a bookmark
+        let bookmarkData = try await mockSecurityProvider.createBookmark(forPath: testURL.path)
+        try await mockSecurityProvider.storeBookmarkData(bookmarkData, forPath: testURL.path)
 
-            let paths = await mockSecurityProvider.getAccessedPaths()
-            XCTAssertTrue(paths.contains(testFileURL.path), "Path should be in accessed paths during operation")
-        }
+        // Mark the URL as valid for access
+        mockSecurityProvider.securityValidator.markURLAsValid(testURL)
 
-        let paths = await mockSecurityProvider.getAccessedPaths()
-        XCTAssertFalse(paths.contains(testFileURL.path), "Path should not be in accessed paths after operation")
-    }
+        // Create an actor to track access state
+        actor AccessTracker {
+            private(set) var granted = false
 
-    func testInvalidBookmark() async throws {
-        let invalidData: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFF] // Invalid UTF-8 sequence
+            func setGranted() {
+                granted = true
+            }
 
-        do {
-            _ = try await mockSecurityProvider.resolveBookmark(invalidData)
-            XCTFail("Should throw error for invalid bookmark data")
-        } catch let error as SecurityError {
-            guard case .bookmarkResolutionFailed = error else {
-                XCTFail("Expected bookmarkResolutionFailed error")
-                return
+            func getGranted() -> Bool {
+                granted
             }
         }
-    }
 
-    func testBookmarkValidation() async throws {
-        let validData = try await mockSecurityProvider.createBookmark(forPath: testFileURL.path)
-        let isValidBookmark = try await mockSecurityProvider.validateBookmark(validData)
-        XCTAssertTrue(isValidBookmark, "Valid bookmark should pass validation")
+        let tracker = AccessTracker()
 
-        let invalidData: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFF] // Invalid UTF-8 sequence
-        let isInvalidBookmark = try await mockSecurityProvider.validateBookmark(invalidData)
-        XCTAssertFalse(isInvalidBookmark, "Invalid bookmark should fail validation")
+        try await urlSecurity.withSecurityScopedAccess(to: testURL) {
+            await tracker.setGranted()
+        }
+
+        let isGranted = await tracker.getGranted()
+        XCTAssertTrue(isGranted, "Access should have been granted")
+        
+        // Verify access was properly stopped
+        let isAccessing = await mockSecurityProvider.isAccessing(path: testURL.path)
+        XCTAssertFalse(isAccessing, "Access should have been stopped")
     }
 }
