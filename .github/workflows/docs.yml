@@ -64,14 +64,17 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global --add safe.directory /github/workspace
 
-      - name: Build documentation
-        run: mkdocs build --verbose
+      - name: Build site
+        run: mkdocs build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'site'
 
       - name: Deploy to GitHub Pages
         id: deployment
-        if: github.event_name != 'pull_request'
-        run: |
-          git fetch origin gh-pages || true
-          mkdocs gh-deploy --force --remote-branch gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/deploy-pages@v4
