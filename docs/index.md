@@ -6,96 +6,132 @@ description: Documentation for the UmbraCore secure backup programme
 permalink: /
 ---
 
+![Deploy Documentation](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/docs.yml/badge.svg)
+
 # UmbraCore Documentation
 
-Welcome to the UmbraCore documentation. UmbraCore is a secure backup management system that provides a robust foundation for backup applications.
+UmbraCore is built upon the foundation of [Restic](https://restic.net), a remarkable open-source backup programme that has set the standard for secure, efficient, and reliable backups. We are deeply grateful to the Restic team for their years of dedication in creating and maintaining such an exceptional tool.
 
-## Overview
+Our mission with UmbraCore is to extend Restic's capabilities specifically for macOS application developers, providing a type-safe, Swift-native interface while maintaining complete compatibility with Restic's core functionality. UmbraCore is not an alternative to Restic, but rather a complementary tool that makes Restic's powerful features more accessible in the macOS development ecosystem.
 
-UmbraCore serves as the core library for several backup applications:
-- **Rbum**: Command-line interface
-- **Rbx**: GUI application
-- **ResticBar**: Menu bar application
+## Core Applications
 
-## Key Features
+UmbraCore powers several macOS backup management tools:
+- **ResticBar**: macOS menu bar app for developers
+- **Rbx**: VS Code extension
+- **Rbum**: User-friendly GUI
 
-### Core Functionality
-- Repository initialisation and validation
-- Backup creation and verification
-- Restore operations
-- Repository maintenance
-- Snapshot management
-- Tag handling
+## Features
 
-### Security & Credentials
-- Repository password management
-- SSH key handling
+### Implemented
+- Secure keychain operations with XPC service
+- Comprehensive error handling and logging
+- Thread-safe operations
+- SwiftyBeaver logging integration
+- Modular architecture
+- Extensive test coverage
+
+### In Development
+- SSH key management
 - Cloud provider credentials
-- Secure credential persistence
-- Access token management
+- Repository password handling
 
-### Advanced Features
-- Multiple repository support
-- Repository health monitoring
-- Space usage optimisation
-- Deduplication
-- Bandwidth management
-- Connection pooling
+## Architecture
+
+### Core Libraries
+- **SecurityTypes**: Base security primitives and protocols
+- **CryptoTypes**: Cryptographic operations and types
+- **UmbraLogging**: Centralised logging infrastructure
+
+### Service Layer
+- **UmbraKeychainService**: Secure keychain operations
+- **UmbraCryptoService**: Cryptographic operations service
+- **UmbraBookmarkService**: File system bookmark management
+- **UmbraXPC**: XPC communication infrastructure
+
+### Features
+- **ResticCLIHelper**: Command-line interface integration
+- **Repositories**: Repository management and operations
+- **Snapshots**: Snapshot creation and management
+- **Config**: Configuration and settings management
+- **Logging**: Privacy-aware structured logging
+- **ErrorHandling**: Comprehensive error management
+- **Autocomplete**: Context-aware command completion
 
 ## Project Status
 
 UmbraCore is currently in active development with the following milestones:
 
-### Q1 2025
-- ✓ Keychain integration
-- ✓ XPC service implementation
-- 🔄 SSH key management
-- 🔄 Cloud provider credentials
-- 🔄 Repository password handling
+### Q1 2025 (Current)
+- ✓ Repository Management
+  - Secure repository initialisation
+  - Repository health monitoring
+  - Multi-repository support
+- ✓ Core Restic Integration
+  - Command execution system
+  - Output parsing
+  - Error handling
+  - Process management
+- ✓ Testing Infrastructure
+  - Unit testing framework
+  - Integration test suite
+  - Performance benchmarks
+  - Mock services
 
-### Q2 2025
-- Repository management
-- Scheduling system
-- Network operations
-- State management
+### Q2 2025 (Planned)
+- Security Layer
+  - SSH key management
+  - Cloud provider credentials
+  - Repository password handling
+- Configuration System
+  - Configuration file format
+  - Validation system
+  - Migration support
+- Progress Monitoring
+  - Progress reporting protocol
+  - Status updates system
+  - Metrics collection
 
-### Q3 2025
-- Statistics & analytics
-- Health monitoring
-- Event system
-- Cache optimisation
+### Q3 2025 (Planned)
+- Statistics & Analytics
+  - Performance metrics
+  - Usage statistics
+  - Trend analysis
+- Health Monitoring
+  - System diagnostics
+  - Performance monitoring
+  - Resource tracking
+- Event System
+  - Event dispatching
+  - Notification management
+  - Webhook support
 
 ## Getting Started
 
-- [Installation Guide](GETTING_STARTED.md)
-- [Architecture Overview](guides/ARCHITECTURE.md)
-- [API Reference](api/README.md)
-- [Contributing Guidelines](contributing/CONTRIBUTING.md)
+Please refer to our [Quick Start Guide](getting-started.md) for installation and basic usage instructions.
 
 ## Security
 
-UmbraCore prioritises security in all aspects of its implementation. For details, see our [Security Guidelines](security/SECURITY_GUIDELINES.md).
+UmbraCore prioritises security in all aspects of its implementation. For details, see our [Security Guide](security.md).
 
 ## Implementation Guides
 
-- [Error Handling](guides/error-handling.md)
-- [Performance Optimisation](guides/performance.md)
-- [Thread Safety](guides/thread-safety.md)
-- [Bookmarks](guides/bookmarks.md)
-- [Cryptography](guides/crypto.md)
-- [Keychain Integration](guides/keychain.md)
-- [Logging](guides/logging.md)
-- [XPC Services](guides/xpc.md)
+Our documentation covers various aspects of UmbraCore:
+
+- Configuration: [Configuration Guide](configuration.md)
+- Features: [Advanced Features](advanced-features.md)
+- Development: [API Reference](api-reference.md)
+- Support: [Troubleshooting Guide](troubleshooting.md)
 
 ## Support
 
 If you find UmbraCore useful, please consider:
 
-1. [Contributing](contributing/CONTRIBUTING.md) to the project
+1. [Contributing](contributing.md) to the project
 2. [Supporting Restic](https://github.com/sponsors/fd0)
 3. Starring us on [GitHub](https://github.com/mpy-dev-ml/UmbraCore)
 4. Sharing your experience with others
 
 ## License
 
-UmbraCore is available under the MIT license. See the [LICENSE](LICENSE.md) file for more info.
+UmbraCore is available under the MIT license. See the [LICENSE](https://github.com/mpy-dev-ml/UmbraCore/blob/main/LICENSE) file for more info.
