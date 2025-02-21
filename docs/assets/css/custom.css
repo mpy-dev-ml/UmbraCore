@@ -40,7 +40,6 @@ body {
 /* Code blocks */
 pre, code {
     font-family: 'Monoid', monospace !important;
-    background-color: var(--main-bg-color) !important;
     color: var(--main-text-color) !important;
     border: 1px solid var(--border-color) !important;
     padding: 1em;
@@ -122,7 +121,6 @@ footer {
 
 /* Table of Contents Sidebar */
 .navbar-light.navbar-expand-md.bs-sidebar {
-    background-color: var(--main-bg-color);
     border: 1px solid var(--border-color);
 }
 
@@ -134,24 +132,13 @@ footer {
     color: #808000 !important;
 }
 
-.navbar-light.navbar-expand-md.bs-sidebar .navbar-collapse {
-    background-color: var(--main-bg-color);
-}
-
-/* Override Bootstrap's default background color for .bg-secondary */
-.card.bg-secondary {
-    background-color: var(--main-bg-color) !important;
-}
-
 /* Alerts and admonitions */
 .admonition {
-    background-color: var(--main-bg-color);
     border: 1px solid var(--border-color);
     color: var(--main-text-color);
 }
 
 .admonition-title {
-    background-color: var(--main-bg-color);
     color: var(--main-text-color);
     border-bottom: 1px solid var(--border-color);
 }
