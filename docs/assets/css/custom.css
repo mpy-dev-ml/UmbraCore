@@ -120,6 +120,29 @@ footer {
     color: var(--menu-hover-color);
 }
 
+/* Table of Contents Sidebar */
+.navbar-light.navbar-expand-md.bs-sidebar {
+    background-color: var(--main-bg-color);
+    border: 1px solid var(--border-color);
+}
+
+.navbar-light.navbar-expand-md.bs-sidebar .nav-link {
+    color: #0000FF !important;
+}
+
+.navbar-light.navbar-expand-md.bs-sidebar .nav-link:hover {
+    color: #808000 !important;
+}
+
+.navbar-light.navbar-expand-md.bs-sidebar .navbar-collapse {
+    background-color: var(--main-bg-color);
+}
+
+/* Override Bootstrap's default background color for .bg-secondary */
+.card.bg-secondary {
+    background-color: var(--main-bg-color) !important;
+}
+
 /* Alerts and admonitions */
 .admonition {
     background-color: var(--main-bg-color);
