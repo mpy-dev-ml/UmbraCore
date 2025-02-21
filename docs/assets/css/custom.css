@@ -4,6 +4,8 @@
     --main-text-color: #ffffff;
     --link-color: #00ffff;
     --border-color: #ffffff;
+    --menu-selected-color: #000084;
+    --menu-hover-color: #808000;
 }
 
 body {
@@ -21,6 +23,12 @@ body {
 .navbar-default .navbar-nav > li > a,
 .navbar-default .navbar-brand {
     color: var(--main-text-color);
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-brand:hover {
+    background-color: var(--main-text-color);
+    color: var(--menu-selected-color);
 }
 
 /* Content */
@@ -102,8 +110,14 @@ footer {
 }
 
 .bs-sidebar .nav > li > a:hover {
-    color: var(--link-color);
-    background-color: transparent;
+    background-color: var(--main-text-color);
+    color: var(--menu-selected-color);
+}
+
+.bs-sidebar .nav > .active > a,
+.bs-sidebar .nav > .active:hover > a {
+    background-color: var(--main-text-color);
+    color: var(--menu-hover-color);
 }
 
 /* Alerts and admonitions */
