@@ -6,6 +6,8 @@ description: Documentation for the UmbraCore secure backup programme
 permalink: /
 ---
 
+![Deploy Documentation](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/docs.yml/badge.svg)
+
 # UmbraCore Documentation
 
 Welcome to the UmbraCore documentation. UmbraCore is a secure backup management system that provides a robust foundation for backup applications.
