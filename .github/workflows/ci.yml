@@ -37,7 +37,7 @@ jobs:
       uses: bazel-contrib/setup-bazel@0.8.0
       with:
         bazelrc: .bazelrc
-        version: ${{ env.BAZEL_VERSION }}
+        bazelisk-version: ${{ env.BAZEL_VERSION }}
 
     - name: Configure Bazel
       run: |
@@ -100,4 +100,5 @@ jobs:
     - name: Cleanup
       if: always()
       run: |
-        rm -rf ~/UmbraTest coverage
+        rm -rf ~/UmbraTest
+        bazel clean --expunge

@@ -119,6 +119,7 @@ extension KeychainXPCProtocol {
     }
 }
 
+@available(macOS 14.0, *)
 final class KeychainXPCService: NSObject {
     private(set) var listener: NSXPCListener
     private let exportedObject: KeychainXPCProtocol
