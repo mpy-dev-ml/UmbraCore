@@ -9,7 +9,6 @@
 [![Swift](https://img.shields.io/badge/Swift-5.9.2-orange.svg)](https://swift.org)
 [![Build](https://img.shields.io/badge/Build-Bazel%208.1.0-43A047.svg)](https://bazel.build)
 
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mpy-dev-ml_UmbraCore&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=mpy-dev-ml_UmbraCore)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/maintainability)](https://codeclimate.com/github/mpy-dev-ml/UmbraCore)
 [![Known Vulnerabilities](https://snyk.io/test/github/mpy-dev-ml/UmbraCore/badge.svg)](https://snyk.io/test/github/mpy-dev-ml/UmbraCore)
 [![Made with ❤️ in London](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20in-London-D40000.svg)](https://github.com/mpy-dev-ml/UmbraCore)
