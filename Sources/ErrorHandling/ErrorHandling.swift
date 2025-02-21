@@ -90,7 +90,7 @@
 public enum ErrorHandling {
     /// Current version of the ErrorHandling module
     public static let version = "1.0.0"
-    
+
     /// Initialise ErrorHandling with default configuration
     public static func initialise() {
         // Configure error handling system

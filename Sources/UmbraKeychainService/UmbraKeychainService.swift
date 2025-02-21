@@ -108,7 +108,7 @@
 public enum UmbraKeychainService {
     /// Current version of the UmbraKeychainService module
     public static let version = "1.0.0"
-    
+
     /// Initialise UmbraKeychainService with default configuration
     public static func initialise() {
         // Configure keychain service

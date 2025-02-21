@@ -3,12 +3,12 @@ import Foundation
 /// Command for managing Restic snapshots
 public struct SnapshotCommand: ResticCommand {
     /// Type of snapshot operation
-    public enum Operation {
+    public enum Operation: Sendable {
         /// List snapshots
         case list
         /// Delete snapshots
         case delete([String])
-        
+
         var commandName: String {
             switch self {
             case .list: return "snapshots"
@@ -16,60 +16,102 @@ public struct SnapshotCommand: ResticCommand {
             }
         }
     }
-    
+
+    /// Group by options for snapshot listing
+    public enum GroupBy: String, Sendable {
+        case host
+        case paths
+        case tags
+    }
+
     /// Common options for the command
     public let options: CommonOptions
-    
+
     /// Operation to perform
     public let operation: Operation
-    
-    /// Filter by path
-    public let path: String?
-    
+
+    /// Filter by paths
+    public let paths: [String]
+
     /// Filter by tags
     public let tags: [String]
-    
+
     /// Filter by host
     public let host: String?
-    
+
+    /// Group by option
+    public let groupBy: GroupBy?
+
+    public init(options: CommonOptions, operation: Operation, paths: [String] = [], tags: [String] = [], host: String? = nil, groupBy: GroupBy? = nil) {
+        self.options = options
+        self.operation = operation
+        self.paths = paths
+        self.tags = tags
+        self.host = host
+        self.groupBy = groupBy
+    }
+
     public var commandName: String {
         operation.commandName
     }
-    
+
     public var environment: [String: String] {
-        options.environmentVariables
+        var env = options.environmentVariables
+        env["RESTIC_PASSWORD"] = options.password
+        env["RESTIC_REPOSITORY"] = options.repository
+        return env
     }
-    
-    public var arguments: [String] {
-        var args = options.arguments
-        
-        // Add path filter
-        if let path = path {
-            args.append("--path")
-            args.append(path)
+
+    public var commandArguments: [String] {
+        var args: [String] = []
+
+        if !options.validateCredentials && options.password.isEmpty {
+            args.append("--insecure-no-password")
+            args.append("--no-cache")  // Avoid cache issues with empty passwords
         }
-        
-        // Add tags filter
+
+        switch operation {
+        case .list:
+            break  // No additional arguments needed
+        case .delete(let ids):
+            args.append(contentsOf: ids)
+        }
+
+        if !paths.isEmpty {
+            for path in paths {
+                args.append("--path")
+                args.append(path)
+            }
+        }
+
         if !tags.isEmpty {
-            args.append("--tag")
-            args.append(tags.joined(separator: ","))
+            for tag in tags {
+                args.append("--tag")
+                args.append(tag)
+            }
         }
-        
-        // Add host filter
+
         if let host = host {
             args.append("--host")
             args.append(host)
         }
-        
-        // Add snapshot IDs for delete operation
-        if case .delete(let ids) = operation {
-            args.append(contentsOf: ids)
+
+        if let groupBy = groupBy {
+            args.append("--group-by")
+            args.append(groupBy.rawValue)
         }
-        
+
         return args
     }
-    
+
     public func validate() throws {
+        // Validate paths
+        for path in paths {
+            guard !path.isEmpty else {
+                throw ResticError.invalidParameter("Path cannot be empty")
+            }
+        }
+
         // Validate tags
         for tag in tags {
             guard !tag.isEmpty else {
@@ -79,7 +121,7 @@ public struct SnapshotCommand: ResticCommand {
                 throw ResticError.invalidParameter("Tag cannot contain commas: \(tag)")
             }
         }
-        
+
         // Validate snapshot IDs for delete operation
         if case .delete(let ids) = operation {
             guard !ids.isEmpty else {
@@ -98,103 +140,73 @@ public struct SnapshotCommand: ResticCommand {
 public class SnapshotCommandBuilder {
     private var options: CommonOptions
     private var operation: SnapshotCommand.Operation = .list
-    private var path: String?
+    private var paths: [String] = []
     private var tags: [String] = []
     private var host: String?
-    
-    public init(repository: String, password: String) {
-        self.options = CommonOptions(repository: repository, password: password)
+    private var groupBy: SnapshotCommand.GroupBy?
+
+    public init(options: CommonOptions) {
+        self.options = options
     }
-    
-    /// Set to list operation (default)
+
+    /// Set operation to list snapshots
     @discardableResult
     public func list() -> Self {
         operation = .list
         return self
     }
-    
-    /// Set to delete operation with specified snapshot IDs
+
+    /// Set operation to delete snapshots
     @discardableResult
-    public func delete(snapshots: [String]) -> Self {
-        operation = .delete(snapshots)
+    public func delete(ids: [String]) -> Self {
+        operation = .delete(ids)
         return self
     }
-    
-    /// Filter by path
+
+    /// Add a path to filter by
     @discardableResult
-    public func setPath(_ path: String) -> Self {
-        self.path = path
+    public func addPath(_ path: String) -> Self {
+        paths.append(path)
         return self
     }
-    
-    /// Add a tag filter
+
+    /// Add multiple paths to filter by
+    @discardableResult
+    public func addPaths(_ paths: [String]) -> Self {
+        self.paths.append(contentsOf: paths)
+        return self
+    }
+
+    /// Add a tag to filter by
     @discardableResult
     public func addTag(_ tag: String) -> Self {
         tags.append(tag)
         return self
     }
-    
-    /// Add multiple tag filters
+
+    /// Add multiple tags to filter by
     @discardableResult
     public func addTags(_ tags: [String]) -> Self {
         self.tags.append(contentsOf: tags)
         return self
     }
-    
-    /// Filter by host
+
+    /// Set host to filter by
     @discardableResult
     public func setHost(_ host: String) -> Self {
         self.host = host
         return self
     }
-    
-    /// Set the cache directory
+
+    /// Set group by option
     @discardableResult
-    public func setCachePath(_ path: String) -> Self {
-        options = CommonOptions(
-            repository: options.repository,
-            password: options.password,
-            cachePath: path,
-            quiet: options.quiet,
-            jsonOutput: options.jsonOutput
-        )
+    public func setGroupBy(_ groupBy: SnapshotCommand.GroupBy) -> Self {
+        self.groupBy = groupBy
         return self
     }
-    
-    /// Enable or disable quiet mode
-    @discardableResult
-    public func setQuiet(_ quiet: Bool) -> Self {
-        options = CommonOptions(
-            repository: options.repository,
-            password: options.password,
-            cachePath: options.cachePath,
-            quiet: quiet,
-            jsonOutput: options.jsonOutput
-        )
-        return self
-    }
-    
-    /// Enable or disable JSON output
-    @discardableResult
-    public func setJsonOutput(_ enabled: Bool) -> Self {
-        options = CommonOptions(
-            repository: options.repository,
-            password: options.password,
-            cachePath: options.cachePath,
-            quiet: options.quiet,
-            jsonOutput: enabled
-        )
-        return self
-    }
-    
+
     /// Build the snapshot command
     public func build() -> SnapshotCommand {
-        SnapshotCommand(
-            options: options,
-            operation: operation,
-            path: path,
-            tags: tags,
-            host: host
-        )
+        SnapshotCommand(options: options, operation: operation, paths: paths, tags: tags, host: host, groupBy: groupBy)
     }
 }

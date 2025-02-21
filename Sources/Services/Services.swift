@@ -92,7 +92,7 @@
 public enum Services {
     /// Current version of the Services module
     public static let version = "1.0.0"
-    
+
     /// Initialise Services with default configuration
     public static func initialise() {
         // Configure service system

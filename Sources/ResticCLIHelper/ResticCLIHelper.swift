@@ -113,20 +113,20 @@ import Foundation
 public final class ResticCLIHelper {
     /// Current version of the ResticCLIHelper module
     public static let version = "1.0.0"
-    
+
     /// Path to the Restic executable
     private let resticPath: String
-    
+
     /// Queue for serialising command execution
     private let executionQueue: DispatchQueue
-    
+
     /// Initialise ResticCLIHelper
     /// - Parameter resticPath: Path to the Restic executable
-    public init(resticPath: String = "/usr/local/bin/restic") {
+    public init(resticPath: String = "/opt/homebrew/bin/restic") {
         self.resticPath = resticPath
         self.executionQueue = DispatchQueue(label: "com.umbracore.restic-cli-helper")
     }
-    
+
     /// Execute a Restic command
     /// - Parameter command: The command to execute
     /// - Returns: The command output
@@ -134,38 +134,60 @@ public final class ResticCLIHelper {
     public func execute(_ command: ResticCommand) async throws -> String {
         // Validate the command
         try command.validate()
-        
+
         // Create process
         let process = Process()
         process.executableURL = URL(fileURLWithPath: resticPath)
-        process.arguments = [command.commandName] + command.arguments
-        process.environment = ProcessInfo.processInfo.environment.merging(
-            command.environment,
-            uniquingKeysWith: { _, new in new }
-        )
-        
+        process.arguments = command.arguments
+
+        // Merge environment variables, ensuring we preserve PATH and don't override with empty values
+        var environment = ProcessInfo.processInfo.environment
+        let commandEnv = command.environment.filter { key, value in
+            // Keep required environment variables even if empty
+            command.requiredEnvironmentVariables.contains(key) || !value.isEmpty
+        }
+        environment.merge(commandEnv) { _, new in new }
+        process.environment = environment
+
         // Set up pipes for output
         let outputPipe = Pipe()
         let errorPipe = Pipe()
         process.standardOutput = outputPipe
         process.standardError = errorPipe
-        
+
         // Execute the command
         return try await withCheckedThrowingContinuation { continuation in
             self.executionQueue.async {
                 do {
                     try process.run()
                     process.waitUntilExit()
-                    
+
                     let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
                     let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-                    
+
                     if process.terminationStatus != 0 {
                         let errorOutput = String(data: errorData, encoding: .utf8) ?? "Unknown error"
-                        continuation.resume(throwing: ResticError.executionFailed(errorOutput))
+                        let error: ResticError
+
+                        switch process.terminationStatus {
+                        case 10:
+                            error = .repositoryNotFound(path: command.environment["RESTIC_REPOSITORY"] ?? "unknown")
+                        case 11:
+                            error = .commandFailed(exitCode: 11, message: "Failed to lock repository: \(errorOutput)")
+                        case 12:
+                            error = .invalidPassword
+                        case 3:
+                            error = .commandFailed(exitCode: 3, message: "Could not read source data: \(errorOutput)")
+                        case 130:
+                            error = .commandFailed(exitCode: 130, message: "Command was interrupted: \(errorOutput)")
+                        default:
+                            error = .executionFailed(errorOutput)
+                        }
+
+                        continuation.resume(throwing: error)
                         return
                     }
-                    
+
                     if let output = String(data: outputData, encoding: .utf8) {
                         continuation.resume(returning: output)
                     } else {
