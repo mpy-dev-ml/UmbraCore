@@ -112,28 +112,26 @@ Please refer to our [Quick Start Guide](getting-started.md) for installation and
 
 ## Security
 
-UmbraCore prioritises security in all aspects of its implementation. For details, see our [Security Guidelines](security/SECURITY_GUIDELINES.md).
+UmbraCore prioritises security in all aspects of its implementation. For details, see our [Security Guide](security.md).
 
 ## Implementation Guides
 
-- [Error Handling](guides/error-handling.md)
-- [Performance Optimisation](guides/performance.md)
-- [Thread Safety](guides/thread-safety.md)
-- [Bookmarks](guides/bookmarks.md)
-- [Cryptography](guides/crypto.md)
-- [Keychain Integration](guides/keychain.md)
-- [Logging](guides/logging.md)
-- [XPC Services](guides/xpc.md)
+Our documentation covers various aspects of UmbraCore:
+
+- Configuration: [Configuration Guide](configuration.md)
+- Features: [Advanced Features](advanced-features.md)
+- Development: [API Reference](api-reference.md)
+- Support: [Troubleshooting Guide](troubleshooting.md)
 
 ## Support
 
 If you find UmbraCore useful, please consider:
 
-1. [Contributing](contributing/CONTRIBUTING.md) to the project
+1. [Contributing](contributing.md) to the project
 2. [Supporting Restic](https://github.com/sponsors/fd0)
 3. Starring us on [GitHub](https://github.com/mpy-dev-ml/UmbraCore)
 4. Sharing your experience with others
 
 ## License
 
-UmbraCore is available under the MIT license. See the [LICENSE](LICENSE.md) file for more info.
+UmbraCore is available under the MIT license. See the [LICENSE](https://github.com/mpy-dev-ml/UmbraCore/blob/main/LICENSE) file for more info.
