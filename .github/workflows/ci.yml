@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BAZEL_VERSION: 8.1.0
+  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+  SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: [self-hosted, macOS, ARM64]
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        clean: true
+        fetch-depth: 0
+
+    - name: System Info
+      run: |
+        uname -a
+        swift --version
+        bazel --version
+
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@0.8.0
+      with:
+        bazelrc: .bazelrc
+        version: ${{ env.BAZEL_VERSION }}
+
+    - name: Configure Bazel
+      run: |
+        cat >> .bazelrc << 'EOF'
+        build --cpu=darwin_arm64
+        build --apple_platform_type=macos
+        build --macos_minimum_os=13.0
+        build --features=swift.use_global_module_cache
+        build --features=swift.enable_batch_mode
+        build --features=swift.enable_concurrency_checking
+        build --verbose_failures
+        test --test_output=errors
+        EOF
+
+    - name: Setup Test Environment
+      run: |
+        mkdir -p ~/UmbraTest/{Core,Security,Coverage}
+        chmod -R 755 ~/UmbraTest
+
+    - name: Build
+      run: |
+        bazel build //... --show_progress_rate_limit=5
+
+    - name: Core Tests
+      env:
+        UMBRA_TEST_ROOT: ~/UmbraTest/Core
+      run: |
+        bazel test //... \
+          --test_tag_filters=-security,-requires_keychain \
+          --test_env=UMBRA_TEST_ROOT
+
+    - name: Security Tests
+      env:
+        UMBRA_TEST_ROOT: ~/UmbraTest/Security
+      run: |
+        bazel test //... \
+          --test_tag_filters=security \
+          --test_env=UMBRA_TEST_ROOT
+
+    - name: Generate Coverage
+      env:
+        UMBRA_TEST_ROOT: ~/UmbraTest/Coverage
+      run: |
+        bazel coverage //... \
+          --experimental_generate_llvm_lcov \
+          --combined_report=lcov \
+          --test_env=UMBRA_TEST_ROOT
+
+    - name: Upload Coverage
+      uses: codecov/codecov-action@v4
+      with:
+        files: $(bazel info output_path)/_coverage/_coverage_report.dat
+        fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -rf ~/UmbraTest
