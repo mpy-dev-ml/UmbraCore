@@ -88,23 +88,15 @@ jobs:
         # Create coverage directory
         mkdir -p coverage
         
-        # Find coverage file from bazel-out/_coverage
-        COVERAGE_DIR="bazel-out/_coverage"
-        if [ -d "$COVERAGE_DIR" ]; then
-          echo "Found coverage directory at: $COVERAGE_DIR"
-          COVERAGE_FILE="$COVERAGE_DIR/_coverage_report.dat"
-          if [ -f "$COVERAGE_FILE" ]; then
-            echo "Found coverage file at: $COVERAGE_FILE"
-            cp "$COVERAGE_FILE" coverage/lcov.info
-            echo "Coverage file contents:"
-            head -n 5 coverage/lcov.info
-          else
-            echo "Error: Coverage file not found in $COVERAGE_DIR"
-            ls -la "$COVERAGE_DIR"
-            exit 1
-          fi
+        # Find coverage file in bazel-out/_coverage
+        COVERAGE_FILE="$(pwd)/bazel-out/_coverage/_coverage_report.dat"
+        if [ -f "$COVERAGE_FILE" ]; then
+          echo "Found coverage file at: $COVERAGE_FILE"
+          cp "$COVERAGE_FILE" coverage/lcov.info
+          echo "Coverage file contents:"
+          head -n 5 coverage/lcov.info
         else
-          echo "Error: Coverage directory not found"
+          echo "Error: Coverage file not found at $COVERAGE_FILE"
           echo "Searching for any coverage files:"
           find bazel-out -type f -name "*coverage*.dat" -ls
           exit 1
