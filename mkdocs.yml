@@ -11,8 +11,11 @@ theme:
     - navigation.instant
     - navigation.tracking
   palette:
-    primary: blue
-  font: false  # Disable default fonts
+    scheme: default
+  font: false
+
+plugins:
+  - search
 
 extra_css:
   - assets/css/custom.css
@@ -26,6 +29,10 @@ markdown_extensions:
   - pymdownx.highlight:
       use_pygments: true
   - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
 
 nav:
   - Home: index.md
