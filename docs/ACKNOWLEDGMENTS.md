@@ -117,7 +117,7 @@ Support Codecov:
 - [GitHub Repository](https://github.com/codecov/codecov-api)
 
 ## Contributing
-If you're interested in contributing to UmbraCore, please check our [Contributing Guide](CONTRIBUTING.md). We welcome all contributions, from code to documentation improvements.
+If you'd like to contribute to UmbraCore, please see our [Contributing Guidelines](contributing/CONTRIBUTING.md). We welcome all contributions, from code to documentation improvements.
 
 ## Supporting Open Source
 We encourage users of UmbraCore to consider supporting these projects through:
