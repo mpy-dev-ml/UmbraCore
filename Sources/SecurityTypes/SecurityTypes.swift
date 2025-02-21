@@ -62,7 +62,7 @@
 public enum SecurityTypes {
     /// Current version of the SecurityTypes module
     public static let version = "1.0.0"
-    
+
     /// Initialise SecurityTypes with default configuration
     public static func initialise() {
         // Configure security services

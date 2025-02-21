@@ -12,18 +12,52 @@
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mpy-dev-ml_UmbraCore&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=mpy-dev-ml_UmbraCore)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/maintainability)](https://codeclimate.com/github/mpy-dev-ml/UmbraCore)
 [![Known Vulnerabilities](https://snyk.io/test/github/mpy-dev-ml/UmbraCore/badge.svg)](https://snyk.io/test/github/mpy-dev-ml/UmbraCore)
+[![Made with ❤️ in London](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20in-London-D40000.svg)](https://github.com/mpy-dev-ml/UmbraCore)
 
-A Swift library that extends and adapts [Restic](https://restic.net) for macOS application developers. UmbraCore provides a type-safe, Swift-native interface to Restic's powerful backup capabilities.
+UmbraCore is built upon the foundation of [Restic](https://restic.net), a remarkable open-source backup programme that has set the standard for secure, efficient, and reliable backups. We are deeply grateful to the Restic team for their years of dedication in creating and maintaining such an exceptional tool.
+
+Our mission with UmbraCore is to extend Restic's capabilities specifically for macOS application developers, providing a type-safe, Swift-native interface while maintaining complete compatibility with Restic's core functionality. UmbraCore is not an alternative to Restic, but rather a complementary tool that makes Restic's powerful features more accessible in the macOS development ecosystem.
+
+If you find UmbraCore useful, please consider:
+- [Supporting the Restic project](https://github.com/sponsors/fd0)
+- [Contributing to Restic](https://github.com/restic/restic/blob/master/CONTRIBUTING.md)
+- [Joining the Restic community](https://forum.restic.net)
+
+## Quick Start
+
+### Requirements
+- macOS 14.0+
+- Swift 5.9.2+
+- Bazel 8.1.0+
+
+### Installation
+1. Add UmbraCore to your dependencies in `MODULE.bazel`:
+```python
+swift_deps = use_extension("@rules_swift_package_manager//:extensions.bzl", "swift_deps")
+swift_deps.from_json(
+    deps_json = "//:.deps.json",
+)
+```
+
+2. Add the dependency to your `.deps.json`:
+```json
+{
+  "umbracore": {
+    "url": "https://github.com/mpy-dev-ml/UmbraCore.git",
+    "version": "0.2.0"
+  }
+}
+```
 
 ## Core Applications
 UmbraCore powers several macOS backup management tools:
 - ResticBar (macOS menu bar app for developers)
 - Rbx (VS Code extension)
-- Rbum (user friendly GUI)
+- Rbum (user-friendly GUI)
 
-## Current Status
+## Features
 
-### Implemented Features
+### Implemented
 - Secure keychain operations with XPC service
 - Comprehensive error handling and logging
 - Thread-safe operations
@@ -31,216 +65,89 @@ UmbraCore powers several macOS backup management tools:
 - Modular architecture
 - Extensive test coverage
 
-### In Progress
+### In Development
 - SSH key management
 - Cloud provider credentials
 - Repository password handling
 
-## Requirements
-- macOS 14.0+
-- Xcode 15.0+
-- Swift 5.9.2+
-
-## Overview
-
-UmbraCore is organised into distinct modular components:
-
-### ResticCLIHelper
-Handles direct interaction with the Restic command-line interface:
-- Command construction and validation
-- Async execution management
-- Output parsing and error handling
-
-### Repositories
-Manages Restic repository operations:
-- Repository initialisation and validation
-- Credential management
-- Health checks and maintenance
-
-### Snapshots
-Handles snapshot-related operations:
-- Snapshot creation and deletion
-- Browsing and filtering
-- Restoration management
-
-### Config
-Manages configuration and settings:
-- Repository configurations
-- Global preferences
-- Secure credential storage
-
-### Logging
-Provides structured logging capabilities:
-- Privacy-aware logging
-- Log level management
-- Performance monitoring
-
-### ErrorHandling
-Comprehensive error management:
-- Structured error types
-- Error recovery strategies
-- User-friendly error messages
-
-### Autocomplete
-Intelligent command completion:
-- Context-aware suggestions
-- Path completion
-- Repository-aware completions
-
-## Project Architecture
+## Architecture
 
 ### Core Libraries
-
-#### SecurityTypes
-Base security primitives and protocols with no external dependencies.
-
-#### CryptoTypes
-Cryptographic operations and types, built on SecurityTypes and CryptoSwift.
-
-#### UmbraLogging
-Centralised logging infrastructure using SwiftyBeaver.
+- **SecurityTypes**: Base security primitives and protocols
+- **CryptoTypes**: Cryptographic operations and types
+- **UmbraLogging**: Centralised logging infrastructure
 
 ### Service Layer
-
-#### UmbraKeychainService
-Secure keychain operations with comprehensive error handling.
-
-#### UmbraCryptoService
-Cryptographic operations service with XPC integration.
-
-#### UmbraBookmarkService
-File system bookmark management service.
-
-#### UmbraXPC
-XPC communication infrastructure ensuring secure inter-process communication.
-
-### Error Handling
-Comprehensive error handling system with structured logging and recovery strategies.
+- **UmbraKeychainService**: Secure keychain operations
+- **UmbraCryptoService**: Cryptographic operations service
+- **UmbraBookmarkService**: File system bookmark management
+- **UmbraXPC**: XPC communication infrastructure
 
 ### Features
-- **Crypto**: Advanced cryptographic features
-- **Logging**: Advanced logging capabilities
+- **ResticCLIHelper**: Command-line interface integration
+- **Repositories**: Repository management and operations
+- **Snapshots**: Snapshot creation and management
+- **Config**: Configuration and settings management
+- **Logging**: Privacy-aware structured logging
+- **ErrorHandling**: Comprehensive error management
+- **Autocomplete**: Context-aware command completion
+
+## Development
+
+### Building
+```bash
+# Generate/update BUILD files
+bazel run //:update_build_files
+
+# Build all targets
+bazel build //...
+
+# Run tests
+bazel test //...
+```
+
+### Documentation
+The complete documentation is available at [https://mpy-dev-ml.github.io/UmbraCore](https://mpy-dev-ml.github.io/UmbraCore).
+
+To build documentation locally:
+```bash
+cd docs
+bundle install
+bundle exec jekyll serve
+```
+Then visit `http://localhost:4000/UmbraCore`
 
 ## Security
+UmbraCore prioritises security through:
+- Secure keychain integration
+- XPC service isolation
+- Regular dependency scanning
+- Comprehensive security testing
 
-UmbraCore prioritises security and follows best practices to ensure the integrity of your data.
+## Contributing
+1. Fork the repository
+2. Create your feature branch
+3. Write tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
 
-### Security Scanning
+Please follow our [contribution guidelines](CONTRIBUTING.md) and [code of conduct](CODE_OF_CONDUCT.md).
 
-UmbraCore uses Snyk to scan for known vulnerabilities and ensure the security of its dependencies.
-
-## Integration Roadmap
-
-### Phase 1: Core Foundation (Q1 2025)
-#### 1.1 Restic Command Framework (March 2025)
-- Command execution system
-- Output parsing
-- Error handling
-- Process management
-- Command queuing
-
-#### 1.2 Security Layer (March-April 2025)
-- ✓ Keychain integration
-- ✓ XPC service implementation
-- SSH key management
-- Cloud provider credentials
-- Repository password handling
-
-#### 1.3 Configuration System (April 2025)
-- Configuration file format
-- Validation system
-- Migration support
-- Default configurations
-- Configuration versioning
-
-#### 1.4 Progress Monitoring (April-May 2025)
-- Progress reporting protocol
-- Status updates system
-- Metrics collection
-- Event dispatching
-- Cancellation support
-
-### Phase 2: Advanced Features (Q2 2025)
-- Repository Management (May 2025)
-- Scheduling System (May-June 2025)
-- Network Operations (June 2025)
-- State Management (June-July 2025)
-
-### Phase 3: Enhancement & Optimisation (Q3 2025)
-- Statistics & Analytics (July 2025)
-- Health Monitoring (August 2025)
-- Event System (August-September 2025)
-- Cache Optimisation (September 2025)
-
-For detailed feature plans and implementation guidelines, see our [Development Roadmap](ROADMAP.md).
-
-## Documentation
-
-The complete documentation for UmbraCore is available at [https://mpy-dev-ml.github.io/UmbraCore](https://mpy-dev-ml.github.io/UmbraCore). This includes:
-
-- Getting Started Guide
-- API Documentation
-- Security Guidelines
-- Performance Optimisation Guide
-- Thread Safety Guide
-- Error Handling Guide
-- Logging Guide
-
-The documentation is built using Jekyll and hosted on GitHub Pages. To build the documentation locally:
-
-1. Navigate to the `docs` directory
-2. Install dependencies: `bundle install`
-3. Start the local server: `bundle exec jekyll serve`
-4. Visit `http://localhost:4000/UmbraCore`
+## Roadmap
+See our detailed [Development Roadmap](ROADMAP.md) for upcoming features and milestones.
 
 ## Dependencies
 
-### External
-- [Restic](https://restic.net) - Fast, secure backup programme
-- [SwiftyBeaver](https://swiftybeaver.com) - Sophisticated logging system
-- [CryptoSwift](https://cryptoswift.io) - Comprehensive cryptography framework
+UmbraCore builds upon the work of several outstanding open-source projects:
 
-For more information about our dependencies and acknowledgments, see our [Acknowledgments](docs/ACKNOWLEDGMENTS.md) page.
+### [Restic](https://restic.net)
+A remarkable backup programme that sets the standard for secure, efficient, and reliable backups. The dedication of the Restic team in creating and maintaining this exceptional tool has been instrumental in making UmbraCore possible.
 
-## Contributing
+### [CryptoSwift](https://cryptoswift.io)
+An outstanding cryptography framework created and maintained by [Marcin Krzyżanowski](https://github.com/krzyzanowskim). We are grateful for the years of work that have gone into making this comprehensive, pure-Swift implementation of popular cryptographic algorithms. CryptoSwift's excellent design and thorough testing have been crucial for UmbraCore's security features.
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+### [SwiftyBeaver](https://swiftybeaver.com)
+A sophisticated logging system developed by [Sebastian Kreutzberger](https://github.com/skreutzberger) and contributors. SwiftyBeaver's elegant API design and robust feature set have significantly enhanced UmbraCore's logging capabilities. We deeply appreciate the maintainers' commitment to providing such a reliable and well-documented logging solution.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support Restic
-
-If you find UmbraCore useful, please consider [supporting the Restic project](https://github.com/sponsors/fd0).
-
-## Installation
-
-Add UmbraCore to your Swift package:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/mpy-dev-ml/UmbraCore.git", from: "1.0.0")
-]
-```
-
-## Usage
-
-### Basic Example
-
-```swift
-import UmbraCore
-
-// Initialize a repository
-let repo = try await Repository(path: "/path/to/repo", password: "secret")
-
-// Create a snapshot
-let snapshot = try await repo.createSnapshot(
-    paths: ["/Users/me/Documents"],
-    tags: ["documents", "weekly"]
-)
-
-// List snapshots
-let snapshots = try await repo.listSnapshots(
-    matching: .init(tags: ["documents"])
-)
+## Licence
+This project is licensed under the MIT Licence - see [LICENCE](LICENCE) for details.

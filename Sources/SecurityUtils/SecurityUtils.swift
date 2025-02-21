@@ -93,7 +93,7 @@
 public enum SecurityUtils {
     /// Current version of the SecurityUtils module
     public static let version = "1.0.0"
-    
+
     /// Initialise SecurityUtils with default configuration
     public static func initialise() {
         // Configure security utilities
