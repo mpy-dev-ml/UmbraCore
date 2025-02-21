@@ -1,144 +1,112 @@
-/* DOS-like theme */
+/* DOS-like theme for Material */
 :root {
-    --main-bg-color: #000084;
-    --main-text-color: #ffffff;
-    --link-color: #00ffff;
-    --border-color: #ffffff;
-    --menu-selected-color: #000084;
-    --menu-hover-color: #808000;
+    --md-primary-fg-color: #000084;
+    --md-accent-fg-color: #00ffff;
+    --md-typeset-color: #ffffff;
+    --md-default-fg-color: #ffffff;
+    --md-default-bg-color: #000084;
 }
 
-body {
-    background-color: var(--main-bg-color);
-    color: var(--main-text-color);
-    font-family: "DOS", "Courier New", monospace;
+/* Override Material theme defaults */
+.md-main {
+    background-color: var(--md-default-bg-color);
+    color: var(--md-default-fg-color);
 }
 
-/* Navigation */
-.navbar {
-    background-color: var(--main-bg-color);
-    border-bottom: 1px solid var(--border-color);
+.md-nav {
+    color: var(--md-default-fg-color);
 }
 
-.navbar-default .navbar-nav > li > a,
-.navbar-default .navbar-brand {
-    color: var(--main-text-color);
+.md-nav__link {
+    color: var(--md-accent-fg-color) !important;
 }
 
-.navbar-default .navbar-nav > li > a:hover,
-.navbar-default .navbar-brand:hover {
-    background-color: var(--main-text-color);
-    color: var(--menu-selected-color);
+.md-nav__link:hover {
+    color: #ffff00 !important;
 }
 
-/* Content */
-.col-md-9 {
-    background-color: var(--main-bg-color);
-    color: var(--main-text-color);
+.md-nav__link--active {
+    color: #ffff00 !important;
+}
+
+.md-typeset {
+    color: var(--md-typeset-color);
+}
+
+.md-typeset a {
+    color: var(--md-accent-fg-color);
+}
+
+.md-typeset a:hover {
+    color: #ffff00;
 }
 
 /* Code blocks */
-pre, code {
-    font-family: 'Monoid', monospace !important;
-    color: var(--main-text-color) !important;
-    border: 1px solid var(--border-color) !important;
+.md-typeset code {
+    background-color: #000042;
+    color: var(--md-default-fg-color);
+    border: 1px solid var(--md-default-fg-color);
+    padding: 0.2em 0.4em;
+}
+
+.md-typeset pre > code {
+    background-color: #000042;
+    color: var(--md-default-fg-color);
+    border: 1px solid var(--md-default-fg-color);
     padding: 1em;
 }
 
-/* Links */
-a {
-    color: var(--link-color);
-    text-decoration: none;
-}
-
-a:hover {
-    color: var(--main-text-color);
-    text-decoration: underline;
-}
-
 /* Headers */
-h1, h2, h3, h4, h5, h6 {
-    color: var(--main-text-color);
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.3em;
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6 {
+    color: var(--md-default-fg-color);
 }
 
 /* Tables */
-table {
-    border: 1px solid var(--border-color);
-    width: 100%;
+.md-typeset table:not([class]) {
+    background-color: #000042;
+    border: 1px solid var(--md-default-fg-color);
 }
 
-th, td {
-    border: 1px solid var(--border-color);
-    padding: 8px;
-    background-color: var(--main-bg-color);
+.md-typeset table:not([class]) th {
+    background-color: #000084;
+    color: var(--md-default-fg-color);
+    border: 1px solid var(--md-default-fg-color);
 }
 
-/* Blockquotes */
-blockquote {
-    border-left: 4px solid var(--border-color);
-    padding-left: 1em;
-    margin-left: 0;
-    color: var(--main-text-color);
+.md-typeset table:not([class]) td {
+    border: 1px solid var(--md-default-fg-color);
 }
 
-/* Search box */
-input[type="text"] {
-    background-color: var(--main-bg-color);
-    color: var(--main-text-color);
-    border: 1px solid var(--border-color);
+/* Search */
+.md-search__input {
+    background-color: #000042;
+    color: var(--md-default-fg-color);
 }
 
-/* Footer */
-footer {
-    background-color: var(--main-bg-color);
-    color: var(--main-text-color);
-    border-top: 1px solid var(--border-color);
-    padding: 1em 0;
+.md-search-result__meta {
+    color: var(--md-default-fg-color);
 }
 
-/* Sidebar */
-.bs-sidebar {
-    background-color: var(--main-bg-color);
-    border: 1px solid var(--border-color);
+.md-search-result__link {
+    background-color: #000042;
 }
 
-.bs-sidebar .nav > li > a {
-    color: var(--main-text-color);
+.md-search-result__link:hover {
+    background-color: #000084;
 }
 
-.bs-sidebar .nav > li > a:hover {
-    background-color: var(--main-text-color);
-    color: var(--menu-selected-color);
+/* Admonitions */
+.md-typeset .admonition {
+    background-color: #000042;
+    border: 1px solid var(--md-default-fg-color);
 }
 
-.bs-sidebar .nav > .active > a,
-.bs-sidebar .nav > .active:hover > a {
-    background-color: var(--main-text-color);
-    color: var(--menu-hover-color);
-}
-
-/* Table of Contents Sidebar */
-.navbar-light.navbar-expand-md.bs-sidebar {
-    border: 1px solid var(--border-color);
-}
-
-.navbar-light.navbar-expand-md.bs-sidebar .nav-link {
-    color: #0000FF !important;
-}
-
-.navbar-light.navbar-expand-md.bs-sidebar .nav-link:hover {
-    color: #808000 !important;
-}
-
-/* Alerts and admonitions */
-.admonition {
-    border: 1px solid var(--border-color);
-    color: var(--main-text-color);
-}
-
-.admonition-title {
-    color: var(--main-text-color);
-    border-bottom: 1px solid var(--border-color);
+.md-typeset .admonition-title {
+    background-color: #000084;
+    color: var(--md-default-fg-color);
 }
