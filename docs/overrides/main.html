@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+    {{ super() }}
+    <link href="{{ 'assets/css/custom.css'|url }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        {{ super() }}
+    </div>
+{% endblock %}

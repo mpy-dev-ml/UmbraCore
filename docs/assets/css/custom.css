@@ -1,0 +1,51 @@
+@font-face {
+    font-family: 'Monoid';
+    src: url('../fonts/monoid/Monoid-Regular.woff2') format('woff2'),
+         url('../fonts/monoid/Monoid-Regular.woff') format('woff'),
+         url('../fonts/monoid/Monoid-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Monoid';
+    src: url('../fonts/monoid/Monoid-Bold.woff2') format('woff2'),
+         url('../fonts/monoid/Monoid-Bold.woff') format('woff'),
+         url('../fonts/monoid/Monoid-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* Apply Monoid to code blocks and pre elements */
+code, pre {
+    font-family: 'Monoid', monospace !important;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Optional: Use Monoid for terminal-like elements */
+.terminal, .command-line {
+    font-family: 'Monoid', monospace !important;
+    font-size: 14px;
+}
+
+/* Adjust the bootstrap386 theme's font sizes for better readability */
+body {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Enhance code block appearance */
+pre {
+    background-color: #000;
+    color: #33ff00;
+    border: 1px solid #33ff00;
+    padding: 15px;
+    border-radius: 0;
+    margin: 20px 0;
+}
+
+/* Add a subtle CRT screen effect */
+.content {
+    text-shadow: 0 0 2px rgba(51, 255, 0, 0.3);
+}
