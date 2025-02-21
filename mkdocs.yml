@@ -1,0 +1,52 @@
+site_name: UmbraCore Documentation
+site_description: Documentation for UmbraCore - Secure Backup Management System
+site_author: MPY Development
+repo_url: https://github.com/mpy-dev-ml/UmbraCore
+edit_uri: edit/main/docs/
+site_url: https://mpy-dev-ml.github.io/UmbraCore/
+
+theme:
+  name: bootstrap386
+  custom_dir: docs/overrides
+  features:
+    - navigation.instant
+    - navigation.tracking
+  palette:
+    primary: amber
+  font: false  # Disable default fonts
+
+extra_css:
+  - assets/css/custom.css
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Getting Started: GETTING_STARTED.md
+  - Architecture: guides/ARCHITECTURE.md
+  - Integration:
+    - Bazel SPM Integration: bazel_spm_integration.md
+  - Guides:
+    - Error Handling: guides/error-handling.md
+    - Performance: guides/performance.md
+    - Thread Safety: guides/thread-safety.md
+    - Bookmarks: guides/bookmarks.md
+    - Crypto: guides/crypto.md
+    - Crypto Types: guides/crypto-types.md
+    - Security: guides/security.md
+    - Keychain: guides/keychain.md
+    - Logging: guides/logging.md
+    - XPC: guides/xpc.md
+  - API Reference: api/README.md
+  - Contributing: contributing/CONTRIBUTING.md
+  - Security: security/SECURITY_GUIDELINES.md
+  - Acknowledgments: ACKNOWLEDGMENTS.md
+  - License: LICENSE.md
