@@ -76,6 +76,7 @@ jobs:
       run: |
         # Generate coverage data
         bazel coverage //... \
+          --collect_code_coverage \
           --instrument_test_targets \
           --experimental_generate_llvm_lcov \
           --combined_report=lcov \
@@ -95,6 +96,7 @@ jobs:
           head -n 5 coverage/lcov.info
         else
           echo "Error: Coverage file not found"
+          echo "Searching for any .dat files in bazel-out:"
           find bazel-out -type f -name "*.dat" -ls
           exit 1
         fi
