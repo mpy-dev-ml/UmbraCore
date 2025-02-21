@@ -1,3 +1,28 @@
+/* Bootstrap386 Theme Customization */
+body {
+    background-color: #000084;
+    color: #ffffff;
+}
+
+.navbar {
+    background-color: #000084;
+    border-bottom: 1px solid #ffffff;
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: #ffffff;
+}
+
+.navbar-default .navbar-brand {
+    color: #ffffff;
+}
+
+.well {
+    background-color: #000084;
+    border: 1px solid #ffffff;
+}
+
+/* Monoid Font Integration */
 @font-face {
     font-family: 'Monoid';
     src: url('../fonts/monoid/Monoid-Regular.woff2') format('woff2'),
@@ -16,63 +41,73 @@
     font-style: normal;
 }
 
-/* Apply Monoid to code blocks and pre elements */
+/* Code Blocks */
 code, pre {
     font-family: 'Monoid', monospace !important;
     font-size: 14px;
     line-height: 1.5;
+    background-color: #000084;
+    color: #ffffff;
+    border: 1px solid #ffffff;
 }
 
-/* Optional: Use Monoid for terminal-like elements */
-.terminal, .command-line {
-    font-family: 'Monoid', monospace !important;
-    font-size: 14px;
-}
-
-/* Adjust the bootstrap386 theme for better readability */
-body {
-    font-size: 16px;
-    line-height: 1.6;
-    background-color: #001830 !important; /* Softer blue background */
-    color: #b4c8d8 !important; /* Softer text color */
-}
-
-/* Enhance code block appearance */
-pre {
-    background-color: #000;
-    color: #33ff00;
-    border: 1px solid #33ff00;
-    padding: 15px;
-    border-radius: 0;
-    margin: 20px 0;
-}
-
-/* Add a subtle CRT screen effect */
-.content {
-    text-shadow: 0 0 2px rgba(51, 255, 0, 0.3);
-}
-
-/* Improve link readability */
+/* Links */
 a {
-    color: #66ccff !important; /* Brighter blue for links */
+    color: #00ffff;
 }
 
 a:hover {
-    color: #99ddff !important;
-    text-decoration: underline;
+    color: #ffffff;
+    text-decoration: none;
 }
 
-/* Improve heading contrast */
+/* Headers */
 h1, h2, h3, h4, h5, h6 {
-    color: #ffffff !important;
+    color: #ffffff;
 }
 
-/* Improve navigation readability */
-.nav > li > a {
-    color: #b4c8d8 !important;
+/* Navigation */
+.bs-sidebar .nav > li > a {
+    color: #ffffff;
 }
 
-.nav > li > a:hover {
-    background-color: #002850 !important;
-    color: #ffffff !important;
+.bs-sidebar .nav > li > a:hover {
+    color: #00ffff;
+    background-color: transparent;
+}
+
+/* Search Box */
+.form-control {
+    background-color: #000084;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+}
+
+/* Tables */
+table {
+    border: 1px solid #ffffff;
+}
+
+th, td {
+    border: 1px solid #ffffff;
+    padding: 8px;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 5px solid #ffffff;
+    background-color: #000084;
+}
+
+/* Alerts and Notes */
+.alert {
+    background-color: #000084;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+}
+
+/* Footer */
+footer {
+    border-top: 1px solid #ffffff;
+    color: #ffffff;
 }

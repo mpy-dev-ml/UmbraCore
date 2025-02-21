@@ -7,12 +7,11 @@ site_url: https://mpy-dev-ml.github.io/UmbraCore
 
 theme:
   name: bootstrap386
-  custom_dir: docs/overrides
   features:
     - navigation.instant
     - navigation.tracking
   palette:
-    primary: amber
+    primary: blue
   font: false  # Disable default fonts
 
 extra_css:
