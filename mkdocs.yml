@@ -6,14 +6,8 @@ edit_uri: edit/main/docs/
 site_url: https://mpy-dev-ml.github.io/UmbraCore
 
 theme:
-  name: bootstrap386
+  name: mkdocs
   custom_dir: docs/overrides
-  features:
-    - navigation.instant
-    - navigation.tracking
-  palette:
-    scheme: default
-  font: false
 
 plugins:
   - search

@@ -1,113 +1,120 @@
-/* Bootstrap386 Theme Customization */
+/* DOS-like theme */
+:root {
+    --main-bg-color: #000084;
+    --main-text-color: #ffffff;
+    --link-color: #00ffff;
+    --border-color: #ffffff;
+}
+
 body {
-    background-color: #000084;
-    color: #ffffff;
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    font-family: "DOS", "Courier New", monospace;
 }
 
+/* Navigation */
 .navbar {
-    background-color: #000084;
-    border-bottom: 1px solid #ffffff;
+    background-color: var(--main-bg-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
-.navbar-default .navbar-nav > li > a {
-    color: #ffffff;
-}
-
+.navbar-default .navbar-nav > li > a,
 .navbar-default .navbar-brand {
-    color: #ffffff;
+    color: var(--main-text-color);
 }
 
-.well {
-    background-color: #000084;
-    border: 1px solid #ffffff;
+/* Content */
+.col-md-9 {
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
 }
 
-/* Monoid Font Integration */
-@font-face {
-    font-family: 'Monoid';
-    src: url('../fonts/monoid/Monoid-Regular.woff2') format('woff2'),
-         url('../fonts/monoid/Monoid-Regular.woff') format('woff'),
-         url('../fonts/monoid/Monoid-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Monoid';
-    src: url('../fonts/monoid/Monoid-Bold.woff2') format('woff2'),
-         url('../fonts/monoid/Monoid-Bold.woff') format('woff'),
-         url('../fonts/monoid/Monoid-Bold.ttf') format('truetype');
-    font-weight: bold;
-    font-style: normal;
-}
-
-/* Code Blocks */
-code, pre {
+/* Code blocks */
+pre, code {
     font-family: 'Monoid', monospace !important;
-    font-size: 14px;
-    line-height: 1.5;
-    background-color: #000084;
-    color: #ffffff;
-    border: 1px solid #ffffff;
+    background-color: var(--main-bg-color) !important;
+    color: var(--main-text-color) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 1em;
 }
 
 /* Links */
 a {
-    color: #00ffff;
+    color: var(--link-color);
+    text-decoration: none;
 }
 
 a:hover {
-    color: #ffffff;
-    text-decoration: none;
+    color: var(--main-text-color);
+    text-decoration: underline;
 }
 
 /* Headers */
 h1, h2, h3, h4, h5, h6 {
-    color: #ffffff;
-}
-
-/* Navigation */
-.bs-sidebar .nav > li > a {
-    color: #ffffff;
-}
-
-.bs-sidebar .nav > li > a:hover {
-    color: #00ffff;
-    background-color: transparent;
-}
-
-/* Search Box */
-.form-control {
-    background-color: #000084;
-    color: #ffffff;
-    border: 1px solid #ffffff;
+    color: var(--main-text-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.3em;
 }
 
 /* Tables */
 table {
-    border: 1px solid #ffffff;
+    border: 1px solid var(--border-color);
+    width: 100%;
 }
 
 th, td {
-    border: 1px solid #ffffff;
+    border: 1px solid var(--border-color);
     padding: 8px;
+    background-color: var(--main-bg-color);
 }
 
 /* Blockquotes */
 blockquote {
-    border-left: 5px solid #ffffff;
-    background-color: #000084;
+    border-left: 4px solid var(--border-color);
+    padding-left: 1em;
+    margin-left: 0;
+    color: var(--main-text-color);
 }
 
-/* Alerts and Notes */
-.alert {
-    background-color: #000084;
-    border: 1px solid #ffffff;
-    color: #ffffff;
+/* Search box */
+input[type="text"] {
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    border: 1px solid var(--border-color);
 }
 
 /* Footer */
 footer {
-    border-top: 1px solid #ffffff;
-    color: #ffffff;
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    border-top: 1px solid var(--border-color);
+    padding: 1em 0;
+}
+
+/* Sidebar */
+.bs-sidebar {
+    background-color: var(--main-bg-color);
+    border: 1px solid var(--border-color);
+}
+
+.bs-sidebar .nav > li > a {
+    color: var(--main-text-color);
+}
+
+.bs-sidebar .nav > li > a:hover {
+    color: var(--link-color);
+    background-color: transparent;
+}
+
+/* Alerts and admonitions */
+.admonition {
+    background-color: var(--main-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--main-text-color);
+}
+
+.admonition-title {
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    border-bottom: 1px solid var(--border-color);
 }
