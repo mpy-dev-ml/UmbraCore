@@ -9,8 +9,16 @@ on:
     branches:
       - main
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 env:
   PYTHON_VERSION: '3.x'
@@ -20,6 +28,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/feature/mkdocs-migration' || github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
       - name: Checkout repository
@@ -57,6 +68,7 @@ jobs:
         run: mkdocs build --verbose
 
       - name: Deploy to GitHub Pages
+        id: deployment
         if: github.event_name != 'pull_request'
         run: |
           git fetch origin gh-pages || true
