@@ -78,3 +78,6 @@ MODULE.bazel.lock
 user.bazelrc
 .bazel/
 .bazelrc.user
+
+# MkDocs build output
+site/
