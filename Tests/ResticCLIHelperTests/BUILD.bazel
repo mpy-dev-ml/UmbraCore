@@ -1,0 +1,13 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+
+swift_test(
+    name = "ResticCLIHelperTests",
+    srcs = glob(["**/*.swift"]),
+    module_name = "ResticCLIHelperTests",
+    deps = [
+        "//Sources/ResticCLIHelper",
+        "//Tests/UmbraTestKit",
+    ],
+    testonly = True,
+    visibility = ["//visibility:public"],
+)
