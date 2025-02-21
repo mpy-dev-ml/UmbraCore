@@ -1,10 +1,12 @@
 # Swift
-*.swift linguist-language=Swift
+*.swift linguist-language=Swift linguist-detectable=true
 *.h linguist-language=Swift
 
 # Documentation
 *.md linguist-documentation
 docs/* linguist-documentation
+site/* linguist-documentation
+*.html linguist-documentation
 
 # Generated files
 *.generated.swift linguist-generated=true
