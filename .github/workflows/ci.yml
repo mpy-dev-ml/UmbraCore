@@ -80,13 +80,14 @@ jobs:
           --experimental_generate_llvm_lcov \
           --combined_report=lcov \
           --test_env=UMBRA_TEST_ROOT \
-          --verbose_failures
+          --verbose_failures \
+          --test_output=errors
         
         # Create coverage directory
         mkdir -p coverage
         
-        # Find coverage file and copy it
-        COVERAGE_FILE=$(find "$(bazel info output_path)" -name "coverage.dat")
+        # Find coverage file from bazel-out
+        COVERAGE_FILE=$(find bazel-out -name "coverage.dat")
         if [ -f "$COVERAGE_FILE" ]; then
           echo "Found coverage file at: $COVERAGE_FILE"
           cp "$COVERAGE_FILE" coverage/lcov.info
@@ -94,6 +95,7 @@ jobs:
           head -n 5 coverage/lcov.info
         else
           echo "Error: Coverage file not found"
+          find bazel-out -type f -name "*.dat" -ls
           exit 1
         fi
 
