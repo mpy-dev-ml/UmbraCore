@@ -1,20 +1,17 @@
 name: CI
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 env:
-  BAZEL_VERSION: 8.1.0
   DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
 permissions:
-  contents: read
+  contents: write
   security-events: write
   id-token: write
+  checks: write
+  pull-requests: write
 
 jobs:
   build-and-test:
@@ -33,18 +30,12 @@ jobs:
         swift --version
         bazel --version
 
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
-      with:
-        bazelrc: .bazelrc
-        version: ${{ env.BAZEL_VERSION }}
-
     - name: Configure Bazel
       run: |
         cat >> .bazelrc << 'EOF'
         build --cpu=darwin_arm64
         build --apple_platform_type=macos
-        build --macos_minimum_os=13.0
+        build --macos_minimum_os=14.0
         build --features=swift.use_global_module_cache
         build --features=swift.enable_batch_mode
         build --features=swift.enable_concurrency_checking
@@ -81,19 +72,44 @@ jobs:
       env:
         UMBRA_TEST_ROOT: ~/UmbraTest/Coverage
       run: |
+        # Generate coverage data
         bazel coverage //... \
+          --collect_code_coverage \
+          --instrument_test_targets \
           --experimental_generate_llvm_lcov \
+          --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main \
           --combined_report=lcov \
-          --test_env=UMBRA_TEST_ROOT
+          --test_env=UMBRA_TEST_ROOT \
+          --verbose_failures \
+          --test_output=errors
+        
+        # Create coverage directory
+        mkdir -p coverage
+        
+        # Find coverage file in bazel-out/_coverage
+        COVERAGE_FILE="$(pwd)/bazel-out/_coverage/_coverage_report.dat"
+        if [ -f "$COVERAGE_FILE" ]; then
+          echo "Found coverage file at: $COVERAGE_FILE"
+          cp "$COVERAGE_FILE" coverage/lcov.info
+          echo "Coverage file contents:"
+          head -n 5 coverage/lcov.info
+        else
+          echo "Error: Coverage file not found at $COVERAGE_FILE"
+          echo "Searching for any coverage files:"
+          find bazel-out -type f -name "*coverage*.dat" -ls
+          exit 1
+        fi
 
     - name: Upload Coverage
       uses: codecov/codecov-action@v4
       with:
-        files: $(bazel info output_path)/_coverage/_coverage_report.dat
+        files: coverage/lcov.info
         fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
+        slug: mpy-dev-ml/UmbraCore
 
     - name: Cleanup
       if: always()
       run: |
         rm -rf ~/UmbraTest
+        bazel clean --expunge

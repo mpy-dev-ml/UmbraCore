@@ -3,6 +3,7 @@ import SecurityTypes
 import UmbraTestKit
 import XCTest
 
+@available(macOS 14.0, *)
 final class URLSecurityTests: XCTestCase {
     var mockSecurityProvider: MockSecurityProvider!
     var testFileURL: URL!
@@ -24,7 +25,7 @@ final class URLSecurityTests: XCTestCase {
         await mockSecurityProvider.reset()
     }
 
-    func testBookmarkCreationAndResolution() async throws {
+    nonisolated func testBookmarkCreationAndResolution() async throws {
         let bookmarkData = try await mockSecurityProvider.createBookmark(forPath: testFileURL.path)
         XCTAssertFalse(bookmarkData.isEmpty, "Bookmark data should not be empty")
 
@@ -33,20 +34,20 @@ final class URLSecurityTests: XCTestCase {
         XCTAssertFalse(isStale, "Bookmark should not be stale")
     }
 
-    func testSecurityScopedAccess() async throws {
-        try await mockSecurityProvider.withSecurityScopedAccess(to: testFileURL.path) {
+    nonisolated func testSecurityScopedAccess() async throws {
+        try await mockSecurityProvider.withSecurityScopedAccess(to: testFileURL.path, perform: { @Sendable in
             let content = try String(contentsOf: testFileURL, encoding: .utf8)
             XCTAssertEqual(content, testFileData, "Should be able to read file content")
 
             let paths = await mockSecurityProvider.getAccessedPaths()
             XCTAssertTrue(paths.contains(testFileURL.path), "Path should be in accessed paths during operation")
-        }
+        })
 
         let paths = await mockSecurityProvider.getAccessedPaths()
         XCTAssertFalse(paths.contains(testFileURL.path), "Path should not be in accessed paths after operation")
     }
 
-    func testInvalidBookmark() async throws {
+    nonisolated func testInvalidBookmark() async throws {
         let invalidData: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFF] // Invalid UTF-8 sequence
 
         do {
@@ -60,7 +61,7 @@ final class URLSecurityTests: XCTestCase {
         }
     }
 
-    func testBookmarkValidation() async throws {
+    nonisolated func testBookmarkValidation() async throws {
         let validData = try await mockSecurityProvider.createBookmark(forPath: testFileURL.path)
         let isValidBookmark = try await mockSecurityProvider.validateBookmark(validData)
         XCTAssertTrue(isValidBookmark, "Valid bookmark should pass validation")
