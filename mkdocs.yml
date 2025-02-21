@@ -6,8 +6,24 @@ edit_uri: edit/main/docs/
 site_url: https://mpy-dev-ml.github.io/UmbraCore
 
 theme:
-  name: mkdocs
+  name: material
   custom_dir: docs/overrides
+  palette:
+    scheme: slate
+    primary: blue
+    accent: cyan
+  font:
+    text: Roboto Mono
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
 
 plugins:
   - search
