@@ -79,16 +79,25 @@ jobs:
           --combined_report=lcov \
           --test_env=UMBRA_TEST_ROOT
         
-        # Ensure coverage file exists and copy it to a known location
+        # Create coverage directory and ensure it exists
         mkdir -p coverage
-        find "$(bazel info output_path)/_coverage" -name "coverage.dat" -exec cp {} coverage/coverage.dat \;
+        
+        # Find and copy the coverage file, showing debug info
+        echo "Looking for coverage files in $(bazel info output_path)/_coverage"
+        find "$(bazel info output_path)/_coverage" -name "coverage.dat" -ls
+        find "$(bazel info output_path)/_coverage" -name "coverage.dat" -exec cp {} coverage/lcov.info \;
+        
+        # Verify the coverage file exists and show its contents
+        ls -la coverage/
+        head -n 5 coverage/lcov.info
 
     - name: Upload Coverage
       uses: codecov/codecov-action@v4
       with:
-        files: coverage/coverage.dat
+        files: coverage/lcov.info
         fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
+        slug: mpy-dev-ml/UmbraCore
 
     - name: Cleanup
       if: always()
