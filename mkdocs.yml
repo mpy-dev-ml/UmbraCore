@@ -3,6 +3,7 @@ site_description: Documentation for UmbraCore - Secure Backup Management System
 site_author: MPY Development
 repo_url: https://github.com/mpy-dev-ml/UmbraCore
 edit_uri: edit/main/docs/
+site_url: https://mpy-dev-ml.github.io/UmbraCore/
 
 theme:
   name: bootstrap386

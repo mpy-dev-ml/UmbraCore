@@ -29,10 +29,12 @@ code, pre {
     font-size: 14px;
 }
 
-/* Adjust the bootstrap386 theme's font sizes for better readability */
+/* Adjust the bootstrap386 theme for better readability */
 body {
     font-size: 16px;
     line-height: 1.6;
+    background-color: #001830 !important; /* Softer blue background */
+    color: #b4c8d8 !important; /* Softer text color */
 }
 
 /* Enhance code block appearance */
@@ -48,4 +50,29 @@ pre {
 /* Add a subtle CRT screen effect */
 .content {
     text-shadow: 0 0 2px rgba(51, 255, 0, 0.3);
+}
+
+/* Improve link readability */
+a {
+    color: #66ccff !important; /* Brighter blue for links */
+}
+
+a:hover {
+    color: #99ddff !important;
+    text-decoration: underline;
+}
+
+/* Improve heading contrast */
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff !important;
+}
+
+/* Improve navigation readability */
+.nav > li > a {
+    color: #b4c8d8 !important;
+}
+
+.nav > li > a:hover {
+    background-color: #002850 !important;
+    color: #ffffff !important;
 }
