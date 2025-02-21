@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  BAZEL_VERSION: 8.1.0
+  BAZEL_VERSION: v8.1.0
   DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
