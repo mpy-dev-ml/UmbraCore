@@ -7,14 +7,16 @@ env:
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
 permissions:
-  contents: read
+  contents: write
   security-events: write
-  id-token: read
+  id-token: write
+  checks: write
+  pull-requests: write
 
 jobs:
   build-and-test:
     name: Build & Test
-    runs-on: self-hosted
+    runs-on: [self-hosted, macOS, ARM64]
     
     steps:
     - uses: actions/checkout@v4
