@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/mkdocs-migration  # Include this branch during development
+      - feature/mkdocs-migration
   pull_request:
     branches:
       - main
@@ -15,6 +15,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/feature/mkdocs-migration' || github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,6 +31,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install mkdocs mkdocs-bootstrap386 pymdown-extensions
 
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Build and deploy documentation
         run: |
-          mkdocs gh-deploy --force
+          mkdocs gh-deploy --force --remote-branch gh-pages
