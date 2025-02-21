@@ -1,4 +1,4 @@
-name: Build & Test
+name: CI
 
 on:
   push:
@@ -11,14 +11,21 @@ env:
   DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
+
 jobs:
-  core-tests:
-    name: Core Tests
-    runs-on: self-hosted
+  build-and-test:
+    name: Build & Test
+    runs-on: [self-hosted, macOS, ARM64]
+    
     steps:
     - uses: actions/checkout@v4
       with:
         clean: true
+        fetch-depth: 0
 
     - name: System Info
       run: |
@@ -34,77 +41,59 @@ jobs:
 
     - name: Configure Bazel
       run: |
-        echo "build --cpu=darwin_arm64" >> .bazelrc
-        echo "build --apple_platform_type=macos" >> .bazelrc
-        echo "build --macos_minimum_os=13.0" >> .bazelrc
-        echo "build --features=swift.use_global_module_cache" >> .bazelrc
-        echo "build --features=swift.enable_batch_mode" >> .bazelrc
-        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
-        echo "build --verbose_failures" >> .bazelrc
+        cat >> .bazelrc << 'EOF'
+        build --cpu=darwin_arm64
+        build --apple_platform_type=macos
+        build --macos_minimum_os=13.0
+        build --features=swift.use_global_module_cache
+        build --features=swift.enable_batch_mode
+        build --features=swift.enable_concurrency_checking
+        build --verbose_failures
+        test --test_output=errors
+        EOF
+
+    - name: Setup Test Environment
+      run: |
+        mkdir -p ~/UmbraTest/{Core,Security,Coverage}
+        chmod -R 755 ~/UmbraTest
 
     - name: Build
-      run: bazel build //...
-
-    - name: Run Tests
-      run: bazel test //...
-
-  security-tests:
-    name: Security Tests
-    needs: core-tests
-    runs-on: self-hosted
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        clean: true
-
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
-      with:
-        bazelrc: .bazelrc
-        version: ${{ env.BAZEL_VERSION }}
-
-    - name: Configure Bazel
       run: |
-        echo "build --cpu=darwin_arm64" >> .bazelrc
-        echo "build --apple_platform_type=macos" >> .bazelrc
-        echo "build --macos_minimum_os=13.0" >> .bazelrc
-        echo "build --features=swift.use_global_module_cache" >> .bazelrc
-        echo "build --features=swift.enable_batch_mode" >> .bazelrc
-        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
-        echo "build --verbose_failures" >> .bazelrc
+        bazel build //... --show_progress_rate_limit=5
 
-    - name: Run Security Tests
-      run: bazel test //... --test_tag_filters=security
-
-  coverage:
-    name: Coverage
-    needs: [core-tests, security-tests]
-    runs-on: self-hosted
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        clean: true
-
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
-      with:
-        bazelrc: .bazelrc
-        version: ${{ env.BAZEL_VERSION }}
-
-    - name: Configure Bazel
+    - name: Core Tests
+      env:
+        UMBRA_TEST_ROOT: ~/UmbraTest/Core
       run: |
-        echo "build --cpu=darwin_arm64" >> .bazelrc
-        echo "build --apple_platform_type=macos" >> .bazelrc
-        echo "build --macos_minimum_os=13.0" >> .bazelrc
-        echo "build --features=swift.use_global_module_cache" >> .bazelrc
-        echo "build --features=swift.enable_batch_mode" >> .bazelrc
-        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
-        echo "build --verbose_failures" >> .bazelrc
+        bazel test //... \
+          --test_tag_filters=-security,-requires_keychain \
+          --test_env=UMBRA_TEST_ROOT
+
+    - name: Security Tests
+      env:
+        UMBRA_TEST_ROOT: ~/UmbraTest/Security
+      run: |
+        bazel test //... \
+          --test_tag_filters=security \
+          --test_env=UMBRA_TEST_ROOT
 
     - name: Generate Coverage
-      run: bazel coverage //...
+      env:
+        UMBRA_TEST_ROOT: ~/UmbraTest/Coverage
+      run: |
+        bazel coverage //... \
+          --experimental_generate_llvm_lcov \
+          --combined_report=lcov \
+          --test_env=UMBRA_TEST_ROOT
 
     - name: Upload Coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
-        files: bazel-out/_coverage/_coverage_report.dat
+        files: $(bazel info output_path)/_coverage/_coverage_report.dat
+        fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -rf ~/UmbraTest
