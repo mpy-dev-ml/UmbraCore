@@ -5,9 +5,19 @@ on:
     branches:
       - main
       - feature/mkdocs-migration
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+      - 'requirements.txt'
   pull_request:
     branches:
       - main
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+      - 'requirements.txt'
 
 permissions:
   contents: read
