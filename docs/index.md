@@ -91,11 +91,11 @@ UmbraCore prioritises security in all aspects of its implementation. For details
 
 If you find UmbraCore useful, please consider:
 
-1. [Contributing](contributing) to the project
+1. [Contributing](contributing/CONTRIBUTING.md) to the project
 2. [Supporting Restic](https://github.com/sponsors/fd0)
 3. Starring us on [GitHub](https://github.com/mpy-dev-ml/UmbraCore)
 4. Sharing your experience with others
 
-## Licence
+## License
 
-UmbraCore is available under the MIT licence. See the [LICENCE](LICENCE) file for more info.
+UmbraCore is available under the MIT license. See the [LICENSE](LICENSE.md) file for more info.
