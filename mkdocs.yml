@@ -32,15 +32,20 @@ nav:
   - Home: index.md
   - Getting Started: GETTING_STARTED.md
   - Architecture: guides/ARCHITECTURE.md
+  - Integration:
+    - Bazel SPM Integration: bazel_spm_integration.md
   - Guides:
     - Error Handling: guides/error-handling.md
     - Performance: guides/performance.md
     - Thread Safety: guides/thread-safety.md
     - Bookmarks: guides/bookmarks.md
     - Crypto: guides/crypto.md
+    - Crypto Types: guides/crypto-types.md
+    - Security: guides/security.md
     - Keychain: guides/keychain.md
     - Logging: guides/logging.md
     - XPC: guides/xpc.md
   - API Reference: api/README.md
   - Contributing: contributing/CONTRIBUTING.md
   - Security: security/SECURITY_GUIDELINES.md
+  - Acknowledgments: ACKNOWLEDGMENTS.md

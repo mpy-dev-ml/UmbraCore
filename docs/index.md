@@ -67,14 +67,14 @@ UmbraCore is currently in active development with the following milestones:
 
 ## Getting Started
 
-- [Installation Guide](GETTING_STARTED.md)
-- [Architecture Overview](guides/ARCHITECTURE.md)
-- [API Reference](api/README.md)
-- [Contributing Guidelines](contributing/CONTRIBUTING.md)
+- [Installation Guide](getting-started.md)
+- [Architecture Overview](guides/architecture.md)
+- [API Reference](api/index.md)
+- [Contributing Guidelines](contributing/index.md)
 
 ## Security
 
-UmbraCore prioritises security in all aspects of its implementation. For details, see our [Security Guidelines](security/SECURITY_GUIDELINES.md).
+UmbraCore prioritises security in all aspects of its implementation. For details, see our [Security Guidelines](security/index.md).
 
 ## Implementation Guides
 
