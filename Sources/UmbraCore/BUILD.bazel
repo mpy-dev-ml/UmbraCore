@@ -25,7 +25,17 @@ filegroup(
 )
 
 filegroup(
-    name = "docc_archive",
+    name = "docc_bundle",
     srcs = glob(["UmbraCore.docc/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+docc_archive(
+    name = "docc_archive",
+    srcs = ["sources"],
+    docc_bundle = ":docc_bundle",
+    module_name = "UmbraCore",
+    display_name = "UmbraCore",
+    bundle_identifier = "com.umbra.core.documentation",
     visibility = ["//visibility:public"],
 )

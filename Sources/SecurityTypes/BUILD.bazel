@@ -22,9 +22,16 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "docc_bundle",
+    srcs = glob(["SecurityTypes.docc/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
 docc_archive(
     name = "docc_archive",
-    srcs = glob(["SecurityTypes.docc/**/*"]),
+    srcs = ["sources"],
+    docc_bundle = ":docc_bundle",
     module_name = "SecurityTypes",
     display_name = "SecurityTypes",
     bundle_identifier = "com.umbra.security.types.documentation",
