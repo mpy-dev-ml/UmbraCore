@@ -23,11 +23,11 @@ CryptoTypes provides the core cryptographic functionality for the UmbraCore fram
 
 ### Protocols
 
-- ``CryptoServiceProtocol``
+- ``CryptoService``
 
 ### Configuration
 
-- ``Configuration``
+- ``CryptoConfig``
 
 ### Error Handling
 
@@ -35,4 +35,4 @@ CryptoTypes provides the core cryptographic functionality for the UmbraCore fram
 
 ### Data Types
 
-- ``StorageData``
+- ``SecureStorageData``
