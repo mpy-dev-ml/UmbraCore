@@ -3,7 +3,7 @@ common --enable_bzlmod
 
 # Platform configuration
 build --apple_platform_type=macos
-build --macos_minimum_os=15.4
+build --macos_minimum_os=14.0
 build --cpu=darwin_arm64
 build --host_cpu=darwin_arm64
 build --macos_cpus=arm64
@@ -49,7 +49,7 @@ build --jobs=auto  # Automatically determine the number of jobs
 # macOS configuration
 build:macos --cpu=darwin_arm64
 build:macos --apple_platform_type=macos
-build:macos --macos_minimum_os=15.2
+build:macos --macos_minimum_os=14.0
 build:macos --features=swift.use_global_module_cache
 build:macos --features=swift.enable_batch_mode
 build:macos --features=swift.enable_concurrency_checking
