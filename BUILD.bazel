@@ -39,7 +39,7 @@ docc_archive(
     name = "SecurityTypes.docc",
     srcs = ["//Sources/SecurityTypes:sources"],
     deps = [],
-    docc_bundle = "//Sources/SecurityTypes:docc_archive",
+    docc_bundle = "//Sources/SecurityTypes:docc_bundle",
     module_name = "SecurityTypes",
     display_name = "SecurityTypes",
     bundle_identifier = "com.umbra.security.types.documentation",
