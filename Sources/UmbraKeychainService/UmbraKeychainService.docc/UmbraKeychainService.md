@@ -1,5 +1,9 @@
 # ``UmbraKeychainService``
 
+@Metadata {
+    @TechnologyRoot
+}
+
 A secure keychain service for managing sensitive data.
 
 ## Overview
@@ -10,24 +14,16 @@ UmbraKeychainService provides a robust and secure interface for managing sensiti
 
 ### Essentials
 
+- ``UmbraKeychainService/KeychainService``
+- ``KeychainServiceProtocol``
 - ``PasswordValidator``
-- ``PasswordRequirements``
-- ``PasswordStrength``
 
-### Security
+### XPC Services
 
-- ``KeychainAccessControl``
-- ``BiometricAuthentication``
-- ``EncryptionService``
+- ``KeychainXPCService``
+- ``KeychainXPCConnection``
+- ``KeychainXPCImplementation``
 
 ### Error Handling
 
-- ``RetryStrategy``
 - ``KeychainError``
-- ``BackupService``
-
-### Metadata
-
-- ``PasswordMetadata``
-- ``PasswordCategory``
-- ``EnhancedMetadata``
