@@ -43,10 +43,10 @@ jobs:
       run: bazel build //... --show_progress_rate_limit=5
 
     - name: Core Tests
-      run: bazel test //Tests/UmbraCoreTests/... --test_output=errors
+      run: bazel test //Tests/UmbraCoreTests/... --config=macos --test_output=errors
 
     - name: Security Tests
-      run: bazel test //Tests/SecurityTypesTests/... //Tests/CryptoTypesTests/... --test_output=errors
+      run: bazel test //Tests/SecurityTypesTests/... //Tests/CryptoTypesTests/... --config=macos --test_output=errors
 
     - name: Generate Coverage
       run: |
