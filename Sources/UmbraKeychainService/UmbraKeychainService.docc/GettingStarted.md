@@ -14,9 +14,9 @@ UmbraKeychainService is a comprehensive keychain service that supports password 
 
 ### Essentials
 
-- ``UmbraKeychainService/UmbraKeychainService``
 - ``UmbraKeychainService/KeychainService``
 - ``UmbraKeychainService/KeychainServiceProtocol``
+- ``UmbraKeychainService/PasswordValidator``
 
 ### Services
 

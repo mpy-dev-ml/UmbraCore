@@ -1,14 +1,14 @@
-# ``UmbraKeychainService``
+# ``UmbraKeychainService/KeychainService``
 
 @Metadata {
     @TechnologyRoot
 }
 
-A secure keychain service for managing sensitive data.
+A secure and robust keychain service for managing sensitive data.
 
 ## Overview
 
-UmbraKeychainService provides a robust and secure interface for managing sensitive data in the system keychain. It supports password validation, biometric authentication, and secure data storage.
+UmbraKeychainService provides a comprehensive set of tools for managing sensitive data in the system keychain. It supports password validation, biometric authentication, and secure data storage.
 
 ## Topics
 
