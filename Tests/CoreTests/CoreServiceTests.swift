@@ -1,5 +1,5 @@
 import SecurityTypes
-@testable import UmbraCore
+@testable import Core
 import UmbraTestKit
 import XCTest
 
