@@ -33,6 +33,9 @@ test --test_output=errors
 test --cache_test_results=no
 test --test_verbose_timeout_warnings
 test --test_summary=detailed
+test --apple_platform_type=macos
+test --cpu=darwin_arm64
+test --macos_cpus=arm64
 
 # Coverage settings
 coverage --config=macos
@@ -49,6 +52,9 @@ build --jobs=auto  # Automatically determine the number of jobs
 
 # macOS configuration
 build:macos --cpu=darwin_arm64
+test:macos --cpu=darwin_arm64
+test:macos --apple_platform_type=macos
+test:macos --macos_cpus=arm64
 build:macos --apple_platform_type=macos
 build:macos --macos_minimum_os=14.0
 build:macos --features=swift.use_global_module_cache
