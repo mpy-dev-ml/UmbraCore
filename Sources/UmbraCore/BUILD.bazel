@@ -35,6 +35,16 @@ docc_archive(
     srcs = ["sources"],
     docc_bundle = ":docc_bundle",
     module_name = "UmbraCore",
+    module_deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+        "//Sources/UmbraKeychainService",
+    ],
+    deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+        "//Sources/UmbraKeychainService",
+    ],
     display_name = "UmbraCore",
     bundle_identifier = "com.umbra.core.documentation",
     visibility = ["//visibility:public"],
