@@ -1,0 +1,32 @@
+name: Generate DocC Documentation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Sources/**/*.docc/**'
+      - 'tools/bazel/docc.bzl'
+      - 'BUILD.bazel'
+      - '.github/workflows/docc-generate.yml'
+
+jobs:
+  generate-docc:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Generate DocC Archives
+        run: |
+          bazel build //Sources/...
+
+      - name: Upload DocC Archives
+        uses: actions/upload-artifact@v4
+        with:
+          name: docc-archives
+          path: bazel-bin/Sources/**/docc_archive.doccarchive
+          retention-days: 1

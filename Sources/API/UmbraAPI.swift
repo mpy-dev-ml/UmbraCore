@@ -1,6 +1,6 @@
 import Foundation
-import UmbraCore
 import Services
+import UmbraCore
 
 /// UmbraAPI provides a simplified interface to the UmbraCore security framework.
 public enum UmbraAPI {

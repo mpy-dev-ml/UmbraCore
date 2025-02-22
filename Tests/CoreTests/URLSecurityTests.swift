@@ -3,6 +3,7 @@ import SecurityTypes
 import UmbraTestKit
 import XCTest
 
+@available(macOS 14.0, *)
 @MainActor
 final class URLSecurityTests: XCTestCase, @unchecked Sendable {
     var mockSecurityProvider: MockSecurityProvider!
@@ -22,7 +23,7 @@ final class URLSecurityTests: XCTestCase, @unchecked Sendable {
         testFileURL = nil
     }
 
-    func testBookmarkCreationAndResolution() async throws {
+    nonisolated func testBookmarkCreationAndResolution() async throws {
         let bookmarkData = try await mockSecurityProvider.createBookmark(forPath: testFileURL.path)
         XCTAssertFalse(bookmarkData.isEmpty, "Bookmark data should not be empty")
 
@@ -47,7 +48,7 @@ final class URLSecurityTests: XCTestCase, @unchecked Sendable {
         XCTAssertFalse(paths.contains(testFileURL.path), "Path should not be in accessed paths after operation")
     }
 
-    func testInvalidBookmark() async throws {
+    nonisolated func testInvalidBookmark() async throws {
         let invalidData: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFF] // Invalid UTF-8 sequence
 
         do {
@@ -61,7 +62,7 @@ final class URLSecurityTests: XCTestCase, @unchecked Sendable {
         }
     }
 
-    func testBookmarkValidation() async throws {
+    nonisolated func testBookmarkValidation() async throws {
         let validData = try await mockSecurityProvider.createBookmark(forPath: testFileURL.path)
         let isValidBookmark = try await mockSecurityProvider.validateBookmark(validData)
         XCTAssertTrue(isValidBookmark, "Valid bookmark should pass validation")

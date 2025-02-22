@@ -3,6 +3,7 @@ import SecurityTypes
 import UmbraTestKit
 
 /// Service for managing log files with security-scoped bookmarks
+@available(macOS 14.0, *)
 public actor LoggingService {
     /// Shared instance with default security service
     public static let shared = LoggingService(securityProvider: MockSecurityProvider())

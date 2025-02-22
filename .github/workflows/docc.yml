@@ -1,0 +1,39 @@
+name: Build and Deploy DocC
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Sources/**/*.swift'
+      - 'Sources/**/*.docc/**'
+      - 'tools/bazel/docc.bzl'
+      - '.github/workflows/docc.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: macos-14
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Bazel
+      uses: bazelbuild/setup-bazelisk@v2
+    
+    - name: Build DocC Documentation
+      run: |
+        bazel build //Sources/UmbraCore:docs
+    
+    - name: Prepare Documentation
+      run: |
+        mkdir -p docs/api
+        cp -r bazel-bin/Sources/UmbraCore/docs/* docs/api/
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs
+        publish_branch: gh-pages-api
+        keep_files: true

@@ -88,7 +88,7 @@
 public enum Core {
     /// Current version of the Core module
     public static let version = "1.0.0"
-    
+
     /// Initialise Core with default configuration
     public static func initialise() {
         // Configure core systems

@@ -1,0 +1,58 @@
+site_name: UmbraCore Documentation
+site_description: Documentation for UmbraCore - Secure Backup Management System
+site_author: MPY Development
+repo_url: https://github.com/mpy-dev-ml/UmbraCore
+edit_uri: edit/main/docs/
+site_url: https://umbracore.dev
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  palette:
+    scheme: slate
+    primary: blue
+    accent: cyan
+  font:
+    text: Roboto Mono
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search
+
+extra_css:
+  - assets/css/custom.css
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+    - Configuration: configuration.md
+    - Advanced Features: advanced-features.md
+    - Security: security.md
+  - Reference:
+    - API Reference: api-reference.md
+    - Troubleshooting: troubleshooting.md
+  - Contributing: contributing.md

@@ -1,110 +1,71 @@
-name: Build & Test
+name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - feature/**
   pull_request:
-    branches: [ main ]
-
-env:
-  BAZEL_VERSION: 8.1.0
-  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
-  SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+    branches:
+      - main
 
 jobs:
-  core-tests:
-    name: Core Tests
+  build:
+    name: Build & Test
     runs-on: self-hosted
+    env:
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+      SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+
     steps:
     - uses: actions/checkout@v4
       with:
-        clean: true
+        fetch-depth: 0
 
     - name: System Info
       run: |
-        uname -a
+        system_profiler SPSoftwareDataType
+        xcodebuild -version
         swift --version
         bazel --version
 
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
-      with:
-        bazelrc: .bazelrc
-        version: ${{ env.BAZEL_VERSION }}
-
     - name: Configure Bazel
       run: |
-        echo "build --cpu=darwin_arm64" >> .bazelrc
-        echo "build --apple_platform_type=macos" >> .bazelrc
-        echo "build --macos_minimum_os=13.0" >> .bazelrc
-        echo "build --features=swift.use_global_module_cache" >> .bazelrc
-        echo "build --features=swift.enable_batch_mode" >> .bazelrc
-        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
-        echo "build --verbose_failures" >> .bazelrc
+        echo "build --config=macos" >> .bazelrc.local
+        echo "test --config=macos" >> .bazelrc.local
+
+    - name: Clean Bazel Cache
+      run: |
+        rm -rf /tmp/bazel-cache
+        rm -rf /tmp/bazel-repo-cache
+        rm -rf ~/.cache/bazel
+        rm -rf ~/.cache/bazelisk
+        bazel clean --expunge
+        mkdir -p /tmp/bazel-cache
+        mkdir -p /tmp/bazel-repo-cache
 
     - name: Build
-      run: bazel build //...
+      run: bazel build //... --config=macos --show_progress_rate_limit=5
 
-    - name: Run Tests
-      run: bazel test //...
+    - name: Core Tests
+      run: bazel test //Tests/UmbraCoreTests/... --config=macos --test_output=errors
 
-  security-tests:
-    name: Security Tests
-    needs: core-tests
-    runs-on: self-hosted
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        clean: true
-
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
-      with:
-        bazelrc: .bazelrc
-        version: ${{ env.BAZEL_VERSION }}
-
-    - name: Configure Bazel
-      run: |
-        echo "build --cpu=darwin_arm64" >> .bazelrc
-        echo "build --apple_platform_type=macos" >> .bazelrc
-        echo "build --macos_minimum_os=13.0" >> .bazelrc
-        echo "build --features=swift.use_global_module_cache" >> .bazelrc
-        echo "build --features=swift.enable_batch_mode" >> .bazelrc
-        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
-        echo "build --verbose_failures" >> .bazelrc
-
-    - name: Run Security Tests
-      run: bazel test //... --test_tag_filters=security
-
-  coverage:
-    name: Coverage
-    needs: [core-tests, security-tests]
-    runs-on: self-hosted
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        clean: true
-
-    - name: Setup Bazel
-      uses: bazel-contrib/setup-bazel@0.8.0
-      with:
-        bazelrc: .bazelrc
-        version: ${{ env.BAZEL_VERSION }}
-
-    - name: Configure Bazel
-      run: |
-        echo "build --cpu=darwin_arm64" >> .bazelrc
-        echo "build --apple_platform_type=macos" >> .bazelrc
-        echo "build --macos_minimum_os=13.0" >> .bazelrc
-        echo "build --features=swift.use_global_module_cache" >> .bazelrc
-        echo "build --features=swift.enable_batch_mode" >> .bazelrc
-        echo "build --features=swift.enable_concurrency_checking" >> .bazelrc
-        echo "build --verbose_failures" >> .bazelrc
+    - name: Security Tests
+      run: bazel test //Tests/SecurityTypesTests/... //Tests/CryptoTypesTests/... --config=macos --test_output=errors
 
     - name: Generate Coverage
-      run: bazel coverage //...
+      run: |
+        bazel coverage //... --config=macos --combined_report=lcov
 
     - name: Upload Coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         files: bazel-out/_coverage/_coverage_report.dat
+        fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -rf /tmp/bazel-cache/*
+        rm -rf /tmp/bazel-repo-cache/*

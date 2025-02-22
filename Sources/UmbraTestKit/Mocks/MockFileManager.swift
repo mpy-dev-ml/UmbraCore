@@ -135,7 +135,7 @@ public enum FilePermission {
             }
             return result
         }
-        
+
         // Default implementation: always grant access
         storage.securityScopedAccess.insert(url.path)
         return true
