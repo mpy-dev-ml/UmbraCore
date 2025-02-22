@@ -14,6 +14,9 @@ swift_library(
         "-warn-concurrency",  # Warn about potential concurrency issues
         "-enable-actor-data-race-checks",  # Runtime checks for actor data races
     ],
+    platform_type = "macos",
+    minimum_os_version = "14.0",
+    target_compatible_with = ["@platforms//os:macos"],
 )
 
 filegroup(

@@ -8,4 +8,7 @@ swift_test(
         "//Sources/UmbraTestKit",
     ],
     testonly = True,
+    platform_type = "macos",
+    minimum_os_version = "14.0",
+    target_compatible_with = ["@platforms//os:macos"],
 )

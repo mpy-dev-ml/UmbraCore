@@ -16,6 +16,9 @@ swift_library(
         "//Sources/SecurityTypes",
         "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
+    platform_type = "macos",
+    minimum_os_version = "14.0",
+    target_compatible_with = ["@platforms//os:macos"],
 )
 
 filegroup(

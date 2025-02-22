@@ -14,10 +14,13 @@ swift_library(
         "//Sources/CryptoTypes",
         "//Sources/UmbraLogging",
     ],
-    visibility = ["//visibility:public"],
     copts = [
         "-strict-concurrency=complete",
         "-warn-concurrency",
         "-enable-actor-data-race-checks",
     ],
+    platform_type = "macos",
+    minimum_os_version = "14.0",
+    target_compatible_with = ["@platforms//os:macos"],
+    visibility = ["//visibility:public"],
 )
