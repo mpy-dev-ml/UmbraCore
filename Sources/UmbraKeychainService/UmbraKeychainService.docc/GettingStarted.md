@@ -14,11 +14,11 @@ UmbraKeychainService is a comprehensive keychain service that supports password 
 
 ### Essentials
 
-- ``UmbraKeychainService/KeychainService``
+- ``UmbraKeychainService``
+- ``KeychainService``
 - ``KeychainServiceProtocol``
-- ``PasswordValidator``
 
-### XPC Services
+### Services
 
 - ``KeychainXPCService``
 - ``KeychainXPCConnection``
