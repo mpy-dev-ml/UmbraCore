@@ -1,4 +1,5 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:tools/bazel/docc.bzl", "docc_bundle")
 
 # CryptoTypes: Core cryptographic types and services
 package(default_visibility = ["//visibility:public"])
@@ -22,7 +23,7 @@ filegroup(
     srcs = glob(["**/*.swift"]),
 )
 
-filegroup(
+docc_bundle(
     name = "docc_bundle",
     srcs = glob(["CryptoTypes.docc/**/*"]),
     visibility = ["//visibility:public"],

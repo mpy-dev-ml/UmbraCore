@@ -1,4 +1,5 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:tools/bazel/docc.bzl", "docc_bundle")
 
 # SecurityTypes: Core security primitives and protocols
 # No external dependencies, pure Swift implementation
@@ -20,7 +21,7 @@ filegroup(
     srcs = glob(["**/*.swift"]),
 )
 
-filegroup(
+docc_bundle(
     name = "docc_bundle",
     srcs = glob(["SecurityTypes.docc/**/*"]),
     visibility = ["//visibility:public"],
