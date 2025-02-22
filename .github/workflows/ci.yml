@@ -31,8 +31,8 @@ jobs:
 
     - name: Configure Bazel
       run: |
-        echo "build --config=ci" >> .bazelrc.local
-        echo "test --config=ci" >> .bazelrc.local
+        echo "build --config=macos" >> .bazelrc.local
+        echo "test --config=macos" >> .bazelrc.local
 
     - name: Setup Test Environment
       run: |
@@ -40,7 +40,7 @@ jobs:
         mkdir -p /tmp/bazel-repo-cache
 
     - name: Build
-      run: bazel build //... --show_progress_rate_limit=5
+      run: bazel build //... --config=macos --show_progress_rate_limit=5
 
     - name: Core Tests
       run: bazel test //Tests/UmbraCoreTests/... --config=macos --test_output=errors
@@ -50,7 +50,7 @@ jobs:
 
     - name: Generate Coverage
       run: |
-        bazel coverage //... --combined_report=lcov
+        bazel coverage //... --config=macos --combined_report=lcov
 
     - name: Upload Coverage
       uses: codecov/codecov-action@v4
