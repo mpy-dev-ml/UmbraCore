@@ -50,3 +50,16 @@ docc_archive(
     bundle_identifier = "com.umbra.keychain.service.documentation",
     visibility = ["//visibility:public"],
 )
+
+docc_archive(
+    name = "docs",
+    srcs = [":sources"],
+    docc_bundle = ":docc_bundle",
+    module_name = "UmbraKeychainService",
+    deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+    ],
+    display_name = "UmbraKeychainService",
+    bundle_identifier = "com.umbra.keychainservice.documentation",
+)
