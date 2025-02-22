@@ -53,11 +53,11 @@ def _docc_archive_impl(ctx):
     # Find the .docc directory in the bundle
     docc_dir = None
     for file in ctx.files.docc_bundle:
-        if file.path.endswith(".docc"):
-            docc_dir = file.path
+        if file.dirname.endswith(".docc"):
+            docc_dir = file.dirname
             break
     if not docc_dir:
-        docc_dir = ctx.files.docc_bundle[0].dirname
+        fail("No .docc directory found in bundle")
     
     args.add(docc_dir)
     args.add("--output-dir")
