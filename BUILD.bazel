@@ -1,6 +1,6 @@
 load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
-load("//tools/bazel:docc.bzl", "docc_bundle")
+load("//tools/bazel:docc.bzl", "docc_archive")
 
 # Ignore the Swift build folder
 # gazelle:exclude .build
@@ -21,7 +21,7 @@ gazelle(
 )
 
 # DocC documentation targets
-docc_bundle(
+docc_archive(
     name = "UmbraCore.docc",
     srcs = ["//Sources/UmbraCore:UmbraCore.swift"],
     deps = [
@@ -35,7 +35,7 @@ docc_bundle(
     bundle_identifier = "com.umbra.core.documentation",
 )
 
-docc_bundle(
+docc_archive(
     name = "SecurityTypes.docc",
     srcs = ["//Sources/SecurityTypes:sources"],
     deps = [],
@@ -45,7 +45,7 @@ docc_bundle(
     bundle_identifier = "com.umbra.security.types.documentation",
 )
 
-docc_bundle(
+docc_archive(
     name = "CryptoTypes.docc",
     srcs = ["//Sources/CryptoTypes:sources"],
     deps = ["//Sources/SecurityTypes"],
@@ -55,7 +55,7 @@ docc_bundle(
     bundle_identifier = "com.umbra.crypto.types.documentation",
 )
 
-docc_bundle(
+docc_archive(
     name = "UmbraKeychainService.docc",
     srcs = ["//Sources/UmbraKeychainService:sources"],
     deps = [
