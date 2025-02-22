@@ -13,7 +13,6 @@ build --features=swift.use_global_module_cache
 build --features=swift.enable_batch_mode
 build --features=swift.enable_vfsoverlays
 build --features=swift.enable_concurrency_checking
-build --swiftcopt=-enable-actor-data-race-checks
 build --swiftcopt=-target
 build --swiftcopt=arm64-apple-macos14.0
 
