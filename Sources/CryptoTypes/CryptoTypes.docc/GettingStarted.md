@@ -21,7 +21,6 @@ CryptoTypes provides the core cryptographic functionality for the UmbraCore fram
 ### Configuration
 
 - ``CryptoConfig``
-- ``CryptoConfiguration``
 
 ### Error Handling
 
