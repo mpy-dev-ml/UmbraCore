@@ -21,4 +21,5 @@ swift_test(
         "//Sources/SecurityTypes",
         "//Sources/UmbraTestKit",
     ],
+    testonly = True,
 )

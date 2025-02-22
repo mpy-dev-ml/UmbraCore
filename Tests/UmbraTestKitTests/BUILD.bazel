@@ -18,4 +18,5 @@ swift_test(
     deps = [
         "//Sources/UmbraTestKit",
     ],
+    testonly = True,
 )

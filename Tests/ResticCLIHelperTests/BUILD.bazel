@@ -20,4 +20,5 @@ swift_test(
         "//Sources/ResticCLIHelper",
         "//Sources/UmbraTestKit",
     ],
+    testonly = True,
 )
