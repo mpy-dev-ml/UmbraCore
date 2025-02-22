@@ -34,10 +34,13 @@ jobs:
         echo "build --config=macos" >> .bazelrc.local
         echo "test --config=macos" >> .bazelrc.local
 
-    - name: Setup Test Environment
+    - name: Clean Bazel Cache
       run: |
         rm -rf /tmp/bazel-cache
         rm -rf /tmp/bazel-repo-cache
+        rm -rf ~/.cache/bazel
+        rm -rf ~/.cache/bazelisk
+        bazel clean --expunge
         mkdir -p /tmp/bazel-cache
         mkdir -p /tmp/bazel-repo-cache
 

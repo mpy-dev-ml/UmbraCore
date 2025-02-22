@@ -47,6 +47,8 @@ build:macos --features=swift.enable_concurrency_checking
 build:macos --apple_crosstool_top=@local_config_apple_cc//:toolchain
 build:macos --crosstool_top=@local_config_apple_cc//:toolchain
 build:macos --host_crosstool_top=@local_config_apple_cc//:toolchain
+build:macos --host_platform=@build_bazel_apple_support//platforms:macos_arm64
+build:macos --platforms=@build_bazel_apple_support//platforms:macos_arm64
 
 # CI configuration
 build:ci --config=docc
