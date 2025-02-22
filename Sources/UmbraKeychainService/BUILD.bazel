@@ -1,5 +1,5 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
-load("//:tools/bazel/docc.bzl", "docc_bundle")
+load("//tools/bazel:docc.bzl", "docc_bundle")
 
 package(default_visibility = ["//visibility:public"])
 
