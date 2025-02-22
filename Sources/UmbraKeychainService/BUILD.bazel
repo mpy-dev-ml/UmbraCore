@@ -29,5 +29,8 @@ filegroup(
 docc_archive(
     name = "docc_bundle",
     srcs = glob(["UmbraKeychainService.docc/**/*"]),
+    module_name = "UmbraKeychainService",
+    display_name = "UmbraKeychainService",
+    bundle_identifier = "com.umbra.keychain.service.documentation",
     visibility = ["//visibility:public"],
 )
