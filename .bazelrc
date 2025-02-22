@@ -71,9 +71,6 @@ build:swift --swiftcopt=-emit-module-doc
 build:swift --swiftcopt=-emit-module-doc-path=$(BINDIR)/$(TARGET).swiftmodule
 
 # Build defaults
-build --cpu=darwin_arm64
-build --apple_platform_type=macos
-build --macos_minimum_os=14.0
 build --verbose_failures
 test --test_output=errors
 
