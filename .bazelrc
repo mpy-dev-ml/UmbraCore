@@ -25,10 +25,12 @@ test --test_verbose_timeout_warnings
 test --test_summary=detailed
 
 # Coverage settings
+coverage --config=macos
 coverage --instrument_test_targets
 coverage --combined_report=lcov
 coverage --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main
 coverage --instrumentation_filter="^//Sources"
+coverage --experimental_use_llvm_covmap
 
 # Performance optimizations
 build --incompatible_strict_action_env
