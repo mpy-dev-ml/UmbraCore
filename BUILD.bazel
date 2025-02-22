@@ -1,5 +1,6 @@
 load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//tools/bazel:docc.bzl", "docc_archive")
 
 # Ignore the Swift build folder
 # gazelle:exclude .build
@@ -17,4 +18,72 @@ gazelle_binary(
 gazelle(
     name = "update_build_files",
     gazelle = ":gazelle_bin",
+)
+
+# DocC documentation targets
+docc_archive(
+    name = "UmbraCore.docc",
+    srcs = ["//Sources/UmbraCore:sources"],
+    deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+        "//Sources/UmbraKeychainService",
+    ],
+    docc_bundle = "//Sources/UmbraCore:docc_bundle",
+    module_name = "UmbraCore",
+    display_name = "UmbraCore",
+    bundle_identifier = "com.umbra.core.documentation",
+)
+
+docc_archive(
+    name = "SecurityTypes.docc",
+    srcs = ["//Sources/SecurityTypes:sources"],
+    deps = [],
+    docc_bundle = "//Sources/SecurityTypes:docc_bundle",
+    module_name = "SecurityTypes",
+    display_name = "SecurityTypes",
+    bundle_identifier = "com.umbra.security.types.documentation",
+)
+
+docc_archive(
+    name = "CryptoTypes.docc",
+    srcs = ["//Sources/CryptoTypes:sources"],
+    deps = ["//Sources/SecurityTypes"],
+    docc_bundle = "//Sources/CryptoTypes:docc_bundle",
+    module_name = "CryptoTypes",
+    display_name = "CryptoTypes",
+    bundle_identifier = "com.umbra.crypto.types.documentation",
+)
+
+docc_archive(
+    name = "UmbraKeychainService.docc",
+    srcs = ["//Sources/UmbraKeychainService:sources"],
+    deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+        "//Sources/UmbraLogging",
+        "//Sources/XPC/Core:UmbraXPC",
+    ],
+    docc_bundle = "//Sources/UmbraKeychainService:docc_bundle",
+    module_name = "UmbraKeychainService",
+    display_name = "Keychain Service",
+    bundle_identifier = "com.umbra.keychain.service.documentation",
+)
+
+# Target to build documentation
+alias(
+    name = "docs",
+    actual = ":UmbraCore.docc",
+)
+
+# Build all documentation
+filegroup(
+    name = "all_docs",
+    srcs = [
+        ":UmbraCore.docc",
+        ":SecurityTypes.docc",
+        ":CryptoTypes.docc",
+        ":UmbraKeychainService.docc",
+    ],
+    visibility = ["//visibility:public"],
 )

@@ -67,6 +67,9 @@ build_report.json
 *.swp
 *.swo
 
+# MkDocs
+site/
+
 # Bazel
 /bazel-*
 /deps.json

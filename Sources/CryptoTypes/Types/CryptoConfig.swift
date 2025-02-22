@@ -1,7 +1,7 @@
 import Foundation
 
 /// Configuration for cryptographic operations
-public struct CryptoConfig {
+public struct CryptoConfig: Sendable {
     /// Length of the encryption key in bits
     public let keyLength: Int
 

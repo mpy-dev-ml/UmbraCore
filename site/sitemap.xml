@@ -51,6 +51,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://umbracore.dev/implementation_plan/</loc>
+         <lastmod>2025-02-22</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://umbracore.dev/security/</loc>
          <lastmod>2025-02-22</lastmod>
          <changefreq>daily</changefreq>

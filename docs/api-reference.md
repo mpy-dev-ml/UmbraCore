@@ -7,6 +7,22 @@ description: Complete API reference for UmbraCore
 
 # API Reference
 
+The UmbraCore API is divided into several modules, each focusing on a specific aspect of secure data management. This page provides a high-level overview and quick reference. For detailed API documentation, visit the module-specific documentation:
+
+## Module Documentation
+
+### Core Module
+[UmbraCore API Documentation](/api/UmbraCore.docc/) - Core functionality and service coordination.
+
+### Security Types
+[SecurityTypes API Documentation](/api/SecurityTypes.docc/) - Core security primitives and protocols.
+
+### Crypto Types
+[CryptoTypes API Documentation](/api/CryptoTypes.docc/) - Cryptographic types and operations.
+
+### Keychain Service
+[UmbraKeychainService API Documentation](/api/UmbraKeychainService.docc/) - Secure keychain management.
+
 ## Core Services
 
 ### UmbraKeychainService
