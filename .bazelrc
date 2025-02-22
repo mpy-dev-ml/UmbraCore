@@ -14,8 +14,10 @@ build --action_env=PATH
 build --action_env=CC=clang
 
 # Cache settings
-build --disk_cache=~/.cache/bazel
-build --repository_cache=~/.cache/bazel-repo
+build --disk_cache=/tmp/bazel-cache
+build --repository_cache=/tmp/bazel-repo-cache
+build --experimental_guard_against_concurrent_changes  # Prevent cache corruption
+build --experimental_repository_cache_hardlinks  # Use hardlinks for repo cache
 
 # Test configuration
 test --test_output=errors
@@ -31,14 +33,31 @@ coverage --instrumentation_filter="^//Sources"
 # Performance optimizations
 build --incompatible_strict_action_env
 build --remote_local_fallback
+build --jobs=auto  # Automatically determine the number of jobs
 
-# Import local settings (must be last)
-try-import %workspace%/user.bazelrc
+# macOS configuration
+build:macos --cpu=darwin_arm64
+build:macos --apple_platform_type=macos
+build:macos --macos_minimum_os=14.0
+build:macos --features=swift.use_global_module_cache
+build:macos --features=swift.enable_batch_mode
+build:macos --features=swift.enable_concurrency_checking
+
+# DocC documentation configuration
+build:docc --config=macos
+run:docc --config=macos
+
+# Swift documentation configuration
+build:swift --apple_generate_dsym
+build:swift --swiftcopt=-emit-module-doc
+build:swift --swiftcopt=-emit-module-doc-path=$(BINDIR)/$(TARGET).swiftmodule
+
+# Build defaults
 build --cpu=darwin_arm64
 build --apple_platform_type=macos
 build --macos_minimum_os=14.0
-build --features=swift.use_global_module_cache
-build --features=swift.enable_batch_mode
-build --features=swift.enable_concurrency_checking
 build --verbose_failures
 test --test_output=errors
+
+# Import local settings (must be last)
+try-import %workspace%/user.bazelrc
