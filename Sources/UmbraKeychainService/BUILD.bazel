@@ -29,7 +29,7 @@ filegroup(
 
 filegroup(
     name = "docc_bundle",
-    srcs = glob(["UmbraKeychainService.docc/**/*"]),
+    srcs = glob(["**/*.docc/**/*"]),
     visibility = ["//visibility:public"],
 )
 

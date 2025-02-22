@@ -64,7 +64,7 @@ docc_archive(
         "//Sources/UmbraLogging",
         "//Sources/XPC/Core:UmbraXPC",
     ],
-    docc_bundle = "//Sources/UmbraKeychainService:docc_archive",
+    docc_bundle = "//Sources/UmbraKeychainService:docc_bundle",
     module_name = "UmbraKeychainService",
     display_name = "Keychain Service",
     bundle_identifier = "com.umbra.keychain.service.documentation",
