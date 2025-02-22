@@ -59,6 +59,8 @@ docc_archive(
     deps = [
         "//Sources/SecurityTypes",
         "//Sources/CryptoTypes",
+        "//Sources/UmbraLogging",
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
     ],
     display_name = "UmbraKeychainService",
     bundle_identifier = "com.umbra.keychainservice.documentation",
