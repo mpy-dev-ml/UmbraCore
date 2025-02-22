@@ -1,6 +1,13 @@
 # Enable bzlmod
 common --enable_bzlmod
 
+# Platform configuration
+build --cpu=darwin_arm64
+build --host_cpu=darwin_arm64
+build --macos_cpus=arm64
+build --apple_platform_type=macos
+build --macos_minimum_os=14.0
+
 # Swift specific settings
 build --features=swift.use_global_module_cache
 build --features=swift.enable_batch_mode
@@ -12,6 +19,7 @@ build --cxxopt=-std=c++14
 # Environment setup
 build --action_env=PATH
 build --action_env=CC=clang
+build --action_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 
 # Cache settings
 build --disk_cache=~/.cache/bazel
@@ -33,4 +41,4 @@ build --incompatible_strict_action_env
 build --remote_local_fallback
 
 # Import local settings (must be last)
-try-import %workspace%/user.bazelrc
+try-import .user.bazelrc

@@ -80,7 +80,10 @@ public actor LoggingService {
     ///   - path: Path to the log file
     ///   - operation: Operation to perform while accessing the file
     /// - Returns: Result of the operation
-    public func withSecurityScopedLogAccess<T>(to path: String, perform operation: () async throws -> T) async throws -> T {
+    public func withSecurityScopedLogAccess<T: Sendable>(
+        to path: String,
+        perform operation: @Sendable () async throws -> T
+    ) async throws -> T {
         try await securityProvider.withSecurityScopedAccess(to: path, perform: operation)
     }
 }

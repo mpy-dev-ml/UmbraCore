@@ -3,25 +3,23 @@ import SecurityTypes
 import UmbraTestKit
 import XCTest
 
-final class URLSecurityTests: XCTestCase {
+@MainActor
+final class URLSecurityTests: XCTestCase, @unchecked Sendable {
     var mockSecurityProvider: MockSecurityProvider!
     var testFileURL: URL!
-    var testFileData: String!
+    let testFileData = "Test file content"
 
     override func setUp() async throws {
         // Create a temporary test file
-        let tempDir = FileManager.default.temporaryDirectory
-        testFileURL = tempDir.appendingPathComponent("test_file.txt")
-        testFileData = "Test file content"
-        try testFileData.write(to: testFileURL, atomically: true, encoding: .utf8)
-
-        // Initialize mock provider
         mockSecurityProvider = MockSecurityProvider()
+        testFileURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try testFileData.write(to: testFileURL, atomically: true, encoding: .utf8)
     }
 
     override func tearDown() async throws {
         try? FileManager.default.removeItem(at: testFileURL)
         await mockSecurityProvider.reset()
+        testFileURL = nil
     }
 
     func testBookmarkCreationAndResolution() async throws {
@@ -34,12 +32,15 @@ final class URLSecurityTests: XCTestCase {
     }
 
     func testSecurityScopedAccess() async throws {
-        try await mockSecurityProvider.withSecurityScopedAccess(to: testFileURL.path) {
-            let content = try String(contentsOf: testFileURL, encoding: .utf8)
-            XCTAssertEqual(content, testFileData, "Should be able to read file content")
+        let fileURL = testFileURL!
+        let fileData = testFileData
+        
+        try await mockSecurityProvider.withSecurityScopedAccess(to: fileURL.path) {
+            let content = try String(contentsOf: fileURL, encoding: .utf8)
+            XCTAssertEqual(content, fileData, "Should be able to read file content")
 
             let paths = await mockSecurityProvider.getAccessedPaths()
-            XCTAssertTrue(paths.contains(testFileURL.path), "Path should be in accessed paths during operation")
+            XCTAssertTrue(paths.contains(fileURL.path), "Path should be in accessed paths during operation")
         }
 
         let paths = await mockSecurityProvider.getAccessedPaths()

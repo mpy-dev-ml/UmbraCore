@@ -38,7 +38,8 @@ actor CoreService {
     }
 }
 
-final class CoreServiceTests: XCTestCase {
+@MainActor
+final class CoreServiceTests: XCTestCase, @unchecked Sendable {
     var mockSecurityProvider: MockSecurityProvider!
     var coreService: CoreService!
 
@@ -69,12 +70,19 @@ final class CoreServiceTests: XCTestCase {
 
     func testSecurityScopedAccess() async throws {
         let testPath = "/test/path"
-        var accessGranted = false
-
-        try await coreService.withSecurityScopedAccess(to: testPath) {
-            accessGranted = true
-            let paths = await mockSecurityProvider.getAccessedPaths()
-            XCTAssertTrue(paths.contains(testPath), "Path should be in accessed paths during operation")
+        let accessGranted = try await withCheckedThrowingContinuation { continuation in
+            Task {
+                do {
+                    let result = try await coreService.withSecurityScopedAccess(to: testPath) {
+                        let paths = await self.mockSecurityProvider.getAccessedPaths()
+                        XCTAssertTrue(paths.contains(testPath), "Path should be in accessed paths during operation")
+                        return true
+                    }
+                    continuation.resume(returning: result)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
         }
 
         XCTAssertTrue(accessGranted, "Operation should be executed")

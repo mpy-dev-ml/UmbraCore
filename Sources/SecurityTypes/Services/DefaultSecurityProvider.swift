@@ -73,8 +73,14 @@ public actor DefaultSecurityProvider: SecurityProvider {
             throw SecurityError.accessDenied(reason: "Access denied to: \(path)")
         }
 
-        defer { Task { await stopAccessing(path: path) } }
-        return try await operation()
+        do {
+            let result = try await operation()
+            await stopAccessing(path: path)
+            return result
+        } catch {
+            await stopAccessing(path: path)
+            throw error
+        }
     }
 
     public func isAccessing(path: String) async -> Bool {

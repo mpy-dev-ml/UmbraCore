@@ -42,17 +42,23 @@ public actor MockSecurityProvider: SecurityProvider {
         accessedPaths.removeAll()
     }
 
-    public func withSecurityScopedAccess<T: Sendable>(to path: String, perform operation: () async throws -> T) async throws -> T {
+    public func withSecurityScopedAccess<T: Sendable>(
+        to path: String,
+        perform operation: @Sendable () async throws -> T
+    ) async throws -> T {
         let success = try await startAccessing(path: path)
         guard success else {
             throw SecurityError.accessDenied(reason: "Access denied to \(path)")
         }
-        defer {
-            Task {
-                try? await stopAccessing(path: path)
-            }
+        
+        do {
+            let result = try await operation()
+            await stopAccessing(path: path)
+            return result
+        } catch {
+            await stopAccessing(path: path)
+            throw error
         }
-        return try await operation()
     }
 
     public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
