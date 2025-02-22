@@ -2,16 +2,6 @@ load("@build_bazel_rules_apple//apple:macos.bzl", "macos_unit_test")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
-swift_library(
-    name = "ResticCLIHelperTestsLib",
-    srcs = glob(["**/*.swift"]),
-    module_name = "ResticCLIHelperTests",
-    deps = [
-        "//Sources/ResticCLIHelper",
-        "//Sources/UmbraTestKit",
-    ],
-)
-
 swift_test(
     name = "ResticCLIHelperTests",
     srcs = glob(["**/*.swift"]),
