@@ -19,6 +19,12 @@ swift_library(
 )
 
 filegroup(
+    name = "sources",
+    srcs = glob(["**/*.swift"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "docc_archive",
     srcs = glob(["UmbraCore.docc/**/*"]),
     visibility = ["//visibility:public"],

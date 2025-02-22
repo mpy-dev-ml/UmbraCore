@@ -23,11 +23,11 @@ gazelle(
 # DocC documentation targets
 docc_archive(
     name = "UmbraCore.docc",
-    srcs = ["//Sources/UmbraCore:UmbraCore.swift"],
+    srcs = ["//Sources/UmbraCore:sources"],
     deps = [
         "//Sources/SecurityTypes",
         "//Sources/CryptoTypes",
-        "//Sources/UmbraLogging",
+        "//Sources/UmbraKeychainService",
     ],
     docc_bundle = "//Sources/UmbraCore:docc_bundle",
     module_name = "UmbraCore",
@@ -41,7 +41,7 @@ docc_archive(
     deps = [],
     docc_bundle = "//Sources/SecurityTypes:docc_bundle",
     module_name = "SecurityTypes",
-    display_name = "Security Types",
+    display_name = "SecurityTypes",
     bundle_identifier = "com.umbra.security.types.documentation",
 )
 
@@ -51,7 +51,7 @@ docc_archive(
     deps = ["//Sources/SecurityTypes"],
     docc_bundle = "//Sources/CryptoTypes:docc_bundle",
     module_name = "CryptoTypes",
-    display_name = "Crypto Types",
+    display_name = "CryptoTypes",
     bundle_identifier = "com.umbra.crypto.types.documentation",
 )
 
