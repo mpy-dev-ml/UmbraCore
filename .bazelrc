@@ -43,9 +43,27 @@ build:macos --features=swift.use_global_module_cache
 build:macos --features=swift.enable_batch_mode
 build:macos --features=swift.enable_concurrency_checking
 
+# CI configuration
+build:ci --config=docc
+build:ci --disk_cache=/tmp/bazel-cache
+build:ci --jobs=HOST_CPUS*0.75
+build:ci --keep_going
+build:ci --color=yes
+build:ci --curses=no
+build:ci --xcode_version=15.0
+build:ci --verbose_failures
+build:ci --experimental_guard_against_concurrent_changes
+build:ci --experimental_repository_cache_hardlinks
+build:ci --noshow_progress
+build:ci --noshow_loading_progress
+
 # DocC documentation configuration
 build:docc --config=macos
-run:docc --config=macos
+build:docc --apple_generate_dsym
+build:docc --swiftcopt=-emit-module-doc
+build:docc --swiftcopt=-emit-module-doc-path=$(BINDIR)/$(TARGET).swiftmodule
+build:docc --verbose_failures
+run:docc --config=docc
 
 # Swift documentation configuration
 build:swift --apple_generate_dsym

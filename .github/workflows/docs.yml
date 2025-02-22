@@ -58,9 +58,20 @@ jobs:
       - name: Setup Bazel
         uses: bazelbuild/setup-bazelisk@v2
 
+      - name: Restore Bazel cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            /private/var/tmp/_bazel_runner
+            /tmp/bazel-cache
+            /tmp/bazel-repo-cache
+          key: bazel-cache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            bazel-cache-${{ runner.os }}-
+
       - name: Build API documentation
         run: |
-          bazel build //:all_docs
+          bazel build //:all_docs --config=ci
           mkdir -p site/api
           for module in UmbraCore SecurityTypes CryptoTypes UmbraKeychainService; do
             module_dir="bazel-bin/$module.docc"
