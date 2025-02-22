@@ -7,7 +7,7 @@ import XCTest
 @MainActor
 final class URLSecurityTests: XCTestCase, @unchecked Sendable {
     var mockSecurityProvider: MockSecurityProvider!
-    var testFileURL: URL!
+    nonisolated(unsafe) var testFileURL: URL!
     let testFileData = "Test file content"
 
     override func setUp() async throws {
