@@ -13,7 +13,7 @@ def _docc_archive_impl(ctx):
     symbol_args.add("-emit-symbol-graph")
     symbol_args.add("-emit-module")
     symbol_args.add("-target")
-    symbol_args.add("arm64-apple-macos15.2")
+    symbol_args.add("arm64-apple-macos14.0")
     symbol_args.add("-sdk")
     symbol_args.add("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk")
     symbol_args.add("-module-name")
