@@ -1,14 +1,29 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
+# CryptoTypes: Core cryptographic types and services
+package(default_visibility = ["//visibility:public"])
+
 swift_library(
     name = "CryptoTypes",
-    srcs = glob([
-        "**/*.swift",
-    ], allow_empty = True),
+    srcs = glob(["**/*.swift"]),
     module_name = "CryptoTypes",
-    visibility = ["//visibility:public"],
+    copts = [
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+    ],
     deps = [
         "//Sources/SecurityTypes",
         "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["**/*.swift"]),
+)
+
+filegroup(
+    name = "docc_bundle",
+    srcs = glob(["CryptoTypes.docc/**/*"]),
+    visibility = ["//visibility:public"],
 )

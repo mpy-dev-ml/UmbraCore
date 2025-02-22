@@ -1,33 +1,40 @@
 # ``UmbraCore``
 
-A secure and efficient core library for managing encrypted data and system services.
+A secure, extensible keychain management system for macOS.
 
 ## Overview
 
-UmbraCore provides a comprehensive set of tools and services for handling encrypted data, system services, and secure storage on macOS. It includes features for keychain management, bookmark services, and cryptographic operations.
+UmbraCore provides a robust and secure keychain management system designed specifically for macOS. It offers advanced features like password validation, biometric authentication, and secure data storage.
 
 ## Topics
 
 ### Essentials
 
-- ``UmbraCoreService``
-- ``UmbraKeychainService``
-- ``UmbraBookmarkService``
-- ``UmbraCryptoService``
+- <doc:GettingStarted>
+- <doc:Installation>
+- <doc:Security>
 
-### Security
+### Password Management
 
-- ``SecurityTypes``
-- ``SecurityUtils``
-- ``CryptoTypes``
+- ``PasswordValidator``
+- ``PasswordRequirements``
+- ``PasswordStrength``
+- ``PasswordMetadata``
 
-### Features
+### Security Features
 
-- ``Features/Crypto``
-- ``Features/Logging``
+- ``KeychainAccessControl``
+- ``BiometricAuthentication``
+- ``EncryptionService``
 
 ### Error Handling
 
-- ``ErrorHandling``
-- ``CommonError``
-- ``CoreError``
+- ``RetryStrategy``
+- ``KeychainError``
+- ``BackupService``
+
+### Documentation
+
+- <doc:API>
+- <doc:Examples>
+- <doc:Troubleshooting>

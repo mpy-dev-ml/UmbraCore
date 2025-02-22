@@ -1,29 +1,96 @@
 """Rules for building DocC documentation."""
 
+load("@build_bazel_rules_swift//swift:swift.bzl", "SwiftInfo")
+
 def _docc_archive_impl(ctx):
     """Implementation of the docc_archive rule."""
     output_dir = ctx.actions.declare_directory(ctx.attr.name)
+    symbol_graph_dir = ctx.actions.declare_directory(ctx.attr.name + "_symbols")
     
+    # Generate the symbol graph
+    symbol_args = ctx.actions.args()
+    symbol_args.add("swiftc")
+    symbol_args.add("-emit-symbol-graph")
+    symbol_args.add("-emit-module")
+    symbol_args.add("-target")
+    symbol_args.add("x86_64-apple-macos14.0")
+    symbol_args.add("-sdk")
+    symbol_args.add("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk")
+    symbol_args.add("-module-name")
+    symbol_args.add(ctx.attr.module_name)
+    symbol_args.add("-emit-symbol-graph-dir")
+    symbol_args.add(symbol_graph_dir.path)
+    
+    # Add search paths for dependencies
+    for dep in ctx.attr.deps:
+        if SwiftInfo in dep:
+            for module in dep[SwiftInfo].transitive_modules.to_list():
+                symbol_args.add("-I")
+                symbol_args.add(module.swift.swiftmodule.dirname)
+    
+    for src in ctx.files.srcs:
+        symbol_args.add(src.path)
+    
+    ctx.actions.run(
+        executable = "/usr/bin/xcrun",
+        arguments = [symbol_args],
+        inputs = ctx.files.srcs + [
+            module.swift.swiftmodule
+            for dep in ctx.attr.deps
+            if SwiftInfo in dep
+            for module in dep[SwiftInfo].transitive_modules.to_list()
+        ],
+        outputs = [symbol_graph_dir],
+        mnemonic = "SwiftSymbolGraph",
+        progress_message = "Generating symbol graph for %s" % ctx.attr.name,
+    )
+    
+    # Generate the DocC archive
     args = ctx.actions.args()
     args.add("docc")
     args.add("convert")
-    args.add(ctx.file.src.path)
-    args.add("--output-path")
+    
+    # Find the .docc directory in the bundle
+    docc_dir = None
+    for file in ctx.files.docc_bundle:
+        if file.path.endswith(".docc"):
+            docc_dir = file.path
+            break
+    if not docc_dir:
+        docc_dir = ctx.files.docc_bundle[0].dirname
+    
+    args.add(docc_dir)
+    args.add("--output-dir")
     args.add(output_dir.path)
     args.add("--fallback-display-name")
     args.add(ctx.attr.display_name)
     args.add("--fallback-bundle-identifier")
     args.add(ctx.attr.bundle_identifier)
     args.add("--additional-symbol-graph-dir")
-    args.add(ctx.file.symbol_graph.dirname)
+    args.add(symbol_graph_dir.path)
+    args.add("--hosting-base-path")
+    args.add(ctx.attr.name)
+    args.add("--transform-for-static-hosting")
+    
+    # Add dependencies' symbol graphs
+    for dep in ctx.attr.deps:
+        if SwiftInfo in dep:
+            for module in dep[SwiftInfo].transitive_modules.to_list():
+                args.add("--additional-symbol-graph-dir")
+                args.add(module.swift.swiftmodule.dirname)
     
     ctx.actions.run(
         executable = "/usr/bin/xcrun",
         arguments = [args],
-        inputs = [ctx.file.src, ctx.file.symbol_graph],
+        inputs = ctx.files.docc_bundle + [symbol_graph_dir] + ctx.files.srcs + [
+            module.swift.swiftmodule
+            for dep in ctx.attr.deps
+            if SwiftInfo in dep
+            for module in dep[SwiftInfo].transitive_modules.to_list()
+        ],
         outputs = [output_dir],
-        mnemonic = "DocC",
-        progress_message = "Generating DocC documentation for %s" % ctx.attr.name,
+        mnemonic = "DocCArchive",
+        progress_message = "Generating DocC archive for %s" % ctx.attr.name,
     )
     
     return [DefaultInfo(files = depset([output_dir]))]
@@ -31,23 +98,11 @@ def _docc_archive_impl(ctx):
 docc_archive = rule(
     implementation = _docc_archive_impl,
     attrs = {
-        "src": attr.label(
-            allow_single_file = [".docc"],
-            mandatory = True,
-            doc = "The .docc package to process",
-        ),
-        "symbol_graph": attr.label(
-            allow_single_file = True,
-            mandatory = True,
-            doc = "The symbol graph file for the target",
-        ),
-        "display_name": attr.string(
-            mandatory = True,
-            doc = "The display name for the documentation bundle",
-        ),
-        "bundle_identifier": attr.string(
-            mandatory = True,
-            doc = "The bundle identifier for the documentation bundle",
-        ),
+        "srcs": attr.label_list(allow_files = True),
+        "deps": attr.label_list(providers = [SwiftInfo]),
+        "docc_bundle": attr.label(allow_files = True),
+        "module_name": attr.string(mandatory = True),
+        "display_name": attr.string(mandatory = True),
+        "bundle_identifier": attr.string(mandatory = True),
     },
 )

@@ -1,14 +1,32 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
+package(default_visibility = ["//visibility:public"])
+
 swift_library(
     name = "UmbraKeychainService",
     srcs = glob(["**/*.swift"]),
     module_name = "UmbraKeychainService",
-    visibility = ["//visibility:public"],
     deps = [
         "//Sources/XPC/Core:UmbraXPC",
         "@swiftpkg_cryptoswift//:CryptoSwift",
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
         "//Sources/UmbraLogging",
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
     ],
+    copts = [
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["**/*.swift"]),
+)
+
+filegroup(
+    name = "docc_bundle",
+    srcs = glob(["UmbraKeychainService.docc/**/*"]),
+    visibility = ["//visibility:public"],
 )
