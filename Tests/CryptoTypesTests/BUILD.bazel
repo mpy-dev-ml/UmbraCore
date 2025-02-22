@@ -1,4 +1,16 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+
+swift_library(
+    name = "CryptoTypesTestsLib",
+    srcs = glob(["**/*.swift"]),
+    module_name = "CryptoTypesTests",
+    deps = [
+        "//Sources/CryptoTypes",
+        "//Sources/SecurityTypes",
+        "//Sources/UmbraTestKit",
+    ],
+)
 
 swift_test(
     name = "CryptoTypesTests",
@@ -8,9 +20,5 @@ swift_test(
         "//Sources/CryptoTypes",
         "//Sources/SecurityTypes",
         "//Sources/UmbraTestKit",
-        "@build_bazel_rules_apple//apple/testing/default_runner:ios_default_runner",
     ],
-    target_compatible_with = ["@platforms//os:macos"],
-    minimum_os_version = "14.0",
-    platform_type = "macos",
 )
