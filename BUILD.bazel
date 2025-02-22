@@ -29,7 +29,7 @@ docc_archive(
         "//Sources/CryptoTypes",
         "//Sources/UmbraKeychainService",
     ],
-    docc_bundle = "//Sources/UmbraCore:docc_archive",
+    docc_bundle = "//Sources/UmbraCore:docc_bundle",
     module_name = "UmbraCore",
     display_name = "UmbraCore",
     bundle_identifier = "com.umbra.core.documentation",
