@@ -74,19 +74,21 @@ UmbraCore prioritises security in several ways:
 
 ## Next Steps
 
-- Learn about [Configuration Options](configuration.md)
-- Explore [Advanced Features](advanced-features.md)
-- Read our [Security Guide](security.md)
-- Check out the [API Reference](api-reference.md)
+Now that you have UmbraCore up and running, you might want to:
+
+- Learn about [Configuration Options](../user-guide/configuration.md)
+- Explore [Advanced Features](../user-guide/advanced-features.md)
+- Read our [Security Guide](../user-guide/security.md)
+- Check out the [API Reference](../api/reference.md)
 
 ## Getting Help
 
 If you encounter any issues or have questions:
 
-1. Check our [Troubleshooting Guide](troubleshooting.md)
+1. Check our [Troubleshooting Guide](../support/troubleshooting.md)
 2. Search existing [GitHub Issues](https://github.com/mpy-dev-ml/UmbraCore/issues)
 3. Create a new issue if your problem hasn't been reported
 
 ## Contributing
 
-We welcome contributions! Please read our [Contributing Guide](contributing.md) to get started.
+We welcome contributions! Please read our [Contributing Guide](../development/contributing.md) to get started.

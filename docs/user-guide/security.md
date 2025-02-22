@@ -146,7 +146,8 @@ If you discover a security vulnerability:
 3. Expect a response within 24 hours
 4. Follow responsible disclosure practices
 
-For general security questions, refer to:
-- [Configuration Guide](configuration.md)
-- [API Reference](api-reference.md)
-- [Troubleshooting Guide](troubleshooting.md)
+## Related Documentation
+
+- [Configuration Guide](../configuration.md)
+- [API Reference](../api/reference.md)
+- [Troubleshooting Guide](../support/troubleshooting.md)

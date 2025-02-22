@@ -56,6 +56,8 @@ try await bookmarkService.create(
 ```
 
 ## Next Steps
-- Read the [Architecture Guide](guides/ARCHITECTURE.md)
-- Check out [Security Best Practices](security/SECURITY_GUIDELINES.md)
-- View [API Documentation](api/README.md)
+After installation, you might want to:
+
+- Read the [Architecture Guide](../development/architecture.md)
+- Check out [Security Best Practices](../user-guide/security.md)
+- View [API Documentation](../api/reference.md)

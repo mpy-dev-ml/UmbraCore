@@ -188,7 +188,7 @@ do {
 
 ## Related Documentation
 
-- [Security Guide](security.md) - Comprehensive security information
-- [Configuration Guide](configuration.md) - Configuration options
-- [API Reference](api-reference.md) - Complete API documentation
-- [Troubleshooting Guide](troubleshooting.md) - Common issues and solutions
+- [Security Guide](../security.md) - Comprehensive security information
+- [Configuration Guide](../configuration.md) - Configuration options
+- [API Reference](../api/reference.md) - Complete API documentation
+- [Troubleshooting Guide](../support/troubleshooting.md) - Common issues and solutions

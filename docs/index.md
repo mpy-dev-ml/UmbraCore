@@ -108,26 +108,26 @@ UmbraCore is currently in active development with the following milestones:
 
 ## Getting Started
 
-Please refer to our [Quick Start Guide](getting-started.md) for installation and basic usage instructions.
+Please refer to our [Quick Start Guide](getting-started/quick-start.md) for installation and basic usage instructions.
 
 ## Security
 
-UmbraCore prioritises security in all aspects of its implementation. For details, see our [Security Guide](security.md).
+UmbraCore prioritises security in all aspects of its implementation. For details, see our [Security Guide](user-guide/security.md).
 
-## Implementation Guides
+## Documentation
 
-Our documentation covers various aspects of UmbraCore:
+Key documentation sections:
 
-- Configuration: [Configuration Guide](configuration.md)
-- Features: [Advanced Features](advanced-features.md)
-- Development: [API Reference](api-reference.md)
-- Support: [Troubleshooting Guide](troubleshooting.md)
+- Configuration: [Configuration Guide](user-guide/configuration.md)
+- Features: [Advanced Features](user-guide/advanced-features.md)
+- Development: [API Reference](api/reference.md)
+- Support: [Troubleshooting Guide](support/troubleshooting.md)
 
 ## Support
 
 If you find UmbraCore useful, please consider:
 
-1. [Contributing](contributing.md) to the project
+1. [Contributing](development/contributing.md) to the project
 2. [Supporting Restic](https://github.com/sponsors/fd0)
 3. Starring us on [GitHub](https://github.com/mpy-dev-ml/UmbraCore)
 4. Sharing your experience with others
