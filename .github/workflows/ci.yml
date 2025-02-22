@@ -36,6 +36,8 @@ jobs:
 
     - name: Setup Test Environment
       run: |
+        rm -rf /tmp/bazel-cache
+        rm -rf /tmp/bazel-repo-cache
         mkdir -p /tmp/bazel-cache
         mkdir -p /tmp/bazel-repo-cache
 

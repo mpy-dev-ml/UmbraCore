@@ -44,6 +44,9 @@ build:macos --macos_minimum_os=15.2
 build:macos --features=swift.use_global_module_cache
 build:macos --features=swift.enable_batch_mode
 build:macos --features=swift.enable_concurrency_checking
+build:macos --apple_crosstool_top=@local_config_apple_cc//:toolchain
+build:macos --crosstool_top=@local_config_apple_cc//:toolchain
+build:macos --host_crosstool_top=@local_config_apple_cc//:toolchain
 
 # CI configuration
 build:ci --config=docc
