@@ -1,5 +1,9 @@
 # ``CryptoTypes``
 
+@Metadata {
+    @TechnologyRoot
+}
+
 Cryptographic types and services for secure data operations.
 
 ## Overview
@@ -10,9 +14,17 @@ CryptoTypes provides a comprehensive set of cryptographic types and services for
 
 ### Essentials
 
+- ``CryptoTypes/CryptoTypes``
+
+### Services
+
+- ``DefaultCryptoServiceImpl``
+- ``CredentialManager``
+
+### Protocols
+
 - ``CryptoService``
 - ``CryptoServiceProtocol``
-- ``CredentialManager``
 
 ### Configuration
 
