@@ -2,11 +2,11 @@
 common --enable_bzlmod
 
 # Platform configuration
+build --apple_platform_type=macos
+build --macos_minimum_os=15.4
 build --cpu=darwin_arm64
 build --host_cpu=darwin_arm64
 build --macos_cpus=arm64
-build --apple_platform_type=macos
-build --macos_minimum_os=14.0
 
 # Swift specific settings
 build --features=swift.use_global_module_cache
@@ -29,6 +29,7 @@ build --experimental_repository_cache_hardlinks  # Use hardlinks for repo cache
 
 # Test configuration
 test --test_output=errors
+test --cache_test_results=no
 test --test_verbose_timeout_warnings
 test --test_summary=detailed
 
@@ -87,7 +88,9 @@ build:swift --swiftcopt=-emit-module-doc-path=$(BINDIR)/$(TARGET).swiftmodule
 
 # Build defaults
 build --verbose_failures
+build --sandbox_debug
+build --experimental_guard_against_concurrent_changes
 test --test_output=errors
 
 # Import local settings (must be last)
-try-import .user.bazelrc
+try-import %workspace%/.bazelrc.local

@@ -3,7 +3,7 @@ import SecurityTypes
 import UmbraTestKit
 import XCTest
 
-@available(macOS 14.0, *)
+@available(macOS 15.4, *)
 @MainActor
 final class URLSecurityTests: XCTestCase, @unchecked Sendable {
     var mockSecurityProvider: MockSecurityProvider!
