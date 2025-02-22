@@ -1,5 +1,6 @@
 load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//tools/bazel:docc.bzl", "docc_archive")
 
 # Ignore the Swift build folder
 # gazelle:exclude .build
@@ -17,4 +18,21 @@ gazelle_binary(
 gazelle(
     name = "update_build_files",
     gazelle = ":gazelle_bin",
+)
+
+# DocC documentation targets
+docc_archive(
+    name = "UmbraCore.docc",
+    src = "//Sources/UmbraCore:UmbraCore.docc",
+    symbol_graph = "//Sources/UmbraCore:symbol_graph",
+    display_name = "UmbraCore",
+    bundle_identifier = "com.umbra.core.documentation",
+)
+
+# Build all documentation
+filegroup(
+    name = "docs",
+    srcs = [
+        ":UmbraCore.docc",
+    ],
 )

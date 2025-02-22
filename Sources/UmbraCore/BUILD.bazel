@@ -4,11 +4,20 @@ swift_library(
     name = "UmbraCore",
     srcs = glob(["**/*.swift"]),
     module_name = "UmbraCore",
-    visibility = ["//visibility:public"],
     deps = [
         "//Sources/SecurityTypes",
         "//Sources/CryptoTypes",
         "//Sources/XPC/Core:UmbraXPC",
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
     ],
+    visibility = ["//visibility:public"],
+    generates_symbol_graph = True,
+    docc_dir = "UmbraCore.docc",
+)
+
+# Export the symbol graph for DocC
+filegroup(
+    name = "symbol_graph",
+    srcs = [":UmbraCore"],
+    output_group = "swift_symbol_graph",
 )
