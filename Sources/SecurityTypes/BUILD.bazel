@@ -24,7 +24,7 @@ filegroup(
 
 filegroup(
     name = "docc_bundle",
-    srcs = glob(["SecurityTypes.docc/**/*"]),
+    srcs = glob(["**/*.docc/**/*"]),
     visibility = ["//visibility:public"],
 )
 
