@@ -47,12 +47,23 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
+  - Getting Started:
+      - Overview: getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quick-start.md
   - User Guide:
-    - Configuration: configuration.md
-    - Advanced Features: advanced-features.md
-    - Security: security.md
-  - Reference:
-    - API Reference: api-reference.md
-    - Troubleshooting: troubleshooting.md
-  - Contributing: contributing.md
+      - Overview: user-guide/index.md
+      - Configuration: user-guide/configuration.md
+      - Advanced Features: user-guide/advanced-features.md
+      - Security: user-guide/security.md
+  - Development:
+      - Overview: development/index.md
+      - Bazel & SPM: development/bazel_spm.md
+      - Architecture: development/architecture.md
+      - Contributing: development/contributing.md
+  - API Reference:
+      - Overview: api/reference.md
+  - Support:
+      - Troubleshooting: support/troubleshooting.md
+  - License: LICENSE.md
+  - Acknowledgments: ACKNOWLEDGMENTS.md
