@@ -12,15 +12,17 @@ CryptoTypes provides the core cryptographic functionality for the UmbraCore fram
 
 ## Topics
 
-### Essentials
+### Services
 
 - ``CryptoService``
 - ``CryptoServiceProtocol``
+- ``DefaultCryptoService``
 - ``CredentialManager``
 
 ### Configuration
 
 - ``CryptoConfig``
+- ``CryptoConfiguration``
 
 ### Error Handling
 

@@ -14,24 +14,16 @@ UmbraKeychainService is a comprehensive keychain service that supports password 
 
 ### Essentials
 
+- ``KeychainService``
+- ``KeychainServiceProtocol``
 - ``PasswordValidator``
-- ``PasswordRequirements``
-- ``PasswordStrength``
 
-### Security
+### XPC Services
 
-- ``KeychainAccessControl``
-- ``BiometricAuthentication``
-- ``EncryptionService``
+- ``KeychainXPCService``
+- ``KeychainXPCConnection``
+- ``KeychainXPCImplementation``
 
 ### Error Handling
 
-- ``RetryStrategy``
 - ``KeychainError``
-- ``BackupService``
-
-### Metadata
-
-- ``PasswordMetadata``
-- ``PasswordCategory``
-- ``EnhancedMetadata``

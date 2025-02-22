@@ -1,7 +1,7 @@
+import CryptoKit
 @testable import ResticCLIHelper
 import UmbraTestKit
 import XCTest
-import CryptoKit
 
 // Custom command type for ls
 struct LsCommand: ResticCommand {
@@ -85,13 +85,13 @@ final class ResticCLIHelperTests: ResticTestCase {
     func testRestoreCommand() async throws {
         let mockRepository = try MockResticRepository()
         let helper = ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
-        
+
         // Create test files and backup
         let testData = "Test file content"
         let testDir = (mockRepository.testFilesPath as NSString)
         let testPath = testDir.appendingPathComponent("test.txt")
         try testData.write(toFile: testPath, atomically: true, encoding: .utf8)
-        
+
         // Create a backup first
         let backupOptions = CommonOptions(
             repository: mockRepository.path,
@@ -99,14 +99,14 @@ final class ResticCLIHelperTests: ResticTestCase {
             validateCredentials: true,
             jsonOutput: true
         )
-        
+
         let backupCommand = BackupCommand(options: backupOptions)
         backupCommand.addPath(testPath)
         backupCommand.tag("test-restore")
         backupCommand.setCachePath(mockRepository.cachePath)
-        
+
         _ = try await helper.execute(backupCommand)
-        
+
         // Get the snapshot ID
         let snapshotCommand = SnapshotCommand(
             options: CommonOptions(
@@ -117,12 +117,12 @@ final class ResticCLIHelperTests: ResticTestCase {
             operation: .list,
             tags: ["test-restore"]
         )
-        
+
         let snapshotOutput = try await helper.execute(snapshotCommand)
         let snapshots: [SnapshotInfo] = try JSONDecoder().decode([SnapshotInfo].self, from: Data(snapshotOutput.utf8))
         XCTAssertFalse(snapshots.isEmpty, "Should have at least one snapshot")
         let snapshotId = snapshots[0].id
-        
+
         // First restore test - with verification
         let restoreOptions = CommonOptions(
             repository: mockRepository.path,
@@ -130,28 +130,28 @@ final class ResticCLIHelperTests: ResticTestCase {
             validateCredentials: true,
             jsonOutput: true
         )
-        
+
         let restoreCommand = RestoreCommand(
             options: restoreOptions,
             snapshotId: snapshotId,
             targetPath: mockRepository.restorePath,
             verify: true
         )
-        
+
         let restoreOutput = try await helper.execute(restoreCommand)
         print("\nRestore output:")
         print(restoreOutput)
-        
+
         // Verify restored files
         try verifyRestoredFiles(
             testFiles: [testPath],
             testFilesPath: mockRepository.testFilesPath,
             restorePath: mockRepository.restorePath
         )
-        
+
         // Delete restored files for next test
         try FileManager.default.removeItem(atPath: mockRepository.restorePath)
-        
+
         // Second restore test - with verification
         let restoreCommand2 = RestoreCommand(
             options: restoreOptions,
@@ -159,11 +159,11 @@ final class ResticCLIHelperTests: ResticTestCase {
             targetPath: mockRepository.restorePath,
             verify: true
         )
-        
+
         let restoreOutput2 = try await helper.execute(restoreCommand2)
         print("\nRestore output (second restore):")
         print(restoreOutput2)
-        
+
         // Verify restored files again
         try verifyRestoredFiles(
             testFiles: [testPath],
@@ -216,15 +216,15 @@ final class ResticCLIHelperTests: ResticTestCase {
 
     private func verifyRestoredFiles(testFiles: [String], testFilesPath: String, restorePath: String) throws {
         let fileManager = FileManager.default
-        
+
         print("\nVerifying restored files:")
         print("Test files path: \(testFilesPath)")
         print("Restore path: \(restorePath)")
-        
+
         // Check that the restore directory exists
         let restoreExists = fileManager.fileExists(atPath: restorePath)
         XCTAssertTrue(restoreExists, "Restore directory should exist at \(restorePath)")
-        
+
         // Check that at least one file was restored
         let enumerator = fileManager.enumerator(atPath: restorePath)
         var hasFiles = false
@@ -237,7 +237,7 @@ final class ResticCLIHelperTests: ResticTestCase {
             }
         }
         XCTAssertTrue(hasFiles, "Restore directory should contain files")
-        
+
         // The --verify flag in the restore command ensures:
         // 1. All files are restored correctly
         // 2. File contents match the snapshot
