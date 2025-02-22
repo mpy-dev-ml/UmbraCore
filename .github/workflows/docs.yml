@@ -62,7 +62,22 @@ jobs:
         run: |
           bazel build //:all_docs
           mkdir -p site/api
-          cp -R bazel-bin/*.docc/* site/api/
+          for module in UmbraCore SecurityTypes CryptoTypes UmbraKeychainService; do
+            module_dir="bazel-bin/$module.docc"
+            if [ -L "$module_dir" ]; then
+              # Handle symlinks on both macOS and Linux
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                module_path=$(stat -f %Y "$module_dir")
+              else
+                module_path=$(readlink -f "$module_dir")
+              fi
+            else
+              module_path="$module_dir"
+            fi
+            if [ -d "$module_path" ]; then
+              cp -R "$module_path" "site/api/$module"
+            fi
+          done
 
       - name: Build documentation
         run: mkdocs build
