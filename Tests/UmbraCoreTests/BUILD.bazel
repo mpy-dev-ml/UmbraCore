@@ -15,5 +15,8 @@ swift_test(
         "-enable-actor-data-race-checks",
     ],
     tags = ["core"],
-    target_compatible_with = ["@platforms//os:macos"],
+    target_compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
 )
