@@ -14,16 +14,16 @@ UmbraKeychainService is a comprehensive keychain service that supports password 
 
 ### Essentials
 
-- ``UmbraKeychainService``
-- ``KeychainService``
-- ``KeychainServiceProtocol``
+- ``UmbraKeychainService/UmbraKeychainService``
+- ``UmbraKeychainService/KeychainService``
+- ``UmbraKeychainService/KeychainServiceProtocol``
 
 ### Services
 
-- ``KeychainXPCService``
-- ``KeychainXPCConnection``
-- ``KeychainXPCImplementation``
+- ``UmbraKeychainService/KeychainXPCService``
+- ``UmbraKeychainService/KeychainXPCConnection``
+- ``UmbraKeychainService/KeychainXPCImplementation``
 
 ### Error Handling
 
-- ``KeychainError``
+- ``UmbraKeychainService/KeychainError``
