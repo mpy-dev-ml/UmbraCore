@@ -49,7 +49,7 @@ docc_archive(
     name = "CryptoTypes.docc",
     srcs = ["//Sources/CryptoTypes:sources"],
     deps = ["//Sources/SecurityTypes"],
-    docc_bundle = "//Sources/CryptoTypes:docc_archive",
+    docc_bundle = "//Sources/CryptoTypes:docc_bundle",
     module_name = "CryptoTypes",
     display_name = "CryptoTypes",
     bundle_identifier = "com.umbra.crypto.types.documentation",
