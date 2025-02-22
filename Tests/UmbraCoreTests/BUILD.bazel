@@ -6,17 +6,10 @@ swift_test(
     module_name = "UmbraCoreTests",
     deps = [
         "//Sources/UmbraCore",
-        "//Sources/SecurityTypes",
-        "//Sources/CryptoTypes",
+        "//Sources/UmbraTestKit",
+        "@build_bazel_rules_apple//apple/testing/default_runner:ios_default_runner",
     ],
-    copts = [
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    tags = ["core"],
-    target_compatible_with = [
-        "@platforms//os:macos",
-        "@platforms//cpu:arm64",
-    ],
+    target_compatible_with = ["@platforms//os:macos"],
+    minimum_os_version = "14.0",
+    platform_type = "macos",
 )

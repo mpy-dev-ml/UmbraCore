@@ -7,11 +7,10 @@ swift_test(
     deps = [
         "//Sources/CryptoTypes",
         "//Sources/SecurityTypes",
-        "@swiftpkg_cryptoswift//:CryptoSwift",
+        "//Sources/UmbraTestKit",
+        "@build_bazel_rules_apple//apple/testing/default_runner:ios_default_runner",
     ],
-    tags = ["security"],
-    target_compatible_with = [
-        "@platforms//os:macos",
-        "@platforms//cpu:arm64",
-    ],
+    target_compatible_with = ["@platforms//os:macos"],
+    minimum_os_version = "14.0",
+    platform_type = "macos",
 )

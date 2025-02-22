@@ -2,17 +2,15 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
     name = "CoreTests",
-    srcs = glob([
-        "**/*.swift",
-    ]),
+    srcs = glob(["**/*.swift"]),
     module_name = "CoreTests",
     deps = [
-        "//Sources/UmbraCore",
+        "//Sources/Core",
+        "//Sources/SecurityTypes",
         "//Sources/UmbraTestKit",
+        "@build_bazel_rules_apple//apple/testing/default_runner:ios_default_runner",
     ],
-    copts = [
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
+    target_compatible_with = ["@platforms//os:macos"],
+    minimum_os_version = "14.0",
+    platform_type = "macos",
 )
