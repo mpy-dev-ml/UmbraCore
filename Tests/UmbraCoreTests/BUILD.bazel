@@ -16,5 +16,4 @@ swift_test(
     ],
     tags = ["core"],
     target_compatible_with = ["@platforms//os:macos"],
-    platform_type = "macos",
 )
