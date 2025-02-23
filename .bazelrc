@@ -61,7 +61,6 @@ test --spawn_strategy=local
 test --test_strategy=standalone
 
 # Coverage settings
-coverage --config=macos
 coverage --instrument_test_targets
 
 # Import local settings (must be last)
