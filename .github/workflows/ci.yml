@@ -1,91 +1,115 @@
 name: CI
 
-on:
-  push:
-    branches:
-      - main
-      - feature/**
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+  SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+
+permissions:
+  contents: write
+  security-events: write
+  id-token: write
+  checks: write
+  pull-requests: write
 
 jobs:
-  build:
+  build-and-test:
     name: Build & Test
-    runs-on: self-hosted
-    env:
-      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
-      SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
-      ARCHS: arm64
-      ONLY_ACTIVE_ARCH: YES
-      ROSETTA_DISABLED: 1
-      MACOSX_DEPLOYMENT_TARGET: 14.0
-
+    runs-on: [self-hosted, macOS, ARM64]
+    
     steps:
     - uses: actions/checkout@v4
       with:
+        clean: true
         fetch-depth: 0
 
     - name: System Info
       run: |
-        system_profiler SPSoftwareDataType
-        xcodebuild -version
+        uname -a
         swift --version
         bazel --version
 
-    - name: Clean Bazel Cache
+    - name: Configure Bazel
       run: |
-        rm -rf /tmp/bazel-cache
-        rm -rf /tmp/bazel-repo-cache
-        rm -rf ~/.cache/bazel
-        rm -rf ~/.cache/bazelisk
-        bazel clean --expunge
-        mkdir -p /tmp/bazel-cache
-        mkdir -p /tmp/bazel-repo-cache
+        cat >> .bazelrc << 'EOF'
+        build --cpu=darwin_arm64
+        build --apple_platform_type=macos
+        build --macos_minimum_os=14.0
+        build --features=swift.use_global_module_cache
+        build --features=swift.enable_batch_mode
+        build --features=swift.enable_concurrency_checking
+        build --verbose_failures
+        test --test_output=errors
+        EOF
+
+    - name: Setup Test Environment
+      run: |
+        mkdir -p ~/UmbraTest/{Core,Security,Coverage}
+        chmod -R 755 ~/UmbraTest
 
     - name: Build
       run: |
-        # Ensure we're running on arm64
-        arch -arm64 bazel build //... \
-          --spawn_strategy=local \
-          --genrule_strategy=local \
-          --strategy=Genrule=local \
-          --strategy=SwiftCompile=local \
-          --platforms=//:macos_arm64
+        bazel build //... --show_progress_rate_limit=5
 
     - name: Core Tests
+      env:
+        UMBRA_TEST_ROOT: ~/UmbraTest/Core
       run: |
-        arch -arm64 bazel test //Tests/UmbraCoreTests/... \
-          --spawn_strategy=local \
-          --test_strategy=standalone \
-          --platforms=//:macos_arm64 \
-          --test_output=errors
+        bazel test //... \
+          --test_tag_filters=-security,-requires_keychain \
+          --test_env=UMBRA_TEST_ROOT
 
     - name: Security Tests
+      env:
+        UMBRA_TEST_ROOT: ~/UmbraTest/Security
       run: |
-        arch -arm64 bazel test //Tests/SecurityTypesTests/... //Tests/CryptoTypesTests/... \
-          --spawn_strategy=local \
-          --test_strategy=standalone \
-          --platforms=//:macos_arm64 \
-          --test_output=errors
+        bazel test //... \
+          --test_tag_filters=security \
+          --test_env=UMBRA_TEST_ROOT
 
     - name: Generate Coverage
+      env:
+        UMBRA_TEST_ROOT: ~/UmbraTest/Coverage
       run: |
-        arch -arm64 bazel coverage //... \
-          --spawn_strategy=local \
-          --strategy=CoverageReport=local \
-          --platforms=//:macos_arm64 \
-          --combined_report=lcov
+        # Generate coverage data
+        bazel coverage //... \
+          --collect_code_coverage \
+          --instrument_test_targets \
+          --experimental_generate_llvm_lcov \
+          --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main \
+          --combined_report=lcov \
+          --test_env=UMBRA_TEST_ROOT \
+          --verbose_failures \
+          --test_output=errors
+        
+        # Create coverage directory
+        mkdir -p coverage
+        
+        # Find coverage file in bazel-out/_coverage
+        COVERAGE_FILE="$(pwd)/bazel-out/_coverage/_coverage_report.dat"
+        if [ -f "$COVERAGE_FILE" ]; then
+          echo "Found coverage file at: $COVERAGE_FILE"
+          cp "$COVERAGE_FILE" coverage/lcov.info
+          echo "Coverage file contents:"
+          head -n 5 coverage/lcov.info
+        else
+          echo "Error: Coverage file not found at $COVERAGE_FILE"
+          echo "Searching for any coverage files:"
+          find bazel-out -type f -name "*coverage*.dat" -ls
+          exit 1
+        fi
 
     - name: Upload Coverage
       uses: codecov/codecov-action@v4
       with:
-        files: bazel-out/_coverage/_coverage_report.dat
+        files: coverage/lcov.info
         fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
+        slug: mpy-dev-ml/UmbraCore
 
     - name: Cleanup
       if: always()
       run: |
-        rm -rf /tmp/bazel-cache/*
-        rm -rf /tmp/bazel-repo-cache/*
+        rm -rf ~/UmbraTest
+        bazel clean --expunge
