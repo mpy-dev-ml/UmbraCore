@@ -6,6 +6,7 @@ build --apple_platform_type=macos
 build --cpu=darwin_arm64
 build --host_cpu=darwin_arm64
 build --macos_cpus=arm64
+build --macos_minimum_os=15.2
 
 # Swift configuration
 build --features=swift.enable_vfsoverlays
@@ -22,7 +23,7 @@ build --action_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 # Cache settings
 build --disk_cache=/tmp/bazel-cache
 build --repository_cache=/tmp/bazel-repo-cache
-build --experimental_repository_cache_hardlinks  # Use hardlinks for repo cache
+build --experimental_repository_cache_hardlinks
 
 # Test configuration
 test --test_output=errors
@@ -43,22 +44,24 @@ coverage --experimental_use_llvm_covmap
 # Performance optimizations
 build --incompatible_strict_action_env
 build --remote_local_fallback
-build --jobs=auto  # Automatically determine the number of jobs
+build --jobs=auto  # Auto-detect CPU cores
 
 # macOS configuration
 build:macos --cpu=darwin_arm64
 test:macos --cpu=darwin_arm64
 build:macos --apple_platform_type=macos
+build:macos --macos_minimum_os=15.2
+test:macos --macos_minimum_os=15.2
 build:macos --apple_crosstool_top=@local_config_apple_cc//:toolchain
 build:macos --crosstool_top=@local_config_apple_cc//:toolchain
 build:macos --host_crosstool_top=@local_config_apple_cc//:toolchain
 build:macos --host_platform=@build_bazel_apple_support//platforms:macos_arm64
 build:macos --platforms=@build_bazel_apple_support//platforms:macos_arm64
 
-# CI configuration
+# CI configuration for local Mac runner
 build:ci --config=macos
 build:ci --disk_cache=/tmp/bazel-cache
-build:ci --jobs=HOST_CPUS*0.75
+build:ci --jobs=$(sysctl -n hw.ncpu)  # Automatically set jobs to match CPU cores
 build:ci --keep_going
 build:ci --color=yes
 build:ci --curses=no
@@ -67,6 +70,7 @@ build:ci --verbose_failures
 build:ci --experimental_repository_cache_hardlinks
 build:ci --noshow_progress
 build:ci --noshow_loading_progress
+build:ci --sandbox_debug
 
 # DocC documentation configuration
 build:docc --config=macos
@@ -81,7 +85,6 @@ build:swift --swiftcopt=-emit-module-doc
 
 # Build defaults
 build --verbose_failures
-build --sandbox_debug
 
 # Import local settings (must be last)
 try-import %workspace%/.bazelrc.local
