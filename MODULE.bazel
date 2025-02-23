@@ -4,25 +4,31 @@ module(
 )
 
 # Core Bazel dependencies
-bazel_dep(name = "rules_swift_package_manager", version = "0.43.0")
-bazel_dep(name = "rules_swift", version = "2.4.0", repo_name = "build_bazel_rules_swift")
+bazel_dep(name = "rules_swift_package_manager", version = "0.44.0")  # Latest version
+bazel_dep(name = "rules_swift", version = "2.10.0", repo_name = "build_bazel_rules_swift")
 bazel_dep(name = "rules_apple", version = "3.19.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "apple_support", version = "1.18.0", repo_name = "build_bazel_apple_support")
 bazel_dep(name = "bazel_skylib", version = "1.5.0")
-bazel_dep(name = "platforms", version = "0.0.10")
 
-# Gazelle (For auto-generating BUILD files)
 bazel_dep(name = "gazelle", version = "0.33.0", dev_dependency = True, repo_name = "bazel_gazelle")
+
+# Ensure correct version of `platforms`
+bazel_dep(name = "platforms", version = "0.0.10")
 
 # Swift package manager integration
 swift_deps = use_extension(
     "@rules_swift_package_manager//:extensions.bzl",
     "swift_deps",
 )
+
 swift_deps.from_package(
     resolved = "//:Package.resolved",
     swift = "//:Package.swift",
 )
 
-# Let Bazel auto-resolve package repositories
-use_repo(swift_deps, "swift_package", "swiftpkg_cryptoswift", "swiftpkg_swiftybeaver")
+use_repo(
+    swift_deps,
+    "swift_package",
+    "swiftpkg_swiftybeaver",
+    "swiftpkg_cryptoswift",
+)
