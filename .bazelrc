@@ -3,14 +3,11 @@ common --enable_bzlmod
 
 # Platform configuration
 build --apple_platform_type=macos
-build --macos_minimum_os=14.0
 build --cpu=darwin_arm64
 build --host_cpu=darwin_arm64
 build --macos_cpus=arm64
 
 # Swift configuration
-build --features=swift.use_global_module_cache
-build --features=swift.enable_batch_mode
 build --features=swift.enable_vfsoverlays
 build --features=swift.enable_concurrency_checking
 
@@ -25,7 +22,6 @@ build --action_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 # Cache settings
 build --disk_cache=/tmp/bazel-cache
 build --repository_cache=/tmp/bazel-repo-cache
-build --experimental_guard_against_concurrent_changes  # Prevent cache corruption
 build --experimental_repository_cache_hardlinks  # Use hardlinks for repo cache
 
 # Test configuration
@@ -33,7 +29,6 @@ test --test_output=errors
 test --cache_test_results=no
 test --test_verbose_timeout_warnings
 test --test_summary=detailed
-test --apple_platform_type=macos
 test --cpu=darwin_arm64
 test --macos_cpus=arm64
 
@@ -53,13 +48,7 @@ build --jobs=auto  # Automatically determine the number of jobs
 # macOS configuration
 build:macos --cpu=darwin_arm64
 test:macos --cpu=darwin_arm64
-test:macos --apple_platform_type=macos
-test:macos --macos_cpus=arm64
 build:macos --apple_platform_type=macos
-build:macos --macos_minimum_os=14.0
-build:macos --features=swift.use_global_module_cache
-build:macos --features=swift.enable_batch_mode
-build:macos --features=swift.enable_concurrency_checking
 build:macos --apple_crosstool_top=@local_config_apple_cc//:toolchain
 build:macos --crosstool_top=@local_config_apple_cc//:toolchain
 build:macos --host_crosstool_top=@local_config_apple_cc//:toolchain
@@ -67,15 +56,14 @@ build:macos --host_platform=@build_bazel_apple_support//platforms:macos_arm64
 build:macos --platforms=@build_bazel_apple_support//platforms:macos_arm64
 
 # CI configuration
-build:ci --config=docc
+build:ci --config=macos
 build:ci --disk_cache=/tmp/bazel-cache
 build:ci --jobs=HOST_CPUS*0.75
 build:ci --keep_going
 build:ci --color=yes
 build:ci --curses=no
-build:ci --xcode_version=15.0
+build:ci --xcode_version=15.2
 build:ci --verbose_failures
-build:ci --experimental_guard_against_concurrent_changes
 build:ci --experimental_repository_cache_hardlinks
 build:ci --noshow_progress
 build:ci --noshow_loading_progress
@@ -84,20 +72,16 @@ build:ci --noshow_loading_progress
 build:docc --config=macos
 build:docc --apple_generate_dsym
 build:docc --swiftcopt=-emit-module-doc
-build:docc --swiftcopt=-emit-module-doc-path=$(BINDIR)/$(TARGET).swiftmodule
 build:docc --verbose_failures
 run:docc --config=docc
 
 # Swift documentation configuration
 build:swift --apple_generate_dsym
 build:swift --swiftcopt=-emit-module-doc
-build:swift --swiftcopt=-emit-module-doc-path=$(BINDIR)/$(TARGET).swiftmodule
 
 # Build defaults
 build --verbose_failures
 build --sandbox_debug
-build --experimental_guard_against_concurrent_changes
-test --test_output=errors
 
 # Import local settings (must be last)
 try-import %workspace%/.bazelrc.local
