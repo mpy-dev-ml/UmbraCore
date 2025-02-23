@@ -107,7 +107,6 @@ platform(
         "@platforms//os:macos",
         "@platforms//cpu:arm64",
     ],
-    parents = ["@platforms//apple:macos"],
 )
 
 # Default Swift library configuration
