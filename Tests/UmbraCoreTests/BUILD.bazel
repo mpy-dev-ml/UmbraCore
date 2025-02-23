@@ -1,17 +1,22 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+load("//tools/bazel:swift_defaults.bzl", "swift_library_cached")
 
 swift_test(
     name = "UmbraCoreTests",
     srcs = glob(["**/*.swift"]),
-    module_name = "UmbraCoreTests",
     deps = [
         "//Sources/Core",
-        "//Sources/SecurityTypes",
         "//Sources/UmbraCore",
-        "//Sources/UmbraTestKit",
+        "//Tests/TestSupport",
     ],
-    testonly = True,
-    platform_type = "macos",
-    minimum_os_version = "14.0",
-    target_compatible_with = ["@platforms//os:macos"],
+    module_name = "UmbraCoreTests",
+    copts = [
+        "-target", "arm64-apple-macos14.0",
+    ],
+    env = {
+        "ARCHS": "arm64",
+        "ONLY_ACTIVE_ARCH": "YES",
+        "ROSETTA_DISABLED": "1",
+        "MACOSX_DEPLOYMENT_TARGET": "14.0",
+    },
 )

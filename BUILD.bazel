@@ -8,6 +8,15 @@ load("//tools/bazel:docc.bzl", "docc_archive")
 # Configure repository names for Swift packages
 # gazelle:swift_repository_prefix swiftpkg_
 
+platform(
+    name = "macos_arm64",
+    constraint_values = [
+        "@platforms//cpu:arm64",
+        "@platforms//os:macos",
+        "//platforms:arm64_apple_macos14_0",
+    ],
+)
+
 gazelle_binary(
     name = "gazelle_bin",
     languages = [
@@ -19,6 +28,14 @@ gazelle(
     name = "update_build_files",
     gazelle = ":gazelle_bin",
 )
+
+# Common Swift compiler options for all targets
+SWIFT_COPTS = [
+    "-strict-concurrency=complete",  # Full concurrency checking
+    "-warn-concurrency",  # Warn about potential concurrency issues
+    "-enable-actor-data-race-checks",  # Runtime checks for actor data races
+    "-target", "arm64-apple-macos14.0",  # Ensure consistent target triple
+]
 
 # DocC documentation targets
 docc_archive(
@@ -84,6 +101,31 @@ filegroup(
         ":SecurityTypes.docc",
         ":CryptoTypes.docc",
         ":UmbraKeychainService.docc",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Platform configuration
+platform(
+    name = "macos_arm64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
+    parents = ["@build_bazel_apple_support//platforms:macos"],
+)
+
+# Default Swift library configuration
+swift_library(
+    name = "UmbraCore",
+    srcs = [],
+    module_name = "UmbraCore",
+    copts = [
+        "-target", "arm64-apple-macos14.0",  # Ensure consistent target triple
     ],
     visibility = ["//visibility:public"],
 )
