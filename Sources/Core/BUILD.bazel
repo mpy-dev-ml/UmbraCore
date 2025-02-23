@@ -1,26 +1,11 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
-package(default_visibility = ["//visibility:public"])
-
-exports_files(["UmbraCore/UmbraCore.swift"])
-
 swift_library(
     name = "Core",
     srcs = glob(["**/*.swift"]),
     module_name = "Core",
-    deps = [
-        "//Sources/SecurityTypes",
-        "//Sources/SecurityUtils",
-        "//Sources/CryptoTypes",
-        "//Sources/UmbraLogging",
-    ],
-    copts = [
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    platform_type = "macos",
-    minimum_os_version = "14.0",
-    target_compatible_with = ["@platforms//os:macos"],
     visibility = ["//visibility:public"],
+    copts = [
+        "-target", "arm64-apple-macos14.0",
+    ],
 )

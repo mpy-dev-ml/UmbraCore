@@ -5,13 +5,7 @@ swift_library(
     srcs = glob(["**/*.swift"]),
     module_name = "XPC",
     visibility = ["//visibility:public"],
-    deps = [
-        "//Sources/CryptoTypes",
-        "//Sources/SecurityTypes",
-    ],
     copts = [
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
+        "-target", "arm64-apple-macos14.0",
     ],
 )

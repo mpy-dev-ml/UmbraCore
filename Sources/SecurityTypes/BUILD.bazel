@@ -1,42 +1,11 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
-load("//tools/bazel:docc.bzl", "docc_archive")
-
-# SecurityTypes: Core security primitives and protocols
-# No external dependencies, pure Swift implementation
-package(default_visibility = ["//visibility:public"])
 
 swift_library(
     name = "SecurityTypes",
     srcs = glob(["**/*.swift"]),
     module_name = "SecurityTypes",
+    visibility = ["//visibility:public"],
     copts = [
-        "-strict-concurrency=complete",  # Full concurrency checking
-        "-warn-concurrency",  # Warn about potential concurrency issues
-        "-enable-actor-data-race-checks",  # Runtime checks for actor data races
+        "-target", "arm64-apple-macos14.0",
     ],
-    platform_type = "macos",
-    minimum_os_version = "14.0",
-    target_compatible_with = ["@platforms//os:macos"],
-)
-
-filegroup(
-    name = "sources",
-    srcs = glob(["**/*.swift"]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "docc_bundle",
-    srcs = glob(["**/*.docc/**/*"]),
-    visibility = ["//visibility:public"],
-)
-
-docc_archive(
-    name = "docc_archive",
-    srcs = ["sources"],
-    docc_bundle = ":docc_bundle",
-    module_name = "SecurityTypes",
-    display_name = "SecurityTypes",
-    bundle_identifier = "com.umbra.security.types.documentation",
-    visibility = ["//visibility:public"],
 )

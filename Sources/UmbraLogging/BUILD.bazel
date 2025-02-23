@@ -5,7 +5,7 @@ swift_library(
     srcs = glob(["**/*.swift"]),
     module_name = "UmbraLogging",
     visibility = ["//visibility:public"],
-    deps = [
-        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    copts = [
+        "-target", "arm64-apple-macos14.0",
     ],
 )
