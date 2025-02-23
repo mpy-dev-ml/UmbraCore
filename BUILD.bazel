@@ -110,14 +110,11 @@ platform(
     parents = ["@build_bazel_apple_support//platforms:macos"],
 )
 
-# Default Swift library configuration
+# Main library target
 swift_library(
     name = "UmbraCore",
     srcs = [],
     module_name = "UmbraCore",
-    copts = [
-        "-target", "arm64-apple-macos14.0",  # Ensure consistent target triple
-    ],
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/UmbraCore",
@@ -127,41 +124,44 @@ swift_library(
         "//Sources/CryptoTypes",
         "//Sources/XPC/Core:UmbraXPC",
     ],
+    copts = [
+        "-target", "arm64-apple-macos14.0",
+    ],
 )
 
 # Documentation targets
 filegroup(
-    name = "UmbraCore.docc",
+    name = "UmbraCore_docs",
     srcs = glob(["Sources/UmbraCore/**/*.md", "Sources/UmbraCore/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "UmbraLogging.docc",
+    name = "UmbraLogging_docs",
     srcs = glob(["Sources/UmbraLogging/**/*.md", "Sources/UmbraLogging/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "UmbraKeychainService.docc",
+    name = "UmbraKeychainService_docs",
     srcs = glob(["Sources/UmbraKeychainService/**/*.md", "Sources/UmbraKeychainService/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "SecurityTypes.docc",
+    name = "SecurityTypes_docs",
     srcs = glob(["Sources/SecurityTypes/**/*.md", "Sources/SecurityTypes/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "CryptoTypes.docc",
+    name = "CryptoTypes_docs",
     srcs = glob(["Sources/CryptoTypes/**/*.md", "Sources/CryptoTypes/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "UmbraXPC.docc",
+    name = "UmbraXPC_docs",
     srcs = glob(["Sources/XPC/Core/**/*.md", "Sources/XPC/Core/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
