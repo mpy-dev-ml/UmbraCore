@@ -1,0 +1,18 @@
+package(default_visibility = ["//visibility:public"])
+
+constraint_setting(name = "target_triple")
+
+constraint_value(
+    name = "arm64_apple_macos14_0",
+    constraint_setting = ":target_triple",
+)
+
+platform(
+    name = "macos_arm64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+        ":arm64_apple_macos14_0",
+    ],
+    parents = ["@build_bazel_apple_support//platforms:macos"],
+)

@@ -1,90 +1,68 @@
 # Enable bzlmod
 common --enable_bzlmod
+common --check_direct_dependencies=off
 
 # Platform configuration
 build --apple_platform_type=macos
 build --cpu=darwin_arm64
 build --host_cpu=darwin_arm64
-build --macos_cpus=arm64
-build --macos_minimum_os=15.2
+build --macos_minimum_os=14.0
+build --platforms=//:macos_arm64
+
+# Build ordering and parallelism
+build --build_tag_filters=priority-1,-no-priority  # Build priority-1 targets first
+build --jobs=auto  # Automatic job count based on CPU cores
+
+# Enhanced caching configuration
+build --disk_cache=/tmp/bazel-cache
+build --repository_cache=/tmp/bazel-repo-cache
+build --experimental_repository_cache_hardlinks
+build --experimental_guard_against_concurrent_changes
+build --experimental_reuse_sandbox_directories
+build --keep_going  # Continue building other targets even if one fails
+build --remote_download_minimal  # Only download artifacts that are needed
+build --experimental_inmemory_dotd_files  # Keep .d files in memory
+build --experimental_inmemory_jdeps_files  # Keep .jdeps files in memory
+build --incompatible_strict_action_env  # Ensure action environment is hermetic
 
 # Swift configuration
 build --features=swift.enable_vfsoverlays
 build --features=swift.enable_concurrency_checking
+build --features=swift.use_global_module_cache
+build --features=swift.enable_batch_mode
+build --features=swift.use_global_index_store
 
-# C++ settings for crypto dependencies
-build --cxxopt=-std=c++14
+# Swift package manager configuration
+build --repo_env=BAZEL_SWIFT_PACKAGE_MANAGER_TARGET_TRIPLE=arm64-apple-macos14.0
+build --repo_env=SWIFT_PACKAGE_MANAGER_PLATFORM=macos
+build --repo_env=SWIFT_PACKAGE_MANAGER_ARCH=arm64
+build --repo_env=SWIFT_PACKAGE_MANAGER_MACOS_MINIMUM_VERSION=14.0
+build --repo_env=SWIFT_PACKAGE_MANAGER_CONFIGURATION=release
+build --repo_env=SWIFT_PACKAGE_MANAGER_ENABLE_LIBRARY_EVOLUTION=1
 
 # Environment setup
-build --action_env=PATH
-build --action_env=CC=clang
 build --action_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-
-# Cache settings
-build --disk_cache=/tmp/bazel-cache
-build --repository_cache=/tmp/bazel-repo-cache
-build --experimental_repository_cache_hardlinks
 
 # Test configuration
 test --test_output=errors
-test --cache_test_results=no
 test --test_verbose_timeout_warnings
 test --test_summary=detailed
+test --test_env=ARCHS=arm64
+test --test_env=ONLY_ACTIVE_ARCH=YES
+test --test_env=ROSETTA_DISABLED=1
 test --cpu=darwin_arm64
 test --macos_cpus=arm64
+test --test_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+test --test_env=MACOSX_DEPLOYMENT_TARGET=14.0
+test --test_env=HOME=/Users/mpy
+test --test_env=TMPDIR=/var/folders
+test --sandbox_writable_path=/Users/mpy/Library/Developer/Xcode/DerivedData
+test --spawn_strategy=local
+test --test_strategy=standalone
 
 # Coverage settings
 coverage --config=macos
 coverage --instrument_test_targets
-coverage --combined_report=lcov
-coverage --coverage_report_generator=@bazel_tools//tools/test/CoverageOutputGenerator/java/com/google/devtools/coverageoutputgenerator:Main
-coverage --instrumentation_filter="^//Sources"
-coverage --experimental_use_llvm_covmap
-
-# Performance optimizations
-build --incompatible_strict_action_env
-build --remote_local_fallback
-build --jobs=auto  # Auto-detect CPU cores
-
-# macOS configuration
-build:macos --cpu=darwin_arm64
-test:macos --cpu=darwin_arm64
-build:macos --apple_platform_type=macos
-build:macos --macos_minimum_os=15.2
-test:macos --macos_minimum_os=15.2
-build:macos --apple_crosstool_top=@local_config_apple_cc//:toolchain
-build:macos --crosstool_top=@local_config_apple_cc//:toolchain
-build:macos --host_crosstool_top=@local_config_apple_cc//:toolchain
-build:macos --host_platform=@build_bazel_apple_support//platforms:macos_arm64
-build:macos --platforms=@build_bazel_apple_support//platforms:macos_arm64
-
-# CI configuration for local Mac runner
-build:ci --config=macos
-build:ci --disk_cache=/tmp/bazel-cache
-build:ci --jobs=$(sysctl -n hw.ncpu)  # Automatically set jobs to match CPU cores
-build:ci --keep_going
-build:ci --color=yes
-build:ci --curses=no
-build:ci --xcode_version=15.2
-build:ci --verbose_failures
-build:ci --experimental_repository_cache_hardlinks
-build:ci --noshow_progress
-build:ci --noshow_loading_progress
-build:ci --sandbox_debug
-
-# DocC documentation configuration
-build:docc --config=macos
-build:docc --apple_generate_dsym
-build:docc --swiftcopt=-emit-module-doc
-build:docc --verbose_failures
-run:docc --config=docc
-
-# Swift documentation configuration
-build:swift --apple_generate_dsym
-build:swift --swiftcopt=-emit-module-doc
-
-# Build defaults
-build --verbose_failures
 
 # Import local settings (must be last)
 try-import %workspace%/.bazelrc.local
