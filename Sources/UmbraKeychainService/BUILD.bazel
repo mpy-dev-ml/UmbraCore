@@ -1,11 +1,25 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("@build_bazel_rules_swift//swift:docc.bzl", "swift_docc_bundle")
 
 swift_library(
     name = "UmbraKeychainService",
     srcs = glob(["**/*.swift"]),
     module_name = "UmbraKeychainService",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+        "//Sources/XPC/Core:UmbraXPC",
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    ],
     copts = [
         "-target", "arm64-apple-macos14.0",
     ],
+)
+
+swift_docc_bundle(
+    name = "docc_bundle",
+    bundle_name = "UmbraKeychainService",
+    srcs = glob(["**/*.md", "**/*.docc/**"]),
+    visibility = ["//visibility:public"],
 )
