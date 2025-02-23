@@ -8,15 +8,6 @@ load("//tools/bazel:docc.bzl", "docc_archive")
 # Configure repository names for Swift packages
 # gazelle:swift_repository_prefix swiftpkg_
 
-platform(
-    name = "macos_arm64",
-    constraint_values = [
-        "@platforms//cpu:arm64",
-        "@platforms//os:macos",
-        "//platforms:arm64_apple_macos14_0",
-    ],
-)
-
 gazelle_binary(
     name = "gazelle_bin",
     languages = [
