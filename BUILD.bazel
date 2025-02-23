@@ -132,36 +132,36 @@ swift_library(
 # Documentation targets
 filegroup(
     name = "UmbraCore.docc",
-    srcs = glob(["Sources/UmbraCore/**/*.md", "Sources/UmbraCore/**/*.docc/**"]),
+    srcs = glob(["Sources/UmbraCore/**/*.md", "Sources/UmbraCore/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "UmbraLogging.docc",
-    srcs = glob(["Sources/UmbraLogging/**/*.md", "Sources/UmbraLogging/**/*.docc/**"]),
+    srcs = glob(["Sources/UmbraLogging/**/*.md", "Sources/UmbraLogging/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "UmbraKeychainService.docc",
-    srcs = glob(["Sources/UmbraKeychainService/**/*.md", "Sources/UmbraKeychainService/**/*.docc/**"]),
+    srcs = glob(["Sources/UmbraKeychainService/**/*.md", "Sources/UmbraKeychainService/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "SecurityTypes.docc",
-    srcs = glob(["Sources/SecurityTypes/**/*.md", "Sources/SecurityTypes/**/*.docc/**"]),
+    srcs = glob(["Sources/SecurityTypes/**/*.md", "Sources/SecurityTypes/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "CryptoTypes.docc",
-    srcs = glob(["Sources/CryptoTypes/**/*.md", "Sources/CryptoTypes/**/*.docc/**"]),
+    srcs = glob(["Sources/CryptoTypes/**/*.md", "Sources/CryptoTypes/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "UmbraXPC.docc",
-    srcs = glob(["Sources/XPC/Core/**/*.md", "Sources/XPC/Core/**/*.docc/**"]),
+    srcs = glob(["Sources/XPC/Core/**/*.md", "Sources/XPC/Core/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )

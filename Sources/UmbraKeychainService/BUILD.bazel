@@ -19,6 +19,6 @@ swift_library(
 # Documentation sources
 filegroup(
     name = "sources",
-    srcs = glob(["**/*.md", "**/*.docc/**"]),
+    srcs = glob(["**/*.md", "**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
