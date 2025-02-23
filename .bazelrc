@@ -43,6 +43,14 @@ build --repo_env=SWIFT_PACKAGE_MANAGER_ENABLE_LIBRARY_EVOLUTION=1
 # Environment setup
 build --action_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 
+# Execution strategy (enforce local execution)
+build --spawn_strategy=local
+build --genrule_strategy=local
+build --strategy=Genrule=local
+build --strategy=SwiftCompile=local
+build --strategy=CppCompile=local
+build --strategy=ObjcCompile=local
+
 # Test configuration
 test --test_output=errors
 test --test_verbose_timeout_warnings
@@ -60,8 +68,16 @@ test --sandbox_writable_path=/Users/mpy/Library/Developer/Xcode/DerivedData
 test --spawn_strategy=local
 test --test_strategy=standalone
 
-# Coverage settings
+# Coverage settings for macOS arm64
+coverage --apple_platform_type=macos
+coverage --cpu=darwin_arm64
+coverage --host_cpu=darwin_arm64
+coverage --platforms=//:macos_arm64
 coverage --instrument_test_targets
+coverage --test_env=ARCHS=arm64
+coverage --test_env=MACOSX_DEPLOYMENT_TARGET=14.0
+coverage --spawn_strategy=local
+coverage --strategy=CoverageReport=local
 
 # Import local settings (must be last)
 try-import %workspace%/.bazelrc.local

@@ -16,6 +16,10 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
       SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+      ARCHS: arm64
+      ONLY_ACTIVE_ARCH: YES
+      ROSETTA_DISABLED: 1
+      MACOSX_DEPLOYMENT_TARGET: 14.0
 
     steps:
     - uses: actions/checkout@v4
@@ -29,11 +33,6 @@ jobs:
         swift --version
         bazel --version
 
-    - name: Configure Bazel
-      run: |
-        echo "build --config=macos" >> .bazelrc.local
-        echo "test --config=macos" >> .bazelrc.local
-
     - name: Clean Bazel Cache
       run: |
         rm -rf /tmp/bazel-cache
@@ -45,17 +44,38 @@ jobs:
         mkdir -p /tmp/bazel-repo-cache
 
     - name: Build
-      run: bazel build //... --config=macos --show_progress_rate_limit=5
+      run: |
+        # Ensure we're running on arm64
+        arch -arm64 bazel build //... \
+          --spawn_strategy=local \
+          --genrule_strategy=local \
+          --strategy=Genrule=local \
+          --strategy=SwiftCompile=local \
+          --platforms=//:macos_arm64
 
     - name: Core Tests
-      run: bazel test //Tests/UmbraCoreTests/... --config=macos --test_output=errors
+      run: |
+        arch -arm64 bazel test //Tests/UmbraCoreTests/... \
+          --spawn_strategy=local \
+          --test_strategy=standalone \
+          --platforms=//:macos_arm64 \
+          --test_output=errors
 
     - name: Security Tests
-      run: bazel test //Tests/SecurityTypesTests/... //Tests/CryptoTypesTests/... --config=macos --test_output=errors
+      run: |
+        arch -arm64 bazel test //Tests/SecurityTypesTests/... //Tests/CryptoTypesTests/... \
+          --spawn_strategy=local \
+          --test_strategy=standalone \
+          --platforms=//:macos_arm64 \
+          --test_output=errors
 
     - name: Generate Coverage
       run: |
-        bazel coverage //... --config=macos --combined_report=lcov
+        arch -arm64 bazel coverage //... \
+          --spawn_strategy=local \
+          --strategy=CoverageReport=local \
+          --platforms=//:macos_arm64 \
+          --combined_report=lcov
 
     - name: Upload Coverage
       uses: codecov/codecov-action@v4
