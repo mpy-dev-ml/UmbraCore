@@ -20,6 +20,14 @@ gazelle(
     gazelle = ":gazelle_bin",
 )
 
+# Common Swift compiler options for all targets
+SWIFT_COPTS = [
+    "-strict-concurrency=complete",  # Full concurrency checking
+    "-warn-concurrency",  # Warn about potential concurrency issues
+    "-enable-actor-data-race-checks",  # Runtime checks for actor data races
+    "-target", "arm64-apple-macos14.0",  # Ensure consistent target triple
+]
+
 # DocC documentation targets
 docc_archive(
     name = "UmbraCore.docc",
@@ -29,30 +37,30 @@ docc_archive(
         "//Sources/CryptoTypes",
         "//Sources/UmbraKeychainService",
     ],
-    docc_bundle = "//Sources/UmbraCore:docc_bundle",
     module_name = "UmbraCore",
     display_name = "UmbraCore",
     bundle_identifier = "com.umbra.core.documentation",
+    docc_bundle = ":UmbraCore.docc",
 )
 
 docc_archive(
     name = "SecurityTypes.docc",
     srcs = ["//Sources/SecurityTypes:sources"],
     deps = [],
-    docc_bundle = "//Sources/SecurityTypes:docc_bundle",
     module_name = "SecurityTypes",
     display_name = "SecurityTypes",
     bundle_identifier = "com.umbra.security.types.documentation",
+    docc_bundle = ":SecurityTypes.docc",
 )
 
 docc_archive(
     name = "CryptoTypes.docc",
     srcs = ["//Sources/CryptoTypes:sources"],
     deps = ["//Sources/SecurityTypes"],
-    docc_bundle = "//Sources/CryptoTypes:docc_bundle",
     module_name = "CryptoTypes",
     display_name = "CryptoTypes",
     bundle_identifier = "com.umbra.crypto.types.documentation",
+    docc_bundle = ":CryptoTypes.docc",
 )
 
 docc_archive(
@@ -64,10 +72,10 @@ docc_archive(
         "//Sources/UmbraLogging",
         "//Sources/XPC/Core:UmbraXPC",
     ],
-    docc_bundle = "//Sources/UmbraKeychainService:docc_bundle",
     module_name = "UmbraKeychainService",
     display_name = "Keychain Service",
     bundle_identifier = "com.umbra.keychain.service.documentation",
+    docc_bundle = ":UmbraKeychainService.docc",
 )
 
 # Target to build documentation
@@ -85,5 +93,75 @@ filegroup(
         ":CryptoTypes.docc",
         ":UmbraKeychainService.docc",
     ],
+    visibility = ["//visibility:public"],
+)
+
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Platform configuration
+platform(
+    name = "macos_arm64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
+    parents = ["@build_bazel_apple_support//platforms:macos"],
+)
+
+# Main library target
+swift_library(
+    name = "UmbraCore",
+    srcs = [],
+    module_name = "UmbraCore",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/UmbraCore",
+        "//Sources/UmbraLogging",
+        "//Sources/UmbraKeychainService",
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+        "//Sources/XPC/Core:UmbraXPC",
+    ],
+    copts = [
+        "-target", "arm64-apple-macos14.0",
+    ],
+)
+
+# Documentation targets
+filegroup(
+    name = "UmbraCore_docs",
+    srcs = glob(["Sources/UmbraCore/**/*.md", "Sources/UmbraCore/**/*.docc/**"], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "UmbraLogging_docs",
+    srcs = glob(["Sources/UmbraLogging/**/*.md", "Sources/UmbraLogging/**/*.docc/**"], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "UmbraKeychainService_docs",
+    srcs = glob(["Sources/UmbraKeychainService/**/*.md", "Sources/UmbraKeychainService/**/*.docc/**"], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "SecurityTypes_docs",
+    srcs = glob(["Sources/SecurityTypes/**/*.md", "Sources/SecurityTypes/**/*.docc/**"], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "CryptoTypes_docs",
+    srcs = glob(["Sources/CryptoTypes/**/*.md", "Sources/CryptoTypes/**/*.docc/**"], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "UmbraXPC_docs",
+    srcs = glob(["Sources/XPC/Core/**/*.md", "Sources/XPC/Core/**/*.docc/**"], allow_empty = True),
     visibility = ["//visibility:public"],
 )

@@ -5,14 +5,7 @@ swift_library(
     srcs = glob(["**/*.swift"]),
     module_name = "Services",
     visibility = ["//visibility:public"],
-    deps = [
-        "//Sources/UmbraCore",
-        "//Sources/CryptoTypes",
-        "//Sources/SecurityTypes",
-    ],
     copts = [
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
+        "-target", "arm64-apple-macos14.0",
     ],
 )

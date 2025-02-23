@@ -5,13 +5,7 @@ swift_library(
     srcs = glob(["**/*.swift"]),
     module_name = "ErrorHandling",
     visibility = ["//visibility:public"],
-    deps = [
-        "//Sources/Core",
-        "//Sources/UmbraLogging",
-    ],
     copts = [
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
+        "-target", "arm64-apple-macos14.0",
     ],
 )

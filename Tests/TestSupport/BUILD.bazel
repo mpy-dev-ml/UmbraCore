@@ -1,14 +1,11 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
-# TestSupport is now just a wrapper around UmbraTestKit
-# All test utilities have been moved to UmbraTestKit
 swift_library(
     name = "TestSupport",
-    testonly = True,
-    srcs = ["TestSupport.swift"],
+    srcs = glob(["**/*.swift"]),
     module_name = "TestSupport",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//Sources/UmbraTestKit",
+    copts = [
+        "-target", "arm64-apple-macos14.0",
     ],
+    visibility = ["//visibility:public"],
 )

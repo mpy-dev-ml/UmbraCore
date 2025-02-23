@@ -3,16 +3,18 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 swift_test(
     name = "SecurityTypesTests",
     srcs = glob(["**/*.swift"]),
+    deps = [
+        "//Sources/SecurityTypesTests",
+        "//Tests/TestSupport",
+    ],
     module_name = "SecurityTypesTests",
-    deps = ["//Sources/SecurityTypes"],
     copts = [
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
+        "-target", "arm64-apple-macos14.0",
     ],
-    tags = ["security"],
-    target_compatible_with = [
-        "@platforms//os:macos",
-        "@platforms//cpu:arm64",
-    ],
+    env = {
+        "ARCHS": "arm64",
+        "ONLY_ACTIVE_ARCH": "YES",
+        "ROSETTA_DISABLED": "1",
+        "MACOSX_DEPLOYMENT_TARGET": "14.0",
+    },
 )

@@ -1,9 +1,20 @@
-load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
-swift_library(
+swift_test(
     name = "UmbraTestKit",
-    srcs = glob(["Sources/UmbraTestKit/**/*.swift"]),
+    srcs = glob(["**/*.swift"]),
+    deps = [
+        "//Sources/UmbraTestKit",
+        "//Tests/TestSupport",
+    ],
     module_name = "UmbraTestKit",
-    visibility = ["//visibility:public"],
-    testonly = True,
+    copts = [
+        "-target", "arm64-apple-macos14.0",
+    ],
+    env = {
+        "ARCHS": "arm64",
+        "ONLY_ACTIVE_ARCH": "YES",
+        "ROSETTA_DISABLED": "1",
+        "MACOSX_DEPLOYMENT_TARGET": "14.0",
+    },
 )

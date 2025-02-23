@@ -5,7 +5,7 @@ swift_library(
     srcs = glob(["**/*.swift"]),
     module_name = "UmbraBookmarkService",
     visibility = ["//visibility:public"],
-    deps = [
-        "//Sources/XPC/Core:UmbraXPC",
+    copts = [
+        "-target", "arm64-apple-macos14.0",
     ],
 )
