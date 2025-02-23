@@ -1,12 +1,10 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
-load("//tools/bazel:swift_defaults.bzl", "swift_library_cached")
 
 swift_test(
     name = "UmbraCoreTests",
     srcs = glob(["**/*.swift"]),
     deps = [
-        "//Sources/Core",
-        "//Sources/UmbraCore",
+        "//Sources/UmbraCoreTests",
         "//Tests/TestSupport",
     ],
     module_name = "UmbraCoreTests",

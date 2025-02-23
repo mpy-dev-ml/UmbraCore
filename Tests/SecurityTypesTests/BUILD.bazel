@@ -4,7 +4,7 @@ swift_test(
     name = "SecurityTypesTests",
     srcs = glob(["**/*.swift"]),
     deps = [
-        "//Sources/SecurityTypes",
+        "//Sources/SecurityTypesTests",
         "//Tests/TestSupport",
     ],
     module_name = "SecurityTypesTests",
