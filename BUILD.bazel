@@ -37,30 +37,30 @@ docc_archive(
         "//Sources/CryptoTypes",
         "//Sources/UmbraKeychainService",
     ],
-    docc_bundle = "//Sources/UmbraCore:docc_bundle",
     module_name = "UmbraCore",
     display_name = "UmbraCore",
     bundle_identifier = "com.umbra.core.documentation",
+    docc_bundle = ":UmbraCore.docc",
 )
 
 docc_archive(
     name = "SecurityTypes.docc",
     srcs = ["//Sources/SecurityTypes:sources"],
     deps = [],
-    docc_bundle = "//Sources/SecurityTypes:docc_bundle",
     module_name = "SecurityTypes",
     display_name = "SecurityTypes",
     bundle_identifier = "com.umbra.security.types.documentation",
+    docc_bundle = ":SecurityTypes.docc",
 )
 
 docc_archive(
     name = "CryptoTypes.docc",
     srcs = ["//Sources/CryptoTypes:sources"],
     deps = ["//Sources/SecurityTypes"],
-    docc_bundle = "//Sources/CryptoTypes:docc_bundle",
     module_name = "CryptoTypes",
     display_name = "CryptoTypes",
     bundle_identifier = "com.umbra.crypto.types.documentation",
+    docc_bundle = ":CryptoTypes.docc",
 )
 
 docc_archive(
@@ -72,10 +72,10 @@ docc_archive(
         "//Sources/UmbraLogging",
         "//Sources/XPC/Core:UmbraXPC",
     ],
-    docc_bundle = "//Sources/UmbraKeychainService:docc_bundle",
     module_name = "UmbraKeychainService",
     display_name = "Keychain Service",
     bundle_identifier = "com.umbra.keychain.service.documentation",
+    docc_bundle = ":UmbraKeychainService.docc",
 )
 
 # Target to build documentation
@@ -118,5 +118,50 @@ swift_library(
     copts = [
         "-target", "arm64-apple-macos14.0",  # Ensure consistent target triple
     ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/UmbraCore",
+        "//Sources/UmbraLogging",
+        "//Sources/UmbraKeychainService",
+        "//Sources/SecurityTypes",
+        "//Sources/CryptoTypes",
+        "//Sources/XPC/Core:UmbraXPC",
+    ],
+)
+
+# Documentation targets
+filegroup(
+    name = "UmbraCore.docc",
+    srcs = glob(["Sources/UmbraCore/**/*.md", "Sources/UmbraCore/**/*.docc/**"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "UmbraLogging.docc",
+    srcs = glob(["Sources/UmbraLogging/**/*.md", "Sources/UmbraLogging/**/*.docc/**"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "UmbraKeychainService.docc",
+    srcs = glob(["Sources/UmbraKeychainService/**/*.md", "Sources/UmbraKeychainService/**/*.docc/**"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "SecurityTypes.docc",
+    srcs = glob(["Sources/SecurityTypes/**/*.md", "Sources/SecurityTypes/**/*.docc/**"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "CryptoTypes.docc",
+    srcs = glob(["Sources/CryptoTypes/**/*.md", "Sources/CryptoTypes/**/*.docc/**"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "UmbraXPC.docc",
+    srcs = glob(["Sources/XPC/Core/**/*.md", "Sources/XPC/Core/**/*.docc/**"]),
     visibility = ["//visibility:public"],
 )
