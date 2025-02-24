@@ -1,7 +1,8 @@
 import Foundation
 
 /// Errors that can occur during XPC operations
-@frozen public enum XPCError: LocalizedError, Sendable {
+@frozen
+public enum XPCError: LocalizedError, Sendable {
     public enum Category: String, Sendable {
         case crypto
         case credentials

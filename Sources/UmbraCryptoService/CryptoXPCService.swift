@@ -135,7 +135,14 @@ public final class CryptoXPCService: NSObject, Core.CryptoXPCServiceProtocol {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
         let error = NSError(domain: "CryptoXPCService", code: -1)
-        throw XPCError.serviceError(category: .credentials, underlying: error, message: "Credential storage not implemented")
+        throw XPCError.serviceError(
+            category: .credentials,
+            underlying: error,
+            message: """
+                Credential storage is not implemented.
+                This functionality is currently not supported.
+            """
+        )
     }
 
     public func retrieveCredential(identifier: String) async throws -> Data {
@@ -144,7 +151,14 @@ public final class CryptoXPCService: NSObject, Core.CryptoXPCServiceProtocol {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
         let error = NSError(domain: "CryptoXPCService", code: -1)
-        throw XPCError.serviceError(category: .credentials, underlying: error, message: "Credential retrieval not implemented")
+        throw XPCError.serviceError(
+            category: .credentials,
+            underlying: error,
+            message: """
+                Credential retrieval is not implemented.
+                This functionality is currently not supported.
+            """
+        )
     }
 
     public func deleteCredential(identifier: String) async throws {
@@ -153,7 +167,14 @@ public final class CryptoXPCService: NSObject, Core.CryptoXPCServiceProtocol {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
         let error = NSError(domain: "CryptoXPCService", code: -1)
-        throw XPCError.serviceError(category: .credentials, underlying: error, message: "Credential deletion not implemented")
+        throw XPCError.serviceError(
+            category: .credentials,
+            underlying: error,
+            message: """
+                Credential deletion is not implemented.
+                This functionality is currently not supported.
+            """
+        )
     }
 
     private nonisolated func encryptData(_ data: Data, key: Data) throws -> Data {

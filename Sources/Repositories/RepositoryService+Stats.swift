@@ -5,7 +5,7 @@ import Foundation
 import Repositories_Types
 import UmbraLogging
 
-/// Extension for repository statistics-related functionality
+/// Extension for repository statistics functionality
 extension RepositoryService {
     // MARK: - Repository Statistics
     

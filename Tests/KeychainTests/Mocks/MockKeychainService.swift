@@ -9,7 +9,13 @@ import Foundation
         [service, account, accessGroup].compactMap { $0 }.joined(separator: "_")
     }
 
-    func addItem(account: String, service: String, accessGroup: String?, data: Data, reply: @escaping (Error?) -> Void) {
+    func addItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping (Error?) -> Void
+    ) {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
             let key = self.key(account: account, service: service, accessGroup: accessGroup)
@@ -22,7 +28,13 @@ import Foundation
         }
     }
 
-    func updateItem(account: String, service: String, accessGroup: String?, data: Data, reply: @escaping (Error?) -> Void) {
+    func updateItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping (Error?) -> Void
+    ) {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
             let key = self.key(account: account, service: service, accessGroup: accessGroup)
@@ -35,7 +47,12 @@ import Foundation
         }
     }
 
-    func retrieveItem(account: String, service: String, accessGroup: String?, reply: @escaping (Data?, Error?) -> Void) {
+    func retrieveItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping (Data?, Error?) -> Void
+    ) {
         queue.async { [weak self] in
             guard let self = self else { return }
             let key = self.key(account: account, service: service, accessGroup: accessGroup)
@@ -47,7 +64,12 @@ import Foundation
         }
     }
 
-    func containsItem(account: String, service: String, accessGroup: String?, reply: @escaping (Bool, Error?) -> Void) {
+    func containsItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping (Bool, Error?) -> Void
+    ) {
         queue.async { [weak self] in
             guard let self = self else { return }
             let key = self.key(account: account, service: service, accessGroup: accessGroup)
@@ -55,7 +77,12 @@ import Foundation
         }
     }
 
-    func removeItem(account: String, service: String, accessGroup: String?, reply: @escaping (Error?) -> Void) {
+    func removeItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping (Error?) -> Void
+    ) {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
             let key = self.key(account: account, service: service, accessGroup: accessGroup)

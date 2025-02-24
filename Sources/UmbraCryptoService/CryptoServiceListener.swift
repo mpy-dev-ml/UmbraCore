@@ -26,7 +26,10 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
 
     // MARK: - NSXPCListenerDelegate
 
-    nonisolated public func listener(_ listener: NSXPCListener, shouldAcceptNewConnection connection: NSXPCConnection) -> Bool {
+    nonisolated public func listener(
+        _ listener: NSXPCListener,
+        shouldAcceptNewConnection connection: NSXPCConnection
+    ) -> Bool {
         Task { @MainActor in
             // Configure the connection
             connection.exportedInterface = NSXPCInterface(with: Core.CryptoXPCServiceProtocol.self)

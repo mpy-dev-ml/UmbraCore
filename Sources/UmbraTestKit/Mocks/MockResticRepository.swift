@@ -149,7 +149,10 @@ public final class MockResticRepository {
         for index in 0..<fileCount {
             try createTestFile(
                 name: "large_test_\(index).txt",
-                content: "Test content for file \(index)\n" + String(repeating: "Additional content to make file larger\n", count: 10)
+                content: """
+                    Test content for file \(index)
+                    \(String(repeating: "Additional content to make file larger\n", count: 10))
+                    """
             )
         }
     }

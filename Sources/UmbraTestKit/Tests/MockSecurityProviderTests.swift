@@ -236,7 +236,12 @@ final class MockSecurityProviderTests: XCTestCase {
             _ = try await provider.loadBookmark(withIdentifier: "test")
             XCTFail("Expected bookmark not found error")
         } catch let error as SecurityTypes.SecurityError {
-            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Bookmark not found: test").errorDescription)
+            XCTAssertEqual(
+                error.errorDescription,
+                SecurityTypes.SecurityError.bookmarkError(
+                    "Bookmark not found: test"
+                ).errorDescription
+            )
         }
     }
 
@@ -245,7 +250,12 @@ final class MockSecurityProviderTests: XCTestCase {
             _ = try await provider.loadBookmark(withIdentifier: "test")
             XCTFail("Expected bookmark not found error")
         } catch let error as SecurityTypes.SecurityError {
-            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Bookmark not found: test").errorDescription)
+            XCTAssertEqual(
+                error.errorDescription,
+                SecurityTypes.SecurityError.bookmarkError(
+                    "Bookmark not found: test"
+                ).errorDescription
+            )
         }
     }
 

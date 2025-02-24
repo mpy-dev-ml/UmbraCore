@@ -42,7 +42,14 @@ public struct SnapshotCommand: ResticCommand {
     /// Group by option
     public let groupBy: GroupBy?
 
-    public init(options: CommonOptions, operation: Operation, paths: [String] = [], tags: [String] = [], host: String? = nil, groupBy: GroupBy? = nil) {
+    public init(
+        options: CommonOptions,
+        operation: Operation,
+        paths: [String] = [],
+        tags: [String] = [],
+        host: String? = nil,
+        groupBy: GroupBy? = nil
+    ) {
         self.options = options
         self.operation = operation
         self.paths = paths

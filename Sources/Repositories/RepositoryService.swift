@@ -161,10 +161,8 @@ public actor RepositoryService {
             ])
         )
 
-        for repository in repositories.values {
-            if await repository.location.path == path {
-                return repository
-            }
+        for (identifier, repository) where await repository.location.path == path {
+            return repository
         }
 
         return nil

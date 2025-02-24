@@ -64,9 +64,9 @@ public final class MockResticRepository {
         let testData = "Test file content"
 
         // Create a few test files
-        for i in 1...5 {
+        for fileIndex in 1...5 {
             let filePath = (testFilesPath as NSString)
-                .appendingPathComponent("test_file_\(i).txt")
+                .appendingPathComponent("test_file_\(fileIndex).txt")
             try testData.write(toFile: filePath, atomically: true, encoding: .utf8)
         }
 
@@ -74,9 +74,9 @@ public final class MockResticRepository {
         let subdir = (testFilesPath as NSString).appendingPathComponent("subdir")
         try FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true)
 
-        for i in 1...3 {
+        for fileIndex in 1...3 {
             let filePath = (subdir as NSString)
-                .appendingPathComponent("subdir_file_\(i).txt")
+                .appendingPathComponent("subdir_file_\(fileIndex).txt")
             try testData.write(toFile: filePath, atomically: true, encoding: .utf8)
         }
     }
@@ -85,9 +85,9 @@ public final class MockResticRepository {
     public func createLargeTestDataset(fileCount: Int) throws {
         let testData = String(repeating: "Large test file content\n", count: 100)
 
-        for i in 1...fileCount {
+        for fileIndex in 1...fileCount {
             let filePath = (testFilesPath as NSString)
-                .appendingPathComponent("large_file_\(i).txt")
+                .appendingPathComponent("large_file_\(fileIndex).txt")
             try testData.write(toFile: filePath, atomically: true, encoding: .utf8)
         }
     }

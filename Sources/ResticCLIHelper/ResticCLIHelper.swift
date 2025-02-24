@@ -175,8 +175,10 @@ public final class ResticCLIHelper {
         do {
             try setup.process.run()
 
-            let outputData = try await setup.outputPipe.fileHandleForReading.bytes.reduce(into: Data()) { $0.append($1) }
-            let errorData = try await setup.errorPipe.fileHandleForReading.bytes.reduce(into: Data()) { $0.append($1) }
+            let outputData = try await setup.outputPipe.fileHandleForReading.bytes
+                .reduce(into: Data()) { $0.append($1) }
+            let errorData = try await setup.errorPipe.fileHandleForReading.bytes
+                .reduce(into: Data()) { $0.append($1) }
 
             setup.process.waitUntilExit()
 

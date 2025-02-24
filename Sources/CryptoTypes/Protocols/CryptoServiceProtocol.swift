@@ -1,7 +1,9 @@
 import Foundation
 
 /// Protocol defining the core cryptographic operations
-@preconcurrency public protocol CryptoServiceProtocol: Sendable {
+@preconcurrency
+@objc
+public protocol CryptoServiceProtocol: Sendable {
     /// Encrypts data using AES-GCM
     /// - Parameters:
     ///   - data: Data to encrypt

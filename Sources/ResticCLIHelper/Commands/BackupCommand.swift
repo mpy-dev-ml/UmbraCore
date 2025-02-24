@@ -189,7 +189,10 @@ public final class BackupCommand: ResticCommand, @unchecked Sendable {
         // Validate tags
         for tag in tags {
             guard tag.range(of: "^[a-zA-Z0-9][a-zA-Z0-9_.-]*$", options: .regularExpression) != nil else {
-                throw ResticError.invalidParameter("Invalid tag format: \(tag). Tags must start with alphanumeric and contain only alphanumeric, underscore, dot, or hyphen")
+                throw ResticError.invalidParameter(
+                    "Invalid tag format: \(tag). " +
+                    "Tags must start with alphanumeric and contain only alphanumeric, underscore, dot, or hyphen"
+                )
             }
         }
     }
