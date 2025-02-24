@@ -19,5 +19,6 @@ swift_library(
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/XPC/Core:Sources_XPC_Core",
+        "//Sources/UmbraXPC:Sources_UmbraXPC",
     ],
 )

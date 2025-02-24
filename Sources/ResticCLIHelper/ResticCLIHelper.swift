@@ -108,6 +108,7 @@
 /// - Output synchronisation
 /// - Resource management
 import Foundation
+import ResticTypes
 
 /// Main class for interacting with the Restic CLI
 public final class ResticCLIHelper {
@@ -157,37 +158,37 @@ public final class ResticCLIHelper {
 
         // Execute the command
         return try await withCheckedThrowingContinuation { continuation in
-            self.executionQueue.async {
+            let workItem = DispatchWorkItem {
                 do {
                     try process.run()
-                    process.waitUntilExit()
-
+                    
+                    // Read output and error data
                     let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
                     let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-
+                    
+                    // Wait for process to complete
+                    process.waitUntilExit()
+                    
                     if process.terminationStatus != 0 {
                         let errorOutput = String(data: errorData, encoding: .utf8) ?? "Unknown error"
                         let error: ResticError
-
+                        
                         switch process.terminationStatus {
-                        case 10:
-                            error = .repositoryNotFound(path: command.environment["RESTIC_REPOSITORY"] ?? "unknown")
-                        case 11:
-                            error = .commandFailed(exitCode: 11, message: "Failed to lock repository: \(errorOutput)")
-                        case 12:
-                            error = .invalidPassword
+                        case 1:
+                            error = .executionFailed("Command failed: \(errorOutput)")
                         case 3:
-                            error = .commandFailed(exitCode: 3, message: "Could not read source data: \(errorOutput)")
-                        case 130:
-                            error = .commandFailed(exitCode: 130, message: "Command was interrupted: \(errorOutput)")
+                            error = .repositoryError(errorOutput)
+                        case 101:
+                            error = .authenticationError(errorOutput)
                         default:
-                            error = .executionFailed(errorOutput)
+                            error = .executionFailed("Process terminated with status \(process.terminationStatus): \(errorOutput)")
                         }
-
+                        
                         continuation.resume(throwing: error)
                         return
                     }
-
+                    
+                    // Try to parse the output
                     if let output = String(data: outputData, encoding: .utf8) {
                         continuation.resume(returning: output)
                     } else {
@@ -197,6 +198,8 @@ public final class ResticCLIHelper {
                     continuation.resume(throwing: ResticError.executionFailed(error.localizedDescription))
                 }
             }
+            
+            self.executionQueue.async(execute: workItem)
         }
     }
 }

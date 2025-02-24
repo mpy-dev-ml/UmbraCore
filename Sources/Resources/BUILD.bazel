@@ -1,8 +1,11 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_ResticCLIHelper",
-    srcs = glob(["*.swift"]),
+    name = "Resources",
+    srcs = glob([
+        "*.swift",
+        "Protocols/*.swift",
+    ]),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
@@ -10,9 +13,7 @@ swift_library(
         "-warn-concurrency",
         "-enable-actor-data-race-checks",
     ],
-    module_name = "ResticCLIHelper",
+    module_name = "Resources",
     visibility = ["//visibility:public"],
-    deps = [
-        "//Sources/ResticTypes:Sources_ResticTypes",
-    ],
+    deps = [],
 )

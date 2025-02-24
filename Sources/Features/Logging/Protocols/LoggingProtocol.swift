@@ -1,3 +1,6 @@
+import Foundation
+import Features_Logging_Models
+
 /// Logging Protocol
 /// Defines the public interface for logging operations.
 public protocol LoggingProtocol: Sendable {
@@ -13,4 +16,27 @@ public protocol LoggingProtocol: Sendable {
 
     /// Stop logging and cleanup resources
     func stop() async
+}
+
+/// Errors that can occur during logging operations.
+public enum LoggingError: LocalizedError, Sendable {
+    /// Failed to write log entry with the given reason.
+    case writeFailed(String)
+    
+    /// Invalid log entry format with the given reason.
+    case invalidFormat(String)
+    
+    /// Storage error with the given reason.
+    case storageError(String)
+    
+    public var errorDescription: String? {
+        switch self {
+        case .writeFailed(let reason):
+            return "Failed to write log entry: \(reason)"
+        case .invalidFormat(let reason):
+            return "Invalid log entry format: \(reason)"
+        case .storageError(let reason):
+            return "Storage error: \(reason)"
+        }
+    }
 }
