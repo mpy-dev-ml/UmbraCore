@@ -22,7 +22,9 @@ public struct CryptoConfig {
 /// Handles cryptographic operations
 public actor CryptoService: UmbraService {
     public static let serviceIdentifier = "com.umbracore.crypto"
-    public private(set) var state: ServiceState = .uninitialized
+    
+    private var _state: ServiceState = .uninitialized
+    public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
     
     private let config: CryptoConfig
     
@@ -34,33 +36,40 @@ public actor CryptoService: UmbraService {
     
     /// Initialize the service
     public func initialize() async throws {
-        guard state == .uninitialized else {
+        guard _state == .uninitialized else {
             throw ServiceError.configurationError("Service already initialized")
         }
         
         state = .initializing
+        _state = .initializing
         
         // Validate configuration
         guard config.keySize > 0, config.ivSize > 0, config.iterations > 0 else {
             state = .error
+            _state = .error
             throw ServiceError.configurationError("Invalid crypto configuration")
         }
         
         state = .ready
+        _state = .ready
     }
     
     /// Gracefully shut down the service
     public func shutdown() async {
-        state = .shuttingDown
-        // Perform any cleanup if needed
-        state = .shutdown
+        if _state == .ready {
+            state = .shuttingDown
+            _state = .shuttingDown
+            // Perform any cleanup if needed
+            state = .uninitialized
+            _state = .uninitialized
+        }
     }
     
     /// Generate a random key of the configured size
     /// - Returns: Random bytes for use as a key
     /// - Throws: CryptoError if key generation fails
     public func generateKey() throws -> [UInt8] {
-        guard state == .ready else {
+        guard _state == .ready else {
             throw ServiceError.invalidState("Service not ready")
         }
         
@@ -71,7 +80,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: Random bytes for use as an IV
     /// - Throws: CryptoError if IV generation fails
     public func generateIV() throws -> [UInt8] {
-        guard state == .ready else {
+        guard _state == .ready else {
             throw ServiceError.invalidState("Service not ready")
         }
         
@@ -85,7 +94,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: Encrypted data with IV and tag
     /// - Throws: CryptoError on failure
     public func encrypt(_ data: [UInt8], using key: [UInt8]) throws -> (encrypted: [UInt8], iv: [UInt8], tag: [UInt8]) {
-        guard state == .ready else {
+        guard _state == .ready else {
             throw ServiceError.invalidState("Service not ready")
         }
         
@@ -108,7 +117,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: Decrypted data
     /// - Throws: CryptoError on failure
     public func decrypt(encrypted: [UInt8], iv: [UInt8], tag: [UInt8], using key: [UInt8]) throws -> [UInt8] {
-        guard state == .ready else {
+        guard _state == .ready else {
             throw ServiceError.invalidState("Service not ready")
         }
         
@@ -125,7 +134,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: Derived key
     /// - Throws: CryptoError on failure
     public func deriveKey(from password: String, salt: [UInt8]) throws -> [UInt8] {
-        guard state == .ready else {
+        guard _state == .ready else {
             throw ServiceError.invalidState("Service not ready")
         }
         

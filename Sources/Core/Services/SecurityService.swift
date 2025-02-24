@@ -33,8 +33,6 @@ public protocol SecurityProvider: Sendable {
     /// - Note: This is typically called during cleanup or when the app is terminating
     func stopAccessingAllResources() async
 
-    // MARK: - Scoped Access Operations
-
     /// Perform an operation with security-scoped resource access
     /// - Parameters:
     ///   - path: Path to the resource to access
@@ -88,7 +86,9 @@ public protocol SecurityProvider: Sendable {
 /// Manages security operations and access control
 public actor SecurityService: UmbraService, SecurityProvider {
     public static let serviceIdentifier = "com.umbracore.security"
-    public private(set) var state: ServiceState = .uninitialized
+    
+    private var _state: ServiceState = .uninitialized
+    public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
     
     private let container: ServiceContainer
     private var cryptoService: CryptoService?
@@ -105,26 +105,38 @@ public actor SecurityService: UmbraService, SecurityProvider {
     
     /// Initialize the service
     public func initialize() async throws {
-        guard state == .uninitialized else {
+        guard _state == .uninitialized else {
             throw ServiceError.configurationError("Service already initialized")
         }
         
         state = .initializing
+        _state = .initializing
         
         // Resolve dependencies
         cryptoService = try await container.resolve(CryptoService.self)
         
+        _state = .ready
         state = .ready
     }
     
     /// Gracefully shut down the service
     public func shutdown() async {
-        state = .shuttingDown
-        
-        // Stop accessing all paths
-        await stopAccessingAllResources()
-        
-        state = .shutdown
+        if _state == .ready {
+            state = .shuttingDown
+            _state = .shuttingDown
+            
+            // Stop accessing all paths
+            await stopAccessingAllResources()
+            
+            // Shutdown crypto service
+            if let crypto = cryptoService {
+                await crypto.shutdown()
+                cryptoService = nil
+            }
+            
+            state = .uninitialized
+            _state = .uninitialized
+        }
     }
     
     // MARK: - SecurityProvider Implementation

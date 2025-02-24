@@ -22,7 +22,7 @@ public protocol UmbraService: Actor {
     static var serviceIdentifier: String { get }
     
     /// Current state of the service
-    var state: ServiceState { get async }
+    nonisolated var state: ServiceState { get }
     
     /// Initialise the service
     /// - Throws: ServiceError if initialisation fails
@@ -39,7 +39,7 @@ public protocol UmbraService: Actor {
 /// Extension providing default implementations for UmbraService
 extension UmbraService {
     public func isUsable() async -> Bool {
-        await state == .ready
+        state == .ready
     }
 }
 
@@ -49,25 +49,25 @@ public enum ServiceError: LocalizedError, Sendable {
     case initialisationFailed(String)
     /// Service is in an invalid state for the requested operation
     case invalidState(String)
-    /// Service operation failed
-    case operationFailed(String)
-    /// Service dependency is missing or invalid
-    case dependencyError(String)
-    /// Service configuration is invalid
+    /// Service configuration error
     case configurationError(String)
+    /// Service dependency error
+    case dependencyError(String)
+    /// Operation failed
+    case operationFailed(String)
     
     public var errorDescription: String? {
         switch self {
-        case .initialisationFailed(let reason):
-            return "Service initialisation failed: \(reason)"
-        case .invalidState(let reason):
-            return "Invalid service state: \(reason)"
-        case .operationFailed(let reason):
-            return "Service operation failed: \(reason)"
-        case .dependencyError(let reason):
-            return "Service dependency error: \(reason)"
-        case .configurationError(let reason):
-            return "Service configuration error: \(reason)"
+        case .initialisationFailed(let message):
+            return "Service initialisation failed: \(message)"
+        case .invalidState(let message):
+            return "Invalid service state: \(message)"
+        case .configurationError(let message):
+            return "Service configuration error: \(message)"
+        case .dependencyError(let message):
+            return "Service dependency error: \(message)"
+        case .operationFailed(let message):
+            return "Operation failed: \(message)"
         }
     }
 }

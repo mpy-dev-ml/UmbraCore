@@ -4,34 +4,37 @@ import XCTest
 /// Mock service for testing
 actor MockService: UmbraService {
     static let serviceIdentifier = "com.umbracore.mock-service"
-    nonisolated var state: ServiceState {
-        get async {
-            await _state
-        }
-    }
+    
     private var _state: ServiceState = .uninitialized
+    public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
+    
+    private var _initializeCalled = false
     nonisolated var initializeCalled: Bool {
         get async {
             await _initializeCalled
         }
     }
-    private var _initializeCalled = false
+    
+    private var _shutdownCalled = false
     nonisolated var shutdownCalled: Bool {
         get async {
             await _shutdownCalled
         }
     }
-    private var _shutdownCalled = false
 
     func initialize() async throws {
+        state = .initializing
         _state = .initializing
         _initializeCalled = true
+        state = .ready
         _state = .ready
     }
 
     func shutdown() async {
+        state = .shuttingDown
         _state = .shuttingDown
         _shutdownCalled = true
+        state = .shutdown
         _state = .shutdown
     }
 }
@@ -39,12 +42,10 @@ actor MockService: UmbraService {
 /// Mock service with dependencies
 actor DependentMockService: UmbraService {
     static let serviceIdentifier = "com.umbracore.dependent-mock-service"
-    nonisolated var state: ServiceState {
-        get async {
-            await _state
-        }
-    }
+    
     private var _state: ServiceState = .uninitialized
+    public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
+    
     private let dependency: MockService
 
     init(dependency: MockService) {
@@ -52,40 +53,51 @@ actor DependentMockService: UmbraService {
     }
 
     func initialize() async throws {
+        state = .initializing
         _state = .initializing
         _ = await dependency.state
+        state = .ready
         _state = .ready
     }
 
     func shutdown() async {
+        state = .shuttingDown
         _state = .shuttingDown
         await dependency.shutdown()
+        state = .shutdown
         _state = .shutdown
     }
 }
 
+/// Test cases for the ServiceContainer and UmbraService implementations
 final class ServiceTests: XCTestCase {
+    // MARK: - Lifecycle Tests
+    
+    /// Tests the basic lifecycle of a service: registration, initialization, and shutdown
     func testServiceInitialization() async throws {
         let container = ServiceContainer()
         let service = MockService()
         
         try await container.register(service)
-        let initialState = await service.state
+        let initialState = service.state
         XCTAssertEqual(initialState, .uninitialized)
         
         try await container.initialiseAll()
         let isInitialized = await service.initializeCalled
-        let readyState = await service.state
+        let readyState = service.state
         XCTAssertTrue(isInitialized)
         XCTAssertEqual(readyState, .ready)
         
         await container.shutdownAll()
         let isShutdown = await service.shutdownCalled
-        let finalState = await service.state
+        let finalState = service.state
         XCTAssertTrue(isShutdown)
         XCTAssertEqual(finalState, .shutdown)
     }
     
+    // MARK: - Dependency Tests
+    
+    /// Tests proper resolution and handling of service dependencies
     func testDependencyResolution() async throws {
         let container = ServiceContainer()
         let dependency = MockService()
@@ -95,18 +107,21 @@ final class ServiceTests: XCTestCase {
         try await container.register(service)
         
         try await container.initialiseAll()
-        let depState = await dependency.state
-        let svcState = await service.state
+        let depState = dependency.state
+        let svcState = service.state
         XCTAssertEqual(depState, .ready)
         XCTAssertEqual(svcState, .ready)
         
         await container.shutdownAll()
-        let depFinalState = await dependency.state
-        let svcFinalState = await service.state
+        let depFinalState = dependency.state
+        let svcFinalState = service.state
         XCTAssertEqual(depFinalState, .shutdown)
         XCTAssertEqual(svcFinalState, .shutdown)
     }
     
+    // MARK: - Scale Tests
+    
+    /// Tests handling of multiple services within a single container
     func testMultipleServices() async throws {
         let container = ServiceContainer()
         let services = (0..<5).map { _ in MockService() }
@@ -117,17 +132,20 @@ final class ServiceTests: XCTestCase {
         
         try await container.initialiseAll()
         for service in services {
-            let state = await service.state
+            let state = service.state
             XCTAssertEqual(state, .ready)
         }
         
         await container.shutdownAll()
         for service in services {
-            let state = await service.state
+            let state = service.state
             XCTAssertEqual(state, .shutdown)
         }
     }
     
+    // MARK: - Error Handling Tests
+    
+    /// Tests various error conditions and their proper handling
     func testErrorHandling() async throws {
         let container = ServiceContainer()
         let service = MockService()
