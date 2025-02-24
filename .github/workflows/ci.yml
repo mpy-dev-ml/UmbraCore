@@ -30,6 +30,11 @@ jobs:
         swift --version
         bazel --version
 
+    - name: Install Bazel
+      run: |
+        brew install bazel
+        bazel --version
+
     - name: Configure Bazel
       run: |
         cat >> .bazelrc << 'EOF'
