@@ -112,7 +112,7 @@ extension KeychainXPCProtocol {
                 } else if let data = data {
                     continuation.resume(returning: data)
                 } else {
-                    continuation.resume(throwing: KeychainError.invalidData)
+                    continuation.resume(throwing: KeychainError.unexpectedData)
                 }
             }
         }

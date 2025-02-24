@@ -6,45 +6,37 @@ public enum KeychainError: LocalizedError, Equatable {
     case itemNotFound
     /// Item already exists in the keychain
     case duplicateItem
-    /// Invalid data returned from keychain
-    case invalidData
-    /// Invalid format for keychain item
-    case invalidItemFormat
-    /// Access to keychain item was denied
-    case accessDenied
-    /// Unexpected status code from keychain operation
-    case unexpectedStatus(OSStatus)
+    /// Authentication failed for the keychain operation
+    case authenticationFailed
+    /// Unexpected data type returned from keychain
+    case unexpectedData
+    /// Unhandled error with status code
+    case unhandledError(status: OSStatus)
     /// XPC connection failed
     case xpcConnectionFailed
     /// XPC connection was interrupted
     case xpcConnectionInterrupted
     /// XPC connection was invalidated
-    case xpcConnectionInvalid
-    /// Unknown keychain error
-    case unknown
+    case xpcConnectionInvalidated
 
     public var errorDescription: String? {
         switch self {
         case .itemNotFound:
-            return "Item not found in keychain"
+            return "The requested item was not found in the keychain"
         case .duplicateItem:
-            return "Item already exists in keychain"
-        case .invalidData:
-            return "Invalid data returned from keychain"
-        case .invalidItemFormat:
-            return "Invalid format for keychain item"
-        case .accessDenied:
-            return "Access to keychain item was denied"
-        case .unexpectedStatus(let status):
-            return "Unexpected keychain status: \(status)"
+            return "An item with the specified attributes already exists in the keychain"
+        case .authenticationFailed:
+            return "Authentication failed for the keychain operation"
+        case .unexpectedData:
+            return "The keychain returned data in an unexpected format"
+        case .unhandledError(let status):
+            return "An unhandled keychain error occurred (status: \(status))"
         case .xpcConnectionFailed:
             return "Failed to establish XPC connection"
         case .xpcConnectionInterrupted:
             return "XPC connection was interrupted"
-        case .xpcConnectionInvalid:
+        case .xpcConnectionInvalidated:
             return "XPC connection was invalidated"
-        case .unknown:
-            return "An unknown keychain error occurred"
         }
     }
 
@@ -54,22 +46,18 @@ public enum KeychainError: LocalizedError, Equatable {
             return "Check that the item exists and you have the correct credentials"
         case .duplicateItem:
             return "Update the existing item instead of creating a new one"
-        case .invalidData:
-            return "Check that the data format is correct"
-        case .invalidItemFormat:
-            return "Check that the item format matches the expected structure"
-        case .accessDenied:
+        case .authenticationFailed:
             return "Verify that you have the necessary permissions to access this item"
-        case .unexpectedStatus:
+        case .unexpectedData:
+            return "Check that the data format is correct"
+        case .unhandledError:
             return "Try the operation again. If the problem persists, check the system keychain status"
         case .xpcConnectionFailed:
             return "Check that the XPC service is running and try again"
         case .xpcConnectionInterrupted:
             return "The operation was interrupted. Try again"
-        case .xpcConnectionInvalid:
+        case .xpcConnectionInvalidated:
             return "The XPC connection is no longer valid. Restart the service"
-        case .unknown:
-            return "Try the operation again"
         }
     }
 
@@ -77,15 +65,13 @@ public enum KeychainError: LocalizedError, Equatable {
         switch (lhs, rhs) {
         case (.itemNotFound, .itemNotFound),
              (.duplicateItem, .duplicateItem),
-             (.invalidData, .invalidData),
-             (.invalidItemFormat, .invalidItemFormat),
-             (.accessDenied, .accessDenied),
+             (.authenticationFailed, .authenticationFailed),
+             (.unexpectedData, .unexpectedData),
              (.xpcConnectionFailed, .xpcConnectionFailed),
              (.xpcConnectionInterrupted, .xpcConnectionInterrupted),
-             (.xpcConnectionInvalid, .xpcConnectionInvalid),
-             (.unknown, .unknown):
+             (.xpcConnectionInvalidated, .xpcConnectionInvalidated):
             return true
-        case (.unexpectedStatus(let lhsStatus), .unexpectedStatus(let rhsStatus)):
+        case (.unhandledError(let lhsStatus), .unhandledError(let rhsStatus)):
             return lhsStatus == rhsStatus
         default:
             return false

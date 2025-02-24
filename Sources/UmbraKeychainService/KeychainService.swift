@@ -4,9 +4,11 @@ import SwiftyBeaver
 import UmbraLogging
 
 /// A service for secure keychain operations
-public final class KeychainService {
-    private let queue = DispatchQueue(label: "com.umbracore.keychain")
+public actor KeychainService: Sendable {
     private let log = SwiftyBeaver.self
+
+    /// Initialize a new KeychainService
+    public init() {}
 
     /// Add a new item to the keychain
     /// - Parameters:
@@ -137,7 +139,7 @@ public final class KeychainService {
     ///   - account: The account name
     ///   - service: The service name
     ///   - accessGroup: Optional access group
-    /// - Returns: true if the item exists, false otherwise
+    /// - Returns: True if the item exists, false otherwise
     /// - Throws: KeychainError if the operation fails
     public func containsItem(account: String, service: String, accessGroup: String?) async throws -> Bool {
         var query: [String: Any] = [
@@ -154,24 +156,12 @@ public final class KeychainService {
         let status = SecItemCopyMatching(query as CFDictionary, nil)
         switch status {
         case errSecSuccess:
-            log.debug("Found keychain item", context: [
-                "operation": "containsItem",
-                "account": account,
-                "service": service,
-                "accessGroup": accessGroup ?? "none"
-            ])
             return true
         case errSecItemNotFound:
-            log.debug("Keychain item not found", context: [
-                "operation": "containsItem",
-                "account": account,
-                "service": service,
-                "accessGroup": accessGroup ?? "none"
-            ])
             return false
         default:
             let error = convertError(status)
-            log.error("Failed to check keychain item", context: [
+            log.error("Failed to check keychain item existence", context: [
                 "error": String(describing: error),
                 "status": String(status),
                 "operation": "containsItem",
@@ -218,14 +208,14 @@ public final class KeychainService {
         }
 
         guard let data = result as? Data else {
-            log.error("Invalid data format in keychain item", context: [
-                "error": String(describing: KeychainError.invalidData),
+            log.error("Retrieved keychain item is not Data", context: [
                 "operation": "retrieveItem",
                 "account": account,
                 "service": service,
-                "accessGroup": accessGroup ?? "none"
+                "accessGroup": accessGroup ?? "none",
+                "resultType": String(describing: type(of: result))
             ])
-            throw KeychainError.invalidData
+            throw KeychainError.unexpectedData
         }
 
         log.info("Successfully retrieved keychain item", context: [
@@ -238,19 +228,17 @@ public final class KeychainService {
         return data
     }
 
-    /// Convert an OSStatus to a KeychainError
+    /// Convert a SecItemError to a KeychainError
     private func convertError(_ status: OSStatus) -> KeychainError {
-        switch Int32(status) {
-        case errSecItemNotFound:
-            return .itemNotFound
+        switch status {
         case errSecDuplicateItem:
             return .duplicateItem
-        case errSecInvalidData:
-            return .invalidData
-        case -25_293: // errSecAccessDenied
-            return .accessDenied
+        case errSecItemNotFound:
+            return .itemNotFound
+        case errSecAuthFailed:
+            return .authenticationFailed
         default:
-            return .unexpectedStatus(status)
+            return .unhandledError(status: status)
         }
     }
 }
