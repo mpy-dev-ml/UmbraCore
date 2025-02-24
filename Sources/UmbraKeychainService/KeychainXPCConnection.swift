@@ -2,8 +2,10 @@ import Foundation
 
 final class KeychainXPCConnection {
     private var connection: NSXPCConnection?
-    private let queue = DispatchQueue(label: "com.umbracore.keychain.connection",
-                                    qos: .userInitiated)
+    private let queue = DispatchQueue(
+        label: "com.umbracore.keychain.connection",
+        qos: .userInitiated
+    )
     private let semaphore = DispatchSemaphore(value: 1)
     private let listener: NSXPCListener?
     private var isInvalidated = false
