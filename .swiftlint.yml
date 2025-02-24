@@ -32,6 +32,7 @@ identifier_name:
     - URL
     - url
     - app
+    - iv  # Initialization Vector - common cryptographic term
 
 line_length:
   warning: 120
