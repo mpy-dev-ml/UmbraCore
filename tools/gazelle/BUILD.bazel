@@ -1,0 +1,31 @@
+load("@bazel_gazelle//:def.bzl", "gazelle_binary")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "gazelle_lib",
+    srcs = ["gazelle.go"],
+    importpath = "github.com/mpy-dev-ml/UmbraCore/tools/gazelle",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tools/gazelle/swift",
+        "@bazel_gazelle//config",
+        "@bazel_gazelle//language",
+        "@bazel_gazelle//rule",
+    ],
+)
+
+gazelle_binary(
+    name = "gazelle_binary",
+    languages = [
+        "@bazel_gazelle//language/go",
+        "@bazel_gazelle//language/proto",
+        "//tools/gazelle/swift",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "gazelle",
+    embed = [":gazelle_lib"],
+    visibility = ["//visibility:public"],
+)

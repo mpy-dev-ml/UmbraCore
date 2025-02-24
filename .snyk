@@ -1,0 +1,21 @@
+# Snyk (https://snyk.io) policy file
+version: v1.25.0
+
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-SWIFT-CRYPTOSWIFT-5763318:
+    - '*':
+        reason: 'False positive in CryptoSwift dependency'
+        expires: 2025-12-31T00:00:00.000Z
+        created: 2025-02-17T00:00:00.000Z
+
+# patches apply the minimum changes required to fix a vulnerability
+patch: {}
+
+# Snyk scanning configuration
+exclude:
+  global:
+    - .build/**
+    - Tests/**
+    - docs/**
+    - DerivedData/**

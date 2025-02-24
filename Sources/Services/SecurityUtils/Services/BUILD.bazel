@@ -1,0 +1,25 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "SecurityUtils",
+    testonly = True,
+    srcs = [
+        "EncryptedBookmarkService.swift",
+        "SecurityBookmarkService.swift",
+    ],
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    module_name = "UmbraSecurityUtils",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/CryptoTypes",
+        "//Sources/CryptoTypes/Protocols:Sources_CryptoTypes_Protocols",
+        "//Sources/Services/SecurityUtils/Protocols:Services_SecurityUtils_Protocols",
+        "//Sources/UmbraCrypto",
+    ],
+)

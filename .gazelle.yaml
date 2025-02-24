@@ -1,0 +1,11 @@
+# Gazelle configuration for UmbraCore
+# Specifies default values for Swift targets
+
+# Default module name prefix
+swift_default_module_name: UmbraCore
+
+# Default visibility for all targets
+swift_default_visibility: //visibility:public
+
+# Default copts for all Swift targets
+swift_default_copts: -target,arm64-apple-macos14.0,-strict-concurrency=complete,-warn-concurrency,-enable-actor-data-race-checks

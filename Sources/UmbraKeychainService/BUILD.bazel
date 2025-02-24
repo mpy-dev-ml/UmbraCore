@@ -1,0 +1,16 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "UmbraKeychainService",
+    srcs = glob([
+        "**/*.swift",
+    ]),
+    module_name = "UmbraKeychainService",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/CryptoTypes",
+        "//Sources/ErrorHandling",
+        "@swiftpkg_cryptoswift//:CryptoSwift",
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    ],
+)

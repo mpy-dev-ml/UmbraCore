@@ -1,0 +1,24 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "Sources_CryptoTypes_Types",
+    srcs = [
+        "CredentialManager.swift",
+        "CryptoConfig.swift",
+        "CryptoConfiguration.swift",
+        "CryptoError.swift",
+        "SecureStorageData.swift",
+    ],
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    module_name = "CryptoTypes_Types",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/CryptoTypes/Protocols:Sources_CryptoTypes_Protocols",
+    ],
+)

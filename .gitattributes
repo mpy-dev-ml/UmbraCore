@@ -1,0 +1,23 @@
+# Swift
+*.swift linguist-language=Swift linguist-detectable=true
+*.h linguist-language=Swift
+
+# Documentation
+*.md linguist-documentation
+docs/* linguist-documentation
+site/* linguist-documentation
+*.html linguist-documentation
+
+# Generated files
+*.generated.swift linguist-generated=true
+bazel-* linguist-generated=true
+
+# Vendored code
+vendor/* linguist-vendored=true
+external/* linguist-vendored=true
+
+# Build files
+*.bazel linguist-language=Starlark
+*.bzl linguist-language=Starlark
+WORKSPACE linguist-language=Starlark
+BUILD linguist-language=Starlark

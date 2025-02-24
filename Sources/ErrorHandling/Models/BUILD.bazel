@@ -1,0 +1,23 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "Sources_ErrorHandling_Models",
+    testonly = True,
+    srcs = [
+        "CommonError.swift",
+        "CoreError.swift",
+    ],
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    defines = ["ENABLE_TESTING"],
+    module_name = "ErrorHandling_Models",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/ErrorHandling/Protocols:Sources_ErrorHandling_Protocols",
+    ],
+)

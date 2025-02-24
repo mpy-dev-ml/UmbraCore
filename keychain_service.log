@@ -1,0 +1,257 @@
+import Foundation
+
+/// XPC service for secure keychain operations
+@objc public protocol KeychainXPCProtocol {
+    func addItem(_ data: Data,
+                 account: String,
+                 service: String,
+                 accessGroup: String?,
+                 accessibility: String,
+                 flags: Int,
+                 withReply reply: @escaping (Error?) -> Void)
+    
+    func readItem(account: String,
+                  service: String,
+                  accessGroup: String?,
+                  withReply reply: @escaping (Data?, Error?) -> Void)
+    
+    func updateItem(_ data: Data,
+                    account: String,
+                    service: String,
+                    accessGroup: String?,
+                    withReply reply: @escaping (Error?) -> Void)
+    
+    func deleteItem(account: String,
+                    service: String,
+                    accessGroup: String?,
+                    withReply reply: @escaping (Error?) -> Void)
+    
+    func containsItem(account: String,
+                      service: String,
+                      accessGroup: String?,
+                      withReply reply: @escaping (Bool, Error?) -> Void)
+}
+
+final class KeychainXPCService: NSObject {
+    private var listener: NSXPCListener?
+    private let queue = DispatchQueue(label: "com.umbracore.keychain.xpc",
+                                    qos: .userInitiated,
+                                    attributes: .concurrent)
+    private let syncQueue = DispatchQueue(label: "com.umbracore.keychain.xpc.sync")
+    private var isRunning = false
+    
+    override init() {
+        super.init()
+        setupListener()
+    }
+    
+    private func setupListener() {
+        syncQueue.sync {
+            guard listener == nil else { return }
+            listener = NSXPCListener.anonymous()
+            listener?.delegate = self
+        }
+    }
+    
+    func start() {
+        syncQueue.sync {
+            guard !isRunning else { return }
+            listener?.resume()
+            isRunning = true
+        }
+    }
+    
+    func stop() {
+        syncQueue.sync {
+            guard isRunning else { return }
+            listener?.suspend()
+            listener = nil
+            isRunning = false
+        }
+    }
+    
+    deinit {
+        stop()
+    }
+}
+
+extension KeychainXPCService: NSXPCListenerDelegate {
+    func listener(_ listener: NSXPCListener,
+                 shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
+        
+        // Configure the connection
+        newConnection.exportedInterface = NSXPCInterface(with: KeychainXPCProtocol.self)
+        
+        // Create and set the exported object
+        let exportedObject = KeychainXPCImplementation()
+        newConnection.exportedObject = exportedObject
+        
+        // Resume the connection
+        newConnection.resume()
+        
+        return true
+    }
+}
+
+// MARK: - KeychainXPCImplementation
+final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
+    private let queue = DispatchQueue(label: "com.umbracore.keychain.service",
+                                    qos: .userInitiated)
+    
+    func addItem(_ data: Data,
+                 account: String,
+                 service: String,
+                 accessGroup: String?,
+                 accessibility: String,
+                 flags: Int,
+                 withReply reply: @escaping (Error?) -> Void) {
+        queue.async {
+            var query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: account,
+                kSecAttrService as String: service,
+                kSecValueData as String: data,
+                kSecAttrAccessible as String: accessibility
+            ]
+            
+            if let accessGroup = accessGroup {
+                query[kSecAttrAccessGroup as String] = accessGroup
+            }
+            
+            let status = SecItemAdd(query as CFDictionary, nil)
+            
+            switch status {
+            case errSecSuccess:
+                reply(nil)
+            case errSecDuplicateItem:
+                reply(KeychainError.duplicateItem)
+            default:
+                reply(KeychainError.unexpectedStatus(status))
+            }
+        }
+    }
+    
+    func readItem(account: String,
+                  service: String,
+                  accessGroup: String?,
+                  withReply reply: @escaping (Data?, Error?) -> Void) {
+        queue.async {
+            var query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: account,
+                kSecAttrService as String: service,
+                kSecReturnData as String: true
+            ]
+            
+            if let accessGroup = accessGroup {
+                query[kSecAttrAccessGroup as String] = accessGroup
+            }
+            
+            var item: CFTypeRef?
+            let status = SecItemCopyMatching(query as CFDictionary, &item)
+            
+            switch status {
+            case errSecSuccess:
+                if let data = item as? Data {
+                    reply(data, nil)
+                } else {
+                    reply(nil, KeychainError.invalidData)
+                }
+            case errSecItemNotFound:
+                reply(nil, KeychainError.itemNotFound)
+            default:
+                reply(nil, KeychainError.unexpectedStatus(status))
+            }
+        }
+    }
+    
+    func updateItem(_ data: Data,
+                    account: String,
+                    service: String,
+                    accessGroup: String?,
+                    withReply reply: @escaping (Error?) -> Void) {
+        queue.async {
+            var query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: account,
+                kSecAttrService as String: service
+            ]
+            
+            if let accessGroup = accessGroup {
+                query[kSecAttrAccessGroup as String] = accessGroup
+            }
+            
+            let attributes: [String: Any] = [
+                kSecValueData as String: data
+            ]
+            
+            let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+            
+            switch status {
+            case errSecSuccess:
+                reply(nil)
+            case errSecItemNotFound:
+                reply(KeychainError.itemNotFound)
+            default:
+                reply(KeychainError.unexpectedStatus(status))
+            }
+        }
+    }
+    
+    func deleteItem(account: String,
+                    service: String,
+                    accessGroup: String?,
+                    withReply reply: @escaping (Error?) -> Void) {
+        queue.async {
+            var query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: account,
+                kSecAttrService as String: service
+            ]
+            
+            if let accessGroup = accessGroup {
+                query[kSecAttrAccessGroup as String] = accessGroup
+            }
+            
+            let status = SecItemDelete(query as CFDictionary)
+            
+            switch status {
+            case errSecSuccess:
+                reply(nil)
+            case errSecItemNotFound:
+                reply(KeychainError.itemNotFound)
+            default:
+                reply(KeychainError.unexpectedStatus(status))
+            }
+        }
+    }
+    
+    func containsItem(account: String,
+                      service: String,
+                      accessGroup: String?,
+                      withReply reply: @escaping (Bool, Error?) -> Void) {
+        queue.async {
+            var query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: account,
+                kSecAttrService as String: service,
+                kSecReturnData as String: false
+            ]
+            
+            if let accessGroup = accessGroup {
+                query[kSecAttrAccessGroup as String] = accessGroup
+            }
+            
+            let status = SecItemCopyMatching(query as CFDictionary, nil)
+            
+            switch status {
+            case errSecSuccess:
+                reply(true, nil)
+            case errSecItemNotFound:
+                reply(false, nil)
+            default:
+                reply(false, KeychainError.unexpectedStatus(status))
+            }
+        }
+    }
+}

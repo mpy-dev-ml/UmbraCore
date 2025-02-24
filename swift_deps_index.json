@@ -1,0 +1,40 @@
+{
+  "direct_dep_identities": [
+    "cryptoswift",
+    "swiftybeaver"
+  ],
+  "modules": [
+    {
+      "name": "CryptoSwift",
+      "c99name": "CryptoSwift",
+      "src_type": "swift",
+      "label": "@swiftpkg_cryptoswift//:CryptoSwift",
+      "package_identity": "cryptoswift"
+    },
+    {
+      "name": "SwiftyBeaver",
+      "c99name": "SwiftyBeaver",
+      "src_type": "swift",
+      "label": "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+      "package_identity": "swiftybeaver"
+    }
+  ],
+  "packages": [
+    {
+      "name": "CryptoSwift",
+      "identity": "cryptoswift",
+      "remote": {
+        "commit": "87cc6a73b9d4b4d12f14007f9c246f0b9b466127",
+        "url": "https://github.com/krzyzanowskim/CryptoSwift.git"
+      }
+    },
+    {
+      "name": "SwiftyBeaver",
+      "identity": "swiftybeaver",
+      "remote": {
+        "commit": "1080914c10658c4c9b77e06b9b46f3c95f78c08f",
+        "url": "https://github.com/SwiftyBeaver/SwiftyBeaver.git"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+
+swift_test(
+    name = "Tests_LoggingTests",
+    srcs = ["LoggingServiceTests.swift"],
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    module_name = "LoggingTests",
+    deps = [
+        "//Sources/UmbraLogging:Sources_UmbraLogging",
+        "//Sources/UmbraMocks",
+    ],
+)

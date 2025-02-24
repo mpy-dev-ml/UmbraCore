@@ -1,0 +1,16 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+
+swift_test(
+    name = "Tests_CryptoTests",
+    srcs = [
+        "CredentialManagerTests.swift",
+        "CryptoServiceTests.swift",
+    ],
+    module_name = "CryptoTests",
+    deps = [
+        "//Sources/CryptoTypes",
+        "//Sources/UmbraTestKit",
+        "//Sources/UmbraCryptoService:Sources_UmbraCryptoService",
+        "@swiftpkg_cryptoswift//:CryptoSwift",
+    ],
+)

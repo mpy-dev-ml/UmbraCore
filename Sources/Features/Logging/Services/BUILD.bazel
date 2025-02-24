@@ -1,0 +1,23 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "LoggingServices",
+    srcs = glob(
+        ["**/*.swift"],
+        allow_empty = True,
+    ),
+    testonly = True,
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    module_name = "LoggingServices",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+        "//Sources/UmbraTestKit",
+    ],
+)

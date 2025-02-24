@@ -1,0 +1,20 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "Sources_UmbraSecurity",
+    testonly = True,
+    srcs = glob(["*.swift"]),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    module_name = "UmbraSecurity",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/Services/SecurityUtils/Protocols:Services_SecurityUtils_Protocols",
+        "//Sources/Services/SecurityUtils/Services:SecurityUtils",
+    ],
+)

@@ -1,0 +1,69 @@
+site_name: UmbraCore Documentation
+site_description: Documentation for UmbraCore - Secure Backup Management System
+site_author: MPY Development
+repo_url: https://github.com/mpy-dev-ml/UmbraCore
+edit_uri: edit/main/docs/
+site_url: https://umbracore.dev
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  palette:
+    scheme: slate
+    primary: blue
+    accent: cyan
+  font:
+    text: Roboto Mono
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search
+
+extra_css:
+  - assets/css/custom.css
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Overview: getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quick-start.md
+  - User Guide:
+      - Overview: user-guide/index.md
+      - Configuration: user-guide/configuration.md
+      - Advanced Features: user-guide/advanced-features.md
+      - Security: user-guide/security.md
+  - Development:
+      - Overview: development/index.md
+      - Bazel & SPM: development/bazel_spm.md
+      - Architecture: development/architecture.md
+      - Contributing: development/contributing.md
+  - API Reference:
+      - Overview: api/reference.md
+  - Support:
+      - Troubleshooting: support/troubleshooting.md
+  - License: LICENSE.md
+  - Acknowledgments: ACKNOWLEDGMENTS.md
