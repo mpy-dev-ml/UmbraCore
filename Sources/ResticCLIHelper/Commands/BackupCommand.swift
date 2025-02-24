@@ -63,7 +63,22 @@ public final class BackupCommand: ResticCommand, @unchecked Sendable {
         return args
     }
 
-    public init(options: CommonOptions) {
+    /// Create a backup command with the specified options
+    /// 
+    /// - Parameters:
+    ///   - paths: Paths to backup
+    ///   - excludes: Paths to exclude
+    ///   - tags: Tags to apply to the backup
+    ///   - options: Common options for the command
+    public init(
+        paths: [String],
+        excludes: [String] = [],
+        tags: [String] = [],
+        options: CommonOptions
+    ) {
+        self.paths = paths
+        self.excludePatterns = excludes
+        self.tags = tags
         self.options = options
     }
 

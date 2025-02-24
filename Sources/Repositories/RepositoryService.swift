@@ -395,4 +395,74 @@ public actor RepositoryService {
             throw RepositoryError.maintenanceFailed(reason: error.localizedDescription)
         }
     }
+
+    /// Retrieves a repository at the specified URL.
+    ///
+    /// - Parameter url: Repository URL
+    /// - Returns: Repository instance if found
+    /// - Throws: RepositoryError if repository is invalid
+    private func getRepository(at url: URL) async throws -> Repository? {
+        guard let repository = repositories[url.path] else {
+            let message = "No repository found at \(url.path)"
+            throw RepositoryError.repositoryNotFound(message)
+        }
+        return repository
+    }
+
+    /// Initializes a new repository at the specified URL.
+    ///
+    /// - Parameter url: Repository URL
+    /// - Returns: Repository instance
+    /// - Throws: RepositoryError if initialization fails
+    public func initializeRepository(at url: URL) async throws -> Repository {
+        guard !repositories.contains(where: { $0.key == url.path }) else {
+            let message = "Repository already exists at \(url.path)"
+            throw RepositoryError.repositoryExists(message)
+        }
+        let repository = try await Repository(url: url)
+        repositories[url.path] = repository
+        return repository
+    }
+
+    /// Validates a repository at a given URL.
+    ///
+    /// - Parameter url: The URL of the repository to validate.
+    /// - Returns: Whether the repository is valid.
+    /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found.
+    public func validateRepository(at url: URL) async throws -> Bool {
+        guard let repository = try await getRepository(at: url) else {
+            throw RepositoryError.repositoryNotFound(
+                "No repository found at \(url.path)"
+            )
+        }
+        return try await repository.validate()
+    }
+
+    /// Checks a repository at a given URL.
+    ///
+    /// - Parameter url: The URL of the repository to check.
+    /// - Returns: The repository statistics.
+    /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found.
+    public func checkRepository(at url: URL) async throws -> RepositoryStats {
+        guard let repository = try await getRepository(at: url) else {
+            throw RepositoryError.repositoryNotFound(
+                "No repository found at \(url.path)"
+            )
+        }
+        return try await repository.check()
+    }
+
+    /// Repairs a repository at a given URL.
+    ///
+    /// - Parameter url: The URL of the repository to repair.
+    /// - Returns: Whether the repository was successfully repaired.
+    /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found.
+    public func repairRepository(at url: URL) async throws -> Bool {
+        guard let repository = try await getRepository(at: url) else {
+            throw RepositoryError.repositoryNotFound(
+                "No repository found at \(url.path)"
+            )
+        }
+        return try await repository.repair()
+    }
 }

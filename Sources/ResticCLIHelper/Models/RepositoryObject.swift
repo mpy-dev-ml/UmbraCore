@@ -2,12 +2,12 @@ import Foundation
 
 /// Types of objects stored in a repository
 public enum RepositoryObjectType: String, Codable {
-    case blob = "blob"
-    case pack = "pack"
-    case index = "index"
-    case snapshot = "snapshot"
-    case key = "key"
-    case lock = "lock"
+    case blob
+    case pack
+    case index
+    case snapshot
+    case key
+    case lock
 }
 
 /// Represents an object in the repository

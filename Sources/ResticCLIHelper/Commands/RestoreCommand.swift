@@ -23,18 +23,15 @@ public final class RestoreCommand: ResticCommand, @unchecked Sendable {
 
         // Add included paths
         // Note: paths must match exactly how they were backed up
-        for path in includePaths {
-            // Only add --include if we have a specific path to include
-            if !path.isEmpty {
-                args.append("--include")
-                // Strip any trailing slashes to match backup format
-                let normalizedPath = path.hasSuffix("/") ? String(path.dropLast()) : path
-                args.append(normalizedPath)
-            }
+        for path in includePaths where !path.isEmpty {
+            args.append("--include")
+            // Strip any trailing slashes to match backup format
+            let normalizedPath = path.hasSuffix("/") ? String(path.dropLast()) : path
+            args.append(normalizedPath)
         }
 
         // Add exclude paths
-        for path in excludePaths {
+        for path in excludePaths where !path.isEmpty {
             args.append("--exclude")
             // Strip any trailing slashes to match backup format
             let normalizedPath = path.hasSuffix("/") ? String(path.dropLast()) : path

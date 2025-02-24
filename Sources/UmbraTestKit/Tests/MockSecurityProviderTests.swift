@@ -242,4 +242,63 @@ final class MockSecurityProviderTests: XCTestCase {
             XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Bookmark not found: test").errorDescription)
         }
     }
+
+    func testEncryptDecryptData() async throws {
+        let testData = "Test data for encryption"
+        guard let data = Data(testData.utf8) else {
+            XCTFail("Failed to convert string to data")
+            return
+        }
+        let encryptedData = try await provider.encrypt(data: data)
+        let decryptedData = try await provider.decrypt(data: encryptedData)
+        guard let decryptedString = String(data: decryptedData, encoding: .utf8) else {
+            XCTFail("Failed to convert data to string")
+            return
+        }
+        XCTAssertEqual(decryptedString, testData)
+    }
+
+    func testEncryptDecryptLargeData() async throws {
+        let largeString = String(repeating: "Test data for encryption ", count: 1000)
+        guard let data = Data(largeString.utf8) else {
+            XCTFail("Failed to convert string to data")
+            return
+        }
+        let encryptedData = try await provider.encrypt(data: data)
+        let decryptedData = try await provider.decrypt(data: encryptedData)
+        guard let decryptedString = String(data: decryptedData, encoding: .utf8) else {
+            XCTFail("Failed to convert data to string")
+            return
+        }
+        XCTAssertEqual(decryptedString, largeString)
+    }
+
+    func testEncryptDecrypt() async throws {
+        let provider = MockSecurityProvider()
+        let testData = "Test data".data(using: .utf8)!
+        let key = "test key"
+
+        // Test encryption
+        let encrypted = try await provider.encrypt(data: testData, key: key)
+        XCTAssertNotEqual(encrypted, testData, "Encrypted data should be different from original")
+
+        // Test decryption
+        let decrypted = try await provider.decrypt(data: encrypted, key: key)
+        XCTAssertEqual(decrypted, testData, "Decrypted data should match original")
+    }
+
+    func testEncryptDecryptWithDifferentKeys() async throws {
+        let provider = MockSecurityProvider()
+        let testData = "Test data".data(using: .utf8)!
+
+        // Test with different keys
+        let key1 = "key1"
+        let key2 = "key2"
+
+        let encrypted = try await provider.encrypt(data: testData, key: key1)
+        XCTAssertThrowsError(
+            try provider.decrypt(data: encrypted, key: key2),
+            "Decryption with wrong key should fail"
+        )
+    }
 }

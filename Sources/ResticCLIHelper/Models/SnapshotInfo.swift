@@ -76,7 +76,11 @@ public struct SnapshotInfo: Codable {
             // Try without fractional seconds
             formatter.formatOptions = [.withInternetDateTime]
             guard let timeDate = formatter.date(from: timeString) else {
-                throw DecodingError.dataCorruptedError(forKey: .time, in: container, debugDescription: "Invalid date format")
+                throw DecodingError.dataCorruptedError(
+                    forKey: .time,
+                    in: container,
+                    debugDescription: "Invalid date format"
+                )
             }
             self.time = timeDate
         }
@@ -174,7 +178,11 @@ public struct SnapshotSummary: Codable {
             // Try without fractional seconds
             formatter.formatOptions = [.withInternetDateTime]
             guard let startDate = formatter.date(from: startString) else {
-                throw DecodingError.dataCorruptedError(forKey: .backupStart, in: container, debugDescription: "Invalid date format")
+                throw DecodingError.dataCorruptedError(
+                    forKey: .backupStart,
+                    in: container,
+                    debugDescription: "Invalid date format"
+                )
             }
             self.backupStart = startDate
         }
@@ -188,7 +196,11 @@ public struct SnapshotSummary: Codable {
             // Try without fractional seconds
             formatter.formatOptions = [.withInternetDateTime]
             guard let endDate = formatter.date(from: endString) else {
-                throw DecodingError.dataCorruptedError(forKey: .backupEnd, in: container, debugDescription: "Invalid date format")
+                throw DecodingError.dataCorruptedError(
+                    forKey: .backupEnd,
+                    in: container,
+                    debugDescription: "Invalid date format"
+                )
             }
             self.backupEnd = endDate
         }

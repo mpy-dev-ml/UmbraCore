@@ -94,22 +94,20 @@ public enum Core {
     public static let version = "1.0.0"
 
     /// Flag indicating whether the Core framework has been initialised
-    private static var isInitialised = false
+    private static var isInitialized = false
 
-    /// Initialise the Core framework
-    /// - Throws: CoreError if initialisation fails
-    public static func initialise() async throws {
+    /// Initialises the core framework and its essential services.
+    /// - Throws: CoreError if framework is already initialised or if service initialisation fails
+    public static func initialize() async throws {
         // Ensure framework is in a valid state for initialisation
-        guard !isInitialised else {
+        guard !isInitialized else {
             throw CoreError.initialisationError("Core framework is already initialised")
         }
-        
         do {
             // Initialize essential services
-            try await ServiceContainer.shared.initialise()
-            
+            try await ServiceContainer.shared.initialize()
             // Mark framework as initialized
-            isInitialised = true
+            isInitialized = true
         } catch {
             throw CoreError.initialisationError("Failed to initialise services: \(error.localizedDescription)")
         }

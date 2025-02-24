@@ -50,7 +50,7 @@ enum TestUtilities {
         // Create binary files of different sizes
         let sizes = [1_024, 2_048, 4_096, 8_192] // Different file sizes in bytes
         try sizes.enumerated().forEach { _, size in
-            let data = Data((0..<size).map { _ in UInt8.random(in: 0...255) })
+            let data = generateTestData(size: size)
             let path = (baseDirectory as NSString).appendingPathComponent("data")
             let filePath = (path as NSString).appendingPathComponent("binary_\(size).dat")
             try data.write(to: URL(fileURLWithPath: filePath))
@@ -67,6 +67,17 @@ enum TestUtilities {
         }
 
         return createdFiles
+    }
+
+    /// Generate test data with specified size
+    /// - Parameter size: Size in bytes
+    /// - Returns: Data with random content
+    static func generateTestData(size: Int) -> Data {
+        var data = Data(count: size)
+        for index in 0..<size {
+            data[index] = UInt8.random(in: 0...255)
+        }
+        return data
     }
 
     /// Verifies that two directories have identical content
