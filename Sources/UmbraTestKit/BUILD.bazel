@@ -1,10 +1,11 @@
-load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
 
 swift_library(
     name = "Sources_UmbraTestKit",
     testonly = True,
     srcs = glob([
         "**/*.swift",
+        "!Tests/**/*.swift",  # Exclude test files from library
     ]),
     copts = [
         "-target",
@@ -24,5 +25,25 @@ swift_library(
         "//Sources/UmbraSecurity",
         "@swiftpkg_cryptoswift//:CryptoSwift",
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    ],
+)
+
+swift_test(
+    name = "UmbraTestKitTests",
+    srcs = glob(["Tests/**/*.swift"]),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    deps = [
+        ":Sources_UmbraTestKit",
+        "//Sources/ErrorHandling",
+        "//Sources/SecurityTypes:SecurityTypes",
+        "//Sources/SecurityTypes/Protocols:SecurityTypes_Protocols",
+        "//Sources/SecurityTypes/Types:SecurityTypes_Types",
+        "//Sources/UmbraSecurity",
     ],
 )
