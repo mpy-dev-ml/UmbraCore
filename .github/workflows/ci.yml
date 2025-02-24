@@ -24,6 +24,12 @@ jobs:
         clean: true
         fetch-depth: 0
 
+    - name: Install Xcode Command Line Tools
+      run: |
+        xcode-select --install || true
+        sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+        sudo xcodebuild -license accept
+
     - name: System Info
       run: |
         uname -a
