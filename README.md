@@ -14,9 +14,11 @@
 [![Made with ❤️ in London](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20in-London-D40000.svg)](https://github.com/mpy-dev-ml/UmbraCore)
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
-UmbraCore is built upon the foundation of [Restic](https://restic.net), a remarkable open-source backup programme that has set the standard for secure, efficient, and reliable backups. We are deeply grateful to the Restic team for their years of dedication in creating and maintaining such an exceptional tool.
+UmbraCore is built to extend the foundation of [Restic](https://restic.net), a remarkable open-source backup programme that has set the standard for secure, efficient, and reliable backups. We are deeply grateful to the Restic team for their years of dedication in creating and maintaining such an exceptional tool, without whom UmbraCore would not exist.
 
-Our mission with UmbraCore is to extend Restic's capabilities specifically for macOS application developers, providing a type-safe, Swift-native interface while maintaining complete compatibility with Restic's core functionality. UmbraCore is not an alternative to Restic, but rather a complementary tool that makes Restic's powerful features more accessible in the macOS development ecosystem.
+In particular, we have focussed extensively on enable Restic to work more fully within Swift sandboxed enviornments as well as using native macOS security features coupled with Restic for those of us who struggle to remember passwords. 
+
+Our mission with UmbraCore is to extend Restic's capabilities specifically for macOS application developers, providing a type-safe, Swift-native interface whilst maintaining complete compatibility with Restic's core functionality. UmbraCore is not an alternative to Restic but, rather, a complementary tool that makes Restic's powerful features more accessible in the macOS development ecosystem.
 
 If you find UmbraCore useful, please consider:
 - [Supporting the Restic project](https://github.com/sponsors/fd0)
@@ -92,6 +94,36 @@ UmbraCore powers several macOS backup management tools:
 - **ErrorHandling**: Comprehensive error management
 - **Autocomplete**: Context-aware command completion
 
+## Cross-Functional Cryptographic Strategy
+
+UmbraCore implements a dual-library cryptographic approach to support both native macOS security features and cross-process operations:
+
+### CryptoKit Integration
+- Native macOS security features for ResticBar
+- Hardware-backed security operations
+- Secure key storage with Secure Enclave
+- Optimised for sandboxed environments
+
+### CryptoSwift Integration
+- Cross-process operations for Rbum and Rbx
+- Platform-independent implementation
+- Flexible XPC service support
+- Consistent cross-application behaviour
+
+### KeyManager
+The KeyManager orchestrates cryptographic operations across both implementations:
+- Intelligent routing between CryptoKit and CryptoSwift
+- Unified key lifecycle management
+- Secure key storage and rotation
+- Context-aware security boundaries
+- Cross-process synchronisation
+
+This dual-library strategy enables UmbraCore to provide:
+- Native security features in ResticBar
+- Cross-functional operation in Rbum and Rbx
+- Consistent security model across all implementations
+- Flexible deployment options
+
 ## Development
 
 ### Building
@@ -109,13 +141,6 @@ bazel test //...
 ### Documentation
 The complete documentation is available at [https://mpy-dev-ml.github.io/UmbraCore](https://mpy-dev-ml.github.io/UmbraCore).
 
-To build documentation locally:
-```bash
-cd docs
-bundle install
-bundle exec jekyll serve
-```
-Then visit `http://localhost:4000/UmbraCore`
 
 ## Security
 UmbraCore prioritises security through:
@@ -141,7 +166,7 @@ See our detailed [Development Roadmap](ROADMAP.md) for upcoming features and mil
 UmbraCore builds upon the work of several outstanding open-source projects:
 
 ### [Restic](https://restic.net)
-A remarkable backup programme that sets the standard for secure, efficient, and reliable backups. The dedication of the Restic team in creating and maintaining this exceptional tool has been instrumental in making UmbraCore possible.
+A truly unique backup programme that sets the standard for secure, efficient, and reliable backups. The dedication of the Restic team in creating and maintaining this exceptional tool has been instrumental in making UmbraCore possible.
 
 ### [CryptoSwift](https://cryptoswift.io)
 An outstanding cryptography framework created and maintained by [Marcin Krzyżanowski](https://github.com/krzyzanowskim). We are grateful for the years of work that have gone into making this comprehensive, pure-Swift implementation of popular cryptographic algorithms. CryptoSwift's excellent design and thorough testing have been crucial for UmbraCore's security features.
