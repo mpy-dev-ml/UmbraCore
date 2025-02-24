@@ -109,7 +109,7 @@ public enum Snapshots {
     public static let version = "1.0.0"
 
     /// Initialise Snapshots with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure snapshot system
     }
 }
