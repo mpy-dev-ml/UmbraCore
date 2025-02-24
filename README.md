@@ -176,3 +176,13 @@ A sophisticated logging system developed by [Sebastian Kreutzberger](https://git
 
 ## Licence
 This project is licensed under the MIT Licence - see [LICENCE](LICENCE) for details.
+
+---
+
+## Copyright
+
+Copyright 2024-2025 Tzel Agentic Development. All rights reserved.
+
+UmbraCore is a trademark of Tzel Agentic Development.
+
+This software includes components from other projects, each under its own licence. See [DEPENDENCIES.md](docs/DEPENDENCIES.md) for details.
