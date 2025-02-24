@@ -108,7 +108,7 @@ public enum UmbraCryptoService {
     public static let version = "1.0.0"
 
     /// Initialise UmbraCryptoService with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure crypto service
     }
 }

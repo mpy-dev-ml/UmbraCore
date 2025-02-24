@@ -110,7 +110,7 @@ public enum UmbraKeychainService {
     public static let version = "1.0.0"
 
     /// Initialise UmbraKeychainService with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure keychain service
     }
 }

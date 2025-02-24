@@ -109,7 +109,7 @@ public enum UmbraBookmarkService {
     public static let version = "1.0.0"
 
     /// Initialise UmbraBookmarkService with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure bookmark service
     }
 }

@@ -87,7 +87,7 @@ public enum Config {
     public static let version = "1.0.0"
 
     /// Initialise Config with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure configuration system
     }
 }

@@ -95,7 +95,7 @@ public enum SecurityUtils {
     public static let version = "1.0.0"
 
     /// Initialise SecurityUtils with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure security utilities
     }
 }

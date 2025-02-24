@@ -79,7 +79,7 @@
 /// ```swift
 /// let manager = RepositoryManager.shared
 /// 
-/// let repo = try await manager.initialise(
+/// let repo = try await manager.initialize(
 ///     path: path,
 ///     config: config
 /// )
@@ -107,7 +107,7 @@ public enum Repositories {
     public static let version = "1.0.0"
 
     /// Initialise Repositories with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure repository system
     }
 }

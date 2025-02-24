@@ -94,7 +94,7 @@ public enum Services {
     public static let version = "1.0.0"
 
     /// Initialise Services with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure service system
     }
 }

@@ -65,7 +65,7 @@ public enum UmbraMocks {
     public static let version = "1.0.0"
 
     /// Initialise UmbraMocks with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure mock services
     }
 }

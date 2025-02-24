@@ -93,7 +93,7 @@ public enum Features {
     public static let version = "1.0.0"
 
     /// Initialise Features with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure feature system
     }
 }

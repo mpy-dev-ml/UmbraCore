@@ -52,7 +52,7 @@
 /// ## Getting Started
 /// ```swift
 /// let client = UmbraClient()
-/// try await client.initialise()
+/// try await client.initialize()
 /// ```
 ///
 /// ## Basic Operations
@@ -99,7 +99,7 @@ public enum API {
     public static let version = "1.0.0"
 
     /// Initialise API with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure API system
     }
 }

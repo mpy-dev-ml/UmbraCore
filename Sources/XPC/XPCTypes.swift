@@ -84,7 +84,7 @@ public enum XPCTypes {
     public static let version = "1.0.0"
 
     /// Initialise XPC services with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure XPC services
     }
 }

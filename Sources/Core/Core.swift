@@ -90,7 +90,7 @@ public enum Core {
     public static let version = "1.0.0"
 
     /// Initialise Core with default configuration
-    public static func initialise() {
+    public static func initialize() {
         // Configure core systems
     }
 }
