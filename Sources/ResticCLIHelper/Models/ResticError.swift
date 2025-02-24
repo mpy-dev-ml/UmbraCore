@@ -92,25 +92,38 @@ public enum ResticError: LocalizedError, Equatable {
         }
     }
 
+    private static func compareAssociatedValues<T: Equatable>(_ lhs: T, _ rhs: T) -> Bool {
+        return lhs == rhs
+    }
+    
+    private static func compareNetworkErrors(_ lhs: Error, _ rhs: Error) -> Bool {
+        return lhs.localizedDescription == rhs.localizedDescription
+    }
+    
+    private static func compareCommandFailure(_ lhs: (Int, String), _ rhs: (Int, String)) -> Bool {
+        return lhs.0 == rhs.0 && lhs.1 == rhs.1
+    }
+
     public static func == (lhs: ResticError, rhs: ResticError) -> Bool {
         switch (lhs, rhs) {
-        case (.missingParameter(let l), .missingParameter(let r)): return l == r
-        case (.invalidParameter(let l), .invalidParameter(let r)): return l == r
-        case (.invalidPath(let l), .invalidPath(let r)): return l == r
-        case (.executionFailed(let l), .executionFailed(let r)): return l == r
-        case (.invalidData(let l), .invalidData(let r)): return l == r
-        case (.outputParsingFailed(let l), .outputParsingFailed(let r)): return l == r
-        case (.commandFailed(let l1, let l2), .commandFailed(let r1, let r2)): return l1 == r1 && l2 == r2
-        case (.repositoryNotFound(let l), .repositoryNotFound(let r)): return l == r
+        case (.missingParameter(let left), .missingParameter(let right)): return compareAssociatedValues(left, right)
+        case (.invalidParameter(let left), .invalidParameter(let right)): return compareAssociatedValues(left, right)
+        case (.invalidPath(let left), .invalidPath(let right)): return compareAssociatedValues(left, right)
+        case (.executionFailed(let left), .executionFailed(let right)): return compareAssociatedValues(left, right)
+        case (.invalidData(let left), .invalidData(let right)): return compareAssociatedValues(left, right)
+        case (.outputParsingFailed(let left), .outputParsingFailed(let right)): return compareAssociatedValues(left, right)
+        case (.commandFailed(let exitCode1, let message1), .commandFailed(let exitCode2, let message2)):
+            return compareCommandFailure((exitCode1, message1), (exitCode2, message2))
+        case (.repositoryNotFound(let left), .repositoryNotFound(let right)): return compareAssociatedValues(left, right)
         case (.invalidPassword, .invalidPassword): return true
-        case (.repositoryCorrupted(let l), .repositoryCorrupted(let r)): return l == r
-        case (.networkError(let l), .networkError(let r)): return l.localizedDescription == r.localizedDescription
-        case (.permissionDenied(let l), .permissionDenied(let r)): return l == r
-        case (.invalidArguments(let l), .invalidArguments(let r)): return l == r
-        case (.invalidConfiguration(let l), .invalidConfiguration(let r)): return l == r
-        case (.repositoryError(let l), .repositoryError(let r)): return l == r
-        case (.authenticationError(let l), .authenticationError(let r)): return l == r
-        case (.other(let l), .other(let r)): return l == r
+        case (.repositoryCorrupted(let left), .repositoryCorrupted(let right)): return compareAssociatedValues(left, right)
+        case (.networkError(let left), .networkError(let right)): return compareNetworkErrors(left, right)
+        case (.permissionDenied(let left), .permissionDenied(let right)): return compareAssociatedValues(left, right)
+        case (.invalidArguments(let left), .invalidArguments(let right)): return compareAssociatedValues(left, right)
+        case (.invalidConfiguration(let left), .invalidConfiguration(let right)): return compareAssociatedValues(left, right)
+        case (.repositoryError(let left), .repositoryError(let right)): return compareAssociatedValues(left, right)
+        case (.authenticationError(let left), .authenticationError(let right)): return compareAssociatedValues(left, right)
+        case (.other(let left), .other(let right)): return compareAssociatedValues(left, right)
         default: return false
         }
     }

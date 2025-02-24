@@ -143,7 +143,10 @@ final class MockSecurityProviderTests: XCTestCase {
             _ = try await provider.createBookmark(forPath: testPath)
             XCTFail("Expected bookmark creation to fail")
         } catch let error as SecurityTypes.SecurityError {
-            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Mock failure").errorDescription)
+            XCTAssertEqual(
+                error.errorDescription,
+                SecurityTypes.SecurityError.bookmarkError("Mock failure").errorDescription
+            )
         }
     }
 
@@ -157,7 +160,10 @@ final class MockSecurityProviderTests: XCTestCase {
             _ = try await provider.resolveBookmark(bookmark)
             XCTFail("Expected access to fail")
         } catch let error as SecurityTypes.SecurityError {
-            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied").errorDescription)
+            XCTAssertEqual(
+                error.errorDescription,
+                SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied").errorDescription
+            )
         }
     }
 
@@ -207,7 +213,7 @@ final class MockSecurityProviderTests: XCTestCase {
         let isValid = try await provider.validateBookmark(bookmark)
         XCTAssertTrue(isValid)
 
-        let invalidBookmark = Array("invalid_bookmark".data(using: .utf8)!)
+        let invalidBookmark = Data("invalid_bookmark".utf8)
         let isInvalid = try await provider.validateBookmark(invalidBookmark)
         XCTAssertFalse(isInvalid)
     }
@@ -245,10 +251,7 @@ final class MockSecurityProviderTests: XCTestCase {
 
     func testEncryptDecryptData() async throws {
         let testData = "Test data for encryption"
-        guard let data = Data(testData.utf8) else {
-            XCTFail("Failed to convert string to data")
-            return
-        }
+        let data = Data(testData.utf8)
         let encryptedData = try await provider.encrypt(data: data)
         let decryptedData = try await provider.decrypt(data: encryptedData)
         guard let decryptedString = String(data: decryptedData, encoding: .utf8) else {
@@ -260,10 +263,7 @@ final class MockSecurityProviderTests: XCTestCase {
 
     func testEncryptDecryptLargeData() async throws {
         let largeString = String(repeating: "Test data for encryption ", count: 1000)
-        guard let data = Data(largeString.utf8) else {
-            XCTFail("Failed to convert string to data")
-            return
-        }
+        let data = Data(largeString.utf8)
         let encryptedData = try await provider.encrypt(data: data)
         let decryptedData = try await provider.decrypt(data: encryptedData)
         guard let decryptedString = String(data: decryptedData, encoding: .utf8) else {
@@ -275,7 +275,7 @@ final class MockSecurityProviderTests: XCTestCase {
 
     func testEncryptDecrypt() async throws {
         let provider = MockSecurityProvider()
-        let testData = "Test data".data(using: .utf8)!
+        let testData = Data("Test data".utf8)
         let key = "test key"
 
         // Test encryption
@@ -289,7 +289,7 @@ final class MockSecurityProviderTests: XCTestCase {
 
     func testEncryptDecryptWithDifferentKeys() async throws {
         let provider = MockSecurityProvider()
-        let testData = "Test data".data(using: .utf8)!
+        let testData = Data("Test data".utf8)
 
         // Test with different keys
         let key1 = "key1"

@@ -56,9 +56,11 @@ public final class MockFileManager: FileManager {
     }
 
     @discardableResult
-    public func simulateCreateFile(atPath path: String,
-                                 contents data: Data?,
-                                 attributes attr: [FileAttributeKey: Any]? = nil) -> Bool {
+    public func simulateCreateFile(
+        atPath path: String,
+        contents data: Data?,
+        attributes attr: [FileAttributeKey: Any]?
+    ) -> Bool {
         setDefaultAccess(forPath: path, withPermissions: attr?[.posixPermissions] as? Int)
 
         if let data = data {
