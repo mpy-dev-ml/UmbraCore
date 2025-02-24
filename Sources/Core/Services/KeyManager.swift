@@ -3,7 +3,7 @@ import CryptoSwift
 import Foundation
 
 /// Represents the type of cryptographic implementation to use
-public enum CryptoImplementation {
+public enum CryptoImplementation: Sendable {
     /// Apple's CryptoKit for native macOS security features
     case cryptoKit
     /// CryptoSwift for cross-process operations
@@ -41,7 +41,7 @@ public struct SecurityContext: Sendable {
 }
 
 /// Represents a cryptographic key identifier
-public struct KeyIdentifier: Hashable {
+public struct KeyIdentifier: Hashable, Sendable {
     /// The unique identifier for this key
     public let id: String
 
@@ -122,28 +122,41 @@ public actor KeyManager {
         return identifier
     }
 
-    /// Rotate the key with the given identifier
-    /// - Parameter id: The identifier of the key to rotate
+    /// Rotate a key
+    /// - Parameter id: The key identifier to rotate
     /// - Throws: KeyManagerError if rotation fails
     public func rotateKey(id: KeyIdentifier) async throws {
         guard let implementation = implementationMap[id] else {
             throw KeyManagerError.keyNotFound
         }
-
-        // TODO: Implement key rotation logic
+        // TODO: Implement key rotation based on implementation type
+        switch implementation {
+        case .cryptoKit:
+            // Use CryptoKit for key rotation
+            break
+        case .cryptoSwift:
+            // Use CryptoSwift for key rotation
+            break
+        }
     }
 
-    /// Validate the key with the given identifier
-    /// - Parameter id: The identifier of the key to validate
-    /// - Returns: The validation result
+    /// Validate a key
+    /// - Parameter id: The key identifier to validate
+    /// - Returns: A validation result indicating the key's status
     /// - Throws: KeyManagerError if validation fails
     public func validateKey(id: KeyIdentifier) async throws -> ValidationResult {
         guard let implementation = implementationMap[id] else {
             throw KeyManagerError.keyNotFound
         }
-
-        // TODO: Implement key validation logic
-        return ValidationResult(isValid: true)
+        // TODO: Implement key validation based on implementation type
+        switch implementation {
+        case .cryptoKit:
+            // Use CryptoKit for validation
+            return ValidationResult(isValid: true)
+        case .cryptoSwift:
+            // Use CryptoSwift for validation
+            return ValidationResult(isValid: true)
+        }
     }
 
     /// Synchronise keys across processes if necessary

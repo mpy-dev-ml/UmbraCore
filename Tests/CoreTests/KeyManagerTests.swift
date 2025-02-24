@@ -33,7 +33,6 @@ final class KeyManagerTests: XCTestCase {
         let context = SecurityContext(applicationType: .resticBar)
         let keyId = try await keyManager.generateKey(for: context)
         XCTAssertNotNil(keyId, "Key generation should succeed")
-        XCTAssertEqual(keyId.context.applicationType, .resticBar)
     }
 
     func testKeyValidation() async throws {
@@ -47,8 +46,7 @@ final class KeyManagerTests: XCTestCase {
     }
 
     func testKeyNotFound() async throws {
-        let unknownContext = SecurityContext(applicationType: .resticBar)
-        let unknownId = KeyIdentifier(id: "unknown", context: unknownContext)
+        let unknownId = KeyIdentifier(id: "unknown")
 
         do {
             _ = try await keyManager.validateKey(id: unknownId)

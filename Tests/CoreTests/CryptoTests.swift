@@ -58,18 +58,18 @@ final class CryptoTests: XCTestCase {
         let key = try await service.generateKey()
         let data = "Hello, World!".data(using: .utf8)!.map { UInt8($0) }
 
-        let (encrypted, iv, tag) = try await service.encrypt(data, using: key)
-        XCTAssertFalse(encrypted.isEmpty)
-        XCTAssertFalse(iv.isEmpty)
-        XCTAssertFalse(tag.isEmpty)
+        let encryptedResult = try await service.encrypt(data, using: key)
+        XCTAssertFalse(encryptedResult.encrypted.isEmpty)
+        XCTAssertFalse(encryptedResult.initializationVector.isEmpty)
+        XCTAssertFalse(encryptedResult.tag.isEmpty)
 
-        let decrypted = try await service.decrypt(encrypted: encrypted, iv: iv, tag: tag, using: key)
+        let decrypted = try await service.decrypt(encryptedResult, using: key)
         XCTAssertEqual(data, decrypted)
 
         // Test wrong key fails decryption
         let wrongKey = try await service.generateKey()
         do {
-            _ = try await service.decrypt(encrypted: encrypted, iv: iv, tag: tag, using: wrongKey)
+            _ = try await service.decrypt(encryptedResult, using: wrongKey)
             XCTFail("Expected decryption error")
         } catch let error as SecurityError {
             XCTAssertTrue(error.errorDescription?.contains("Decryption failed") == true)
@@ -115,18 +115,13 @@ final class CryptoTests: XCTestCase {
 
         // Measure encryption time
         let startEncrypt = Date()
-        let (encrypted, iv, tag) = try await service.encrypt(largeData, using: key)
+        let encryptedResult = try await service.encrypt(largeData, using: key)
         let encryptDuration = Date().timeIntervalSince(startEncrypt)
         XCTAssertLessThan(encryptDuration, 1.0) // Should encrypt 1MB in under 1 second
 
         // Measure decryption time
         let startDecrypt = Date()
-        _ = try await service.decrypt(
-            encrypted: encrypted,
-            iv: iv,
-            tag: tag,
-            using: key
-        )
+        _ = try await service.decrypt(encryptedResult, using: key)
         let decryptDuration = Date().timeIntervalSince(startDecrypt)
         XCTAssertLessThan(decryptDuration, 1.0) // Should decrypt 1MB in under 1 second
     }
