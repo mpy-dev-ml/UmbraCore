@@ -7,32 +7,32 @@ public final class LsCommand: ResticCommand, @unchecked Sendable {
     private let path: String?
     private let longFormat: Bool
     private let recursive: Bool
-    
+
     public var commandName: String { "ls" }
-    
+
     public var commandArguments: [String] {
         var args = [String]()
-        
+
         // Add snapshot ID
         args.append(snapshotID)
-        
+
         // Add path if specified
         if let path = path {
             args.append(path)
         }
-        
+
         // Add flags
         if longFormat {
             args.append("--long")
         }
-        
+
         if recursive {
             args.append("--recursive")
         }
-        
+
         return args
     }
-    
+
     public init(
         options: CommonOptions,
         snapshotID: String,
@@ -46,7 +46,7 @@ public final class LsCommand: ResticCommand, @unchecked Sendable {
         self.longFormat = longFormat
         self.recursive = recursive
     }
-    
+
     public var environment: [String: String] {
         var env = options.environmentVariables
         env["RESTIC_REPOSITORY"] = options.repository
@@ -56,7 +56,7 @@ public final class LsCommand: ResticCommand, @unchecked Sendable {
         }
         return env
     }
-    
+
     public func validate() throws {
         guard !options.repository.isEmpty else {
             throw ResticError.missingParameter("Repository path must not be empty")

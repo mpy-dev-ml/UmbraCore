@@ -17,7 +17,8 @@ public enum FilePermission {
 }
 
 /// A mock implementation of FileManager for testing
-@objc public final class MockFileManager: FileManager {
+@objc
+public final class MockFileManager: FileManager {
     // Nonisolated storage
     private let storage = Storage()
 
@@ -170,8 +171,12 @@ public enum FilePermission {
         return false
     }
 
-    public func simulateCreateDirectory(at url: URL, withIntermediateDirectories: Bool, attributes: [FileAttributeKey: Any]? = nil) throws {
-        if withIntermediateDirectories {
+    public func createDirectory(
+        at url: URL,
+        withIntermediateDirectories createIntermediates: Bool,
+        attributes: [FileAttributeKey: Any]?
+    ) throws -> Bool {
+        if createIntermediates {
             var currentPath = ""
             for component in url.pathComponents {
                 if component == "/" {
@@ -189,6 +194,40 @@ public enum FilePermission {
             setDefaultAccess(forPath: url.path)
             storage.directories.insert(url.path)
         }
+        return true
+    }
+
+    public func createDirectory(
+        atPath path: String,
+        withIntermediateDirectories createIntermediates: Bool,
+        attributes: [FileAttributeKey: Any]?
+    ) throws -> Bool {
+        if createIntermediates {
+            var currentPath = ""
+            for component in path.pathComponents {
+                if component == "/" {
+                    currentPath = "/"
+                } else {
+                    currentPath = (currentPath as NSString).appendingPathComponent(component)
+                    setDefaultAccess(forPath: currentPath)
+                    storage.directories.insert(currentPath)
+                }
+            }
+        } else {
+            guard !simulateFileExists(atPath: path) else {
+                throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteFileExistsError)
+            }
+            setDefaultAccess(forPath: path)
+            storage.directories.insert(path)
+        }
+        return true
+    }
+
+    public func createSymbolicLink(at url: URL, withDestinationURL destinationURL: URL) throws -> Bool {
+        guard let mockPath = storage.fileContents[url.path] else {
+            throw NSError(domain: NSCocoaErrorDomain, code: NSFileNoSuchFileError)
+        }
+        return true
     }
 
     // MARK: - Async File Operations

@@ -39,6 +39,20 @@ public struct CryptoConfig {
     }
 }
 
+/// The result of an encryption operation.
+///
+/// Contains the encrypted data, initialization vector, and authentication tag.
+public struct EncryptionResult: Sendable {
+    /// The encrypted data
+    public let encrypted: [UInt8]
+
+    /// The initialization vector used for encryption
+    public let initializationVector: [UInt8]
+
+    /// The authentication tag for verifying data integrity
+    public let tag: [UInt8]
+}
+
 /// A service that provides cryptographic operations.
 ///
 /// `CryptoService` handles encryption, decryption, and key derivation operations
@@ -139,39 +153,45 @@ public actor CryptoService: UmbraService {
     ///   - key: Encryption key.
     /// - Returns: Encrypted data with IV and tag.
     /// - Throws: `CryptoError` on failure.
-    public func encrypt(_ data: [UInt8], using key: [UInt8]) throws -> (encrypted: [UInt8], iv: [UInt8], tag: [UInt8]) {
+    public func encrypt(
+        _ data: [UInt8],
+        using key: [UInt8]
+    ) throws -> EncryptionResult {
         guard _state == .ready else {
             throw ServiceError.invalidState("Service not ready")
         }
 
-        let iv = try generateIV()
-        let gcm = GCM(iv: iv, mode: .combined)
+        let initializationVector = try generateIV()
+        let gcm = GCM(iv: initializationVector, mode: .combined)
         let aes = try AES(key: key, blockMode: gcm, padding: .pkcs7)
 
         let encrypted = try aes.encrypt(data)
         let tag = gcm.authenticationTag ?? []
 
-        return (encrypted: encrypted, iv: iv, tag: tag)
+        return EncryptionResult(encrypted: encrypted, initializationVector: initializationVector, tag: tag)
     }
 
     /// Decrypts data using AES-GCM.
     ///
     /// - Parameters:
-    ///   - encrypted: Encrypted data.
-    ///   - iv: Initialization vector used for encryption.
-    ///   - tag: Authentication tag.
+    ///   - encryptedData: The encrypted data and associated cryptographic parameters.
     ///   - key: Decryption key.
     /// - Returns: Decrypted data.
     /// - Throws: `CryptoError` on failure.
-    public func decrypt(encrypted: [UInt8], iv: [UInt8], tag: [UInt8], using key: [UInt8]) throws -> [UInt8] {
+    public func decrypt(
+        _ encryptedData: EncryptionResult,
+        using key: [UInt8]
+    ) throws -> [UInt8] {
         guard _state == .ready else {
             throw ServiceError.invalidState("Service not ready")
         }
 
-        let gcm = GCM(iv: iv, authenticationTag: tag, mode: .combined)
+        let gcm = GCM(iv: encryptedData.initializationVector,
+                      authenticationTag: encryptedData.tag,
+                      additionalAuthenticatedData: nil,
+                      mode: .combined)
         let aes = try AES(key: key, blockMode: gcm, padding: .pkcs7)
-
-        return try aes.decrypt(encrypted)
+        return try aes.decrypt(encryptedData.encrypted)
     }
 
     /// Derives a key from a password using PBKDF2.

@@ -1,7 +1,8 @@
 import Foundation
 
 /// Common options for all Restic commands
-@frozen public struct CommonOptions: Sendable {
+@objc
+public class CommonOptions: NSObject {
     /// Path to the repository
     public let repository: String
 
@@ -44,5 +45,6 @@ import Foundation
         self.jsonOutput = jsonOutput
         self.environmentVariables = environmentVariables
         self.arguments = arguments
+        super.init()
     }
 }

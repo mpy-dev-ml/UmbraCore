@@ -171,4 +171,24 @@ public final class MockResticRepository {
             "RESTIC_CACHE_DIR": cachePath
         ]
     }
+
+    /// Generate random snapshots
+    /// - Parameter count: Number of snapshots to generate
+    /// - Returns: Array of snapshot information
+    public func generateRandomSnapshots(count: Int) -> [SnapshotInfo] {
+        var snapshots: [SnapshotInfo] = []
+        for snapshotIndex in 0..<count {
+            let snapshot = SnapshotInfo(
+                id: "snapshot_\(snapshotIndex)",
+                time: Date(),
+                hostname: "test_host",
+                username: "test_user",
+                paths: ["/test/path"],
+                excludePaths: [],
+                tags: []
+            )
+            snapshots.append(snapshot)
+        }
+        return snapshots
+    }
 }

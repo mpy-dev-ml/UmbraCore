@@ -23,6 +23,15 @@ public enum RepositoryError: LocalizedError {
     /// Repository configuration is invalid
     case invalidConfiguration(reason: String)
 
+    /// The repository health check failed
+    case healthCheckFailed(reason: String)
+
+    /// Repository maintenance operation failed
+    case maintenanceFailed(reason: String)
+
+    /// Repository not found
+    case notFound(identifier: String)
+
     public var errorDescription: String? {
         switch self {
         case .initializationFailed(let reason):
@@ -39,6 +48,12 @@ public enum RepositoryError: LocalizedError {
             return "Repository is corrupted: \(reason)"
         case .invalidConfiguration(let reason):
             return "Invalid repository configuration: \(reason)"
+        case .healthCheckFailed(let reason):
+            return "Repository health check failed: \(reason)"
+        case .maintenanceFailed(let reason):
+            return "Repository maintenance operation failed: \(reason)"
+        case .notFound(let identifier):
+            return "Repository not found: \(identifier)"
         }
     }
 
@@ -50,8 +65,12 @@ public enum RepositoryError: LocalizedError {
              .notAccessible(let reason),
              .operationFailed(let reason),
              .corrupted(let reason),
-             .invalidConfiguration(let reason):
+             .invalidConfiguration(let reason),
+             .healthCheckFailed(let reason),
+             .maintenanceFailed(let reason):
             return reason
+        case .notFound(let identifier):
+            return identifier
         }
     }
 
@@ -71,6 +90,12 @@ public enum RepositoryError: LocalizedError {
             return "Run repository repair or restore from backup"
         case .invalidConfiguration:
             return "Check repository configuration settings"
+        case .healthCheckFailed:
+            return "Run repository repair or check for corruption"
+        case .maintenanceFailed:
+            return "Retry the maintenance operation or check logs for more details"
+        case .notFound:
+            return "Check the repository identifier and try again"
         }
     }
 }

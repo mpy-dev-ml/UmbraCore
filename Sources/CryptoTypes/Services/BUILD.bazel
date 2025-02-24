@@ -2,7 +2,6 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "CryptoTypes_Services",
-    testonly = True,
     srcs = glob(["*.swift"]),
     copts = [
         "-target",
@@ -16,5 +15,6 @@ swift_library(
     deps = [
         "//Sources/CryptoTypes/Protocols:CryptoTypes_Protocols",
         "//Sources/CryptoTypes/Types:CryptoTypes_Types",
+        "//Sources/XPC/Core:Sources_XPC_Core",
     ],
 )

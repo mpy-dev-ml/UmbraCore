@@ -101,17 +101,31 @@ public final class SecurityService: SecurityProvider {
         return (result.url, result.isStale)
     }
 
-    /// Perform an operation with security-scoped access
+    /// Execute an operation with security access to a path
     /// - Parameters:
     ///   - path: Path to access
-    ///   - operation: Operation to perform while path is accessible
-    /// - Returns: Result of the operation
+    ///   - operation: Operation to execute
+    /// - Returns: Result of operation
     /// - Throws: SecurityError if access fails
-    public func withSecurityScopedAccess<T>(to path: String, perform operation: () async throws -> T) async throws -> T {
-        guard try await startAccessing(path: path) else {
-            throw SecurityError.accessDenied(reason: "Failed to access: \(path)")
-        }
+    private func withSecurityAccess<T>(
+        path: String,
+        operation: () async throws -> T
+    ) async throws -> T {
+        try await startAccessing(path: path)
         defer { Task { await stopAccessing(path: path) } }
         return try await operation()
+    }
+
+    /// Validate the security boundary for a given URL
+    /// - Parameter url: URL to validate
+    /// - Returns: ValidationResult indicating whether the URL is within the security boundary
+    /// - Throws: SecurityError if validation fails
+    public func validateSecurityBoundary(for url: URL) throws -> ValidationResult {
+        let result = try securityProvider.validateSecurityBoundary(for: url)
+        if !result.isValid {
+            let message = "Security boundary validation failed: \(result.reason)"
+            throw SecurityError.boundaryViolation(message)
+        }
+        return result
     }
 }

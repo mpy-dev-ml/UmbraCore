@@ -1,50 +1,65 @@
 import Foundation
 
 /// XPC service for secure keychain operations
-@objc public protocol KeychainXPCProtocol {
+@objc
+public protocol KeychainXPCProtocol {
     /// Add a new item to the keychain
-    func addItem(account: String,
-                service: String,
-                accessGroup: String?,
-                data: Data,
-                reply: @escaping @Sendable (Error?) -> Void)
+    func addItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping @Sendable (Error?) -> Void
+    )
 
     /// Update an existing item in the keychain
-    func updateItem(account: String,
-                   service: String,
-                   accessGroup: String?,
-                   data: Data,
-                   reply: @escaping @Sendable (Error?) -> Void)
+    func updateItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping @Sendable (Error?) -> Void
+    )
 
     /// Remove an item from the keychain
-    func removeItem(account: String,
-                   service: String,
-                   accessGroup: String?,
-                   reply: @escaping @Sendable (Error?) -> Void)
+    func removeItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Error?) -> Void
+    )
 
     /// Check if an item exists in the keychain
-    func containsItem(account: String,
-                     service: String,
-                     accessGroup: String?,
-                     reply: @escaping @Sendable (Bool, Error?) -> Void)
+    func containsItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Bool, Error?) -> Void
+    )
 
     /// Retrieve an item from the keychain
-    func retrieveItem(account: String,
-                     service: String,
-                     accessGroup: String?,
-                     reply: @escaping @Sendable (Data?, Error?) -> Void)
+    func retrieveItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Data?, Error?) -> Void
+    )
 }
 
 extension KeychainXPCProtocol {
-    func addItem(account: String,
-                service: String,
-                accessGroup: String?,
-                data: Data) async throws {
+    func addItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data
+    ) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            addItem(account: account,
-                   service: service,
-                   accessGroup: accessGroup,
-                   data: data) { error in
+            addItem(
+                account: account,
+                service: service,
+                accessGroup: accessGroup,
+                data: data
+            ) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -54,15 +69,19 @@ extension KeychainXPCProtocol {
         }
     }
 
-    func updateItem(account: String,
-                   service: String,
-                   accessGroup: String?,
-                   data: Data) async throws {
+    func updateItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data
+    ) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            updateItem(account: account,
-                      service: service,
-                      accessGroup: accessGroup,
-                      data: data) { error in
+            updateItem(
+                account: account,
+                service: service,
+                accessGroup: accessGroup,
+                data: data
+            ) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -72,13 +91,17 @@ extension KeychainXPCProtocol {
         }
     }
 
-    func removeItem(account: String,
-                   service: String,
-                   accessGroup: String?) async throws {
+    func removeItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            removeItem(account: account,
-                      service: service,
-                      accessGroup: accessGroup) { error in
+            removeItem(
+                account: account,
+                service: service,
+                accessGroup: accessGroup
+            ) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -88,25 +111,33 @@ extension KeychainXPCProtocol {
         }
     }
 
-    func containsItem(account: String,
-                     service: String,
-                     accessGroup: String?) async -> Bool {
+    func containsItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async -> Bool {
         await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
-            containsItem(account: account,
-                        service: service,
-                        accessGroup: accessGroup) { exists, _ in
+            containsItem(
+                account: account,
+                service: service,
+                accessGroup: accessGroup
+            ) { exists, _ in
                 continuation.resume(returning: exists)
             }
         }
     }
 
-    func retrieveItem(account: String,
-                     service: String,
-                     accessGroup: String?) async throws -> Data {
+    func retrieveItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws -> Data {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-            retrieveItem(account: account,
-                        service: service,
-                        accessGroup: accessGroup) { data, error in
+            retrieveItem(
+                account: account,
+                service: service,
+                accessGroup: accessGroup
+            ) { data, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else if let data = data {

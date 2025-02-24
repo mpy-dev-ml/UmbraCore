@@ -1,6 +1,8 @@
+import Core
 import CryptoSwift
+import CryptoTypes
+import CryptoTypes_Services
 import Foundation
-import Security
 import UmbraXPC
 
 /// Extension to generate random data using SecRandomCopyBytes
@@ -25,44 +27,40 @@ extension Data {
 /// use DefaultCryptoService which provides hardware-backed security.
 @available(macOS 14.0, *)
 @MainActor
-public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
+public final class CryptoXPCService: NSObject, Core.CryptoXPCServiceProtocol {
     private let cryptoQueue = DispatchQueue(label: "com.umbracore.crypto", qos: .userInitiated)
 
     public override init() {
         super.init()
     }
 
+    // MARK: - XPCServiceProtocol
+
+    public func validateConnection() async throws {
+        // Basic validation - could be extended with more checks
+        return
+    }
+
+    public func getServiceVersion() async throws -> String {
+        return "1.0.0"
+    }
+
+    // MARK: - CryptoXPCServiceProtocol
+
     public func encrypt(_ data: Data, key: Data) async throws -> Data {
         try Task.checkCancellation()
         return try await withCheckedThrowingContinuation { continuation in
             cryptoQueue.async {
                 do {
-                    // Generate random IV
-                    let iv = Data.random(count: 12)
-
-                    // Create AES-GCM cipher
-                    let gcm = GCM(iv: iv.bytes, mode: .detached)
-                    let aes = try AES(key: key.bytes, blockMode: gcm)
-
-                    // Encrypt data
-                    let ciphertext = try aes.encrypt(data.bytes)
-
-                    // Get authentication tag
-                    let tag = gcm.authenticationTag ?? []
-
-                    // Combine IV + ciphertext + tag
-                    var result = Data()
-                    result.append(iv)
-                    result.append(Data(ciphertext))
-                    result.append(Data(tag))
-
+                    let result = try self.encryptData(data, key: key)
                     continuation.resume(returning: result)
                 } catch {
-                    continuation.resume(throwing: XPCError.serviceError(
-                        category: XPCError.Category.crypto,
+                    let xpcError = XPCError.serviceError(
+                        category: .crypto,
                         underlying: error,
                         message: "Encryption failed"
-                    ))
+                    )
+                    continuation.resume(throwing: xpcError)
                 }
             }
         }
@@ -70,31 +68,22 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
 
     public func decrypt(_ data: Data, key: Data) async throws -> Data {
         try Task.checkCancellation()
-        guard data.count > 28 else { // 12 (IV) + 16 (minimum tag size)
-            throw XPCError.invalidRequest(message: "Invalid encrypted data format")
+        guard data.count > 28 else {
+            throw XPCError.invalidRequest(message: "Data too short for decryption")
         }
 
         return try await withCheckedThrowingContinuation { continuation in
             cryptoQueue.async {
                 do {
-                    // Split data into IV, ciphertext, and tag
-                    let iv = data.prefix(12)
-                    let tag = data.suffix(16)
-                    let ciphertext = data.dropFirst(12).dropLast(16)
-
-                    // Create AES-GCM cipher
-                    let gcm = GCM(iv: iv.bytes, authenticationTag: tag.bytes, mode: .detached)
-                    let aes = try AES(key: key.bytes, blockMode: gcm)
-
-                    // Decrypt data
-                    let decrypted = try aes.decrypt(ciphertext.bytes)
-                    continuation.resume(returning: Data(decrypted))
+                    let decrypted = try self.decryptData(data, key: key)
+                    continuation.resume(returning: decrypted)
                 } catch {
-                    continuation.resume(throwing: XPCError.serviceError(
-                        category: XPCError.Category.crypto,
+                    let xpcError = XPCError.serviceError(
+                        category: .crypto,
                         underlying: error,
                         message: "Decryption failed"
-                    ))
+                    )
+                    continuation.resume(throwing: xpcError)
                 }
             }
         }
@@ -106,7 +95,16 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
             throw XPCError.invalidRequest(message: "Key size must be 128 or 256 bits")
         }
 
-        return Data.random(count: bits / 8)
+        let bytes = bits / 8
+        var key = [UInt8](repeating: 0, count: bytes)
+        let result = SecRandomCopyBytes(kSecRandomDefault, bytes, &key)
+
+        guard result == errSecSuccess else {
+            let error = NSError(domain: "CryptoXPCService", code: Int(result))
+            throw XPCError.serviceError(category: .crypto, underlying: error, message: "Failed to generate random key")
+        }
+
+        return Data(key)
     }
 
     public func generateSecureRandomKey(length: Int) async throws -> Data {
@@ -115,7 +113,15 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
             throw XPCError.invalidRequest(message: "Key length must be greater than 0")
         }
 
-        return Data.random(count: length)
+        var salt = [UInt8](repeating: 0, count: length)
+        let result = SecRandomCopyBytes(kSecRandomDefault, length, &salt)
+
+        guard result == errSecSuccess else {
+            let error = NSError(domain: "CryptoXPCService", code: Int(result))
+            throw XPCError.serviceError(category: .crypto, underlying: error, message: "Failed to generate random salt")
+        }
+
+        return Data(salt)
     }
 
     public func generateInitializationVector() async throws -> Data {
@@ -128,12 +134,8 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
         guard !identifier.isEmpty else {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
-
-        guard !credential.isEmpty else {
-            throw XPCError.invalidRequest(message: "Credential data cannot be empty")
-        }
-
-        // TODO: Implement actual keychain storage
+        let error = NSError(domain: "CryptoXPCService", code: -1)
+        throw XPCError.serviceError(category: .credentials, underlying: error, message: "Credential storage not implemented")
     }
 
     public func retrieveCredential(identifier: String) async throws -> Data {
@@ -141,13 +143,8 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
         guard !identifier.isEmpty else {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
-
-        // TODO: Implement actual keychain retrieval
-        throw XPCError.serviceError(
-            category: XPCError.Category.credentials,
-            underlying: NSError(domain: "CryptoXPCService", code: -1),
-            message: "Credential retrieval not implemented"
-        )
+        let error = NSError(domain: "CryptoXPCService", code: -1)
+        throw XPCError.serviceError(category: .credentials, underlying: error, message: "Credential retrieval not implemented")
     }
 
     public func deleteCredential(identifier: String) async throws {
@@ -155,7 +152,45 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
         guard !identifier.isEmpty else {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
+        let error = NSError(domain: "CryptoXPCService", code: -1)
+        throw XPCError.serviceError(category: .credentials, underlying: error, message: "Credential deletion not implemented")
+    }
 
-        // TODO: Implement actual keychain deletion
+    private nonisolated func encryptData(_ data: Data, key: Data) throws -> Data {
+        // Generate random IV
+        let iv = Data.random(count: 12)
+
+        // Create AES-GCM cipher
+        let gcm = GCM(iv: iv.bytes, mode: .detached)
+        let aes = try AES(key: key.bytes, blockMode: gcm)
+
+        // Encrypt data
+        let ciphertext = try aes.encrypt(data.bytes)
+
+        // Get authentication tag
+        let tag = gcm.authenticationTag ?? []
+
+        // Combine IV + ciphertext + tag
+        var result = Data()
+        result.append(iv)
+        result.append(Data(ciphertext))
+        result.append(Data(tag))
+
+        return result
+    }
+
+    private nonisolated func decryptData(_ data: Data, key: Data) throws -> Data {
+        // Split data into IV, ciphertext, and tag
+        let iv = data.prefix(12)
+        let tag = data.suffix(16)
+        let ciphertext = data.dropFirst(12).dropLast(16)
+
+        // Create AES-GCM cipher
+        let gcm = GCM(iv: iv.bytes, authenticationTag: tag.bytes, mode: .detached)
+        let aes = try AES(key: key.bytes, blockMode: gcm)
+
+        // Decrypt data
+        let decrypted = try aes.decrypt(ciphertext.bytes)
+        return Data(decrypted)
     }
 }

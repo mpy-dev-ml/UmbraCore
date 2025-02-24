@@ -1,7 +1,8 @@
 import Foundation
 
 /// Base error type for UmbraCore errors
-@frozen public enum CoreError: LocalizedError, Equatable {
+@frozen
+public enum CoreError: LocalizedError, Equatable {
     /// Indicates an operation that requires authentication failed
     case authenticationFailed
     /// Indicates an operation failed due to insufficient permissions

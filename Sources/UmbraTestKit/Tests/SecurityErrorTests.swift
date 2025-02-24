@@ -1,3 +1,4 @@
+import Core
 @testable import SecurityTypes
 import XCTest
 
@@ -15,8 +16,8 @@ final class SecurityErrorTests: XCTestCase {
         let error2 = SecurityError.accessDenied(reason: "Access denied to /test/path")
         let error3 = SecurityError.accessDenied(reason: "Access denied to /different/path")
 
-        XCTAssertEqual(error1, error2)
-        XCTAssertNotEqual(error1, error3)
+        XCTAssertEqual(error1.localizedDescription, error2.localizedDescription)
+        XCTAssertNotEqual(error1.localizedDescription, error3.localizedDescription)
     }
 
     func testErrorMetadata() {

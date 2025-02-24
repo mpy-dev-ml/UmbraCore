@@ -61,7 +61,9 @@ public final class SecurityService: SecurityProvider {
   /// - Returns: A tuple containing the resolved path and whether the bookmark is stale
   /// - Throws: SecurityError if bookmark resolution fails
   public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-    let identifier = String(decoding: bookmarkData, as: UTF8.self)
+    guard let identifier = String(bytes: bookmarkData, encoding: .utf8) else {
+      throw SecurityError.invalidBookmarkData("Could not decode bookmark data as UTF-8")
+    }
     let url = try await encryptedBookmarkService.resolveBookmark(withIdentifier: identifier)
     return (path: url.path, isStale: false)
   }
@@ -71,7 +73,9 @@ public final class SecurityService: SecurityProvider {
   /// - Returns: True if the bookmark can be resolved, false otherwise
   /// - Throws: SecurityError if validation fails
   public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
-    let identifier = String(decoding: bookmarkData, as: UTF8.self)
+    guard let identifier = String(bytes: bookmarkData, encoding: .utf8) else {
+      throw SecurityError.invalidBookmarkData("Could not decode bookmark data as UTF-8")
+    }
     do {
       _ = try await encryptedBookmarkService.resolveBookmark(withIdentifier: identifier)
       return true

@@ -1,7 +1,8 @@
 import Foundation
 
 /// Errors that can occur during cryptographic operations
-@frozen public enum CryptoError: LocalizedError, Sendable {
+@frozen
+public enum CryptoError: LocalizedError, Sendable {
     /// Invalid key length
     case invalidKeyLength(expected: Int, got: Int)
     /// Invalid initialization vector length

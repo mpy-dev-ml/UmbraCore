@@ -2,8 +2,10 @@ import Foundation
 
 final class KeychainXPCConnection {
     private var connection: NSXPCConnection?
-    private let queue = DispatchQueue(label: "com.umbracore.keychain.connection",
-                                    qos: .userInitiated)
+    private let queue = DispatchQueue(
+        label: "com.umbracore.keychain.connection",
+        qos: .userInitiated
+    )
     private let semaphore = DispatchSemaphore(value: 1)
     private let listener: NSXPCListener?
     private var isInvalidated = false
@@ -87,40 +89,50 @@ final class KeychainXPCConnection {
 
 // MARK: - KeychainXPCProtocol Implementation
 extension KeychainXPCConnection: KeychainXPCProtocol {
-    func addItem(account: String,
-                service: String,
-                accessGroup: String?,
-                data: Data,
-                reply: @escaping @Sendable (Error?) -> Void) {
+    func addItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping @Sendable (Error?) -> Void
+    ) {
         // Implementation
     }
 
-    func updateItem(account: String,
-                   service: String,
-                   accessGroup: String?,
-                   data: Data,
-                   reply: @escaping @Sendable (Error?) -> Void) {
+    func updateItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping @Sendable (Error?) -> Void
+    ) {
         // Implementation
     }
 
-    func removeItem(account: String,
-                   service: String,
-                   accessGroup: String?,
-                   reply: @escaping @Sendable (Error?) -> Void) {
+    func removeItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Error?) -> Void
+    ) {
         // Implementation
     }
 
-    func containsItem(account: String,
-                     service: String,
-                     accessGroup: String?,
-                     reply: @escaping @Sendable (Bool, Error?) -> Void) {
+    func containsItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Bool, Error?) -> Void
+    ) {
         // Implementation
     }
 
-    func retrieveItem(account: String,
-                     service: String,
-                     accessGroup: String?,
-                     reply: @escaping @Sendable (Data?, Error?) -> Void) {
+    func retrieveItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Data?, Error?) -> Void
+    ) {
         // Implementation
     }
 }

@@ -60,20 +60,30 @@ public final class ResticCLIHelper {
     /// The logger instance used by this helper.
     @MainActor private let logger: Logger
 
+    /// The delegate for progress reporting.
+    private var progressDelegate: ResticProgressReporting?
+
+    /// The parser for progress reporting.
+    private let progressParser: ProgressParser?
+
     /// Creates a new Restic CLI helper.
     ///
     /// - Parameters:
     ///   - executablePath: The path to the Restic executable. Must be an absolute path to a valid
     ///                     executable.
     ///   - logger: The logger to use for operation tracking. Defaults to the shared logger instance.
+    ///   - progressDelegate: The delegate for progress reporting. Defaults to nil.
     ///
     /// - Throws: `ResticError.invalidConfiguration` if the executable cannot be found or accessed.
     public init(
         executablePath: String,
-        logger: Logger = .shared
+        logger: Logger = .shared,
+        progressDelegate: ResticProgressReporting? = nil
     ) throws {
         self.executablePath = executablePath
         self.logger = logger
+        self.progressDelegate = progressDelegate
+        self.progressParser = progressDelegate.map { ProgressParser(delegate: $0) }
 
         // Validate executable
         let fileManager = FileManager.default
@@ -100,25 +110,33 @@ public final class ResticCLIHelper {
         // Validate the command
         try command.validate()
 
+        // Create pipes for stdout and stderr
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+
         // Create process
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executablePath)
         process.arguments = command.arguments
-
-        // Merge environment variables, ensuring we preserve PATH and don't override with empty values
-        var environment = ProcessInfo.processInfo.environment
-        let commandEnv = command.environment.filter { key, value in
-            // Keep required environment variables even if empty
-            command.requiredEnvironmentVariables.contains(key) || !value.isEmpty
-        }
-        environment.merge(commandEnv) { _, new in new }
-        process.environment = environment
-
-        // Set up pipes for output
-        let outputPipe = Pipe()
-        let errorPipe = Pipe()
+        process.environment = command.environment
         process.standardOutput = outputPipe
         process.standardError = errorPipe
+
+        // Set up async handlers for output
+        let outputHandler = Task {
+            for try await line in outputPipe.fileHandleForReading.bytes.lines {
+                if let progressParser = progressParser {
+                    progressParser.parseLine(line)
+                }
+                await logger.debug(line)
+            }
+        }
+
+        let errorHandler = Task {
+            for try await line in errorPipe.fileHandleForReading.bytes.lines {
+                await logger.error(line)
+            }
+        }
 
         // Log the command
         let commandDescription = command.arguments.joined(separator: " ")
@@ -133,22 +151,18 @@ public final class ResticCLIHelper {
                     ))
                     return
                 }
-                
+
                 do {
                     // Execute the process and wait for completion
                     try process.run()
-                    
-                    // Read output and error data
-                    let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-                    let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-                    
+
                     // Wait for process to complete
                     process.waitUntilExit()
-                    
+
                     // Check the exit code
                     let exitCode = process.terminationStatus
                     if exitCode != 0 {
-                        let errorOutput = String(data: errorData, encoding: .utf8) ?? "Unknown error"
+                        let errorOutput = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? "Unknown error"
                         var error: ResticError
                         switch exitCode {
                         case 1:
@@ -165,21 +179,27 @@ public final class ResticCLIHelper {
                     }
 
                     // Try to parse the output
-                    if let output = String(data: outputData, encoding: .utf8) {
+                    if let output = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) {
                         continuation.resume(returning: output)
                     } else {
-                        continuation.resume(throwing: ResticError.outputParsingFailed(
-                            "Could not decode command output"
-                        ))
+                        continuation.resume(throwing: ResticError.outputParsingFailed("Failed to decode output as UTF-8"))
                     }
                 } catch {
-                    continuation.resume(throwing: ResticError.executionFailed(
-                        error.localizedDescription
-                    ))
+                    continuation.resume(throwing: error)
                 }
             }
 
             DispatchQueue(label: "com.umbracore.restic-cli-helper").async(execute: workItem)
         }
+
+        // Cancel output handlers when done
+        outputHandler.cancel()
+        errorHandler.cancel()
+    }
+
+    /// Set the progress delegate
+    /// - Parameter delegate: The delegate to receive progress updates
+    public func setProgressDelegate(_ delegate: ResticProgressReporting?) {
+        self.progressDelegate = delegate
     }
 }

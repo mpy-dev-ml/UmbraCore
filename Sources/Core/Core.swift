@@ -86,20 +86,36 @@
 /// - Atomic operations
 /// - Value types
 
+import Foundation
+
 /// Core framework initialisation and management
 public enum Core {
     /// Current version of the Core module
     public static let version = "1.0.0"
 
-    /// Initialise the Core framework
-    /// - Throws: CoreError if initialisation fails
-    public static func initialise() async throws {
-        // TODO: Implement core initialisation
+    /// Flag indicating whether the Core framework has been initialised
+    private static var isInitialized = false
+
+    /// Initialises the core framework and its essential services.
+    /// - Throws: CoreError if framework is already initialised or if service initialisation fails
+    public static func initialize() async throws {
+        // Ensure framework is in a valid state for initialisation
+        guard !isInitialized else {
+            throw CoreError.initialisationError("Core framework is already initialised")
+        }
+        do {
+            // Initialize essential services
+            try await ServiceContainer.shared.initialize()
+            // Mark framework as initialized
+            isInitialized = true
+        } catch {
+            throw CoreError.initialisationError("Failed to initialise services: \(error.localizedDescription)")
+        }
     }
 }
 
 /// Errors that can occur during Core operations
-public enum CoreError: LocalizedError {
+public enum CoreError: Foundation.LocalizedError {
     /// Error during initialisation
     case initialisationError(String)
 

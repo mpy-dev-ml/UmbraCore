@@ -6,6 +6,7 @@ enum XPCError: Error {
     case serviceNotResponsive
     case serviceNotAvailable
     case connectionFailed
+    case invalidServiceType
 }
 
 /// Helper class for managing XPC service lifecycle in tests
@@ -76,9 +77,14 @@ final class XPCServiceHelper {
 
             let proxy = connection.remoteObjectProxyWithErrorHandler { error in
                 continuation.resume(throwing: error)
-            } as! any KeychainXPCProtocol
+            }
+            
+            guard let keychainProxy = proxy as? any KeychainXPCProtocol else {
+                continuation.resume(throwing: XPCError.invalidServiceType)
+                return
+            }
 
-            continuation.resume(returning: proxy)
+            continuation.resume(returning: keychainProxy)
         }
     }
 
@@ -116,7 +122,10 @@ final class XPCServiceHelper {
     }
 
     /// Helper function for timeout
-    private static func withTimeout<T>(seconds: TimeInterval, operation: @escaping () async throws -> T) async throws -> T {
+    private static func withTimeout<T>(
+        seconds: TimeInterval,
+        operation: @escaping () async throws -> T
+    ) async throws -> T {
         try await withThrowingTaskGroup(of: T.self) { group in
             // Start the operation
             group.addTask {

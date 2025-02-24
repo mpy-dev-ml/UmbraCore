@@ -24,7 +24,7 @@ final class KeychainServiceTests: XCTestCase {
     }
 
     func testAddItem() async throws {
-        let testData = "test_data".data(using: .utf8)!
+        let testData = Data("test_data".utf8)
         try await proxy.addItem(account: "testAccount",
                               service: "com.umbracore.tests",
                               accessGroup: nil as String?,
@@ -39,7 +39,7 @@ final class KeychainServiceTests: XCTestCase {
 
     func testRemoveItem() async throws {
         // First add an item
-        let testData = "test_data".data(using: .utf8)!
+        let testData = Data("test_data".utf8)
         try await proxy.addItem(account: "testAccount",
                               service: "com.umbracore.tests",
                               accessGroup: nil as String?,
@@ -62,7 +62,7 @@ final class KeychainServiceTests: XCTestCase {
     }
 
     func testDuplicateItem() async throws {
-        let testData = "test_data".data(using: .utf8)!
+        let testData = Data("test_data".utf8)
 
         // Add item first time
         try await proxy.addItem(account: "testAccount",
@@ -83,8 +83,8 @@ final class KeychainServiceTests: XCTestCase {
     }
 
     func testUpdateItem() async throws {
-        let initialData = "initial_data".data(using: .utf8)!
-        let updatedData = "updated_data".data(using: .utf8)!
+        let initialData = Data("initial_data".utf8)
+        let updatedData = Data("updated_data".utf8)
 
         // Add initial item
         try await proxy.addItem(account: "testAccount",

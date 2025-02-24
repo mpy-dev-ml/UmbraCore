@@ -27,15 +27,22 @@ public actor XPCConnectionManager {
 
         // Set up error handling
         let serviceName = self.serviceName // Capture in local variable
-        connection.invalidationHandler = { [weak self] in
-            Task {
-                await self?.handleInvalidation(for: serviceName)
+        let weakSelf = self as XPCConnectionManager? // Capture as optional for weak reference
+        connection.invalidationHandler = { [serviceName] in
+            // Create a new detached task to avoid potential data races
+            Task.detached {
+                if let strongSelf = weakSelf {
+                    await strongSelf.handleInvalidation(for: serviceName)
+                }
             }
         }
 
-        connection.interruptionHandler = { [weak self] in
-            Task {
-                await self?.handleInterruption(for: serviceName)
+        connection.interruptionHandler = { [serviceName] in
+            // Create a new detached task to avoid potential data races
+            Task.detached {
+                if let strongSelf = weakSelf {
+                    await strongSelf.handleInterruption(for: serviceName)
+                }
             }
         }
 
@@ -64,15 +71,22 @@ public actor XPCConnectionManager {
     }
 
     public func invalidateAll() {
-        for connection in connections.values {
+        // Take a snapshot of the connections to avoid mutation during iteration
+        let connectionsToInvalidate = connections
+        connections.removeAll()
+
+        for connection in connectionsToInvalidate.values {
             connection.invalidate()
         }
-        connections.removeAll()
     }
 
     deinit {
         // Note: We can't use async/await in deinit, so we'll invalidate synchronously
-        for connection in connections.values {
+        // Take a snapshot of the connections to avoid mutation during iteration
+        let connectionsToInvalidate = connections
+        connections.removeAll()
+
+        for connection in connectionsToInvalidate.values {
             connection.invalidate()
         }
     }

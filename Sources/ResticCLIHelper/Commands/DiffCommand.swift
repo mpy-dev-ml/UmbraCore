@@ -7,29 +7,29 @@ public final class DiffCommand: ResticCommand, @unchecked Sendable {
     private let snapshotID2: String
     private let path: String?
     private let metadata: Bool
-    
+
     public var commandName: String { "diff" }
-    
+
     public var commandArguments: [String] {
         var args = [String]()
-        
+
         // Add snapshot IDs
         args.append(snapshotID1)
         args.append(snapshotID2)
-        
+
         // Add path if specified
         if let path = path {
             args.append(path)
         }
-        
+
         // Add metadata flag
         if metadata {
             args.append("--metadata")
         }
-        
+
         return args
     }
-    
+
     public init(
         options: CommonOptions,
         snapshotID1: String,
@@ -43,7 +43,7 @@ public final class DiffCommand: ResticCommand, @unchecked Sendable {
         self.path = path
         self.metadata = metadata
     }
-    
+
     public var environment: [String: String] {
         var env = options.environmentVariables
         env["RESTIC_REPOSITORY"] = options.repository
@@ -53,7 +53,7 @@ public final class DiffCommand: ResticCommand, @unchecked Sendable {
         }
         return env
     }
-    
+
     public func validate() throws {
         guard !options.repository.isEmpty else {
             throw ResticError.missingParameter("Repository path must not be empty")

@@ -13,6 +13,10 @@ swift_library(
     module_name = "UmbraCryptoService",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/UmbraXPC:Sources_UmbraXPC",
+        "//Sources/UmbraXPC:UmbraXPC",
+        "//Sources/CryptoTypes:CryptoTypes",
+        "//Sources/XPC/Core:Sources_XPC_Core",
+        "//Sources/CryptoTypes/Services:CryptoTypes_Services",
+        "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
 )

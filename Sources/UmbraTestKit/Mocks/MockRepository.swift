@@ -1,8 +1,8 @@
+import Core
 import Foundation
 import Repositories_Types
+import SecurityTypes
 import SecurityTypes_Protocols
-import SecurityTypes_Types
-import UmbraSecurity
 
 /// A mock repository implementation for testing that handles sandbox security
 public actor MockRepository: Repository {
@@ -13,151 +13,90 @@ public actor MockRepository: Repository {
     private let securityProvider: SecurityProvider
     private var isLocked: Bool = false
     private var mockStats: RepositoryStats
-    private var shouldFailNextOperation: Bool = false
-    private var error: RepositoryError?
-    private var hasSecurityAccess: Bool = false
 
     public init(
-        identifier: String = "mock-repo",
+        identifier: String = UUID().uuidString,
         location: URL = FileManager.default.temporaryDirectory.appendingPathComponent("mock-repo"),
         initialState: RepositoryState = .uninitialized,
-        securityProvider: SecurityProvider = SecurityService.shared
+        securityProvider: SecurityProvider = MockSecurityProvider()
     ) {
         self.identifier = identifier
         self.location = location
         self.state = initialState
         self.securityProvider = securityProvider
         self.mockStats = RepositoryStats(
-            totalSize: 1_024 * 1_024, // 1MB
-            snapshotCount: 5,
-            deduplicationSavings: 512 * 1_024, // 512KB
+            totalSize: 0,
+            snapshotCount: 0,
+            deduplicationSavings: 0,
             lastModified: Date(),
-            compressionRatio: 0.7
+            compressionRatio: 1.0
         )
     }
 
-    // MARK: - Security Access Management
-
-    /// Ensure security-scoped access to the repository location
-    /// - Throws: RepositoryError if access cannot be obtained
-    private func ensureSecurityAccess() async throws {
-        guard !hasSecurityAccess else { return }
-
-        do {
-            hasSecurityAccess = try await securityProvider.startAccessing(path: location.path)
-            if !hasSecurityAccess {
-                throw RepositoryError.notAccessible(reason: "Failed to obtain security-scoped access")
-            }
-        } catch {
-            throw RepositoryError.notAccessible(reason: "Security access error: \(error.localizedDescription)")
-        }
-    }
-
-    /// Release security-scoped access to the repository location
-    private func releaseSecurityAccess() async {
-        if hasSecurityAccess {
-            await securityProvider.stopAccessing(path: location.path)
-            hasSecurityAccess = false
-        }
-    }
-
-    // MARK: - Test Control Methods
-
-    /// Set the repository to fail the next operation
-    /// - Parameter error: The error to throw, or nil to use a default error
-    public func setFailNextOperation(_ error: RepositoryError? = nil) {
-        shouldFailNextOperation = true
-        self.error = error
-    }
-
-    /// Update the mock statistics
-    /// - Parameter stats: New repository statistics
-    public func updateStats(_ stats: RepositoryStats) {
-        self.mockStats = stats
-    }
-
-    // MARK: - Repository Protocol Implementation
-
     public func initialize() async throws {
-        if shouldFailNextOperation {
-            shouldFailNextOperation = false
-            throw error ?? RepositoryError.initializationFailed(reason: "Mock initialization failure")
+        guard try await securityProvider.startAccessing(path: location.path) else {
+            throw SecurityTypes.SecurityError.accessError("Failed to access repository at \(location.path)")
         }
-
-        try await ensureSecurityAccess()
-
-        // Simulate repository initialization
-        try await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-
         state = .ready
     }
 
     public func validate() async throws -> Bool {
-        if shouldFailNextOperation {
-            shouldFailNextOperation = false
-            throw error ?? RepositoryError.validationFailed(reason: "Mock validation failure")
-        }
-
-        try await ensureSecurityAccess()
-        return state == .ready
+        return state == .ready && !isLocked
     }
 
     public func lock() async throws {
-        if shouldFailNextOperation {
-            shouldFailNextOperation = false
-            throw error ?? RepositoryError.locked(reason: "Mock lock failure")
+        guard state == .ready else {
+            throw RepositoryError.operationFailed(reason: "Repository must be ready to lock")
         }
-
-        try await ensureSecurityAccess()
-
-        if isLocked {
+        guard !isLocked else {
             throw RepositoryError.locked(reason: "Repository is already locked")
         }
-
         isLocked = true
         state = .locked
     }
 
     public func unlock() async throws {
-        if shouldFailNextOperation {
-            shouldFailNextOperation = false
-            throw error ?? RepositoryError.operationFailed(reason: "Mock unlock failure")
+        guard state == .locked else {
+            throw RepositoryError.operationFailed(reason: "Repository must be locked to unlock")
         }
-
-        try await ensureSecurityAccess()
-
-        if !isLocked {
-            throw RepositoryError.operationFailed(reason: "Repository is not locked")
-        }
-
         isLocked = false
         state = .ready
     }
 
     public func isAccessible() async -> Bool {
-        do {
-            try await ensureSecurityAccess()
-            return state == .ready || state == .locked
-        } catch {
-            return false
-        }
+        state == .ready && !isLocked
     }
 
     public func getStats() async throws -> RepositoryStats {
-        if shouldFailNextOperation {
-            shouldFailNextOperation = false
-            throw error ?? RepositoryError.operationFailed(reason: "Mock stats retrieval failure")
+        guard state == .ready else {
+            throw RepositoryError.operationFailed(reason: "Repository must be ready to get stats")
         }
-
-        try await ensureSecurityAccess()
         return mockStats
     }
 
-    // MARK: - Cleanup
-
-    deinit {
-        Task {
-            await releaseSecurityAccess()
+    public func check(readData: Bool, checkUnused: Bool) async throws {
+        guard state == .ready else {
+            throw RepositoryError.operationFailed(reason: "Repository must be ready to check")
         }
+        // Mock implementation - just verify state
+    }
+
+    public func prune() async throws {
+        guard state == .ready else {
+            throw RepositoryError.operationFailed(reason: "Repository must be ready to prune")
+        }
+        // Mock implementation - just verify state
+    }
+
+    public func rebuildIndex() async throws {
+        guard state == .ready else {
+            throw RepositoryError.operationFailed(reason: "Repository must be ready to rebuild index")
+        }
+        // Mock implementation - just verify state
+    }
+
+    // Test helper methods
+    public func setStats(_ stats: RepositoryStats) {
+        self.mockStats = stats
     }
 }

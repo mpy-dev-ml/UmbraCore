@@ -1,57 +1,46 @@
+import Core
 import Foundation
 import SecurityTypes
+import SecurityTypes_Protocols
 
 /// Mock implementation of URL security provider
 public actor MockURLProvider: SecurityProvider {
     private var bookmarks: [String: [UInt8]]
     private var accessedPaths: Set<String>
 
-    /// Initialize a new mock URL provider
     public init() {
         self.bookmarks = [:]
         self.accessedPaths = []
     }
 
     public func createBookmark(forPath path: String) async throws -> [UInt8] {
-        let mockBookmark = "MockBookmark:\(path)".data(using: .utf8)!.map { $0 }
-        return mockBookmark
+        guard !bookmarks.keys.contains(path) else {
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark already exists for path: \(path)")
+        }
+        let bookmark = Array("mock-bookmark-\(path)".utf8)
+        bookmarks[path] = bookmark
+        return bookmark
     }
 
-    public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        let mockBookmark = String(decoding: bookmarkData, as: UTF8.self)
-        guard mockBookmark.hasPrefix("MockBookmark:") else {
-            throw SecurityError.bookmarkResolutionFailed(reason: "Invalid bookmark format")
+    public func resolveBookmark(_ bookmark: [UInt8]) async throws -> (path: String, isStale: Bool) {
+        let bookmarkString = String(bytes: bookmark, encoding: .utf8) ?? ""
+        guard bookmarkString.hasPrefix("mock-bookmark-") else {
+            throw SecurityTypes.SecurityError.bookmarkError("Invalid bookmark format")
         }
-        let path = String(mockBookmark.dropFirst("MockBookmark:".count))
+        let path = String(bookmarkString.dropFirst("mock-bookmark-".count))
+        guard bookmarks[path] == bookmark else {
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found for path: \(path)")
+        }
+        accessedPaths.insert(path)
         return (path: path, isStale: false)
     }
 
-    public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
-        bookmarks[identifier] = bookmarkData
-    }
-
-    public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
-        guard let bookmarkData = bookmarks[identifier] else {
-            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found for identifier: \(identifier)")
-        }
-        return bookmarkData
-    }
-
-    public func deleteBookmark(withIdentifier identifier: String) async throws {
-        guard bookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found for identifier: \(identifier)")
-        }
-    }
-
     public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
-        let mockBookmark = String(decoding: bookmarkData, as: UTF8.self)
-        return mockBookmark.hasPrefix("MockBookmark:")
+        let bookmarkString = String(bytes: bookmarkData, encoding: .utf8) ?? ""
+        return bookmarkString.hasPrefix("mock-bookmark-")
     }
 
     public func startAccessing(path: String) async throws -> Bool {
-        if accessedPaths.contains(path) {
-            throw SecurityError.accessDenied(reason: "Path already being accessed: \(path)")
-        }
         accessedPaths.insert(path)
         return true
     }
@@ -60,26 +49,47 @@ public actor MockURLProvider: SecurityProvider {
         accessedPaths.remove(path)
     }
 
-    public func stopAccessingAllResources() async {
-        accessedPaths.removeAll()
-    }
-
     public func isAccessing(path: String) async -> Bool {
         accessedPaths.contains(path)
     }
 
-    public func getAccessedPaths() async -> Set<String> {
-        accessedPaths
+    public func stopAccessingAllResources() async {
+        accessedPaths.removeAll()
     }
 
-    public func withSecurityScopedAccess<T: Sendable>(to path: String, perform operation: () async throws -> T) async throws -> T {
-        _ = try await startAccessing(path: path)
+    public func withSecurityScopedAccess<T: Sendable>(
+        to path: String,
+        perform operation: @Sendable () async throws -> T
+    ) async throws -> T {
+        let granted = try await startAccessing(path: path)
+        guard granted else {
+            throw SecurityTypes.SecurityError.accessError("Failed to access \(path)")
+        }
         defer { Task { await stopAccessing(path: path) } }
         return try await operation()
     }
 
-    public func reset() async {
-        bookmarks.removeAll()
-        accessedPaths.removeAll()
+    // MARK: - Bookmark Storage
+
+    public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
+        guard let bookmarkData = bookmarks[identifier] else {
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
+        }
+        return bookmarkData
+    }
+
+    public func deleteBookmark(withIdentifier identifier: String) async throws {
+        guard bookmarks.removeValue(forKey: identifier) != nil else {
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
+        }
+    }
+
+    public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
+        bookmarks[identifier] = bookmarkData
+    }
+
+    // Test helper methods
+    public func getAccessedPaths() async -> Set<String> {
+        accessedPaths
     }
 }

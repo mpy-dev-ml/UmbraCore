@@ -22,7 +22,8 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
 }
 
 /// Protocol defining operations for secure keychain access
-@objc public protocol KeychainServiceXPCProtocol {
+@objc
+public protocol KeychainServiceXPCProtocol {
     /// Add a new item to the keychain
     /// - Parameters:
     ///   - data: Data to store
@@ -32,12 +33,14 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
     ///   - accessibility: Keychain accessibility
     ///   - flags: Access control flags
     /// - Throws: KeychainError if operation fails
-    func addItem(_ data: Data,
-                 account: String,
-                 service: String,
-                 accessGroup: String?,
-                 accessibility: String,
-                 flags: UInt) async throws
+    func addItem(
+        _ data: Data,
+        account: String,
+        service: String,
+        accessGroup: String?,
+        accessibility: String,
+        flags: UInt
+    ) async throws
 
     /// Update an existing keychain item
     /// - Parameters:
@@ -46,10 +49,12 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
     ///   - service: Service identifier
     ///   - accessGroup: Optional access group
     /// - Throws: KeychainError if operation fails
-    func updateItem(_ data: Data,
-                   account: String,
-                   service: String,
-                   accessGroup: String?) async throws
+    func updateItem(
+        _ data: Data,
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws
 
     /// Delete an item from the keychain
     /// - Parameters:
@@ -57,9 +62,11 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
     ///   - service: Service identifier
     ///   - accessGroup: Optional access group
     /// - Throws: KeychainError if operation fails
-    func deleteItem(account: String,
-                   service: String,
-                   accessGroup: String?) async throws
+    func deleteItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws
 
     /// Read an item from the keychain
     /// - Parameters:
@@ -68,9 +75,11 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
     ///   - accessGroup: Optional access group
     /// - Returns: Stored data
     /// - Throws: KeychainError if operation fails
-    func readItem(account: String,
-                 service: String,
-                 accessGroup: String?) async throws -> Data
+    func readItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws -> Data
 
     /// Check if an item exists in the keychain
     /// - Parameters:
@@ -78,9 +87,11 @@ public struct KeychainAccessOptions: OptionSet, Sendable {
     ///   - service: Service identifier
     ///   - accessGroup: Optional access group
     /// - Returns: True if item exists
-    func containsItem(account: String,
-                     service: String,
-                     accessGroup: String?) async -> Bool
+    func containsItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async -> Bool
 }
 
 /// Protocol for actor-based keychain service
@@ -94,12 +105,14 @@ public protocol KeychainServiceProtocol: Actor {
     ///   - accessibility: Keychain accessibility
     ///   - flags: Access control flags
     /// - Throws: KeychainError if operation fails
-    func addItem(_ data: Data,
-                 account: String,
-                 service: String,
-                 accessGroup: String?,
-                 accessibility: CFString,
-                 flags: SecAccessControlCreateFlags) async throws
+    func addItem(
+        _ data: Data,
+        account: String,
+        service: String,
+        accessGroup: String?,
+        accessibility: CFString,
+        flags: SecAccessControlCreateFlags
+    ) async throws
 
     /// Update an existing keychain item
     /// - Parameters:
@@ -108,10 +121,12 @@ public protocol KeychainServiceProtocol: Actor {
     ///   - service: Service identifier
     ///   - accessGroup: Optional access group
     /// - Throws: KeychainError if operation fails
-    func updateItem(_ data: Data,
-                   account: String,
-                   service: String,
-                   accessGroup: String?) async throws
+    func updateItem(
+        _ data: Data,
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws
 
     /// Delete an item from the keychain
     /// - Parameters:
@@ -119,9 +134,11 @@ public protocol KeychainServiceProtocol: Actor {
     ///   - service: Service identifier
     ///   - accessGroup: Optional access group
     /// - Throws: KeychainError if operation fails
-    func deleteItem(account: String,
-                   service: String,
-                   accessGroup: String?) async throws
+    func deleteItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws
 
     /// Read an item from the keychain
     /// - Parameters:
@@ -130,9 +147,11 @@ public protocol KeychainServiceProtocol: Actor {
     ///   - accessGroup: Optional access group
     /// - Returns: Stored data
     /// - Throws: KeychainError if operation fails
-    func readItem(account: String,
-                 service: String,
-                 accessGroup: String?) async throws -> Data
+    func readItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws -> Data
 
     /// Check if an item exists in the keychain
     /// - Parameters:
@@ -140,7 +159,9 @@ public protocol KeychainServiceProtocol: Actor {
     ///   - service: Service identifier
     ///   - accessGroup: Optional access group
     /// - Returns: True if item exists
-    func containsItem(account: String,
-                     service: String,
-                     accessGroup: String?) async -> Bool
+    func containsItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async -> Bool
 }

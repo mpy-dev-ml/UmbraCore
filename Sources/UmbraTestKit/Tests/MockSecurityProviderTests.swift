@@ -1,4 +1,6 @@
+import Core
 @testable import SecurityTypes
+import SecurityTypes_Protocols
 import XCTest
 
 /// A mock security provider for testing
@@ -12,21 +14,20 @@ actor MockSecurityProvider: SecurityProvider {
 
     func createBookmark(forPath path: String) async throws -> [UInt8] {
         if shouldFailBookmarkCreation {
-            throw SecurityError.bookmarkCreationFailed(reason: "Mock failure")
+            throw SecurityTypes.SecurityError.bookmarkError("Mock failure")
         }
-        let bookmarkData = "mock_bookmark_\(path)".data(using: .utf8)!
+        let bookmarkData = Data("mock_bookmark_\(path)".utf8)
         bookmarks[path] = bookmarkData
         return Array(bookmarkData)
     }
 
     func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        let data = Data(bookmarkData)
-        guard let mockPath = String(data: data, encoding: .utf8) else {
-            throw SecurityError.bookmarkResolutionFailed(reason: "Invalid bookmark data")
+        guard let mockPath = String(data: Data(bookmarkData), encoding: .utf8) else {
+            throw SecurityTypes.SecurityError.invalidData(reason: "Invalid bookmark data")
         }
         let path = mockPath.replacingOccurrences(of: "mock_bookmark_", with: "")
         if shouldFailAccess {
-            throw SecurityError.accessDenied(reason: "Mock access denied")
+            throw SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied")
         }
         accessCount[path, default: 0] += 1
         return (path: path, isStale: false)
@@ -34,7 +35,7 @@ actor MockSecurityProvider: SecurityProvider {
 
     func startAccessing(path: String) async throws -> Bool {
         if shouldFailAccess {
-            throw SecurityError.accessDenied(reason: "Mock access denied")
+            throw SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied")
         }
         accessedPaths.insert(path)
         return true
@@ -53,7 +54,7 @@ actor MockSecurityProvider: SecurityProvider {
         perform operation: @Sendable () async throws -> T
     ) async throws -> T {
         if shouldFailAccess {
-            throw SecurityError.accessDenied(reason: "Mock access denied")
+            throw SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied")
         }
         accessedPaths.insert(path)
         defer { accessedPaths.remove(path) }
@@ -65,8 +66,7 @@ actor MockSecurityProvider: SecurityProvider {
     }
 
     func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
-        let data = Data(bookmarkData)
-        guard let mockPath = String(data: data, encoding: .utf8) else {
+        guard let mockPath = String(data: Data(bookmarkData), encoding: .utf8) else {
             return false
         }
         return mockPath.hasPrefix("mock_bookmark_")
@@ -78,24 +78,24 @@ actor MockSecurityProvider: SecurityProvider {
 
     func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
         if shouldFailAccess {
-            throw SecurityError.storageError(reason: "Mock storage failure")
+            throw SecurityTypes.SecurityError.accessError("Mock storage failure")
         }
         storedBookmarks[identifier] = bookmarkData
     }
 
     func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
         guard let bookmark = storedBookmarks[identifier] else {
-            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found: \(identifier)")
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found: \(identifier)")
         }
         return bookmark
     }
 
     func deleteBookmark(withIdentifier identifier: String) async throws {
         if shouldFailAccess {
-            throw SecurityError.storageError(reason: "Mock storage failure")
+            throw SecurityTypes.SecurityError.accessError("Mock storage failure")
         }
         guard storedBookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found: \(identifier)")
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found: \(identifier)")
         }
     }
 
@@ -142,8 +142,8 @@ final class MockSecurityProviderTests: XCTestCase {
         do {
             _ = try await provider.createBookmark(forPath: testPath)
             XCTFail("Expected bookmark creation to fail")
-        } catch let error as SecurityError {
-            XCTAssertEqual(error, SecurityError.bookmarkCreationFailed(reason: "Mock failure"))
+        } catch let error as SecurityTypes.SecurityError {
+            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Mock failure").errorDescription)
         }
     }
 
@@ -156,8 +156,8 @@ final class MockSecurityProviderTests: XCTestCase {
         do {
             _ = try await provider.resolveBookmark(bookmark)
             XCTFail("Expected access to fail")
-        } catch let error as SecurityError {
-            XCTAssertEqual(error, SecurityError.accessDenied(reason: "Mock access denied"))
+        } catch let error as SecurityTypes.SecurityError {
+            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied").errorDescription)
         }
     }
 
@@ -207,7 +207,7 @@ final class MockSecurityProviderTests: XCTestCase {
         let isValid = try await provider.validateBookmark(bookmark)
         XCTAssertTrue(isValid)
 
-        let invalidBookmark: [UInt8] = Array("invalid_bookmark".data(using: .utf8)!)
+        let invalidBookmark = Array("invalid_bookmark".data(using: .utf8)!)
         let isInvalid = try await provider.validateBookmark(invalidBookmark)
         XCTAssertFalse(isInvalid)
     }
@@ -229,8 +229,76 @@ final class MockSecurityProviderTests: XCTestCase {
         do {
             _ = try await provider.loadBookmark(withIdentifier: "test")
             XCTFail("Expected bookmark not found error")
-        } catch let error as SecurityError {
-            XCTAssertEqual(error, SecurityError.bookmarkNotFound(reason: "Bookmark not found: test"))
+        } catch let error as SecurityTypes.SecurityError {
+            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Bookmark not found: test").errorDescription)
         }
+    }
+
+    func testLoadNonExistentBookmark() async throws {
+        do {
+            _ = try await provider.loadBookmark(withIdentifier: "test")
+            XCTFail("Expected bookmark not found error")
+        } catch let error as SecurityTypes.SecurityError {
+            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Bookmark not found: test").errorDescription)
+        }
+    }
+
+    func testEncryptDecryptData() async throws {
+        let testData = "Test data for encryption"
+        guard let data = Data(testData.utf8) else {
+            XCTFail("Failed to convert string to data")
+            return
+        }
+        let encryptedData = try await provider.encrypt(data: data)
+        let decryptedData = try await provider.decrypt(data: encryptedData)
+        guard let decryptedString = String(data: decryptedData, encoding: .utf8) else {
+            XCTFail("Failed to convert data to string")
+            return
+        }
+        XCTAssertEqual(decryptedString, testData)
+    }
+
+    func testEncryptDecryptLargeData() async throws {
+        let largeString = String(repeating: "Test data for encryption ", count: 1000)
+        guard let data = Data(largeString.utf8) else {
+            XCTFail("Failed to convert string to data")
+            return
+        }
+        let encryptedData = try await provider.encrypt(data: data)
+        let decryptedData = try await provider.decrypt(data: encryptedData)
+        guard let decryptedString = String(data: decryptedData, encoding: .utf8) else {
+            XCTFail("Failed to convert data to string")
+            return
+        }
+        XCTAssertEqual(decryptedString, largeString)
+    }
+
+    func testEncryptDecrypt() async throws {
+        let provider = MockSecurityProvider()
+        let testData = "Test data".data(using: .utf8)!
+        let key = "test key"
+
+        // Test encryption
+        let encrypted = try await provider.encrypt(data: testData, key: key)
+        XCTAssertNotEqual(encrypted, testData, "Encrypted data should be different from original")
+
+        // Test decryption
+        let decrypted = try await provider.decrypt(data: encrypted, key: key)
+        XCTAssertEqual(decrypted, testData, "Decrypted data should match original")
+    }
+
+    func testEncryptDecryptWithDifferentKeys() async throws {
+        let provider = MockSecurityProvider()
+        let testData = "Test data".data(using: .utf8)!
+
+        // Test with different keys
+        let key1 = "key1"
+        let key2 = "key2"
+
+        let encrypted = try await provider.encrypt(data: testData, key: key1)
+        XCTAssertThrowsError(
+            try provider.decrypt(data: encrypted, key: key2),
+            "Decryption with wrong key should fail"
+        )
     }
 }

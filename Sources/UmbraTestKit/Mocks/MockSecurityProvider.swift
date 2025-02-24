@@ -1,32 +1,43 @@
+import Core
 import Foundation
 import SecurityTypes
+import SecurityTypes_Protocols
 
+/// Mock implementation of security provider for testing
 public actor MockSecurityProvider: SecurityProvider {
-    private var permissions: [String: FilePermission] = [:]
-    private var bookmarks: [String: [UInt8]] = [:]
-    private var accessedPaths: Set<String> = []
+    private var bookmarks: [String: [UInt8]]
+    private var accessedPaths: Set<String>
 
-    public init() {}
-
-    public func checkPermission(for path: String) -> FilePermission {
-        return permissions[path] ?? .readWrite
-    }
-
-    public func setPermission(_ permission: FilePermission, for path: String) {
-        permissions[path] = permission
+    public init() {
+        self.bookmarks = [:]
+        self.accessedPaths = []
     }
 
     public func createBookmark(forPath path: String) async throws -> [UInt8] {
-        // Mock implementation - just encode the path
-        return Array(path.utf8)
+        guard !bookmarks.keys.contains(path) else {
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark already exists for path: \(path)")
+        }
+        let bookmark = Array("mock-bookmark-\(path)".utf8)
+        bookmarks[path] = bookmark
+        return bookmark
     }
 
-    public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        // Mock implementation - just decode the path
-        guard let path = String(bytes: bookmarkData, encoding: .utf8) else {
-            throw SecurityError.bookmarkResolutionFailed(reason: "Invalid bookmark data")
+    public func resolveBookmark(_ bookmark: [UInt8]) async throws -> (path: String, isStale: Bool) {
+        let bookmarkString = String(bytes: bookmark, encoding: .utf8) ?? ""
+        guard bookmarkString.hasPrefix("mock-bookmark-") else {
+            throw SecurityTypes.SecurityError.bookmarkError("Invalid bookmark format")
         }
+        let path = String(bookmarkString.dropFirst("mock-bookmark-".count))
+        guard bookmarks[path] == bookmark else {
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found for path: \(path)")
+        }
+        accessedPaths.insert(path)
         return (path: path, isStale: false)
+    }
+
+    public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
+        let bookmarkString = String(bytes: bookmarkData, encoding: .utf8) ?? ""
+        return bookmarkString.hasPrefix("mock-bookmark-")
     }
 
     public func startAccessing(path: String) async throws -> Bool {
@@ -38,56 +49,47 @@ public actor MockSecurityProvider: SecurityProvider {
         accessedPaths.remove(path)
     }
 
+    public func isAccessing(path: String) async -> Bool {
+        accessedPaths.contains(path)
+    }
+
     public func stopAccessingAllResources() async {
         accessedPaths.removeAll()
     }
 
-    public func withSecurityScopedAccess<T: Sendable>(to path: String, perform operation: () async throws -> T) async throws -> T {
-        let success = try await startAccessing(path: path)
-        guard success else {
-            throw SecurityError.accessDenied(reason: "Access denied to \(path)")
+    public func withSecurityScopedAccess<T: Sendable>(
+        to path: String,
+        perform operation: @Sendable () async throws -> T
+    ) async throws -> T {
+        let granted = try await startAccessing(path: path)
+        guard granted else {
+            throw SecurityTypes.SecurityError.accessError("Failed to access \(path)")
         }
-        defer {
-            Task {
-                try? await stopAccessing(path: path)
-            }
-        }
+        defer { Task { await stopAccessing(path: path) } }
         return try await operation()
     }
+
+    // MARK: - Bookmark Storage
 
     public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
         bookmarks[identifier] = bookmarkData
     }
 
     public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
-        guard let bookmark = bookmarks[identifier] else {
-            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found for \(identifier)")
+        guard let bookmarkData = bookmarks[identifier] else {
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
         }
-        return bookmark
+        return bookmarkData
     }
 
     public func deleteBookmark(withIdentifier identifier: String) async throws {
         guard bookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found for \(identifier)")
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
         }
     }
 
-    public func isAccessing(path: String) async -> Bool {
-        return accessedPaths.contains(path)
-    }
-
-    public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
-        // Mock implementation - just check if it can be decoded as a string
-        return String(bytes: bookmarkData, encoding: .utf8) != nil
-    }
-
+    // Test helper methods
     public func getAccessedPaths() async -> Set<String> {
-        return accessedPaths
-    }
-
-    public func reset() async {
-        permissions.removeAll()
-        bookmarks.removeAll()
-        accessedPaths.removeAll()
+        accessedPaths
     }
 }

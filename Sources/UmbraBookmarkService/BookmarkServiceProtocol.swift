@@ -1,14 +1,15 @@
 import Foundation
 
 /// Protocol defining operations for security-scoped bookmark management
-@objc @preconcurrency public protocol BookmarkServiceProtocol {
+@objc
+public protocol BookmarkServiceProtocol {
     /// Create a security-scoped bookmark for a file URL
     /// - Parameters:
     ///   - url: The file URL to create a bookmark for
     ///   - options: Options for bookmark creation
     /// - Returns: The bookmark data
     /// - Throws: BookmarkError if creation fails
-    func createBookmark(for url: URL, options: URL.BookmarkCreationOptions) async throws -> Data
+    @preconcurrency func createBookmark(for url: URL, options: URL.BookmarkCreationOptions) async throws -> Data
 
     /// Resolve a security-scoped bookmark to a URL
     /// - Parameters:
@@ -16,19 +17,19 @@ import Foundation
     ///   - options: Options for bookmark resolution
     /// - Returns: The resolved URL and whether the bookmark is stale
     /// - Throws: BookmarkError if resolution fails
-    func resolveBookmark(_ bookmarkData: Data, options: URL.BookmarkResolutionOptions) async throws -> (URL, Bool)
+    @preconcurrency func resolveBookmark(_ bookmarkData: Data, options: URL.BookmarkResolutionOptions) async throws -> (URL, Bool)
 
     /// Start accessing a security-scoped resource
     /// - Parameter url: The URL of the resource to access
     /// - Throws: BookmarkError if access cannot be started
-    func startAccessing(_ url: URL) async throws
+    @preconcurrency func startAccessing(_ url: URL) async throws
 
     /// Stop accessing a security-scoped resource
     /// - Parameter url: The URL of the resource to stop accessing
-    func stopAccessing(_ url: URL) async
+    @preconcurrency func stopAccessing(_ url: URL) async
 
     /// Check if a URL is currently being accessed
     /// - Parameter url: The URL to check
     /// - Returns: true if the URL is being accessed, false otherwise
-    func isAccessing(_ url: URL) async -> Bool
+    @preconcurrency func isAccessing(_ url: URL) async -> Bool
 }

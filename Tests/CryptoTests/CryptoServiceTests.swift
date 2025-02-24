@@ -12,14 +12,14 @@ final class CryptoServiceTests: XCTestCase {
     }
 
     func testEncryptionDecryption() async throws {
-        let originalData = "Test data for encryption".data(using: .utf8)!
+        let originalData = Data("Test data for encryption".utf8)
         let key = try await cryptoService.generateSecureRandomKey(length: config.keyLength / 8)
-        let iv = try await cryptoService.generateSecureRandomKey(length: 12) // GCM requires 12 bytes
+        let initVector = try await cryptoService.generateSecureRandomKey(length: 12) // GCM requires 12 bytes
 
-        let encrypted = try await cryptoService.encrypt(originalData, using: key, iv: iv)
+        let encrypted = try await cryptoService.encrypt(originalData, using: key, iv: initVector)
         XCTAssertNotEqual(encrypted, originalData, "Encrypted data should be different from original")
 
-        let decrypted = try await cryptoService.decrypt(encrypted, using: key, iv: iv)
+        let decrypted = try await cryptoService.decrypt(encrypted, using: key, iv: initVector)
         XCTAssertEqual(decrypted, originalData, "Decrypted data should match original")
     }
 
@@ -32,7 +32,11 @@ final class CryptoServiceTests: XCTestCase {
 
         XCTAssertEqual(key1, key2, "Same password and salt should produce same key")
 
-        let differentKey = try await cryptoService.deriveKey(from: "different_password", salt: salt, iterations: iterations)
+        let differentKey = try await cryptoService.deriveKey(
+            from: "different_password",
+            salt: salt,
+            iterations: iterations
+        )
         XCTAssertNotEqual(key1, differentKey, "Different passwords should produce different keys")
     }
 
@@ -47,7 +51,7 @@ final class CryptoServiceTests: XCTestCase {
     }
 
     func testHMAC() async throws {
-        let data = "Test data for HMAC".data(using: .utf8)!
+        let data = Data("Test data for HMAC".utf8)
         let key = try await cryptoService.generateSecureRandomKey(length: 32)
 
         let hmac1 = try await cryptoService.generateHMAC(for: data, using: key)
@@ -55,18 +59,18 @@ final class CryptoServiceTests: XCTestCase {
 
         XCTAssertEqual(hmac1, hmac2, "Same data and key should produce same HMAC")
 
-        let differentData = "Different data".data(using: .utf8)!
+        let differentData = Data("Different data".utf8)
         let hmac3 = try await cryptoService.generateHMAC(for: differentData, using: key)
         XCTAssertNotEqual(hmac1, hmac3, "Different data should produce different HMAC")
     }
 
     func testInvalidKeyLength() async throws {
-        let data = "Test data".data(using: .utf8)!
-        let invalidKey = "short".data(using: .utf8)!
-        let iv = try await cryptoService.generateSecureRandomKey(length: 12) // GCM requires 12 bytes
+        let data = Data("Test data".utf8)
+        let invalidKey = Data("short".utf8)
+        let initVector = try await cryptoService.generateSecureRandomKey(length: 12) // GCM requires 12 bytes
 
         do {
-            _ = try await cryptoService.encrypt(data, using: invalidKey, iv: iv)
+            _ = try await cryptoService.encrypt(data, using: invalidKey, iv: initVector)
             XCTFail("Expected error to be thrown")
         } catch let error as CryptoError {
             guard case .invalidKeyLength = error else {

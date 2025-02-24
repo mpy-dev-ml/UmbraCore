@@ -14,6 +14,6 @@ swift_test(
     ],
     deps = [
         "//Sources/UmbraKeychainService:Sources_UmbraKeychainService",
-        "//Sources/UmbraTestKit",
+        "//Sources/UmbraTestKit:Sources_UmbraTestKit",
     ],
 )

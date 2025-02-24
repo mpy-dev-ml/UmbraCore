@@ -5,10 +5,10 @@ public enum TestUtilities {
         in basePath: String,
         fileCount: Int
     ) throws -> String {
-        let fm = FileManager.default
+        let fileManager = FileManager.default
 
         // Create base directory if it doesn't exist
-        try fm.createDirectory(
+        try fileManager.createDirectory(
             atPath: basePath,
             withIntermediateDirectories: true
         )
@@ -18,9 +18,9 @@ public enum TestUtilities {
         let imagesDirPath = (mediaDirPath as NSString).appendingPathComponent("images")
         let videosDirPath = (mediaDirPath as NSString).appendingPathComponent("videos")
 
-        try fm.createDirectory(atPath: mediaDirPath, withIntermediateDirectories: true)
-        try fm.createDirectory(atPath: imagesDirPath, withIntermediateDirectories: true)
-        try fm.createDirectory(atPath: videosDirPath, withIntermediateDirectories: true)
+        try fileManager.createDirectory(atPath: mediaDirPath, withIntermediateDirectories: true)
+        try fileManager.createDirectory(atPath: imagesDirPath, withIntermediateDirectories: true)
+        try fileManager.createDirectory(atPath: videosDirPath, withIntermediateDirectories: true)
 
         // Create sample files
         let sampleContent = "This is a sample file created for testing purposes. It contains some test data.\n"
@@ -48,15 +48,15 @@ public enum TestUtilities {
         )
 
         // Create additional numbered files in each directory
-        for i in 1...fileCount {
-            let content = "This is test file number \(i) with some random content.\n"
+        for fileIndex in 1...fileCount {
+            let content = "This is test file number \(fileIndex) with some random content.\n"
             try content.write(
-                toFile: (imagesDirPath as NSString).appendingPathComponent("file_\(i).txt"),
+                toFile: (imagesDirPath as NSString).appendingPathComponent("file_\(fileIndex).txt"),
                 atomically: true,
                 encoding: .utf8
             )
             try content.write(
-                toFile: (videosDirPath as NSString).appendingPathComponent("file_\(i).txt"),
+                toFile: (videosDirPath as NSString).appendingPathComponent("file_\(fileIndex).txt"),
                 atomically: true,
                 encoding: .utf8
             )
