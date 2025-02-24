@@ -3,10 +3,10 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
 swift_library(
     name = "Sources_UmbraTestKit",
     testonly = True,
-    srcs = glob([
-        "**/*.swift",
-        "!Tests/**/*.swift",  # Exclude test files from library
-    ]),
+    srcs = glob(
+        ["**/*.swift"],
+        exclude = ["Tests/**/*.swift"],  # Exclude test files from library
+    ),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
