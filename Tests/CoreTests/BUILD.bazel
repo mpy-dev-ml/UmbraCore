@@ -2,21 +2,26 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
     name = "CoreTests",
-    srcs = ["ServiceTests.swift"],
+    srcs = [
+        "CryptoTests.swift",
+        "SecurityTests.swift",
+        "ServiceTests.swift",
+    ],
+    deps = ["//Sources/Core"],
+    module_name = "CoreTests",
     copts = [
         "-target",
         "arm64-apple-macos14.0",
+        "-enable-testing",
         "-strict-concurrency=complete",
         "-warn-concurrency",
         "-enable-actor-data-race-checks",
     ],
-    module_name = "CoreTests",
-    deps = [
-        "//Sources/Core",
+    linkopts = [
+        "-target",
+        "arm64-apple-macos14.0",
     ],
-    testonly = True,
-    target_compatible_with = [
-        "@platforms//os:macos",
-        "@platforms//cpu:arm64",
-    ],
+    tags = ["unit"],
+    size = "small",
+    timeout = "short",  # Add this line
 )

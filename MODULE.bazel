@@ -24,10 +24,19 @@ swift_deps.configure_swift_package(
     manifest_cache = "local",
     manifest_caching = True,
 )
+
+# Swift package dependencies
 swift_deps.from_package(
     declare_swift_deps_info = True,
     declare_swift_package = True,
     resolved = "//:Package.resolved",
     swift = "//:Package.swift",
 )
-use_repo(swift_deps, "swift_deps_info", "swift_package", "swiftpkg_cryptoswift", "swiftpkg_swiftybeaver")
+
+use_repo(
+    swift_deps,
+    "swift_deps_info",
+    "swift_package",
+    "swiftpkg_cryptoswift",
+    "swiftpkg_swiftybeaver",
+)

@@ -1,4 +1,4 @@
-@testable import Core
+import Core
 import XCTest
 
 /// Mock service for testing
@@ -65,54 +65,88 @@ actor DependentMockService: UmbraService {
 }
 
 final class ServiceTests: XCTestCase {
-    var container: ServiceContainer!
-    
-    override func setUp() async throws {
-        container = ServiceContainer()
-    }
-    
-    override func tearDown() async throws {
-        await container.shutdownAll()
-        container = nil
-    }
-    
-    func testServiceRegistration() async throws {
+    func testServiceInitialization() async throws {
+        let container = ServiceContainer()
         let service = MockService()
-        try await container.register(service)
         
+        try await container.register(service)
         let initialState = await service.state
         XCTAssertEqual(initialState, .uninitialized)
         
         try await container.initialiseAll()
         let isInitialized = await service.initializeCalled
-        XCTAssertTrue(isInitialized)
         let readyState = await service.state
+        XCTAssertTrue(isInitialized)
         XCTAssertEqual(readyState, .ready)
         
         await container.shutdownAll()
         let isShutdown = await service.shutdownCalled
-        XCTAssertTrue(isShutdown)
         let finalState = await service.state
+        XCTAssertTrue(isShutdown)
         XCTAssertEqual(finalState, .shutdown)
     }
     
     func testDependencyResolution() async throws {
-        let service = MockService()
+        let container = ServiceContainer()
+        let dependency = MockService()
+        let service = DependentMockService(dependency: dependency)
+        
+        try await container.register(dependency)
         try await container.register(service)
+        
         try await container.initialiseAll()
+        let depState = await dependency.state
+        let svcState = await service.state
+        XCTAssertEqual(depState, .ready)
+        XCTAssertEqual(svcState, .ready)
         
-        let resolved: MockService = try await container.resolve(MockService.self)
-        let resolvedState = await resolved.state
-        XCTAssertEqual(resolvedState, .ready)
+        await container.shutdownAll()
+        let depFinalState = await dependency.state
+        let svcFinalState = await service.state
+        XCTAssertEqual(depFinalState, .shutdown)
+        XCTAssertEqual(svcFinalState, .shutdown)
+    }
+    
+    func testMultipleServices() async throws {
+        let container = ServiceContainer()
+        let services = (0..<5).map { _ in MockService() }
         
+        for service in services {
+            try await container.register(service)
+        }
+        
+        try await container.initialiseAll()
+        for service in services {
+            let state = await service.state
+            XCTAssertEqual(state, .ready)
+        }
+        
+        await container.shutdownAll()
+        for service in services {
+            let state = await service.state
+            XCTAssertEqual(state, .shutdown)
+        }
+    }
+    
+    func testErrorHandling() async throws {
+        let container = ServiceContainer()
+        let service = MockService()
+        
+        // Test duplicate registration
+        try await container.register(service)
         do {
-            let _: DependentMockService = try await container.resolve(DependentMockService.self)
-            XCTFail("Expected resolution error")
+            try await container.register(service)
+            XCTFail("Expected duplicate registration error")
         } catch let error as ServiceError {
-            guard case .dependencyError = error else {
-                XCTFail("Expected dependency error")
-                return
-            }
+            XCTAssertTrue(error.errorDescription?.contains("already registered") == true)
+        }
+        
+        // Test resolving non-existent service
+        do {
+            _ = try await container.resolve(CryptoService.self)
+            XCTFail("Expected service not found error")
+        } catch let error as ServiceError {
+            XCTAssertTrue(error.errorDescription?.contains("not found") == true)
         }
     }
 }

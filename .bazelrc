@@ -3,23 +3,23 @@ common --enable_bzlmod
 
 # Platform configuration
 build --apple_platform_type=macos
-build --cpu=darwin_arm64
 build --macos_minimum_os=14.0
+build --cpu=darwin_arm64
 build --platforms=//:macos_arm64
 
 # Test configuration
+test --test_output=all
 test --test_env=DYLD_LIBRARY_PATH
 test --test_env=DYLD_FRAMEWORK_PATH
 test --test_env=DEVELOPER_DIR
+test --test_env=SWIFT_DETERMINISTIC_HASHING=1
 test --test_env=SDKROOT
 test --test_env=MACOS_SDK_VERSION=14.0
 test --test_env=XCODE_VERSION_OVERRIDE=15.0.0
 test --test_env=PLATFORM_NAME=macosx
-test --test_output=errors
 test --test_verbose_timeout_warnings
 test --test_summary=detailed
 test --build_tests_only
-test --test_env=SWIFT_DETERMINISTIC_HASHING=1
 
 # Swift specific settings
 build --features=swift.use_global_module_cache
@@ -48,5 +48,17 @@ coverage --instrumentation_filter="^//Sources"
 build --incompatible_strict_action_env
 build --remote_local_fallback
 
+# Build configurations
+build:debug -c dbg
+build:debug --swiftcopt=-g
+build:debug --swiftcopt=-Onone
+build:debug --swiftcopt=-enable-testing
+build:debug --swiftcopt=-DDEBUG
+
+build:release -c opt
+build:release --swiftcopt=-O
+build:release --swiftcopt=-whole-module-optimization
+
 # Import local settings (must be last)
 try-import %workspace%/user.bazelrc
+try-import %workspace%/.bazelrc.local

@@ -30,7 +30,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0"),
-        .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", from: "2.0.0")
+        .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", from: "2.0.0"),
+        .package(url: "https://github.com/apple/swift-testing.git", exact: "0.5.0")
     ],
     targets: [
         .target(
@@ -53,62 +54,46 @@ let package = Package(
             name: "UmbraCore",
             dependencies: [
                 "SecurityTypes",
+                "SecurityUtils",
                 "CryptoTypes",
-                "UmbraXPC",
-                "UmbraBookmarkService",
-                "UmbraKeychainService",
-                "SwiftyBeaver"
+                "UmbraLogging"
             ]
         ),
         .target(
             name: "UmbraXPC",
-            dependencies: [],
-            path: "Sources/XPC/Core"
+            dependencies: [
+                "UmbraCore"
+            ]
         ),
         .target(
             name: "UmbraCryptoService",
             dependencies: [
-                "UmbraXPC",
-                "CryptoSwift"
-            ],
-            exclude: [
-                "Resources/Info.plist",
-                "Resources/UmbraCryptoService.entitlements"
+                "UmbraCore",
+                "CryptoTypes"
             ]
         ),
         .target(
             name: "UmbraBookmarkService",
             dependencies: [
-                "UmbraXPC"
+                "UmbraCore",
+                "SecurityTypes"
             ]
         ),
         .target(
             name: "UmbraKeychainService",
             dependencies: [
-                "UmbraXPC",
-                "CryptoSwift"
+                "UmbraCore",
+                "SecurityTypes"
             ]
         ),
         .testTarget(
-            name: "UmbraCoreTests",
-            dependencies: ["UmbraCore"]
-        ),
-        .testTarget(
-            name: "XPCTests",
-            dependencies: ["UmbraXPC", "UmbraCryptoService"]
-        ),
-        .testTarget(
-            name: "BookmarkTests",
-            dependencies: ["UmbraBookmarkService", "SecurityUtils"]
-        ),
-        .testTarget(
-            name: "KeychainTests",
+            name: "CoreTests",
             dependencies: [
+                "UmbraCore",
+                "UmbraCryptoService",
+                "UmbraBookmarkService",
                 "UmbraKeychainService",
-                "UmbraXPC"
-            ],
-            resources: [
-                .process("UmbraKeychainService.entitlements")
+                .product(name: "Testing", package: "swift-testing")
             ]
         )
     ]
