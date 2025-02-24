@@ -1,5 +1,6 @@
 import Foundation
 import SecurityTypes
+import SecurityUtils_Protocols
 
 /// Service for managing security-scoped bookmarks
 public actor SecurityBookmarkService {

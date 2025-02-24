@@ -21,27 +21,27 @@ final class DefaultCryptoServiceTests: XCTestCase {
     }
 
     func testEncryptDecrypt() async throws {
-        let data = "Hello, World!".data(using: .utf8)!
+        let data = Data("Hello, World!".utf8)
         let key = try await cryptoService.generateSecureRandomKey(length: 32)
-        let iv = try await cryptoService.generateSecureRandomBytes(length: 12)
+        let initVector = try await cryptoService.generateSecureRandomBytes(length: 12)
 
-        let encrypted = try await cryptoService.encrypt(data, withKey: key, iv: iv)
+        let encrypted = try await cryptoService.encrypt(data, withKey: key, iv: initVector)
         XCTAssertNotEqual(encrypted, data)
 
-        let decrypted = try await cryptoService.decrypt(encrypted, withKey: key, iv: iv)
+        let decrypted = try await cryptoService.decrypt(encrypted, withKey: key, iv: initVector)
         XCTAssertEqual(decrypted, data)
     }
 
     func testEncryptDecryptWithInvalidKey() async throws {
-        let data = "Hello, World!".data(using: .utf8)!
+        let data = Data("Hello, World!".utf8)
         let key = try await cryptoService.generateSecureRandomKey(length: 32)
         let invalidKey = try await cryptoService.generateSecureRandomKey(length: 32)
-        let iv = try await cryptoService.generateSecureRandomBytes(length: 12)
+        let initVector = try await cryptoService.generateSecureRandomBytes(length: 12)
 
-        let encrypted = try await cryptoService.encrypt(data, withKey: key, iv: iv)
+        let encrypted = try await cryptoService.encrypt(data, withKey: key, iv: initVector)
 
         do {
-            _ = try await cryptoService.decrypt(encrypted, withKey: invalidKey, iv: iv)
+            _ = try await cryptoService.decrypt(encrypted, withKey: invalidKey, iv: initVector)
             XCTFail("Expected decryption to fail with invalid key")
         } catch let error as CryptoError {
             XCTAssertTrue(error.localizedDescription.contains("decryption failed"))
@@ -49,15 +49,15 @@ final class DefaultCryptoServiceTests: XCTestCase {
     }
 
     func testEncryptDecryptWithInvalidIV() async throws {
-        let data = "Hello, World!".data(using: .utf8)!
+        let data = Data("Hello, World!".utf8)
         let key = try await cryptoService.generateSecureRandomKey(length: 32)
-        let iv = try await cryptoService.generateSecureRandomBytes(length: 12)
-        let invalidIV = try await cryptoService.generateSecureRandomBytes(length: 12)
+        let initVector = try await cryptoService.generateSecureRandomBytes(length: 12)
+        let invalidInitVector = try await cryptoService.generateSecureRandomBytes(length: 12)
 
-        let encrypted = try await cryptoService.encrypt(data, withKey: key, iv: iv)
+        let encrypted = try await cryptoService.encrypt(data, withKey: key, iv: initVector)
 
         do {
-            _ = try await cryptoService.decrypt(encrypted, withKey: key, iv: invalidIV)
+            _ = try await cryptoService.decrypt(encrypted, withKey: key, iv: invalidInitVector)
             XCTFail("Expected decryption to fail with invalid IV")
         } catch let error as CryptoError {
             XCTAssertTrue(error.localizedDescription.contains("decryption failed"))

@@ -11,53 +11,53 @@ public final class ForgetCommand: ResticCommand, @unchecked Sendable {
     private let keepMonthly: Int?
     private let keepYearly: Int?
     private let prune: Bool
-    
+
     public var commandName: String { "forget" }
-    
+
     public var commandArguments: [String] {
         var args = [String]()
-        
+
         // Add snapshot IDs if specified
         args.append(contentsOf: snapshotIDs)
-        
+
         // Add keep policy flags
         if let keepLast = keepLast {
             args.append("--keep-last")
             args.append(String(keepLast))
         }
-        
+
         if let keepHourly = keepHourly {
             args.append("--keep-hourly")
             args.append(String(keepHourly))
         }
-        
+
         if let keepDaily = keepDaily {
             args.append("--keep-daily")
             args.append(String(keepDaily))
         }
-        
+
         if let keepWeekly = keepWeekly {
             args.append("--keep-weekly")
             args.append(String(keepWeekly))
         }
-        
+
         if let keepMonthly = keepMonthly {
             args.append("--keep-monthly")
             args.append(String(keepMonthly))
         }
-        
+
         if let keepYearly = keepYearly {
             args.append("--keep-yearly")
             args.append(String(keepYearly))
         }
-        
+
         if prune {
             args.append("--prune")
         }
-        
+
         return args
     }
-    
+
     public init(
         options: CommonOptions,
         snapshotIDs: [String] = [],
@@ -79,7 +79,7 @@ public final class ForgetCommand: ResticCommand, @unchecked Sendable {
         self.keepYearly = keepYearly
         self.prune = prune
     }
-    
+
     public var environment: [String: String] {
         var env = options.environmentVariables
         env["RESTIC_REPOSITORY"] = options.repository
@@ -89,7 +89,7 @@ public final class ForgetCommand: ResticCommand, @unchecked Sendable {
         }
         return env
     }
-    
+
     public func validate() throws {
         guard !options.repository.isEmpty else {
             throw ResticError.missingParameter("Repository path must not be empty")
@@ -97,7 +97,7 @@ public final class ForgetCommand: ResticCommand, @unchecked Sendable {
         if options.validateCredentials && options.password.isEmpty {
             throw ResticError.missingParameter("Password must not be empty when validation is enabled")
         }
-        
+
         // Ensure at least one keep policy or snapshot ID is specified
         let hasKeepPolicy = keepLast != nil || keepHourly != nil || keepDaily != nil ||
                            keepWeekly != nil || keepMonthly != nil || keepYearly != nil

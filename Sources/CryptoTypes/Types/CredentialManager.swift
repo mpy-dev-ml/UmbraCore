@@ -50,6 +50,13 @@ public actor CredentialManager {
         return credential
     }
 
+    /// Delete a credential
+    /// - Parameter identifier: Identifier for the credential to delete
+    /// - Throws: SecurityError if deletion fails
+    public func delete(forIdentifier identifier: String) async throws {
+        try await keychain.delete(forKey: identifier)
+    }
+
     private func getMasterKey() async throws -> Data {
         if try await keychain.exists(forKey: "master_key") {
             return try await keychain.loadWithMetadata(forKey: "master_key").0

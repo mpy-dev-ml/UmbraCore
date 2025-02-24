@@ -261,4 +261,133 @@ public actor RepositoryService {
 
         return stats
     }
+
+    /// Options for repository health checks
+    public struct HealthCheckOptions {
+        /// Whether to verify the actual data blobs
+        public let readData: Bool
+
+        /// Whether to check for unused data
+        public let checkUnused: Bool
+
+        /// Default options with basic integrity check
+        public static let basic = HealthCheckOptions(readData: false, checkUnused: false)
+
+        /// Full verification including data blobs
+        public static let full = HealthCheckOptions(readData: true, checkUnused: true)
+    }
+
+    /// Performs a health check on a specific repository
+    ///
+    /// - Parameters:
+    ///   - identifier: The identifier of the repository to check
+    ///   - options: Health check options controlling the verification level
+    /// - Throws: `RepositoryError.notFound` if the repository is not found,
+    ///           `RepositoryError.healthCheckFailed` if the check fails
+    public func checkHealth(
+        of identifier: String,
+        options: HealthCheckOptions = .basic
+    ) async throws {
+        let metadata = LogMetadata([
+            "repository_id": identifier,
+            "read_data": String(options.readData),
+            "check_unused": String(options.checkUnused)
+        ])
+
+        await logger.info("Starting repository health check", metadata: metadata)
+
+        guard let repository = repositories[identifier] else {
+            await logger.error("Repository not found", metadata: metadata)
+            throw RepositoryError.notFound(identifier: identifier)
+        }
+
+        do {
+            try await repository.check(readData: options.readData, checkUnused: options.checkUnused)
+            await logger.info("Repository health check completed successfully", metadata: metadata)
+        } catch {
+            await logger.error("Repository health check failed: \(error.localizedDescription)", metadata: metadata)
+            throw RepositoryError.healthCheckFailed(reason: error.localizedDescription)
+        }
+    }
+
+    /// Performs a health check on all registered repositories
+    ///
+    /// - Parameters:
+    ///   - options: Health check options controlling the verification level
+    ///   - force: If true, continue checking other repositories even if some fail
+    /// - Throws: `RepositoryError.healthCheckFailed` if any repository check fails and force is false
+    public func checkHealthAll(
+        options: HealthCheckOptions = .basic,
+        force: Bool = false
+    ) async throws {
+        let metadata = LogMetadata([
+            "repository_count": String(repositories.count),
+            "read_data": String(options.readData),
+            "check_unused": String(options.checkUnused),
+            "force": String(force)
+        ])
+
+        await logger.info("Starting health check for all repositories", metadata: metadata)
+
+        var errors: [String: Error] = [:]
+
+        for (identifier, repository) in repositories {
+            do {
+                try await repository.check(readData: options.readData, checkUnused: options.checkUnused)
+                await logger.info("Health check completed for repository", metadata: ["repository_id": identifier])
+            } catch {
+                errors[identifier] = error
+                await logger.error("Health check failed for repository: \(error.localizedDescription)",
+                                 metadata: ["repository_id": identifier])
+                if !force {
+                    throw RepositoryError.healthCheckFailed(reason: "Health check failed for repository '\(identifier)': \(error.localizedDescription)")
+                }
+            }
+        }
+
+        if !errors.isEmpty {
+            let errorSummary = errors.map { "'\($0)': \($1.localizedDescription)" }.joined(separator: ", ")
+            throw RepositoryError.healthCheckFailed(reason: "Health checks failed for repositories: \(errorSummary)")
+        }
+
+        await logger.info("Health check completed for all repositories", metadata: metadata)
+    }
+
+    /// Performs maintenance on a repository
+    ///
+    /// - Parameters:
+    ///   - identifier: The identifier of the repository to maintain
+    ///   - rebuildIndex: Whether to rebuild the repository index
+    /// - Throws: `RepositoryError.notFound` if the repository is not found,
+    ///           `RepositoryError.maintenanceFailed` if the operation fails
+    public func maintain(
+        _ identifier: String,
+        rebuildIndex: Bool = false
+    ) async throws {
+        let metadata = LogMetadata([
+            "repository_id": identifier,
+            "rebuild_index": String(rebuildIndex)
+        ])
+
+        await logger.info("Starting repository maintenance", metadata: metadata)
+
+        guard let repository = repositories[identifier] else {
+            await logger.error("Repository not found", metadata: metadata)
+            throw RepositoryError.notFound(identifier: identifier)
+        }
+
+        do {
+            // Prune unused data
+            try await repository.prune()
+
+            if rebuildIndex {
+                try await repository.rebuildIndex()
+            }
+
+            await logger.info("Repository maintenance completed successfully", metadata: metadata)
+        } catch {
+            await logger.error("Repository maintenance failed: \(error.localizedDescription)", metadata: metadata)
+            throw RepositoryError.maintenanceFailed(reason: error.localizedDescription)
+        }
+    }
 }

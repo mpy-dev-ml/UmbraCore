@@ -7,33 +7,33 @@ public final class FindCommand: ResticCommand, @unchecked Sendable {
     private let snapshotID: String?
     private let ignoreCase: Bool
     private let longFormat: Bool
-    
+
     public var commandName: String { "find" }
-    
+
     public var commandArguments: [String] {
         var args = [String]()
-        
+
         // Add patterns
         args.append(contentsOf: patterns)
-        
+
         // Add snapshot ID if specified
         if let snapshotID = snapshotID {
             args.append("--snapshot")
             args.append(snapshotID)
         }
-        
+
         // Add flags
         if ignoreCase {
             args.append("--ignore-case")
         }
-        
+
         if longFormat {
             args.append("--long")
         }
-        
+
         return args
     }
-    
+
     public init(
         options: CommonOptions,
         patterns: [String],
@@ -47,7 +47,7 @@ public final class FindCommand: ResticCommand, @unchecked Sendable {
         self.ignoreCase = ignoreCase
         self.longFormat = longFormat
     }
-    
+
     public var environment: [String: String] {
         var env = options.environmentVariables
         env["RESTIC_REPOSITORY"] = options.repository
@@ -57,7 +57,7 @@ public final class FindCommand: ResticCommand, @unchecked Sendable {
         }
         return env
     }
-    
+
     public func validate() throws {
         guard !options.repository.isEmpty else {
             throw ResticError.missingParameter("Repository path must not be empty")

@@ -19,6 +19,7 @@ swift_library(
     deps = [
         "//Sources/CryptoTypes",
         "//Sources/CryptoTypes/Protocols:CryptoTypes_Protocols",
+        "//Sources/CryptoTypes/Types:CryptoTypes_Types",
         "//Sources/Services/SecurityUtils/Protocols:SecurityUtils_Protocols",
         "//Sources/UmbraCrypto",
     ],

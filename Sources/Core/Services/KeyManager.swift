@@ -13,7 +13,7 @@ public enum CryptoImplementation {
 /// Represents a security context for cryptographic operations
 public struct SecurityContext: Sendable {
     /// The type of application requesting the operation
-    public enum ApplicationType {
+    public enum ApplicationType: Sendable {
         /// ResticBar (native macOS app)
         case resticBar
         /// Rbum (cross-process GUI app)
@@ -41,15 +41,22 @@ public struct SecurityContext: Sendable {
 }
 
 /// Represents a cryptographic key identifier
-public struct KeyIdentifier: Hashable, Sendable {
-    /// Unique identifier for the key
+public struct KeyIdentifier: Hashable {
+    /// The unique identifier for this key
     public let id: String
-    /// Context in which the key was created
-    public let context: SecurityContext
 
-    public init(id: String, context: SecurityContext) {
+    /// Create a new key identifier
+    /// - Parameter id: The unique identifier for this key
+    public init(id: String) {
         self.id = id
-        self.context = context
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    public static func == (lhs: KeyIdentifier, rhs: KeyIdentifier) -> Bool {
+        lhs.id == rhs.id
     }
 }
 
@@ -106,7 +113,7 @@ public actor KeyManager {
     public func generateKey(for context: SecurityContext) async throws -> KeyIdentifier {
         let implementation = selectImplementation(for: context)
         let keyId = UUID().uuidString
-        let identifier = KeyIdentifier(id: keyId, context: context)
+        let identifier = KeyIdentifier(id: keyId)
 
         // Store the implementation choice for this key
         implementationMap[identifier] = implementation

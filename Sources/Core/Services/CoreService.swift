@@ -1,7 +1,8 @@
 import Foundation
 
 /// Core service that manages application-wide functionality
-@MainActor public final class CoreService {
+@MainActor
+public final class CoreService {
     /// Shared instance
     public static let shared = CoreService()
 

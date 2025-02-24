@@ -1,4 +1,6 @@
 import CryptoTypes
+import CryptoTypes_Protocols
+import CryptoTypes_Types
 import Foundation
 import SecurityTypes
 
@@ -38,7 +40,7 @@ public actor EncryptedBookmarkService {
         let key = try await getOrCreateKey()
         let iv = try await cryptoService.generateSecureRandomKey(length: config.ivLength)
         let encryptedData = try await cryptoService.encrypt(bookmarkData, using: key, iv: iv)
-        try await credentialManager.store(credential: encryptedData, withIdentifier: identifier)
+        try await credentialManager.save(String(data: encryptedData, encoding: .utf8)!, forIdentifier: identifier)
     }
 
     /// Resolve an encrypted bookmark
@@ -46,7 +48,7 @@ public actor EncryptedBookmarkService {
     /// - Returns: Resolved URL
     /// - Throws: SecurityError or CryptoError if bookmark resolution fails
     public func resolveBookmark(withIdentifier identifier: String) async throws -> URL {
-        let encryptedData: Data = try await credentialManager.retrieve(withIdentifier: identifier)
+        let encryptedData: Data = try await credentialManager.load(forIdentifier: identifier).data(using: .utf8)!
         let key = try await getKey()
         let iv = try await cryptoService.generateSecureRandomKey(length: config.ivLength)
         let bookmarkData = try await cryptoService.decrypt(encryptedData, using: key, iv: iv)
@@ -58,7 +60,7 @@ public actor EncryptedBookmarkService {
     /// - Parameter identifier: Unique identifier for the bookmark to delete
     /// - Throws: SecurityError if deletion fails
     public func deleteBookmark(withIdentifier identifier: String) async throws {
-        try await credentialManager.delete(withIdentifier: identifier)
+        try await credentialManager.delete(forIdentifier: identifier)
     }
 
     // MARK: - Private Methods
@@ -68,11 +70,12 @@ public actor EncryptedBookmarkService {
             return key
         }
         let key = try await cryptoService.generateSecureRandomKey(length: config.keyLength)
-        try await credentialManager.store(credential: key, withIdentifier: bookmarkKeyIdentifier)
+        try await credentialManager.save(String(data: key, encoding: .utf8)!, forIdentifier: bookmarkKeyIdentifier)
         return key
     }
 
     private func getKey() async throws -> Data {
-        try await credentialManager.retrieve(withIdentifier: bookmarkKeyIdentifier)
+        let keyString = try await credentialManager.load(forIdentifier: bookmarkKeyIdentifier)
+        return keyString.data(using: .utf8)!
     }
 }

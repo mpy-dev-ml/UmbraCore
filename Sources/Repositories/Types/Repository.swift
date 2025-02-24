@@ -62,6 +62,24 @@ public protocol Repository: Actor {
     /// - Returns: A `RepositoryStats` object containing current metrics.
     /// - Throws: `RepositoryError` if statistics cannot be gathered.
     func getStats() async throws -> RepositoryStats
+
+    /// Checks the repository integrity.
+    ///
+    /// - Parameters:
+    ///   - readData: Whether to verify the actual data blobs
+    ///   - checkUnused: Whether to check for unused data
+    /// - Throws: `RepositoryError` if the check fails or cannot be completed
+    func check(readData: Bool, checkUnused: Bool) async throws
+
+    /// Removes unused data from the repository.
+    ///
+    /// - Throws: `RepositoryError` if pruning fails or cannot be completed
+    func prune() async throws
+
+    /// Rebuilds the repository index.
+    ///
+    /// - Throws: `RepositoryError` if index rebuilding fails or cannot be completed
+    func rebuildIndex() async throws
 }
 
 /// The operational state of a repository.

@@ -86,6 +86,8 @@
 /// - Atomic operations
 /// - Value types
 
+import Foundation
+
 /// Core framework initialisation and management
 public enum Core {
     /// Current version of the Core module
@@ -99,7 +101,7 @@ public enum Core {
 }
 
 /// Errors that can occur during Core operations
-public enum CoreError: LocalizedError {
+public enum CoreError: Foundation.LocalizedError {
     /// Error during initialisation
     case initialisationError(String)
 

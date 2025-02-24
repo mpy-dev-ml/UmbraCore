@@ -10,21 +10,25 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
         super.init()
     }
 
-    func addItem(account: String,
-                 service: String,
-                 accessGroup: String?,
-                 data: Data,
-                 reply: @escaping @Sendable (Error?) -> Void) {
+    func addItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping @Sendable (Error?) -> Void
+    ) {
         // Capture values in local variables to avoid capturing self
         let keychain = self.keychain
         let queue = self.queue
 
         Task { @Sendable in
             do {
-                try await keychain.addItem(account: account,
-                                       service: service,
-                                       accessGroup: accessGroup,
-                                       data: data)
+                try await keychain.addItem(
+                    account: account,
+                    service: service,
+                    accessGroup: accessGroup,
+                    data: data
+                )
                 queue.async { reply(nil) }
             } catch {
                 queue.async { reply(error as? KeychainError ?? KeychainError.unhandledError(status: 0)) }
@@ -32,20 +36,24 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
         }
     }
 
-    func updateItem(account: String,
-                   service: String,
-                   accessGroup: String?,
-                   data: Data,
-                   reply: @escaping @Sendable (Error?) -> Void) {
+    func updateItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping @Sendable (Error?) -> Void
+    ) {
         let keychain = self.keychain
         let queue = self.queue
 
         Task { @Sendable in
             do {
-                try await keychain.updateItem(account: account,
-                                          service: service,
-                                          accessGroup: accessGroup,
-                                          data: data)
+                try await keychain.updateItem(
+                    account: account,
+                    service: service,
+                    accessGroup: accessGroup,
+                    data: data
+                )
                 queue.async { reply(nil) }
             } catch {
                 queue.async { reply(error as? KeychainError ?? KeychainError.unhandledError(status: 0)) }
@@ -53,18 +61,22 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
         }
     }
 
-    func removeItem(account: String,
-                   service: String,
-                   accessGroup: String?,
-                   reply: @escaping @Sendable (Error?) -> Void) {
+    func removeItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Error?) -> Void
+    ) {
         let keychain = self.keychain
         let queue = self.queue
 
         Task { @Sendable in
             do {
-                try await keychain.removeItem(account: account,
-                                          service: service,
-                                          accessGroup: accessGroup)
+                try await keychain.removeItem(
+                    account: account,
+                    service: service,
+                    accessGroup: accessGroup
+                )
                 queue.async { reply(nil) }
             } catch {
                 queue.async { reply(error as? KeychainError ?? KeychainError.unhandledError(status: 0)) }
@@ -72,18 +84,22 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
         }
     }
 
-    func containsItem(account: String,
-                     service: String,
-                     accessGroup: String?,
-                     reply: @escaping @Sendable (Bool, Error?) -> Void) {
+    func containsItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Bool, Error?) -> Void
+    ) {
         let keychain = self.keychain
         let queue = self.queue
 
         Task { @Sendable in
             do {
-                let exists = try await keychain.containsItem(account: account,
-                                                         service: service,
-                                                         accessGroup: accessGroup)
+                let exists = try await keychain.containsItem(
+                    account: account,
+                    service: service,
+                    accessGroup: accessGroup
+                )
                 queue.async { reply(exists, nil) }
             } catch {
                 queue.async { reply(false, error as? KeychainError ?? KeychainError.unhandledError(status: 0)) }
@@ -91,18 +107,22 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
         }
     }
 
-    func retrieveItem(account: String,
-                     service: String,
-                     accessGroup: String?,
-                     reply: @escaping @Sendable (Data?, Error?) -> Void) {
+    func retrieveItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Data?, Error?) -> Void
+    ) {
         let keychain = self.keychain
         let queue = self.queue
 
         Task { @Sendable in
             do {
-                let data = try await keychain.retrieveItem(account: account,
-                                                       service: service,
-                                                       accessGroup: accessGroup)
+                let data = try await keychain.retrieveItem(
+                    account: account,
+                    service: service,
+                    accessGroup: accessGroup
+                )
                 queue.async { reply(data, nil) }
             } catch {
                 queue.async { reply(nil, error as? KeychainError ?? KeychainError.unhandledError(status: 0)) }
