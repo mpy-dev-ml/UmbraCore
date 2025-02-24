@@ -2,7 +2,8 @@ import Foundation
 import UmbraXPC
 
 /// Service for managing security-scoped bookmarks
-@MainActor public final class BookmarkService: NSObject, BookmarkServiceProtocol {
+@MainActor
+public final class BookmarkService: NSObject, BookmarkServiceProtocol {
     /// Set of URLs currently being accessed
     private var activeAccessURLs: Set<URL> = []
 
@@ -10,7 +11,10 @@ import UmbraXPC
         super.init()
     }
 
-    public func createBookmark(for url: URL, options: URL.BookmarkCreationOptions = [.withSecurityScope]) async throws -> Data {
+    public func createBookmark(
+        for url: URL,
+        options: URL.BookmarkCreationOptions = [.withSecurityScope]
+    ) async throws -> Data {
         guard url.isFileURL else {
             throw BookmarkError.invalidBookmarkData
         }
@@ -29,7 +33,10 @@ import UmbraXPC
         }
     }
 
-    public func resolveBookmark(_ bookmarkData: Data, options: URL.BookmarkResolutionOptions = [.withSecurityScope]) async throws -> (URL, Bool) {
+    public func resolveBookmark(
+        _ bookmarkData: Data,
+        options: URL.BookmarkResolutionOptions = [.withSecurityScope]
+    ) async throws -> (URL, Bool) {
         do {
             var isStale = false
             let url = try URL(resolvingBookmarkData: bookmarkData,
@@ -78,7 +85,10 @@ import UmbraXPC
 
 // MARK: - XPC Support
 extension BookmarkService: NSXPCListenerDelegate {
-    nonisolated public func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
+    nonisolated public func listener(
+        _ listener: NSXPCListener,
+        shouldAcceptNewConnection newConnection: NSXPCConnection
+    ) -> Bool {
         Task { @MainActor in
             newConnection.exportedInterface = NSXPCInterface(with: BookmarkServiceProtocol.self)
             newConnection.exportedObject = self

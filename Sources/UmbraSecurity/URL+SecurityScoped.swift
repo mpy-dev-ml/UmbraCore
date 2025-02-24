@@ -22,7 +22,11 @@ extension URL {
         relativeTo: nil
       )
     } catch {
-      throw SecurityTypes.SecurityError.bookmarkError("Failed to create bookmark for: \(path)")
+      throw SecurityTypes.SecurityError.bookmarkError(
+        """
+        Failed to create bookmark for: \(path)
+        """
+      )
     }
   }
 
@@ -46,7 +50,11 @@ extension URL {
       )
       return (url, isStale)
     } catch {
-      throw SecurityTypes.SecurityError.bookmarkError("Failed to resolve bookmark")
+      throw SecurityTypes.SecurityError.bookmarkError(
+        """
+        Failed to resolve bookmark
+        """
+      )
     }
   }
 
@@ -72,7 +80,11 @@ extension URL {
     _ operation: () throws -> T
   ) throws -> T {
     guard startSecurityScopedAccess() else {
-      throw SecurityTypes.SecurityError.accessDenied(reason: "Failed to access: \(path)")
+      throw SecurityTypes.SecurityError.accessDenied(
+        reason: """
+        Failed to access: \(path)
+        """
+      )
     }
     defer { stopSecurityScopedAccess() }
     return try operation()
@@ -87,7 +99,11 @@ extension URL {
     _ operation: () async throws -> T
   ) async throws -> T {
     guard startSecurityScopedAccess() else {
-      throw SecurityTypes.SecurityError.accessDenied(reason: "Failed to access: \(path)")
+      throw SecurityTypes.SecurityError.accessDenied(
+        reason: """
+        Failed to access: \(path)
+        """
+      )
     }
     defer { stopSecurityScopedAccess() }
     return try await operation()

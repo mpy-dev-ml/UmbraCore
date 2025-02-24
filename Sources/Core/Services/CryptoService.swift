@@ -45,10 +45,10 @@ public struct CryptoConfig {
 public struct EncryptionResult: Sendable {
     /// The encrypted data
     public let encrypted: [UInt8]
-    
+
     /// The initialization vector used for encryption
     public let initializationVector: [UInt8]
-    
+
     /// The authentication tag for verifying data integrity
     public let tag: [UInt8]
 }

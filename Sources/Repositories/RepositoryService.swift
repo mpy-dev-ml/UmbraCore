@@ -50,11 +50,11 @@ public actor RepositoryService {
         let location = await repository.location
         let state = await repository.state
 
-        let metadata = LogMetadata([
-            "repository_id": identifier,
-            "location": location.path,
-            "state": String(describing: state)
-        ])
+        let metadata: LogMetadata = [
+            "repository_id": .string(identifier),
+            "location": .string(location.path),
+            "state": .string(String(describing: state))
+        ]
 
         await logger.info("Registering repository", metadata: metadata)
 
@@ -98,7 +98,7 @@ public actor RepositoryService {
     /// - Throws: `RepositoryError.notFound` if the repository is not found.
     @discardableResult
     public func unregister(_ identifier: String) async throws -> any Repository {
-        let metadata = LogMetadata(["repository_id": identifier])
+        let metadata: LogMetadata = ["repository_id": .string(identifier)]
         await logger.info("Unregistering repository", metadata: metadata)
 
         guard let repository = repositories.removeValue(forKey: identifier) else {
@@ -116,7 +116,7 @@ public actor RepositoryService {
     /// - Returns: The requested repository.
     /// - Throws: `RepositoryError.notFound` if the repository is not found.
     public func getRepository(_ identifier: String) async throws -> any Repository {
-        let metadata = LogMetadata(["repository_id": identifier])
+        let metadata: LogMetadata = ["repository_id": .string(identifier)]
 
         guard let repository = repositories[identifier] else {
             await logger.error("Repository not found", metadata: metadata)
@@ -132,7 +132,7 @@ public actor RepositoryService {
     /// - Returns: An array of registered repositories.
     public func listRepositories() async -> [any Repository] {
         await logger.debug("Listing repositories", metadata: LogMetadata([
-            "count": String(repositories.count)
+            "count": .string(String(repositories.count))
         ]))
         return Array(repositories.values)
     }
@@ -144,20 +144,20 @@ public actor RepositoryService {
     /// - Parameter force: If true, ignore errors from individual repositories. Defaults to false.
     /// - Throws: `RepositoryError.operationFailed` if any repository fails to lock and force is false.
     public func lockAll(force: Bool = false) async throws {
-        let metadata = LogMetadata([
-            "force": String(force),
-            "repository_count": String(repositories.count)
-        ])
+        let metadata: LogMetadata = [
+            "force": .string(String(force)),
+            "repository_count": .string(String(repositories.count))
+        ]
 
         await logger.info("Locking all repositories", metadata: metadata)
         var errors: [String: Error] = [:]
 
         for repository in repositories.values {
             let identifier = await repository.identifier
-            let repoMetadata = LogMetadata([
-                "repository_id": identifier,
-                "force": String(force)
-            ])
+            let repoMetadata: LogMetadata = [
+                "repository_id": .string(identifier),
+                "force": .string(String(force))
+            ]
 
             do {
                 try await repository.lock()
@@ -173,8 +173,8 @@ public actor RepositoryService {
 
         if !errors.isEmpty {
             await logger.warning("Some repositories failed to lock", metadata: LogMetadata([
-                "error_count": String(errors.count),
-                "force": String(force)
+                "error_count": .string(String(errors.count)),
+                "force": .string(String(force))
             ]))
         } else {
             await logger.info("All repositories locked successfully", metadata: metadata)
@@ -186,20 +186,20 @@ public actor RepositoryService {
     /// - Parameter force: If true, ignore errors from individual repositories. Defaults to false.
     /// - Throws: `RepositoryError.operationFailed` if any repository fails to unlock and force is false.
     public func unlockAll(force: Bool = false) async throws {
-        let metadata = LogMetadata([
-            "force": String(force),
-            "repository_count": String(repositories.count)
-        ])
+        let metadata: LogMetadata = [
+            "force": .string(String(force)),
+            "repository_count": .string(String(repositories.count))
+        ]
 
         await logger.info("Unlocking all repositories", metadata: metadata)
         var errors: [String: Error] = [:]
 
         for repository in repositories.values {
             let identifier = await repository.identifier
-            let repoMetadata = LogMetadata([
-                "repository_id": identifier,
-                "force": String(force)
-            ])
+            let repoMetadata: LogMetadata = [
+                "repository_id": .string(identifier),
+                "force": .string(String(force))
+            ]
 
             do {
                 try await repository.unlock()
@@ -215,8 +215,8 @@ public actor RepositoryService {
 
         if !errors.isEmpty {
             await logger.warning("Some repositories failed to unlock", metadata: LogMetadata([
-                "error_count": String(errors.count),
-                "force": String(force)
+                "error_count": .string(String(errors.count)),
+                "force": .string(String(force))
             ]))
         } else {
             await logger.info("All repositories unlocked successfully", metadata: metadata)
@@ -228,7 +228,7 @@ public actor RepositoryService {
     /// - Returns: A dictionary mapping repository identifiers to their statistics.
     /// - Throws: `RepositoryError.operationFailed` if stats cannot be retrieved for any repository.
     public func getAllStats() async throws -> [String: RepositoryStats] {
-        let metadata = LogMetadata(["repository_count": String(repositories.count)])
+        let metadata: LogMetadata = ["repository_count": .string(String(repositories.count))]
         await logger.info("Retrieving stats for all repositories", metadata: metadata)
 
         var stats: [String: RepositoryStats] = [:]
@@ -236,7 +236,7 @@ public actor RepositoryService {
 
         for repository in repositories.values {
             let identifier = await repository.identifier
-            let repoMetadata = LogMetadata(["repository_id": identifier])
+            let repoMetadata: LogMetadata = ["repository_id": .string(identifier)]
 
             do {
                 stats[identifier] = try await repository.getStats()
@@ -249,26 +249,31 @@ public actor RepositoryService {
 
         if !errors.isEmpty {
             await logger.error("Failed to get stats for some repositories", metadata: LogMetadata([
-                "error_count": String(errors.count),
-                "success_count": String(stats.count)
+                "error_count": .string(String(errors.count)),
+                "success_count": .string(String(stats.count))
             ]))
             throw RepositoryError.operationFailed(reason: "Failed to get stats for some repositories: \(errors)")
         }
 
         await logger.info("Retrieved all repository stats successfully", metadata: LogMetadata([
-            "repository_count": String(stats.count)
+            "repository_count": .string(String(stats.count))
         ]))
 
         return stats
     }
 
     /// Options for repository health checks
-    public struct HealthCheckOptions {
+    public struct HealthCheckOptions: Sendable {
         /// Whether to verify the actual data blobs
         public let readData: Bool
 
         /// Whether to check for unused data
         public let checkUnused: Bool
+
+        public init(readData: Bool, checkUnused: Bool) {
+            self.readData = readData
+            self.checkUnused = checkUnused
+        }
 
         /// Default options with basic integrity check
         public static let basic = HealthCheckOptions(readData: false, checkUnused: false)
@@ -288,11 +293,11 @@ public actor RepositoryService {
         of identifier: String,
         options: HealthCheckOptions = .basic
     ) async throws {
-        let metadata = LogMetadata([
-            "repository_id": identifier,
-            "read_data": String(options.readData),
-            "check_unused": String(options.checkUnused)
-        ])
+        let metadata: LogMetadata = [
+            "repository_id": .string(identifier),
+            "read_data": .string(String(options.readData)),
+            "check_unused": .string(String(options.checkUnused))
+        ]
 
         await logger.info("Starting repository health check", metadata: metadata)
 
@@ -320,12 +325,12 @@ public actor RepositoryService {
         options: HealthCheckOptions = .basic,
         force: Bool = false
     ) async throws {
-        let metadata = LogMetadata([
-            "repository_count": String(repositories.count),
-            "read_data": String(options.readData),
-            "check_unused": String(options.checkUnused),
-            "force": String(force)
-        ])
+        let metadata: LogMetadata = [
+            "repository_count": .string(String(repositories.count)),
+            "read_data": .string(String(options.readData)),
+            "check_unused": .string(String(options.checkUnused)),
+            "force": .string(String(force))
+        ]
 
         await logger.info("Starting health check for all repositories", metadata: metadata)
 
@@ -334,11 +339,11 @@ public actor RepositoryService {
         for (identifier, repository) in repositories {
             do {
                 try await repository.check(readData: options.readData, checkUnused: options.checkUnused)
-                await logger.info("Health check completed for repository", metadata: ["repository_id": identifier])
+                await logger.info("Health check completed for repository", metadata: ["repository_id": .string(identifier)])
             } catch {
                 errors[identifier] = error
                 await logger.error("Health check failed for repository: \(error.localizedDescription)",
-                                 metadata: ["repository_id": identifier])
+                                 metadata: ["repository_id": .string(identifier)])
                 if !force {
                     throw RepositoryError.healthCheckFailed(reason: "Health check failed for repository '\(identifier)': \(error.localizedDescription)")
                 }
@@ -364,10 +369,10 @@ public actor RepositoryService {
         _ identifier: String,
         rebuildIndex: Bool = false
     ) async throws {
-        let metadata = LogMetadata([
-            "repository_id": identifier,
-            "rebuild_index": String(rebuildIndex)
-        ])
+        let metadata: LogMetadata = [
+            "repository_id": .string(identifier),
+            "rebuild_index": .string(String(rebuildIndex))
+        ]
 
         await logger.info("Starting repository maintenance", metadata: metadata)
 

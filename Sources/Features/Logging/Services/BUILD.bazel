@@ -18,6 +18,6 @@ swift_library(
     visibility = ["//visibility:public"],
     deps = [
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
-        "//Sources/UmbraTestKit",
+        "//Sources/UmbraTestKit:Sources_UmbraTestKit",
     ],
 )

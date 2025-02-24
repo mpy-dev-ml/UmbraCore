@@ -44,12 +44,12 @@ final class CryptoXPCServiceTests: XCTestCase {
     }
 
     func testGenerateInitializationVector() async throws {
-        let iv = try await service.generateInitializationVector()
-        XCTAssertEqual(iv.count, 12, "IV should be 12 bytes for GCM mode")
+        let initVector = try await service.generateInitializationVector()
+        XCTAssertEqual(initVector.count, 12, "IV should be 12 bytes for GCM mode")
 
         // Test uniqueness
-        let iv2 = try await service.generateInitializationVector()
-        XCTAssertNotEqual(iv, iv2, "Generated IVs should be unique")
+        let initVector2 = try await service.generateInitializationVector()
+        XCTAssertNotEqual(initVector, initVector2, "Generated IVs should be unique")
     }
 
     func testInvalidKeySize() async throws {

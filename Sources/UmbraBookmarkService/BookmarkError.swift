@@ -1,7 +1,8 @@
 import Foundation
 
 /// Errors that can occur during bookmark operations
-@frozen public enum BookmarkError: LocalizedError, Sendable {
+@frozen
+public enum BookmarkError: LocalizedError, Sendable {
     /// Failed to create bookmark data for URL
     case bookmarkCreationFailed(url: URL)
 

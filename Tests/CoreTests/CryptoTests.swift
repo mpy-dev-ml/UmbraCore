@@ -29,7 +29,7 @@ final class CryptoTests: XCTestCase {
 
         // Test key derivation
         let password = "test-password"
-        let salt = "test-salt".data(using: .utf8)!.map { UInt8($0) }
+        let salt = Array("test-salt".utf8)
         let derivedKey = try await service.deriveKey(from: password, salt: salt)
         XCTAssertEqual(derivedKey.count, 32)
 
@@ -42,7 +42,7 @@ final class CryptoTests: XCTestCase {
         XCTAssertNotEqual(derivedKey, differentKey)
 
         // Different salt should yield different key
-        let differentSalt = "different-salt".data(using: .utf8)!.map { UInt8($0) }
+        let differentSalt = Array("different-salt".utf8)
         let keyWithDifferentSalt = try await service.deriveKey(from: password, salt: differentSalt)
         XCTAssertNotEqual(derivedKey, keyWithDifferentSalt)
     }
@@ -56,7 +56,7 @@ final class CryptoTests: XCTestCase {
 
         // Test basic encryption/decryption
         let key = try await service.generateKey()
-        let data = "Hello, World!".data(using: .utf8)!.map { UInt8($0) }
+        let data = Array("Hello, World!".utf8)
 
         let encryptedResult = try await service.encrypt(data, using: key)
         XCTAssertFalse(encryptedResult.encrypted.isEmpty)

@@ -1,4 +1,5 @@
 import CryptoTypes
+import CryptoTypes_Protocols
 import Foundation
 
 public actor MockCryptoService: CryptoServiceProtocol {
@@ -8,43 +9,36 @@ public actor MockCryptoService: CryptoServiceProtocol {
     public init() {}
 
     public func encrypt(_ data: Data, using key: Data, iv: Data) async throws -> Data {
-        // Simple mock implementation - just store the data with its key
-        let identifier = "\(key.base64EncodedString()):\(iv.base64EncodedString())"
+        let identifier = "\(key.hashValue):\(iv.hashValue)"
         encryptedData[identifier] = data
-        return data
+        return data // Mock implementation just returns the original data
     }
 
     public func decrypt(_ data: Data, using key: Data, iv: Data) async throws -> Data {
-        // Simple mock implementation - retrieve stored data for key
-        let identifier = "\(key.base64EncodedString()):\(iv.base64EncodedString())"
-        if let storedData = decryptedData[identifier] {
-            return storedData
-        }
-        // If not found, just return the input data for testing
-        return data
+        let identifier = "\(key.hashValue):\(iv.hashValue)"
+        decryptedData[identifier] = data
+        return data // Mock implementation just returns the original data
     }
 
     public func deriveKey(from password: String, salt: Data, iterations: Int) async throws -> Data {
-        // Return a deterministic key based on password for testing
-        return "\(password)_\(iterations)_derived".data(using: .utf8)!
+        // Mock implementation just returns a deterministic key based on inputs
+        let combinedData = password.data(using: .utf8)! + salt
+        return Data(combinedData.prefix(32))
     }
 
     public func generateSecureRandomKey(length: Int) async throws -> Data {
-        // Return a consistent test key
-        return Data(repeating: 0x42, count: length)
+        // Mock implementation returns predictable data for testing
+        return Data(repeating: 0xAA, count: length)
     }
 
     public func generateHMAC(for data: Data, using key: Data) async throws -> Data {
-        // Simple mock implementation - just concatenate data and key
-        var result = Data()
-        result.append(data)
-        result.append(key)
-        return result
+        // Mock implementation returns predictable HMAC for testing
+        return Data(repeating: 0xBB, count: 32)
     }
 
     // Test helper methods
-    public func setDecryptedData(_ data: Data, forKey key: Data, iv: Data) async {
-        let identifier = "\(key.base64EncodedString()):\(iv.base64EncodedString())"
+    public func setDecryptedData(_ data: Data, forKey key: Data, initializationVector: Data) async {
+        let identifier = "\(key.base64EncodedString()):\(initializationVector.base64EncodedString())"
         decryptedData[identifier] = data
     }
 

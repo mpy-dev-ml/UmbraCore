@@ -9,7 +9,7 @@ swift_test(
     module_name = "CryptoTests",
     deps = [
         "//Sources/CryptoTypes",
-        "//Sources/UmbraTestKit",
+        "//Sources/UmbraTestKit:Sources_UmbraTestKit",
         "//Sources/UmbraCryptoService:Sources_UmbraCryptoService",
         "@swiftpkg_cryptoswift//:CryptoSwift",
     ],

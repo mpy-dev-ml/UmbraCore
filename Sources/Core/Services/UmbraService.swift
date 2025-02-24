@@ -1,7 +1,8 @@
 import Foundation
 
 /// Represents the current state of a service
-@frozen public enum ServiceState: String, Sendable {
+@frozen
+public enum ServiceState: String, Sendable {
     /// Service has not been initialised
     case uninitialized
     /// Service is in the process of initialising

@@ -12,6 +12,6 @@ swift_test(
         "-enable-actor-data-race-checks",
     ],
     deps = [
-        "//Sources/ResticTypes:ResticTypes",
+        "//Sources/ResticTypes:Sources_ResticTypes",
     ],
 )

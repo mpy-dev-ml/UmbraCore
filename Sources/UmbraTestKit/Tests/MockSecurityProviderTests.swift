@@ -1,4 +1,6 @@
+import Core
 @testable import SecurityTypes
+import SecurityTypes_Protocols
 import XCTest
 
 /// A mock security provider for testing
@@ -12,7 +14,7 @@ actor MockSecurityProvider: SecurityProvider {
 
     func createBookmark(forPath path: String) async throws -> [UInt8] {
         if shouldFailBookmarkCreation {
-            throw SecurityError.bookmarkError("Mock failure")
+            throw SecurityTypes.SecurityError.bookmarkError("Mock failure")
         }
         let bookmarkData = Data("mock_bookmark_\(path)".utf8)
         bookmarks[path] = bookmarkData
@@ -21,11 +23,11 @@ actor MockSecurityProvider: SecurityProvider {
 
     func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
         guard let mockPath = String(data: Data(bookmarkData), encoding: .utf8) else {
-            throw SecurityError.invalidData(reason: "Invalid bookmark data")
+            throw SecurityTypes.SecurityError.invalidData(reason: "Invalid bookmark data")
         }
         let path = mockPath.replacingOccurrences(of: "mock_bookmark_", with: "")
         if shouldFailAccess {
-            throw SecurityError.accessDenied(reason: "Mock access denied")
+            throw SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied")
         }
         accessCount[path, default: 0] += 1
         return (path: path, isStale: false)
@@ -33,7 +35,7 @@ actor MockSecurityProvider: SecurityProvider {
 
     func startAccessing(path: String) async throws -> Bool {
         if shouldFailAccess {
-            throw SecurityError.accessDenied(reason: "Mock access denied")
+            throw SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied")
         }
         accessedPaths.insert(path)
         return true
@@ -52,7 +54,7 @@ actor MockSecurityProvider: SecurityProvider {
         perform operation: @Sendable () async throws -> T
     ) async throws -> T {
         if shouldFailAccess {
-            throw SecurityError.accessDenied(reason: "Mock access denied")
+            throw SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied")
         }
         accessedPaths.insert(path)
         defer { accessedPaths.remove(path) }
@@ -76,24 +78,24 @@ actor MockSecurityProvider: SecurityProvider {
 
     func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
         if shouldFailAccess {
-            throw SecurityError.accessError("Mock storage failure")
+            throw SecurityTypes.SecurityError.accessError("Mock storage failure")
         }
         storedBookmarks[identifier] = bookmarkData
     }
 
     func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
         guard let bookmark = storedBookmarks[identifier] else {
-            throw SecurityError.itemNotFound(reason: "Bookmark not found: \(identifier)")
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found: \(identifier)")
         }
         return bookmark
     }
 
     func deleteBookmark(withIdentifier identifier: String) async throws {
         if shouldFailAccess {
-            throw SecurityError.accessError("Mock storage failure")
+            throw SecurityTypes.SecurityError.accessError("Mock storage failure")
         }
         guard storedBookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityError.itemNotFound(reason: "Bookmark not found: \(identifier)")
+            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found: \(identifier)")
         }
     }
 
@@ -140,8 +142,8 @@ final class MockSecurityProviderTests: XCTestCase {
         do {
             _ = try await provider.createBookmark(forPath: testPath)
             XCTFail("Expected bookmark creation to fail")
-        } catch let error as SecurityError {
-            XCTAssertEqual(error.errorDescription, SecurityError.bookmarkError("Mock failure").errorDescription)
+        } catch let error as SecurityTypes.SecurityError {
+            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Mock failure").errorDescription)
         }
     }
 
@@ -154,8 +156,8 @@ final class MockSecurityProviderTests: XCTestCase {
         do {
             _ = try await provider.resolveBookmark(bookmark)
             XCTFail("Expected access to fail")
-        } catch let error as SecurityError {
-            XCTAssertEqual(error.errorDescription, SecurityError.accessDenied(reason: "Mock access denied").errorDescription)
+        } catch let error as SecurityTypes.SecurityError {
+            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.accessDenied(reason: "Mock access denied").errorDescription)
         }
     }
 
@@ -227,8 +229,17 @@ final class MockSecurityProviderTests: XCTestCase {
         do {
             _ = try await provider.loadBookmark(withIdentifier: "test")
             XCTFail("Expected bookmark not found error")
-        } catch let error as SecurityError {
-            XCTAssertEqual(error.errorDescription, SecurityError.itemNotFound(reason: "Bookmark not found: test").errorDescription)
+        } catch let error as SecurityTypes.SecurityError {
+            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Bookmark not found: test").errorDescription)
+        }
+    }
+
+    func testLoadNonExistentBookmark() async throws {
+        do {
+            _ = try await provider.loadBookmark(withIdentifier: "test")
+            XCTFail("Expected bookmark not found error")
+        } catch let error as SecurityTypes.SecurityError {
+            XCTAssertEqual(error.errorDescription, SecurityTypes.SecurityError.bookmarkError("Bookmark not found: test").errorDescription)
         }
     }
 }

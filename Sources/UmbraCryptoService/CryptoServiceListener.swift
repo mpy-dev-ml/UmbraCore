@@ -1,3 +1,4 @@
+import Core
 import Foundation
 import UmbraXPC
 import XPC
@@ -6,9 +7,11 @@ import XPC
 @MainActor
 public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
     private let listener: NSXPCListener
+    private let cryptoService: CryptoXPCService
 
     public init(machServiceName: String) {
         self.listener = NSXPCListener(machServiceName: machServiceName)
+        self.cryptoService = CryptoXPCService()
         super.init()
         self.listener.delegate = self
     }
@@ -26,11 +29,10 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
     nonisolated public func listener(_ listener: NSXPCListener, shouldAcceptNewConnection connection: NSXPCConnection) -> Bool {
         Task { @MainActor in
             // Configure the connection
-            connection.exportedInterface = NSXPCInterface(with: CryptoXPCServiceProtocol.self)
+            connection.exportedInterface = NSXPCInterface(with: Core.CryptoXPCServiceProtocol.self)
 
             // Create and set the exported object
-            let exportedObject = CryptoXPCService()
-            connection.exportedObject = exportedObject
+            connection.exportedObject = cryptoService
 
             // Set up error handling
             connection.invalidationHandler = {

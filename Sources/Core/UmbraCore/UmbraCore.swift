@@ -23,7 +23,8 @@ public enum UmbraCore {
     }
 
     /// Security levels for cryptographic operations
-    @frozen public enum SecurityLevel: Sendable {
+    @frozen
+    public enum SecurityLevel: Sendable {
         /// High security - suitable for sensitive data
         case high
         /// Medium security - balanced between security and performance

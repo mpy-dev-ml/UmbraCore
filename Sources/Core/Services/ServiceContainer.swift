@@ -167,7 +167,11 @@ public actor ServiceContainer {
                         await updateServiceState(identifier, to: .ready)
                     } catch {
                         await updateServiceState(identifier, to: .error)
-                        throw ServiceError.initialisationFailed("Failed to initialise \(identifier): \(error.localizedDescription)")
+                        let errorMessage = [
+                            "Failed to initialise \(identifier): ",
+                            error.localizedDescription
+                        ].joined()
+                        throw ServiceError.initialisationFailed(errorMessage)
                     }
                 }
             }

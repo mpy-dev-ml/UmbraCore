@@ -36,7 +36,10 @@ enum TestUtilities {
         }
 
         // Create sample text files
-        let textContent = fileContent ?? "This is a sample text file for testing Restic backup and restore functionality.\n"
+        let textContent = fileContent ?? [
+            "This is a sample text file for testing ",
+            "Restic backup and restore functionality.\n"
+        ].joined()
         try directories.forEach { dir in
             let path = (baseDirectory as NSString).appendingPathComponent(dir)
             let filePath = (path as NSString).appendingPathComponent("sample.txt")

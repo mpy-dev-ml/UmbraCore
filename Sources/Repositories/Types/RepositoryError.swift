@@ -29,6 +29,9 @@ public enum RepositoryError: LocalizedError {
     /// Repository maintenance operation failed
     case maintenanceFailed(reason: String)
 
+    /// Repository not found
+    case notFound(identifier: String)
+
     public var errorDescription: String? {
         switch self {
         case .initializationFailed(let reason):
@@ -49,6 +52,8 @@ public enum RepositoryError: LocalizedError {
             return "Repository health check failed: \(reason)"
         case .maintenanceFailed(let reason):
             return "Repository maintenance operation failed: \(reason)"
+        case .notFound(let identifier):
+            return "Repository not found: \(identifier)"
         }
     }
 
@@ -64,6 +69,8 @@ public enum RepositoryError: LocalizedError {
              .healthCheckFailed(let reason),
              .maintenanceFailed(let reason):
             return reason
+        case .notFound(let identifier):
+            return identifier
         }
     }
 
@@ -87,6 +94,8 @@ public enum RepositoryError: LocalizedError {
             return "Run repository repair or check for corruption"
         case .maintenanceFailed:
             return "Retry the maintenance operation or check logs for more details"
+        case .notFound:
+            return "Check the repository identifier and try again"
         }
     }
 }
