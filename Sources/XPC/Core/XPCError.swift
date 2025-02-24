@@ -13,7 +13,7 @@ import Foundation
     case serviceError(category: Category, underlying: Error, message: String)
     case connectionError(message: String)
     case invalidRequest(message: String)
-    case operationCancelled(reason: String)
+    case operationCanceled(reason: String)
     case timeout(operation: String)
     case securityValidationFailed(reason: String)
     case serviceUnavailable(name: String)
@@ -30,7 +30,7 @@ import Foundation
             }
         case .connectionError, .timeout, .serviceUnavailable:
             return true
-        case .invalidRequest, .operationCancelled, .securityValidationFailed:
+        case .invalidRequest, .operationCanceled, .securityValidationFailed:
             return false
         }
     }
@@ -43,8 +43,8 @@ import Foundation
             return "[Connection] \(message)"
         case .invalidRequest(let message):
             return "[Invalid Request] \(message)"
-        case .operationCancelled(let reason):
-            return "[Cancelled] \(reason)"
+        case .operationCanceled(let reason):
+            return "[Canceled] \(reason)"
         case .timeout(let operation):
             return "[Timeout] Operation timed out: \(operation)"
         case .securityValidationFailed(let reason):
@@ -62,8 +62,8 @@ import Foundation
             return "[Connection] \(message)"
         case .invalidRequest(let message):
             return "[Invalid Request] \(message)"
-        case .operationCancelled(let reason):
-            return "[Cancelled] \(reason)"
+        case .operationCanceled(let reason):
+            return "[Canceled] \(reason)"
         case .timeout(let operation):
             return "[Timeout] Operation timed out: \(operation)"
         case .securityValidationFailed(let reason):
