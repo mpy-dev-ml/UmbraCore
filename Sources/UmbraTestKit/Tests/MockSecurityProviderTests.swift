@@ -262,7 +262,7 @@ final class MockSecurityProviderTests: XCTestCase {
     }
 
     func testEncryptDecryptLargeData() async throws {
-        let largeString = String(repeating: "Test data for encryption ", count: 1000)
+        let largeString = String(repeating: "Test data for encryption ", count: 1_000)
         let data = Data(largeString.utf8)
         let encryptedData = try await provider.encrypt(data: data)
         let decryptedData = try await provider.decrypt(data: encryptedData)
@@ -280,11 +280,19 @@ final class MockSecurityProviderTests: XCTestCase {
 
         // Test encryption
         let encrypted = try await provider.encrypt(data: testData, key: key)
-        XCTAssertNotEqual(encrypted, testData, "Encrypted data should be different from original")
+        XCTAssertNotEqual(
+            encrypted,
+            testData,
+            "Encrypted data should be different from original"
+        )
 
         // Test decryption
         let decrypted = try await provider.decrypt(data: encrypted, key: key)
-        XCTAssertEqual(decrypted, testData, "Decrypted data should match original")
+        XCTAssertEqual(
+            decrypted,
+            testData,
+            "Decrypted data should match original"
+        )
     }
 
     func testEncryptDecryptWithDifferentKeys() async throws {
@@ -300,5 +308,48 @@ final class MockSecurityProviderTests: XCTestCase {
             try provider.decrypt(data: encrypted, key: key2),
             "Decryption with wrong key should fail"
         )
+    }
+
+    func testEncryptionWithCustomKey() async throws {
+        let provider = MockSecurityProvider()
+        let testData = Data("Test data".utf8)
+        let customKey = Data("Custom encryption key".utf8)
+
+        // Test encryption with custom key
+        let encrypted = try await provider.encrypt(
+            data: testData,
+            key: customKey
+        )
+        XCTAssertNotEqual(
+            encrypted,
+            testData,
+            "Encrypted data with custom key should be different from original"
+        )
+
+        // Test decryption with custom key
+        let decrypted = try await provider.decrypt(
+            data: encrypted,
+            key: customKey
+        )
+        XCTAssertEqual(
+            decrypted,
+            testData,
+            "Decrypted data with custom key should match original"
+        )
+    }
+
+    func testEncryptionWithInvalidKey() async throws {
+        let provider = MockSecurityProvider()
+        let testData = Data("Test data".utf8)
+        let invalidKey = Data()
+
+        do {
+            _ = try await provider.encrypt(data: testData, key: invalidKey)
+            XCTFail("Encryption with invalid key should fail")
+        } catch SecurityError.invalidKey {
+            // Expected error
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
     }
 }

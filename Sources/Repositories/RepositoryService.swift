@@ -23,10 +23,10 @@ public actor RepositoryService {
     public static let shared = RepositoryService()
 
     /// Currently registered repositories
-    private var repositories: [String: any Repository]
+    internal private(set) var repositories: [String: any Repository]
 
     /// Logger instance
-    private let logger: Logger
+    internal let logger: Logger
 
     /// Initializes a new repository service instance.
     ///
@@ -61,13 +61,20 @@ public actor RepositoryService {
         // Ensure repository is accessible
         guard await repository.isAccessible() else {
             await logger.error("Repository not accessible", metadata: metadata)
-            throw RepositoryError.notAccessible(reason: "Repository is not accessible")
+            throw RepositoryError.notAccessible(
+                reason: "Repository is not accessible"
+            )
         }
 
         // Check for duplicate
         guard repositories[identifier] == nil else {
-            await logger.error("Duplicate repository identifier", metadata: metadata)
-            throw RepositoryError.invalidConfiguration(reason: "Repository with identifier '\(identifier)' already exists")
+            await logger.error(
+                "Duplicate repository identifier",
+                metadata: metadata
+            )
+            throw RepositoryError.invalidConfiguration(
+                reason: "Repository with identifier '\(identifier)' already exists"
+            )
         }
 
         // Initialize repository if needed
@@ -80,10 +87,15 @@ public actor RepositoryService {
         do {
             guard try await repository.validate() else {
                 await logger.error("Repository validation failed", metadata: metadata)
-                throw RepositoryError.validationFailed(reason: "Repository validation failed")
+                throw RepositoryError.validationFailed(
+                    reason: "Repository validation failed"
+                )
             }
         } catch {
-            await logger.error("Repository validation error: \(error.localizedDescription)", metadata: metadata)
+            await logger.error(
+                "Repository validation error: \(error.localizedDescription)",
+                metadata: metadata
+            )
             throw error
         }
 
@@ -91,378 +103,70 @@ public actor RepositoryService {
         await logger.info("Repository registered successfully", metadata: metadata)
     }
 
-    /// Unregisters a repository from the service.
+    /// Deregisters a repository from the service.
     ///
-    /// - Parameter identifier: The identifier of the repository to unregister.
-    /// - Returns: The unregistered repository.
-    /// - Throws: `RepositoryError.notFound` if the repository is not found.
-    @discardableResult
-    public func unregister(_ identifier: String) async throws -> any Repository {
+    /// - Parameter identifier: The identifier of the repository to deregister.
+    /// - Throws: `RepositoryError.repositoryNotFound` if no repository exists with the given identifier.
+    public func deregister(identifier: String) async throws {
         let metadata: LogMetadata = ["repository_id": .string(identifier)]
-        await logger.info("Unregistering repository", metadata: metadata)
+        await logger.info("Deregistering repository", metadata: metadata)
 
-        guard let repository = repositories.removeValue(forKey: identifier) else {
+        guard repositories.removeValue(forKey: identifier) != nil else {
             await logger.error("Repository not found", metadata: metadata)
-            throw RepositoryError.notAccessible(reason: "Repository '\(identifier)' not found")
+            throw RepositoryError.repositoryNotFound(
+                "No repository found with identifier '\(identifier)'"
+            )
         }
 
-        await logger.info("Repository unregistered successfully", metadata: metadata)
-        return repository
-    }
-
-    /// Retrieves a repository by its identifier.
-    ///
-    /// - Parameter identifier: The identifier of the repository to retrieve.
-    /// - Returns: The requested repository.
-    /// - Throws: `RepositoryError.notFound` if the repository is not found.
-    public func getRepository(_ identifier: String) async throws -> any Repository {
-        let metadata: LogMetadata = ["repository_id": .string(identifier)]
-
-        guard let repository = repositories[identifier] else {
-            await logger.error("Repository not found", metadata: metadata)
-            throw RepositoryError.notAccessible(reason: "Repository '\(identifier)' not found")
-        }
-
-        await logger.debug("Repository retrieved", metadata: metadata)
-        return repository
+        await logger.info("Repository deregistered successfully", metadata: metadata)
     }
 
     /// Lists all registered repositories.
     ///
     /// - Returns: An array of registered repositories.
     public func listRepositories() async -> [any Repository] {
-        await logger.debug("Listing repositories", metadata: LogMetadata([
-            "count": .string(String(repositories.count))
-        ]))
+        await logger.debug(
+            "Listing repositories",
+            metadata: LogMetadata([
+                "count": .string(String(repositories.count))
+            ])
+        )
         return Array(repositories.values)
     }
 
-    // MARK: - Bulk Operations
-
-    /// Locks all repositories.
+    /// Gets a repository by its identifier.
     ///
-    /// - Parameter force: If true, ignore errors from individual repositories. Defaults to false.
-    /// - Throws: `RepositoryError.operationFailed` if any repository fails to lock and force is false.
-    public func lockAll(force: Bool = false) async throws {
-        let metadata: LogMetadata = [
-            "force": .string(String(force)),
-            "repository_count": .string(String(repositories.count))
-        ]
+    /// - Parameter identifier: The identifier of the repository.
+    /// - Returns: The repository if found, nil otherwise.
+    public func getRepository(identifier: String) async -> (any Repository)? {
+        await logger.debug(
+            "Getting repository",
+            metadata: LogMetadata([
+                "repository_id": .string(identifier)
+            ])
+        )
+        return repositories[identifier]
+    }
 
-        await logger.info("Locking all repositories", metadata: metadata)
-        var errors: [String: Error] = [:]
+    /// Gets a repository at the specified URL.
+    ///
+    /// - Parameter url: The URL of the repository.
+    /// - Returns: The repository if found, nil otherwise.
+    public func getRepository(at url: URL) async -> (any Repository)? {
+        let path = url.path
+        await logger.debug(
+            "Getting repository by URL",
+            metadata: LogMetadata([
+                "path": .string(path)
+            ])
+        )
 
         for repository in repositories.values {
-            let identifier = await repository.identifier
-            let repoMetadata: LogMetadata = [
-                "repository_id": .string(identifier),
-                "force": .string(String(force))
-            ]
-
-            do {
-                try await repository.lock()
-                await logger.debug("Repository locked successfully", metadata: repoMetadata)
-            } catch {
-                await logger.error("Failed to lock repository: \(error.localizedDescription)", metadata: repoMetadata)
-                if !force {
-                    throw RepositoryError.operationFailed(reason: "Failed to lock repository '\(identifier)': \(error.localizedDescription)")
-                }
-                errors[identifier] = error
+            if await repository.location.path == path {
+                return repository
             }
         }
 
-        if !errors.isEmpty {
-            await logger.warning("Some repositories failed to lock", metadata: LogMetadata([
-                "error_count": .string(String(errors.count)),
-                "force": .string(String(force))
-            ]))
-        } else {
-            await logger.info("All repositories locked successfully", metadata: metadata)
-        }
-    }
-
-    /// Unlocks all repositories.
-    ///
-    /// - Parameter force: If true, ignore errors from individual repositories. Defaults to false.
-    /// - Throws: `RepositoryError.operationFailed` if any repository fails to unlock and force is false.
-    public func unlockAll(force: Bool = false) async throws {
-        let metadata: LogMetadata = [
-            "force": .string(String(force)),
-            "repository_count": .string(String(repositories.count))
-        ]
-
-        await logger.info("Unlocking all repositories", metadata: metadata)
-        var errors: [String: Error] = [:]
-
-        for repository in repositories.values {
-            let identifier = await repository.identifier
-            let repoMetadata: LogMetadata = [
-                "repository_id": .string(identifier),
-                "force": .string(String(force))
-            ]
-
-            do {
-                try await repository.unlock()
-                await logger.debug("Repository unlocked successfully", metadata: repoMetadata)
-            } catch {
-                await logger.error("Failed to unlock repository: \(error.localizedDescription)", metadata: repoMetadata)
-                if !force {
-                    throw RepositoryError.operationFailed(reason: "Failed to unlock repository '\(identifier)': \(error.localizedDescription)")
-                }
-                errors[identifier] = error
-            }
-        }
-
-        if !errors.isEmpty {
-            await logger.warning("Some repositories failed to unlock", metadata: LogMetadata([
-                "error_count": .string(String(errors.count)),
-                "force": .string(String(force))
-            ]))
-        } else {
-            await logger.info("All repositories unlocked successfully", metadata: metadata)
-        }
-    }
-
-    /// Retrieves aggregated statistics for all repositories.
-    ///
-    /// - Returns: A dictionary mapping repository identifiers to their statistics.
-    /// - Throws: `RepositoryError.operationFailed` if stats cannot be retrieved for any repository.
-    public func getAllStats() async throws -> [String: RepositoryStats] {
-        let metadata: LogMetadata = ["repository_count": .string(String(repositories.count))]
-        await logger.info("Retrieving stats for all repositories", metadata: metadata)
-
-        var stats: [String: RepositoryStats] = [:]
-        var errors: [String: Error] = [:]
-
-        for repository in repositories.values {
-            let identifier = await repository.identifier
-            let repoMetadata: LogMetadata = ["repository_id": .string(identifier)]
-
-            do {
-                stats[identifier] = try await repository.getStats()
-                await logger.debug("Retrieved stats successfully", metadata: repoMetadata)
-            } catch {
-                await logger.error("Failed to get repository stats: \(error.localizedDescription)", metadata: repoMetadata)
-                errors[identifier] = error
-            }
-        }
-
-        if !errors.isEmpty {
-            await logger.error("Failed to get stats for some repositories", metadata: LogMetadata([
-                "error_count": .string(String(errors.count)),
-                "success_count": .string(String(stats.count))
-            ]))
-            throw RepositoryError.operationFailed(reason: "Failed to get stats for some repositories: \(errors)")
-        }
-
-        await logger.info("Retrieved all repository stats successfully", metadata: LogMetadata([
-            "repository_count": .string(String(stats.count))
-        ]))
-
-        return stats
-    }
-
-    /// Options for repository health checks
-    public struct HealthCheckOptions: Sendable {
-        /// Whether to verify the actual data blobs
-        public let readData: Bool
-
-        /// Whether to check for unused data
-        public let checkUnused: Bool
-
-        public init(readData: Bool, checkUnused: Bool) {
-            self.readData = readData
-            self.checkUnused = checkUnused
-        }
-
-        /// Default options with basic integrity check
-        public static let basic = HealthCheckOptions(readData: false, checkUnused: false)
-
-        /// Full verification including data blobs
-        public static let full = HealthCheckOptions(readData: true, checkUnused: true)
-    }
-
-    /// Performs a health check on a specific repository
-    ///
-    /// - Parameters:
-    ///   - identifier: The identifier of the repository to check
-    ///   - options: Health check options controlling the verification level
-    /// - Throws: `RepositoryError.notFound` if the repository is not found,
-    ///           `RepositoryError.healthCheckFailed` if the check fails
-    public func checkHealth(
-        of identifier: String,
-        options: HealthCheckOptions = .basic
-    ) async throws {
-        let metadata: LogMetadata = [
-            "repository_id": .string(identifier),
-            "read_data": .string(String(options.readData)),
-            "check_unused": .string(String(options.checkUnused))
-        ]
-
-        await logger.info("Starting repository health check", metadata: metadata)
-
-        guard let repository = repositories[identifier] else {
-            await logger.error("Repository not found", metadata: metadata)
-            throw RepositoryError.notFound(identifier: identifier)
-        }
-
-        do {
-            try await repository.check(readData: options.readData, checkUnused: options.checkUnused)
-            await logger.info("Repository health check completed successfully", metadata: metadata)
-        } catch {
-            await logger.error("Repository health check failed: \(error.localizedDescription)", metadata: metadata)
-            throw RepositoryError.healthCheckFailed(reason: error.localizedDescription)
-        }
-    }
-
-    /// Performs a health check on all registered repositories
-    ///
-    /// - Parameters:
-    ///   - options: Health check options controlling the verification level
-    ///   - force: If true, continue checking other repositories even if some fail
-    /// - Throws: `RepositoryError.healthCheckFailed` if any repository check fails and force is false
-    public func checkHealthAll(
-        options: HealthCheckOptions = .basic,
-        force: Bool = false
-    ) async throws {
-        let metadata: LogMetadata = [
-            "repository_count": .string(String(repositories.count)),
-            "read_data": .string(String(options.readData)),
-            "check_unused": .string(String(options.checkUnused)),
-            "force": .string(String(force))
-        ]
-
-        await logger.info("Starting health check for all repositories", metadata: metadata)
-
-        var errors: [String: Error] = [:]
-
-        for (identifier, repository) in repositories {
-            do {
-                try await repository.check(readData: options.readData, checkUnused: options.checkUnused)
-                await logger.info("Health check completed for repository", metadata: ["repository_id": .string(identifier)])
-            } catch {
-                errors[identifier] = error
-                await logger.error("Health check failed for repository: \(error.localizedDescription)",
-                                 metadata: ["repository_id": .string(identifier)])
-                if !force {
-                    throw RepositoryError.healthCheckFailed(reason: "Health check failed for repository '\(identifier)': \(error.localizedDescription)")
-                }
-            }
-        }
-
-        if !errors.isEmpty {
-            let errorSummary = errors.map { "'\($0)': \($1.localizedDescription)" }.joined(separator: ", ")
-            throw RepositoryError.healthCheckFailed(reason: "Health checks failed for repositories: \(errorSummary)")
-        }
-
-        await logger.info("Health check completed for all repositories", metadata: metadata)
-    }
-
-    /// Performs maintenance on a repository
-    ///
-    /// - Parameters:
-    ///   - identifier: The identifier of the repository to maintain
-    ///   - rebuildIndex: Whether to rebuild the repository index
-    /// - Throws: `RepositoryError.notFound` if the repository is not found,
-    ///           `RepositoryError.maintenanceFailed` if the operation fails
-    public func maintain(
-        _ identifier: String,
-        rebuildIndex: Bool = false
-    ) async throws {
-        let metadata: LogMetadata = [
-            "repository_id": .string(identifier),
-            "rebuild_index": .string(String(rebuildIndex))
-        ]
-
-        await logger.info("Starting repository maintenance", metadata: metadata)
-
-        guard let repository = repositories[identifier] else {
-            await logger.error("Repository not found", metadata: metadata)
-            throw RepositoryError.notFound(identifier: identifier)
-        }
-
-        do {
-            // Prune unused data
-            try await repository.prune()
-
-            if rebuildIndex {
-                try await repository.rebuildIndex()
-            }
-
-            await logger.info("Repository maintenance completed successfully", metadata: metadata)
-        } catch {
-            await logger.error("Repository maintenance failed: \(error.localizedDescription)", metadata: metadata)
-            throw RepositoryError.maintenanceFailed(reason: error.localizedDescription)
-        }
-    }
-
-    /// Retrieves a repository at the specified URL.
-    ///
-    /// - Parameter url: Repository URL
-    /// - Returns: Repository instance if found
-    /// - Throws: RepositoryError if repository is invalid
-    private func getRepository(at url: URL) async throws -> Repository? {
-        guard let repository = repositories[url.path] else {
-            let message = "No repository found at \(url.path)"
-            throw RepositoryError.repositoryNotFound(message)
-        }
-        return repository
-    }
-
-    /// Initializes a new repository at the specified URL.
-    ///
-    /// - Parameter url: Repository URL
-    /// - Returns: Repository instance
-    /// - Throws: RepositoryError if initialization fails
-    public func initializeRepository(at url: URL) async throws -> Repository {
-        guard !repositories.contains(where: { $0.key == url.path }) else {
-            let message = "Repository already exists at \(url.path)"
-            throw RepositoryError.repositoryExists(message)
-        }
-        let repository = try await Repository(url: url)
-        repositories[url.path] = repository
-        return repository
-    }
-
-    /// Validates a repository at a given URL.
-    ///
-    /// - Parameter url: The URL of the repository to validate.
-    /// - Returns: Whether the repository is valid.
-    /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found.
-    public func validateRepository(at url: URL) async throws -> Bool {
-        guard let repository = try await getRepository(at: url) else {
-            throw RepositoryError.repositoryNotFound(
-                "No repository found at \(url.path)"
-            )
-        }
-        return try await repository.validate()
-    }
-
-    /// Checks a repository at a given URL.
-    ///
-    /// - Parameter url: The URL of the repository to check.
-    /// - Returns: The repository statistics.
-    /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found.
-    public func checkRepository(at url: URL) async throws -> RepositoryStats {
-        guard let repository = try await getRepository(at: url) else {
-            throw RepositoryError.repositoryNotFound(
-                "No repository found at \(url.path)"
-            )
-        }
-        return try await repository.check()
-    }
-
-    /// Repairs a repository at a given URL.
-    ///
-    /// - Parameter url: The URL of the repository to repair.
-    /// - Returns: Whether the repository was successfully repaired.
-    /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found.
-    public func repairRepository(at url: URL) async throws -> Bool {
-        guard let repository = try await getRepository(at: url) else {
-            throw RepositoryError.repositoryNotFound(
-                "No repository found at \(url.path)"
-            )
-        }
-        return try await repository.repair()
+        return nil
     }
 }
