@@ -7,6 +7,20 @@ build --cpu=darwin_arm64
 build --macos_minimum_os=14.0
 build --platforms=//:macos_arm64
 
+# Test configuration
+test --test_env=DYLD_LIBRARY_PATH
+test --test_env=DYLD_FRAMEWORK_PATH
+test --test_env=DEVELOPER_DIR
+test --test_env=SDKROOT
+test --test_env=MACOS_SDK_VERSION=14.0
+test --test_env=XCODE_VERSION_OVERRIDE=15.0.0
+test --test_env=PLATFORM_NAME=macosx
+test --test_output=errors
+test --test_verbose_timeout_warnings
+test --test_summary=detailed
+test --build_tests_only
+test --test_env=SWIFT_DETERMINISTIC_HASHING=1
+
 # Swift specific settings
 build --features=swift.use_global_module_cache
 build --features=swift.enable_batch_mode
@@ -23,14 +37,6 @@ build --action_env=CC=clang
 # Cache settings
 build --disk_cache=~/.cache/bazel
 build --repository_cache=~/.cache/bazel-repo
-
-# Test configuration
-test --test_output=errors
-test --test_verbose_timeout_warnings
-test --test_summary=detailed
-test --build_tests_only
-test --test_env=DYLD_LIBRARY_PATH
-test --test_env=SWIFT_DETERMINISTIC_HASHING=1
 
 # Coverage settings
 coverage --instrument_test_targets
