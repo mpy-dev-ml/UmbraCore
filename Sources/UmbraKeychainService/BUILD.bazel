@@ -2,15 +2,25 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "UmbraKeychainService",
-    srcs = glob([
-        "**/*.swift",
-    ]),
+    srcs = glob(["**/*.swift"]),
     module_name = "UmbraKeychainService",
+    testonly = True,
     visibility = ["//visibility:public"],
+    copts = [
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+        "-enable-testing",
+        "-target",
+        "arm64-apple-macos14.0",
+    ],
     deps = [
-        "//Sources/CryptoTypes",
-        "//Sources/ErrorHandling",
-        "@swiftpkg_cryptoswift//:CryptoSwift",
+        "//Sources/CryptoTypes:CryptoTypes",
+        "//Sources/ErrorHandling:ErrorHandling",
+        "//Sources/SecurityTypes:SecurityTypes",
+        "//Sources/SecurityUtils:Sources_SecurityUtils",
+        "//Sources/UmbraCore:Sources_UmbraCore",
+        "//Sources/UmbraLogging:Sources_UmbraLogging",
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
     ],
 )

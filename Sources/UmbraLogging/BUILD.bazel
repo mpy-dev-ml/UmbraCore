@@ -17,4 +17,7 @@ swift_library(
     ],
     module_name = "UmbraLogging",
     visibility = ["//visibility:public"],
+    deps = [
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    ],
 )
