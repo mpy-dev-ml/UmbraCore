@@ -1,7 +1,7 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_CryptoTypes_Services",
+    name = "CryptoTypes_Services",
     testonly = True,
     srcs = glob(["*.swift"]),
     copts = [
@@ -14,7 +14,7 @@ swift_library(
     module_name = "CryptoTypes_Services",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/CryptoTypes/Protocols:Sources_CryptoTypes_Protocols",
-        "//Sources/CryptoTypes/Types:Sources_CryptoTypes_Types",
+        "//Sources/CryptoTypes/Protocols:CryptoTypes_Protocols",
+        "//Sources/CryptoTypes/Types:CryptoTypes_Types",
     ],
 )

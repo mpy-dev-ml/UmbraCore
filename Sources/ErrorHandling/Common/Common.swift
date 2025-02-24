@@ -30,18 +30,20 @@ public enum ServiceErrorType: String, Sendable, CaseIterable {
     case network = "Network"
     /// Authentication-related errors
     case authentication = "Authentication"
-    /// Timeout-related errors
-    case timeout = "Timeout"
-    /// Initialization-related errors
-    case initialization = "Initialization"
-    /// Lifecycle-related errors
-    case lifecycle = "Lifecycle"
+    /// Security-related errors
+    case security = "Security"
     /// Permission-related errors
     case permission = "Permission"
+    /// Validation-related errors
+    case validation = "Validation"
+    /// Data-related errors
+    case data = "Data"
+    /// Service-related errors
+    case service = "Service"
     /// Unknown errors
     case unknown = "Unknown"
 
-    /// User-friendly description of the error type
+    /// Returns a user-friendly description of the error type
     public var description: String {
         switch self {
         case .configuration:
@@ -58,58 +60,18 @@ public enum ServiceErrorType: String, Sendable, CaseIterable {
             return "Network Error"
         case .authentication:
             return "Authentication Error"
-        case .timeout:
-            return "Timeout Error"
-        case .initialization:
-            return "Initialization Error"
-        case .lifecycle:
-            return "Lifecycle Error"
+        case .security:
+            return "Security Error"
         case .permission:
             return "Permission Error"
+        case .validation:
+            return "Validation Error"
+        case .data:
+            return "Data Error"
+        case .service:
+            return "Service Error"
         case .unknown:
             return "Unknown Error"
         }
-    }
-}
-
-/// Additional context that can be attached to errors
-public struct ErrorContext {
-    /// The source of the error (e.g., module name, class name)
-    public let source: String
-
-    /// Operation being performed when the error occurred
-    public let operation: String
-
-    /// Additional details about the error
-    public let details: String?
-
-    /// Underlying error if any
-    public let underlyingError: Error?
-
-    /// File where the error occurred
-    public let file: String
-
-    /// Line number where the error occurred
-    public let line: Int
-
-    /// Function where the error occurred
-    public let function: String
-
-    public init(
-        source: String,
-        operation: String,
-        details: String? = nil,
-        underlyingError: Error? = nil,
-        file: String = #file,
-        line: Int = #line,
-        function: String = #function
-    ) {
-        self.source = source
-        self.operation = operation
-        self.details = details
-        self.underlyingError = underlyingError
-        self.file = file
-        self.line = line
-        self.function = function
     }
 }

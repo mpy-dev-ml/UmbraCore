@@ -1,7 +1,7 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_UmbraSecurity",
+    name = "UmbraSecurity",
     testonly = True,
     srcs = glob(["*.swift"]),
     copts = [
@@ -14,7 +14,7 @@ swift_library(
     module_name = "UmbraSecurity",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/Services/SecurityUtils/Protocols:Services_SecurityUtils_Protocols",
+        "//Sources/Services/SecurityUtils/Protocols:SecurityUtils_Protocols",
         "//Sources/Services/SecurityUtils/Services:SecurityUtils",
     ],
 )

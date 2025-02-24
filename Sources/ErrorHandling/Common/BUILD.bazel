@@ -1,8 +1,8 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_ErrorHandling_Common",
-    srcs = ["Common.swift"],
+    name = "ErrorHandling_Common",
+    srcs = glob(["*.swift"]),
     copts = [
         "-target",
         "arm64-apple-macos14.0",

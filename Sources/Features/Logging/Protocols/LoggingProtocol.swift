@@ -1,5 +1,5 @@
-import Foundation
 import Features_Logging_Models
+import Foundation
 
 /// Logging Protocol
 /// Defines the public interface for logging operations.
@@ -22,13 +22,13 @@ public protocol LoggingProtocol: Sendable {
 public enum LoggingError: LocalizedError, Sendable {
     /// Failed to write log entry with the given reason.
     case writeFailed(String)
-    
+
     /// Invalid log entry format with the given reason.
     case invalidFormat(String)
-    
+
     /// Storage error with the given reason.
     case storageError(String)
-    
+
     public var errorDescription: String? {
         switch self {
         case .writeFailed(let reason):

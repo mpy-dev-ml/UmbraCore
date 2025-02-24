@@ -2,9 +2,10 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "ErrorHandling",
-    srcs = glob(["**/*.swift"]),
+    srcs = glob(["*.swift"]),
     module_name = "ErrorHandling",
     visibility = ["//visibility:public"],
+    testonly = True,
     copts = [
         "-strict-concurrency=complete",
         "-warn-concurrency",
@@ -12,5 +13,10 @@ swift_library(
         "-enable-testing",
         "-target",
         "arm64-apple-macos14.0",
+    ],
+    deps = [
+        "//Sources/ErrorHandling/Common:ErrorHandling_Common",
+        "//Sources/ErrorHandling/Models:ErrorHandling_Models",
+        "//Sources/ErrorHandling/Protocols:ErrorHandling_Protocols",
     ],
 )

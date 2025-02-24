@@ -1,0 +1,1763 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for UmbraCore - Secure Backup Management System">
+      
+      
+        <meta name="author" content="MPY Development">
+      
+      
+        <link rel="canonical" href="https://umbracore.dev/REFACTORING_PLAN/">
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+    
+    
+      
+        <title>UmbraCore Refactoring Plan - UmbraCore Documentation</title>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    <style>
+        body {
+            background-color: #000084;
+            color: #ffffff;
+        }
+        
+        .navbar {
+            background-color: #000084;
+            border-bottom: 1px solid #ffffff;
+        }
+        
+        .navbar-default .navbar-nav > li > a {
+            color: #ffffff;
+        }
+        
+        .navbar-default .navbar-brand {
+            color: #ffffff;
+        }
+        
+        .well {
+            background-color: #000084;
+            border: 1px solid #ffffff;
+        }
+        
+        code, pre {
+            font-family: 'Monoid', monospace !important;
+            background-color: #000084;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+        }
+        
+        a {
+            color: #00ffff;
+        }
+        
+        a:hover {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: #ffffff;
+        }
+        
+        .bs-sidebar .nav > li > a {
+            color: #ffffff;
+        }
+        
+        .bs-sidebar .nav > li > a:hover {
+            color: #00ffff;
+            background-color: transparent;
+        }
+        
+        .form-control {
+            background-color: #000084;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+        }
+        
+        table {
+            border: 1px solid #ffffff;
+        }
+        
+        th, td {
+            border: 1px solid #ffffff;
+            padding: 8px;
+        }
+        
+        blockquote {
+            border-left: 5px solid #ffffff;
+            background-color: #000084;
+        }
+        
+        .alert {
+            background-color: #000084;
+            border: 1px solid #ffffff;
+            color: #ffffff;
+        }
+        
+        footer {
+            border-top: 1px solid #ffffff;
+            color: #ffffff;
+        }
+    </style>
+
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto Mono";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#umbracore-refactoring-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="UmbraCore Documentation" class="md-header__button md-logo" aria-label="UmbraCore Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            UmbraCore Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              UmbraCore Refactoring Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mpy-dev-ml/UmbraCore" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="UmbraCore Documentation" class="md-nav__button md-logo" aria-label="UmbraCore Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    UmbraCore Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mpy-dev-ml/UmbraCore" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/advanced-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Advanced Features
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/security/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Security
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Development
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/bazel_spm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Bazel & SPM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/architecture.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architecture
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Support
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Support
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LICENSE/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    License
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ACKNOWLEDGMENTS/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-service-architecture-4-weeks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 1: Service Architecture (4 weeks)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1: Service Architecture (4 weeks)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#week-1-2-core-service-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 1-2: Core Service Infrastructure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 1-2: Core Service Infrastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-service-protocol-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Service Protocol Definition
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-service-container-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Service Container Implementation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-3-4-security-service-refactoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 3-4: Security Service Refactoring
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 3-4: Security Service Refactoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-crypto-service-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Crypto Service Implementation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-security-service-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Security Service Implementation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-resource-management-4-weeks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 2: Resource Management (4 weeks)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2: Resource Management (4 weeks)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#week-1-2-resource-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 1-2: Resource Handling
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 1-2: Resource Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-resource-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Resource Protocol
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-resource-pool-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Resource Pool Implementation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-3-4-security-resource-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 3-4: Security Resource Implementation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 3-4: Security Resource Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-secure-storage-resource" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Secure Storage Resource
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-keychain-resource" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Keychain Resource
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3-error-handling-4-weeks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phase 3: Error Handling (4 weeks)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3: Error Handling (4 weeks)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#week-1-2-error-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 1-2: Error Infrastructure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 1-2: Error Infrastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-error-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Error Context
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-error-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Error Protocol
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#week-3-4-security-error-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Week 3-4: Security Error Implementation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Week 3-4: Security Error Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-crypto-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Crypto Errors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-security-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Security Errors
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#style-guide-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Style Guide Compliance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Style Guide Compliance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentation-standards" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation Standards
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Organization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Naming Conventions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swift-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Swift Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-service-layer-weeks-1-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Service Layer (Weeks 1-4)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-resource-management-weeks-5-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Resource Management (Weeks 5-8)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-error-handling-weeks-9-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Error Handling (Weeks 9-12)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Unit Tests
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Integration Tests
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-performance-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Performance Tests
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#success-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Success Metrics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Success Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-code-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Code Quality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-maintainability" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Maintainability
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+    <div class="content">
+        
+                  
+
+  
+  
+
+
+<h1 id="umbracore-refactoring-plan">UmbraCore Refactoring Plan<a class="headerlink" href="#umbracore-refactoring-plan" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>This document outlines our approach to refactoring UmbraCore, using the Security and Crypto modules as templates. The plan combines functional improvements with progressive style guide compliance.</p>
+<h2 id="phase-1-service-architecture-4-weeks">Phase 1: Service Architecture (4 weeks)<a class="headerlink" href="#phase-1-service-architecture-4-weeks" title="Permanent link">&para;</a></h2>
+<h3 id="week-1-2-core-service-infrastructure">Week 1-2: Core Service Infrastructure<a class="headerlink" href="#week-1-2-core-service-infrastructure" title="Permanent link">&para;</a></h3>
+<h4 id="1-service-protocol-definition">1. Service Protocol Definition<a class="headerlink" href="#1-service-protocol-definition" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Protocol defining the base requirements for all UmbraCore services</span>
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="nc">UmbraService</span><span class="p">:</span> <span class="n">Actor</span> <span class="p">{</span>
+    <span class="c1">/// Unique identifier for the service type</span>
+    <span class="kd">static</span> <span class="kd">var</span> <span class="nv">serviceIdentifier</span><span class="p">:</span> <span class="nb">String</span> <span class="p">{</span> <span class="kr">get</span> <span class="p">}</span>
+
+    <span class="c1">/// Current state of the service</span>
+    <span class="kd">var</span> <span class="nv">state</span><span class="p">:</span> <span class="n">ServiceState</span> <span class="p">{</span> <span class="kr">get</span> <span class="p">}</span>
+
+    <span class="c1">/// Initialize the service</span>
+    <span class="c1">/// - Throws: ServiceError if initialization fails</span>
+    <span class="kd">func</span> <span class="nf">initialize</span><span class="p">()</span> <span class="k">async</span> <span class="kr">throws</span>
+
+    <span class="c1">/// Gracefully shut down the service</span>
+    <span class="kd">func</span> <span class="nf">shutdown</span><span class="p">()</span> <span class="k">async</span>
+<span class="p">}</span>
+
+<span class="c1">/// Represents the current state of a service</span>
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">ServiceState</span><span class="p">:</span> <span class="nb">String</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">uninitialized</span>
+    <span class="k">case</span> <span class="n">initializing</span>
+    <span class="k">case</span> <span class="n">ready</span>
+    <span class="k">case</span> <span class="n">error</span>
+    <span class="k">case</span> <span class="n">shuttingDown</span>
+    <span class="k">case</span> <span class="n">shutdown</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="2-service-container-implementation">2. Service Container Implementation<a class="headerlink" href="#2-service-container-implementation" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Thread-safe container for managing service instances</span>
+<span class="kd">public</span> <span class="kd">actor</span> <span class="n">ServiceContainer</span> <span class="p">{</span>
+    <span class="c1">/// Registered services</span>
+    <span class="kd">private</span> <span class="kd">var</span> <span class="nv">services</span><span class="p">:</span> <span class="p">[</span><span class="nb">String</span><span class="p">:</span> <span class="n">any</span> <span class="n">UmbraService</span><span class="p">]</span>
+
+    <span class="c1">/// Service initialization queue</span>
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">initializationQueue</span><span class="p">:</span> <span class="n">TaskGroup</span>
+
+    <span class="c1">/// Register a service with the container</span>
+    <span class="c1">/// - Parameter service: The service to register</span>
+    <span class="c1">/// - Throws: ServiceError if registration fails</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">register</span><span class="p">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="n">UmbraService</span><span class="p">&gt;(</span><span class="kc">_</span> <span class="n">service</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span>
+
+    <span class="c1">/// Resolve a service of the specified type</span>
+    <span class="c1">/// - Returns: The requested service instance</span>
+    <span class="c1">/// - Throws: ServiceError if service not found</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">resolve</span><span class="p">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="n">UmbraService</span><span class="p">&gt;(</span><span class="kc">_</span> <span class="n">type</span><span class="p">:</span> <span class="n">T</span><span class="p">.</span><span class="kr">Type</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">T</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="week-3-4-security-service-refactoring">Week 3-4: Security Service Refactoring<a class="headerlink" href="#week-3-4-security-service-refactoring" title="Permanent link">&para;</a></h3>
+<h4 id="1-crypto-service-implementation">1. Crypto Service Implementation<a class="headerlink" href="#1-crypto-service-implementation" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Handles cryptographic operations</span>
+<span class="kd">public</span> <span class="kd">actor</span> <span class="n">CryptoService</span><span class="p">:</span> <span class="n">UmbraService</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">let</span> <span class="nv">serviceIdentifier</span> <span class="p">=</span> <span class="s">&quot;com.umbracore.crypto&quot;</span>
+    <span class="kd">public</span> <span class="kd">private</span><span class="p">(</span><span class="kr">set</span><span class="p">)</span> <span class="kd">var</span> <span class="nv">state</span><span class="p">:</span> <span class="n">ServiceState</span>
+
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">keyManager</span><span class="p">:</span> <span class="n">KeyManager</span>
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">config</span><span class="p">:</span> <span class="n">CryptoConfig</span>
+
+    <span class="c1">/// Initialize with the specified configuration</span>
+    <span class="c1">/// - Parameter config: Cryptographic configuration</span>
+    <span class="kd">public</span> <span class="kd">init</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">CryptoConfig</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span>
+
+    <span class="c1">/// Encrypt data using the specified key</span>
+    <span class="c1">/// - Parameters:</span>
+    <span class="c1">///   - data: Data to encrypt</span>
+    <span class="c1">///   - key: Encryption key</span>
+    <span class="c1">/// - Returns: Encrypted data</span>
+    <span class="c1">/// - Throws: CryptoError on failure</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">encrypt</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="n">Data</span><span class="p">,</span> <span class="n">using</span> <span class="n">key</span><span class="p">:</span> <span class="n">SymmetricKey</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">EncryptedData</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="2-security-service-implementation">2. Security Service Implementation<a class="headerlink" href="#2-security-service-implementation" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Manages security operations and access control</span>
+<span class="kd">public</span> <span class="kd">actor</span> <span class="n">SecurityService</span><span class="p">:</span> <span class="n">UmbraService</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">let</span> <span class="nv">serviceIdentifier</span> <span class="p">=</span> <span class="s">&quot;com.umbracore.security&quot;</span>
+    <span class="kd">public</span> <span class="kd">private</span><span class="p">(</span><span class="kr">set</span><span class="p">)</span> <span class="kd">var</span> <span class="nv">state</span><span class="p">:</span> <span class="n">ServiceState</span>
+
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">cryptoService</span><span class="p">:</span> <span class="n">CryptoService</span>
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">accessController</span><span class="p">:</span> <span class="n">AccessController</span>
+
+    <span class="c1">/// Initialize security service</span>
+    <span class="c1">/// - Parameter container: Service container for dependencies</span>
+    <span class="kd">public</span> <span class="kd">init</span><span class="p">(</span><span class="n">container</span><span class="p">:</span> <span class="n">ServiceContainer</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span>
+
+    <span class="c1">/// Secure a resource with the specified protection level</span>
+    <span class="c1">/// - Parameters:</span>
+    <span class="c1">///   - resource: Resource to protect</span>
+    <span class="c1">///   - level: Protection level</span>
+    <span class="c1">/// - Returns: Protected resource handle</span>
+    <span class="c1">/// - Throws: SecurityError on failure</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">secure</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="kc">_</span> <span class="n">resource</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="n">ProtectionLevel</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">SecureHandle</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="phase-2-resource-management-4-weeks">Phase 2: Resource Management (4 weeks)<a class="headerlink" href="#phase-2-resource-management-4-weeks" title="Permanent link">&para;</a></h2>
+<h3 id="week-1-2-resource-handling">Week 1-2: Resource Handling<a class="headerlink" href="#week-1-2-resource-handling" title="Permanent link">&para;</a></h3>
+<h4 id="1-resource-protocol">1. Resource Protocol<a class="headerlink" href="#1-resource-protocol" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Protocol for managed resources</span>
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="nc">ManagedResource</span><span class="p">:</span> <span class="n">Actor</span> <span class="p">{</span>
+    <span class="c1">/// Resource type identifier</span>
+    <span class="kd">static</span> <span class="kd">var</span> <span class="nv">resourceType</span><span class="p">:</span> <span class="nb">String</span> <span class="p">{</span> <span class="kr">get</span> <span class="p">}</span>
+
+    <span class="c1">/// Current state of the resource</span>
+    <span class="kd">var</span> <span class="nv">state</span><span class="p">:</span> <span class="n">ResourceState</span> <span class="p">{</span> <span class="kr">get</span> <span class="p">}</span>
+
+    <span class="c1">/// Acquire the resource</span>
+    <span class="kd">func</span> <span class="nf">acquire</span><span class="p">()</span> <span class="k">async</span> <span class="kr">throws</span>
+
+    <span class="c1">/// Release the resource</span>
+    <span class="kd">func</span> <span class="nf">release</span><span class="p">()</span> <span class="k">async</span>
+
+    <span class="c1">/// Clean up any allocated resources</span>
+    <span class="kd">func</span> <span class="nf">cleanup</span><span class="p">()</span> <span class="k">async</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="2-resource-pool-implementation">2. Resource Pool Implementation<a class="headerlink" href="#2-resource-pool-implementation" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Manages a pool of reusable resources</span>
+<span class="kd">public</span> <span class="kd">actor</span> <span class="n">ResourcePool</span><span class="p">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="n">ManagedResource</span><span class="p">&gt;</span> <span class="p">{</span>
+    <span class="c1">/// Available resources</span>
+    <span class="kd">private</span> <span class="kd">var</span> <span class="nv">available</span><span class="p">:</span> <span class="p">[</span><span class="n">T</span><span class="p">]</span>
+
+    <span class="c1">/// Resources currently in use</span>
+    <span class="kd">private</span> <span class="kd">var</span> <span class="nv">inUse</span><span class="p">:</span> <span class="p">[</span><span class="n">T</span><span class="p">]</span>
+
+    <span class="c1">/// Resource creation factory</span>
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">factory</span><span class="p">:</span> <span class="p">()</span> <span class="k">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">T</span>
+
+    <span class="c1">/// Acquire a resource from the pool</span>
+    <span class="c1">/// - Returns: An available resource</span>
+    <span class="c1">/// - Throws: ResourceError if no resources available</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">acquire</span><span class="p">()</span> <span class="k">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">T</span>
+
+    <span class="c1">/// Release a resource back to the pool</span>
+    <span class="c1">/// - Parameter resource: Resource to release</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">release</span><span class="p">(</span><span class="kc">_</span> <span class="n">resource</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="k">async</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="week-3-4-security-resource-implementation">Week 3-4: Security Resource Implementation<a class="headerlink" href="#week-3-4-security-resource-implementation" title="Permanent link">&para;</a></h3>
+<h4 id="1-secure-storage-resource">1. Secure Storage Resource<a class="headerlink" href="#1-secure-storage-resource" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Manages secure storage operations</span>
+<span class="kd">public</span> <span class="kd">actor</span> <span class="n">SecureStorageResource</span><span class="p">:</span> <span class="n">ManagedResource</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">let</span> <span class="nv">resourceType</span> <span class="p">=</span> <span class="s">&quot;com.umbracore.secure-storage&quot;</span>
+    <span class="kd">public</span> <span class="kd">private</span><span class="p">(</span><span class="kr">set</span><span class="p">)</span> <span class="kd">var</span> <span class="nv">state</span><span class="p">:</span> <span class="n">ResourceState</span>
+
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">storage</span><span class="p">:</span> <span class="n">SecureStorage</span>
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">cryptoService</span><span class="p">:</span> <span class="n">CryptoService</span>
+
+    <span class="c1">/// Store data securely</span>
+    <span class="c1">/// - Parameters:</span>
+    <span class="c1">///   - data: Data to store</span>
+    <span class="c1">///   - key: Storage key</span>
+    <span class="c1">/// - Throws: StorageError on failure</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">store</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="n">Data</span><span class="p">,</span> <span class="n">forKey</span> <span class="n">key</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="2-keychain-resource">2. Keychain Resource<a class="headerlink" href="#2-keychain-resource" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Manages keychain operations</span>
+<span class="kd">public</span> <span class="kd">actor</span> <span class="n">KeychainResource</span><span class="p">:</span> <span class="n">ManagedResource</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">let</span> <span class="nv">resourceType</span> <span class="p">=</span> <span class="s">&quot;com.umbracore.keychain&quot;</span>
+    <span class="kd">public</span> <span class="kd">private</span><span class="p">(</span><span class="kr">set</span><span class="p">)</span> <span class="kd">var</span> <span class="nv">state</span><span class="p">:</span> <span class="n">ResourceState</span>
+
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">accessGroup</span><span class="p">:</span> <span class="nb">String</span>
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">accessibility</span><span class="p">:</span> <span class="n">KeychainAccessibility</span>
+
+    <span class="c1">/// Store an item in the keychain</span>
+    <span class="c1">/// - Parameters:</span>
+    <span class="c1">///   - item: Item to store</span>
+    <span class="c1">///   - identifier: Item identifier</span>
+    <span class="c1">/// - Throws: KeychainError on failure</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">store</span><span class="p">(</span><span class="kc">_</span> <span class="n">item</span><span class="p">:</span> <span class="n">KeychainItem</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="phase-3-error-handling-4-weeks">Phase 3: Error Handling (4 weeks)<a class="headerlink" href="#phase-3-error-handling-4-weeks" title="Permanent link">&para;</a></h2>
+<h3 id="week-1-2-error-infrastructure">Week 1-2: Error Infrastructure<a class="headerlink" href="#week-1-2-error-infrastructure" title="Permanent link">&para;</a></h3>
+<h4 id="1-error-context">1. Error Context<a class="headerlink" href="#1-error-context" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Provides context for error handling</span>
+<span class="kd">public</span> <span class="kd">struct</span> <span class="nc">ErrorContext</span> <span class="p">{</span>
+    <span class="c1">/// Source file where error occurred</span>
+    <span class="kd">public</span> <span class="kd">let</span> <span class="nv">file</span><span class="p">:</span> <span class="nb">String</span>
+
+    <span class="c1">/// Function where error occurred</span>
+    <span class="kd">public</span> <span class="kd">let</span> <span class="nv">function</span><span class="p">:</span> <span class="nb">String</span>
+
+    <span class="c1">/// Line number where error occurred</span>
+    <span class="kd">public</span> <span class="kd">let</span> <span class="nv">line</span><span class="p">:</span> <span class="nb">Int</span>
+
+    <span class="c1">/// Time when error occurred</span>
+    <span class="kd">public</span> <span class="kd">let</span> <span class="nv">timestamp</span><span class="p">:</span> <span class="n">Date</span>
+
+    <span class="c1">/// Additional context information</span>
+    <span class="kd">public</span> <span class="kd">var</span> <span class="nv">userInfo</span><span class="p">:</span> <span class="p">[</span><span class="nb">String</span><span class="p">:</span> <span class="nb">Any</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="2-error-protocol">2. Error Protocol<a class="headerlink" href="#2-error-protocol" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Protocol for contextual errors</span>
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="nc">ContextualError</span><span class="p">:</span> <span class="n">Error</span> <span class="p">{</span>
+    <span class="c1">/// Error context</span>
+    <span class="kd">var</span> <span class="nv">context</span><span class="p">:</span> <span class="n">ErrorContext</span> <span class="p">{</span> <span class="kr">get</span> <span class="p">}</span>
+
+    <span class="c1">/// Available recovery options</span>
+    <span class="kd">var</span> <span class="nv">recoveryOptions</span><span class="p">:</span> <span class="p">[</span><span class="n">RecoveryOption</span><span class="p">]</span> <span class="p">{</span> <span class="kr">get</span> <span class="p">}</span>
+
+    <span class="c1">/// Attempt to recover from the error</span>
+    <span class="c1">/// - Parameter option: Recovery option to attempt</span>
+    <span class="c1">/// - Returns: Whether recovery was successful</span>
+    <span class="kd">func</span> <span class="nf">attemptRecovery</span><span class="p">(</span><span class="kc">_</span> <span class="n">option</span><span class="p">:</span> <span class="n">RecoveryOption</span><span class="p">)</span> <span class="k">async</span> <span class="p">-&gt;</span> <span class="nb">Bool</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="week-3-4-security-error-implementation">Week 3-4: Security Error Implementation<a class="headerlink" href="#week-3-4-security-error-implementation" title="Permanent link">&para;</a></h3>
+<h4 id="1-crypto-errors">1. Crypto Errors<a class="headerlink" href="#1-crypto-errors" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Represents cryptographic operation errors</span>
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">CryptoError</span><span class="p">:</span> <span class="n">ContextualError</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">invalidKey</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">encryptionFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">decryptionFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">invalidData</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+
+    <span class="kd">public</span> <span class="kd">var</span> <span class="nv">context</span><span class="p">:</span> <span class="n">ErrorContext</span>
+    <span class="kd">public</span> <span class="kd">var</span> <span class="nv">recoveryOptions</span><span class="p">:</span> <span class="p">[</span><span class="n">RecoveryOption</span><span class="p">]</span>
+
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">attemptRecovery</span><span class="p">(</span><span class="kc">_</span> <span class="n">option</span><span class="p">:</span> <span class="n">RecoveryOption</span><span class="p">)</span> <span class="k">async</span> <span class="p">-&gt;</span> <span class="nb">Bool</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="2-security-errors">2. Security Errors<a class="headerlink" href="#2-security-errors" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Represents security operation errors</span>
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">SecurityError</span><span class="p">:</span> <span class="n">ContextualError</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">accessDenied</span><span class="p">(</span><span class="n">resource</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">invalidCredentials</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">resourceUnavailable</span><span class="p">(</span><span class="n">identifier</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">secureStorageFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+
+    <span class="kd">public</span> <span class="kd">var</span> <span class="nv">context</span><span class="p">:</span> <span class="n">ErrorContext</span>
+    <span class="kd">public</span> <span class="kd">var</span> <span class="nv">recoveryOptions</span><span class="p">:</span> <span class="p">[</span><span class="n">RecoveryOption</span><span class="p">]</span>
+
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">attemptRecovery</span><span class="p">(</span><span class="kc">_</span> <span class="n">option</span><span class="p">:</span> <span class="n">RecoveryOption</span><span class="p">)</span> <span class="k">async</span> <span class="p">-&gt;</span> <span class="nb">Bool</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="style-guide-compliance">Style Guide Compliance<a class="headerlink" href="#style-guide-compliance" title="Permanent link">&para;</a></h2>
+<h3 id="documentation-standards">Documentation Standards<a class="headerlink" href="#documentation-standards" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use /// for documentation comments</li>
+<li>Document all public APIs</li>
+<li>Include parameter descriptions</li>
+<li>Document error conditions</li>
+<li>Add usage examples</li>
+</ul>
+<h3 id="code-organization">Code Organization<a class="headerlink" href="#code-organization" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Properties first</li>
+<li>Then initializers</li>
+<li>Then methods</li>
+<li>Protocol conformance in extensions</li>
+</ul>
+<h3 id="naming-conventions">Naming Conventions<a class="headerlink" href="#naming-conventions" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use verb phrases for functions</li>
+<li>Clear, self-documenting names</li>
+<li>Consistent capitalization</li>
+<li>Follow Swift API guidelines</li>
+</ul>
+<h3 id="swift-best-practices">Swift Best Practices<a class="headerlink" href="#swift-best-practices" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use let over var</li>
+<li>Early returns with guard</li>
+<li>Proper access control</li>
+<li>Type inference where clear</li>
+</ul>
+<h2 id="implementation-strategy">Implementation Strategy<a class="headerlink" href="#implementation-strategy" title="Permanent link">&para;</a></h2>
+<h3 id="1-service-layer-weeks-1-4">1. Service Layer (Weeks 1-4)<a class="headerlink" href="#1-service-layer-weeks-1-4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Define base protocols</li>
+<li>[ ] Implement service container</li>
+<li>[ ] Refactor crypto service</li>
+<li>[ ] Refactor security service</li>
+</ul>
+<h3 id="2-resource-management-weeks-5-8">2. Resource Management (Weeks 5-8)<a class="headerlink" href="#2-resource-management-weeks-5-8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Define resource protocols</li>
+<li>[ ] Implement resource pool</li>
+<li>[ ] Refactor secure storage</li>
+<li>[ ] Refactor keychain access</li>
+</ul>
+<h3 id="3-error-handling-weeks-9-12">3. Error Handling (Weeks 9-12)<a class="headerlink" href="#3-error-handling-weeks-9-12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Define error protocols</li>
+<li>[ ] Implement error context</li>
+<li>[ ] Refactor crypto errors</li>
+<li>[ ] Refactor security errors</li>
+</ul>
+<h2 id="testing-strategy">Testing Strategy<a class="headerlink" href="#testing-strategy" title="Permanent link">&para;</a></h2>
+<h3 id="1-unit-tests">1. Unit Tests<a class="headerlink" href="#1-unit-tests" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Test each component in isolation</li>
+<li>Mock dependencies</li>
+<li>Test error conditions</li>
+<li>Verify resource cleanup</li>
+</ul>
+<h3 id="2-integration-tests">2. Integration Tests<a class="headerlink" href="#2-integration-tests" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Test service interactions</li>
+<li>Verify resource management</li>
+<li>Test error recovery</li>
+<li>Check memory handling</li>
+</ul>
+<h3 id="3-performance-tests">3. Performance Tests<a class="headerlink" href="#3-performance-tests" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Measure operation timing</li>
+<li>Check resource usage</li>
+<li>Test under load</li>
+<li>Verify cleanup efficiency</li>
+</ul>
+<h2 id="success-metrics">Success Metrics<a class="headerlink" href="#success-metrics" title="Permanent link">&para;</a></h2>
+<h3 id="1-code-quality">1. Code Quality<a class="headerlink" href="#1-code-quality" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Reduced coupling</li>
+<li>Improved cohesion</li>
+<li>Better error handling</li>
+<li>Cleaner interfaces</li>
+</ul>
+<h3 id="2-performance">2. Performance<a class="headerlink" href="#2-performance" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Faster operations</li>
+<li>Lower memory usage</li>
+<li>Better resource utilization</li>
+<li>Quicker error recovery</li>
+</ul>
+<h3 id="3-maintainability">3. Maintainability<a class="headerlink" href="#3-maintainability" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Easier to test</li>
+<li>Simpler to debug</li>
+<li>Clearer documentation</li>
+<li>More consistent style</li>
+</ul>
+<hr />
+<p>Last Updated: 2025-02-24</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+    </div>
+
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.top", "toc.follow", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      
+    
+  </body>
+</html>

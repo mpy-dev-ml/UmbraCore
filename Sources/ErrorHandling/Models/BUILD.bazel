@@ -1,11 +1,12 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_ErrorHandling_Models",
+    name = "ErrorHandling_Models",
     testonly = True,
     srcs = [
         "CommonError.swift",
         "CoreError.swift",
+        "ServiceErrorTypes.swift",
     ],
     copts = [
         "-target",
@@ -18,6 +19,6 @@ swift_library(
     module_name = "ErrorHandling_Models",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/ErrorHandling/Protocols:Sources_ErrorHandling_Protocols",
+        "//Sources/ErrorHandling/Common:ErrorHandling_Common",
     ],
 )

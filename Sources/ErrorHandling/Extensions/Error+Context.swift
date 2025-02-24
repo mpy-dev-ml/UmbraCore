@@ -1,17 +1,43 @@
 import Foundation
 import Models
 
-/// Extension to Error type to provide context information.
+/// Adds contextual information to Swift errors.
+///
+/// This extension allows any error to be wrapped with additional context
+/// about where and how the error occurred, making debugging and error
+/// handling more effective.
+///
+/// Example:
+/// ```swift
+/// do {
+///     try performOperation()
+/// } catch let error {
+///     throw error.withContext(
+///         source: "PaymentProcessor",
+///         operation: "processRefund",
+///         details: "Failed to connect to payment gateway"
+///     )
+/// }
+/// ```
 public extension Error {
-    /// Creates an error context for this error.
+    /// Creates a detailed error context from this error.
+    ///
+    /// This method wraps the current error with additional contextual information
+    /// that can help with debugging and error reporting. The context includes
+    /// both user-provided information and automatically captured details about
+    /// where the error occurred.
+    ///
     /// - Parameters:
-    ///   - source: The source of the error.
-    ///   - operation: The operation being performed.
-    ///   - details: Additional details about the error.
-    ///   - file: The file where the error occurred.
-    ///   - line: The line where the error occurred.
-    ///   - function: The function where the error occurred.
-    /// - Returns: An `ErrorContext` instance.
+    ///   - source: The component or module where the error occurred
+    ///             (e.g., "PaymentProcessor", "DatabaseService").
+    ///   - operation: The specific operation that failed
+    ///                (e.g., "processRefund", "queryUser").
+    ///   - details: Optional additional information about the error.
+    ///             Use this to provide more context about what went wrong.
+    ///   - file: The source file where the error occurred. Defaults to the current file.
+    ///   - line: The line number where the error occurred. Defaults to the current line.
+    ///   - function: The function name where the error occurred. Defaults to the current function.
+    /// - Returns: An `ErrorContext` containing the original error and all contextual information.
     func withContext(
         source: String,
         operation: String,

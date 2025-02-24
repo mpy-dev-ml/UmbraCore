@@ -85,12 +85,28 @@
 /// - Thread-safe configuration
 /// - Atomic operations
 /// - Value types
+
+/// Core framework initialisation and management
 public enum Core {
     /// Current version of the Core module
     public static let version = "1.0.0"
 
-    /// Initialise Core with default configuration
-    public static func initialize() {
-        // Configure core systems
+    /// Initialise the Core framework
+    /// - Throws: CoreError if initialisation fails
+    public static func initialise() async throws {
+        // TODO: Implement core initialisation
+    }
+}
+
+/// Errors that can occur during Core operations
+public enum CoreError: LocalizedError {
+    /// Error during initialisation
+    case initialisationError(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .initialisationError(let message):
+            return "Initialisation error: \(message)"
+        }
     }
 }

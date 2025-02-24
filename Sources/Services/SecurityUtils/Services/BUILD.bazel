@@ -18,8 +18,8 @@ swift_library(
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/CryptoTypes",
-        "//Sources/CryptoTypes/Protocols:Sources_CryptoTypes_Protocols",
-        "//Sources/Services/SecurityUtils/Protocols:Services_SecurityUtils_Protocols",
+        "//Sources/CryptoTypes/Protocols:CryptoTypes_Protocols",
+        "//Sources/Services/SecurityUtils/Protocols:SecurityUtils_Protocols",
         "//Sources/UmbraCrypto",
     ],
 )

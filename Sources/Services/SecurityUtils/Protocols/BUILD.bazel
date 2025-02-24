@@ -1,7 +1,7 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Services_SecurityUtils_Protocols",
+    name = "SecurityUtils_Protocols",
     #testonly = True,
     srcs = glob(["*.swift"]),
     copts = [
@@ -11,7 +11,9 @@ swift_library(
         "-warn-concurrency",
         "-enable-actor-data-race-checks",
     ],
-    module_name = "Services_SecurityUtils_Protocols",
+    module_name = "SecurityUtils_Protocols",
     visibility = ["//visibility:public"],
-    deps = [],
+    deps = [
+        "//Sources/SecurityTypes",
+    ],
 )

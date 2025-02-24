@@ -18,7 +18,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
         // Capture values in local variables to avoid capturing self
         let keychain = self.keychain
         let queue = self.queue
-        
+
         Task { @Sendable in
             do {
                 try await keychain.addItem(account: account,
@@ -39,7 +39,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
                    reply: @escaping @Sendable (Error?) -> Void) {
         let keychain = self.keychain
         let queue = self.queue
-        
+
         Task { @Sendable in
             do {
                 try await keychain.updateItem(account: account,
@@ -59,7 +59,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
                    reply: @escaping @Sendable (Error?) -> Void) {
         let keychain = self.keychain
         let queue = self.queue
-        
+
         Task { @Sendable in
             do {
                 try await keychain.removeItem(account: account,
@@ -78,7 +78,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
                      reply: @escaping @Sendable (Bool, Error?) -> Void) {
         let keychain = self.keychain
         let queue = self.queue
-        
+
         Task { @Sendable in
             do {
                 let exists = try await keychain.containsItem(account: account,
@@ -97,7 +97,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
                      reply: @escaping @Sendable (Data?, Error?) -> Void) {
         let keychain = self.keychain
         let queue = self.queue
-        
+
         Task { @Sendable in
             do {
                 let data = try await keychain.retrieveItem(account: account,

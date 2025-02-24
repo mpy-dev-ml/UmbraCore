@@ -1,0 +1,25 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+
+swift_test(
+    name = "Tests_ResourcesTests",
+    srcs = glob(["**/*.swift"]),
+    module_name = "Tests_ResourcesTests",
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    target_compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
+    env = {
+        "MACOS_DEPLOYMENT_TARGET": "14.0",
+        "SWIFT_DETERMINISTIC_HASHING": "1",
+    },
+    deps = [
+        "//Sources/Resources:Resources",
+    ],
+)

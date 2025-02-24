@@ -1,10 +1,9 @@
 import Foundation
 
 /// Configuration for cryptographic operations
-public struct CryptoConfig {
+public struct CryptoConfig: Sendable {
     /// Length of the encryption key in bits
     public let keyLength: Int
-
     /// Length of the initialization vector in bytes
     public let ivLength: Int
 

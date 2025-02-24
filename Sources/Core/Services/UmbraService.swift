@@ -20,17 +20,17 @@ import Foundation
 public protocol UmbraService: Actor {
     /// Unique identifier for the service type
     static var serviceIdentifier: String { get }
-    
+
     /// Current state of the service
     nonisolated var state: ServiceState { get }
-    
+
     /// Initialise the service
     /// - Throws: ServiceError if initialisation fails
     func initialize() async throws
-    
+
     /// Gracefully shut down the service
     func shutdown() async
-    
+
     /// Check if the service is in a usable state
     /// - Returns: true if the service can be used
     func isUsable() async -> Bool
@@ -55,7 +55,7 @@ public enum ServiceError: LocalizedError, Sendable {
     case dependencyError(String)
     /// Operation failed
     case operationFailed(String)
-    
+
     public var errorDescription: String? {
         switch self {
         case .initialisationFailed(let message):
@@ -91,7 +91,7 @@ public protocol HealthCheckable {
     /// Perform a health check on the service
     /// - Returns: true if the service is healthy
     func checkHealth() async throws -> Bool
-    
+
     /// Get detailed health status information
     /// - Returns: Dictionary containing health status details
     func getHealthStatus() async -> [String: Any]

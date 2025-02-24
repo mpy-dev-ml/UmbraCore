@@ -1,3 +1,4 @@
+import ErrorHandling_Common
 import Foundation
 
 /// Protocol for types that can provide detailed error information

@@ -16,6 +16,7 @@ swift_library(
     module_name = "Core",
     visibility = ["//visibility:public"],
     deps = [
+        "//Sources/SecurityTypes",
         "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
 )

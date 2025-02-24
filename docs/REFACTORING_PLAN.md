@@ -4,275 +4,132 @@
 
 This document outlines our approach to refactoring UmbraCore, using the Security and Crypto modules as templates. The plan combines functional improvements with progressive style guide compliance.
 
-## Phase 1: Service Architecture (4 weeks)
+## Completed Work
 
-### Week 1-2: Core Service Infrastructure
+### Phase 1: Service Architecture
+✓ Core Service Infrastructure
+- Implemented UmbraService protocol
+- Created service state management
+- Established actor-based architecture
 
-#### 1. Service Protocol Definition
+✓ Security Service Implementation
+- Implemented CryptoService with XPC support
+- Created SecurityService with bookmark management
+- Integrated KeyManager and CredentialManager
+- Added security-scoped resource handling
+
+✓ Resource Management Foundation
+- Implemented ManagedResource protocol
+- Created ResourcePool implementation
+- Added SecureStorageResource
+- Integrated KeychainResource
+
+## Current Phase: Core Features Implementation
+
+### 1. Repository Management (2 weeks)
+#### Week 1: Core Repository Types
 ```swift
-/// Protocol defining the base requirements for all UmbraCore services
-public protocol UmbraService: Actor {
-    /// Unique identifier for the service type
-    static var serviceIdentifier: String { get }
+public protocol Repository: Actor {
+    var identifier: String { get }
+    var state: RepositoryState { get }
+    var location: URL { get }
     
-    /// Current state of the service
-    var state: ServiceState { get }
-    
-    /// Initialize the service
-    /// - Throws: ServiceError if initialization fails
     func initialize() async throws
-    
-    /// Gracefully shut down the service
-    func shutdown() async
+    func validate() async throws -> Bool
+    func lock() async throws
+    func unlock() async throws
 }
 
-/// Represents the current state of a service
-public enum ServiceState: String {
+public enum RepositoryState {
     case uninitialized
-    case initializing
     case ready
-    case error
-    case shuttingDown
-    case shutdown
+    case locked
+    case error(Error)
 }
 ```
 
-#### 2. Service Container Implementation
+#### Week 2: Repository Service
 ```swift
-/// Thread-safe container for managing service instances
-public actor ServiceContainer {
-    /// Registered services
-    private var services: [String: any UmbraService]
-    
-    /// Service initialization queue
-    private let initializationQueue: TaskGroup
-    
-    /// Register a service with the container
-    /// - Parameter service: The service to register
-    /// - Throws: ServiceError if registration fails
-    public func register<T: UmbraService>(_ service: T) async throws
-    
-    /// Resolve a service of the specified type
-    /// - Returns: The requested service instance
-    /// - Throws: ServiceError if service not found
-    public func resolve<T: UmbraService>(_ type: T.Type) async throws -> T
-}
-```
-
-### Week 3-4: Security Service Refactoring
-
-#### 1. Crypto Service Implementation
-```swift
-/// Handles cryptographic operations
-public actor CryptoService: UmbraService {
-    public static let serviceIdentifier = "com.umbracore.crypto"
-    public private(set) var state: ServiceState
-    
-    private let keyManager: KeyManager
-    private let config: CryptoConfig
-    
-    /// Initialize with the specified configuration
-    /// - Parameter config: Cryptographic configuration
-    public init(config: CryptoConfig) async throws
-    
-    /// Encrypt data using the specified key
-    /// - Parameters:
-    ///   - data: Data to encrypt
-    ///   - key: Encryption key
-    /// - Returns: Encrypted data
-    /// - Throws: CryptoError on failure
-    public func encrypt(_ data: Data, using key: SymmetricKey) async throws -> EncryptedData
-}
-```
-
-#### 2. Security Service Implementation
-```swift
-/// Manages security operations and access control
-public actor SecurityService: UmbraService {
-    public static let serviceIdentifier = "com.umbracore.security"
-    public private(set) var state: ServiceState
-    
-    private let cryptoService: CryptoService
-    private let accessController: AccessController
-    
-    /// Initialize security service
-    /// - Parameter container: Service container for dependencies
-    public init(container: ServiceContainer) async throws
-    
-    /// Secure a resource with the specified protection level
-    /// - Parameters:
-    ///   - resource: Resource to protect
-    ///   - level: Protection level
-    /// - Returns: Protected resource handle
-    /// - Throws: SecurityError on failure
-    public func secure<T>(_ resource: T, level: ProtectionLevel) async throws -> SecureHandle<T>
-}
-```
-
-## Phase 2: Resource Management (4 weeks)
-
-### Week 1-2: Resource Handling
-
-#### 1. Resource Protocol
-```swift
-/// Protocol for managed resources
-public protocol ManagedResource: Actor {
-    /// Resource type identifier
-    static var resourceType: String { get }
-    
-    /// Current state of the resource
-    var state: ResourceState { get }
-    
-    /// Acquire the resource
-    func acquire() async throws
-    
-    /// Release the resource
-    func release() async
-    
-    /// Clean up any allocated resources
-    func cleanup() async
-}
-```
-
-#### 2. Resource Pool Implementation
-```swift
-/// Manages a pool of reusable resources
-public actor ResourcePool<T: ManagedResource> {
-    /// Available resources
-    private var available: [T]
-    
-    /// Resources currently in use
-    private var inUse: [T]
-    
-    /// Resource creation factory
-    private let factory: () async throws -> T
-    
-    /// Acquire a resource from the pool
-    /// - Returns: An available resource
-    /// - Throws: ResourceError if no resources available
-    public func acquire() async throws -> T
-    
-    /// Release a resource back to the pool
-    /// - Parameter resource: Resource to release
-    public func release(_ resource: T) async
-}
-```
-
-### Week 3-4: Security Resource Implementation
-
-#### 1. Secure Storage Resource
-```swift
-/// Manages secure storage operations
-public actor SecureStorageResource: ManagedResource {
-    public static let resourceType = "com.umbracore.secure-storage"
-    public private(set) var state: ResourceState
-    
-    private let storage: SecureStorage
+public actor RepositoryService {
+    private var repositories: [String: Repository]
+    private let securityService: SecurityService
     private let cryptoService: CryptoService
     
-    /// Store data securely
-    /// - Parameters:
-    ///   - data: Data to store
-    ///   - key: Storage key
-    /// - Throws: StorageError on failure
-    public func store(_ data: Data, forKey key: String) async throws
+    public func register(_ repository: Repository) async throws
+    public func unregister(_ identifier: String) async
+    public func getRepository(_ identifier: String) async throws -> Repository
 }
 ```
 
-#### 2. Keychain Resource
+### 2. Snapshot Management (2 weeks)
+#### Week 1: Snapshot Types
 ```swift
-/// Manages keychain operations
-public actor KeychainResource: ManagedResource {
-    public static let resourceType = "com.umbracore.keychain"
-    public private(set) var state: ResourceState
-    
-    private let accessGroup: String
-    private let accessibility: KeychainAccessibility
-    
-    /// Store an item in the keychain
-    /// - Parameters:
-    ///   - item: Item to store
-    ///   - identifier: Item identifier
-    /// - Throws: KeychainError on failure
-    public func store(_ item: KeychainItem, identifier: String) async throws
-}
-```
-
-## Phase 3: Error Handling (4 weeks)
-
-### Week 1-2: Error Infrastructure
-
-#### 1. Error Context
-```swift
-/// Provides context for error handling
-public struct ErrorContext {
-    /// Source file where error occurred
-    public let file: String
-    
-    /// Function where error occurred
-    public let function: String
-    
-    /// Line number where error occurred
-    public let line: Int
-    
-    /// Time when error occurred
+public struct Snapshot: Identifiable {
+    public let id: String
     public let timestamp: Date
-    
-    /// Additional context information
-    public var userInfo: [String: Any]
+    public let tags: Set<String>
+    public let paths: [URL]
+    public let size: UInt64
+    public let stats: SnapshotStats
+}
+
+public protocol SnapshotManager: Actor {
+    func create(_ paths: [URL], tags: Set<String>) async throws -> Snapshot
+    func list() async throws -> [Snapshot]
+    func restore(_ snapshot: Snapshot, to: URL) async throws
+    func delete(_ snapshot: Snapshot) async throws
 }
 ```
 
-#### 2. Error Protocol
+#### Week 2: Snapshot Service Implementation
 ```swift
-/// Protocol for contextual errors
-public protocol ContextualError: Error {
-    /// Error context
-    var context: ErrorContext { get }
+public actor SnapshotService: SnapshotManager {
+    private let repository: Repository
+    private let securityService: SecurityService
+    private let fileManager: FileManager
     
-    /// Available recovery options
-    var recoveryOptions: [RecoveryOption] { get }
-    
-    /// Attempt to recover from the error
-    /// - Parameter option: Recovery option to attempt
-    /// - Returns: Whether recovery was successful
-    func attemptRecovery(_ option: RecoveryOption) async -> Bool
+    public func create(_ paths: [URL], tags: Set<String>) async throws -> Snapshot
+    public func restore(_ snapshot: Snapshot, to: URL) async throws
 }
 ```
 
-### Week 3-4: Security Error Implementation
+### 3. CLI Integration (2 weeks)
+#### Week 1: Command Framework
+- Design command execution system
+- Implement process management
+- Add output parsing
 
-#### 1. Crypto Errors
-```swift
-/// Represents cryptographic operation errors
-public enum CryptoError: ContextualError {
-    case invalidKey(reason: String)
-    case encryptionFailed(reason: String)
-    case decryptionFailed(reason: String)
-    case invalidData(reason: String)
-    
-    public var context: ErrorContext
-    public var recoveryOptions: [RecoveryOption]
-    
-    public func attemptRecovery(_ option: RecoveryOption) async -> Bool
-}
-```
+#### Week 2: Restic Integration
+- Repository operations
+- Snapshot management
+- Backup and restore
+- Error handling
 
-#### 2. Security Errors
-```swift
-/// Represents security operation errors
-public enum SecurityError: ContextualError {
-    case accessDenied(resource: String)
-    case invalidCredentials(reason: String)
-    case resourceUnavailable(identifier: String)
-    case secureStorageFailed(reason: String)
-    
-    public var context: ErrorContext
-    public var recoveryOptions: [RecoveryOption]
-    
-    public func attemptRecovery(_ option: RecoveryOption) async -> Bool
-}
-```
+## Next Phases
+
+### Phase 4: Configuration Management (2 weeks)
+- Repository settings
+- Backup policies
+- Security preferences
+- Logging configuration
+
+### Phase 5: Logging Enhancement (2 weeks)
+- Privacy-aware logging
+- Log rotation
+- Performance metrics
+- Debug information
+
+### Phase 6: Error Handling (2 weeks)
+- Error categorization
+- Recovery strategies
+- User feedback
+- Diagnostic tools
+
+## Timeline
+- Current Phase (Core Features): March 2025
+- Phase 4 (Configuration): April 2025
+- Phase 5 (Logging): April 2025
+- Phase 6 (Error Handling): May 2025
 
 ## Style Guide Compliance
 

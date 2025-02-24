@@ -1,14 +1,17 @@
 import CryptoKit
+import CryptoTypes_Protocols
+import CryptoTypes_Types
 import Foundation
 import SecurityTypes
+import SecurityTypes_Protocols
 
 /// Manages secure storage and retrieval of credentials
 public actor CredentialManager {
     private let keychain: any SecureStorageProvider
-    private let cryptoService: CryptoService
+    private let cryptoService: CryptoServiceProtocol
     private let config: CryptoConfig
 
-    public init(service: String, cryptoService: CryptoService, config: CryptoConfig) {
+    public init(service: String, cryptoService: CryptoServiceProtocol, config: CryptoConfig) {
         self.keychain = KeychainAccess(service: service)
         self.cryptoService = cryptoService
         self.config = config
@@ -16,8 +19,8 @@ public actor CredentialManager {
 
     public func store(credential: Data, withIdentifier identifier: String) async throws {
         let key = try await getMasterKey()
-        let iv = try await cryptoService.generateSecureRandomBytes(length: config.ivLength)
-        let encrypted = try await cryptoService.encrypt(credential, withKey: key, iv: iv)
+        let iv = try await cryptoService.generateSecureRandomKey(length: config.ivLength)
+        let encrypted = try await cryptoService.encrypt(credential, using: key, iv: iv)
         let storageData = SecureStorageData(encryptedData: encrypted, iv: iv)
         let encodedData = try JSONEncoder().encode(storageData)
         try await keychain.save(encodedData, forKey: identifier, metadata: nil)
@@ -27,7 +30,7 @@ public actor CredentialManager {
         let key = try await getMasterKey()
         let (encodedData, _) = try await keychain.loadWithMetadata(forKey: identifier)
         let storageData = try JSONDecoder().decode(SecureStorageData.self, from: encodedData)
-        return try await cryptoService.decrypt(storageData.encryptedData, withKey: key, iv: storageData.iv)
+        return try await cryptoService.decrypt(storageData.encryptedData, using: key, iv: storageData.iv)
     }
 
     public func delete(withIdentifier identifier: String) async throws {
@@ -80,21 +83,21 @@ private actor KeychainAccess: SecureStorageProvider {
 
     func load(forKey key: String) async throws -> Data {
         guard let item = items[key] else {
-            throw SecurityError.itemNotFound(reason: "Item not found: \(key)")
+            throw SecurityError.accessError("Item not found: \(key)")
         }
         return item.data
     }
 
-    func loadWithMetadata(forKey key: String) async throws -> (data: Data, metadata: [String: String]?) {
+    func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
         guard let item = items[key] else {
-            throw SecurityError.itemNotFound(reason: "Item not found: \(key)")
+            throw SecurityError.accessError("Item not found: \(key)")
         }
-        return item
+        return (item.data, item.metadata)
     }
 
     func delete(forKey key: String) async throws {
         guard items.removeValue(forKey: key) != nil else {
-            throw SecurityError.itemNotFound(reason: "Item not found: \(key)")
+            throw SecurityError.accessError("Item not found: \(key)")
         }
     }
 
@@ -108,7 +111,7 @@ private actor KeychainAccess: SecureStorageProvider {
 
     func updateMetadata(_ metadata: [String: String], forKey key: String) async throws {
         guard var item = items[key] else {
-            throw SecurityError.itemNotFound(reason: "Item not found: \(key)")
+            throw SecurityError.accessError("Item not found: \(key)")
         }
         item.metadata = metadata
         items[key] = item

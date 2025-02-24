@@ -4,22 +4,22 @@ import Foundation
 public actor ServiceContainer {
     /// Registered services keyed by their identifiers.
     private var services: [String: any UmbraService]
-    
+
     /// Tracks service dependencies to prevent circular references.
     private var dependencyGraph: [String: Set<String>]
-    
+
     /// Tracks service states for lifecycle management.
     private var serviceStates: [String: ServiceState]
-    
+
     /// Create a new service container.
     public init() {
         self.services = [:]
         self.dependencyGraph = [:]
         self.serviceStates = [:]
     }
-    
+
     // MARK: - Service Registration
-    
+
     /// Register a service with the container.
     /// - Parameters:
     ///   - service: The service to register.
@@ -27,43 +27,43 @@ public actor ServiceContainer {
     /// - Throws: ServiceError if registration fails.
     public func register<T: UmbraService>(_ service: T, dependencies: [String] = []) async throws {
         let identifier = T.serviceIdentifier
-        
+
         guard services[identifier] == nil else {
             throw ServiceError.configurationError("Service \(identifier) is already registered")
         }
-        
+
         try validateDependencies(identifier: identifier, dependencies: dependencies)
-        
+
         // Register the service
         services[identifier] = service
         serviceStates[identifier] = .uninitialized
     }
-    
+
     // MARK: - Service Resolution
-    
+
     /// Resolve a service of the specified type.
     /// - Returns: The requested service instance.
     /// - Throws: ServiceError if service not found or unusable.
     public func resolve<T: UmbraService>(_ type: T.Type) async throws -> T {
         let identifier = T.serviceIdentifier
-        
+
         guard let service = services[identifier] else {
             throw ServiceError.dependencyError("Service \(identifier) not found")
         }
-        
+
         guard let typedService = service as? T else {
             throw ServiceError.dependencyError("Service \(identifier) is of incorrect type")
         }
-        
+
         guard await typedService.isUsable() else {
             throw ServiceError.invalidState("Service \(identifier) is not in a usable state")
         }
-        
+
         return typedService
     }
-    
+
     // MARK: - Service Lifecycle
-    
+
     /// Initialise all registered services in dependency order.
     /// - Parameter timeout: Maximum time to wait for initialisation (in seconds).
     /// - Throws: ServiceError if initialisation fails.
@@ -71,22 +71,22 @@ public actor ServiceContainer {
         let sortedServices = try sortServicesByDependency()
         try await initializeServices(sortedServices, timeout: timeout)
     }
-    
+
     /// Shut down all services in reverse dependency order.
     public func shutdownAll() async {
         let sortedServices = (try? sortServicesByDependency().reversed()) ?? Array(services.keys)
         await shutdownServices(sortedServices)
     }
-    
+
     // MARK: - Service State Management
-    
+
     /// Get the current state of a service.
     /// - Parameter identifier: Service identifier.
     /// - Returns: Current service state.
     public func getServiceState(_ identifier: String) -> ServiceState? {
         serviceStates[identifier]
     }
-    
+
     /// Check if all services are in a ready state.
     /// - Returns: true if all services are ready.
     public func areAllServicesReady() async -> Bool {
@@ -100,7 +100,7 @@ public actor ServiceContainer {
         }
         return true
     }
-    
+
     /// Reset services to uninitialized state.
     /// - Parameter preserveRegistration: If true, keeps services registered but uninitialised.
     public func reset(preserveRegistration: Bool = false) async {
@@ -116,9 +116,9 @@ public actor ServiceContainer {
             serviceStates.removeAll()
         }
     }
-    
+
     // MARK: - Private Helpers
-    
+
     /// Validate service dependencies and update dependency graph.
     /// - Parameters:
     ///   - identifier: Service identifier.
@@ -129,19 +129,19 @@ public actor ServiceContainer {
             guard services[dependency] != nil else {
                 throw ServiceError.dependencyError("Required dependency \(dependency) not found")
             }
-            
+
             if dependencyGraph[identifier] == nil {
                 dependencyGraph[identifier] = Set()
             }
             dependencyGraph[identifier]?.insert(dependency)
-            
+
             if hasCircularDependency(from: identifier) {
                 dependencyGraph[identifier]?.remove(dependency)
                 throw ServiceError.dependencyError("Circular dependency detected for \(identifier)")
             }
         }
     }
-    
+
     /// Initialize services in the specified order with timeout.
     /// - Parameters:
     ///   - services: Ordered list of service identifiers.
@@ -154,14 +154,14 @@ public actor ServiceContainer {
                 try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
                 throw ServiceError.operationFailed("Operation timed out after \(timeout) seconds")
             }
-            
+
             // Start service initialization tasks
             for identifier in services {
                 guard let service = self.services[identifier] else { continue }
-                
+
                 group.addTask { [self] in
                     await updateServiceState(identifier, to: .initializing)
-                    
+
                     do {
                         try await service.initialize()
                         await updateServiceState(identifier, to: .ready)
@@ -171,31 +171,31 @@ public actor ServiceContainer {
                     }
                 }
             }
-            
+
             // Wait for either timeout or completion
             try await group.next()
             group.cancelAll()
         }
     }
-    
+
     /// Shutdown services in the specified order.
     /// - Parameter services: Ordered list of service identifiers.
     private func shutdownServices(_ services: [String]) async {
         await withTaskGroup(of: Void.self) { [self] group in
             for identifier in services {
                 guard let service = self.services[identifier] else { continue }
-                
+
                 group.addTask { [self] in
                     await updateServiceState(identifier, to: .shuttingDown)
                     await service.shutdown()
                     await updateServiceState(identifier, to: .shutdown)
                 }
             }
-            
+
             await group.waitForAll()
         }
     }
-    
+
     /// Sort services by dependency order.
     /// - Returns: Ordered list of service identifiers.
     /// - Throws: ServiceError if circular dependency detected.
@@ -203,34 +203,34 @@ public actor ServiceContainer {
         var sorted: [String] = []
         var visited: Set<String> = []
         var temporary: Set<String> = []
-        
+
         func visit(_ identifier: String) throws {
             if temporary.contains(identifier) {
                 throw ServiceError.dependencyError("Circular dependency detected")
             }
-            
+
             if !visited.contains(identifier) {
                 temporary.insert(identifier)
-                
+
                 if let dependencies = dependencyGraph[identifier] {
                     for dependency in dependencies {
                         try visit(dependency)
                     }
                 }
-                
+
                 visited.insert(identifier)
                 temporary.remove(identifier)
                 sorted.append(identifier)
             }
         }
-        
+
         for identifier in services.keys {
             try visit(identifier)
         }
-        
+
         return sorted
     }
-    
+
     /// Check if a service has a circular dependency.
     /// - Parameter identifier: Service identifier.
     /// - Returns: true if circular dependency detected.
@@ -238,10 +238,10 @@ public actor ServiceContainer {
         guard let dependencies = dependencyGraph[identifier] else {
             return false
         }
-        
+
         var visited = visited
         visited.insert(identifier)
-        
+
         for dependency in dependencies {
             if visited.contains(dependency) {
                 return true
@@ -250,10 +250,10 @@ public actor ServiceContainer {
                 return true
             }
         }
-        
+
         return false
     }
-    
+
     /// Update the state of a service.
     /// - Parameters:
     ///   - identifier: Service identifier.

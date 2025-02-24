@@ -1,11 +1,11 @@
+import Core
 import Foundation
-import UmbraCore
 
 /// UmbraAPI provides a simplified interface to the UmbraCore security framework.
 public enum UmbraAPI {
     /// Initialize the UmbraCore framework
     public static func initialize() async throws {
-        UmbraCore.initialize()
+        try await Core.initialise()
     }
 
     /// Create an encrypted security-scoped bookmark for the given URL

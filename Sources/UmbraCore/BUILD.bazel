@@ -13,5 +13,11 @@ swift_library(
         "-enable-actor-data-race-checks",
     ],
     module_name = "UmbraCore",
+    testonly = True,
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/CryptoTypes:CryptoTypes",
+        "//Sources/SecurityTypes:SecurityTypes",
+        "//Sources/Resources:Resources",
+    ],
 )

@@ -1,37 +1,84 @@
 import Foundation
 
-/// Represents the context in which an error occurred.
+/// A structure that provides detailed context about an error's occurrence.
+///
+/// `ErrorContext` enriches errors with information about where and how they
+/// occurred, making debugging and error reporting more effective. It captures
+/// both programmatic details (file, line, function) and semantic information
+/// (source, operation, details).
+///
+/// Example:
+/// ```swift
+/// do {
+///     try processPayment(amount: 100)
+/// } catch let error {
+///     throw ErrorContext(
+///         source: "PaymentProcessor",
+///         operation: "processPayment",
+///         details: "Invalid card number",
+///         underlyingError: error
+///     )
+/// }
+/// ```
 public struct ErrorContext: LocalizedError, Sendable {
-    /// The source of the error (e.g., component or service name).
+    /// The component or module where the error occurred.
+    ///
+    /// This should be a descriptive name that identifies the part of the
+    /// system where the error originated (e.g., "DatabaseService",
+    /// "NetworkLayer").
     public let source: String
-    
-    /// The operation that was being performed.
+
+    /// The specific operation that failed.
+    ///
+    /// This should be a clear description of what was being attempted
+    /// when the error occurred (e.g., "userLogin", "fileDownload").
     public let operation: String
-    
-    /// Additional details about the error.
+
+    /// Additional context about the error.
+    ///
+    /// Use this field to provide any relevant information that might
+    /// help in understanding or fixing the error.
     public let details: String?
-    
-    /// The underlying error that caused this error.
+
+    /// The original error that triggered this context.
+    ///
+    /// This is the actual error that occurred, wrapped with additional
+    /// context information.
     public let underlyingError: Error
-    
-    /// The file where the error occurred.
+
+    /// The source file where the error occurred.
+    ///
+    /// This is automatically captured when the context is created
+    /// and is useful for debugging.
     public let file: String
-    
+
     /// The line number where the error occurred.
+    ///
+    /// This is automatically captured when the context is created
+    /// and is useful for debugging.
     public let line: Int
-    
-    /// The function where the error occurred.
+
+    /// The function name where the error occurred.
+    ///
+    /// This is automatically captured when the context is created
+    /// and is useful for debugging.
     public let function: String
-    
-    /// Creates a new error context.
+
+    /// Creates a new error context with detailed information.
+    ///
     /// - Parameters:
-    ///   - source: The source of the error.
-    ///   - operation: The operation being performed.
-    ///   - details: Additional details about the error.
-    ///   - underlyingError: The underlying error.
-    ///   - file: The file where the error occurred.
-    ///   - line: The line where the error occurred.
-    ///   - function: The function where the error occurred.
+    ///   - source: The component or module where the error occurred
+    ///             (e.g., "PaymentProcessor", "DatabaseService").
+    ///   - operation: The specific operation that failed
+    ///                (e.g., "processPayment", "queryUser").
+    ///   - details: Optional additional information about what went wrong.
+    ///   - underlyingError: The original error that occurred.
+    ///   - file: The source file where the error occurred.
+    ///           Defaults to the current file.
+    ///   - line: The line number where the error occurred.
+    ///           Defaults to the current line.
+    ///   - function: The function name where the error occurred.
+    ///               Defaults to the current function.
     public init(
         source: String,
         operation: String,
@@ -49,21 +96,18 @@ public struct ErrorContext: LocalizedError, Sendable {
         self.line = line
         self.function = function
     }
-    
+
+    /// A localized description of the error context.
+    ///
+    /// This property combines all the context information into a
+    /// human-readable error message.
     public var errorDescription: String? {
-        var description = """
-            Error in \(source) while \(operation)
-            File: \(file)
-            Line: \(line)
-            Function: \(function)
-            """
-        
+        var description = "[\(source)] Error in \(operation)"
         if let details = details {
-            description += "\nDetails: \(details)"
+            description += ": \(details)"
         }
-        
         description += "\nUnderlying error: \(underlyingError.localizedDescription)"
-        
+        description += "\nLocation: \(file):\(line) - \(function)"
         return description
     }
 }

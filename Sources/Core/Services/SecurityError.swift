@@ -1,14 +1,41 @@
 import Foundation
 
-/// Errors that can occur during security operations
+/// Represents errors that can occur during security-related operations.
+///
+/// This enum provides specific error cases for different types of security
+/// operations, including bookmark management, security-scoped resource access,
+/// and cryptographic operations.
+///
+/// Example:
+/// ```swift
+/// catch let error as SecurityError {
+///     switch error {
+///     case .bookmarkError(let message):
+///         // Handle bookmark-related error
+///     case .accessError(let message):
+///         // Handle access-related error
+///     case .cryptoError(let message):
+///         // Handle cryptography-related error
+///     }
+/// }
+/// ```
 public enum SecurityError: LocalizedError {
-    /// Error creating or resolving a bookmark
+    /// An error occurred while creating or resolving a security bookmark.
+    ///
+    /// - Parameter message: A description of what went wrong.
     case bookmarkError(String)
-    /// Error accessing a security-scoped resource
+
+    /// An error occurred while accessing a security-scoped resource.
+    ///
+    /// - Parameter message: A description of what went wrong.
     case accessError(String)
-    /// Error during cryptographic operations
+
+    /// An error occurred during cryptographic operations.
+    ///
+    /// - Parameter message: A description of what went wrong.
     case cryptoError(String)
-    
+
+    /// A localized message describing what went wrong.
     public var errorDescription: String? {
         switch self {
         case .bookmarkError(let message):

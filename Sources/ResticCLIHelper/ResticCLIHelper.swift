@@ -1,131 +1,93 @@
-/// ResticCLIHelper Module
+/// A Swift interface for interacting with the Restic command-line tool.
 ///
-/// Provides a type-safe Swift interface to the Restic command-line tool.
-/// This module handles all aspects of Restic CLI interaction, from command
-/// construction to output parsing.
+/// `ResticCLIHelper` provides a type-safe, Swift-native way to interact with
+/// Restic, handling command construction, execution, and output parsing.
 ///
-/// # Key Features
-/// - Type-safe command building
-/// - Secure credential handling
-/// - Output parsing
-/// - Error management
+/// Features:
+/// - Type-safe command building and validation
+/// - Secure credential management
+/// - Structured output parsing
+/// - Progress tracking and statistics collection
+/// - Comprehensive error handling
 ///
-/// # Module Organisation
-///
-/// ## Core Types
+/// Example:
 /// ```swift
-/// ResticCommand
-/// CommandBuilder
-/// CommandResult
+/// let helper = ResticCLIHelper(executablePath: "/usr/local/bin/restic")
+/// try await helper.execute(BackupCommand(
+///     source: "/path/to/backup",
+///     tags: ["daily"],
+///     excludes: ["*.tmp"]
+/// ))
 /// ```
 ///
-/// ## Command Types
-/// ```swift
-/// BackupCommand
-/// RestoreCommand
-/// MaintenanceCommand
-/// ```
+/// Command Categories:
+/// - Backup: Create and manage backups
+/// - Restore: Restore data from backups
+/// - Maintenance: Repository maintenance and cleanup
+/// - Query: Search and inspect backups
 ///
-/// ## Output Parsing
-/// ```swift
-/// OutputParser
-/// ProgressTracker
-/// StatisticsCollector
-/// ```
+/// Security:
+/// - Credentials are never logged or exposed
+/// - Environment variables are cleared after use
+/// - Paths are sanitized to prevent injection
 ///
-/// # Command Building
+/// Error Handling:
+/// - Input validation before execution
+/// - Detailed error messages with context
+/// - Recovery suggestions when applicable
 ///
-/// ## Type Safety
-/// Safe command construction:
-/// - Parameter validation
-/// - Path sanitisation
-/// - Flag verification
-///
-/// ## Command Options
-/// Supported command types:
-/// - Backup operations
-/// - Restore operations
-/// - Repository management
-/// - Maintenance tasks
-///
-/// # Credential Management
-///
-/// ## Security
-/// Secure credential handling:
-/// - Environment variables
-/// - Configuration files
-/// - Keychain integration
-///
-/// ## Validation
-/// Credential validation:
-/// - Format checking
-/// - Permission verification
-/// - Expiry management
-///
-/// # Output Handling
-///
-/// ## Parsing
-/// Structured output parsing:
-/// - JSON output
-/// - Progress updates
-/// - Error messages
-///
-/// ## Progress Tracking
-/// Real-time progress monitoring:
-/// - Transfer rates
-/// - File counts
-/// - Size statistics
-///
-/// # Usage Example
-/// ```swift
-/// let helper = ResticCLIHelper(resticPath: "/usr/local/bin/restic")
-/// 
-/// let result = try await helper.execute(
-///     BackupCommand(
-///         source: path,
-///         tag: "daily"
-///     )
-/// )
-/// ```
-///
-/// # Error Handling
-///
-/// ## CLI Errors
-/// Comprehensive error handling:
-/// - Command errors
-/// - System errors
-/// - Permission errors
-///
-/// ## Recovery
-/// Error recovery strategies:
-/// - Automatic retry
-/// - Command adjustment
-/// - Clean-up operations
-///
-/// # Thread Safety
-/// CLI operations are thread-safe:
-/// - Command queuing
-/// - Output synchronisation
-/// - Resource management
+/// Performance:
+/// - Asynchronous command execution
+/// - Progress reporting for long operations
+/// - Memory-efficient output handling
+
 import Foundation
 import ResticTypes
+import UmbraLogging
 
-/// Main class for interacting with the Restic CLI
+/// A helper class that provides a Swift interface to the Restic command-line tool.
 public final class ResticCLIHelper {
-    /// Current version of the ResticCLIHelper module
+    /// The current version of the ResticCLIHelper module.
+    ///
+    /// This version follows semantic versioning (MAJOR.MINOR.PATCH).
     public static let version = "1.0.0"
 
-    /// Path to the Restic executable
-    private let resticPath: String
+    /// The absolute path to the Restic executable.
+    ///
+    /// This path is validated during initialization to ensure
+    /// the executable exists and is accessible.
+    private let executablePath: String
 
-    /// Queue for serialising command execution
-    private let executionQueue: DispatchQueue
+    /// The logger instance used for operation tracking.
+    private let logger: Logger
 
-    /// Initialise ResticCLIHelper
-    /// - Parameter resticPath: Path to the Restic executable
-    public init(resticPath: String = "/opt/homebrew/bin/restic") {
-        self.resticPath = resticPath
-        self.executionQueue = DispatchQueue(label: "com.umbracore.restic-cli-helper")
+    /// Creates a new Restic CLI helper.
+    ///
+    /// - Parameters:
+    ///   - executablePath: The path to the Restic executable.
+    ///                     Must be an absolute path to a valid executable.
+    ///   - logger: The logger to use for operation tracking.
+    ///            Defaults to the shared logger instance.
+    /// - Throws: `ResticError.invalidConfiguration` if the executable
+    ///          cannot be found or accessed.
+    public init(
+        executablePath: String,
+        logger: Logger = .shared
+    ) throws {
+        self.executablePath = executablePath
+        self.logger = logger
+
+        // Validate executable
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: executablePath) else {
+            throw ResticError.invalidConfiguration("Restic executable not found at \(executablePath)")
+        }
+
+        var isDirectory: ObjCBool = false
+        guard fileManager.fileExists(atPath: executablePath, isDirectory: &isDirectory),
+              !isDirectory.boolValue else {
+            throw ResticError.invalidConfiguration("Path is a directory: \(executablePath)")
+        }
     }
 
     /// Execute a Restic command
@@ -138,7 +100,7 @@ public final class ResticCLIHelper {
 
         // Create process
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: resticPath)
+        process.executableURL = URL(fileURLWithPath: executablePath)
         process.arguments = command.arguments
 
         // Merge environment variables, ensuring we preserve PATH and don't override with empty values
@@ -161,18 +123,18 @@ public final class ResticCLIHelper {
             let workItem = DispatchWorkItem {
                 do {
                     try process.run()
-                    
+
                     // Read output and error data
                     let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
                     let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-                    
+
                     // Wait for process to complete
                     process.waitUntilExit()
-                    
+
                     if process.terminationStatus != 0 {
                         let errorOutput = String(data: errorData, encoding: .utf8) ?? "Unknown error"
                         let error: ResticError
-                        
+
                         switch process.terminationStatus {
                         case 1:
                             error = .executionFailed("Command failed: \(errorOutput)")
@@ -183,11 +145,11 @@ public final class ResticCLIHelper {
                         default:
                             error = .executionFailed("Process terminated with status \(process.terminationStatus): \(errorOutput)")
                         }
-                        
+
                         continuation.resume(throwing: error)
                         return
                     }
-                    
+
                     // Try to parse the output
                     if let output = String(data: outputData, encoding: .utf8) {
                         continuation.resume(returning: output)
@@ -198,8 +160,9 @@ public final class ResticCLIHelper {
                     continuation.resume(throwing: ResticError.executionFailed(error.localizedDescription))
                 }
             }
-            
-            self.executionQueue.async(execute: workItem)
+
+            self.logger.info("Executing command: \(command)")
+            DispatchQueue(label: "com.umbracore.restic-cli-helper").async(execute: workItem)
         }
     }
 }

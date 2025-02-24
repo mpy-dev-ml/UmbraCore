@@ -86,15 +86,15 @@ public protocol SecurityProvider: Sendable {
 /// Manages security operations and access control
 public actor SecurityService: UmbraService, SecurityProvider {
     public static let serviceIdentifier = "com.umbracore.security"
-    
+
     private var _state: ServiceState = .uninitialized
     public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
-    
+
     private let container: ServiceContainer
     private var cryptoService: CryptoService?
     private var accessedPaths: Set<String>
     private var bookmarks: [String: [UInt8]]
-    
+
     /// Initialize security service
     /// - Parameter container: Service container for dependencies
     public init(container: ServiceContainer) {
@@ -102,45 +102,45 @@ public actor SecurityService: UmbraService, SecurityProvider {
         self.accessedPaths = []
         self.bookmarks = [:]
     }
-    
+
     /// Initialize the service
     public func initialize() async throws {
         guard _state == .uninitialized else {
             throw ServiceError.configurationError("Service already initialized")
         }
-        
+
         state = .initializing
         _state = .initializing
-        
+
         // Resolve dependencies
         cryptoService = try await container.resolve(CryptoService.self)
-        
+
         _state = .ready
         state = .ready
     }
-    
+
     /// Gracefully shut down the service
     public func shutdown() async {
         if _state == .ready {
             state = .shuttingDown
             _state = .shuttingDown
-            
+
             // Stop accessing all paths
             await stopAccessingAllResources()
-            
+
             // Shutdown crypto service
             if let crypto = cryptoService {
                 await crypto.shutdown()
                 cryptoService = nil
             }
-            
+
             state = .uninitialized
             _state = .uninitialized
         }
     }
-    
+
     // MARK: - SecurityProvider Implementation
-    
+
     public func createBookmark(forPath path: String) async throws -> [UInt8] {
         let url = URL(fileURLWithPath: path)
         do {
@@ -154,7 +154,7 @@ public actor SecurityService: UmbraService, SecurityProvider {
             throw SecurityError.bookmarkError("Failed to create bookmark for \(path): \(error.localizedDescription)")
         }
     }
-    
+
     public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
         let data = Data(bookmarkData)
         var isStale = false
@@ -171,7 +171,7 @@ public actor SecurityService: UmbraService, SecurityProvider {
             throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
         }
     }
-    
+
     public func startAccessing(path: String) async throws -> Bool {
         let url = URL(fileURLWithPath: path)
         if url.startAccessingSecurityScopedResource() {
@@ -181,19 +181,19 @@ public actor SecurityService: UmbraService, SecurityProvider {
             throw SecurityError.accessError("Failed to access: \(path)")
         }
     }
-    
+
     public func stopAccessing(path: String) async {
         let url = URL(fileURLWithPath: path)
         url.stopAccessingSecurityScopedResource()
         accessedPaths.remove(path)
     }
-    
+
     public func stopAccessingAllResources() async {
         for path in accessedPaths {
             await stopAccessing(path: path)
         }
     }
-    
+
     public func withSecurityScopedAccess<T: Sendable>(
         to path: String,
         perform operation: @Sendable () async throws -> T
@@ -202,32 +202,32 @@ public actor SecurityService: UmbraService, SecurityProvider {
         guard accessGranted else {
             throw SecurityError.accessError("Access denied to: \(path)")
         }
-        
+
         defer { Task { await stopAccessing(path: path) } }
         return try await operation()
     }
-    
+
     public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
         bookmarks[identifier] = bookmarkData
     }
-    
+
     public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
         guard let data = bookmarks[identifier] else {
             throw SecurityError.bookmarkError("Bookmark not found: \(identifier)")
         }
         return data
     }
-    
+
     public func deleteBookmark(withIdentifier identifier: String) async throws {
         guard bookmarks.removeValue(forKey: identifier) != nil else {
             throw SecurityError.bookmarkError("Bookmark not found: \(identifier)")
         }
     }
-    
+
     public func isAccessing(path: String) async -> Bool {
         accessedPaths.contains(path)
     }
-    
+
     public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
         do {
             let (_, isStale) = try await resolveBookmark(bookmarkData)
@@ -236,7 +236,7 @@ public actor SecurityService: UmbraService, SecurityProvider {
             return false
         }
     }
-    
+
     public func getAccessedPaths() async -> Set<String> {
         accessedPaths
     }

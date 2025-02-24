@@ -2,9 +2,10 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "Sources_Repositories",
-    srcs = [
-        "Repositories.swift",
-    ],
+    srcs = glob([
+        "*.swift",
+        "**/*.swift",
+    ]),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
@@ -14,4 +15,11 @@ swift_library(
     ],
     module_name = "Repositories",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/Repositories/Types:Repositories_Types",
+        "//Sources/SecurityTypes:SecurityTypes",
+        "//Sources/SecurityTypes/Protocols:SecurityTypes_Protocols",
+        "//Sources/SecurityTypes/Types:SecurityTypes_Types",
+        "//Sources/UmbraLogging:Sources_UmbraLogging",
+    ],
 )

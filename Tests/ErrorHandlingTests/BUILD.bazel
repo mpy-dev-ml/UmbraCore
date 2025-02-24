@@ -1,7 +1,7 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
-    name = "Tests_ErrorHandlingTests",
+    name = "ErrorHandlingTests",
     srcs = [
         "CommonErrorTests.swift",
         "CoreErrorTests.swift",
@@ -9,6 +9,6 @@ swift_test(
     module_name = "ErrorHandlingTests",
     deps = [
         "//Sources/ErrorHandling",
-        "//Sources/ErrorHandling/Models:Sources_ErrorHandling_Models",
+        "//Sources/ErrorHandling/Models:ErrorHandling_Models",
     ],
 )

@@ -2,11 +2,7 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "Sources_UmbraCryptoService",
-    srcs = [
-        "CryptoServiceListener.swift",
-        "CryptoXPCService.swift",
-        "UmbraCryptoService.swift",
-    ],
+    srcs = glob(["*.swift"]),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
@@ -16,4 +12,7 @@ swift_library(
     ],
     module_name = "UmbraCryptoService",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/UmbraXPC:Sources_UmbraXPC",
+    ],
 )

@@ -1,3 +1,4 @@
+import ErrorHandling_Common
 import Foundation
 
 /// Protocol for service-specific errors
@@ -29,11 +30,15 @@ extension ServiceErrorProtocol {
     }
 
     public var description: String {
-        var desc = "[\(severity.rawValue.uppercased())] \(errorType.rawValue) Error"
-        if let errorDesc = errorDescription {
-            desc += ": \(errorDesc)"
+        var description = "[\(errorType)] \(localizedDescription)"
+        if !contextInfo.isEmpty {
+            description += "\nContext: \(contextInfo)"
         }
-        return desc
+        return description
+    }
+
+    public var localizedDescription: String {
+        errorType.description
     }
 
     /// Category of the error based on its type

@@ -3,21 +3,43 @@ import Security
 import SwiftyBeaver
 import UmbraLogging
 
-/// A service for secure keychain operations
-public actor KeychainService: Sendable {
+/// A thread-safe service for managing secure keychain operations.
+///
+/// `KeychainService` provides a safe interface for storing and retrieving sensitive data
+/// from the system keychain. It handles all common keychain operations and provides
+/// detailed error information when operations fail.
+///
+/// Example:
+/// ```swift
+/// let service = KeychainService()
+/// try await service.addItem(
+///     account: "user@example.com",
+///     service: "com.example.app",
+///     accessGroup: nil,
+///     data: "secret".data(using: .utf8)!
+/// )
+/// ```
+public actor KeychainService {
+    /// Logger instance for tracking operations.
     private let log = SwiftyBeaver.self
 
-    /// Initialize a new KeychainService
+    /// Creates a new keychain service instance.
     public init() {}
 
-    /// Add a new item to the keychain
+    /// Adds a new item to the keychain.
+    ///
     /// - Parameters:
-    ///   - account: The account name
-    ///   - service: The service name
-    ///   - accessGroup: Optional access group
-    ///   - data: The data to store
-    /// - Throws: KeychainError if the operation fails
-    public func addItem(account: String, service: String, accessGroup: String?, data: Data) async throws {
+    ///   - account: The account identifier for the item.
+    ///   - service: The service identifier for the item.
+    ///   - accessGroup: Optional access group for sharing items between apps.
+    ///   - data: The sensitive data to store.
+    /// - Throws: `KeychainError` if the operation fails, with specific error information.
+    public func addItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data
+    ) async throws {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
@@ -51,14 +73,20 @@ public actor KeychainService: Sendable {
         ])
     }
 
-    /// Update an existing item in the keychain
+    /// Updates an existing item in the keychain.
+    ///
     /// - Parameters:
-    ///   - account: The account name
-    ///   - service: The service name
-    ///   - accessGroup: Optional access group
-    ///   - data: The new data to store
-    /// - Throws: KeychainError if the operation fails
-    public func updateItem(account: String, service: String, accessGroup: String?, data: Data) async throws {
+    ///   - account: The account identifier for the item.
+    ///   - service: The service identifier for the item.
+    ///   - accessGroup: Optional access group for sharing items between apps.
+    ///   - data: The new sensitive data to store.
+    /// - Throws: `KeychainError` if the operation fails, with specific error information.
+    public func updateItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data
+    ) async throws {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
@@ -95,13 +123,18 @@ public actor KeychainService: Sendable {
         ])
     }
 
-    /// Remove an item from the keychain
+    /// Removes an item from the keychain.
+    ///
     /// - Parameters:
-    ///   - account: The account name
-    ///   - service: The service name
-    ///   - accessGroup: Optional access group
-    /// - Throws: KeychainError if the operation fails
-    public func removeItem(account: String, service: String, accessGroup: String?) async throws {
+    ///   - account: The account identifier for the item.
+    ///   - service: The service identifier for the item.
+    ///   - accessGroup: Optional access group for sharing items between apps.
+    /// - Throws: `KeychainError` if the operation fails, with specific error information.
+    public func removeItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
@@ -134,14 +167,19 @@ public actor KeychainService: Sendable {
         ])
     }
 
-    /// Check if an item exists in the keychain
+    /// Checks if an item exists in the keychain.
+    ///
     /// - Parameters:
-    ///   - account: The account name
-    ///   - service: The service name
-    ///   - accessGroup: Optional access group
-    /// - Returns: True if the item exists, false otherwise
-    /// - Throws: KeychainError if the operation fails
-    public func containsItem(account: String, service: String, accessGroup: String?) async throws -> Bool {
+    ///   - account: The account identifier to check.
+    ///   - service: The service identifier to check.
+    ///   - accessGroup: Optional access group for shared items.
+    /// - Returns: `true` if the item exists, `false` otherwise.
+    /// - Throws: `KeychainError` if the query operation fails.
+    public func containsItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws -> Bool {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
@@ -173,14 +211,19 @@ public actor KeychainService: Sendable {
         }
     }
 
-    /// Retrieve an item from the keychain
+    /// Retrieves an item from the keychain.
+    ///
     /// - Parameters:
-    ///   - account: The account name
-    ///   - service: The service name
-    ///   - accessGroup: Optional access group
-    /// - Returns: The stored data
-    /// - Throws: KeychainError if the operation fails
-    public func retrieveItem(account: String, service: String, accessGroup: String?) async throws -> Data {
+    ///   - account: The account identifier for the item.
+    ///   - service: The service identifier for the item.
+    ///   - accessGroup: Optional access group for sharing items between apps.
+    /// - Returns: The stored sensitive data.
+    /// - Throws: `KeychainError` if the operation fails, with specific error information.
+    public func retrieveItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async throws -> Data {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
@@ -228,7 +271,7 @@ public actor KeychainService: Sendable {
         return data
     }
 
-    /// Convert a SecItemError to a KeychainError
+    /// Converts a `SecItemError` to a `KeychainError`.
     private func convertError(_ status: OSStatus) -> KeychainError {
         switch status {
         case errSecDuplicateItem:

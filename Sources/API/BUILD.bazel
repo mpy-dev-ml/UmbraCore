@@ -1,7 +1,7 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_API",
+    name = "API",
     srcs = [
         "API.swift",
         "UmbraAPI.swift",
@@ -16,6 +16,6 @@ swift_library(
     module_name = "API",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/Core/UmbraCore:Sources_Core_UmbraCore",
+        "//Sources/Core:Core",
     ],
 )

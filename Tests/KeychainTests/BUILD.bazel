@@ -13,7 +13,7 @@ swift_test(
         "arm64-apple-macos14.0",
     ],
     deps = [
-        "//Sources/UmbraKeychainService",
+        "//Sources/UmbraKeychainService:Sources_UmbraKeychainService",
         "//Sources/UmbraTestKit",
     ],
 )

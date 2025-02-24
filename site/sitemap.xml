@@ -1,223 +1,298 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/ACKNOWLEDGMENTS/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/ACKNOWLEDGMENTS/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/GETTING_STARTED/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/DEPENDENCIES/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/LICENSE/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/LICENSE/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/advanced-features/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/PROJECT_STATUS/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/api-reference/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/REFACTORING_PLAN/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/bazel_spm_integration/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/SECURITY_ARCHITECTURE/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/configuration/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/crypto-strategy/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/contributing/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/api/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/getting-started/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/api/backup-management/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/security/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/api/configuration/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/troubleshooting/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/api/reference/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/api/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/api/repository-handling/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/ACKNOWLEDGMENTS/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/api/keychain/overview/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/GETTING_STARTED/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/api/keychain/password-management/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/LICENSE/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/api/keychain/secure-storage/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/bazel_spm_integration/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/api/keychain/xpc-integration/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/api/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/ACKNOWLEDGMENTS/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/contributing/CONTRIBUTING/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/GETTING_STARTED/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/ARCHITECTURE/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/LICENSE/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/bookmarks/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/bazel_spm_integration/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/crypto-types/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/api/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/crypto/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/contributing/CONTRIBUTING/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/error-handling/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/ARCHITECTURE/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/keychain/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/bookmarks/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/logging/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/crypto-types/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/performance/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/crypto/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/security/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/error-handling/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/thread-safety/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/keychain/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/guides/xpc/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/logging/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/archive/security/SECURITY_GUIDELINES/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/performance/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/contributing/CONTRIBUTING/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/security/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/ARCHITECTURE/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/thread-safety/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/bookmarks/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/guides/xpc/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/crypto-types/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/archive/security/SECURITY_GUIDELINES/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/crypto/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/contributing/CONTRIBUTING/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/error-handling/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/development/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/keychain/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/development/bazel_spm/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/logging/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/development/contributing/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/performance/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/getting-started/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/security/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/getting-started/installation/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/thread-safety/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/getting-started/quick-start/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/guides/xpc/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/guides/ARCHITECTURE/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://mpy-dev-ml.github.io/UmbraCore/security/SECURITY_GUIDELINES/</loc>
-         <lastmod>2025-02-23</lastmod>
+         <loc>https://umbracore.dev/guides/bookmarks/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/guides/crypto-types/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/guides/crypto/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/guides/error-handling/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/guides/keychain/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/guides/logging/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/guides/performance/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/guides/security/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/guides/thread-safety/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/guides/xpc/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/security/SECURITY_GUIDELINES/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/support/troubleshooting/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/user-guide/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/user-guide/advanced-features/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/user-guide/configuration/</loc>
+         <lastmod>2025-02-24</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://umbracore.dev/user-guide/security/</loc>
+         <lastmod>2025-02-24</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

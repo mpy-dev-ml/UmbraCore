@@ -30,8 +30,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0"),
-        .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", from: "2.0.0"),
-        .package(url: "https://github.com/apple/swift-testing.git", exact: "0.5.0")
+        .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", from: "2.0.0")
     ],
     targets: [
         .target(
@@ -61,40 +60,23 @@ let package = Package(
         ),
         .target(
             name: "UmbraXPC",
-            dependencies: [
-                "UmbraCore"
-            ]
+            dependencies: ["UmbraCore"]
         ),
         .target(
             name: "UmbraCryptoService",
-            dependencies: [
-                "UmbraCore",
-                "CryptoTypes"
-            ]
+            dependencies: ["UmbraCore"]
         ),
         .target(
             name: "UmbraBookmarkService",
-            dependencies: [
-                "UmbraCore",
-                "SecurityTypes"
-            ]
+            dependencies: ["UmbraCore"]
         ),
         .target(
             name: "UmbraKeychainService",
-            dependencies: [
-                "UmbraCore",
-                "SecurityTypes"
-            ]
+            dependencies: ["UmbraCore"]
         ),
         .testTarget(
-            name: "CoreTests",
-            dependencies: [
-                "UmbraCore",
-                "UmbraCryptoService",
-                "UmbraBookmarkService",
-                "UmbraKeychainService",
-                .product(name: "Testing", package: "swift-testing")
-            ]
+            name: "UmbraCoreTests",
+            dependencies: ["UmbraCore"]
         )
     ]
 )

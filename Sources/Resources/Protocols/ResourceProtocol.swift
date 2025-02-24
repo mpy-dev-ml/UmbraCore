@@ -1,67 +1,164 @@
 import Foundation
 
-/// Represents the current state of a managed resource
+/// The lifecycle state of a managed resource.
+///
+/// Resources progress through these states during their lifecycle,
+/// from initialisation through active use to eventual release.
+/// State transitions should be handled atomically to ensure thread safety.
+///
+/// Example state flow:
+/// ```
+/// uninitialized -> initializing -> ready -> inUse -> ready -> released
+/// ```
 public enum ResourceState: String, Sendable {
-    /// Resource is not yet initialised
+    /// The resource has not been initialised.
     case uninitialized
-    /// Resource is being initialised
+
+    /// The resource is currently being initialised.
     case initializing
-    /// Resource is ready for use
+
+    /// The resource is initialised and available for use.
     case ready
-    /// Resource is in use
+
+    /// The resource is currently in use by a client.
     case inUse
-    /// Resource encountered an error
+
+    /// The resource encountered an error during operation.
     case error
-    /// Resource is being released
+
+    /// The resource is being released back to the pool.
     case releasing
-    /// Resource has been released
+
+    /// The resource has been fully released and cleaned up.
     case released
 }
 
-/// Protocol for managed resources that require lifecycle management
+/// A protocol for resources that require lifecycle management.
+///
+/// Managed resources provide thread-safe access through the actor model
+/// and support operations like acquisition, release, and cleanup.
+/// Implementations should ensure proper state transitions and handle
+/// concurrent access safely.
+///
+/// Example:
+/// ```swift
+/// actor DatabaseConnection: ManagedResource {
+///     static let resourceType = "database"
+///     nonisolated let id: String
+///     nonisolated private(set) var state: ResourceState
+///     
+///     func acquire() async throws {
+///         guard state == .ready else {
+///             throw ResourceError.invalidState("Resource not ready")
+///         }
+///         state = .inUse
+///         // Acquire database connection
+///     }
+///     
+///     func release() async {
+///         // Release connection
+///         state = .ready
+///     }
+/// }
+/// ```
 public protocol ManagedResource: Actor, Sendable {
-    /// Resource type identifier
+    /// A string identifying the type of resource.
+    ///
+    /// This should be a unique, lowercase identifier for the resource type,
+    /// such as "database" or "file-handle". The identifier should be
+    /// consistent across the application.
     static var resourceType: String { get }
-    
-    /// Current state of the resource
+
+    /// The current lifecycle state of the resource.
+    ///
+    /// This property must be safe to access from any context and should
+    /// accurately reflect the resource's current state. State transitions
+    /// should be handled atomically.
     nonisolated var state: ResourceState { get }
-    
-    /// Acquire the resource for use
-    /// - Throws: ResourceError if acquisition fails
+
+    /// A unique identifier for this resource instance.
+    ///
+    /// This should be unique within the scope of the resource type
+    /// and must be safe to access from any context. Consider using
+    /// UUID or another guaranteed unique identifier.
+    nonisolated var id: String { get }
+
+    /// Acquires the resource for use.
+    ///
+    /// This method should transition the resource from `ready` to `inUse`
+    /// state if successful. The transition should be atomic to prevent
+    /// race conditions.
+    ///
+    /// - Throws: `ResourceError` if acquisition fails due to invalid state,
+    ///           timeout, or other errors.
+    /// - Returns: Void if acquisition succeeds.
     func acquire() async throws
-    
-    /// Release the resource back to the pool
+
+    /// Releases the resource back to the pool.
+    ///
+    /// This method should transition the resource from `inUse` to `ready`
+    /// state after performing any necessary cleanup. The transition should
+    /// be atomic to prevent race conditions.
+    ///
+    /// - Important: This method should be idempotent and safe to call
+    ///             multiple times.
     func release() async
-    
-    /// Clean up any allocated resources
+
+    /// Performs final cleanup of the resource.
+    ///
+    /// This method should release any system resources and transition
+    /// the resource to the `released` state. Once cleaned up, the resource
+    /// cannot be reused.
+    ///
+    /// - Important: This method should be idempotent and safe to call
+    ///             multiple times.
     func cleanup() async
 }
 
-/// Errors that can occur during resource operations
+/// Errors that can occur during resource operations.
+///
+/// These errors provide specific information about what went wrong
+/// during resource management operations. Each case includes a detailed
+/// message to aid in debugging and error handling.
 public enum ResourceError: LocalizedError, Sendable {
-    /// Resource acquisition failed
+    /// The resource could not be acquired.
+    ///
+    /// - Parameter message: A description of why acquisition failed,
+    ///                     such as "Connection timeout" or "Invalid credentials".
     case acquisitionFailed(String)
-    /// Resource is in an invalid state
+
+    /// The resource is in an invalid state for the requested operation.
+    ///
+    /// - Parameter message: A description of the state conflict,
+    ///                     such as "Resource already in use" or "Resource not initialised".
     case invalidState(String)
-    /// Resource operation timed out
+
+    /// The operation timed out.
+    ///
+    /// - Parameter message: A description of what operation timed out,
+    ///                     including relevant timing information.
     case timeout(String)
-    /// Resource pool is exhausted
+
+    /// No resources are available in the pool.
+    ///
+    /// - Parameter message: A description of the resource shortage,
+    ///                     including pool size and current usage.
     case poolExhausted(String)
-    /// Resource cleanup failed
-    case cleanupFailed(String)
-    
+
+    /// A localised description of the error.
+    ///
+    /// This property provides a human-readable description of the error,
+    /// suitable for logging or user display.
     public var errorDescription: String? {
         switch self {
-        case .acquisitionFailed(let reason):
-            return "Resource acquisition failed: \(reason)"
-        case .invalidState(let reason):
-            return "Resource is in an invalid state: \(reason)"
-        case .timeout(let reason):
-            return "Resource operation timed out: \(reason)"
-        case .poolExhausted(let reason):
-            return "Resource pool is exhausted: \(reason)"
-        case .cleanupFailed(let reason):
-            return "Resource cleanup failed: \(reason)"
+        case .acquisitionFailed(let message):
+            return "Failed to acquire resource: \(message)"
+        case .invalidState(let message):
+            return "Invalid resource state: \(message)"
+        case .timeout(let message):
+            return "Operation timed out: \(message)"
+        case .poolExhausted(let message):
+            return "Resource pool exhausted: \(message)"
         }
     }
 }
