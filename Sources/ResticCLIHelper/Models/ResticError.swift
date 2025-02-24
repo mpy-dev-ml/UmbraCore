@@ -41,6 +41,15 @@ public enum ResticError: LocalizedError, Equatable {
     /// Invalid command arguments
     case invalidArguments(details: String)
 
+    /// Invalid configuration
+    case invalidConfiguration(String)
+
+    /// Repository error
+    case repositoryError(String)
+
+    /// Authentication error
+    case authenticationError(String)
+
     /// Generic error
     case other(message: String)
 
@@ -72,6 +81,12 @@ public enum ResticError: LocalizedError, Equatable {
             return "Permission denied: \(path)"
         case .invalidArguments(let details):
             return "Invalid arguments: \(details)"
+        case .invalidConfiguration(let details):
+            return "Invalid configuration: \(details)"
+        case .repositoryError(let details):
+            return "Repository error: \(details)"
+        case .authenticationError(let details):
+            return "Authentication error: \(details)"
         case .other(let message):
             return message
         }
@@ -92,6 +107,9 @@ public enum ResticError: LocalizedError, Equatable {
         case (.networkError(let l), .networkError(let r)): return l.localizedDescription == r.localizedDescription
         case (.permissionDenied(let l), .permissionDenied(let r)): return l == r
         case (.invalidArguments(let l), .invalidArguments(let r)): return l == r
+        case (.invalidConfiguration(let l), .invalidConfiguration(let r)): return l == r
+        case (.repositoryError(let l), .repositoryError(let r)): return l == r
+        case (.authenticationError(let l), .authenticationError(let r)): return l == r
         case (.other(let l), .other(let r)): return l == r
         default: return false
         }
