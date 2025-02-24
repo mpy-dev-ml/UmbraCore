@@ -1,147 +1,171 @@
+import Core
+import CryptoTypes
 import CryptoTypes_Protocols
+import CryptoTypes_Services
 import CryptoTypes_Types
 import Foundation
+import SecurityTypes
 import SecurityTypes_Protocols
 import SecurityTypes_Types
-import Services_SecurityUtils_Protocols
-import Services_SecurityUtils_Services
+import SecurityUtils_Protocols
+import UmbraSecurityUtils
 
-/// A service that manages security-scoped resource access and bookmarks
+/// A service that manages security-scoped resource access and bookmarks.
+/// This service provides functionality for:
+/// - Creating and managing encrypted security-scoped bookmarks
+/// - Managing access to security-scoped resources
+/// - Handling bookmark persistence and resolution
 @MainActor
 public final class SecurityService: SecurityProvider {
-    /// Shared instance of the SecurityService
-    public static let shared = SecurityService()
+  /// Shared instance of the SecurityService
+  public static let shared = SecurityService()
 
-    private let bookmarkService: SecurityBookmarkService
-    private let encryptedBookmarkService: EncryptedBookmarkService
-    private var activeSecurityScopedResources: Set<String> = []
-    private var bookmarks: [String: [UInt8]] = [:]
+  private let cryptoService: CryptoTypes_Protocols.CryptoServiceProtocol
+  private let bookmarkService: UmbraSecurityUtils.SecurityBookmarkService
+  private let encryptedBookmarkService: UmbraSecurityUtils.EncryptedBookmarkService
+  private var activeSecurityScopedResources: Set<String> = []
 
-    private init() {
-        let config = CryptoConfiguration.default
-        let cryptoService = DefaultCryptoServiceImpl()
-        self.bookmarkService = SecurityBookmarkService()
-        let credentialManager = CredentialManager(
-            service: "com.umbracore.security",
-            cryptoService: cryptoService,
-            config: config
-        )
-        self.encryptedBookmarkService = EncryptedBookmarkService(
-            cryptoService: cryptoService,
-            bookmarkService: bookmarkService,
-            credentialManager: credentialManager,
-            config: config
-        )
+  private init() {
+    let config = CryptoTypes_Types.CryptoConfiguration.default
+    let cryptoService = CryptoTypes_Services.DefaultCryptoServiceImpl()
+    let credentialManager = CryptoTypes_Types.CredentialManager(
+      service: "com.umbra.security",
+      cryptoService: cryptoService,
+      config: CryptoTypes_Types.CryptoConfig.default
+    )
+    self.cryptoService = cryptoService
+    self.bookmarkService = UmbraSecurityUtils.SecurityBookmarkService()
+    self.encryptedBookmarkService = UmbraSecurityUtils.EncryptedBookmarkService(
+      cryptoService: cryptoService,
+      bookmarkService: bookmarkService,
+      credentialManager: credentialManager,
+      config: config
+    )
+  }
+
+  // MARK: - SecurityProvider Protocol
+
+  /// Creates an encrypted security-scoped bookmark for the specified path.
+  /// - Parameter path: The file system path to create a bookmark for
+  /// - Returns: A byte array containing the bookmark identifier
+  /// - Throws: SecurityError if bookmark creation fails
+  public func createBookmark(forPath path: String) async throws -> [UInt8] {
+    let url = URL(fileURLWithPath: path)
+    let identifier = UUID().uuidString
+    try await encryptedBookmarkService.saveBookmark(for: url, withIdentifier: identifier)
+    return Array(identifier.utf8)
+  }
+
+  /// Resolves an encrypted security-scoped bookmark to its file system path.
+  /// - Parameter bookmarkData: The bookmark data to resolve
+  /// - Returns: A tuple containing the resolved path and whether the bookmark is stale
+  /// - Throws: SecurityError if bookmark resolution fails
+  public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
+    let identifier = String(decoding: bookmarkData, as: UTF8.self)
+    let url = try await encryptedBookmarkService.resolveBookmark(withIdentifier: identifier)
+    return (path: url.path, isStale: false)
+  }
+
+  /// Validates whether a bookmark can be resolved.
+  /// - Parameter bookmarkData: The bookmark data to validate
+  /// - Returns: True if the bookmark can be resolved, false otherwise
+  /// - Throws: SecurityError if validation fails
+  public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
+    let identifier = String(decoding: bookmarkData, as: UTF8.self)
+    do {
+      _ = try await encryptedBookmarkService.resolveBookmark(withIdentifier: identifier)
+      return true
+    } catch {
+      return false
     }
+  }
 
-    // MARK: - Resource Access Control
+  /// Loads a bookmark by its identifier.
+  /// - Parameter identifier: The identifier of the bookmark to load
+  /// - Returns: The bookmark data as a byte array
+  /// - Throws: SecurityError if bookmark loading fails
+  public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
+    let url = try await encryptedBookmarkService.resolveBookmark(withIdentifier: identifier)
+    let bookmarkData = try await url.createSecurityScopedBookmark()
+    return Array(bookmarkData)
+  }
 
-    public func startAccessing(path: String) async throws -> Bool {
-        let url = URL(fileURLWithPath: path)
-        let success = try await bookmarkService.withSecurityScopedAccess(to: url) {
-            _ = await MainActor.run {
-                activeSecurityScopedResources.insert(path)
-            }
-            return true
-        }
-        return success
+  /// Deletes a bookmark with the specified identifier.
+  /// - Parameter identifier: The identifier of the bookmark to delete
+  /// - Throws: SecurityError if bookmark deletion fails
+  public func deleteBookmark(withIdentifier identifier: String) async throws {
+    try await encryptedBookmarkService.deleteBookmark(withIdentifier: identifier)
+  }
+
+  /// Saves a bookmark with the specified identifier.
+  /// - Parameters:
+  ///   - bookmarkData: The bookmark data to save
+  ///   - identifier: The identifier to associate with the bookmark
+  /// - Throws: SecurityError if bookmark saving fails
+  public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
+    let data = Data(bookmarkData)
+    let (url, _) = try await URL.resolveSecurityScopedBookmark(data)
+    try await encryptedBookmarkService.saveBookmark(for: url, withIdentifier: identifier)
+  }
+
+  // MARK: - Resource Access
+
+  /// Starts accessing a security-scoped resource.
+  /// - Parameter path: The path to the resource to access
+  /// - Returns: True if access was granted, false otherwise
+  /// - Throws: SecurityError if access cannot be granted
+  public func startAccessing(path: String) async throws -> Bool {
+    let url = URL(fileURLWithPath: path)
+    return try url.withSecurityScopedAccess {
+      activeSecurityScopedResources.insert(path)
+      return true
     }
+  }
 
-    public func stopAccessing(path: String) async {
-        let url = URL(fileURLWithPath: path)
-        do {
-            try await bookmarkService.withSecurityScopedAccess(to: url) { url.stopAccessingSecurityScopedResource() }
-        } catch {
-            // Log error but continue with removal from active resources
-            print("Error stopping access to \(path): \(error)")
-        }
-        activeSecurityScopedResources.remove(path)
+  /// Stops accessing a security-scoped resource.
+  /// - Parameter path: The path to stop accessing
+  public func stopAccessing(path: String) async {
+    if activeSecurityScopedResources.contains(path) {
+      let url = URL(fileURLWithPath: path)
+      url.stopAccessingSecurityScopedResource()
+      activeSecurityScopedResources.remove(path)
     }
+  }
 
-    public func stopAccessingAllResources() async {
-        for path in activeSecurityScopedResources {
-            await stopAccessing(path: path)
-        }
+  /// Stops accessing all currently accessed security-scoped resources.
+  public func stopAccessingAllResources() async {
+    for path in activeSecurityScopedResources {
+      await stopAccessing(path: path)
     }
+  }
 
-    public func isAccessing(path: String) -> Bool {
-        activeSecurityScopedResources.contains(path)
+  /// Performs an operation with security-scoped access to a resource.
+  /// - Parameters:
+  ///   - path: The path to the resource to access
+  ///   - operation: The operation to perform while access is granted
+  /// - Returns: The result of the operation
+  /// - Throws: SecurityError if access cannot be granted
+  public func withSecurityScopedAccess<T: Sendable>(
+    to path: String,
+    perform operation: @Sendable () async throws -> T
+  ) async throws -> T {
+    guard try await startAccessing(path: path) else {
+      throw SecurityTypes.SecurityError.accessDenied(reason: "Failed to access: \(path)")
     }
+    defer { Task { await stopAccessing(path: path) } }
+    return try await operation()
+  }
 
-    public func getAllAccessedPaths() -> Set<String> {
-        activeSecurityScopedResources
-    }
+  /// Checks if a path is currently being accessed.
+  /// - Parameter path: The path to check
+  /// - Returns: True if the path is being accessed, false otherwise
+  public func isAccessing(path: String) async -> Bool {
+    activeSecurityScopedResources.contains(path)
+  }
 
-    public func getAccessedPaths() async -> Set<String> {
-        activeSecurityScopedResources
-    }
-
-    public func withSecurityScopedAccess<T: Sendable>(
-        to path: String,
-        perform operation: @Sendable () async throws -> T
-    ) async throws -> T {
-        guard try await startAccessing(path: path) else {
-            throw SecurityError.accessDenied(reason: "Failed to access: \(path)")
-        }
-        defer { Task { await stopAccessing(path: path) } }
-        return try await operation()
-    }
-
-    // MARK: - Bookmark Management
-
-    public func createBookmark(forPath path: String) async throws -> [UInt8] {
-        let url = URL(fileURLWithPath: path)
-        let data = try await bookmarkService.createBookmark(for: url)
-        return Array(data)
-    }
-
-    public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        let data = Data(bookmarkData)
-        let result = try await bookmarkService.resolveBookmark(data)
-        return (path: result.url.path, isStale: result.isStale)
-    }
-
-    public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
-        let data = Data(bookmarkData)
-        let result = try await bookmarkService.resolveBookmark(data)
-        return !result.isStale
-    }
-
-    public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
-        bookmarks[identifier] = bookmarkData
-    }
-
-    public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
-        guard let data = bookmarks[identifier] else {
-            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found: \(identifier)")
-        }
-        return data
-    }
-
-    public func deleteBookmark(withIdentifier identifier: String) async throws {
-        guard bookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityError.bookmarkNotFound(reason: "Bookmark not found: \(identifier)")
-        }
-    }
-
-    // MARK: - Encrypted Bookmark Management
-
-    public func createEncryptedBookmark(forPath path: String) async throws -> [UInt8] {
-        let url = URL(fileURLWithPath: path)
-        let identifier = UUID().uuidString
-        try await encryptedBookmarkService.saveBookmark(for: url, withIdentifier: identifier)
-        return try await loadBookmark(withIdentifier: identifier)
-    }
-
-    public func resolveEncryptedBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        let identifier = String(decoding: bookmarkData, as: UTF8.self)
-        let url = try await encryptedBookmarkService.resolveBookmark(withIdentifier: identifier)
-        return (path: url.path, isStale: false)
-    }
-
-    public func validateEncryptedBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
-        let identifier = String(decoding: bookmarkData, as: UTF8.self)
-        _ = try await encryptedBookmarkService.resolveBookmark(withIdentifier: identifier)
-        return true
-    }
+  /// Gets all paths that are currently being accessed.
+  /// - Returns: A set of paths that are currently being accessed
+  public func getAccessedPaths() async -> Set<String> {
+    activeSecurityScopedResources
+  }
 }

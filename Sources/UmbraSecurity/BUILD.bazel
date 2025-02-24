@@ -14,7 +14,15 @@ swift_library(
     module_name = "UmbraSecurity",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/Services/SecurityUtils/Protocols:SecurityUtils_Protocols",
+        "//Sources/Core",
+        "//Sources/CryptoTypes",
+        "//Sources/CryptoTypes/Protocols:CryptoTypes_Protocols",
+        "//Sources/CryptoTypes/Services:CryptoTypes_Services",
+        "//Sources/CryptoTypes/Types:CryptoTypes_Types",
+        "//Sources/SecurityTypes",
+        "//Sources/SecurityTypes/Protocols:SecurityTypes_Protocols",
+        "//Sources/SecurityTypes/Types:SecurityTypes_Types",
         "//Sources/Services/SecurityUtils/Services:SecurityUtils",
+        "//Sources/UmbraCrypto",
     ],
 )
