@@ -32,7 +32,11 @@ final class CryptoServiceTests: XCTestCase {
 
         XCTAssertEqual(key1, key2, "Same password and salt should produce same key")
 
-        let differentKey = try await cryptoService.deriveKey(from: "different_password", salt: salt, iterations: iterations)
+        let differentKey = try await cryptoService.deriveKey(
+            from: "different_password",
+            salt: salt,
+            iterations: iterations
+        )
         XCTAssertNotEqual(key1, differentKey, "Different passwords should produce different keys")
     }
 

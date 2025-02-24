@@ -5,7 +5,7 @@ final class KeychainXPCServiceTests: XCTestCase {
     private var proxy: (any KeychainXPCProtocol)!
     let testAccount = "test_account"
     let testService = "test_service"
-    let testData = "test_data".data(using: .utf8)!
+    let testData = Data("test_data".utf8)
 
     override func setUp() async throws {
         try await super.setUp()
@@ -36,7 +36,7 @@ final class KeychainXPCServiceTests: XCTestCase {
         XCTAssertEqual(retrievedData, testData)
 
         // Test updating item
-        let updatedData = "updated_data".data(using: .utf8)!
+        let updatedData = Data("updated_data".utf8)
         try await proxy.updateItem(
             account: testAccount,
             service: testService,
@@ -81,7 +81,7 @@ final class KeychainXPCServiceTests: XCTestCase {
             for i in 0..<iterations {
                 group.addTask {
                     let account = "concurrent_\(i)"
-                    let data = "data_\(i)".data(using: .utf8)!
+                    let data = Data("data_\(i)".utf8)
                     try await self.proxy.addItem(
                         account: account,
                         service: testService,
@@ -96,7 +96,7 @@ final class KeychainXPCServiceTests: XCTestCase {
         // Verify all items
         for i in 0..<iterations {
             let account = "concurrent_\(i)"
-            let expectedData = "data_\(i)".data(using: .utf8)!
+            let expectedData = Data("data_\(i)".utf8)
             let retrievedData = try await proxy.retrieveItem(
                 account: account,
                 service: testService,
@@ -110,7 +110,7 @@ final class KeychainXPCServiceTests: XCTestCase {
             for i in 0..<iterations {
                 group.addTask {
                     let account = "concurrent_\(i)"
-                    let updatedData = "updated_\(i)".data(using: .utf8)!
+                    let updatedData = Data("updated_\(i)".utf8)
                     try await self.proxy.updateItem(
                         account: account,
                         service: testService,
@@ -125,7 +125,7 @@ final class KeychainXPCServiceTests: XCTestCase {
         // Verify updates
         for i in 0..<iterations {
             let account = "concurrent_\(i)"
-            let expectedData = "updated_\(i)".data(using: .utf8)!
+            let expectedData = Data("updated_\(i)".utf8)
             let retrievedData = try await proxy.retrieveItem(
                 account: account,
                 service: testService,

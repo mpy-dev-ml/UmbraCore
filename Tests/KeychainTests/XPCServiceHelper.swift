@@ -122,7 +122,10 @@ final class XPCServiceHelper {
     }
 
     /// Helper function for timeout
-    private static func withTimeout<T>(seconds: TimeInterval, operation: @escaping () async throws -> T) async throws -> T {
+    private static func withTimeout<T>(
+        seconds: TimeInterval,
+        operation: @escaping () async throws -> T
+    ) async throws -> T {
         try await withThrowingTaskGroup(of: T.self) { group in
             // Start the operation
             group.addTask {
