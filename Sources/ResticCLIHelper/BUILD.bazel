@@ -2,7 +2,9 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "Sources_ResticCLIHelper",
-    srcs = glob(["*.swift"]),
+    srcs = glob([
+        "**/*.swift",  # Include all Swift files in subdirectories
+    ]),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
@@ -14,5 +16,6 @@ swift_library(
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/ResticTypes:Sources_ResticTypes",
+        "//Sources/UmbraLogging:Sources_UmbraLogging",
     ],
 )
