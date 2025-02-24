@@ -1,7 +1,8 @@
 import Foundation
 
 /// Configuration for cryptographic operations
-@frozen public struct CryptoConfiguration: Sendable {
+@frozen
+public struct CryptoConfiguration: Sendable {
     /// Key length in bits (256 for AES-256)
     public let keyLength: Int
     /// IV length in bytes (12 for GCM mode)

@@ -78,10 +78,10 @@ final class KeychainXPCServiceTests: XCTestCase {
 
         // Concurrent additions
         try await withThrowingTaskGroup(of: Void.self) { [testService] group in
-            for i in 0..<iterations {
+            for iterationIndex in 0..<iterations {
                 group.addTask {
-                    let account = "concurrent_\(i)"
-                    let data = Data("data_\(i)".utf8)
+                    let account = "concurrent_\(iterationIndex)"
+                    let data = Data("data_\(iterationIndex)".utf8)
                     try await self.proxy.addItem(
                         account: account,
                         service: testService,
@@ -94,9 +94,9 @@ final class KeychainXPCServiceTests: XCTestCase {
         }
 
         // Verify all items
-        for i in 0..<iterations {
-            let account = "concurrent_\(i)"
-            let expectedData = Data("data_\(i)".utf8)
+        for iterationIndex in 0..<iterations {
+            let account = "concurrent_\(iterationIndex)"
+            let expectedData = Data("data_\(iterationIndex)".utf8)
             let retrievedData = try await proxy.retrieveItem(
                 account: account,
                 service: testService,
@@ -107,10 +107,10 @@ final class KeychainXPCServiceTests: XCTestCase {
 
         // Concurrent updates
         try await withThrowingTaskGroup(of: Void.self) { [testService] group in
-            for i in 0..<iterations {
+            for iterationIndex in 0..<iterations {
                 group.addTask {
-                    let account = "concurrent_\(i)"
-                    let updatedData = Data("updated_\(i)".utf8)
+                    let account = "concurrent_\(iterationIndex)"
+                    let updatedData = Data("updated_\(iterationIndex)".utf8)
                     try await self.proxy.updateItem(
                         account: account,
                         service: testService,
@@ -123,9 +123,9 @@ final class KeychainXPCServiceTests: XCTestCase {
         }
 
         // Verify updates
-        for i in 0..<iterations {
-            let account = "concurrent_\(i)"
-            let expectedData = Data("updated_\(i)".utf8)
+        for iterationIndex in 0..<iterations {
+            let account = "concurrent_\(iterationIndex)"
+            let expectedData = Data("updated_\(iterationIndex)".utf8)
             let retrievedData = try await proxy.retrieveItem(
                 account: account,
                 service: testService,
@@ -135,8 +135,8 @@ final class KeychainXPCServiceTests: XCTestCase {
         }
 
         // Clean up
-        for i in 0..<iterations {
-            let account = "concurrent_\(i)"
+        for iterationIndex in 0..<iterations {
+            let account = "concurrent_\(iterationIndex)"
             try await proxy.removeItem(
                 account: account,
                 service: testService,

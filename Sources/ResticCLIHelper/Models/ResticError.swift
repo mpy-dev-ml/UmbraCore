@@ -92,26 +92,117 @@ public enum ResticError: LocalizedError, Equatable {
         }
     }
 
-    public static func == (lhs: ResticError, rhs: ResticError) -> Bool {
+    private static func compareAssociatedValues<T: Equatable>(_ lhs: T, _ rhs: T) -> Bool {
+        return lhs == rhs
+    }
+
+    private static func compareNetworkErrors(_ lhs: Error, _ rhs: Error) -> Bool {
+        return lhs.localizedDescription == rhs.localizedDescription
+    }
+
+    private static func compareCommandFailure(_ lhs: (Int, String), _ rhs: (Int, String)) -> Bool {
+        return lhs.0 == rhs.0 && lhs.1 == rhs.1
+    }
+
+    private static func compareSimpleErrors(
+        _ lhs: ResticError,
+        _ rhs: ResticError
+    ) -> Bool? {
         switch (lhs, rhs) {
-        case (.missingParameter(let l), .missingParameter(let r)): return l == r
-        case (.invalidParameter(let l), .invalidParameter(let r)): return l == r
-        case (.invalidPath(let l), .invalidPath(let r)): return l == r
-        case (.executionFailed(let l), .executionFailed(let r)): return l == r
-        case (.invalidData(let l), .invalidData(let r)): return l == r
-        case (.outputParsingFailed(let l), .outputParsingFailed(let r)): return l == r
-        case (.commandFailed(let l1, let l2), .commandFailed(let r1, let r2)): return l1 == r1 && l2 == r2
-        case (.repositoryNotFound(let l), .repositoryNotFound(let r)): return l == r
-        case (.invalidPassword, .invalidPassword): return true
-        case (.repositoryCorrupted(let l), .repositoryCorrupted(let r)): return l == r
-        case (.networkError(let l), .networkError(let r)): return l.localizedDescription == r.localizedDescription
-        case (.permissionDenied(let l), .permissionDenied(let r)): return l == r
-        case (.invalidArguments(let l), .invalidArguments(let r)): return l == r
-        case (.invalidConfiguration(let l), .invalidConfiguration(let r)): return l == r
-        case (.repositoryError(let l), .repositoryError(let r)): return l == r
-        case (.authenticationError(let l), .authenticationError(let r)): return l == r
-        case (.other(let l), .other(let r)): return l == r
-        default: return false
+        case (.missingParameter(let left), .missingParameter(let right)):
+            return compareAssociatedValues(left, right)
+        case (.invalidParameter(let left), .invalidParameter(let right)):
+            return compareAssociatedValues(left, right)
+        case (.invalidPath(let left), .invalidPath(let right)):
+            return compareAssociatedValues(left, right)
+        case (.executionFailed(let left), .executionFailed(let right)):
+            return compareAssociatedValues(left, right)
+        case (.invalidData(let left), .invalidData(let right)):
+            return compareAssociatedValues(left, right)
+        case (.outputParsingFailed(let left), .outputParsingFailed(let right)):
+            return compareAssociatedValues(left, right)
+        case (.invalidPassword, .invalidPassword):
+            return true
+        default:
+            return nil
         }
+    }
+
+    private static func compareRepositoryErrors(
+        _ lhs: ResticError,
+        _ rhs: ResticError
+    ) -> Bool? {
+        switch (lhs, rhs) {
+        case (.repositoryNotFound(let left), .repositoryNotFound(let right)):
+            return compareAssociatedValues(left, right)
+        case (.repositoryCorrupted(let left), .repositoryCorrupted(let right)):
+            return compareAssociatedValues(left, right)
+        case (.repositoryError(let left), .repositoryError(let right)):
+            return compareAssociatedValues(left, right)
+        default:
+            return nil
+        }
+    }
+
+    private static func compareAuthAndConfigErrors(
+        _ lhs: ResticError,
+        _ rhs: ResticError
+    ) -> Bool? {
+        switch (lhs, rhs) {
+        case (.permissionDenied(let left), .permissionDenied(let right)):
+            return compareAssociatedValues(left, right)
+        case (.invalidArguments(let left), .invalidArguments(let right)):
+            return compareAssociatedValues(left, right)
+        case (.invalidConfiguration(let left), .invalidConfiguration(let right)):
+            return compareAssociatedValues(left, right)
+        case (.authenticationError(let left), .authenticationError(let right)):
+            return compareAssociatedValues(left, right)
+        default:
+            return nil
+        }
+    }
+
+    private static func compareComplexErrors(
+        _ lhs: ResticError,
+        _ rhs: ResticError
+    ) -> Bool? {
+        switch (lhs, rhs) {
+        case (
+            .commandFailed(let exitCode1, let msg1),
+            .commandFailed(let exitCode2, let msg2)
+        ):
+            return compareCommandFailure((exitCode1, msg1), (exitCode2, msg2))
+        case (.networkError(let left), .networkError(let right)):
+            return compareNetworkErrors(left, right)
+        case (.other(let left), .other(let right)):
+            return compareAssociatedValues(left, right)
+        default:
+            return nil
+        }
+    }
+
+    public static func == (lhs: ResticError, rhs: ResticError) -> Bool {
+        // Try comparing simple errors first
+        if let result = compareSimpleErrors(lhs, rhs) {
+            return result
+        }
+
+        // Try comparing repository-related errors
+        if let result = compareRepositoryErrors(lhs, rhs) {
+            return result
+        }
+
+        // Try comparing authentication and configuration errors
+        if let result = compareAuthAndConfigErrors(lhs, rhs) {
+            return result
+        }
+
+        // Finally, try comparing complex errors
+        if let result = compareComplexErrors(lhs, rhs) {
+            return result
+        }
+
+        // If no comparison matched, the errors are different
+        return false
     }
 }

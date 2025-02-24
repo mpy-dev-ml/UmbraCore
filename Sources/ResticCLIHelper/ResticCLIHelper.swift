@@ -101,20 +101,17 @@ public final class ResticCLIHelper {
         }
     }
 
-    /// Executes a Restic command and returns its output.
-    ///
-    /// - Parameter command: The command to execute.
-    /// - Returns: The command output as a string.
-    /// - Throws: `ResticError` if the command fails.
-    public func execute(_ command: ResticCommand) async throws -> String {
-        // Validate the command
-        try command.validate()
+    /// Represents the setup for a Restic process execution
+    private struct ProcessSetup {
+        let process: Process
+        let outputPipe: Pipe
+        let errorPipe: Pipe
+    }
 
-        // Create pipes for stdout and stderr
+    private func setupProcess(for command: ResticCommand) -> ProcessSetup {
         let outputPipe = Pipe()
         let errorPipe = Pipe()
 
-        // Create process
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executablePath)
         process.arguments = command.arguments
@@ -122,79 +119,78 @@ public final class ResticCLIHelper {
         process.standardOutput = outputPipe
         process.standardError = errorPipe
 
-        // Set up async handlers for output
-        let outputHandler = Task {
-            for try await line in outputPipe.fileHandleForReading.bytes.lines {
-                if let progressParser = progressParser {
-                    progressParser.parseLine(line)
-                }
-                await logger.debug(line)
+        return ProcessSetup(
+            process: process,
+            outputPipe: outputPipe,
+            errorPipe: errorPipe
+        )
+    }
+
+    private func handleProcessError(_ error: Error, stderr: String) throws -> Never {
+        if let error = error as? POSIXError {
+            switch error.code {
+            case .ENOENT:
+                throw ResticError.executionFailed("Restic executable not found at path: \(executablePath)")
+            case .EACCES:
+                throw ResticError.permissionDenied("Permission denied to execute Restic at path: \(executablePath)")
+            default:
+                throw ResticError.executionFailed("Failed to execute Restic: \(error.localizedDescription)")
             }
         }
 
-        let errorHandler = Task {
-            for try await line in errorPipe.fileHandleForReading.bytes.lines {
-                await logger.error(line)
-            }
+        if !stderr.isEmpty {
+            throw ResticError.executionFailed(stderr)
         }
 
-        // Log the command
-        let commandDescription = command.arguments.joined(separator: " ")
-        await self.logger.info("Executing command: \(commandDescription)")
+        throw ResticError.executionFailed("Unknown error occurred while executing Restic")
+    }
 
-        // Execute the command
-        return try await withCheckedThrowingContinuation { continuation in
-            let workItem = DispatchWorkItem { [weak self] in
-                guard self != nil else {
-                    continuation.resume(throwing: ResticError.executionFailed(
-                        "Helper was deallocated"
-                    ))
-                    return
-                }
-
-                do {
-                    // Execute the process and wait for completion
-                    try process.run()
-
-                    // Wait for process to complete
-                    process.waitUntilExit()
-
-                    // Check the exit code
-                    let exitCode = process.terminationStatus
-                    if exitCode != 0 {
-                        let errorOutput = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? "Unknown error"
-                        var error: ResticError
-                        switch exitCode {
-                        case 1:
-                            error = .executionFailed("Command failed: \(errorOutput)")
-                        case 3:
-                            error = .repositoryError(errorOutput)
-                        case 101:
-                            error = .authenticationError(errorOutput)
-                        default:
-                            error = .commandFailed(exitCode: Int(exitCode), message: errorOutput)
-                        }
-                        continuation.resume(throwing: error)
-                        return
-                    }
-
-                    // Try to parse the output
-                    if let output = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) {
-                        continuation.resume(returning: output)
-                    } else {
-                        continuation.resume(throwing: ResticError.outputParsingFailed("Failed to decode output as UTF-8"))
-                    }
-                } catch {
-                    continuation.resume(throwing: error)
-                }
+    private func processOutput(_ output: String, _ stderr: String) throws -> String {
+        if !stderr.isEmpty {
+            // Check for known error patterns
+            if stderr.contains("wrong password") {
+                throw ResticError.invalidPassword
             }
-
-            DispatchQueue(label: "com.umbracore.restic-cli-helper").async(execute: workItem)
+            if stderr.contains("permission denied") {
+                throw ResticError.permissionDenied(stderr)
+            }
+            if stderr.contains("repository not found") {
+                throw ResticError.repositoryNotFound(stderr)
+            }
+            throw ResticError.executionFailed(stderr)
         }
+        return output
+    }
 
-        // Cancel output handlers when done
-        outputHandler.cancel()
-        errorHandler.cancel()
+    /// Executes a Restic command and returns its output.
+    ///
+    /// - Parameter command: The command to execute.
+    /// - Returns: The command output as a string.
+    /// - Throws: `ResticError` if the command fails.
+    public func execute(_ command: ResticCommand) async throws -> String {
+        try command.validate()
+
+        let setup = setupProcess(for: command)
+
+        do {
+            try setup.process.run()
+
+            let outputData = try await setup.outputPipe.fileHandleForReading.bytes
+                .reduce(into: Data()) { $0.append($1) }
+            let errorData = try await setup.errorPipe.fileHandleForReading.bytes
+                .reduce(into: Data()) { $0.append($1) }
+
+            setup.process.waitUntilExit()
+
+            let output = String(data: outputData, encoding: .utf8) ?? ""
+            let stderr = String(data: errorData, encoding: .utf8) ?? ""
+
+            return try processOutput(output, stderr)
+        } catch {
+            let errorData = try? setup.errorPipe.fileHandleForReading.readToEnd()
+            let stderr = errorData.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+            try handleProcessError(error, stderr: stderr)
+        }
     }
 
     /// Set the progress delegate

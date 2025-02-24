@@ -30,8 +30,8 @@ enum TestUtilities {
         ]
 
         // Create directories
-        try directories.forEach { dir in
-            let path = (baseDirectory as NSString).appendingPathComponent(dir)
+        try directories.forEach { directory in
+            let path = (baseDirectory as NSString).appendingPathComponent(directory)
             try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true)
         }
 
@@ -40,8 +40,8 @@ enum TestUtilities {
             "This is a sample text file for testing ",
             "Restic backup and restore functionality.\n"
         ].joined()
-        try directories.forEach { dir in
-            let path = (baseDirectory as NSString).appendingPathComponent(dir)
+        try directories.forEach { directory in
+            let path = (baseDirectory as NSString).appendingPathComponent(directory)
             let filePath = (path as NSString).appendingPathComponent("sample.txt")
             try textContent.write(toFile: filePath, atomically: true, encoding: .utf8)
             createdFiles.append(filePath)
@@ -49,7 +49,7 @@ enum TestUtilities {
 
         // Create binary files of different sizes
         let sizes = [1_024, 2_048, 4_096, 8_192] // Different file sizes in bytes
-        try sizes.enumerated().forEach { _, size in
+        try sizes.forEach { size in
             let data = generateTestData(size: size)
             let path = (baseDirectory as NSString).appendingPathComponent("data")
             let filePath = (path as NSString).appendingPathComponent("binary_\(size).dat")
@@ -58,10 +58,10 @@ enum TestUtilities {
         }
 
         // Create additional random text files
-        for i in 0..<fileCount {
-            let randomDir = directories.randomElement()!
-            let path = (baseDirectory as NSString).appendingPathComponent(randomDir)
-            let filePath = (path as NSString).appendingPathComponent("file_\(i).txt")
+        for fileIndex in 0..<fileCount {
+            let randomDirectory = directories.randomElement()!
+            let path = (baseDirectory as NSString).appendingPathComponent(randomDirectory)
+            let filePath = (path as NSString).appendingPathComponent("file_\(fileIndex).txt")
             try textContent.write(toFile: filePath, atomically: true, encoding: .utf8)
             createdFiles.append(filePath)
         }
@@ -74,8 +74,8 @@ enum TestUtilities {
     /// - Returns: Data with random content
     static func generateTestData(size: Int) -> Data {
         var data = Data(count: size)
-        for index in 0..<size {
-            data[index] = UInt8.random(in: 0...255)
+        for byteIndex in 0..<size {
+            data[byteIndex] = UInt8.random(in: 0...255)
         }
         return data
     }

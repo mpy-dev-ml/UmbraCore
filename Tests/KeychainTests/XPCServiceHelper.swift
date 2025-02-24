@@ -78,7 +78,7 @@ final class XPCServiceHelper {
             let proxy = connection.remoteObjectProxyWithErrorHandler { error in
                 continuation.resume(throwing: error)
             }
-            
+
             guard let keychainProxy = proxy as? any KeychainXPCProtocol else {
                 continuation.resume(throwing: XPCError.invalidServiceType)
                 return

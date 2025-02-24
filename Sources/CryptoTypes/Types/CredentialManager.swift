@@ -21,7 +21,7 @@ public actor CredentialManager {
     ///   - identifier: Identifier for the credential
     ///   - credential: The credential to save
     public func save(_ credential: String, forIdentifier identifier: String) async throws {
-        let key = try await getMasterKey()
+        let key = try await getPrimaryKey()
         let iv = try await cryptoService.generateSecureRandomKey(length: config.ivLength)
         let credentialData = credential.data(using: .utf8)!
         let encryptedData = try await cryptoService.encrypt(credentialData, using: key, iv: iv)
@@ -39,7 +39,7 @@ public actor CredentialManager {
     /// - Parameter identifier: Identifier for the credential
     /// - Returns: The decrypted credential
     public func load(forIdentifier identifier: String) async throws -> String {
-        let key = try await getMasterKey()
+        let key = try await getPrimaryKey()
         let encodedData = try await keychain.loadWithMetadata(forKey: identifier).0
         let storageData = try JSONDecoder().decode(SecureStorageData.self, from: encodedData)
 
@@ -57,7 +57,7 @@ public actor CredentialManager {
         try await keychain.delete(forKey: identifier)
     }
 
-    private func getMasterKey() async throws -> Data {
+    private func getPrimaryKey() async throws -> Data {
         if try await keychain.exists(forKey: "master_key") {
             return try await keychain.loadWithMetadata(forKey: "master_key").0
         }

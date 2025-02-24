@@ -146,10 +146,13 @@ public final class MockResticRepository {
     /// Create a large test dataset
     /// - Parameter fileCount: Number of test files to create
     public func createLargeTestDataset(fileCount: Int) throws {
-        for i in 0..<fileCount {
+        for index in 0..<fileCount {
             try createTestFile(
-                name: "large_test_\(i).txt",
-                content: "Test content for file \(i)\n" + String(repeating: "Additional content to make file larger\n", count: 10)
+                name: "large_test_\(index).txt",
+                content: """
+                    Test content for file \(index)
+                    \(String(repeating: "Additional content to make file larger\n", count: 10))
+                    """
             )
         }
     }
