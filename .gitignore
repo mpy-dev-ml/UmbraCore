@@ -78,3 +78,32 @@ MODULE.bazel.lock
 user.bazelrc
 .bazel/
 .bazelrc.user
+
+# Log files
+*.log
+/keychain_*.log
+/service_*.log
+/explain.log
+/replay_pid*.log
+/hs_err_pid*.log
+
+# JSON files (build artifacts and temporary files)
+/compile_commands.json
+/.deps.json
+/swift_deps_index.json
+/swift_deps.json
+
+# Additional Bazel artifacts
+/bazel-analysis/
+
+# Documentation (keep ROADMAP.md in version control)
+# ROADMAP.md is intentionally not ignored as it contains important project planning information
+
+# Temporary and work files
+*.tmp
+*TEMP*
+*DRAFT*
+*WIP*
+*NOTES*
+*INTERNAL*
+*PRIVATE*
