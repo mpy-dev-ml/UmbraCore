@@ -21,6 +21,5 @@ swift_test(
     ],
     deps = [
         "//Sources/Resources",
-        "//Sources/Resources/Types:ResourcesTypes",
     ],
 )

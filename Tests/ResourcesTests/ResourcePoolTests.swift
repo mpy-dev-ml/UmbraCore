@@ -1,6 +1,4 @@
 @testable import Resources
-import ResourcesProtocols
-import ResourcesTypes
 import XCTest
 
 /// State manager for test resources
