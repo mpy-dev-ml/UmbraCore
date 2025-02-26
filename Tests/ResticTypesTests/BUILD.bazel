@@ -1,9 +1,8 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
-    name = "Tests_ResticTypesTests",
+    name = "ResticTypesTests",
     srcs = glob(["**/*.swift"]),
-    module_name = "Tests_ResticTypesTests",
     copts = [
         "-target",
         "arm64-apple-macos14.0",
@@ -11,7 +10,8 @@ swift_test(
         "-warn-concurrency",
         "-enable-actor-data-race-checks",
     ],
+    module_name = "ResticTypesTests",
     deps = [
-        "//Sources/ResticTypes:Sources_ResticTypes",
+        "//Sources/ResticTypes",
     ],
 )

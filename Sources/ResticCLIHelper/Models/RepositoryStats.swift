@@ -1,7 +1,8 @@
 import Foundation
+import ResticTypes
 
 /// Statistics about a repository
-public struct RepositoryStats: Codable {
+public struct RepositoryStats: Repositories.RepositoryStats {
     /// Repository size in bytes
     public let totalSize: Int64
 

@@ -2,14 +2,18 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "UmbraXPC",
-    srcs = glob(["*.swift"]),
+    srcs = ["XPCConnection.swift"],
     copts = [
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
     module_name = "UmbraXPC",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/UmbraLogging",
+    ],
 )

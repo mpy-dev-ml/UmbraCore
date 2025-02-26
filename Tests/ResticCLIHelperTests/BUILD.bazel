@@ -12,9 +12,10 @@ swift_test(
         "-warn-concurrency",
         "-enable-actor-data-race-checks",
     ],
+    module_name = "ResticCLIHelperTests",
     deps = [
-        "//Sources/ResticCLIHelper:Sources_ResticCLIHelper",
-        "//Sources/ResticTypes:Sources_ResticTypes",
-        "//Sources/UmbraTestKit:Sources_UmbraTestKit",
+        "//Sources/ResticCLIHelper",
+        "//Sources/ResticTypes",
+        "//Sources/UmbraTestKit",
     ],
 )

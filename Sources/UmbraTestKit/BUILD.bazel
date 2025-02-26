@@ -1,53 +1,29 @@
-load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_UmbraTestKit",
+    name = "UmbraTestKit",
     testonly = True,
     srcs = glob(
         ["**/*.swift"],
-        exclude = ["Tests/**/*.swift"],  # Exclude test files from library
+        allow_empty = True,
     ),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
     module_name = "UmbraTestKit",
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/Core",
+        "//Sources/CryptoTypes",
+        "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
         "//Sources/ErrorHandling",
-        "//Sources/Repositories/Types:Repositories_Types",
-        "//Sources/SecurityTypes:SecurityTypes",
-        "//Sources/SecurityTypes/Protocols:SecurityTypes_Protocols",
-        "//Sources/SecurityTypes/Types:SecurityTypes_Types",
-        "//Sources/UmbraCryptoService:Sources_UmbraCryptoService",
-        "//Sources/UmbraSecurity",
-        "@swiftpkg_cryptoswift//:CryptoSwift",
-        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
-    ],
-)
-
-swift_test(
-    name = "UmbraTestKitTests",
-    srcs = glob(["Tests/**/*.swift"]),
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    deps = [
-        ":Sources_UmbraTestKit",
-        "//Sources/Core",
-        "//Sources/ErrorHandling",
-        "//Sources/SecurityTypes:SecurityTypes",
-        "//Sources/SecurityTypes/Protocols:SecurityTypes_Protocols",
-        "//Sources/SecurityTypes/Types:SecurityTypes_Types",
-        "//Sources/UmbraCryptoService:Sources_UmbraCryptoService",
-        "//Sources/UmbraSecurity",
+        "//Sources/Repositories/Types:RepositoriesTypes",
+        "//Sources/SecurityTypes",
+        "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
+        "//Sources/UmbraLogging",
     ],
 )

@@ -1,19 +1,16 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_XPC_Core",
-    srcs = [
-        "XPCConnectionManager.swift",
-        "XPCError.swift",
-        "XPCServiceProtocols.swift",
-    ],
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    module_name = "Core",
+    name = "XPCCore",
+    srcs = glob(["**/*.swift"]),
+    module_name = "XPCCore",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
+        "//Sources/ErrorHandling/Models:ErrorHandlingModels",
+        "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
+        "//Sources/UmbraLogging",
+    ],
+    copts = ["-target", "arm64-apple-macos14.0"],
 )

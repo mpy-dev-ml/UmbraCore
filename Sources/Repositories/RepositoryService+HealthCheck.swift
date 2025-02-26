@@ -2,13 +2,13 @@
 import Foundation
 
 // Internal modules
-import Repositories_Types
+import RepositoriesTypes
 import UmbraLogging
 
 /// Extension for repository health check functionality
 extension RepositoryService {
     // MARK: - Health Check Types
-    
+
     /// Options for repository health checks
     public struct HealthCheckOptions: Sendable {
         /// Whether to verify the actual data blobs

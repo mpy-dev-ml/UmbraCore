@@ -1,20 +1,24 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "CryptoTypes_Services",
-    srcs = glob(["*.swift"]),
+    name = "CryptoTypesServices",
+    srcs = glob(
+        ["*.swift"],
+        allow_empty = True,
+    ),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
-    module_name = "CryptoTypes_Services",
+    module_name = "CryptoTypesServices",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/CryptoTypes/Protocols:CryptoTypes_Protocols",
-        "//Sources/CryptoTypes/Types:CryptoTypes_Types",
-        "//Sources/XPC/Core:Sources_XPC_Core",
+        "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
+        "//Sources/CryptoTypes/Types:CryptoTypesTypes",
+        "//Sources/ErrorHandling",
+        "//Sources/UmbraLogging",
     ],
 )

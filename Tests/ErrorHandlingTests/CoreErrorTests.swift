@@ -1,5 +1,9 @@
 @testable import ErrorHandling
+@testable import ErrorHandlingCommon
+@testable import ErrorHandlingModels
+@testable import ErrorHandlingProtocols
 import Testing
+import XCTest
 
 @Suite("CoreError Tests")
 struct CoreErrorTests {
@@ -7,30 +11,62 @@ struct CoreErrorTests {
     func testCoreErrorDescriptions() {
         // Test authentication failed error
         let authError = CoreError.authenticationFailed
-        #expect(authError.errorDescription == "Authentication failed")
+        XCTAssertEqual(authError.errorDescription, "Authentication failed")
 
         // Test insufficient permissions error
         let permError = CoreError.insufficientPermissions
-        #expect(permError.errorDescription == "Insufficient permissions to perform the operation")
+        XCTAssertEqual(permError.errorDescription, "Insufficient permissions to perform the operation")
 
         // Test invalid configuration error
         let configError = CoreError.invalidConfiguration("Missing API key")
-        #expect(configError.errorDescription == "Invalid configuration: Missing API key")
+        XCTAssertEqual(configError.errorDescription, "Invalid configuration: Missing API key")
 
         // Test system error
         let sysError = CoreError.systemError("Process terminated unexpectedly")
-        #expect(sysError.errorDescription == "System error: Process terminated unexpectedly")
+        XCTAssertEqual(sysError.errorDescription, "System error: Process terminated unexpectedly")
+    }
+
+    @Test("Test error severity levels")
+    func testErrorSeverityLevels() {
+        XCTAssertEqual(ErrorSeverity.critical.rawValue, "critical")
+        XCTAssertEqual(ErrorSeverity.error.rawValue, "error")
+        XCTAssertEqual(ErrorSeverity.warning.rawValue, "warning")
+        XCTAssertEqual(ErrorSeverity.info.rawValue, "info")
+    }
+
+    @Test("Test service error types")
+    func testServiceErrorTypes() {
+        XCTAssertEqual(ServiceErrorType.configuration.description, "Configuration Error")
+        XCTAssertEqual(ServiceErrorType.operation.description, "Operation Error")
+        XCTAssertEqual(ServiceErrorType.network.description, "Network Error")
     }
 }
 
 // Example service error for testing
 struct TestServiceError: ServiceErrorProtocol {
+    let serviceName: String = "TestService"
+    let operation: String = "testOperation"
+    let details: String? = "Test details"
+    let underlyingError: Error? = nil
     let errorType: ServiceErrorType
     let contextInfo: [String: String]
     let message: String
+    var severity: ErrorSeverity = .error
+    var isRecoverable: Bool = false
+    var recoverySteps: [String]? = nil
+    var errorContext: ErrorContext? = nil
 
-    var errorDescription: String? {
-        message
+    var category: String { errorType.rawValue }
+    var description: String { "[\(severity.rawValue.uppercased())] \(errorType.description): \(message)" }
+    var errorDescription: String? { message }
+
+    func toDictionary() -> [String: Any] {
+        [
+            "type": String(describing: type(of: self)),
+            "error_type": errorType.rawValue,
+            "description": message,
+            "context": contextInfo
+        ]
     }
 }
 
@@ -44,30 +80,15 @@ struct ServiceErrorTests {
             message: "Test error"
         )
 
-        #expect(error.severity == .error) // Default severity
-        #expect(!error.isRecoverable) // Default not recoverable
-        #expect(error.category == "Configuration")
-        #expect(error.description == "[ERROR] Configuration Error: Test error")
+        XCTAssertEqual(error.severity, .error) // Default severity
+        XCTAssertFalse(error.isRecoverable) // Default not recoverable
+        XCTAssertEqual(error.category, "Configuration")
+        XCTAssertEqual(error.description, "[ERROR] Configuration Error: Test error")
 
         let dict = error.toDictionary()
-        #expect(dict["type"] as? String == "TestServiceError")
-        #expect(dict["error_type"] as? String == "Configuration")
-        #expect(dict["description"] as? String == "Test error")
-        #expect((dict["context"] as? [String: String])?["key"] == "value")
-    }
-
-    @Test("Test error severity")
-    func testErrorSeverity() {
-        #expect(ErrorSeverity.critical.rawValue == "critical")
-        #expect(ErrorSeverity.error.rawValue == "error")
-        #expect(ErrorSeverity.warning.rawValue == "warning")
-        #expect(ErrorSeverity.info.rawValue == "info")
-    }
-
-    @Test("Test service error types")
-    func testServiceErrorTypes() {
-        #expect(ServiceErrorType.configuration.description == "Configuration Error")
-        #expect(ServiceErrorType.operation.description == "Operation Error")
-        #expect(ServiceErrorType.network.description == "Network Error")
+        XCTAssertEqual(dict["type"] as? String, "TestServiceError")
+        XCTAssertEqual(dict["error_type"] as? String, "Configuration")
+        XCTAssertEqual(dict["description"] as? String, "Test error")
+        XCTAssertEqual((dict["context"] as? [String: String])?["key"], "value")
     }
 }

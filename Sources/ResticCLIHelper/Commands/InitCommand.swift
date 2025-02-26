@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for initializing a new repository
 public final class InitCommand: ResticCommand, @unchecked Sendable {

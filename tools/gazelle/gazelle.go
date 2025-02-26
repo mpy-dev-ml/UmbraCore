@@ -13,6 +13,30 @@ import (
     "github.com/mpy-dev-ml/UmbraCore/tools/gazelle/swift"
 )
 
+func main() {
+    // Parse flags
+    flag.Parse()
+    
+    // Get current working directory
+    wd, err := os.Getwd()
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    // Create configuration
+    c := &config.Config{
+        RepoRoot: wd,
+    }
+    
+    // Create Swift language
+    swiftLang := swift.NewLanguage()
+    
+    // Generate BUILD files
+    if err := generateBuildFiles(wd, swiftLang, c); err != nil {
+        log.Fatal(err)
+    }
+}
+
 func generateBuildFiles(dir string, lang language.Language, c *config.Config) error {
     // Walk through all directories
     return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -51,60 +75,32 @@ func generateBuildFiles(dir string, lang language.Language, c *config.Config) er
             return err
         }
         
-        // Generate rules
+        // Create args for generating rules
         args := language.GenerateArgs{
             Config:       c,
             Dir:         path,
             Rel:         rel,
-            File:        rule.EmptyFile("BUILD.bazel", ""),
             RegularFiles: swiftFiles,
         }
         
-        result := lang.GenerateRules(args)
-        if len(result.Gen) > 0 {
-            // Create BUILD file
-            f := rule.EmptyFile("BUILD.bazel", "")
-            f.AddLoad("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
-            
-            // Add rules
-            for _, r := range result.Gen {
-                f.AddRule(r)
-            }
-            
-            // Write BUILD file
-            buildPath := filepath.Join(path, "BUILD.bazel")
-            if err := f.Save(buildPath); err != nil {
-                log.Printf("Error writing BUILD.bazel in %s: %v", path, err)
-            } else {
-                log.Printf("Generated BUILD.bazel in %s", path)
-            }
+        // Generate rules
+        res := lang.GenerateRules(args)
+        if len(res.Gen) == 0 {
+            return nil
+        }
+        
+        // Create BUILD file
+        f := rule.EmptyFile("swift", "")
+        for _, r := range res.Gen {
+            r.Insert(f)
+        }
+        
+        // Write BUILD file
+        buildPath := filepath.Join(path, "BUILD.bazel")
+        if err := os.WriteFile(buildPath, f.Format(), 0644); err != nil {
+            return err
         }
         
         return nil
     })
-}
-
-func main() {
-    // Initialize language
-    lang := swift.NewLanguage()
-    
-    // Create configuration
-    c := config.New()
-    c.RepoRoot = "."
-    c.ValidBuildFileNames = []string{"BUILD.bazel"}
-    
-    // Parse flags
-    fs := flag.NewFlagSet("gazelle", flag.ExitOnError)
-    lang.RegisterFlags(fs, "", c)
-    if err := fs.Parse(os.Args[1:]); err != nil {
-        log.Fatal(err)
-    }
-    
-    // Configure language
-    lang.Configure(c, "", &rule.File{})
-    
-    // Generate BUILD files
-    if err := generateBuildFiles(".", lang, c); err != nil {
-        log.Fatal(err)
-    }
 }

@@ -1,99 +1,52 @@
-import ErrorHandling_Common
+import ErrorHandlingModels
 import Foundation
 
-/// Protocol for service-specific errors
-public protocol ServiceErrorProtocol: LocalizedError, Sendable, CustomStringConvertible {
-    /// The type of error that occurred
-    var errorType: ServiceErrorType { get }
+/// Protocol for service-specific errors that provide detailed context
+public protocol ServiceErrorProtocol: LocalizedError {
+    /// The source service that generated this error
+    var serviceName: String { get }
 
-    /// Additional context information about the error
-    var contextInfo: [String: String] { get }
+    /// The operation that was being performed
+    var operation: String { get }
 
-    /// Severity level of the error
-    var severity: ErrorSeverity { get }
+    /// Additional details about what went wrong
+    var details: String? { get }
 
-    /// Whether the error can be recovered from
+    /// The underlying error that caused this error, if any
+    var underlyingError: Error? { get }
+
+    /// Whether this error can potentially be recovered from
     var isRecoverable: Bool { get }
+
+    /// Steps that might help recover from this error
+    var recoverySteps: [String]? { get }
+
+    /// Creates an error context from this service error
+    var context: ErrorContext { get }
 }
 
-// MARK: - ServiceErrorProtocol Extensions
+public extension ServiceErrorProtocol {
+    /// Default implementation assuming errors are not recoverable
+    var isRecoverable: Bool { false }
 
-extension ServiceErrorProtocol {
-    /// Default severity level
-    public var severity: ErrorSeverity {
-        .error
-    }
+    /// Default implementation providing no recovery steps
+    var recoverySteps: [String]? { nil }
 
-    /// Default recoverable state
-    public var isRecoverable: Bool {
-        false
-    }
-
-    public var description: String {
-        var description = "[\(errorType)] \(localizedDescription)"
-        if !contextInfo.isEmpty {
-            description += "\nContext: \(contextInfo)"
+    /// Default implementation creating an error context
+    var context: ErrorContext {
+        var metadata: [String: String] = [:]
+        if let details = details {
+            metadata["details"] = details
         }
-        return description
-    }
-
-    public var localizedDescription: String {
-        errorType.description
-    }
-
-    /// Category of the error based on its type
-    var category: String {
-        errorType.rawValue
-    }
-
-    /// String representation of the error
-    var detailedDescription: String {
-        var desc = "[\(category)] \(localizedDescription)"
-
-        if !contextInfo.isEmpty {
-            desc += "\nContext:"
-            for (key, value) in contextInfo.sorted(by: { $0.key < $1.key }) {
-                desc += "\n  \(key): \(value)"
-            }
+        metadata["operation"] = operation
+        if let error = underlyingError {
+            metadata["underlyingError"] = String(describing: error)
         }
 
-        return desc
-    }
-
-    /// Format error for logging
-    func formatForLogging() -> String {
-        var desc = "[\(category)] \(localizedDescription)"
-
-        if !contextInfo.isEmpty {
-            desc += "\nContext:"
-            for (key, value) in contextInfo.sorted(by: { $0.key < $1.key }) {
-                desc += "\n  \(key): \(value)"
-            }
-        }
-
-        return desc
-    }
-
-    /// Convert error to dictionary for serialization
-    func toDictionary() -> [String: Any] {
-        var dict: [String: Any] = [
-            "type": String(describing: Self.self),
-            "error_type": errorType.rawValue,
-            "description": localizedDescription
-        ]
-
-        if !contextInfo.isEmpty {
-            dict["context"] = contextInfo
-        }
-
-        if let reason = failureReason {
-            dict["reason"] = reason
-        }
-
-        if let suggestion = recoverySuggestion {
-            dict["suggestion"] = suggestion
-        }
-
-        return dict
+        return ErrorContext(
+            source: serviceName,
+            message: localizedDescription,
+            metadata: metadata
+        )
     }
 }

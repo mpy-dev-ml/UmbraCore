@@ -1,21 +1,27 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_ResticCLIHelper",
-    srcs = glob([
-        "**/*.swift",  # Include all Swift files in subdirectories
-    ]),
+    name = "ResticCLIHelper",
+    srcs = [
+        "ProgressParser.swift",
+        "ResticCLIHelper.swift",
+    ],
     copts = [
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
     module_name = "ResticCLIHelper",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/ResticTypes:Sources_ResticTypes",
-        "//Sources/UmbraLogging:Sources_UmbraLogging",
+        "//Sources/ErrorHandling",
+        "//Sources/ResticCLIHelper/Commands:ResticCLIHelperCommands",
+        "//Sources/ResticCLIHelper/Models:ResticCLIHelperModels",
+        "//Sources/ResticCLIHelper/Protocols:ResticCLIHelperProtocols",
+        "//Sources/ResticCLIHelper/Types:ResticCLIHelperTypes",
+        "//Sources/ResticTypes",
+        "//Sources/UmbraLogging",
     ],
 )

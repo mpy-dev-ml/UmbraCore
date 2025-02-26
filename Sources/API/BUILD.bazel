@@ -10,12 +10,14 @@ swift_library(
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
     module_name = "API",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/Core:Core",
+        "//Sources/Core",
+        "//Sources/ErrorHandling",
+        "//Sources/UmbraLogging",
     ],
 )

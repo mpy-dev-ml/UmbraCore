@@ -2,22 +2,19 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "UmbraMocks",
-    srcs = glob(["**/*.swift"]),
-    module_name = "UmbraMocks",
     testonly = True,
-    visibility = ["//visibility:public"],
+    srcs = glob(["*.swift"]),
     copts = [
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-        "-enable-testing",
         "-target",
         "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
+    module_name = "UmbraMocks",
+    visibility = ["//visibility:public"],
     deps = [
-        "//Sources/CryptoTypes:CryptoTypes",
-        "//Sources/ErrorHandling:ErrorHandling",
-        "//Sources/SecurityTypes:SecurityTypes",
-        "//Sources/UmbraCore:Sources_UmbraCore",
+        "//Sources/ErrorHandling",
+        "//Sources/UmbraLogging",
     ],
 )

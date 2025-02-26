@@ -1,16 +1,19 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "CryptoTypes_Protocols",
-    #testonly = True,
+    name = "CryptoTypesProtocols",
     srcs = glob(["*.swift"]),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
-    module_name = "CryptoTypes_Protocols",
+    module_name = "CryptoTypesProtocols",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/CryptoTypes/Types:CryptoTypesTypes",
+        "//Sources/SecurityTypes",
+    ],
 )

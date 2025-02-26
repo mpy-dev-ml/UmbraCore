@@ -2,19 +2,21 @@
 import Foundation
 
 // Internal modules
-import Repositories_Types
+import RepositoriesTypes
 import UmbraLogging
 
 /// Extension for repository statistics functionality
 extension RepositoryService {
     // MARK: - Repository Statistics
-    
+
     /// Retrieves aggregated statistics for all repositories.
     ///
     /// - Returns: A dictionary mapping repository identifiers to their statistics.
     /// - Throws: `RepositoryError.operationFailed` if stats cannot be retrieved for any repository.
     public func getAllStats() async throws -> [String: RepositoryStats] {
-        let metadata: LogMetadata = ["repository_count": .string(String(repositories.count))]
+        let metadata = LogMetadataBuilder.forRepository(
+            count: repositories.count
+        )
         await logger.info("Retrieving stats for all repositories", metadata: metadata)
 
         var stats: [String: RepositoryStats] = [:]
@@ -22,10 +24,12 @@ extension RepositoryService {
 
         for repository in repositories.values {
             let identifier = await repository.identifier
-            let repoMetadata: LogMetadata = ["repository_id": .string(identifier)]
+            let repoMetadata = LogMetadataBuilder.forRepository(
+                identifier: identifier
+            )
 
             do {
-                stats[identifier] = try await repository.getStats()
+                stats[identifier] = try await repository.check(readData: false, checkUnused: false)
                 await logger.debug("Retrieved stats successfully", metadata: repoMetadata)
             } catch {
                 await logger.error(
@@ -39,10 +43,10 @@ extension RepositoryService {
         if !errors.isEmpty {
             await logger.error(
                 "Failed to get stats for some repositories",
-                metadata: LogMetadata([
-                    "error_count": .string(String(errors.count)),
-                    "success_count": .string(String(stats.count))
-                ])
+                metadata: LogMetadataBuilder.forRepository(
+                    errorCount: errors.count,
+                    successCount: stats.count
+                )
             )
             throw RepositoryError.operationFailed(
                 reason: "Failed to get stats for some repositories: \(errors)"
@@ -51,9 +55,9 @@ extension RepositoryService {
 
         await logger.info(
             "Retrieved all repository stats successfully",
-            metadata: LogMetadata([
-                "repository_count": .string(String(stats.count))
-            ])
+            metadata: LogMetadataBuilder.forRepository(
+                count: stats.count
+            )
         )
 
         return stats
@@ -66,18 +70,20 @@ extension RepositoryService {
     /// - Throws: `RepositoryError.repositoryNotFound` if no repository exists with the given identifier,
     ///           `RepositoryError.operationFailed` if stats cannot be retrieved.
     public func getStats(for identifier: String) async throws -> RepositoryStats {
-        let metadata: LogMetadata = ["repository_id": .string(identifier)]
+        let metadata = LogMetadataBuilder.forRepository(
+            identifier: identifier
+        )
         await logger.info("Retrieving repository stats", metadata: metadata)
 
         guard let repository = repositories[identifier] else {
             await logger.error("Repository not found", metadata: metadata)
-            throw RepositoryError.repositoryNotFound(
-                "No repository found with identifier '\(identifier)'"
+            throw RepositoryError.notFound(
+                identifier: identifier
             )
         }
 
         do {
-            let stats = try await repository.getStats()
+            let stats = try await repository.check(readData: false, checkUnused: false)
             await logger.debug("Retrieved stats successfully", metadata: metadata)
             return stats
         } catch {

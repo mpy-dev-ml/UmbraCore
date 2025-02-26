@@ -1,20 +1,27 @@
 @testable import Core
+@preconcurrency import ResticCLIHelper
+@preconcurrency import SecurityUtils
+@preconcurrency import UmbraKeychainService
 import XCTest
 
 /// Tests for the KeyManager class that handles cryptographic key operations
-final class KeyManagerTests: XCTestCase {
+@preconcurrency
+actor KeyManagerTests: XCTestCase {
     // MARK: - Properties
 
     private var keyManager: KeyManager!
+    private var dependencies: MockKeyManagerDependencies!
 
     // MARK: - Test Lifecycle
 
     override func setUp() async throws {
-        keyManager = KeyManager()
+        dependencies = try await MockKeyManagerDependencies()
+        keyManager = KeyManager(dependencies: dependencies)
     }
 
     override func tearDown() async throws {
         keyManager = nil
+        dependencies = nil
     }
 
     // MARK: - Implementation Selection Tests
@@ -87,5 +94,27 @@ final class KeyManagerTests: XCTestCase {
         } catch {
             XCTFail("Unexpected error type: \(error)")
         }
+    }
+}
+
+/// Mock implementation of KeyManagerDependencies for testing
+@preconcurrency
+private actor MockKeyManagerDependencies: KeyManagerDependencies {
+    nonisolated(unsafe) let resticCLIHelper: ResticCLIHelper
+    nonisolated(unsafe) let keychain: UmbraKeychainService
+    nonisolated(unsafe) let securityUtils: SecurityUtils
+
+    init() async throws {
+        // Initialize with mock dependencies
+        self.resticCLIHelper = try ResticCLIHelper(executablePath: "/usr/local/bin/restic")
+
+        // Initialize keychain service with mock implementation
+        self.keychain = try UmbraKeychainService(
+            identifier: "com.umbracore.tests.keymanager",
+            accessGroup: nil as String?
+        )
+
+        // Initialize security utils
+        self.securityUtils = SecurityUtils.shared
     }
 }

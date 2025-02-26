@@ -1,4 +1,4 @@
-import CryptoKit
+// CryptoKit removed - cryptography will be handled in ResticBar
 @testable import ResticCLIHelper
 import UmbraTestKit
 import XCTest

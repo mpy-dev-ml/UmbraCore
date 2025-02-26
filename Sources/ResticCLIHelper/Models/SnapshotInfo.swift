@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Represents a snapshot in the repository
 public struct SnapshotInfo: Codable {

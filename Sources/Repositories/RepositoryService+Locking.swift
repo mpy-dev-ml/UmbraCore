@@ -2,52 +2,46 @@
 import Foundation
 
 // Internal modules
-import Repositories_Types
+import RepositoriesTypes
 import UmbraLogging
 
 /// Extension for repository locking functionality
 extension RepositoryService {
-    // MARK: - Locking Operations
-
     /// Unlocks all repositories.
     ///
-    /// - Parameter force: If true, continue unlocking other repositories even if some fail
-    /// - Throws: `RepositoryError.operationFailed` if any repository unlock fails and force is false
+    /// - Parameter force: If true, attempts to unlock even if errors occur
+    /// - Throws: `RepositoryError.operationFailed` if any repository fails to unlock
     public func unlockAll(force: Bool = false) async throws {
-        let metadata: LogMetadata = [
-            "repository_count": .string(String(repositories.count)),
-            "force": .string(String(force))
-        ]
+        let metadata = LogMetadata([
+            "repository_count": String(repositories.count),
+            "force": String(force)
+        ])
 
-        await logger.info(
-            "Starting unlock for all repositories",
-            metadata: metadata
-        )
+        await logger.info("Unlocking all repositories", metadata: metadata)
 
         var errors: [String: Error] = [:]
 
         for (identifier, repository) in repositories {
-            let repoMetadata: LogMetadata = [
-                "repository_id": .string(identifier)
-            ]
+            let repoMetadata = LogMetadata([
+                "repository_id": identifier
+            ])
 
             do {
                 try await repository.unlock()
-                await logger.debug(
-                    "Repository unlocked successfully",
-                    metadata: repoMetadata
-                )
+                await logger.debug("Repository unlocked successfully", metadata: repoMetadata)
             } catch {
                 await logger.error(
-                    "Failed to unlock repository: \(error.localizedDescription)",
-                    metadata: repoMetadata
+                    "Failed to unlock repository",
+                    metadata: repoMetadata,
+                    error: error
                 )
+                errors[identifier] = error
+
                 if !force {
                     throw RepositoryError.operationFailed(
-                        reason: "Failed to unlock '\(identifier)': \(error.localizedDescription)"
+                        reason: "Failed to unlock repository \(identifier): \(error.localizedDescription)"
                     )
                 }
-                errors[identifier] = error
             }
         }
 
@@ -55,47 +49,39 @@ extension RepositoryService {
             await logger.warning(
                 "Some repositories failed to unlock",
                 metadata: LogMetadata([
-                    "error_count": .string(String(errors.count)),
-                    "force": .string(String(force))
+                    "error_count": String(errors.count),
+                    "force": String(force)
                 ])
             )
-        } else {
-            await logger.info(
-                "All repositories unlocked successfully",
-                metadata: metadata
-            )
         }
+
+        await logger.info("Repository unlock operation completed", metadata: metadata)
     }
 
     /// Unlocks a specific repository.
     ///
-    /// - Parameter identifier: The identifier of the repository to unlock
-    /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found,
+    /// - Parameter identifier: The repository identifier
+    /// - Throws: `RepositoryError.notFound` if the repository does not exist,
     ///           `RepositoryError.operationFailed` if the unlock operation fails
     public func unlock(_ identifier: String) async throws {
-        let metadata: LogMetadata = [
-            "repository_id": .string(identifier)
-        ]
+        let metadata = LogMetadata([
+            "repository_id": identifier
+        ])
 
-        await logger.info("Starting repository unlock", metadata: metadata)
+        await logger.info("Unlocking repository", metadata: metadata)
 
         guard let repository = repositories[identifier] else {
-            await logger.error("Repository not found", metadata: metadata)
-            throw RepositoryError.repositoryNotFound(
-                "No repository found with identifier '\(identifier)'"
-            )
+            throw RepositoryError.notFound(identifier: identifier)
         }
 
         do {
             try await repository.unlock()
-            await logger.debug(
-                "Repository unlocked successfully",
-                metadata: metadata
-            )
+            await logger.info("Repository unlocked successfully", metadata: metadata)
         } catch {
             await logger.error(
-                "Failed to unlock repository: \(error.localizedDescription)",
-                metadata: metadata
+                "Failed to unlock repository",
+                metadata: metadata,
+                error: error
             )
             throw RepositoryError.operationFailed(
                 reason: "Failed to unlock repository: \(error.localizedDescription)"

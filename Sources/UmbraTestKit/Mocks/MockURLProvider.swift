@@ -1,7 +1,7 @@
 import Core
 import Foundation
 import SecurityTypes
-import SecurityTypes_Protocols
+import SecurityTypesProtocols
 
 /// Mock implementation of URL security provider
 public actor MockURLProvider: SecurityProvider {

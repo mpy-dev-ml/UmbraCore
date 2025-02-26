@@ -1,18 +1,17 @@
-import Core
 import Foundation
-import Repositories_Types
+import RepositoriesTypes
 import SecurityTypes
-import SecurityTypes_Protocols
+import SecurityTypesProtocols
 
 /// A mock repository implementation for testing that handles sandbox security
-public actor MockRepository: Repository {
+public actor MockRepository: RepositoryCore & RepositoryLocking & RepositoryMaintenance {
     public let identifier: String
     public let location: URL
     public private(set) var state: RepositoryState
 
     private let securityProvider: SecurityProvider
     private var isLocked: Bool = false
-    private var mockStats: RepositoryStats
+    private var mockStats: RepositoryStatistics
 
     public init(
         identifier: String = UUID().uuidString,
@@ -24,7 +23,7 @@ public actor MockRepository: Repository {
         self.location = location
         self.state = initialState
         self.securityProvider = securityProvider
-        self.mockStats = RepositoryStats(
+        self.mockStats = RepositoryStatistics(
             totalSize: 0,
             snapshotCount: 0,
             deduplicationSavings: 0,
@@ -67,18 +66,22 @@ public actor MockRepository: Repository {
         state == .ready && !isLocked
     }
 
-    public func getStats() async throws -> RepositoryStats {
+    public func getStats() async throws -> RepositoryStatistics {
         guard state == .ready else {
             throw RepositoryError.operationFailed(reason: "Repository must be ready to get stats")
         }
         return mockStats
     }
 
-    public func check(readData: Bool, checkUnused: Bool) async throws {
+    public func check(readData: Bool, checkUnused: Bool) async throws -> RepositoryStatistics {
         guard state == .ready else {
             throw RepositoryError.operationFailed(reason: "Repository must be ready to check")
         }
-        // Mock implementation - just verify state
+        
+        // Simulate a repository check
+        // In a real implementation, this would scan the repository
+        
+        return mockStats
     }
 
     public func prune() async throws {
@@ -95,8 +98,19 @@ public actor MockRepository: Repository {
         // Mock implementation - just verify state
     }
 
+    public func repair() async throws -> Bool {
+        guard state == .ready else {
+            throw RepositoryError.operationFailed(reason: "Repository must be ready to repair")
+        }
+        
+        // Simulate a repository repair
+        // In a real implementation, this would repair any issues found
+        
+        return true // Simulate successful repair
+    }
+
     // Test helper methods
-    public func setStats(_ stats: RepositoryStats) {
+    public func setStats(_ stats: RepositoryStatistics) {
         self.mockStats = stats
     }
 }

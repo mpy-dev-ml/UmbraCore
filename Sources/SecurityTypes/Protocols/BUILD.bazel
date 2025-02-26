@@ -1,15 +1,23 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "SecurityTypes_Protocols",
-    srcs = glob(["*.swift"]),
+    name = "SecurityTypesProtocols",
+    srcs = glob(
+        ["**/*.swift"],
+        allow_empty = True,
+    ),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
-    module_name = "SecurityTypes_Protocols",
+    module_name = "SecurityTypesProtocols",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/SecurityTypes/Types:SecurityTypesTypes",
+        "//Sources/UmbraLogging",
+    ],
 )

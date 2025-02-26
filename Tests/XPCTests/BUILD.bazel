@@ -1,11 +1,24 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
-    name = "Tests_XPCTests",
-    srcs = ["CryptoXPCServiceTests.swift"],
+    name = "XPCTests",
+    srcs = glob(
+        ["*.swift"],
+        allow_empty = True,
+    ),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
+    ],
     module_name = "XPCTests",
+    visibility = ["//visibility:public"],
     deps = [
-        "//Sources/UmbraCryptoService:Sources_UmbraCryptoService",
-        "//Sources/XPC/Core:Sources_XPC_Core",
+        "//Sources/Testing",
+        "//Sources/UmbraCryptoService",
+        "//Sources/UmbraXPC",
+        "//Sources/XPC/Core:XPCCore",
     ],
 )

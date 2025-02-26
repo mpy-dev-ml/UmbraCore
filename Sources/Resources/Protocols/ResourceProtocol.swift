@@ -145,6 +145,12 @@ public enum ResourceError: LocalizedError, Sendable {
     ///                     including pool size and current usage.
     case poolExhausted(String)
 
+    /// Resource cleanup failed.
+    ///
+    /// - Parameter message: A description of why cleanup failed,
+    ///                     such as "Failed to close connection" or "Failed to release lock".
+    case cleanupFailed(String)
+
     /// A localised description of the error.
     ///
     /// This property provides a human-readable description of the error,
@@ -159,6 +165,8 @@ public enum ResourceError: LocalizedError, Sendable {
             return "Operation timed out: \(message)"
         case .poolExhausted(let message):
             return "Resource pool exhausted: \(message)"
+        case .cleanupFailed(let message):
+            return "Resource cleanup failed: \(message)"
         }
     }
 }

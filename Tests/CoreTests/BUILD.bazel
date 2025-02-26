@@ -2,14 +2,14 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
     name = "CoreTests",
+    size = "small",
+    timeout = "short",
     srcs = [
         "CryptoTests.swift",
         "KeyManagerTests.swift",
         "SecurityTests.swift",
         "ServiceTests.swift",
     ],
-    deps = ["//Sources/Core"],
-    module_name = "CoreTests",
     copts = [
         "-target",
         "arm64-apple-macos14.0",
@@ -22,7 +22,13 @@ swift_test(
         "-target",
         "arm64-apple-macos14.0",
     ],
+    module_name = "CoreTests",
     tags = ["unit"],
-    size = "small",
-    timeout = "short",  
+    deps = [
+        "//Sources/Core",
+        "//Sources/ResticCLIHelper",
+        "//Sources/SecurityUtils",
+        "//Sources/UmbraCryptoService",
+        "//Sources/UmbraKeychainService",
+    ],
 )

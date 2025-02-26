@@ -2,18 +2,20 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "Resources",
-    srcs = glob([
-        "*.swift",
-        "Protocols/*.swift",
-    ]),
+    srcs = glob(["*.swift"]),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
     module_name = "Resources",
     visibility = ["//visibility:public"],
-    deps = [],
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/Resources/Protocols:ResourcesProtocols",
+        "//Sources/Resources/Types:ResourcesTypes",
+        "//Sources/UmbraLogging",
+    ],
 )

@@ -1,19 +1,23 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_UmbraLogging",
-    srcs = glob(["**/*.swift"]),
-    module_name = "UmbraLogging",
-    visibility = ["//visibility:public"],
+    name = "UmbraLogging",
+    srcs = [
+        "LogEntry.swift",
+        "LogLevel.swift",
+        "LogMetadata.swift",
+        "Logger.swift",
+        "LoggingProtocol.swift",
+        "UmbraLogging.swift",
+    ],
     copts = [
-        "-enable-actor-data-race-checks",
-        "-enable-testing",
-        "-strict-concurrency=complete",
         "-target",
         "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
         "-warn-concurrency",
     ],
-    deps = [
-        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
-    ],
+    module_name = "UmbraLogging",
+    visibility = ["//visibility:public"],
+    deps = ["@swiftpkg_swiftybeaver//:SwiftyBeaver"],
 )

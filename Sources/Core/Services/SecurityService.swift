@@ -1,4 +1,5 @@
 import Foundation
+import CoreServicesTypes
 
 /// Protocol defining security-related operations for managing secure resource access
 public protocol SecurityProvider: Sendable {

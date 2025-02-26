@@ -1,6 +1,6 @@
 import Foundation
 import SecurityTypes
-import SecurityUtils_Protocols
+import SecurityUtilsProtocols
 
 /// Service for managing security-scoped bookmarks
 public actor SecurityBookmarkService {
@@ -37,19 +37,26 @@ public actor SecurityBookmarkService {
         return bookmarkData
     }
 
-    /// Resolve a security-scoped bookmark
-    /// - Parameter bookmarkData: Bookmark data to resolve
-    /// - Returns: Tuple containing resolved URL and whether bookmark is stale
+    /// Resolve a security-scoped bookmark to a URL
+    /// - Parameter bookmarkData: Bookmark data
+    /// - Returns: Resolved URL
     /// - Throws: SecurityError if bookmark resolution fails
-    public func resolveBookmark(_ bookmarkData: Data) async throws -> (url: URL, isStale: Bool) {
+    public func resolveBookmark(_ bookmarkData: Data) async throws -> URL {
         var isStale = false
-        let url = try URL(
-            resolvingBookmarkData: bookmarkData,
-            options: .withSecurityScope,
-            relativeTo: nil,
-            bookmarkDataIsStale: &isStale
-        )
-        return (url, isStale)
+        let options: NSURL.BookmarkResolutionOptions = [.withSecurityScope, .withoutUI]
+        
+        do {
+            let url = try URL(resolvingBookmarkData: bookmarkData, options: options, relativeTo: nil, bookmarkDataIsStale: &isStale)
+            
+            if isStale {
+                // Log warning but continue with the stale bookmark
+                print("Warning: Bookmark is stale for \(url.path)")
+            }
+            
+            return url
+        } catch {
+            throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+        }
     }
 
     /// Perform an operation with security-scoped access to a URL

@@ -31,4 +31,11 @@ extension LogMetadata {
         let stringDict = dictionary.compactMapValues { "\($0)" }
         return LogMetadata(stringDict)
     }
+
+    /// Create a string value for the metadata
+    /// - Parameter value: The value to convert to a string
+    /// - Returns: The string representation of the value
+    public static func string(_ value: Any) -> String {
+        "\(value)"
+    }
 }

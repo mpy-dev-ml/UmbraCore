@@ -2,7 +2,7 @@
 import Foundation
 
 // Internal modules
-import Repositories_Types
+import RepositoriesTypes
 import UmbraLogging
 
 /// Extension for repository maintenance functionality
@@ -20,10 +20,10 @@ extension RepositoryService {
         _ identifier: String,
         rebuildIndex: Bool = false
     ) async throws {
-        let metadata: LogMetadata = [
-            "repository_id": .string(identifier),
-            "rebuild_index": .string(String(rebuildIndex))
-        ]
+        let metadata = LogMetadata([
+            "repository_id": identifier,
+            "rebuild_index": String(rebuildIndex)
+        ])
 
         await logger.info("Starting repository maintenance", metadata: metadata)
 
@@ -63,13 +63,15 @@ extension RepositoryService {
     /// - Returns: Whether the repository was successfully repaired
     /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found
     public func repairRepository(at url: URL) async throws -> Bool {
-        let metadata: LogMetadata = ["path": .string(url.path)]
+        let metadata = LogMetadataBuilder.forRepository(
+            path: url.path
+        )
         await logger.info("Starting repository repair", metadata: metadata)
 
         guard let repository = await getRepository(at: url) else {
             await logger.error("Repository not found", metadata: metadata)
-            throw RepositoryError.repositoryNotFound(
-                "No repository found at \(url.path)"
+            throw RepositoryError.notFound(
+                identifier: url.path
             )
         }
 

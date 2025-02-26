@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for repairing repository inconsistencies
 public final class RepairCommand: ResticCommand, @unchecked Sendable {

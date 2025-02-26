@@ -12,6 +12,10 @@ public enum SecurityError: LocalizedError {
     case invalidData(reason: String)
     /// Access denied to resource
     case accessDenied(reason: String)
+    /// Failed to generate random data
+    case randomGenerationFailed
+    /// Item not found in secure storage
+    case itemNotFound
 
     public var errorDescription: String? {
         switch self {
@@ -25,6 +29,10 @@ public enum SecurityError: LocalizedError {
             return "Invalid data: \(reason)"
         case .accessDenied(let reason):
             return "Access denied: \(reason)"
+        case .randomGenerationFailed:
+            return "Failed to generate random data"
+        case .itemNotFound:
+            return "Item not found in secure storage"
         }
     }
 }

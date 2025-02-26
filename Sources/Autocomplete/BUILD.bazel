@@ -3,6 +3,18 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 swift_library(
     name = "Autocomplete",
     srcs = ["AutocompleteProtocol.swift"],
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
+    ],
     module_name = "Autocomplete",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/Autocomplete/Protocols",
+        "//Sources/ErrorHandling",
+        "//Sources/UmbraLogging",
+    ],
 )

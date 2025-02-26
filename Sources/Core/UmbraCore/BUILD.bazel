@@ -1,7 +1,7 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_Core_UmbraCore",
+    name = "CoreUmbraCore",
     srcs = [
         "UmbraCore.swift",
     ],
@@ -9,10 +9,12 @@ swift_library(
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
-        "-enable-testing",
+        "-warn-concurrency",
     ],
-    module_name = "UmbraCore",
+    module_name = "CoreUmbraCore",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecurityTypes",
+    ],
 )

@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for checking repository integrity
 public final class CheckCommand: ResticCommand, @unchecked Sendable {

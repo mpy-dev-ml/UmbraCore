@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for listing directory contents in snapshots
 public final class LsCommand: ResticCommand, @unchecked Sendable {

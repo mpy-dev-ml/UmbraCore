@@ -2,17 +2,20 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "UmbraCrypto",
-    srcs = glob(["**/*.swift"]),
+    testonly = True,
+    srcs = [
+        "UmbraCrypto.swift",
+    ],
     copts = [
         "-target",
         "arm64-apple-macos14.0",
-        "-enable-testing",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
     module_name = "UmbraCrypto",
-    testonly = True,
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/CryptoTypes",
-        "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
 )

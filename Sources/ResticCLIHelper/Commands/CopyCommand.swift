@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for copying snapshots between repositories
 public final class CopyCommand: ResticCommand, @unchecked Sendable {

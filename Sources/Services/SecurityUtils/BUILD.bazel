@@ -1,7 +1,23 @@
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
-alias(
+swift_library(
     name = "SecurityUtils",
-    actual = "//Sources/Services/SecurityUtils/Services:SecurityUtils",
+    srcs = glob(["*.swift"]),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
+    ],
+    module_name = "SecurityUtils",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/CryptoTypes",
+        "//Sources/ErrorHandling",
+        "//Sources/SecurityTypes",
+        "//Sources/Services/SecurityUtils/Protocols:SecurityUtilsProtocols",
+        "//Sources/Services/SecurityUtils/Services:SecurityUtilsServices",
+        "//Sources/UmbraLogging",
+    ],
 )

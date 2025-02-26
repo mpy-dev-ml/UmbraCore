@@ -1,10 +1,10 @@
 import Core
 @testable import SecurityTypes
-import SecurityTypes_Protocols
+import SecurityTypesProtocols
 import XCTest
 
 /// A mock security provider for testing
-actor MockSecurityProvider: SecurityProvider {
+actor TestMockSecurityProvider: SecurityProvider {
     private var bookmarks: [String: Data] = [:]
     private var accessCount: [String: Int] = [:]
     private var shouldFailBookmarkCreation = false
@@ -115,10 +115,10 @@ actor MockSecurityProvider: SecurityProvider {
 
 @MainActor
 final class MockSecurityProviderTests: XCTestCase {
-    private var provider: MockSecurityProvider!
+    private var provider: TestMockSecurityProvider!
 
     override func setUp() async throws {
-        provider = MockSecurityProvider()
+        provider = TestMockSecurityProvider()
     }
 
     override func tearDown() async throws {
@@ -284,7 +284,7 @@ final class MockSecurityProviderTests: XCTestCase {
     }
 
     func testEncryptDecrypt() async throws {
-        let provider = MockSecurityProvider()
+        let provider = TestMockSecurityProvider()
         let testData = Data("Test data".utf8)
         let key = "test key"
 
@@ -306,7 +306,7 @@ final class MockSecurityProviderTests: XCTestCase {
     }
 
     func testEncryptDecryptWithDifferentKeys() async throws {
-        let provider = MockSecurityProvider()
+        let provider = TestMockSecurityProvider()
         let testData = Data("Test data".utf8)
 
         // Test with different keys
@@ -321,7 +321,7 @@ final class MockSecurityProviderTests: XCTestCase {
     }
 
     func testEncryptionWithCustomKey() async throws {
-        let provider = MockSecurityProvider()
+        let provider = TestMockSecurityProvider()
         let testData = Data("Test data".utf8)
         let customKey = Data("Custom encryption key".utf8)
 
@@ -349,17 +349,17 @@ final class MockSecurityProviderTests: XCTestCase {
     }
 
     func testEncryptionWithInvalidKey() async throws {
-        let provider = MockSecurityProvider()
+        let provider = TestMockSecurityProvider()
         let testData = Data("Test data".utf8)
         let invalidKey = Data()
 
         do {
             _ = try await provider.encrypt(data: testData, key: invalidKey)
             XCTFail("Encryption with invalid key should fail")
-        } catch SecurityError.invalidKey {
+        } catch SecurityError.cryptoError {
             // Expected error
         } catch {
-            XCTFail("Unexpected error type: \(error)")
+            XCTFail("Unexpected error: \(error)")
         }
     }
 }

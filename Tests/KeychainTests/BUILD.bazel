@@ -1,9 +1,8 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
-    name = "Tests_KeychainTests",
+    name = "KeychainTests",
     srcs = glob(["**/*.swift"]),
-    module_name = "Tests_KeychainTests",
     copts = [
         "-strict-concurrency=complete",
         "-warn-concurrency",
@@ -12,8 +11,9 @@ swift_test(
         "-target",
         "arm64-apple-macos14.0",
     ],
+    module_name = "KeychainTests",
     deps = [
-        "//Sources/UmbraKeychainService:Sources_UmbraKeychainService",
-        "//Sources/UmbraTestKit:Sources_UmbraTestKit",
+        "//Sources/UmbraKeychainService",
+        "//Sources/UmbraTestKit",
     ],
 )

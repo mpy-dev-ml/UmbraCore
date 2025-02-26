@@ -6,9 +6,21 @@ swift_test(
         "CommonErrorTests.swift",
         "CoreErrorTests.swift",
     ],
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
     module_name = "ErrorHandlingTests",
     deps = [
         "//Sources/ErrorHandling",
-        "//Sources/ErrorHandling/Models:ErrorHandling_Models",
+        "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
+        "//Sources/ErrorHandling/Models:ErrorHandlingModels",
+        "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
+        "//Sources/Testing",
+        # Temporarily removed due to swift-syntax dependency issues
+        # "//Sources/TestingMacros",
     ],
 )

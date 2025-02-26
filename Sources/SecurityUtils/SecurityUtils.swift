@@ -1,101 +1,50 @@
+import CommonCrypto
+import Foundation
+import Security
+import SecurityTypes
+import SecurityTypesTypes
+
 /// SecurityUtils Module
 ///
-/// Provides security utility functions and helpers for UmbraCore.
-/// This module implements common security operations and utilities
-/// used across the framework.
-///
-/// # Key Features
-/// - Secure random generation
-/// - Hash functions
-/// - Key derivation
-/// - Security validation
-///
-/// # Module Organisation
-///
-/// ## Core Utilities
-/// ```swift
-/// SecureRandom
-/// HashGenerator
-/// KeyDerivation
-/// ```
-///
-/// ## Validation
-/// ```swift
-/// SecurityValidator
-/// PermissionChecker
-/// IntegrityVerifier
-/// ```
-///
-/// ## Helpers
-/// ```swift
-/// SecurityFormatter
-/// SecurityParser
-/// SecurityConverter
-/// ```
-///
-/// # Security Operations
-///
-/// ## Random Generation
-/// Secure random generation:
-/// - Cryptographic RNG
-/// - Nonce generation
-/// - Salt creation
-///
-/// ## Hashing
-/// Hash function support:
-/// - SHA-256/512
-/// - BLAKE2b
-/// - Custom algorithms
-///
-/// # Key Management
-///
-/// ## Key Derivation
-/// Key derivation functions:
-/// - PBKDF2
-/// - Argon2
-/// - Scrypt
-///
-/// ## Key Storage
-/// Secure key handling:
-/// - Secure enclave
-/// - Keychain storage
-/// - Memory protection
-///
-/// # Validation
-///
-/// ## Security Checks
-/// Security validation:
-/// - Path validation
-/// - Input sanitisation
-/// - Permission checks
-///
-/// ## Integrity
-/// Data integrity:
-/// - Checksums
-/// - Digital signatures
-/// - MAC verification
-///
-/// # Usage Example
-/// ```swift
-/// let utils = SecurityUtils.shared
-/// 
-/// let hash = try utils.hash(
-///     data: data,
-///     using: .sha256
-/// )
-/// ```
-///
-/// # Thread Safety
-/// Security operations are thread-safe:
-/// - Concurrent operations
-/// - State isolation
-/// - Resource protection
-public enum SecurityUtils {
-    /// Current version of the SecurityUtils module
-    public static let version = "1.0.0"
+/// This module provides utility functions for security-related operations
+/// such as generating secure random data and hashing.
+public final class SecurityUtils: @unchecked Sendable {
+    /// Shared instance of SecurityUtils
+    public static let shared = SecurityUtils()
 
-    /// Initialise SecurityUtils with default configuration
-    public static func initialize() {
-        // Configure security utilities
+    /// Private initializer to enforce singleton pattern
+    private init() {}
+
+    /// Generate cryptographically secure random data
+    /// - Parameter length: Length of random data to generate
+    /// - Returns: Random data of specified length
+    /// - Throws: SecurityError if random generation fails
+    public func generateRandomData(_ length: Int) throws -> Data {
+        var data = Data(count: length)
+        let result = data.withUnsafeMutableBytes { bytes in
+            SecRandomCopyBytes(kSecRandomDefault, length, bytes.baseAddress!)
+        }
+
+        guard result == errSecSuccess else {
+            throw SecurityError.randomGenerationFailed
+        }
+
+        return data
+    }
+
+    /// Hash data using the specified algorithm
+    /// - Parameters:
+    ///   - data: Data to hash
+    ///   - algorithm: Hash algorithm to use
+    /// - Returns: Hashed data
+    /// - Throws: SecurityError if hashing fails
+    public func hash(_ data: Data, using algorithm: HashAlgorithm) throws -> Data {
+        var hashData = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
+        _ = hashData.withUnsafeMutableBytes { hashBytes in
+            data.withUnsafeBytes { dataBytes in
+                CC_SHA256(dataBytes.baseAddress, CC_LONG(data.count), hashBytes.baseAddress?.assumingMemoryBound(to: UInt8.self))
+            }
+        }
+        return hashData
     }
 }

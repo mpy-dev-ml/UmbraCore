@@ -1,17 +1,23 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
-    name = "Sources_Repositories_Protocols",
-    srcs = [
-        "RepositoryProtocol.swift",
-    ],
+    name = "RepositoriesProtocols",
+    srcs = glob(
+        ["**/*.swift"],
+        allow_empty = True,
+    ),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
-    module_name = "Protocols",
+    module_name = "RepositoriesProtocols",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/Repositories/Types:RepositoriesTypes",
+        "//Sources/SecurityTypes",
+    ],
 )

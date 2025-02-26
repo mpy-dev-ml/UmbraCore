@@ -1,5 +1,8 @@
 import Core
+import CryptoTypesServices
 import Foundation
+import SecurityUtils
+import UmbraKeychainService
 import UmbraXPC
 import XPC
 
@@ -9,10 +12,22 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
     private let listener: NSXPCListener
     private let cryptoService: CryptoXPCService
 
-    public init(machServiceName: String) {
-        self.listener = NSXPCListener(machServiceName: machServiceName)
-        self.cryptoService = CryptoXPCService()
+    public override init() {
+        // Initialize dependencies
+        let dependencies = DefaultCryptoXPCServiceDependencies(
+            securityUtils: SecurityUtils.shared,
+            keychain: UmbraKeychainService(
+                identifier: "com.umbracore.crypto.xpc"
+            )
+        )
+
+        // Initialize service
+        self.cryptoService = CryptoXPCService(dependencies: dependencies)
+
+        // Create and configure listener
+        self.listener = NSXPCListener(machServiceName: "com.umbracore.crypto.xpc")
         super.init()
+
         self.listener.delegate = self
     }
 
@@ -32,10 +47,20 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
     ) -> Bool {
         Task { @MainActor in
             // Configure the connection
-            connection.exportedInterface = NSXPCInterface(with: Core.CryptoXPCServiceProtocol.self)
-
-            // Create and set the exported object
+            let interface = NSXPCInterface(with: CryptoXPCServiceProtocol.self)
+            
+            // Set up the connection interfaces
+            connection.exportedInterface = interface
             connection.exportedObject = cryptoService
+            
+            // Configure remote interface
+            connection.remoteObjectInterface = NSXPCInterface(with: CryptoXPCServiceProtocol.self)
+
+            // Resume the connection
+            connection.resume()
+
+            // Store the connection
+            cryptoService.connection = connection
 
             // Set up error handling
             connection.invalidationHandler = {
@@ -45,9 +70,6 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
             connection.interruptionHandler = {
                 print("[CryptoService] Connection interrupted")
             }
-
-            // Start the connection
-            connection.resume()
         }
 
         return true
@@ -59,7 +81,7 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
 @MainActor
 public func startService() {
     // Create and start the listener
-    let listener = CryptoServiceListener(machServiceName: "com.umbracore.cryptoservice")
+    let listener = CryptoServiceListener()
     listener.start()
 
     // Run the main loop

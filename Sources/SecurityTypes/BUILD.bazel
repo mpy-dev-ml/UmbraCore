@@ -2,18 +2,21 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "SecurityTypes",
-    srcs = glob(["*.swift"]),
+    srcs = glob(
+        ["*.swift"],
+        allow_empty = True,
+    ),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
         "-strict-concurrency=complete",
-        "-warn-concurrency",
         "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
     module_name = "SecurityTypes",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/SecurityTypes/Protocols:SecurityTypes_Protocols",
-        "//Sources/SecurityTypes/Types:SecurityTypes_Types",
+        "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
+        "//Sources/SecurityTypes/Types:SecurityTypesTypes",
     ],
 )

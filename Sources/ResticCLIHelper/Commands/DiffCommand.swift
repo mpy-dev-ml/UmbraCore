@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for showing differences between snapshots
 public final class DiffCommand: ResticCommand, @unchecked Sendable {

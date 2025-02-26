@@ -1,6 +1,25 @@
 import Foundation
 
-/// Additional context that can be attached to errors
+/// A structure that provides detailed context about an error's occurrence.
+///
+/// `ErrorContext` enriches errors with information about where and how they
+/// occurred, making debugging and error reporting more effective. It captures
+/// both programmatic details (file, line, function) and semantic information
+/// (source, operation, details).
+///
+/// Example:
+/// ```swift
+/// do {
+///     try processPayment(amount: 100)
+/// } catch let error {
+///     throw ErrorContext(
+///         source: "PaymentProcessor",
+///         operation: "processPayment",
+///         details: "Invalid card number",
+///         underlyingError: error
+///     )
+/// }
+/// ```
 public struct ErrorContext {
     /// The source of the error (e.g., module name, class name)
     public let source: String
@@ -23,6 +42,16 @@ public struct ErrorContext {
     /// Function where the error occurred
     public let function: String
 
+    /// Creates a new error context with the specified information.
+    ///
+    /// - Parameters:
+    ///   - source: The source of the error (e.g., module name, class name)
+    ///   - operation: Operation being performed when the error occurred
+    ///   - details: Additional details about the error (optional)
+    ///   - underlyingError: The original error that caused this error (optional)
+    ///   - file: File where the error occurred (defaults to current file)
+    ///   - line: Line number where the error occurred (defaults to current line)
+    ///   - function: Function where the error occurred (defaults to current function)
     public init(
         source: String,
         operation: String,
