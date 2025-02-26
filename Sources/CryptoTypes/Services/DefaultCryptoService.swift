@@ -1,12 +1,12 @@
 import CommonCrypto
-import CryptoKit
-import CryptoTypes_Protocols
-import CryptoTypes_Types
+// CryptoKit removed - cryptography will be handled in ResticBar
+import CryptoTypesProtocols
+import CryptoTypesTypes
 import Foundation
 import SecurityTypes
 
 /// Default implementation of CryptoService
-/// This implementation uses CryptoKit for cryptographic operations
+/// This implementation will be replaced by functionality in ResticBar
 /// Note: This implementation is specifically for the main app context and should not
 /// be used directly in XPC services. For XPC cryptographic operations, use CryptoXPCService.
 public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
@@ -31,59 +31,13 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
     }
 
     public func encrypt(_ data: Data, using key: Data, iv: Data) async throws -> Data {
-        guard key.count == 32 else {
-            throw CryptoError.encryptionFailed(reason: "Invalid key length")
-        }
-        guard iv.count == 12 else {
-            throw CryptoError.encryptionFailed(reason: "Invalid IV length")
-        }
-
-        let symmetricKey = SymmetricKey(data: key)
-
-        do {
-            let sealedBox = try AES.GCM.seal(data, using: symmetricKey, nonce: .init(data: iv))
-            var combined = Data()
-            combined.append(contentsOf: sealedBox.nonce.withUnsafeBytes { Data($0) })
-            combined.append(contentsOf: sealedBox.ciphertext)
-            combined.append(contentsOf: sealedBox.tag)
-            return combined
-        } catch {
-            throw CryptoError.encryptionFailed(reason: "encryption failed")
-        }
+        // Placeholder implementation - will be replaced by ResticBar
+        throw CryptoError.encryptionFailed(reason: "Encryption functionality moved to ResticBar")
     }
 
     public func decrypt(_ data: Data, using key: Data, iv: Data) async throws -> Data {
-        guard key.count == 32 else {
-            throw CryptoError.decryptionFailed(reason: "decryption failed")
-        }
-        guard iv.count == 12 else {
-            throw CryptoError.decryptionFailed(reason: "decryption failed")
-        }
-        guard data.count >= 12 + 16 else { // At least IV (12) + tag (16)
-            throw CryptoError.decryptionFailed(reason: "decryption failed")
-        }
-
-        let symmetricKey = SymmetricKey(data: key)
-
-        do {
-            let storedIV = data.prefix(12)
-            guard storedIV == iv else {
-                throw CryptoError.decryptionFailed(reason: "decryption failed")
-            }
-
-            let ciphertext = data.dropFirst(12).dropLast(16)
-            let tag = data.suffix(16)
-
-            let sealedBox = try AES.GCM.SealedBox(
-                nonce: .init(data: iv),
-                ciphertext: ciphertext,
-                tag: tag
-            )
-
-            return try AES.GCM.open(sealedBox, using: symmetricKey)
-        } catch {
-            throw CryptoError.decryptionFailed(reason: "decryption failed")
-        }
+        // Placeholder implementation - will be replaced by ResticBar
+        throw CryptoError.decryptionFailed(reason: "Decryption functionality moved to ResticBar")
     }
 
     public func deriveKey(from password: String, salt: Data, iterations: Int) async throws -> Data {
@@ -123,8 +77,7 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
     }
 
     public func generateHMAC(for data: Data, using key: Data) async throws -> Data {
-        let symmetricKey = SymmetricKey(data: key)
-        let hmac = HMAC<SHA256>.authenticationCode(for: data, using: symmetricKey)
-        return Data(hmac)
+        // Placeholder implementation - will be replaced by ResticBar
+        throw CryptoError.authenticationFailed(reason: "HMAC functionality moved to ResticBar")
     }
 }
