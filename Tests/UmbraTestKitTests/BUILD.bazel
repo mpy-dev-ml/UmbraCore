@@ -1,0 +1,15 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+load("//:bazel/macros/swift.bzl", "umbra_swift_test")
+
+umbra_swift_test(
+    name = "UmbraTestKitTests",
+    srcs = glob(["**/*.swift"]),
+    module_name = "UmbraTestKitTests",
+    deps = [
+        "//Tests/UmbraTestKit",
+    ],
+    linkopts = [
+        "-target",
+        "arm64-apple-macos14.0",
+    ],
+)

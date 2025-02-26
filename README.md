@@ -124,6 +124,18 @@ This dual-library strategy enables UmbraCore to provide:
 - Consistent security model across all implementations
 - Flexible deployment options
 
+## Test Suite
+
+UmbraCore is moving to a centralised test suite structure using UmbraTestKit. This new approach:
+
+- Centralises all tests in a single, well-organized framework
+- Separates test infrastructure from test implementations
+- Reduces duplication across test modules
+- Improves test maintainability and reusability
+- Standardises test patterns and practices
+
+For more information, see [TEST_MIGRATION_PLAN.md](TEST_MIGRATION_PLAN.md).
+
 ## Development
 
 ### Building
