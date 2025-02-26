@@ -139,6 +139,23 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
         return Data.random(count: length)
     }
 
+    /// Generate a secure random key of specified length
+    /// - Parameter length: Length of the key in bytes
+    /// - Returns: Generated key as Data
+    /// - Throws: XPCError if generation fails
+    @MainActor public func generateSecureRandomKey(length: Int) async throws -> Data {
+        try Task.checkCancellation()
+        return Data.random(count: length)
+    }
+
+    /// Generate an initialization vector for AES-GCM
+    /// - Returns: Generated IV as Data
+    /// - Throws: XPCError if generation fails
+    @MainActor public func generateInitializationVector() async throws -> Data {
+        try Task.checkCancellation()
+        return Data.random(count: 12) // 12 bytes is standard for GCM mode
+    }
+
     /// Store a credential securely
     /// - Parameters:
     ///   - credential: Credential to store

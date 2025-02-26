@@ -9,7 +9,6 @@ umbra_swift_library(
     ),
     deps = [
         "//Sources/ErrorHandling",
-        "//Sources/SecurityInterfaces",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
         "//Sources/SecurityTypes/Types:SecurityTypesTypes",
     ],

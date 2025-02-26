@@ -4,7 +4,7 @@ import Foundation
 import SecurityInterfaces
 
 /// Manages security operations and access control
-public actor SecurityService: UmbraService, SecurityProviderBase, SecurityProvider {
+public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, SecurityProvider {
     public static let serviceIdentifier = "com.umbracore.security"
 
     private var _state: ServiceState = .uninitialized
@@ -172,18 +172,18 @@ public actor SecurityService: UmbraService, SecurityProviderBase, SecurityProvid
         }
     }
 
-    public func generateRandomBytes(length: Int) async throws -> [UInt8] {
+    public func generateRandomBytes(count: Int) async throws -> [UInt8] {
         guard state == .ready else {
             throw ServiceError.invalidState("Security service not initialized")
         }
 
         if let crypto = cryptoService {
             // Use crypto service if available
-            let data = try await crypto.generateSecureRandomBytes(length: length)
+            let data = try await crypto.generateSecureRandomBytes(length: count)
             return Array(data)
         } else {
             // Fallback implementation using SecRandomCopyBytes
-            var bytes = [UInt8](repeating: 0, count: length)
+            var bytes = [UInt8](repeating: 0, count: count)
             let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
 
             guard status == errSecSuccess else {
@@ -192,6 +192,11 @@ public actor SecurityService: UmbraService, SecurityProviderBase, SecurityProvid
 
             return bytes
         }
+    }
+
+    // For backward compatibility
+    public func generateRandomBytes(length: Int) async throws -> [UInt8] {
+        return try await generateRandomBytes(count: length)
     }
 
     // MARK: - SecurityProvider Implementation (Foundation-dependent)
@@ -328,24 +333,8 @@ public actor SecurityService: UmbraService, SecurityProviderBase, SecurityProvid
     }
 
     public func generateRandomBytes(length: Int) async throws -> Data {
-        guard state == .ready else {
-            throw ServiceError.invalidState("Security service not initialized")
-        }
-
-        if let crypto = cryptoService {
-            // Use crypto service if available and it has the method
-            return try await crypto.generateSecureRandomBytes(length: length)
-        } else {
-            // Fallback implementation
-            var bytes = [UInt8](repeating: 0, count: length)
-            let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-
-            guard status == errSecSuccess else {
-                throw SecurityError.randomGenerationFailed
-            }
-
-            return Data(bytes)
-        }
+        let bytes = try await generateRandomBytes(count: length)
+        return Data(bytes)
     }
 
     public func withSecurityScopedAccess<T: Sendable>(
@@ -373,5 +362,169 @@ public actor SecurityService: UmbraService, SecurityProviderBase, SecurityProvid
 
     public func getAccessedPaths() async -> Set<String> {
         accessedPaths
+    }
+
+    // MARK: - SecurityInterfacesCore.SecurityProviderBase Implementation
+
+    public func resetSecurityData() async throws {
+        guard state == .ready else {
+            throw ServiceError.invalidState("Security service not initialized")
+        }
+
+        bookmarks = [:]
+        accessedPaths = []
+    }
+
+    public func getHostIdentifier() async throws -> String {
+        guard state == .ready else {
+            throw ServiceError.invalidState("Security service not initialized")
+        }
+
+        // Generate a unique identifier for this host
+        let hostName = Host.current().name ?? "unknown-host"
+        return "\(hostName)-\(UUID().uuidString)"
+    }
+
+    public func registerClient(bundleIdentifier: String) async throws -> Bool {
+        guard state == .ready else {
+            throw ServiceError.invalidState("Security service not initialized")
+        }
+
+        // Simple implementation - always return true for now
+        return true
+    }
+
+    public func requestKeyRotation(keyId: String) async throws {
+        guard state == .ready else {
+            throw ServiceError.invalidState("Security service not initialized")
+        }
+
+        // Implementation would request key rotation from a key management service
+        // For now, just validate the service is ready
+    }
+
+    public func notifyKeyCompromise(keyId: String) async throws {
+        guard state == .ready else {
+            throw ServiceError.invalidState("Security service not initialized")
+        }
+
+        // Implementation would notify about a compromised key
+        // For now, just validate the service is ready
+    }
+
+    // MARK: - SecurityProvider Implementation (Encryption/Decryption)
+
+    public func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
+        guard state == .ready else {
+            throw ServiceError.invalidState("Security service not initialized")
+        }
+        
+        if let crypto = cryptoService {
+            do {
+                let result = try await crypto.encrypt(data, using: key)
+                
+                // Combine all parts into a single byte array
+                var combined = [UInt8]()
+                combined.append(contentsOf: result.initializationVector)
+                combined.append(contentsOf: result.tag)
+                combined.append(contentsOf: result.encrypted)
+                
+                return combined
+            } catch {
+                throw SecurityError.cryptoError("Encryption failed: \(error.localizedDescription)")
+            }
+        } else {
+            throw SecurityError.operationFailed("Encryption not available without CryptoService")
+        }
+    }
+    
+    public func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
+        guard state == .ready else {
+            throw ServiceError.invalidState("Security service not initialized")
+        }
+        
+        if let crypto = cryptoService {
+            // Extract IV, tag, and encrypted data from the combined data
+            // Assuming IV is 12 bytes and tag is 16 bytes (standard for AES-GCM)
+            let ivLength = 12
+            let tagLength = 16
+            
+            guard data.count > ivLength + tagLength else {
+                throw SecurityError.cryptoError("Invalid encrypted data format")
+            }
+            
+            let iv = Array(data.prefix(ivLength))
+            let tag = Array(data[ivLength..<(ivLength + tagLength)])
+            let encrypted = Array(data.suffix(from: ivLength + tagLength))
+            
+            let encryptionResult = EncryptionResult(
+                encrypted: encrypted,
+                initializationVector: iv,
+                tag: tag
+            )
+            
+            do {
+                return try await crypto.decrypt(encryptionResult, using: key)
+            } catch {
+                throw SecurityError.cryptoError("Decryption failed: \(error.localizedDescription)")
+            }
+        } else {
+            throw SecurityError.operationFailed("Decryption not available without CryptoService")
+        }
+    }
+    
+    public func generateKey(length: Int) async throws -> [UInt8] {
+        guard state == .ready else {
+            throw ServiceError.invalidState("Security service not initialized")
+        }
+
+        return try await generateRandomBytes(count: length)
+    }
+    
+    public func hash(_ data: [UInt8]) async throws -> [UInt8] {
+        guard state == .ready else {
+            throw ServiceError.invalidState("Security service not initialized")
+        }
+        
+        // Since we don't have a direct hash function in CryptoService,
+        // we'll implement a basic hash using a key derivation function
+        if let crypto = cryptoService {
+            do {
+                // Convert data to a hex string for the password parameter
+                let hexString = data.map { String(format: "%02x", $0) }.joined()
+                
+                // Use a fixed salt for hashing
+                let salt = Array("UmbraSecurityHash".utf8)
+                
+                // Use the string-based deriveKey method
+                return try await crypto.deriveKey(from: hexString, salt: salt)
+            } catch {
+                throw SecurityError.cryptoError("Hashing failed: \(error.localizedDescription)")
+            }
+        } else {
+            throw SecurityError.operationFailed("Hashing not available without CryptoService")
+        }
+    }
+    
+    // MARK: - Foundation Data Methods
+    
+    public func encryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data {
+        let result = try await encrypt([UInt8](data), key: [UInt8](key))
+        return Data(result)
+    }
+    
+    public func decryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data {
+        let result = try await decrypt([UInt8](data), key: [UInt8](key))
+        return Data(result)
+    }
+    
+    public func generateDataKey(length: Int) async throws -> Foundation.Data {
+        let result = try await generateKey(length: length)
+        return Data(result)
+    }
+    
+    public func hashData(_ data: Foundation.Data) async throws -> Foundation.Data {
+        let result = try await hash([UInt8](data))
+        return Data(result)
     }
 }

@@ -6,6 +6,7 @@ import SecurityInterfaces
 import SecurityTypes
 import SecurityUtils
 import UmbraLogging
+import UmbraSecurityUtils
 
 /// A service that manages security-scoped resource access and bookmarks
 @MainActor
@@ -15,10 +16,16 @@ public final class SecurityService {
 
     private var activeSecurityScopedResources: Set<String>
     private var bookmarks: [String: [UInt8]] = [:]
+    
+    // Services
+    private let bookmarkService: UmbraSecurityUtils.SecurityBookmarkService
+    private let securityProvider: any SecurityProvider
 
     /// Initialize a new SecurityService instance
     private init() {
         self.activeSecurityScopedResources = []
+        self.bookmarkService = UmbraSecurityUtils.SecurityBookmarkService()
+        self.securityProvider = DefaultSecurityProvider()
     }
 
     // MARK: - SecurityProvider Protocol

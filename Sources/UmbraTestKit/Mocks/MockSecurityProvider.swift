@@ -1,5 +1,5 @@
 import Foundation
-import SecurityTypes
+import SecurityInterfaces
 import SecurityTypesProtocols
 
 /// Mock implementation of security provider for testing
@@ -14,7 +14,7 @@ public actor MockSecurityProvider: SecurityProvider {
 
     public func createBookmark(forPath path: String) async throws -> [UInt8] {
         guard !bookmarks.keys.contains(path) else {
-            throw SecurityTypes.SecurityError.bookmarkError("Bookmark already exists for path: \(path)")
+            throw SecurityError.bookmarkError("Bookmark already exists for path: \(path)")
         }
         let bookmark = Array("mock-bookmark-\(path)".utf8)
         bookmarks[path] = bookmark
@@ -24,14 +24,14 @@ public actor MockSecurityProvider: SecurityProvider {
     public func resolveBookmark(_ bookmark: [UInt8]) async throws -> (path: String, isStale: Bool) {
         let bookmarkString = String(bytes: bookmark, encoding: .utf8) ?? ""
         guard bookmarkString.hasPrefix("mock-bookmark-") else {
-            throw SecurityTypes.SecurityError.bookmarkError("Invalid bookmark format")
+            throw SecurityError.bookmarkError("Invalid bookmark format")
         }
         let path = String(bookmarkString.dropFirst("mock-bookmark-".count))
         guard bookmarks[path] == bookmark else {
-            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found for path: \(path)")
+            throw SecurityError.bookmarkError("Bookmark not found for path: \(path)")
         }
         accessedPaths.insert(path)
-        return (path: path, isStale: false)
+        return (path, false)
     }
 
     public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
@@ -40,6 +40,9 @@ public actor MockSecurityProvider: SecurityProvider {
     }
 
     public func startAccessing(path: String) async throws -> Bool {
+        guard !path.isEmpty else {
+            throw SecurityError.invalidData(reason: "Empty path")
+        }
         accessedPaths.insert(path)
         return true
     }
@@ -52,6 +55,10 @@ public actor MockSecurityProvider: SecurityProvider {
         return accessedPaths.contains(path)
     }
 
+    public func getAccessedPaths() async -> Set<String> {
+        accessedPaths
+    }
+
     public func stopAccessingAllResources() async {
         accessedPaths.removeAll()
     }
@@ -62,7 +69,7 @@ public actor MockSecurityProvider: SecurityProvider {
     ) async throws -> T {
         let granted = try await startAccessing(path: path)
         guard granted else {
-            throw SecurityTypes.SecurityError.accessError("Failed to access \(path)")
+            throw SecurityError.accessError("Failed to access \(path)")
         }
         defer { Task { await stopAccessing(path: path) } }
         return try await operation()
@@ -76,72 +83,73 @@ public actor MockSecurityProvider: SecurityProvider {
 
     public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
         guard let bookmarkData = bookmarks[identifier] else {
-            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
+            throw SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
         }
         return bookmarkData
     }
 
     public func deleteBookmark(withIdentifier identifier: String) async throws {
         guard bookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityTypes.SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
+            throw SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
         }
     }
 
-    // Test helper methods
-    public func getAccessedPaths() async -> Set<String> {
-        accessedPaths
-    }
+    // MARK: - Encryption
 
-    /// Simple XOR-based encryption for testing
     public func encrypt(data: Data, key: String) async throws -> Data {
         guard !key.isEmpty else {
-            throw SecurityTypes.SecurityError.cryptoError("Empty encryption key")
+            throw SecurityError.cryptoError("Empty encryption key")
         }
-
-        let keyData = Data(key.utf8)
+        
+        guard let keyData = key.data(using: .utf8) else {
+            throw SecurityError.cryptoError("Invalid key encoding")
+        }
+        
         return try xorCrypt(data: data, key: keyData)
     }
 
-    /// Simple XOR-based decryption for testing
     public func decrypt(data: Data, key: String) async throws -> Data {
         guard !key.isEmpty else {
-            throw SecurityTypes.SecurityError.cryptoError("Empty decryption key")
+            throw SecurityError.cryptoError("Empty decryption key")
         }
-
-        let keyData = Data(key.utf8)
+        
+        guard let keyData = key.data(using: .utf8) else {
+            throw SecurityError.cryptoError("Invalid key encoding")
+        }
+        
         return try xorCrypt(data: data, key: keyData)
     }
 
-    /// Encrypt data with a custom key
     public func encrypt(data: Data, key: Data) async throws -> Data {
         guard !key.isEmpty else {
-            throw SecurityTypes.SecurityError.cryptoError("Empty encryption key")
+            throw SecurityError.cryptoError("Empty encryption key")
         }
 
         return try xorCrypt(data: data, key: key)
     }
 
-    /// Decrypt data with a custom key
     public func decrypt(data: Data, key: Data) async throws -> Data {
         guard !key.isEmpty else {
-            throw SecurityTypes.SecurityError.cryptoError("Empty decryption key")
+            throw SecurityError.cryptoError("Empty decryption key")
         }
 
         return try xorCrypt(data: data, key: key)
     }
 
-    // Helper method to perform XOR encryption/decryption
+    // MARK: - Private Helpers
+
     private func xorCrypt(data: Data, key: Data) throws -> Data {
         guard !key.isEmpty else {
-            throw SecurityTypes.SecurityError.cryptoError("Empty key")
+            throw SecurityError.cryptoError("Empty key")
         }
 
         var result = Data(count: data.count)
         for i in 0..<data.count {
             let keyByte = key[i % key.count]
-            result[i] = data[i] ^ keyByte
+            let dataByte = data[i]
+            result[i] = dataByte ^ keyByte
         }
-
+        
         return result
     }
 }

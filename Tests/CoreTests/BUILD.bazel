@@ -1,6 +1,7 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+load("//:bazel/macros/swift.bzl", "umbra_swift_test")
 
-swift_test(
+umbra_swift_test(
     name = "CoreTests",
     size = "small",
     timeout = "short",
@@ -10,14 +11,6 @@ swift_test(
         "SecurityTests.swift",
         "ServiceTests.swift",
     ],
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-enable-testing",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
     linkopts = [
         "-target",
         "arm64-apple-macos14.0",
@@ -26,8 +19,10 @@ swift_test(
     tags = ["unit"],
     deps = [
         "//Sources/Core",
+        "//Sources/CoreTypes",
         "//Sources/ResticCLIHelper",
         "//Sources/SecurityUtils",
+        "//Sources/Services",
         "//Sources/UmbraCryptoService",
         "//Sources/UmbraKeychainService",
     ],

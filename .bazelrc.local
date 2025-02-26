@@ -23,6 +23,6 @@ build --worker_max_instances=8
 build --worker_max_multiplex_instances=2
 
 # UI and performance settings
-build --experimental_spawn_scheduler
+# build --experimental_spawn_scheduler
 build --experimental_profile_include_primary_output
 build --ui_actions_shown=16

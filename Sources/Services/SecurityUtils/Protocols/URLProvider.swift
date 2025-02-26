@@ -1,5 +1,6 @@
 import Foundation
-import SecurityTypes
+import SecurityInterfaces
+import UmbraSecurity
 
 /// Protocol for URL-based operations
 public protocol URLProvider: Sendable {
@@ -30,63 +31,63 @@ public protocol URLProvider: Sendable {
     /// - Returns: True if the path is being accessed, false otherwise
     func isAccessing(path: String) async -> Bool
 
-    /// Gets all paths currently being accessed
-    /// - Returns: Array of paths currently being accessed
-    func getAccessedPaths() async -> [String]
+    /// Get all paths that are currently being accessed
+    /// - Returns: Set of paths that are currently being accessed
+    func getAccessedPaths() async -> Set<String>
+
+    /// Stop accessing all resources
+    func stopAccessingAllResources() async
 }
 
 /// Default implementation of URLProvider using Foundation
-public actor PathURLProvider: URLProvider {
-    public init() {}
-
+extension URLProvider {
     public func createBookmark(forPath path: String) async throws -> Data {
         guard let url = URL(string: path) else {
-            throw SecurityError.invalidData(reason: "Invalid path: \(path)")
+            throw SecurityError.operationFailed("Invalid path: \(path)")
         }
-
-        return try url.bookmarkData(
-            options: .withSecurityScope,
-            includingResourceValuesForKeys: nil,
-            relativeTo: nil
-        )
+        
+        return try await url.us_createSecurityScopedBookmark()
     }
 
     public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        var isStale = false
-        let url = try URL(
-            resolvingBookmarkData: Data(bookmarkData),
-            options: .withSecurityScope,
-            relativeTo: nil,
-            bookmarkDataIsStale: &isStale
-        )
+        let data = Data(bookmarkData)
+        let (url, isStale) = try await URL.us_resolveSecurityScopedBookmark(data)
         return (url.path, isStale)
+    }
+
+    public func stopAccessing(path: String) async {
+        guard let url = URL(string: path) else {
+            return
+        }
+        
+        url.us_stopAccessingSecurityScopedResource()
+    }
+
+    public func isAccessing(path: String) async -> Bool {
+        // This is a placeholder implementation
+        // Foundation doesn't provide a direct way to check if a URL is being accessed
+        false
     }
 
     public func startAccessing(path: String) async throws -> Bool {
         guard let url = URL(string: path) else {
-            throw SecurityError.invalidData(reason: "Invalid path: \(path)")
+            throw SecurityError.operationFailed("Invalid path: \(path)")
         }
-
-        if url.startAccessingSecurityScopedResource() {
+        
+        if url.us_startAccessingSecurityScopedResource() {
             return true
         } else {
-            throw SecurityError.accessDenied(reason: "Failed to access: \(path)")
+            throw SecurityError.accessError("Failed to access: \(path)")
         }
     }
 
-    public func stopAccessing(path: String) async {
-        guard let url = URL(string: path) else { return }
-        url.stopAccessingSecurityScopedResource()
+    public func getAccessedPaths() async -> Set<String> {
+        // For now, just return an empty set
+        Set<String>()
     }
 
-    public func isAccessing(path: String) async -> Bool {
-        // Check if the path exists and is readable
-        guard let url = URL(string: path) else { return false }
-        return url.startAccessingSecurityScopedResource()
-    }
-
-    public func getAccessedPaths() async -> [String] {
-        // For now, just return an empty array
-        []
+    public func stopAccessingAllResources() async {
+        // Default implementation does nothing
+        // Subclasses should override this if they track accessed resources
     }
 }
