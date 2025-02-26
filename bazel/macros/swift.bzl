@@ -27,6 +27,7 @@ def umbra_swift_library(
         "-strict-concurrency=complete",
         "-enable-actor-data-race-checks",
         "-warn-concurrency",
+        "-enable-testing",
     ] + additional_copts
 
     swift_library(
