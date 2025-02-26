@@ -1,7 +1,8 @@
 import Core
 import CoreServices
-@preconcurrency import CoreServicesTypes
+import CoreServicesTypes
 import Foundation
+import SecurityInterfaces
 import SecurityTypes
 import SecurityUtils
 import UmbraLogging

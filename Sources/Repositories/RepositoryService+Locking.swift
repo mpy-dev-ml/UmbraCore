@@ -31,9 +31,8 @@ extension RepositoryService {
                 await logger.debug("Repository unlocked successfully", metadata: repoMetadata)
             } catch {
                 await logger.error(
-                    "Failed to unlock repository",
-                    metadata: repoMetadata,
-                    error: error
+                    "Failed to unlock repository: \(error.localizedDescription)",
+                    metadata: repoMetadata
                 )
                 errors[identifier] = error
 
@@ -79,9 +78,8 @@ extension RepositoryService {
             await logger.info("Repository unlocked successfully", metadata: metadata)
         } catch {
             await logger.error(
-                "Failed to unlock repository",
-                metadata: metadata,
-                error: error
+                "Failed to unlock repository: \(error.localizedDescription)",
+                metadata: metadata
             )
             throw RepositoryError.operationFailed(
                 reason: "Failed to unlock repository: \(error.localizedDescription)"

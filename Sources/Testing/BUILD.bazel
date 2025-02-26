@@ -1,0 +1,16 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+umbra_swift_library(
+    name = "Testing",
+    srcs = glob(["*.swift"]),
+    deps = [
+        "//Sources/ErrorHandling",
+        # Temporarily commented out due to swift-syntax dependency issues
+        # "//Sources/TestingMacros",
+        "//Sources/UmbraLogging",
+        # Temporarily commented out due to swift-syntax dependency issues
+        # "@swiftpkg_swift_syntax//:SwiftSyntax",
+        # "@swiftpkg_swift_syntax//:SwiftSyntaxMacros",
+    ],
+)

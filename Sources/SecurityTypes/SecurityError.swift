@@ -1,6 +1,9 @@
 import Foundation
+import SecurityInterfaces
 
 /// Errors that can occur during security operations
+/// This is a compatibility layer for the new SecurityInterfaces.SecurityError
+@available(*, deprecated, message: "Use SecurityInterfaces.SecurityError instead")
 public enum SecurityError: LocalizedError {
     /// Error creating or resolving a bookmark
     case bookmarkError(String)

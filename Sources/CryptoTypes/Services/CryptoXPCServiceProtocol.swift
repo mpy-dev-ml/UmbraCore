@@ -17,10 +17,10 @@ import XPC
 
     /// Deletes a credential from the system keychain
     func deleteCredential(forIdentifier identifier: String) async throws
-    
+
     /// Encrypts data using the specified key
     func encrypt(_ data: Data, key: Data) async throws -> Data
-    
+
     /// Decrypts data using the specified key
     func decrypt(_ data: Data, key: Data) async throws -> Data
 }

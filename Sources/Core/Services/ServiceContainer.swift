@@ -1,5 +1,8 @@
-import Foundation
+import CoreServicesSecurityTypeAliases
+import CoreServicesTypeAliases
 import CoreServicesTypes
+import CoreTypes
+import Foundation
 
 /// Thread-safe container for managing service instances and their dependencies.
 public actor ServiceContainer {
@@ -7,7 +10,7 @@ public actor ServiceContainer {
     public static let shared = ServiceContainer()
 
     /// XPC connection for inter-process communication
-    public private(set) var xpcConnection: CoreServicesTypes.XPCServiceProtocol?
+    public private(set) var xpcConnection: XPCServiceProtocolBase?
 
     /// Registered services keyed by their identifiers.
     private var services: [String: any UmbraService]
@@ -28,7 +31,7 @@ public actor ServiceContainer {
 
     /// Set the XPC connection
     /// - Parameter connection: The XPC connection to use
-    public func setXPCConnection(_ connection: CoreServicesTypes.XPCServiceProtocol) {
+    public func setXPCConnection(_ connection: XPCServiceProtocolBase) {
         xpcConnection = connection
     }
 

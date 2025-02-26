@@ -48,11 +48,11 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
         Task { @MainActor in
             // Configure the connection
             let interface = NSXPCInterface(with: CryptoXPCServiceProtocol.self)
-            
+
             // Set up the connection interfaces
             connection.exportedInterface = interface
             connection.exportedObject = cryptoService
-            
+
             // Configure remote interface
             connection.remoteObjectInterface = NSXPCInterface(with: CryptoXPCServiceProtocol.self)
 

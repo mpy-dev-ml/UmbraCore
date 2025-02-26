@@ -1,5 +1,5 @@
-import Foundation
 import CoreServicesTypes
+import Foundation
 
 /// Protocol defining the base requirements for all UmbraCore services
 public protocol UmbraService: Actor {

@@ -1,6 +1,6 @@
+import FeaturesLoggingErrors
 import FeaturesLoggingModels
 import FeaturesLoggingProtocols
-import FeaturesLoggingErrors
 import Foundation
 import SecurityTypes
 import SwiftyBeaver

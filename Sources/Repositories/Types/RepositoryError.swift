@@ -27,6 +27,9 @@ public enum RepositoryError: LocalizedError, Equatable, Sendable, Codable {
     /// Repository validation failed.
     case validationFailed(reason: String)
 
+    /// Repository health check failed.
+    case healthCheckFailed(reason: String)
+
     /// The error description.
     public var errorDescription: String? {
         switch self {
@@ -46,6 +49,8 @@ public enum RepositoryError: LocalizedError, Equatable, Sendable, Codable {
             return "Repository maintenance failed: \(reason)"
         case .validationFailed(let reason):
             return "Repository validation failed: \(reason)"
+        case .healthCheckFailed(let reason):
+            return "Repository health check failed: \(reason)"
         }
     }
 
@@ -56,7 +61,8 @@ public enum RepositoryError: LocalizedError, Equatable, Sendable, Codable {
              .invalidConfiguration(let reason),
              .operationFailed(let reason),
              .maintenanceFailed(let reason),
-             .validationFailed(let reason):
+             .validationFailed(let reason),
+             .healthCheckFailed(let reason):
             return reason
         case .notFound(let identifier):
             return identifier
@@ -82,6 +88,8 @@ public enum RepositoryError: LocalizedError, Equatable, Sendable, Codable {
         case .maintenanceFailed:
             return "Retry the maintenance operation or check logs for more details"
         case .validationFailed:
+            return "Check repository configuration and data for errors"
+        case .healthCheckFailed:
             return "Check repository configuration and data for errors"
         }
     }
@@ -122,6 +130,9 @@ public enum RepositoryError: LocalizedError, Equatable, Sendable, Codable {
         case .validationFailed(let reason):
             try container.encode("validationFailed", forKey: .type)
             try container.encode(reason, forKey: .reason)
+        case .healthCheckFailed(let reason):
+            try container.encode("healthCheckFailed", forKey: .type)
+            try container.encode(reason, forKey: .reason)
         }
     }
 
@@ -153,6 +164,9 @@ public enum RepositoryError: LocalizedError, Equatable, Sendable, Codable {
         case "validationFailed":
             let reason = try container.decode(String.self, forKey: .reason)
             self = .validationFailed(reason: reason)
+        case "healthCheckFailed":
+            let reason = try container.decode(String.self, forKey: .reason)
+            self = .healthCheckFailed(reason: reason)
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: .type,

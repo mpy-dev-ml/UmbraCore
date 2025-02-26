@@ -34,7 +34,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
 
     /// Queue for cryptographic operations
     private let cryptoQueue = DispatchQueue(label: "com.umbracore.crypto", qos: .userInitiated)
-    
+
     /// XPC connection for the service
     var connection: NSXPCConnection?
 
@@ -115,27 +115,27 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
     /// - Throws: Error if bit length is invalid
     public func generateKey(bits: Int) async throws -> Data {
         try Task.checkCancellation()
-        
+
         guard bits == 128 || bits == 256 else {
             throw XPCError.invalidRequest(message: "Key size must be 128 or 256 bits")
         }
-        
+
         // Convert bits to bytes
         let bytes = bits / 8
         return Data.random(count: bytes)
     }
-    
+
     /// Generates a random salt of the specified length
     /// - Parameter length: Length in bytes
     /// - Returns: Generated salt data
     /// - Throws: Error if length is invalid
     public func generateSalt(length: Int) async throws -> Data {
         try Task.checkCancellation()
-        
+
         guard length > 0 && length <= 64 else {
             throw XPCError.invalidRequest(message: "Salt length must be between 1 and 64 bytes")
         }
-        
+
         return Data.random(count: length)
     }
 

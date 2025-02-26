@@ -1,0 +1,14 @@
+
+=== PHASE SUMMARY INFORMATION ===
+
+Total launch phase time                              0.080 s   19.92%
+Total init phase time                                0.194 s   48.51%
+Total target pattern evaluation phase time           0.052 s   13.16%
+Total interleaved loading, analysis and execution phase time    0.071 s   17.79%
+Total finish phase time                              0.002 s    0.62%
+---------------------------------------------------------------------
+Total run time                                       0.401 s  100.00%
+
+Critical path (34.4 ms):
+       Time Percentage   Description
+    34.4 ms  100.00%   action 'BazelWorkspaceStatusAction stable-status.txt'

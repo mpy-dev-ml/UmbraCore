@@ -1,5 +1,5 @@
-import Foundation
 import CoreServicesTypes
+import Foundation
 // CryptoKit removed - cryptography will be handled in ResticBar
 
 /// Configuration options for cryptographic operations.
@@ -230,5 +230,25 @@ public actor CryptoService: UmbraService {
 
         // Placeholder implementation - will be replaced by ResticBar
         throw CryptoError.keyDerivationFailed
+    }
+
+    /// Generates secure random bytes for cryptographic operations.
+    ///
+    /// - Parameter length: The number of bytes to generate.
+    /// - Returns: Random bytes as Data.
+    /// - Throws: `CryptoError` on failure.
+    public func generateSecureRandomBytes(length: Int) async throws -> Data {
+        guard _state == .ready else {
+            throw ServiceError.invalidState("Service not ready")
+        }
+
+        var bytes = [UInt8](repeating: 0, count: length)
+        let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+
+        guard status == errSecSuccess else {
+            throw CryptoError.randomGenerationFailed
+        }
+
+        return Data(bytes)
     }
 }

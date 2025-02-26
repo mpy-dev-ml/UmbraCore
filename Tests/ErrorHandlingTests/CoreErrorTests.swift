@@ -53,8 +53,8 @@ struct TestServiceError: ServiceErrorProtocol {
     let message: String
     var severity: ErrorSeverity = .error
     var isRecoverable: Bool = false
-    var recoverySteps: [String]? = nil
-    var errorContext: ErrorContext? = nil
+    var recoverySteps: [String]?
+    var errorContext: ErrorContext?
 
     var category: String { errorType.rawValue }
     var description: String { "[\(severity.rawValue.uppercased())] \(errorType.description): \(message)" }

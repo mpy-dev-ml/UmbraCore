@@ -21,10 +21,9 @@ swift_deps.from_package(
     resolved = "//:Package.resolved",
     swift = "//:Package.swift",
 )
-
 use_repo(
     swift_deps,
     "swift_package",
     "swiftpkg_cryptoswift",
-    "swiftpkg_swiftybeaver"
+    "swiftpkg_swiftybeaver",
 )

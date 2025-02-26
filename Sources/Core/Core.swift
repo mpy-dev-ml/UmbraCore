@@ -108,7 +108,7 @@ public enum Core {
             // Initialize essential services
             // Commented out until ServiceContainer is implemented
             // try await ServiceContainer.shared.initialize()
-            
+
             // Mark framework as initialized
             isInitialized = true
         } catch {

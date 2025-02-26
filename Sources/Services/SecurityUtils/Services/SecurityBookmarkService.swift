@@ -44,15 +44,15 @@ public actor SecurityBookmarkService {
     public func resolveBookmark(_ bookmarkData: Data) async throws -> URL {
         var isStale = false
         let options: NSURL.BookmarkResolutionOptions = [.withSecurityScope, .withoutUI]
-        
+
         do {
             let url = try URL(resolvingBookmarkData: bookmarkData, options: options, relativeTo: nil, bookmarkDataIsStale: &isStale)
-            
+
             if isStale {
                 // Log warning but continue with the stale bookmark
                 print("Warning: Bookmark is stale for \(url.path)")
             }
-            
+
             return url
         } catch {
             throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")

@@ -1,0 +1,26 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -showBuildSettings
+
+User defaults from command line:
+    IDEPackageSupportUseBuiltinSCM = YES
+
+Resolve Package Graph
+
+Fetching from https://github.com/krzyzanowskim/CryptoSwift.git
+
+Fetching from https://github.com/SwiftyBeaver/SwiftyBeaver.git
+
+Creating working copy of package ‘SwiftyBeaver’
+
+Checking out 2.1.1 of package ‘SwiftyBeaver’
+
+Creating working copy of package ‘CryptoSwift’
+
+Checking out 1.8.4 of package ‘CryptoSwift’
+
+
+Resolved source packages:
+  UmbraCore: /Users/mpy/CascadeProjects/UmbraCore
+  CryptoSwift: https://github.com/krzyzanowskim/CryptoSwift.git @ 1.8.4
+  SwiftyBeaver: https://github.com/SwiftyBeaver/SwiftyBeaver.git @ 2.1.1
+

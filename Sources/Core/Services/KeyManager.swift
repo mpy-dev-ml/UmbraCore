@@ -1,6 +1,6 @@
+import CoreServicesTypes
 import CryptoSwift
 import Foundation
-@preconcurrency import CoreServicesTypes
 import UmbraXPC
 
 /// Represents the type of cryptographic implementation to use
@@ -65,7 +65,7 @@ public struct KeyValidationResult: Sendable {
     public let isValid: Bool
     /// Reason for validation failure, if any
     public let failureReason: String?
-    
+
     /// Initialize a new key validation result
     /// - Parameters:
     ///   - isValid: Whether the key is valid
@@ -168,12 +168,12 @@ public actor KeyManager {
             if metadata.status == .compromised {
                 return KeyValidationResult(isValid: false, failureReason: "Key has been marked as compromised")
             }
-            
+
             // Check if key has been marked as retired
             if metadata.status == .retired {
                 return KeyValidationResult(isValid: false, failureReason: "Key has been retired")
             }
-            
+
             // Check if key has expired
             if let expiryDate = metadata.expiryDate,
                expiryDate < Date() {
@@ -204,9 +204,8 @@ public actor KeyManager {
             throw KeyManagerError.synchronisationError("XPC connection not available or invalid type")
         }
 
-        // Prepare sync data
-        let encoder = JSONEncoder()
-        let syncData = try encoder.encode(keyMetadata)
+        // Create JSON object with sync data
+        let syncData = try await createKeySyncData()
 
         // Send synchronisation request through XPC
         try await xpcConnection.synchroniseKeys(syncData)
@@ -258,6 +257,12 @@ public actor KeyManager {
         // Check if the key is stored in the secure enclave
         guard let metadata = keyMetadata[id] else { return false }
         return metadata.storageLocation == .secureEnclave
+    }
+
+    private func createKeySyncData() async throws -> Data {
+        // Simple encoding of the key metadata for synchronization
+        let encoder = JSONEncoder()
+        return try encoder.encode(keyMetadata)
     }
 }
 
@@ -377,22 +382,6 @@ public struct SecurityPolicy: Sendable {
     public static var current: SecurityPolicy {
         // Implement current security policy
         return SecurityPolicy()
-    }
-}
-
-public struct KeySyncData: Sendable {
-    public let keys: [KeyIdentifier: [UInt8]]
-    public let metadata: [KeyIdentifier: KeyMetadata]
-    public let implementations: [KeyIdentifier: CryptoImplementation]
-
-    public init(
-        keys: [KeyIdentifier: [UInt8]],
-        metadata: [KeyIdentifier: KeyMetadata],
-        implementations: [KeyIdentifier: CryptoImplementation]
-    ) {
-        self.keys = keys
-        self.metadata = metadata
-        self.implementations = implementations
     }
 }
 

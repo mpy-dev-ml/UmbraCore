@@ -97,51 +97,51 @@ public actor MockSecurityProvider: SecurityProvider {
         guard !key.isEmpty else {
             throw SecurityTypes.SecurityError.cryptoError("Empty encryption key")
         }
-        
+
         let keyData = Data(key.utf8)
         return try xorCrypt(data: data, key: keyData)
     }
-    
+
     /// Simple XOR-based decryption for testing
     public func decrypt(data: Data, key: String) async throws -> Data {
         guard !key.isEmpty else {
             throw SecurityTypes.SecurityError.cryptoError("Empty decryption key")
         }
-        
+
         let keyData = Data(key.utf8)
         return try xorCrypt(data: data, key: keyData)
     }
-    
+
     /// Encrypt data with a custom key
     public func encrypt(data: Data, key: Data) async throws -> Data {
         guard !key.isEmpty else {
             throw SecurityTypes.SecurityError.cryptoError("Empty encryption key")
         }
-        
+
         return try xorCrypt(data: data, key: key)
     }
-    
+
     /// Decrypt data with a custom key
     public func decrypt(data: Data, key: Data) async throws -> Data {
         guard !key.isEmpty else {
             throw SecurityTypes.SecurityError.cryptoError("Empty decryption key")
         }
-        
+
         return try xorCrypt(data: data, key: key)
     }
-    
+
     // Helper method to perform XOR encryption/decryption
     private func xorCrypt(data: Data, key: Data) throws -> Data {
         guard !key.isEmpty else {
             throw SecurityTypes.SecurityError.cryptoError("Empty key")
         }
-        
+
         var result = Data(count: data.count)
         for i in 0..<data.count {
             let keyByte = key[i % key.count]
             result[i] = data[i] ^ keyByte
         }
-        
+
         return result
     }
 }

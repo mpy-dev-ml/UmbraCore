@@ -77,10 +77,10 @@ public actor MockRepository: RepositoryCore & RepositoryLocking & RepositoryMain
         guard state == .ready else {
             throw RepositoryError.operationFailed(reason: "Repository must be ready to check")
         }
-        
+
         // Simulate a repository check
         // In a real implementation, this would scan the repository
-        
+
         return mockStats
     }
 
@@ -102,10 +102,10 @@ public actor MockRepository: RepositoryCore & RepositoryLocking & RepositoryMain
         guard state == .ready else {
             throw RepositoryError.operationFailed(reason: "Repository must be ready to repair")
         }
-        
+
         // Simulate a repository repair
         // In a real implementation, this would repair any issues found
-        
+
         return true // Simulate successful repair
     }
 

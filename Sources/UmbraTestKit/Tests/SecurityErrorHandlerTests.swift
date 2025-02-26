@@ -15,15 +15,15 @@ public class SecurityErrorHandler {
     private var lastErrorTimes: [String: Date] = [:]
     private let maxRetries = 3
     private let rapidFailureThreshold: TimeInterval = 5.0 // seconds
-    
+
     public init() {}
-    
+
     public func handleError(_ error: SecurityTypes.SecurityError, context: String) -> Bool {
         let key = "\(context):\(error)"
         let currentCount = errorCounts[key] ?? 0
         errorCounts[key] = currentCount + 1
         lastErrorTimes[context] = Date()
-        
+
         // Allow retries for certain errors
         switch error {
         case .bookmarkError, .accessError:
@@ -34,31 +34,31 @@ public class SecurityErrorHandler {
             return false
         }
     }
-    
+
     public func resetErrorCounts() {
         errorCounts.removeAll()
         lastErrorTimes.removeAll()
     }
-    
+
     public func isRapidlyFailing(_ context: String) -> Bool {
         guard let lastTime = lastErrorTimes[context] else {
             return false
         }
-        
+
         // Check if we've had multiple errors in a short time period
         let errorCount = errorCounts.filter { $0.key.hasPrefix("\(context):") }.values.reduce(0, +)
         let timeSinceLastError = Date().timeIntervalSince(lastTime)
-        
+
         return errorCount > 1 && timeSinceLastError < rapidFailureThreshold
     }
-    
+
     public func getErrorStats() -> ErrorStats {
         let totalErrors = errorCounts.values.reduce(0, +)
         let contexts = Set(errorCounts.keys.compactMap { key -> String? in
             let components = key.split(separator: ":")
             return components.first.map { String($0) }
         })
-        
+
         return ErrorStats(totalErrors: totalErrors, uniqueContexts: contexts)
     }
 }

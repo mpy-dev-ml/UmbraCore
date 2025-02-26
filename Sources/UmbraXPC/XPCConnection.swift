@@ -73,12 +73,12 @@ public enum XPCError: LocalizedError, Sendable {
     ///
     /// - Parameter reason: A description of what made the message invalid.
     case invalidMessage(String)
-    
+
     /// The request is invalid.
     ///
     /// - Parameter message: A description of why the request is invalid.
     case invalidRequest(message: String)
-    
+
     /// The data is invalid.
     ///
     /// - Parameter message: A description of why the data is invalid.
