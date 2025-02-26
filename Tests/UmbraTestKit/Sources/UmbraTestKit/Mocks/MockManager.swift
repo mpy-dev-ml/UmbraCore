@@ -1,66 +1,84 @@
 import Foundation
 
 /// Protocol for objects that can be reset to their initial state
-public protocol Resettable {
+@preconcurrency
+public protocol Resettable: AnyObject, Sendable {
     /// Reset the object to its initial state
-    func reset()
+    func reset() async
 }
 
 /// Manager for mock objects used in tests
+@MainActor
 public final class MockManager {
-    /// Shared instance of the mock manager
+    /// Shared instance of the MockManager
     public static let shared = MockManager()
+    
+    /// Dictionary of registered mocks
+    private var registeredMocks: [String: any (Resettable & Sendable)] = [:]
     
     /// Private initializer to enforce singleton pattern
     private init() {}
     
-    /// Dictionary of registered mocks
-    private var registeredMocks: [String: Resettable] = [:]
+    /// Register a mock object
+    ///
+    /// - Parameter mock: The mock object to register
+    public func register(_ mock: any (Resettable & Sendable)) {
+        let name = String(describing: type(of: mock))
+        registeredMocks[name] = mock
+    }
     
-    /// Register a mock with the manager
+    /// Register a mock object with a specific name
+    ///
     /// - Parameters:
     ///   - mock: The mock object to register
-    ///   - name: Optional name for the mock, defaults to the type name
-    public func register<T: Resettable>(_ mock: T, name: String? = nil) {
-        let key = name ?? String(describing: type(of: mock))
-        registeredMocks[key] = mock
+    ///   - name: The name to register the mock with
+    public func register(_ mock: any (Resettable & Sendable), name: String) {
+        registeredMocks[name] = mock
     }
     
-    /// Get a registered mock by type
-    /// - Parameter type: The type of the mock to retrieve
-    /// - Returns: The registered mock of the specified type, or nil if not found
-    public func mock<T: Resettable>(ofType type: T.Type) -> T? {
-        let key = String(describing: type)
-        return registeredMocks[key] as? T
+    /// Get a mock object by type
+    ///
+    /// - Parameter type: The type of the mock to get
+    /// - Returns: The mock object, or nil if not found
+    public func mock<T: Resettable & Sendable>(ofType type: T.Type) -> T? {
+        let name = String(describing: type)
+        return registeredMocks[name] as? T
     }
     
-    /// Get a registered mock by name
-    /// - Parameter name: The name of the mock to retrieve
-    /// - Returns: The registered mock with the specified name, or nil if not found
-    public func mock(named name: String) -> Resettable? {
+    /// Get a mock object by name
+    ///
+    /// - Parameter name: The name of the mock to get
+    /// - Returns: The mock object, or nil if not found
+    public func mock(named name: String) -> (any (Resettable & Sendable))? {
         return registeredMocks[name]
     }
     
     /// Reset all registered mocks
-    public func resetAll() {
-        for mock in registeredMocks.values {
-            mock.reset()
+    public func resetAll() async {
+        // Make a copy of the mocks to avoid concurrent access issues
+        let mocks = Array(registeredMocks.values)
+        
+        // Reset each mock outside of the actor context
+        for mock in mocks {
+            await mock.reset()
         }
     }
     
-    /// Reset a specific mock by type
+    /// Reset a mock object by type
+    ///
     /// - Parameter type: The type of the mock to reset
-    public func reset<T: Resettable>(mockOfType type: T.Type) {
+    public func reset<T: Resettable & Sendable>(mockOfType type: T.Type) async {
         if let mock = mock(ofType: type) {
-            mock.reset()
+            await mock.reset()
         }
     }
     
-    /// Reset a specific mock by name
+    /// Reset a mock object by name
+    ///
     /// - Parameter name: The name of the mock to reset
-    public func reset(mockNamed name: String) {
+    public func reset(mockNamed name: String) async {
         if let mock = mock(named: name) {
-            mock.reset()
+            await mock.reset()
         }
     }
 }

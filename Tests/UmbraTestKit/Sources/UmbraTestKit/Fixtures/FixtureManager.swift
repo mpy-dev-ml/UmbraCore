@@ -13,6 +13,7 @@ public protocol TestFixture {
 }
 
 /// Manager for test fixtures
+@MainActor
 public final class FixtureManager {
     /// Shared instance of the fixture manager
     public static let shared = FixtureManager()

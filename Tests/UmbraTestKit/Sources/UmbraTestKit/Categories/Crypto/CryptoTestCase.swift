@@ -1,7 +1,6 @@
 import Foundation
 import XCTest
 import CryptoTypes
-import CryptoTypesProtocols
 
 /// Base test case for crypto-related tests
 open class CryptoTestCase: UmbraTestCase {
