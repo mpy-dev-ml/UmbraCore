@@ -5,7 +5,7 @@ import SecurityInterfacesCore
 /// Protocol defining Foundation-dependent security operations
 public protocol SecurityProviderFoundation: SecurityProvider {
     // MARK: - Foundation Data Methods
-    
+
     /// Encrypt Foundation.Data using the provider's encryption mechanism
     /// - Parameters:
     ///   - data: Data to encrypt
@@ -13,7 +13,7 @@ public protocol SecurityProviderFoundation: SecurityProvider {
     /// - Returns: Encrypted data
     /// - Throws: SecurityError if encryption fails
     func encryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data
-    
+
     /// Decrypt Foundation.Data using the provider's decryption mechanism
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -21,19 +21,19 @@ public protocol SecurityProviderFoundation: SecurityProvider {
     /// - Returns: Decrypted data
     /// - Throws: SecurityError if decryption fails
     func decryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data
-    
+
     /// Generate a cryptographically secure random key as Foundation.Data
     /// - Parameter length: Length of the key in bytes
     /// - Returns: Generated key as Foundation.Data
     /// - Throws: SecurityError if key generation fails
     func generateDataKey(length: Int) async throws -> Foundation.Data
-    
+
     /// Hash Foundation.Data using the provider's hashing mechanism
     /// - Parameter data: Data to hash
     /// - Returns: Hash of the data as Foundation.Data
     /// - Throws: SecurityError if hashing fails
     func hashData(_ data: Foundation.Data) async throws -> Foundation.Data
-    
+
     // MARK: - Bookmark Management
 
     /// Create a security-scoped bookmark for a URL

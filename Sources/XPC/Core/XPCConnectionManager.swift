@@ -5,13 +5,13 @@ public actor XPCConnectionManager {
     /// Dictionary of connections marked as unchecked Sendable because NSXPCConnection is thread-safe
     /// for invalidation operations but doesn't conform to Sendable protocol
     private var connections: [String: NSXPCConnection] = [:]
-    
+
     /// Nonisolated collection of connections for use in deinit
     /// This is safe because:
     /// 1. NSXPCConnection is thread-safe for invalidation
     /// 2. We're only using this for thread-safe operations in deinit
     private nonisolated let deinitConnectionHandler = DeinitConnectionHandler()
-    
+
     private let serviceName: String
     private let interfaceProtocol: Protocol
 
@@ -60,7 +60,7 @@ public actor XPCConnectionManager {
 
         // Store the connection
         connections[serviceName] = connection
-        
+
         // Also store in our deinit handler
         deinitConnectionHandler.addConnection(connection)
 
@@ -91,7 +91,7 @@ public actor XPCConnectionManager {
         // Take a snapshot of the connections to avoid mutation during iteration
         let connectionsToInvalidate = connections
         connections.removeAll()
-        
+
         // Update deinit handler
         deinitConnectionHandler.removeAllConnections()
 
@@ -114,31 +114,31 @@ private final class DeinitConnectionHandler: @unchecked Sendable {
     // Using NSMutableSet for thread-safe operations
     private let connections = NSMutableSet()
     private let lock = NSLock()
-    
+
     func addConnection(_ connection: NSXPCConnection) {
         lock.lock()
         defer { lock.unlock() }
         connections.add(connection)
     }
-    
+
     func removeConnection(_ connection: NSXPCConnection) {
         lock.lock()
         defer { lock.unlock() }
         connections.remove(connection)
     }
-    
+
     func removeAllConnections() {
         lock.lock()
         defer { lock.unlock() }
         connections.removeAllObjects()
     }
-    
+
     func invalidateAllConnections() {
         lock.lock()
         let connectionsCopy = connections.copy() as! NSSet
         connections.removeAllObjects()
         lock.unlock()
-        
+
         for case let connection as NSXPCConnection in connectionsCopy {
             connection.invalidate()
         }

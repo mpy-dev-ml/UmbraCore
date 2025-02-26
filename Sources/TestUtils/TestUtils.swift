@@ -63,7 +63,7 @@ public enum TestUtils {
         timeout: TimeInterval = 5,
         interval: TimeInterval = 0.1,
         description: String,
-        condition: () async -> Bool
+        condition: () async throws -> Bool
     ) async throws {
         let start = Date()
         while !(try await condition()) {

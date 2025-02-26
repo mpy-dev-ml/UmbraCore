@@ -104,16 +104,12 @@ public enum Core {
         guard !isInitialized else {
             throw CoreError.initialisationError("Core framework is already initialised")
         }
-        do {
-            // Initialize essential services
-            // Commented out until ServiceContainer is implemented
-            // try await ServiceContainer.shared.initialize()
 
-            // Mark framework as initialized
-            isInitialized = true
-        } catch {
-            throw CoreError.initialisationError("Failed to initialise services: \(error.localizedDescription)")
-        }
+        // Mark framework as initialized
+        isInitialized = true
+
+        // Note: When ServiceContainer is implemented, add:
+        // try await ServiceContainer.shared.initialize()
     }
 }
 

@@ -1,6 +1,6 @@
+@testable import CoreTypes
 @testable import ErrorHandling
 @testable import ErrorHandlingModels
-@testable import CoreTypes
 import Testing
 
 final class CommonErrorTests {

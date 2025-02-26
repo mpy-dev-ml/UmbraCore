@@ -1,4 +1,5 @@
 import Foundation
+import SecurityInterfaces
 import SecurityTypes
 import SecurityUtilsProtocols
 
@@ -24,7 +25,7 @@ public actor SecurityBookmarkService {
 
         // Start accessing the resource before creating bookmark
         guard fileURL.startAccessingSecurityScopedResource() else {
-            throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
+            throw SecurityInterfaces.SecurityError.resourceAccessFailed(path: url.path)
         }
         defer { fileURL.stopAccessingSecurityScopedResource() }
 
@@ -55,7 +56,7 @@ public actor SecurityBookmarkService {
 
             return url
         } catch {
-            throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+            throw SecurityInterfaces.SecurityError.bookmarkResolutionFailed
         }
     }
 
@@ -74,7 +75,7 @@ public actor SecurityBookmarkService {
 
         // Start accessing the resource
         guard fileURL.startAccessingSecurityScopedResource() else {
-            throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
+            throw SecurityInterfaces.SecurityError.resourceAccessFailed(path: url.path)
         }
 
         // Track the active resource

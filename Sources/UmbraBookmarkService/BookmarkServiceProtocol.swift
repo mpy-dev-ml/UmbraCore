@@ -33,7 +33,6 @@ public protocol BookmarkServiceProtocol {
     /// - Parameter url: The URL of the resource to access
     /// - Throws: BookmarkError if access cannot be started
     @preconcurrency
-    @discardableResult
     func startAccessing(
         _ url: URL
     ) async throws
@@ -41,7 +40,6 @@ public protocol BookmarkServiceProtocol {
     /// Stop accessing a security-scoped resource
     /// - Parameter url: The URL of the resource to stop accessing
     @preconcurrency
-    @discardableResult
     func stopAccessing(
         _ url: URL
     ) async

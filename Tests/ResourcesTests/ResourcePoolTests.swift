@@ -1,7 +1,7 @@
-@testable import Resources
 import CoreTypes
-import ResourcesTypes
+@testable import Resources
 import ResourcesProtocols
+import ResourcesTypes
 import XCTest
 
 /// State manager for test resources
@@ -25,22 +25,22 @@ private actor TestResource: ResourcesProtocols.BasicManagedResource {
     nonisolated private let stateManager: TestResourceStateManager
     nonisolated var state: ResourcesProtocols.ResourceState { stateManager.state }
     static var resourceType: String { "test" }
-    
+
     private var error: Error?
-    
+
     init(id: String) {
         self.id = id
         self.stateManager = TestResourceStateManager(initialState: .uninitialized)
     }
-    
+
     func setError(_ error: Error) {
         self.error = error
     }
-    
+
     private func updateState(_ newState: ResourcesProtocols.ResourceState) {
         stateManager.state = newState
     }
-    
+
     func initialize() async throws {
         updateState(.initializing)
         if let error = error {
@@ -48,18 +48,18 @@ private actor TestResource: ResourcesProtocols.BasicManagedResource {
         }
         updateState(.ready)
     }
-    
+
     func acquire() async throws {
         if let error = error {
             throw error
         }
         updateState(ResourcesProtocols.ResourceState.inUse)
     }
-    
+
     func release() async throws {
         updateState(ResourcesProtocols.ResourceState.ready)
     }
-    
+
     func cleanup() async throws {
         updateState(ResourcesProtocols.ResourceState.released)
     }
@@ -70,38 +70,38 @@ class ResourcePoolTests: XCTestCase {
         let pool = ResourcePool<TestResource>(maxSize: 2)
         let resource1 = TestResource(id: "1")
         let resource2 = TestResource(id: "2")
-        
+
         try await pool.add(resource1)
         try await pool.add(resource2)
-        
+
         let acquired1 = try await pool.acquire()
         XCTAssertEqual(acquired1.id, "1")
         let acquired1State = acquired1.state
         XCTAssertEqual(acquired1State, ResourcesProtocols.ResourceState.inUse)
-        
+
         let acquired2 = try await pool.acquire()
         XCTAssertEqual(acquired2.id, "2")
         let acquired2State = acquired2.state
         XCTAssertEqual(acquired2State, ResourcesProtocols.ResourceState.inUse)
-        
+
         // Release resources
         await pool.release(acquired1)
         let released1State = acquired1.state
         XCTAssertEqual(released1State, ResourcesProtocols.ResourceState.ready)
-        
+
         await pool.release(acquired2)
         let released2State = acquired2.state
         XCTAssertEqual(released2State, ResourcesProtocols.ResourceState.ready)
     }
-    
+
     func testResourcePoolMaxSize() async throws {
         let pool = ResourcePool<TestResource>(maxSize: 1)
         let resource1 = TestResource(id: "1")
         let resource2 = TestResource(id: "2")
-        
+
         // Add first resource
         try await pool.add(resource1)
-        
+
         // Try to add second resource, should fail
         do {
             try await pool.add(resource2)
@@ -116,12 +116,12 @@ class ResourcePoolTests: XCTestCase {
             XCTFail("Unexpected error type: \(error)")
         }
     }
-    
+
     func testResourceInitializationFailure() async {
         let pool = ResourcePool<TestResource>(maxSize: 1)
         let resource = TestResource(id: "1")
         await resource.setError(ResourcesProtocols.ResourceError.acquisitionFailed("Test error"))
-        
+
         do {
             try await pool.add(resource)
             XCTFail("Expected ResourceError.acquisitionFailed")
@@ -135,7 +135,7 @@ class ResourcePoolTests: XCTestCase {
             XCTFail("Unexpected error type: \(error)")
         }
     }
-    
+
     func testResourceErrorDescription() {
         let errors: [ResourcesProtocols.ResourceError] = [
             .acquisitionFailed("test"),
@@ -144,7 +144,7 @@ class ResourcePoolTests: XCTestCase {
             .poolExhausted("test"),
             .cleanupFailed("test")
         ]
-        
+
         for error in errors {
             XCTAssertFalse(error.errorDescription?.isEmpty ?? true, "Error description should not be empty")
         }

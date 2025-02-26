@@ -3,14 +3,12 @@ import SecurityUtilsProtocols
 
 /// Default implementation of URLProvider that uses FileManager
 public struct PathURLProvider: URLProvider {
-
-    /// FileManager instance
-    private let fileManager: FileManager
+    // Use a static property instead of an instance property to avoid Sendable issues
+    // FileManager.default is already thread-safe for read operations
 
     /// Initialize a new PathURLProvider
-    /// - Parameter fileManager: FileManager instance to use
-    public init(fileManager: FileManager = .default) {
-        self.fileManager = fileManager
+    public init() {
+        // No initialization needed
     }
 
     /// Get the URL for a specified path
@@ -27,7 +25,7 @@ public struct PathURLProvider: URLProvider {
     /// - Returns: URL for the directory
     /// - Throws: Error if directory cannot be located
     public func url(for directory: FileManager.SearchPathDirectory, in domain: FileManager.SearchPathDomainMask) throws -> URL {
-        try fileManager.url(for: directory, in: domain, appropriateFor: nil, create: false)
+        try FileManager.default.url(for: directory, in: domain, appropriateFor: nil, create: false)
     }
 
     /// Get the URL for a specified directory with additional path components

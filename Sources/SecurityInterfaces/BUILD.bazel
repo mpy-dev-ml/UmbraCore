@@ -58,3 +58,32 @@ swift_library(
         ":SecurityInterfacesFoundation",
     ],
 )
+
+# Test version of SecurityInterfaces for @testable import
+swift_library(
+    name = "SecurityInterfacesForTesting",
+    testonly = True,
+    srcs = glob(
+        ["**/*.swift"],
+        exclude = [
+            "SecurityError.swift",
+            "SecurityProvider.swift",
+            "SecurityProviderBase.swift",
+            "SecurityProviderFoundation.swift",
+            "XPCServiceProtocol.swift",
+        ],
+    ),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
+    ],
+    module_name = "SecurityInterfaces",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":SecurityInterfacesCore",
+        ":SecurityInterfacesFoundation",
+    ],
+)

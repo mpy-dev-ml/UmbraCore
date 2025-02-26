@@ -16,7 +16,7 @@ public final class SecurityService {
 
     private var activeSecurityScopedResources: Set<String>
     private var bookmarks: [String: [UInt8]] = [:]
-    
+
     // Services
     private let bookmarkService: UmbraSecurityUtils.SecurityBookmarkService
     private let securityProvider: any SecurityProvider

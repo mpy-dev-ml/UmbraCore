@@ -418,17 +418,17 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
         guard state == .ready else {
             throw ServiceError.invalidState("Security service not initialized")
         }
-        
+
         if let crypto = cryptoService {
             do {
                 let result = try await crypto.encrypt(data, using: key)
-                
+
                 // Combine all parts into a single byte array
                 var combined = [UInt8]()
                 combined.append(contentsOf: result.initializationVector)
                 combined.append(contentsOf: result.tag)
                 combined.append(contentsOf: result.encrypted)
-                
+
                 return combined
             } catch {
                 throw SecurityError.cryptoError("Encryption failed: \(error.localizedDescription)")
@@ -437,32 +437,32 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             throw SecurityError.operationFailed("Encryption not available without CryptoService")
         }
     }
-    
+
     public func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
         guard state == .ready else {
             throw ServiceError.invalidState("Security service not initialized")
         }
-        
+
         if let crypto = cryptoService {
             // Extract IV, tag, and encrypted data from the combined data
             // Assuming IV is 12 bytes and tag is 16 bytes (standard for AES-GCM)
             let ivLength = 12
             let tagLength = 16
-            
+
             guard data.count > ivLength + tagLength else {
                 throw SecurityError.cryptoError("Invalid encrypted data format")
             }
-            
+
             let iv = Array(data.prefix(ivLength))
             let tag = Array(data[ivLength..<(ivLength + tagLength)])
             let encrypted = Array(data.suffix(from: ivLength + tagLength))
-            
+
             let encryptionResult = EncryptionResult(
                 encrypted: encrypted,
                 initializationVector: iv,
                 tag: tag
             )
-            
+
             do {
                 return try await crypto.decrypt(encryptionResult, using: key)
             } catch {
@@ -472,7 +472,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             throw SecurityError.operationFailed("Decryption not available without CryptoService")
         }
     }
-    
+
     public func generateKey(length: Int) async throws -> [UInt8] {
         guard state == .ready else {
             throw ServiceError.invalidState("Security service not initialized")
@@ -480,22 +480,22 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
         return try await generateRandomBytes(count: length)
     }
-    
+
     public func hash(_ data: [UInt8]) async throws -> [UInt8] {
         guard state == .ready else {
             throw ServiceError.invalidState("Security service not initialized")
         }
-        
+
         // Since we don't have a direct hash function in CryptoService,
         // we'll implement a basic hash using a key derivation function
         if let crypto = cryptoService {
             do {
                 // Convert data to a hex string for the password parameter
                 let hexString = data.map { String(format: "%02x", $0) }.joined()
-                
+
                 // Use a fixed salt for hashing
                 let salt = Array("UmbraSecurityHash".utf8)
-                
+
                 // Use the string-based deriveKey method
                 return try await crypto.deriveKey(from: hexString, salt: salt)
             } catch {
@@ -505,24 +505,24 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             throw SecurityError.operationFailed("Hashing not available without CryptoService")
         }
     }
-    
+
     // MARK: - Foundation Data Methods
-    
+
     public func encryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data {
         let result = try await encrypt([UInt8](data), key: [UInt8](key))
         return Data(result)
     }
-    
+
     public func decryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data {
         let result = try await decrypt([UInt8](data), key: [UInt8](key))
         return Data(result)
     }
-    
+
     public func generateDataKey(length: Int) async throws -> Foundation.Data {
         let result = try await generateKey(length: length)
         return Data(result)
     }
-    
+
     public func hashData(_ data: Foundation.Data) async throws -> Foundation.Data {
         let result = try await hash([UInt8](data))
         return Data(result)
