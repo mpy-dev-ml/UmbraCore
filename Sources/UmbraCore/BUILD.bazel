@@ -1,23 +1,20 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-swift_library(
-    name = "Sources_UmbraCore",
-    srcs = [
-        "UmbraCore.swift",
-    ],
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    module_name = "UmbraCore",
-    testonly = True,
-    visibility = ["//visibility:public"],
+umbra_swift_library(
+    name = "UmbraCore",
+    srcs = glob(["**/*.swift"]),
     deps = [
-        "//Sources/CryptoTypes:CryptoTypes",
-        "//Sources/SecurityTypes:SecurityTypes",
-        "//Sources/Resources:Resources",
+        "//Sources/CryptoTypes",
+        "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
+        "//Sources/CryptoTypes/Types:CryptoTypesTypes",
+        "//Sources/ErrorHandling",
+        "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
+        "//Sources/ErrorHandling/Models:ErrorHandlingModels",
+        "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
+        "//Sources/SecurityTypes",
+        "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
+        "//Sources/SecurityTypes/Types:SecurityTypesTypes",
+        "//Sources/UmbraLogging",
     ],
 )

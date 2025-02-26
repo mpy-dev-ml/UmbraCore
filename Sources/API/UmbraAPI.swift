@@ -5,7 +5,7 @@ import Foundation
 public enum UmbraAPI {
     /// Initialize the UmbraCore framework
     public static func initialize() async throws {
-        try await Core.initialise()
+        try await Core.initialize()
     }
 
     /// Create an encrypted security-scoped bookmark for the given URL

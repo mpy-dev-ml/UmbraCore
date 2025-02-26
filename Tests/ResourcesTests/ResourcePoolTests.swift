@@ -16,8 +16,8 @@ private final class TestResourceStateManager: @unchecked Sendable {
     }
 }
 
-/// Test implementation of ManagedResource
-private actor TestResource: ManagedResource {
+/// Test implementation of BasicManagedResource
+private actor TestResource: BasicManagedResource {
     nonisolated private let stateManager: TestResourceStateManager
     nonisolated var state: ResourceState { stateManager.state }
     static var resourceType: String { "test" }
@@ -97,7 +97,7 @@ final class ResourcePoolTests: XCTestCase {
         do {
             try await pool.add(resource2)
             XCTFail("Expected ResourceError.poolExhausted")
-        } catch let error as ResourceError {
+        } catch let error as ResourcesProtocols.ResourceError {
             if case .poolExhausted = error {
                 // Expected error
             } else {
@@ -111,12 +111,12 @@ final class ResourcePoolTests: XCTestCase {
     func testResourceInitializationFailure() async {
         let pool = ResourcePool<TestResource>(maxSize: 1)
         let resource = TestResource(id: "1")
-        await resource.setError(ResourceError.acquisitionFailed("Test error"))
+        await resource.setError(ResourcesProtocols.ResourceError.acquisitionFailed("Test error"))
 
         do {
             try await pool.add(resource)
             XCTFail("Expected ResourceError.acquisitionFailed")
-        } catch let error as ResourceError {
+        } catch let error as ResourcesProtocols.ResourceError {
             if case .acquisitionFailed(let message) = error {
                 XCTAssertEqual(message, "Test error")
             } else {
@@ -128,7 +128,7 @@ final class ResourcePoolTests: XCTestCase {
     }
 
     func testResourceErrorDescription() {
-        let errors: [ResourceError] = [
+        let errors: [ResourcesProtocols.ResourceError] = [
             .acquisitionFailed("test"),
             .invalidState("test"),
             .timeout("test"),

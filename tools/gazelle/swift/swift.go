@@ -7,6 +7,7 @@ import (
     "fmt"
     "os"
     "path/filepath"
+    "sort"
     "strings"
     "unicode"
 
@@ -18,7 +19,10 @@ import (
     "github.com/bazelbuild/bazel-gazelle/rule"
 )
 
-const swiftName = "swift"
+const (
+    swiftName = "swift"
+    languageName = "swift"
+)
 
 func NewLanguage() language.Language {
     return &swiftLang{}
@@ -127,17 +131,45 @@ func generateUniqueTargetName(rel, dir, repoRoot string) string {
 func generateModuleName(dir string) string {
     // Extract module name from directory path
     parts := strings.Split(dir, string(os.PathSeparator))
-    for i := len(parts) - 1; i >= 0; i-- {
-        if parts[i] != "" && parts[i] != "." {
-            return parts[i]
+    var moduleParts []string
+    
+    // Find the "Sources" or "Tests" directory
+    sourcesIdx := -1
+    for i, part := range parts {
+        if part == "Sources" || part == "Tests" {
+            sourcesIdx = i
+            break
         }
     }
+    
+    if sourcesIdx >= 0 && sourcesIdx < len(parts)-1 {
+        // Get all parts after Sources/Tests
+        moduleParts = parts[sourcesIdx+1:]
+        
+        // Convert each part to CamelCase and join
+        for i, part := range moduleParts {
+            if part != "" && part != "." {
+                // Split by any non-alphanumeric character
+                words := strings.FieldsFunc(part, func(r rune) bool {
+                    return !unicode.IsLetter(r) && !unicode.IsNumber(r)
+                })
+                
+                // Capitalize each word
+                for j, word := range words {
+                    if len(word) > 0 {
+                        words[j] = strings.ToUpper(word[:1]) + strings.ToLower(word[1:])
+                    }
+                }
+                
+                moduleParts[i] = strings.Join(words, "")
+            }
+        }
+        
+        // Join all parts
+        return strings.Join(moduleParts, "")
+    }
+    
     return "UnknownModule"
-}
-
-func setModuleName(r *rule.Rule, dir string) {
-    moduleName := generateModuleName(dir)
-    r.SetAttr("module_name", moduleName)
 }
 
 func parseSwiftFileForImports(content []byte) ([]resolve.ImportSpec, error) {
@@ -210,37 +242,119 @@ func (*swiftLang) GenerateRules(args language.GenerateArgs) language.GenerateRes
         return result
     }
     
-    // Create rule
-    r := rule.NewRule("swift_library", generateUniqueTargetName(args.Rel, args.Dir, args.Config.RepoRoot))
+    // Get the module name based on directory structure
+    var ruleName, moduleName string
     
-    // Add sources
-    setSrcsAttr(r, args.RegularFiles)
-    
-    // Set visibility
-    setVisibilityAttr(r, args)
-    
-    // Set module name
-    setModuleName(r, args.Dir)
-    
-    // Process imports and dependencies
-    imports, depSet := parseSwiftFilesForImports(args)
-    
-    // Convert depSet to deps slice
-    var deps []string
-    for dep := range depSet {
-        deps = append(deps, dep)
+    // For submodules, we need to include the parent module name
+    if strings.Contains(args.Dir, "Sources/") {
+        parts := strings.Split(args.Dir, "Sources/")
+        if len(parts) > 1 {
+            subParts := strings.Split(parts[1], "/")
+            if len(subParts) > 1 {
+                // This is a submodule
+                parentModule := subParts[0]
+                submoduleType := subParts[len(subParts)-1]
+                
+                // Generate names based on our conventions
+                ruleName = parentModule + submoduleType
+                moduleName = ruleName
+            } else {
+                // This is a top-level module
+                ruleName = subParts[0]
+                moduleName = ruleName
+            }
+        }
+    } else if strings.Contains(args.Dir, "Tests/") {
+        parts := strings.Split(args.Dir, "Tests/")
+        if len(parts) > 1 {
+            // This is a test module
+            ruleName = "Tests_" + parts[1]
+            moduleName = parts[1]
+        }
     }
     
-    // Set dependencies if any found
-    if len(deps) > 0 {
+    if ruleName == "" {
+        // Use the directory name as a fallback
+        ruleName = filepath.Base(args.Dir)
+        moduleName = ruleName
+    }
+    
+    // Create rule with proper name
+    r := rule.NewRule("swift_library", ruleName)
+    
+    // Add sources
+    r.SetAttr("srcs", args.RegularFiles)
+    
+    // Set visibility
+    r.SetAttr("visibility", []string{"//visibility:public"})
+    
+    // Set module name
+    r.SetAttr("module_name", moduleName)
+    
+    // Set copts
+    r.SetAttr("copts", []string{
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
+    })
+    
+    // Parse imports and find dependencies
+    imports, depSet := parseSwiftFilesForImports(args)
+    
+    // Add deps
+    if len(depSet) > 0 {
+        deps := make([]string, 0, len(depSet))
+        for dep := range depSet {
+            // For submodules, try to find the correct target
+            if strings.HasSuffix(dep, "Types") || strings.HasSuffix(dep, "Protocols") || strings.HasSuffix(dep, "Services") || strings.HasSuffix(dep, "Commands") || strings.HasSuffix(dep, "Models") {
+                // Extract parent module name
+                var parentModule string
+                if strings.HasSuffix(dep, "Types") {
+                    parentModule = strings.TrimSuffix(dep, "Types")
+                } else if strings.HasSuffix(dep, "Protocols") {
+                    parentModule = strings.TrimSuffix(dep, "Protocols")
+                } else if strings.HasSuffix(dep, "Services") {
+                    parentModule = strings.TrimSuffix(dep, "Services")
+                } else if strings.HasSuffix(dep, "Commands") {
+                    parentModule = strings.TrimSuffix(dep, "Commands")
+                } else if strings.HasSuffix(dep, "Models") {
+                    parentModule = strings.TrimSuffix(dep, "Models")
+                }
+                
+                // Check if the parent module exists
+                if parentModule != "" {
+                    // Try to find the submodule in the parent module directory
+                    submoduleType := strings.TrimPrefix(dep, parentModule)
+                    submodulePath := filepath.Join(args.Config.RepoRoot, "Sources", parentModule, submoduleType)
+                    if _, err := os.Stat(submodulePath); err == nil {
+                        deps = append(deps, fmt.Sprintf("//Sources/%s/%s:%s", parentModule, submoduleType, dep))
+                        continue
+                    }
+                }
+            }
+            
+            // Handle test dependencies
+            if strings.HasPrefix(dep, "Tests_") {
+                deps = append(deps, fmt.Sprintf("//Tests/%s:%s", strings.TrimPrefix(dep, "Tests_"), dep))
+            } else {
+                // For regular dependencies, try to find the target
+                if target, ok := findTargetForModule(dep, args.Config.RepoRoot); ok {
+                    deps = append(deps, target)
+                }
+            }
+        }
+        sort.Strings(deps)
         r.SetAttr("deps", deps)
     }
     
-    // Add the rule to the result
     result.Gen = append(result.Gen, r)
-    var importsInterface []interface{}
-    for _, imp := range imports {
-        importsInterface = append(importsInterface, imp)
+    
+    // Convert imports to []interface{}
+    importsInterface := make([]interface{}, len(imports))
+    for i, imp := range imports {
+        importsInterface[i] = imp
     }
     result.Imports = importsInterface
     
@@ -266,37 +380,43 @@ func setVisibilityAttr(r *rule.Rule, args language.GenerateArgs) {
 }
 
 func findTargetForModule(moduleName string, repoRoot string) (string, bool) {
-    // Common module name to target mappings
-    moduleToTarget := map[string]string{
-        "SecurityTypes": "//Sources/SecurityTypes:Sources_SecurityTypes",
-        "SecurityUtils": "//Sources/SecurityUtils:Sources_SecurityUtils",
-        "CryptoTypes":  "//Sources/CryptoTypes:Sources_CryptoTypes",
-        "UmbraLogging": "//Sources/UmbraLogging:Sources_UmbraLogging",
-        "UmbraCore":    "//Sources/UmbraCore:Sources_UmbraCore",
-        "UmbraXPC":     "//Sources/XPC:Sources_XPC",
-        "Models":       "//Sources/ErrorHandling/Models:Sources_ErrorHandling_Models",
-        "Services":     "//Sources/Core/Services:Sources_Core_Services",
-    }
-    
-    if target, ok := moduleToTarget[moduleName]; ok {
-        return target, true
-    }
-    
-    // Check if this is a Services module in a subdirectory
-    if strings.HasSuffix(moduleName, "Service") || strings.HasSuffix(moduleName, "Services") {
-        // Try to find the module in the Services directory
-        servicesDir := filepath.Join(repoRoot, "Sources", "Services")
-        if _, err := os.Stat(servicesDir); err == nil {
-            // Look for a directory matching the module name
-            matches, err := filepath.Glob(filepath.Join(servicesDir, "*", moduleName))
-            if err == nil && len(matches) > 0 {
-                // Found a match, create target
-                rel, err := filepath.Rel(repoRoot, matches[0])
-                if err == nil {
-                    return fmt.Sprintf("//%s:Sources_%s", rel, moduleName), true
-                }
+    // Check if this is a submodule
+    if strings.HasSuffix(moduleName, "Types") || strings.HasSuffix(moduleName, "Protocols") || strings.HasSuffix(moduleName, "Services") || strings.HasSuffix(moduleName, "Commands") || strings.HasSuffix(moduleName, "Models") {
+        // Extract parent module name
+        var parentModule string
+        if strings.HasSuffix(moduleName, "Types") {
+            parentModule = strings.TrimSuffix(moduleName, "Types")
+        } else if strings.HasSuffix(moduleName, "Protocols") {
+            parentModule = strings.TrimSuffix(moduleName, "Protocols")
+        } else if strings.HasSuffix(moduleName, "Services") {
+            parentModule = strings.TrimSuffix(moduleName, "Services")
+        } else if strings.HasSuffix(moduleName, "Commands") {
+            parentModule = strings.TrimSuffix(moduleName, "Commands")
+        } else if strings.HasSuffix(moduleName, "Models") {
+            parentModule = strings.TrimSuffix(moduleName, "Models")
+        }
+        
+        // Check if the parent module exists
+        if parentModule != "" {
+            // Try to find the submodule in the parent module directory
+            submoduleType := strings.TrimPrefix(moduleName, parentModule)
+            submodulePath := filepath.Join(repoRoot, "Sources", parentModule, submoduleType)
+            if _, err := os.Stat(submodulePath); err == nil {
+                return fmt.Sprintf("//Sources/%s/%s:%s", parentModule, submoduleType, moduleName), true
             }
         }
+    }
+    
+    // Try finding the module directly in Sources
+    sourcePath := filepath.Join(repoRoot, "Sources", moduleName)
+    if _, err := os.Stat(sourcePath); err == nil {
+        return fmt.Sprintf("//Sources/%s:%s", moduleName, moduleName), true
+    }
+    
+    // Try finding the module in Tests
+    testPath := filepath.Join(repoRoot, "Tests", moduleName)
+    if _, err := os.Stat(testPath); err == nil {
+        return fmt.Sprintf("//Tests/%s:%s", moduleName, moduleName), true
     }
     
     return "", false
@@ -388,4 +508,9 @@ func (*swiftLang) Resolve(c *config.Config, ix *resolve.RuleIndex, rc *repo.Remo
 
 func (*swiftLang) Embeds(r *rule.Rule, from label.Label) []label.Label {
     return nil
+}
+
+func setModuleName(r *rule.Rule, dir string) {
+    moduleName := generateModuleName(dir)
+    r.SetAttr("module_name", moduleName)
 }

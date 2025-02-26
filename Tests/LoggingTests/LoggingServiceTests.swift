@@ -20,10 +20,13 @@ final class LoggingServiceTests: XCTestCase {
     }
 
     func testLogging() async throws {
+        var metadata = LogMetadata()
+        metadata["test"] = "value"
+
         let entry = LogEntry(
             level: .info,
             message: "Test message",
-            metadata: ["test": "value"]
+            metadata: metadata
         )
 
         await logger.log(entry)

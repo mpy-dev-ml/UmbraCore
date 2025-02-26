@@ -1,0 +1,43 @@
+# User-specific Bazel settings optimized for MacBook Pro M2 Max (96GB)
+# Apply these settings by copying to user.bazelrc
+
+# CPU utilization - M2 Max has 12 cores, but leaving 2 for system processes
+build --jobs=10
+
+# Memory settings - leverage the 96GB of RAM
+startup --host_jvm_args=-Xmx24g  # Allocate 24GB to JVM (25% of available RAM)
+startup --host_jvm_args=-XX:+UseParallelGC  # Better GC for multi-core systems
+
+# Local build cache - increase size significantly
+build --disk_cache=~/.cache/bazel-disk
+# Note: disk_cache_size option was removed as it's not supported in this version of Bazel
+
+# Performance optimizations
+build --experimental_reuse_sandbox_directories
+build --experimental_repository_cache_hardlinks
+build --experimental_merged_skyframe_analysis_execution
+build --sandbox_tmpfs_path=/tmp
+
+# Better Swift compilation
+build --compilation_mode=opt
+build --features=swift.use_global_module_cache
+build --features=swift.enable_batch_mode
+build --features=swift.disable_system_index
+build --strategy=SwiftCompile=worker
+build --worker_max_instances=8  # Higher value for more cores
+build --worker_max_multiplex_instances=2
+
+# Parallelism settings
+# Using recommended replacement for experimental_spawn_scheduler
+build --internal_spawn_scheduler
+build --spawn_strategy=dynamic
+build --experimental_profile_include_primary_output
+
+# Debug settings - when needed
+build:debug-extra --spawn_strategy=standalone
+build:debug-extra --verbose_failures
+build:debug-extra --sandbox_debug
+
+# Memory pressure settings
+# build --experimental_ui_limit_console_output=1  # Removed - not supported in this version
+build --ui_actions_shown=16  # Updated from experimental_ui_actions_shown

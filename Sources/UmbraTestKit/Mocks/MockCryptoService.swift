@@ -1,5 +1,5 @@
 import CryptoTypes
-import CryptoTypes_Protocols
+import CryptoTypesProtocols
 import Foundation
 
 public actor MockCryptoService: CryptoServiceProtocol {

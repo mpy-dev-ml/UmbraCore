@@ -1,21 +1,11 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-swift_library(
-    name = "ErrorHandling_Protocols",
+umbra_swift_library(
+    name = "ErrorHandlingProtocols",
     srcs = glob(["*.swift"]),
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-        "-enable-testing",
-    ],
-    defines = ["ENABLE_TESTING"],
-    module_name = "ErrorHandling_Protocols",
-    testonly = True,
-    visibility = ["//visibility:public"],
     deps = [
-        "//Sources/ErrorHandling/Common:ErrorHandling_Common",
+        "//Sources/ErrorHandling/Models:ErrorHandlingModels",
+        "//Sources/UmbraLogging",
     ],
 )

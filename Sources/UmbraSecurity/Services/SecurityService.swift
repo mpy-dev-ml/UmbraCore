@@ -1,20 +1,23 @@
+import Core
+import CoreServices
+import CoreServicesTypes
 import Foundation
+import SecurityInterfaces
 import SecurityTypes
-import UmbraSecurityUtils
+import SecurityUtils
+import UmbraLogging
 
 /// A service that manages security-scoped resource access and bookmarks
 @MainActor
-public final class SecurityService: SecurityProvider {
+public final class SecurityService {
     /// Shared instance of the SecurityService
     public static let shared = SecurityService()
 
-    private let bookmarkService: SecurityBookmarkService
     private var activeSecurityScopedResources: Set<String>
     private var bookmarks: [String: [UInt8]] = [:]
 
     /// Initialize a new SecurityService instance
     private init() {
-        self.bookmarkService = SecurityBookmarkService(urlProvider: PathURLProvider())
         self.activeSecurityScopedResources = []
     }
 

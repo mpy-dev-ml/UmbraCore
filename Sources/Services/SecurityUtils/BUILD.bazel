@@ -1,7 +1,15 @@
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-alias(
+umbra_swift_library(
     name = "SecurityUtils",
-    actual = "//Sources/Services/SecurityUtils/Services:SecurityUtils",
-    visibility = ["//visibility:public"],
+    srcs = glob(["*.swift"]),
+    deps = [
+        "//Sources/CryptoTypes",
+        "//Sources/ErrorHandling",
+        "//Sources/SecurityTypes",
+        "//Sources/Services/SecurityUtils/Protocols:SecurityUtilsProtocols",
+        "//Sources/Services/SecurityUtils/Services:SecurityUtilsServices",
+        "//Sources/UmbraLogging",
+    ],
 )

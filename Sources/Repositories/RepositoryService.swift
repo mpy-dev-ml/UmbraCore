@@ -2,9 +2,9 @@
 import Foundation
 
 // Internal modules
-import Repositories_Types
-import SecurityTypes_Protocols
-import SecurityTypes_Types
+import RepositoriesTypes
+import SecurityTypes
+import SecurityTypesProtocols
 import UmbraLogging
 
 /// A service that manages repository registration, locking, and statistics.
@@ -23,7 +23,7 @@ public actor RepositoryService {
     public static let shared = RepositoryService()
 
     /// Currently registered repositories
-    internal private(set) var repositories: [String: any Repository]
+    internal var repositories: [String: any Repository]
 
     /// Logger instance
     internal let logger: Logger
@@ -50,11 +50,11 @@ public actor RepositoryService {
         let location = await repository.location
         let state = await repository.state
 
-        let metadata: LogMetadata = [
-            "repository_id": .string(identifier),
-            "location": .string(location.path),
-            "state": .string(String(describing: state))
-        ]
+        let metadata = LogMetadata([
+            "repository_id": identifier,
+            "location": location.path,
+            "state": String(describing: state)
+        ])
 
         await logger.info("Registering repository", metadata: metadata)
 
@@ -106,15 +106,17 @@ public actor RepositoryService {
     /// Deregisters a repository from the service.
     ///
     /// - Parameter identifier: The identifier of the repository to deregister.
-    /// - Throws: `RepositoryError.repositoryNotFound` if no repository exists with the given identifier.
+    /// - Throws: `RepositoryError.notFound` if no repository exists with the given identifier.
     public func deregister(identifier: String) async throws {
-        let metadata: LogMetadata = ["repository_id": .string(identifier)]
+        let metadata = LogMetadata([
+            "repository_id": identifier
+        ])
         await logger.info("Deregistering repository", metadata: metadata)
 
         guard repositories.removeValue(forKey: identifier) != nil else {
             await logger.error("Repository not found", metadata: metadata)
-            throw RepositoryError.repositoryNotFound(
-                "No repository found with identifier '\(identifier)'"
+            throw RepositoryError.notFound(
+                identifier: identifier
             )
         }
 
@@ -128,7 +130,7 @@ public actor RepositoryService {
         await logger.debug(
             "Listing repositories",
             metadata: LogMetadata([
-                "count": .string(String(repositories.count))
+                "count": String(repositories.count)
             ])
         )
         return Array(repositories.values)
@@ -142,7 +144,7 @@ public actor RepositoryService {
         await logger.debug(
             "Getting repository",
             metadata: LogMetadata([
-                "repository_id": .string(identifier)
+                "repository_id": identifier
             ])
         )
         return repositories[identifier]
@@ -157,7 +159,7 @@ public actor RepositoryService {
         await logger.debug(
             "Getting repository by URL",
             metadata: LogMetadata([
-                "path": .string(path)
+                "path": path
             ])
         )
 
@@ -166,5 +168,22 @@ public actor RepositoryService {
         }
 
         return nil
+    }
+
+    // MARK: - Internal Helpers
+
+    /// Creates a new repository instance at the specified URL.
+    ///
+    /// - Parameter url: The URL where the repository should be created
+    /// - Returns: A new repository instance
+    /// - Throws: `RepositoryError` if creation fails
+    internal func createRepository(at url: URL) async throws -> any Repository {
+        let repository = FileSystemRepository(
+            identifier: url.path,
+            location: url,
+            state: .uninitialized
+        )
+        try await repository.initialize()
+        return repository
     }
 }

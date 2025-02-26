@@ -1,149 +1,94 @@
+// Standard modules
 import Foundation
 
-/// A protocol that defines the core requirements for a repository.
+/// Deprecated: Use CompleteRepository typealias from RepositoryProtocols.swift instead.
 ///
-/// Repositories are actor-based entities that provide thread-safe access to their contents
-/// and maintain their own state. Each repository must have a unique identifier and support
-/// basic operations like initialization, locking, and statistics gathering.
-///
-/// Example:
-/// ```swift
-/// actor MyRepository: Repository {
-///     let identifier: String
-///     var state: RepositoryState = .uninitialized
-///     let location: URL
-///     
-///     func initialize() async throws {
-///         // Implementation
-///     }
-/// }
-/// ```
-public protocol Repository: Actor {
-    /// The unique identifier for this repository.
-    var identifier: String { get }
+/// A complete repository that implements all repository functionality.
+public typealias Repository = RepositoryCore & RepositoryLocking & RepositoryMaintenance & RepositoryStats
 
-    /// The current operational state of the repository.
-    var state: RepositoryState { get }
-
-    /// The filesystem location where this repository is stored.
-    var location: URL { get }
-
-    /// Initializes the repository and prepares it for use.
-    ///
-    /// - Throws: `RepositoryError` if initialization fails due to filesystem
-    ///           permissions, corruption, or other errors.
-    func initialize() async throws
-
-    /// Validates the repository structure and integrity.
-    ///
-    /// - Returns: `true` if the repository is valid, `false` otherwise.
-    /// - Throws: `RepositoryError` if validation cannot be completed.
-    func validate() async throws -> Bool
-
-    /// Locks the repository for exclusive access.
-    ///
-    /// - Throws: `RepositoryError` if the lock cannot be acquired or if
-    ///           the repository is in an invalid state.
-    func lock() async throws
-
-    /// Releases an exclusive lock on the repository.
-    ///
-    /// - Throws: `RepositoryError` if the lock cannot be released or if
-    ///           the repository is in an invalid state.
-    func unlock() async throws
-
-    /// Checks if the repository is currently accessible.
-    ///
-    /// - Returns: `true` if the repository can be accessed, `false` otherwise.
-    func isAccessible() async -> Bool
-
-    /// Retrieves current statistics about the repository.
-    ///
-    /// - Returns: A `RepositoryStats` object containing current metrics.
-    /// - Throws: `RepositoryError` if statistics cannot be gathered.
-    func getStats() async throws -> RepositoryStats
-
-    /// Checks the repository integrity.
-    ///
-    /// - Parameters:
-    ///   - readData: Whether to verify the actual data blobs
-    ///   - checkUnused: Whether to check for unused data
-    /// - Throws: `RepositoryError` if the check fails or cannot be completed
-    func check(readData: Bool, checkUnused: Bool) async throws
-
-    /// Removes unused data from the repository.
-    ///
-    /// - Throws: `RepositoryError` if pruning fails or cannot be completed
-    func prune() async throws
-
-    /// Rebuilds the repository index.
-    ///
-    /// - Throws: `RepositoryError` if index rebuilding fails or cannot be completed
-    func rebuildIndex() async throws
-}
-
-/// The operational state of a repository.
-///
-/// This enum represents the various states a repository can be in during
-/// its lifecycle, from initialization through active use.
-public enum RepositoryState: Equatable, Sendable {
-    /// The repository has not been initialized.
-    case uninitialized
-
-    /// The repository is initialized and ready for operations.
-    case ready
-
-    /// The repository is locked for exclusive access.
-    case locked
-
-    /// The repository is in an error state.
-    case error(RepositoryError)
-
-    public static func == (lhs: RepositoryState, rhs: RepositoryState) -> Bool {
-        switch (lhs, rhs) {
-        case (.uninitialized, .uninitialized),
-             (.ready, .ready),
-             (.locked, .locked):
-            return true
-        case (.error(let lhsError), .error(let rhsError)):
-            return lhsError.localizedDescription == rhsError.localizedDescription
-        default:
-            return false
-        }
-    }
-}
-
-/// Statistics for a repository.
-///
-/// This struct contains various metrics about a repository, including its size,
-/// snapshot count, and compression ratio.
-public struct RepositoryStats: Codable, Equatable, Sendable {
+/// Repository statistics data structure.
+public struct RepositoryStatistics: RepositoryStats, Codable, Equatable, Sendable {
     /// The total size of the repository in bytes.
-    public let totalSize: UInt64
+    public let storedTotalSize: UInt64
 
     /// The number of snapshots in the repository.
-    public let snapshotCount: Int
+    public let snapshotCount: UInt
 
-    /// The space saved by deduplication.
-    public let deduplicationSavings: UInt64
+    /// The time of the last check operation.
+    public let lastCheck: Date
 
-    /// The last modified timestamp.
-    public let lastModified: Date
+    /// Number of files backed up in the repository
+    public let totalFileCount: Int
 
-    /// The compression ratio (1.0 means no compression).
+    /// Number of blobs in the repository
+    public let totalBlobCount: Int
+
+    /// Repository size in bytes if blobs were uncompressed
+    public let totalUncompressedSize: Int64
+
+    /// Factor by which the already compressed data has shrunk due to compression
     public let compressionRatio: Double
 
+    /// Percentage of already compressed data
+    public let compressionProgress: Double
+
+    /// Overall space saving due to compression
+    public let compressionSpaceSaving: Double
+
+    /// Creates a new repository statistics instance.
+    /// - Parameters:
+    ///   - totalSize: Total size in bytes
+    ///   - snapshotCount: Number of snapshots
+    ///   - lastCheck: Time of last check
+    ///   - totalFileCount: Number of files backed up
+    ///   - totalBlobCount: Number of blobs
+    ///   - totalUncompressedSize: Uncompressed size in bytes
+    ///   - compressionRatio: Compression ratio
+    ///   - compressionProgress: Compression progress percentage
+    ///   - compressionSpaceSaving: Space saving percentage
     public init(
         totalSize: UInt64,
-        snapshotCount: Int,
-        deduplicationSavings: UInt64,
-        lastModified: Date,
-        compressionRatio: Double
+        snapshotCount: UInt,
+        lastCheck: Date,
+        totalFileCount: Int = 0,
+        totalBlobCount: Int = 0,
+        totalUncompressedSize: Int64 = 0,
+        compressionRatio: Double = 1.0,
+        compressionProgress: Double = 0.0,
+        compressionSpaceSaving: Double = 0.0
     ) {
-        self.totalSize = totalSize
+        self.storedTotalSize = totalSize
         self.snapshotCount = snapshotCount
-        self.deduplicationSavings = deduplicationSavings
-        self.lastModified = lastModified
+        self.lastCheck = lastCheck
+        self.totalFileCount = totalFileCount
+        self.totalBlobCount = totalBlobCount
+        self.totalUncompressedSize = totalUncompressedSize
         self.compressionRatio = compressionRatio
+        self.compressionProgress = compressionProgress
+        self.compressionSpaceSaving = compressionSpaceSaving
+    }
+
+    // MARK: - RepositoryStats Protocol Conformance
+
+    public var snapshotsCount: Int {
+        return Int(snapshotCount)
+    }
+
+    public var totalSize: Int64 {
+        return Int64(storedTotalSize)
+    }
+
+    // MARK: - Codable Implementation
+
+    private enum CodingKeys: String, CodingKey {
+        case storedTotalSize = "totalSize"
+        case snapshotCount
+        case lastCheck
+        case totalFileCount
+        case totalBlobCount
+        case totalUncompressedSize
+        case compressionRatio
+        case compressionProgress
+        case compressionSpaceSaving
     }
 }

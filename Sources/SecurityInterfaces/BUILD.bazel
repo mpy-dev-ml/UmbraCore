@@ -1,0 +1,27 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+# Core interfaces that don't depend on Foundation
+umbra_swift_library(
+    name = "SecurityInterfacesCore",
+    srcs = [
+        "SecurityError.swift",
+    ],
+    deps = [
+        "//Sources/CoreTypes",
+        "//Sources/ErrorHandling",
+    ],
+)
+
+# Main module with Foundation dependencies
+umbra_swift_library(
+    name = "SecurityInterfaces",
+    srcs = [
+        "SecurityProvider.swift",
+        "XPCServiceProtocol.swift",
+    ],
+    deps = [
+        ":SecurityInterfacesCore",
+        "//Sources/CoreTypes",
+    ],
+)

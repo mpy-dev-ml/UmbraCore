@@ -1,0 +1,44 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+package(default_visibility = ["//visibility:public"])
+
+swift_library(
+    name = "SwiftSyntax",
+    srcs = glob(["Sources/SwiftSyntax/**/*.swift"]),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    module_name = "SwiftSyntax",
+)
+
+swift_library(
+    name = "SwiftParser",
+    srcs = glob(["Sources/SwiftParser/**/*.swift"]),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    module_name = "SwiftParser",
+    deps = [":SwiftSyntax"],
+)
+
+swift_library(
+    name = "SwiftParserDiagnostics",
+    srcs = glob(["Sources/SwiftParserDiagnostics/**/*.swift"]),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-warn-concurrency",
+        "-enable-actor-data-race-checks",
+    ],
+    module_name = "SwiftParserDiagnostics",
+    deps = [":SwiftParser", ":SwiftSyntax"],
+)

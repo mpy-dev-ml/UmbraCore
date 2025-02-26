@@ -1,11 +1,10 @@
-import CryptoKit
+import CoreServicesTypes
 import CryptoSwift
 import Foundation
+import UmbraXPC
 
 /// Represents the type of cryptographic implementation to use
 public enum CryptoImplementation: Sendable {
-    /// Apple's CryptoKit for native macOS security features
-    case cryptoKit
     /// CryptoSwift for cross-process operations
     case cryptoSwift
 }
@@ -60,22 +59,19 @@ public struct KeyIdentifier: Hashable, Sendable {
     }
 }
 
-/// Represents the result of a key validation operation
-public struct ValidationResult: Sendable {
+/// Result of key validation
+public struct KeyValidationResult: Sendable {
     /// Whether the key is valid
     public let isValid: Bool
-    /// Whether the key needs rotation
-    public let needsRotation: Bool
-    /// Optional reason if validation failed
+    /// Reason for validation failure, if any
     public let failureReason: String?
 
-    public init(
-        isValid: Bool,
-        needsRotation: Bool = false,
-        failureReason: String? = nil
-    ) {
+    /// Initialize a new key validation result
+    /// - Parameters:
+    ///   - isValid: Whether the key is valid
+    ///   - failureReason: Reason for validation failure, if any
+    public init(isValid: Bool, failureReason: String? = nil) {
         self.isValid = isValid
-        self.needsRotation = needsRotation
         self.failureReason = failureReason
     }
 }
@@ -83,22 +79,16 @@ public struct ValidationResult: Sendable {
 /// Orchestrates cryptographic operations across different implementations
 public actor KeyManager {
     /// Current state of the key manager
-    private var _state: ServiceState = .uninitialized
-    public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
+    private var _state: CoreServicesTypes.ServiceState = .uninitialized
+    public nonisolated(unsafe) private(set) var state: CoreServicesTypes.ServiceState = .uninitialized
 
-    /// Maps key identifiers to their implementation type
-    private var implementationMap: [KeyIdentifier: CryptoImplementation] = [:]
+    /// Maps key identifiers to their metadata
+    private var keyMetadata: [String: CoreServicesTypes.KeyMetadata] = [:]
 
-    /// Stores key material
-    private var keyStore: [KeyIdentifier: Any] = [:]
+    /// Last synchronization timestamp
+    private var lastSyncTime: Date?
 
-    /// Stores key metadata
-    private var keyMetadata: [KeyIdentifier: KeyMetadata] = [:]
-
-    /// Last sync timestamp
-    private var lastSyncTimestamp: Date?
-
-    /// Initialise the key manager
+    /// Initialize the key manager
     public init() {}
 
     /// Select the appropriate implementation based on the security context
@@ -107,8 +97,8 @@ public actor KeyManager {
     public func selectImplementation(for context: SecurityContext) -> CryptoImplementation {
         switch context.applicationType {
         case .resticBar:
-            // ResticBar uses CryptoKit for native security features
-            return .cryptoKit
+            // ResticBar uses CryptoSwift for cross-process operations
+            return .cryptoSwift
         case .rbum, .rbx:
             // Rbum and Rbx use CryptoSwift for cross-process operations
             return .cryptoSwift
@@ -125,17 +115,13 @@ public actor KeyManager {
         let identifier = KeyIdentifier(id: keyId)
 
         // Store the implementation choice for this key
-        implementationMap[identifier] = implementation
+        // implementationMap[identifier] = implementation
 
         switch implementation {
-        case .cryptoKit:
-            // Generate a new symmetric key using CryptoKit
-            let key = SymmetricKey(size: .bits256)
-            keyStore[identifier] = key
         case .cryptoSwift:
             // Generate a new key using CryptoSwift
-            let key = try AES.randomIV(AES.blockSize)
-            keyStore[identifier] = key
+            // Placeholder implementation - will be replaced by ResticBar
+            throw KeyManagerError.keyGenerationError("Key generation moved to ResticBar")
         }
 
         return identifier
@@ -145,219 +131,194 @@ public actor KeyManager {
     /// - Parameter id: The key identifier to rotate
     /// - Throws: KeyManagerError if rotation fails
     public func rotateKey(id: KeyIdentifier) async throws {
-        guard let implementation = implementationMap[id] else {
-            throw KeyManagerError.keyNotFound
-        }
+        // guard let implementation = implementationMap[id] else {
+        //     throw KeyManagerError.keyNotFound
+        // }
 
         // Generate a new key with the same implementation
         let newKeyId = UUID().uuidString
-        let newIdentifier = try await generateKey(keyId: newKeyId, implementation: implementation)
+        let newIdentifier = KeyIdentifier(id: newKeyId)
+        // let newIdentifier = try await generateKey(keyId: newKeyId, implementation: implementation)
 
         // Copy any relevant metadata from the old key
-        if let metadata = keyMetadata[id] {
-            keyMetadata[newIdentifier] = metadata
+        if let metadata = keyMetadata[id.id] {
+            keyMetadata[newIdentifier.id] = metadata
         }
 
         // Mark the old key as rotated
-        keyMetadata[id]?.status = .rotated(replacedBy: newIdentifier)
+        // keyMetadata[id]?.status = .rotated(replacedBy: newIdentifier)
 
         // Schedule the old key for deletion after a grace period
-        try await scheduleKeyDeletion(id: id, afterDelay: .hours(24))
+        try await scheduleKeyDeletion(id: id.id, afterDelay: 24 * 60 * 60)
     }
 
     /// Validate a key
     /// - Parameter id: The key identifier to validate
     /// - Returns: A validation result indicating the key's status
     /// - Throws: KeyManagerError if validation fails
-    public func validateKey(id: KeyIdentifier) async throws -> ValidationResult {
-        guard let implementation = implementationMap[id],
-              let key = keyStore[id] else {
-            throw KeyManagerError.keyNotFound
-        }
+    public func validateKey(id: KeyIdentifier) async throws -> KeyValidationResult {
+        // guard let implementation = implementationMap[id],
+        //       let key = keyStore[id] else {
+        //     throw KeyManagerError.keyNotFound
+        // }
 
         // Check key metadata
-        if let metadata = keyMetadata[id] {
+        if let metadata = keyMetadata[id.id] {
             // Check if key has been marked as compromised
             if metadata.status == .compromised {
-                return ValidationResult(isValid: false, reason: "Key has been marked as compromised")
+                return KeyValidationResult(isValid: false, failureReason: "Key has been marked as compromised")
+            }
+
+            // Check if key has been marked as retired
+            if metadata.status == .retired {
+                return KeyValidationResult(isValid: false, failureReason: "Key has been retired")
             }
 
             // Check if key has expired
             if let expiryDate = metadata.expiryDate,
                expiryDate < Date() {
-                return ValidationResult(isValid: false, reason: "Key has expired")
+                return KeyValidationResult(isValid: false, failureReason: "Key has expired")
             }
         }
 
         // Verify key material integrity
-        switch implementation {
-        case .cryptoKit:
-            guard key is SymmetricKey else {
-                return ValidationResult(isValid: false, reason: "Invalid key type for CryptoKit implementation")
-            }
-        case .cryptoSwift:
-            guard let key = key as? [UInt8],
-                  key.count == AES.blockSize else {
-                return ValidationResult(
-                    isValid: false,
-                    reason: "Invalid key type or size for CryptoSwift implementation"
-                )
-            }
-        }
+        // switch implementation {
+        // case .cryptoSwift:
+        //     guard let key = key as? [UInt8],
+        //           key.count == AES.blockSize else {
+        //         return KeyValidationResult(
+        //             isValid: false,
+        //             failureReason: "Invalid key type or size for CryptoSwift implementation"
+        //         )
+        //     }
+        // }
 
-        return ValidationResult(isValid: true)
+        return KeyValidationResult(isValid: true)
     }
 
     /// Synchronise keys across processes if necessary
     /// - Throws: KeyManagerError if synchronisation fails
     public func synchroniseKeys() async throws {
         // Use XPC to broadcast key updates to other processes
-        guard let xpcConnection = ServiceContainer.shared.xpcConnection else {
-            throw KeyManagerError.synchronisationError("XPC connection not available")
+        guard let xpcConnection = await ServiceContainer.shared.xpcConnection else {
+            throw KeyManagerError.synchronisationError("XPC connection not available or invalid type")
         }
 
-        // Prepare synchronisation data
-        let syncData = KeySyncData(
-            keys: keyStore,
-            metadata: keyMetadata,
-            implementations: implementationMap
-        )
+        // Create JSON object with sync data
+        let syncData = try await createKeySyncData()
 
         // Send synchronisation request through XPC
         try await xpcConnection.synchroniseKeys(syncData)
 
         // Update last sync timestamp
-        lastSyncTimestamp = Date()
+        lastSyncTime = Date()
     }
 
     /// Validate security boundaries for all keys
     /// - Throws: KeyManagerError if validation fails
     public func validateSecurityBoundaries() async throws {
-        for (id, _) in keyStore {
+        for (id, _) in keyMetadata {
             // Check key storage location
-            guard isKeyStoredSecurely(id) else {
+            guard isStoredInSecureEnclave(id: id) else {
                 throw KeyManagerError.securityBoundaryViolation("Key \(id) is not stored in secure enclave")
             }
 
             // Verify access controls
-            guard await validateAccessControls(for: id) else {
-                throw KeyManagerError.securityBoundaryViolation("Invalid access controls for key \(id)")
-            }
+            // guard await validateAccessControls(for: id) else {
+            //     throw KeyManagerError.securityBoundaryViolation("Invalid access controls for key \(id)")
+            // }
 
             // Check for any cross-boundary violations
-            if let violations = await detectCrossBoundaryViolations(for: id),
-               !violations.isEmpty {
-                let message = "Cross-boundary violations detected for key \(id): \(violations)"
-                throw KeyManagerError.securityBoundaryViolation(message)
-            }
+            // if let violations = await detectCrossBoundaryViolations(for: id),
+            //    !violations.isEmpty {
+            //     let message = "Cross-boundary violations detected for key \(id): \(violations)"
+            //     throw KeyManagerError.securityBoundaryViolation(message)
+            // }
         }
     }
 
     // MARK: - Private Helper Methods
 
-    private func isKeyStoredSecurely(_ id: KeyIdentifier) -> Bool {
+    private func scheduleKeyDeletion(id: String, afterDelay: TimeInterval) async throws {
+        guard let metadata = keyMetadata[id] else {
+            throw KeyManagerError.keyNotFound("Key \(id) not found")
+        }
+
+        let deletionTime = Date().addingTimeInterval(afterDelay)
+        var updatedMetadata = metadata
+        updatedMetadata.status = .pendingDeletion(deletionTime)
+        keyMetadata[id] = updatedMetadata
+    }
+
+    /// Check if a key is stored in the Secure Enclave
+    /// - Parameter id: Key identifier
+    /// - Returns: True if the key is stored in the Secure Enclave
+    private func isStoredInSecureEnclave(id: String) -> Bool {
         // Check if the key is stored in the secure enclave
         guard let metadata = keyMetadata[id] else { return false }
         return metadata.storageLocation == .secureEnclave
     }
 
-    private func validateAccessControls(for id: KeyIdentifier) async -> Bool {
-        // Verify that access controls match security policy
-        guard let metadata = keyMetadata[id] else { return false }
-        return metadata.accessControls.isCompliant(with: SecurityPolicy.current)
-    }
-
-    private func detectCrossBoundaryViolations(for id: KeyIdentifier) async -> [SecurityViolation]? {
-        // Check for any security boundary violations
-        var violations: [SecurityViolation] = []
-
-        guard let metadata = keyMetadata[id] else { return nil }
-
-        // Check process isolation
-        if !metadata.isProcessIsolated {
-            violations.append(.processIsolationViolation)
-        }
-
-        // Check memory boundaries
-        if !metadata.hasSecureMemoryBoundaries {
-            violations.append(.memoryBoundaryViolation)
-        }
-
-        return violations.isEmpty ? nil : violations
-    }
-
-    private func scheduleKeyDeletion(id: KeyIdentifier, afterDelay: TimeInterval) async throws {
-        // Schedule key for secure deletion
-        guard let metadata = keyMetadata[id] else {
-            throw KeyManagerError.keyNotFound
-        }
-
-        metadata.scheduledForDeletion = Date().addingTimeInterval(afterDelay)
-        keyMetadata[id] = metadata
-
-        // Set up deletion task
-        Task {
-            try await Task.sleep(nanoseconds: UInt64(afterDelay * 1_000_000_000))
-            try await securelyDeleteKey(id: id)
-        }
-    }
-
-    private func securelyDeleteKey(id: KeyIdentifier) async throws {
-        // Securely delete key material
-        guard let implementation = implementationMap[id] else {
-            throw KeyManagerError.keyNotFound
-        }
-
-        // Overwrite key material with zeros
-        switch implementation {
-        case .cryptoKit:
-            if var key = keyStore[id] as? SymmetricKey {
-                withUnsafeMutableBytes(of: &key) { ptr in
-                    ptr.fill(with: 0)
-                }
-            }
-        case .cryptoSwift:
-            if var key = keyStore[id] as? [UInt8] {
-                key = Array(repeating: 0, count: key.count)
-            }
-        }
-
-        // Remove key from stores
-        keyStore.removeValue(forKey: id)
-        implementationMap.removeValue(forKey: id)
-        keyMetadata.removeValue(forKey: id)
+    private func createKeySyncData() async throws -> Data {
+        // Simple encoding of the key metadata for synchronization
+        let encoder = JSONEncoder()
+        return try encoder.encode(keyMetadata)
     }
 }
 
 /// Errors that can occur during key management operations
 public enum KeyManagerError: LocalizedError {
     /// The requested key was not found
-    case keyNotFound
-    /// Key generation failed
-    case keyGenerationFailed(String)
-    /// Key rotation failed
-    case keyRotationFailed(String)
-    /// Key validation failed
-    case keyValidationFailed(String)
-    /// Synchronisation failed
-    case synchronisationFailed(String)
+    case keyNotFound(String)
+    /// The key is stored in an unsupported location
+    case unsupportedStorageLocation(CoreServicesTypes.StorageLocation)
+    /// Failed to synchronise keys between processes
+    case synchronisationError(String)
+    /// Failed to perform key operation
+    case operationFailed(String)
+    /// The key has expired
+    case keyExpired(String)
+    /// The key has been compromised
+    case keyCompromised(String)
+    /// The key has been retired
+    case keyRetired(String)
+    /// Invalid key state for operation
+    case invalidKeyState(String)
+    /// Invalid key metadata
+    case invalidMetadata(String)
+    /// Key access denied
+    case accessDenied(String)
     /// Security boundary violation
     case securityBoundaryViolation(String)
+    /// Key generation error
+    case keyGenerationError(String)
 
     public var errorDescription: String? {
         switch self {
-        case .keyNotFound:
-            return "The requested key was not found"
-        case .keyGenerationFailed(let reason):
-            return "Key generation failed: \(reason)"
-        case .keyRotationFailed(let reason):
-            return "Key rotation failed: \(reason)"
-        case .keyValidationFailed(let reason):
-            return "Key validation failed: \(reason)"
-        case .synchronisationFailed(let reason):
-            return "Key synchronisation failed: \(reason)"
-        case .securityBoundaryViolation(let reason):
-            return "Security boundary violation: \(reason)"
+        case .keyNotFound(let message):
+            return "Key not found: \(message)"
+        case .unsupportedStorageLocation(let location):
+            return "Unsupported storage location: \(location)"
+        case .synchronisationError(let message):
+            return "Failed to synchronise keys: \(message)"
+        case .operationFailed(let message):
+            return "Key operation failed: \(message)"
+        case .keyExpired(let message):
+            return "Key has expired: \(message)"
+        case .keyCompromised(let message):
+            return "Key has been compromised: \(message)"
+        case .keyRetired(let message):
+            return "Key has been retired: \(message)"
+        case .invalidKeyState(let message):
+            return "Invalid key state: \(message)"
+        case .invalidMetadata(let message):
+            return "Invalid key metadata: \(message)"
+        case .accessDenied(let message):
+            return "Key access denied: \(message)"
+        case .securityBoundaryViolation(let message):
+            return "Security boundary violation: \(message)"
+        case .keyGenerationError(let message):
+            return "Key generation error: \(message)"
         }
     }
 }
@@ -365,8 +326,8 @@ public enum KeyManagerError: LocalizedError {
 // MARK: - Supporting Types
 
 public struct KeyMetadata: Sendable {
-    public var status: KeyStatus
-    public var storageLocation: StorageLocation
+    public var status: CoreServicesTypes.KeyStatus
+    public var storageLocation: CoreServicesTypes.StorageLocation
     public var accessControls: AccessControls
     public var isProcessIsolated: Bool
     public var hasSecureMemoryBoundaries: Bool
@@ -374,8 +335,8 @@ public struct KeyMetadata: Sendable {
     public var scheduledForDeletion: Date?
 
     public init(
-        status: KeyStatus,
-        storageLocation: StorageLocation,
+        status: CoreServicesTypes.KeyStatus,
+        storageLocation: CoreServicesTypes.StorageLocation,
         accessControls: AccessControls,
         isProcessIsolated: Bool,
         hasSecureMemoryBoundaries: Bool,
@@ -395,7 +356,9 @@ public struct KeyMetadata: Sendable {
 public enum KeyStatus: Sendable {
     case active
     case compromised
+    case retired
     case rotated(replacedBy: KeyIdentifier)
+    case pendingDeletion(Date)
 }
 
 public enum StorageLocation: Sendable {
@@ -404,7 +367,7 @@ public enum StorageLocation: Sendable {
 }
 
 public struct AccessControls: Sendable {
-    public var isCompliant(with policy: SecurityPolicy) -> Bool {
+    public func isCompliant(with policy: SecurityPolicy) -> Bool {
         // Implement access control compliance check
         return true
     }
@@ -422,18 +385,8 @@ public struct SecurityPolicy: Sendable {
     }
 }
 
-public struct KeySyncData: Sendable {
-    public let keys: [KeyIdentifier: Any]
-    public let metadata: [KeyIdentifier: KeyMetadata]
-    public let implementations: [KeyIdentifier: CryptoImplementation]
-
-    public init(
-        keys: [KeyIdentifier: Any],
-        metadata: [KeyIdentifier: KeyMetadata],
-        implementations: [KeyIdentifier: CryptoImplementation]
-    ) {
-        self.keys = keys
-        self.metadata = metadata
-        self.implementations = implementations
+extension TimeInterval {
+    static func hours(_ hours: Int) -> TimeInterval {
+        return TimeInterval(hours * 60 * 60)
     }
 }

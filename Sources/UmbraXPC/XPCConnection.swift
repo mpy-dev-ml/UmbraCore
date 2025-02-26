@@ -74,15 +74,29 @@ public enum XPCError: LocalizedError, Sendable {
     /// - Parameter reason: A description of what made the message invalid.
     case invalidMessage(String)
 
+    /// The request is invalid.
+    ///
+    /// - Parameter message: A description of why the request is invalid.
+    case invalidRequest(message: String)
+
+    /// The data is invalid.
+    ///
+    /// - Parameter message: A description of why the data is invalid.
+    case invalidData(message: String)
+
     /// A localized description of the error.
     public var errorDescription: String? {
         switch self {
         case .connectionFailed(let reason):
             return "XPC connection failed: \(reason)"
         case .messageFailed(let reason):
-            return "Failed to send XPC message: \(reason)"
+            return "XPC message failed: \(reason)"
         case .invalidMessage(let reason):
-            return "Invalid XPC message format: \(reason)"
+            return "XPC invalid message: \(reason)"
+        case .invalidRequest(let message):
+            return "XPC invalid request: \(message)"
+        case .invalidData(let message):
+            return "XPC invalid data: \(message)"
         }
     }
 }

@@ -1,21 +1,15 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-swift_library(
+umbra_swift_library(
     name = "API",
     srcs = [
         "API.swift",
         "UmbraAPI.swift",
     ],
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    module_name = "API",
-    visibility = ["//visibility:public"],
     deps = [
-        "//Sources/Core:Core",
+        "//Sources/Core",
+        "//Sources/ErrorHandling",
+        "//Sources/UmbraLogging",
     ],
 )

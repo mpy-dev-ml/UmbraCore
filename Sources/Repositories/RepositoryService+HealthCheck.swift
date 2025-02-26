@@ -2,13 +2,13 @@
 import Foundation
 
 // Internal modules
-import Repositories_Types
+import RepositoriesTypes
 import UmbraLogging
 
 /// Extension for repository health check functionality
 extension RepositoryService {
     // MARK: - Health Check Types
-    
+
     /// Options for repository health checks
     public struct HealthCheckOptions: Sendable {
         /// Whether to verify the actual data blobs
@@ -48,11 +48,11 @@ extension RepositoryService {
         of identifier: String,
         options: HealthCheckOptions = .basic
     ) async throws {
-        let metadata: LogMetadata = [
-            "repository_id": .string(identifier),
-            "read_data": .string(String(options.readData)),
-            "check_unused": .string(String(options.checkUnused))
-        ]
+        let metadata = LogMetadata([
+            "repository_id": identifier,
+            "read_data": String(options.readData),
+            "check_unused": String(options.checkUnused)
+        ])
 
         await logger.info("Starting repository health check", metadata: metadata)
 
@@ -64,7 +64,7 @@ extension RepositoryService {
         }
 
         do {
-            try await repository.check(
+            let stats = try await repository.check(
                 readData: options.readData,
                 checkUnused: options.checkUnused
             )
@@ -93,12 +93,12 @@ extension RepositoryService {
         options: HealthCheckOptions = .basic,
         force: Bool = false
     ) async throws {
-        let metadata: LogMetadata = [
-            "repository_count": .string(String(repositories.count)),
-            "read_data": .string(String(options.readData)),
-            "check_unused": .string(String(options.checkUnused)),
-            "force": .string(String(force))
-        ]
+        let metadata = LogMetadata([
+            "repository_count": String(repositories.count),
+            "read_data": String(options.readData),
+            "check_unused": String(options.checkUnused),
+            "force": String(force)
+        ])
 
         await logger.info(
             "Starting health check for all repositories",
@@ -108,12 +108,12 @@ extension RepositoryService {
         var errors: [String: Error] = [:]
 
         for (identifier, repository) in repositories {
-            let repoMetadata: LogMetadata = [
-                "repository_id": .string(identifier)
-            ]
+            let repoMetadata = LogMetadata([
+                "repository_id": identifier
+            ])
 
             do {
-                try await repository.check(
+                let stats = try await repository.check(
                     readData: options.readData,
                     checkUnused: options.checkUnused
                 )

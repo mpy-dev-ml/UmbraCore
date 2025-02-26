@@ -77,12 +77,15 @@
 ///
 /// # Usage Example
 /// ```swift
-/// let service = KeychainService.shared
+/// let service = UmbraKeychainService(
+///     identifier: "com.example.app",
+///     accessGroup: "com.example.group",
+///     logger: Logger(label: "com.example.keychain")
+/// )
 /// 
 /// try await service.store(
 ///     password: password,
-///     for: account,
-///     accessibility: .whenUnlocked
+///     for: account
 /// )
 /// ```
 ///
@@ -105,12 +108,107 @@
 /// - Concurrent access
 /// - Operation queuing
 /// - State protection
-public enum UmbraKeychainService {
+import Foundation
+import SecurityTypes
+import SecurityUtils
+import UmbraLogging
+
+/// UmbraKeychainService Module
+///
+/// Provides secure keychain access and management for UmbraCore.
+/// This module handles all interactions with the macOS Keychain,
+/// ensuring secure credential storage and retrieval.
+public final class UmbraKeychainService: @unchecked Sendable {
     /// Current version of the UmbraKeychainService module
     public static let version = "1.0.0"
 
-    /// Initialise UmbraKeychainService with default configuration
-    public static func initialize() {
-        // Configure keychain service
+    /// Service identifier used for keychain items
+    private let identifier: String
+
+    /// Optional access group for shared keychain access
+    private let accessGroup: String?
+
+    /// Logger instance for keychain operations
+    private let logger: Logger
+
+    /// Initialize a new keychain service instance
+    /// - Parameters:
+    ///   - identifier: Service identifier for keychain items
+    ///   - accessGroup: Optional access group for shared keychain access
+    ///   - logger: Logger instance for keychain operations
+    public init(
+        identifier: String,
+        accessGroup: String? = nil,
+        logger: Logger = Logger.shared
+    ) {
+        self.identifier = identifier
+        self.accessGroup = accessGroup
+        self.logger = logger
+    }
+
+    /// Store a password in the keychain
+    /// - Parameters:
+    ///   - password: Password to store
+    ///   - account: Account identifier
+    /// - Throws: KeychainError if storage fails
+    public func store(password: String, for account: String) throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: identifier,
+            kSecAttrAccount as String: account,
+            kSecValueData as String: password.data(using: .utf8)!
+        ]
+
+        let status = SecItemAdd(query as CFDictionary, nil)
+        guard status == errSecSuccess else {
+            throw KeychainError.storeFailed(
+                "Failed to store password: \(status)"
+            )
+        }
+    }
+
+    /// Retrieve a password from the keychain
+    /// - Parameter account: Account identifier
+    /// - Returns: Retrieved password
+    /// - Throws: KeychainError if retrieval fails
+    public func retrievePassword(for account: String) throws -> String {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: identifier,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true
+        ]
+
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+
+        guard status == errSecSuccess,
+              let data = item as? Data,
+              let password = String(data: data, encoding: .utf8)
+        else {
+            throw KeychainError.retrieveFailed(
+                "Failed to retrieve password: \(status)"
+            )
+        }
+
+        return password
+    }
+
+    /// Delete a password from the keychain
+    /// - Parameter account: Account identifier
+    /// - Throws: KeychainError if deletion fails
+    public func deletePassword(for account: String) throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: identifier,
+            kSecAttrAccount as String: account
+        ]
+
+        let status = SecItemDelete(query as CFDictionary)
+        guard status == errSecSuccess else {
+            throw KeychainError.deleteFailed(
+                "Failed to delete password: \(status)"
+            )
+        }
     }
 }

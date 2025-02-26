@@ -1,9 +1,9 @@
-import CryptoKit
-import CryptoTypes_Protocols
-import CryptoTypes_Types
+// CryptoKit removed - cryptography will be handled in ResticBar
+import CryptoTypesProtocols
+import CryptoTypesTypes
 import Foundation
 import SecurityTypes
-import SecurityTypes_Protocols
+import SecurityTypesProtocols
 
 /// Manages secure storage and retrieval of credentials
 public actor CredentialManager {

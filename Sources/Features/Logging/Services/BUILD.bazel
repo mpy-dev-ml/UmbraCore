@@ -1,23 +1,19 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-swift_library(
-    name = "LoggingServices",
+umbra_swift_library(
+    name = "FeaturesLoggingServices",
     srcs = glob(
         ["**/*.swift"],
         allow_empty = True,
     ),
-    testonly = True,
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    module_name = "LoggingServices",
-    visibility = ["//visibility:public"],
     deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/Features/Logging/Errors:FeaturesLoggingErrors",
+        "//Sources/Features/Logging/Models:FeaturesLoggingModels",
+        "//Sources/Features/Logging/Protocols:FeaturesLoggingProtocols",
+        "//Sources/SecurityTypes",
+        "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
-        "//Sources/UmbraTestKit:Sources_UmbraTestKit",
     ],
 )

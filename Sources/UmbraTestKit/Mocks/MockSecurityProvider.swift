@@ -1,7 +1,6 @@
-import Core
 import Foundation
 import SecurityTypes
-import SecurityTypes_Protocols
+import SecurityTypesProtocols
 
 /// Mock implementation of security provider for testing
 public actor MockSecurityProvider: SecurityProvider {
@@ -50,7 +49,7 @@ public actor MockSecurityProvider: SecurityProvider {
     }
 
     public func isAccessing(path: String) async -> Bool {
-        accessedPaths.contains(path)
+        return accessedPaths.contains(path)
     }
 
     public func stopAccessingAllResources() async {
@@ -91,5 +90,58 @@ public actor MockSecurityProvider: SecurityProvider {
     // Test helper methods
     public func getAccessedPaths() async -> Set<String> {
         accessedPaths
+    }
+
+    /// Simple XOR-based encryption for testing
+    public func encrypt(data: Data, key: String) async throws -> Data {
+        guard !key.isEmpty else {
+            throw SecurityTypes.SecurityError.cryptoError("Empty encryption key")
+        }
+
+        let keyData = Data(key.utf8)
+        return try xorCrypt(data: data, key: keyData)
+    }
+
+    /// Simple XOR-based decryption for testing
+    public func decrypt(data: Data, key: String) async throws -> Data {
+        guard !key.isEmpty else {
+            throw SecurityTypes.SecurityError.cryptoError("Empty decryption key")
+        }
+
+        let keyData = Data(key.utf8)
+        return try xorCrypt(data: data, key: keyData)
+    }
+
+    /// Encrypt data with a custom key
+    public func encrypt(data: Data, key: Data) async throws -> Data {
+        guard !key.isEmpty else {
+            throw SecurityTypes.SecurityError.cryptoError("Empty encryption key")
+        }
+
+        return try xorCrypt(data: data, key: key)
+    }
+
+    /// Decrypt data with a custom key
+    public func decrypt(data: Data, key: Data) async throws -> Data {
+        guard !key.isEmpty else {
+            throw SecurityTypes.SecurityError.cryptoError("Empty decryption key")
+        }
+
+        return try xorCrypt(data: data, key: key)
+    }
+
+    // Helper method to perform XOR encryption/decryption
+    private func xorCrypt(data: Data, key: Data) throws -> Data {
+        guard !key.isEmpty else {
+            throw SecurityTypes.SecurityError.cryptoError("Empty key")
+        }
+
+        var result = Data(count: data.count)
+        for i in 0..<data.count {
+            let keyByte = key[i % key.count]
+            result[i] = data[i] ^ keyByte
+        }
+
+        return result
     }
 }

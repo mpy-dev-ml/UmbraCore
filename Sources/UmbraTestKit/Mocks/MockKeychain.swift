@@ -1,6 +1,6 @@
 import Foundation
 import SecurityTypes
-import SecurityTypes_Protocols
+import SecurityTypesProtocols
 
 public actor MockKeychain: SecureStorageProvider {
     private var storage: [String: Data] = [:]

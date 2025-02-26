@@ -1,19 +1,14 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-swift_library(
-    name = "Sources_XPC_Core",
-    srcs = [
-        "XPCConnectionManager.swift",
-        "XPCError.swift",
-        "XPCServiceProtocols.swift",
+umbra_swift_library(
+    name = "XPCCore",
+    srcs = glob(["**/*.swift"]),
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
+        "//Sources/ErrorHandling/Models:ErrorHandlingModels",
+        "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
+        "//Sources/UmbraLogging",
     ],
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    module_name = "Core",
-    visibility = ["//visibility:public"],
 )

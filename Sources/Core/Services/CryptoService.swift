@@ -1,5 +1,6 @@
-import CryptoSwift
+import CoreServicesTypes
 import Foundation
+// CryptoKit removed - cryptography will be handled in ResticBar
 
 /// Configuration options for cryptographic operations.
 ///
@@ -131,7 +132,12 @@ public actor CryptoService: UmbraService {
             throw ServiceError.invalidState("Service not ready")
         }
 
-        return AES.randomIV(config.keySize / 8)
+        var key = [UInt8](repeating: 0, count: config.keySize / 8)
+        let status = SecRandomCopyBytes(kSecRandomDefault, key.count, &key)
+        guard status == errSecSuccess else {
+            throw CryptoError.keyGenerationFailed
+        }
+        return key
     }
 
     /// Generates a random initialization vector.
@@ -143,7 +149,12 @@ public actor CryptoService: UmbraService {
             throw ServiceError.invalidState("Service not ready")
         }
 
-        return AES.randomIV(config.ivSize / 8)
+        var iv = [UInt8](repeating: 0, count: config.ivSize / 8)
+        let status = SecRandomCopyBytes(kSecRandomDefault, iv.count, &iv)
+        guard status == errSecSuccess else {
+            throw CryptoError.ivGenerationFailed
+        }
+        return iv
     }
 
     /// Encrypts data using AES-GCM.
@@ -162,13 +173,19 @@ public actor CryptoService: UmbraService {
         }
 
         let initializationVector = try generateIV()
-        let gcm = GCM(iv: initializationVector, mode: .combined)
-        let aes = try AES(key: key, blockMode: gcm, padding: .pkcs7)
-
-        let encrypted = try aes.encrypt(data)
-        let tag = gcm.authenticationTag ?? []
-
+        let encrypted = try encrypt(data, key: key, iv: initializationVector)
+        let tag = try generateTag(data: data, key: key, iv: initializationVector)
         return EncryptionResult(encrypted: encrypted, initializationVector: initializationVector, tag: tag)
+    }
+
+    private func encrypt(_ data: [UInt8], key: [UInt8], iv: [UInt8]) throws -> [UInt8] {
+        // Placeholder implementation - will be replaced by ResticBar
+        throw CryptoError.encryptionFailed
+    }
+
+    private func generateTag(data: [UInt8], key: [UInt8], iv: [UInt8]) throws -> [UInt8] {
+        // Placeholder implementation - will be replaced by ResticBar
+        throw CryptoError.tagGenerationFailed
     }
 
     /// Decrypts data using AES-GCM.
@@ -186,12 +203,17 @@ public actor CryptoService: UmbraService {
             throw ServiceError.invalidState("Service not ready")
         }
 
-        let gcm = GCM(iv: encryptedData.initializationVector,
-                      authenticationTag: encryptedData.tag,
-                      additionalAuthenticatedData: nil,
-                      mode: .combined)
-        let aes = try AES(key: key, blockMode: gcm, padding: .pkcs7)
-        return try aes.decrypt(encryptedData.encrypted)
+        let encrypted = encryptedData.encrypted
+        let initializationVector = encryptedData.initializationVector
+        let tag = encryptedData.tag
+
+        let decrypted = try decrypt(encrypted, key: key, iv: initializationVector, tag: tag)
+        return decrypted
+    }
+
+    private func decrypt(_ encrypted: [UInt8], key: [UInt8], iv: [UInt8], tag: [UInt8]) throws -> [UInt8] {
+        // Placeholder implementation - will be replaced by ResticBar
+        throw CryptoError.decryptionFailed
     }
 
     /// Derives a key from a password using PBKDF2.
@@ -206,12 +228,27 @@ public actor CryptoService: UmbraService {
             throw ServiceError.invalidState("Service not ready")
         }
 
-        return try PKCS5.PBKDF2(
-            password: Array(password.utf8),
-            salt: salt,
-            iterations: config.iterations,
-            keyLength: config.keySize / 8,
-            variant: .sha2(.sha256)
-        ).calculate()
+        // Placeholder implementation - will be replaced by ResticBar
+        throw CryptoError.keyDerivationFailed
+    }
+
+    /// Generates secure random bytes for cryptographic operations.
+    ///
+    /// - Parameter length: The number of bytes to generate.
+    /// - Returns: Random bytes as Data.
+    /// - Throws: `CryptoError` on failure.
+    public func generateSecureRandomBytes(length: Int) async throws -> Data {
+        guard _state == .ready else {
+            throw ServiceError.invalidState("Service not ready")
+        }
+
+        var bytes = [UInt8](repeating: 0, count: length)
+        let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+
+        guard status == errSecSuccess else {
+            throw CryptoError.randomGenerationFailed
+        }
+
+        return Data(bytes)
     }
 }

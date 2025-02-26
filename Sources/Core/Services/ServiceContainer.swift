@@ -1,7 +1,17 @@
+import CoreServicesSecurityTypeAliases
+import CoreServicesTypeAliases
+import CoreServicesTypes
+import CoreTypes
 import Foundation
 
 /// Thread-safe container for managing service instances and their dependencies.
 public actor ServiceContainer {
+    /// Shared instance of the service container
+    public static let shared = ServiceContainer()
+
+    /// XPC connection for inter-process communication
+    public private(set) var xpcConnection: XPCServiceProtocolBase?
+
     /// Registered services keyed by their identifiers.
     private var services: [String: any UmbraService]
 
@@ -16,6 +26,13 @@ public actor ServiceContainer {
         self.services = [:]
         self.dependencyGraph = [:]
         self.serviceStates = [:]
+        self.xpcConnection = nil
+    }
+
+    /// Set the XPC connection
+    /// - Parameter connection: The XPC connection to use
+    public func setXPCConnection(_ connection: XPCServiceProtocolBase) {
+        xpcConnection = connection
     }
 
     // MARK: - Service Registration
@@ -94,7 +111,7 @@ public actor ServiceContainer {
             guard await service.isUsable() else {
                 return false
             }
-            guard serviceStates[identifier] == .ready else {
+            guard serviceStates[identifier] == .ready || serviceStates[identifier] == .running else {
                 return false
             }
         }

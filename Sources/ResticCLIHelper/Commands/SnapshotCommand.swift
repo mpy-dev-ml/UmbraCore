@@ -1,6 +1,7 @@
 import Foundation
+import ResticTypes
 
-/// Command for managing Restic snapshots
+/// Command for managing repository snapshots
 public struct SnapshotCommand: ResticCommand {
     /// Type of snapshot operation
     public enum Operation: Sendable {

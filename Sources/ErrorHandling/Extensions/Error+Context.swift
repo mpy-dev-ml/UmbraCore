@@ -1,5 +1,5 @@
+import ErrorHandlingModels
 import Foundation
-import Models
 
 /// Adds contextual information to Swift errors.
 ///
@@ -46,14 +46,20 @@ public extension Error {
         line: Int = #line,
         function: String = #function
     ) -> ErrorContext {
-        ErrorContext(
+        var metadata: [String: String] = [:]
+        metadata["operation"] = operation
+        if let details = details {
+            metadata["details"] = details
+        }
+        metadata["file"] = file
+        metadata["line"] = String(line)
+        metadata["function"] = function
+        metadata["error"] = String(describing: self)
+
+        return ErrorContext(
             source: source,
-            operation: operation,
-            details: details,
-            underlyingError: self,
-            file: file,
-            line: line,
-            function: function
+            message: localizedDescription,
+            metadata: metadata
         )
     }
 }

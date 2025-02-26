@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for finding files in snapshots
 public final class FindCommand: ResticCommand, @unchecked Sendable {

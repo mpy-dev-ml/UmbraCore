@@ -1,17 +1,20 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-swift_library(
-    name = "Sources_ResticCLIHelper_Types",
-    srcs = [
-        "ResticTypes.swift",
+umbra_swift_library(
+    name = "ResticCLIHelperTypes",
+    srcs = glob(
+        ["**/*.swift"],
+        exclude = [
+            "ResticTypes.swift",  # Exclude the file with duplicate definitions
+            "CommandResult.swift", # Exclude duplicate CommandResult
+            "MaintenanceType.swift", # Exclude duplicate MaintenanceType
+        ],
+        allow_empty = True,
+    ),
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/ResticTypes",
+        "//Sources/UmbraLogging",
     ],
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    module_name = "Types",
-    visibility = ["//visibility:public"],
 )

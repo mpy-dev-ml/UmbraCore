@@ -1,4 +1,6 @@
 import Foundation
+import ResourcesProtocols
+import ResourcesTypes
 
 /// A thread-safe pool for managing reusable resources.
 ///
@@ -19,7 +21,7 @@ import Foundation
 /// 
 /// // Use connection...
 /// ```
-public actor ResourcePool<Resource: ManagedResource> {
+public actor ResourcePool<Resource: BasicManagedResource> {
     /// Available resources in the pool.
     ///
     /// This array contains all resources managed by the pool, whether they
@@ -52,16 +54,16 @@ public actor ResourcePool<Resource: ManagedResource> {
     /// the pool is full, an error is thrown.
     ///
     /// - Parameter resource: Resource to add to the pool.
-    /// - Throws: `ResourceError.poolExhausted` if the pool is at capacity,
-    ///          or other `ResourceError` if resource initialisation fails.
+    /// - Throws: `ResourcesTypes.ResourceError.poolExhausted` if the pool is at capacity,
+    ///          or any error thrown by the resource during acquisition.
     public func add(_ resource: Resource) async throws {
         guard resources.count < maxSize else {
-            throw ResourceError.poolExhausted("Pool is at maximum capacity (\(maxSize) resources)")
+            throw ResourcesTypes.ResourceError.poolExhausted
         }
 
         // Test the resource by acquiring and releasing it
         try await resource.acquire()
-        await resource.release()
+        try await resource.release()
         resources.append(resource)
     }
 
@@ -71,11 +73,11 @@ public actor ResourcePool<Resource: ManagedResource> {
     /// state. If no resources are available, it throws an error.
     ///
     /// - Returns: An available resource from the pool.
-    /// - Throws: `ResourceError.acquisitionFailed` if no resources are available,
+    /// - Throws: `ResourcesTypes.ResourceError.acquisitionFailed` if no resources are available,
     ///          or if the resource cannot be acquired.
     public func acquire() async throws -> Resource {
         guard let index = resources.firstIndex(where: { $0.state == .ready }) else {
-            throw ResourceError.acquisitionFailed(
+            throw ResourcesTypes.ResourceError.acquisitionFailed(
                 "No available resources (pool size: \(resources.count), max: \(maxSize))"
             )
         }
@@ -87,31 +89,31 @@ public actor ResourcePool<Resource: ManagedResource> {
 
     /// Releases a resource back to the pool.
     ///
-    /// This method transitions the resource back to the `ready` state,
-    /// making it available for future use. If the resource is not found
-    /// in the pool, the operation is silently ignored.
-    ///
-    /// - Parameter resource: Resource to release back to the pool.
-    /// - Important: Always release resources when you're done with them
-    ///             to prevent resource leaks.
+    /// - Parameter resource: The resource to release.
     public func release(_ resource: Resource) async {
         if let index = resources.firstIndex(where: { $0.id == resource.id }) {
             let resource = resources[index]
-            await resource.release()
+            do {
+                try await resource.release()
+            } catch {
+                // Log the error but continue
+                print("Error releasing resource \(resource.id): \(error)")
+            }
         }
     }
 
     /// Cleans up all resources in the pool.
     ///
-    /// This method releases all system resources and removes them from
-    /// the pool. After cleanup, the pool will be empty and new resources
-    /// must be added before it can be used again.
-    ///
-    /// - Important: This operation cannot be undone. Only call this
-    ///             method when you're sure you no longer need the pool.
+    /// This method should be called when the pool is no longer needed.
+    /// It attempts to clean up all resources, ignoring errors.
     public func cleanup() async {
         for resource in resources {
-            await resource.cleanup()
+            do {
+                try await resource.cleanup()
+            } catch {
+                // Log the error but continue
+                print("Error cleaning up resource \(resource.id): \(error)")
+            }
         }
         resources.removeAll()
     }

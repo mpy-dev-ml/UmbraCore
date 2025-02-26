@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for listing files in Restic snapshots
 public struct ListCommand: ResticCommand {

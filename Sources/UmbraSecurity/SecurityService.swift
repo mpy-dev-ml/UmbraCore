@@ -1,7 +1,4 @@
-import Core
-import CryptoTypes
-import CryptoTypes_Protocols
-import CryptoTypes_Services
+// Standard modules
 import CryptoTypes_Types
 import Foundation
 import SecurityTypes
@@ -10,6 +7,13 @@ import SecurityTypes_Types
 import SecurityUtils_Protocols
 import UmbraSecurityUtils
 
+// MARK: - SecurityService
+
+/// A service that provides security-related functionality.
+///
+/// This service implements the `SecurityProvider` protocol and provides
+/// methods for creating and resolving security bookmarks, as well as
+/// managing security-scoped resource access.
 /// A service that manages security-scoped resource access and bookmarks.
 /// This service provides functionality for:
 /// - Creating and managing encrypted security-scoped bookmarks

@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for removing unused data from a repository
 public final class PruneCommand: ResticCommand, @unchecked Sendable {

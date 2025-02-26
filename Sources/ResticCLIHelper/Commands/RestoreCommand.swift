@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for restoring data from a repository
 public final class RestoreCommand: ResticCommand, @unchecked Sendable {

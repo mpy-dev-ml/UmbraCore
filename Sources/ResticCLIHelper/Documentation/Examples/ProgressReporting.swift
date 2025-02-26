@@ -88,8 +88,7 @@ public final class ProgressReportingExample {
     public init(repository: String, password: String) {
         // Create command with progress reporting enabled
         let options = CommonOptions(repository: repository, password: password)
-        command = BackupCommand(options: options)
-            .addPath("/path/to/backup")
+        command = BackupCommand(paths: ["/path/to/backup"], options: options)
             .tag("example")
             .withProgress()
 

@@ -1,21 +1,5 @@
+import CoreServicesTypes
 import Foundation
-
-/// Represents the current state of a service
-@frozen
-public enum ServiceState: String, Sendable {
-    /// Service has not been initialised
-    case uninitialized
-    /// Service is in the process of initialising
-    case initializing
-    /// Service is ready for use
-    case ready
-    /// Service has encountered an error
-    case error
-    /// Service is in the process of shutting down
-    case shuttingDown
-    /// Service has been shut down
-    case shutdown
-}
 
 /// Protocol defining the base requirements for all UmbraCore services
 public protocol UmbraService: Actor {
@@ -23,7 +7,7 @@ public protocol UmbraService: Actor {
     static var serviceIdentifier: String { get }
 
     /// Current state of the service
-    nonisolated var state: ServiceState { get }
+    nonisolated var state: CoreServicesTypes.ServiceState { get }
 
     /// Initialise the service
     /// - Throws: ServiceError if initialisation fails
@@ -40,7 +24,7 @@ public protocol UmbraService: Actor {
 /// Extension providing default implementations for UmbraService
 extension UmbraService {
     public func isUsable() async -> Bool {
-        state == .ready
+        state == .ready || state == .running
     }
 }
 

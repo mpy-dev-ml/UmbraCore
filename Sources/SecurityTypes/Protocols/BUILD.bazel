@@ -1,15 +1,15 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-swift_library(
-    name = "SecurityTypes_Protocols",
-    srcs = glob(["*.swift"]),
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
+umbra_swift_library(
+    name = "SecurityTypesProtocols",
+    srcs = glob(
+        ["**/*.swift"],
+        allow_empty = True,
+    ),
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/SecurityTypes/Types:SecurityTypesTypes",
+        "//Sources/UmbraLogging",
     ],
-    module_name = "SecurityTypes_Protocols",
-    visibility = ["//visibility:public"],
 )

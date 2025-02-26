@@ -2,9 +2,18 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 swift_test(
     name = "UmbraSecurityTests",
-    srcs = ["SecurityServiceTests.swift"],
+    srcs = glob(["*.swift"]),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
+    ],
     module_name = "UmbraSecurityTests",
     deps = [
-        "//Sources/UmbraSecurity:UmbraSecurity",
+        "//Sources/ErrorHandling",
+        "//Sources/UmbraLogging",
+        "//Sources/UmbraTestKit",
     ],
 )

@@ -1,0 +1,21 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+# Basic type aliases that don't depend on any security modules
+umbra_swift_library(
+    name = "CoreServicesTypeAliases",
+    srcs = glob(
+        ["**/*.swift"],
+        exclude = ["XPCServiceProtocolAlias.swift"],
+    ),
+)
+
+# Type aliases that depend on SecurityInterfaces
+umbra_swift_library(
+    name = "CoreServicesSecurityTypeAliases",
+    srcs = ["XPCServiceProtocolAlias.swift"],
+    deps = [
+        "//Sources/CoreTypes",
+        "//Sources/SecurityInterfaces",
+    ],
+)

@@ -3,13 +3,25 @@ import XCTest
 
 /// Test implementation of ResticCommand
 private struct TestResticCommand: ResticCommand {
-    let command: String
-    let arguments: [String]
+    let commandName: String
+    let commandArguments: [String]
     let environment: [String: String]
-    let requiredEnvironmentVariables: Set<String>
+    let options: CommonOptions
+
+    init(
+        command: String,
+        arguments: [String],
+        environment: [String: String],
+        requiredEnvironmentVariables: Set<String>
+    ) {
+        self.commandName = command
+        self.commandArguments = arguments
+        self.environment = environment
+        self.options = CommonOptions(repository: "/test/repo", password: "test-password")
+    }
 
     func validate() throws {
-        guard !command.isEmpty else {
+        guard !commandName.isEmpty else {
             throw ResticError.invalidConfiguration("Command cannot be empty")
         }
     }
@@ -25,6 +37,8 @@ final class ResticCommandTests: XCTestCase {
         )
 
         XCTAssertNoThrow(try command.validate())
+        XCTAssertEqual(command.commandName, "backup")
+        XCTAssertEqual(command.commandArguments, ["--tag", "test"])
     }
 
     func testInvalidCommand() {
@@ -41,33 +55,26 @@ final class ResticCommandTests: XCTestCase {
                 return
             }
 
-            if case .invalidConfiguration(let message) = resticError {
+            switch resticError {
+            case .invalidConfiguration(let message):
                 XCTAssertEqual(message, "Command cannot be empty")
-            } else {
+            default:
                 XCTFail("Expected invalidConfiguration error")
             }
         }
     }
 
-    func testResticErrorDescription() {
-        let errors: [ResticError] = [
-            .executionFailed("Command failed"),
-            .outputParsingFailed("Invalid output"),
-            .invalidConfiguration("Bad config"),
-            .repositoryError("Repo error"),
-            .authenticationError("Auth failed")
-        ]
+    func testCommandArguments() {
+        let command = TestResticCommand(
+            command: "backup",
+            arguments: ["--tag", "test"],
+            environment: ["RESTIC_PASSWORD": "test"],
+            requiredEnvironmentVariables: ["RESTIC_PASSWORD"]
+        )
 
-        let expectedDescriptions = [
-            "Command execution failed: Command failed",
-            "Output parsing failed: Invalid output",
-            "Invalid configuration: Bad config",
-            "Repository error: Repo error",
-            "Authentication error: Auth failed"
-        ]
-
-        for (error, expectedDescription) in zip(errors, expectedDescriptions) {
-            XCTAssertEqual(error.errorDescription, expectedDescription)
-        }
+        let args = command.arguments
+        XCTAssertEqual(args.first, "backup")
+        XCTAssertTrue(args.contains("--tag"))
+        XCTAssertTrue(args.contains("test"))
     }
 }

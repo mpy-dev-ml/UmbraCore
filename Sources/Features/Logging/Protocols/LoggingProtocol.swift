@@ -1,4 +1,4 @@
-import Features_Logging_Models
+import FeaturesLoggingModels
 import Foundation
 
 /// Logging Protocol

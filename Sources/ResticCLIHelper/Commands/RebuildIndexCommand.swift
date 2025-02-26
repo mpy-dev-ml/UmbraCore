@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for rebuilding repository index
 public final class RebuildIndexCommand: ResticCommand, @unchecked Sendable {

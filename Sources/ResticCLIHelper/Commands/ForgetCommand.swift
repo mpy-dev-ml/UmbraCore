@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for removing snapshots from a repository
 public final class ForgetCommand: ResticCommand, @unchecked Sendable {

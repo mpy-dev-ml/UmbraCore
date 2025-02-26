@@ -1,17 +1,15 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-swift_library(
-    name = "Sources_Snapshots",
-    srcs = [
-        "Snapshots.swift",
+umbra_swift_library(
+    name = "Snapshots",
+    srcs = glob(
+        ["**/*.swift"],
+        allow_empty = True,
+    ),
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/Snapshots/Protocols:SnapshotsProtocols",
+        "//Sources/UmbraLogging",
     ],
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-        "-strict-concurrency=complete",
-        "-warn-concurrency",
-        "-enable-actor-data-race-checks",
-    ],
-    module_name = "Snapshots",
-    visibility = ["//visibility:public"],
 )

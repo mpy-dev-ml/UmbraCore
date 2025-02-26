@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for retrieving repository statistics
 public final class StatsCommand: ResticCommand, @unchecked Sendable {

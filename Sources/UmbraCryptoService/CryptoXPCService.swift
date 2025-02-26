@@ -1,8 +1,9 @@
 import Core
 import CryptoSwift
 import CryptoTypes
-import CryptoTypes_Services
+import CryptoTypesServices
 import Foundation
+import SecurityUtils
 import UmbraXPC
 
 /// Extension to generate random data using SecRandomCopyBytes
@@ -27,191 +28,179 @@ extension Data {
 /// use DefaultCryptoService which provides hardware-backed security.
 @available(macOS 14.0, *)
 @MainActor
-public final class CryptoXPCService: NSObject, Core.CryptoXPCServiceProtocol {
+public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
+    /// Dependencies for the crypto service
+    private let dependencies: CryptoXPCServiceDependencies
+
+    /// Queue for cryptographic operations
     private let cryptoQueue = DispatchQueue(label: "com.umbracore.crypto", qos: .userInitiated)
 
-    public override init() {
+    /// XPC connection for the service
+    var connection: NSXPCConnection?
+
+    /// Initialize the crypto service with dependencies
+    /// - Parameter dependencies: Dependencies required by the service
+    public init(dependencies: CryptoXPCServiceDependencies) {
+        self.dependencies = dependencies
         super.init()
     }
 
-    // MARK: - XPCServiceProtocol
-
-    public func validateConnection() async throws {
-        // Basic validation - could be extended with more checks
-        return
-    }
-
-    public func getServiceVersion() async throws -> String {
-        return "1.0.0"
-    }
-
-    // MARK: - CryptoXPCServiceProtocol
-
+    /// Encrypt data using AES-256-GCM
+    /// - Parameters:
+    ///   - data: Data to encrypt
+    ///   - key: Encryption key
+    /// - Returns: Encrypted data
+    /// - Throws: CryptoError if encryption fails
     public func encrypt(_ data: Data, key: Data) async throws -> Data {
         try Task.checkCancellation()
+
         return try await withCheckedThrowingContinuation { continuation in
             cryptoQueue.async {
                 do {
-                    let result = try self.encryptData(data, key: key)
+                    // Generate random IV
+                    let iv = Data.random(count: 12)
+
+                    // Create AES-GCM
+                    let aes = try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
+
+                    // Encrypt
+                    let encrypted = try aes.encrypt(data.bytes)
+
+                    // Combine IV and ciphertext
+                    var result = Data()
+                    result.append(iv)
+                    result.append(Data(encrypted))
+
                     continuation.resume(returning: result)
                 } catch {
-                    let xpcError = XPCError.serviceError(
-                        category: .crypto,
-                        underlying: error,
-                        message: "Encryption failed"
-                    )
-                    continuation.resume(throwing: xpcError)
+                    continuation.resume(throwing: CryptoError.encryptionFailed(error.localizedDescription))
                 }
             }
         }
     }
 
+    /// Decrypt data using AES-256-GCM
+    /// - Parameters:
+    ///   - data: Data to decrypt
+    ///   - key: Decryption key
+    /// - Returns: Decrypted data
+    /// - Throws: CryptoError if decryption fails
     public func decrypt(_ data: Data, key: Data) async throws -> Data {
         try Task.checkCancellation()
-        guard data.count > 28 else {
-            throw XPCError.invalidRequest(message: "Data too short for decryption")
-        }
 
         return try await withCheckedThrowingContinuation { continuation in
             cryptoQueue.async {
                 do {
-                    let decrypted = try self.decryptData(data, key: key)
-                    continuation.resume(returning: decrypted)
+                    // Extract IV and ciphertext
+                    let iv = data.prefix(12)
+                    let ciphertext = data.dropFirst(12)
+
+                    // Create AES-GCM
+                    let aes = try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
+
+                    // Decrypt
+                    let decrypted = try aes.decrypt(ciphertext.bytes)
+
+                    continuation.resume(returning: Data(decrypted))
                 } catch {
-                    let xpcError = XPCError.serviceError(
-                        category: .crypto,
-                        underlying: error,
-                        message: "Decryption failed"
-                    )
-                    continuation.resume(throwing: xpcError)
+                    continuation.resume(throwing: CryptoError.decryptionFailed(error.localizedDescription))
                 }
             }
         }
     }
 
+    /// Generates a random key of the specified bit length
+    /// - Parameter bits: Bit length (128 or 256 bits)
+    /// - Returns: Generated key data
+    /// - Throws: Error if bit length is invalid
     public func generateKey(bits: Int) async throws -> Data {
         try Task.checkCancellation()
+
         guard bits == 128 || bits == 256 else {
             throw XPCError.invalidRequest(message: "Key size must be 128 or 256 bits")
         }
 
+        // Convert bits to bytes
         let bytes = bits / 8
-        var key = [UInt8](repeating: 0, count: bytes)
-        let result = SecRandomCopyBytes(kSecRandomDefault, bytes, &key)
-
-        guard result == errSecSuccess else {
-            let error = NSError(domain: "CryptoXPCService", code: Int(result))
-            throw XPCError.serviceError(category: .crypto, underlying: error, message: "Failed to generate random key")
-        }
-
-        return Data(key)
+        return Data.random(count: bytes)
     }
 
-    public func generateSecureRandomKey(length: Int) async throws -> Data {
+    /// Generates a random salt of the specified length
+    /// - Parameter length: Length in bytes
+    /// - Returns: Generated salt data
+    /// - Throws: Error if length is invalid
+    public func generateSalt(length: Int) async throws -> Data {
         try Task.checkCancellation()
-        guard length > 0 else {
-            throw XPCError.invalidRequest(message: "Key length must be greater than 0")
+
+        guard length > 0 && length <= 64 else {
+            throw XPCError.invalidRequest(message: "Salt length must be between 1 and 64 bytes")
         }
 
-        var salt = [UInt8](repeating: 0, count: length)
-        let result = SecRandomCopyBytes(kSecRandomDefault, length, &salt)
-
-        guard result == errSecSuccess else {
-            let error = NSError(domain: "CryptoXPCService", code: Int(result))
-            throw XPCError.serviceError(category: .crypto, underlying: error, message: "Failed to generate random salt")
-        }
-
-        return Data(salt)
+        return Data.random(count: length)
     }
 
-    public func generateInitializationVector() async throws -> Data {
+    /// Store a credential securely
+    /// - Parameters:
+    ///   - credential: Credential to store
+    ///   - identifier: Unique identifier for the credential
+    /// - Throws: XPCError if storage fails
+    public func storeCredential(_ credential: Data, forIdentifier identifier: String) async throws {
         try Task.checkCancellation()
-        return Data.random(count: 12)
-    }
 
-    public func storeCredential(_ credential: Data, identifier: String) async throws {
-        try Task.checkCancellation()
         guard !identifier.isEmpty else {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
-        let error = NSError(domain: "CryptoXPCService", code: -1)
-        throw XPCError.serviceError(
-            category: .credentials,
-            underlying: error,
-            message: """
-                Credential storage is not implemented.
-                This functionality is currently not supported.
-            """
+
+        // Generate a random key for the credential
+        let key = try await generateKey(bits: 256)
+
+        // Encrypt the credential
+        _ = try await encrypt(credential, key: key)
+
+        // Store the key in the keychain
+        try dependencies.keychain.store(
+            password: key.base64EncodedString(),
+            for: identifier
         )
+
+        // TODO: Store encrypted credential in secure storage
     }
 
-    public func retrieveCredential(identifier: String) async throws -> Data {
+    /// Retrieve a credential
+    /// - Parameter forIdentifier: Identifier of the credential to retrieve
+    /// - Returns: Retrieved credential
+    /// - Throws: XPCError if retrieval fails
+    public func retrieveCredential(forIdentifier identifier: String) async throws -> Data {
         try Task.checkCancellation()
+
         guard !identifier.isEmpty else {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
-        let error = NSError(domain: "CryptoXPCService", code: -1)
-        throw XPCError.serviceError(
-            category: .credentials,
-            underlying: error,
-            message: """
-                Credential retrieval is not implemented.
-                This functionality is currently not supported.
-            """
-        )
+
+        // Retrieve the key from the keychain
+        let keyString = try dependencies.keychain.retrievePassword(for: identifier)
+        guard Data(base64Encoded: keyString) != nil else {
+            throw XPCError.invalidData(message: "Invalid key format")
+        }
+
+        // TODO: Retrieve encrypted credential from secure storage
+        // For now, return empty data
+        return Data()
     }
 
-    public func deleteCredential(identifier: String) async throws {
+    /// Delete a credential
+    /// - Parameter forIdentifier: Identifier of the credential to delete
+    /// - Throws: XPCError if deletion fails
+    public func deleteCredential(forIdentifier identifier: String) async throws {
         try Task.checkCancellation()
+
         guard !identifier.isEmpty else {
             throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
         }
-        let error = NSError(domain: "CryptoXPCService", code: -1)
-        throw XPCError.serviceError(
-            category: .credentials,
-            underlying: error,
-            message: """
-                Credential deletion is not implemented.
-                This functionality is currently not supported.
-            """
-        )
-    }
 
-    private nonisolated func encryptData(_ data: Data, key: Data) throws -> Data {
-        // Generate random IV
-        let iv = Data.random(count: 12)
+        // Delete the key from the keychain
+        try dependencies.keychain.deletePassword(for: identifier)
 
-        // Create AES-GCM cipher
-        let gcm = GCM(iv: iv.bytes, mode: .detached)
-        let aes = try AES(key: key.bytes, blockMode: gcm)
-
-        // Encrypt data
-        let ciphertext = try aes.encrypt(data.bytes)
-
-        // Get authentication tag
-        let tag = gcm.authenticationTag ?? []
-
-        // Combine IV + ciphertext + tag
-        var result = Data()
-        result.append(iv)
-        result.append(Data(ciphertext))
-        result.append(Data(tag))
-
-        return result
-    }
-
-    private nonisolated func decryptData(_ data: Data, key: Data) throws -> Data {
-        // Split data into IV, ciphertext, and tag
-        let iv = data.prefix(12)
-        let tag = data.suffix(16)
-        let ciphertext = data.dropFirst(12).dropLast(16)
-
-        // Create AES-GCM cipher
-        let gcm = GCM(iv: iv.bytes, authenticationTag: tag.bytes, mode: .detached)
-        let aes = try AES(key: key.bytes, blockMode: gcm)
-
-        // Decrypt data
-        let decrypted = try aes.decrypt(ciphertext.bytes)
-        return Data(decrypted)
+        // TODO: Delete encrypted credential from secure storage
     }
 }

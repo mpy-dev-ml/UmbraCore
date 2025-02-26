@@ -94,10 +94,11 @@ public enum Core {
     public static let version = "1.0.0"
 
     /// Flag indicating whether the Core framework has been initialised
-    private static var isInitialized = false
+    @MainActor private static var isInitialized = false
 
     /// Initialises the core framework and its essential services.
     /// - Throws: CoreError if framework is already initialised or if service initialisation fails
+    @MainActor
     public static func initialize() async throws {
         // Ensure framework is in a valid state for initialisation
         guard !isInitialized else {
@@ -105,7 +106,9 @@ public enum Core {
         }
         do {
             // Initialize essential services
-            try await ServiceContainer.shared.initialize()
+            // Commented out until ServiceContainer is implemented
+            // try await ServiceContainer.shared.initialize()
+
             // Mark framework as initialized
             isInitialized = true
         } catch {

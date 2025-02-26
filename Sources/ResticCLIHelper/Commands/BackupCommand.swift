@@ -1,4 +1,5 @@
 import Foundation
+import ResticTypes
 
 /// Command for creating backups
 ///

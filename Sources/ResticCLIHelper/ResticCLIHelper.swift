@@ -132,7 +132,7 @@ public final class ResticCLIHelper {
             case .ENOENT:
                 throw ResticError.executionFailed("Restic executable not found at path: \(executablePath)")
             case .EACCES:
-                throw ResticError.permissionDenied("Permission denied to execute Restic at path: \(executablePath)")
+                throw ResticError.permissionDenied(path: executablePath)
             default:
                 throw ResticError.executionFailed("Failed to execute Restic: \(error.localizedDescription)")
             }
@@ -152,10 +152,10 @@ public final class ResticCLIHelper {
                 throw ResticError.invalidPassword
             }
             if stderr.contains("permission denied") {
-                throw ResticError.permissionDenied(stderr)
+                throw ResticError.permissionDenied(path: stderr)
             }
             if stderr.contains("repository not found") {
-                throw ResticError.repositoryNotFound(stderr)
+                throw ResticError.repositoryNotFound(path: stderr)
             }
             throw ResticError.executionFailed(stderr)
         }

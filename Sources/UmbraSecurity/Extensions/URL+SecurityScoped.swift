@@ -15,7 +15,7 @@ extension URL {
                 relativeTo: nil
             )
         } catch {
-            throw SecurityError.bookmarkCreationFailed(reason: "Failed to create bookmark for: \(path)")
+            throw SecurityError.bookmarkError("Failed to create bookmark for: \(path)")
         }
     }
 
@@ -34,7 +34,7 @@ extension URL {
             )
             return (url, isStale)
         } catch {
-            throw SecurityError.bookmarkResolutionFailed(reason: "Failed to resolve bookmark")
+            throw SecurityError.bookmarkError("Failed to resolve bookmark")
         }
     }
 
