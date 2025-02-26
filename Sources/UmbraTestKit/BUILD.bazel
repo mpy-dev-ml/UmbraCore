@@ -8,6 +8,7 @@ umbra_swift_library(
         ["**/*.swift"],
         allow_empty = True,
     ),
+    additional_copts = [],
     deps = [
         "//Sources/Core",
         "//Sources/CryptoTypes",

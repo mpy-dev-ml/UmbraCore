@@ -32,7 +32,7 @@ build --features=swift.enable_concurrency_checking
 build --features=swift.use_global_index_store
 build --strategy=SwiftCompile=worker
 build --worker_max_instances=4
-build --worker_sandboxing
+# build --worker_sandboxing
 
 # C++ settings for crypto dependencies
 build --cxxopt=-std=c++14
@@ -63,7 +63,7 @@ coverage --instrumentation_filter="^//Sources"
 build --incompatible_strict_action_env
 build --remote_local_fallback
 build --spawn_strategy=local,sandboxed
-build --sandbox_default_allow_network=false
+# build --sandbox_default_allow_network=false
 
 # Build configurations
 build:debug -c dbg

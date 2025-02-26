@@ -1,4 +1,7 @@
-import Core
+@testable import Core
+import CoreTypes
+import CryptoTypes
+import Services
 import XCTest
 
 /// Mock service for testing
@@ -23,19 +26,19 @@ actor MockService: UmbraService {
     }
 
     func initialize() async throws {
-        state = .initializing
-        _state = .initializing
+        state = ServiceState.initializing
+        _state = ServiceState.initializing
         _initializeCalled = true
-        state = .ready
-        _state = .ready
+        state = ServiceState.ready
+        _state = ServiceState.ready
     }
 
     func shutdown() async {
-        state = .shuttingDown
-        _state = .shuttingDown
+        state = ServiceState.shuttingDown
+        _state = ServiceState.shuttingDown
         _shutdownCalled = true
-        state = .shutdown
-        _state = .shutdown
+        state = ServiceState.shutdown
+        _state = ServiceState.shutdown
     }
 }
 
@@ -53,19 +56,19 @@ actor DependentMockService: UmbraService {
     }
 
     func initialize() async throws {
-        state = .initializing
-        _state = .initializing
+        state = ServiceState.initializing
+        _state = ServiceState.initializing
         _ = await dependency.state
-        state = .ready
-        _state = .ready
+        state = ServiceState.ready
+        _state = ServiceState.ready
     }
 
     func shutdown() async {
-        state = .shuttingDown
-        _state = .shuttingDown
+        state = ServiceState.shuttingDown
+        _state = ServiceState.shuttingDown
         await dependency.shutdown()
-        state = .shutdown
-        _state = .shutdown
+        state = ServiceState.shutdown
+        _state = ServiceState.shutdown
     }
 }
 
@@ -80,19 +83,19 @@ final class ServiceTests: XCTestCase {
 
         try await container.register(service)
         let initialState = service.state
-        XCTAssertEqual(initialState, .uninitialized)
+        XCTAssertEqual(initialState, ServiceState.uninitialized)
 
         try await container.initialiseAll()
         let isInitialized = await service.initializeCalled
         let readyState = service.state
         XCTAssertTrue(isInitialized)
-        XCTAssertEqual(readyState, .ready)
+        XCTAssertEqual(readyState, ServiceState.ready)
 
         await container.shutdownAll()
         let isShutdown = await service.shutdownCalled
         let finalState = service.state
         XCTAssertTrue(isShutdown)
-        XCTAssertEqual(finalState, .shutdown)
+        XCTAssertEqual(finalState, ServiceState.shutdown)
     }
 
     // MARK: - Dependency Tests
@@ -109,14 +112,14 @@ final class ServiceTests: XCTestCase {
         try await container.initialiseAll()
         let depState = dependency.state
         let svcState = service.state
-        XCTAssertEqual(depState, .ready)
-        XCTAssertEqual(svcState, .ready)
+        XCTAssertEqual(depState, ServiceState.ready)
+        XCTAssertEqual(svcState, ServiceState.ready)
 
         await container.shutdownAll()
         let depFinalState = dependency.state
         let svcFinalState = service.state
-        XCTAssertEqual(depFinalState, .shutdown)
-        XCTAssertEqual(svcFinalState, .shutdown)
+        XCTAssertEqual(depFinalState, ServiceState.shutdown)
+        XCTAssertEqual(svcFinalState, ServiceState.shutdown)
     }
 
     // MARK: - Scale Tests
@@ -133,13 +136,13 @@ final class ServiceTests: XCTestCase {
         try await container.initialiseAll()
         for service in services {
             let state = service.state
-            XCTAssertEqual(state, .ready)
+            XCTAssertEqual(state, ServiceState.ready)
         }
 
         await container.shutdownAll()
         for service in services {
             let state = service.state
-            XCTAssertEqual(state, .shutdown)
+            XCTAssertEqual(state, ServiceState.shutdown)
         }
     }
 
@@ -155,7 +158,7 @@ final class ServiceTests: XCTestCase {
         do {
             try await container.register(service)
             XCTFail("Expected duplicate registration error")
-        } catch let error as ServiceError {
+        } catch let error as CoreError {
             XCTAssertTrue(error.errorDescription?.contains("already registered") == true)
         }
 
@@ -163,7 +166,7 @@ final class ServiceTests: XCTestCase {
         do {
             _ = try await container.resolve(CryptoService.self)
             XCTFail("Expected service not found error")
-        } catch let error as ServiceError {
+        } catch let error as CoreError {
             XCTAssertTrue(error.errorDescription?.contains("not found") == true)
         }
     }

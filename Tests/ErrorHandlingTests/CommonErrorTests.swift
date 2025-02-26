@@ -1,4 +1,6 @@
 @testable import ErrorHandling
+@testable import ErrorHandlingModels
+@testable import CoreTypes
 import Testing
 
 final class CommonErrorTests {
@@ -37,8 +39,8 @@ final class CommonErrorTests {
         )
 
         #expect(context.source == "TestModule")
-        #expect(context.operation == "serviceInit")
-        #expect(context.details == "Service initialization failed")
-        #expect(context.underlyingError as? CommonError == error)
+        #expect(context.message.contains("Service initialization failed"))
+        #expect(context.metadata?["operation"] == "serviceInit")
+        #expect(error.localizedDescription == "Required dependency unavailable: Test service")
     }
 }

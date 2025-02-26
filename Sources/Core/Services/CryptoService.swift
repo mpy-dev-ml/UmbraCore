@@ -223,7 +223,7 @@ public actor CryptoService: UmbraService {
     ///   - salt: Salt for key derivation.
     /// - Returns: Derived key.
     /// - Throws: `CryptoError` on failure.
-    public func deriveKey(from password: String, salt: [UInt8]) throws -> [UInt8] {
+    public func deriveKey(from password: String, salt: [UInt8]) async throws -> [UInt8] {
         guard _state == .ready else {
             throw ServiceError.invalidState("Service not ready")
         }

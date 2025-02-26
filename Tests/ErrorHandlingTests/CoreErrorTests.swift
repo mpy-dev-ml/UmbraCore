@@ -2,12 +2,9 @@
 @testable import ErrorHandlingCommon
 @testable import ErrorHandlingModels
 @testable import ErrorHandlingProtocols
-import Testing
 import XCTest
 
-@Suite("CoreError Tests")
-struct CoreErrorTests {
-    @Test("Test core error descriptions")
+final class CoreErrorTests: XCTestCase {
     func testCoreErrorDescriptions() {
         // Test authentication failed error
         let authError = CoreError.authenticationFailed
@@ -26,7 +23,6 @@ struct CoreErrorTests {
         XCTAssertEqual(sysError.errorDescription, "System error: Process terminated unexpectedly")
     }
 
-    @Test("Test error severity levels")
     func testErrorSeverityLevels() {
         XCTAssertEqual(ErrorSeverity.critical.rawValue, "critical")
         XCTAssertEqual(ErrorSeverity.error.rawValue, "error")
@@ -34,7 +30,6 @@ struct CoreErrorTests {
         XCTAssertEqual(ErrorSeverity.info.rawValue, "info")
     }
 
-    @Test("Test service error types")
     func testServiceErrorTypes() {
         XCTAssertEqual(ServiceErrorType.configuration.description, "Configuration Error")
         XCTAssertEqual(ServiceErrorType.operation.description, "Operation Error")
@@ -51,10 +46,10 @@ struct TestServiceError: ServiceErrorProtocol {
     let errorType: ServiceErrorType
     let contextInfo: [String: String]
     let message: String
-    var severity: ErrorSeverity = .error
+    var severity: ErrorSeverity = ErrorSeverity.error
     var isRecoverable: Bool = false
     var recoverySteps: [String]?
-    var errorContext: ErrorContext?
+    var errorContext: ErrorHandlingModels.ErrorContext?
 
     var category: String { errorType.rawValue }
     var description: String { "[\(severity.rawValue.uppercased())] \(errorType.description): \(message)" }
@@ -70,17 +65,15 @@ struct TestServiceError: ServiceErrorProtocol {
     }
 }
 
-@Suite("Service Error Tests")
-struct ServiceErrorTests {
-    @Test("Test service error type")
+final class ServiceErrorTests: XCTestCase {
     func testServiceErrorType() {
         let error = TestServiceError(
-            errorType: .configuration,
+            errorType: ServiceErrorType.configuration,
             contextInfo: ["key": "value"],
             message: "Test error"
         )
 
-        XCTAssertEqual(error.severity, .error) // Default severity
+        XCTAssertEqual(error.severity, ErrorSeverity.error) // Default severity
         XCTAssertFalse(error.isRecoverable) // Default not recoverable
         XCTAssertEqual(error.category, "Configuration")
         XCTAssertEqual(error.description, "[ERROR] Configuration Error: Test error")

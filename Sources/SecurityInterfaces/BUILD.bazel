@@ -6,22 +6,55 @@ umbra_swift_library(
     name = "SecurityInterfacesCore",
     srcs = [
         "SecurityError.swift",
+        "SecurityProvider.swift",
+        "SecurityProviderBase.swift",
     ],
+    additional_copts = [],
     deps = [
         "//Sources/CoreTypes",
         "//Sources/ErrorHandling",
     ],
 )
 
-# Main module with Foundation dependencies
+# Foundation-dependent interfaces
 umbra_swift_library(
-    name = "SecurityInterfaces",
+    name = "SecurityInterfacesFoundation",
     srcs = [
-        "SecurityProvider.swift",
+        "SecurityProviderFoundation.swift",
         "XPCServiceProtocol.swift",
     ],
+    additional_copts = [],
+    deps = [
+        "//Sources/CoreTypes",
+        "//Sources/ErrorHandling",
+        ":SecurityInterfacesCore",
+    ],
+)
+
+# Main SecurityInterfaces module
+swift_library(
+    name = "SecurityInterfaces",
+    srcs = glob(
+        ["**/*.swift"],
+        exclude = [
+            "SecurityError.swift",
+            "SecurityProvider.swift",
+            "SecurityProviderBase.swift",
+            "SecurityProviderFoundation.swift",
+            "XPCServiceProtocol.swift",
+        ],
+    ),
+    copts = [
+        "-target",
+        "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
+    ],
+    module_name = "SecurityInterfaces",
+    visibility = ["//visibility:public"],
     deps = [
         ":SecurityInterfacesCore",
-        "//Sources/CoreTypes",
+        ":SecurityInterfacesFoundation",
     ],
 )

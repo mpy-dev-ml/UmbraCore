@@ -5,14 +5,17 @@ import XCTest
 @available(macOS 14.0, *)
 final class CryptoXPCServiceTests: XCTestCase {
     var service: CryptoXPCService!
+    var dependencies: MockCryptoXPCServiceDependencies!
 
     override func setUp() async throws {
         try await super.setUp()
-        service = await CryptoXPCService()
+        dependencies = MockCryptoXPCServiceDependencies()
+        service = await CryptoXPCService(dependencies: dependencies)
     }
 
     override func tearDown() async throws {
         service = nil
+        dependencies = nil
         try await super.tearDown()
     }
 

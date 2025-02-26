@@ -2,7 +2,16 @@ import Foundation
 
 @available(macOS 14.0, *)
 public actor XPCConnectionManager {
+    /// Dictionary of connections marked as unchecked Sendable because NSXPCConnection is thread-safe
+    /// for invalidation operations but doesn't conform to Sendable protocol
     private var connections: [String: NSXPCConnection] = [:]
+    
+    /// Nonisolated collection of connections for use in deinit
+    /// This is safe because:
+    /// 1. NSXPCConnection is thread-safe for invalidation
+    /// 2. We're only using this for thread-safe operations in deinit
+    private nonisolated let deinitConnectionHandler = DeinitConnectionHandler()
+    
     private let serviceName: String
     private let interfaceProtocol: Protocol
 
@@ -51,21 +60,29 @@ public actor XPCConnectionManager {
 
         // Store the connection
         connections[serviceName] = connection
+        
+        // Also store in our deinit handler
+        deinitConnectionHandler.addConnection(connection)
 
         return connection
     }
 
     private func handleInvalidation(for serviceName: String) {
-        connections.removeValue(forKey: serviceName)
+        if let connection = connections.removeValue(forKey: serviceName) {
+            deinitConnectionHandler.removeConnection(connection)
+        }
     }
 
     private func handleInterruption(for serviceName: String) {
         // Handle interruption - could implement retry logic here
-        connections.removeValue(forKey: serviceName)
+        if let connection = connections.removeValue(forKey: serviceName) {
+            deinitConnectionHandler.removeConnection(connection)
+        }
     }
 
     public func invalidateConnection(for serviceName: String) {
         if let connection = connections.removeValue(forKey: serviceName) {
+            deinitConnectionHandler.removeConnection(connection)
             connection.invalidate()
         }
     }
@@ -74,6 +91,9 @@ public actor XPCConnectionManager {
         // Take a snapshot of the connections to avoid mutation during iteration
         let connectionsToInvalidate = connections
         connections.removeAll()
+        
+        // Update deinit handler
+        deinitConnectionHandler.removeAllConnections()
 
         for connection in connectionsToInvalidate.values {
             connection.invalidate()
@@ -81,12 +101,45 @@ public actor XPCConnectionManager {
     }
 
     deinit {
-        // Note: We can't use async/await in deinit, so we'll invalidate synchronously
-        // Take a snapshot of the connections to avoid mutation during iteration
-        let connectionsToInvalidate = connections
-        connections.removeAll()
+        // Note: We can't use async/await in deinit, but NSXPCConnection is thread-safe for invalidation
+        // We use the nonisolated DeinitConnectionHandler which is safe for the operations we're performing
+        deinitConnectionHandler.invalidateAllConnections()
+    }
+}
 
-        for connection in connectionsToInvalidate.values {
+/// Helper class to manage connections for deinit
+/// This class is nonisolated and can be safely used in deinit
+@available(macOS 14.0, *)
+private final class DeinitConnectionHandler: @unchecked Sendable {
+    // Using NSMutableSet for thread-safe operations
+    private let connections = NSMutableSet()
+    private let lock = NSLock()
+    
+    func addConnection(_ connection: NSXPCConnection) {
+        lock.lock()
+        defer { lock.unlock() }
+        connections.add(connection)
+    }
+    
+    func removeConnection(_ connection: NSXPCConnection) {
+        lock.lock()
+        defer { lock.unlock() }
+        connections.remove(connection)
+    }
+    
+    func removeAllConnections() {
+        lock.lock()
+        defer { lock.unlock() }
+        connections.removeAllObjects()
+    }
+    
+    func invalidateAllConnections() {
+        lock.lock()
+        let connectionsCopy = connections.copy() as! NSSet
+        connections.removeAllObjects()
+        lock.unlock()
+        
+        for case let connection as NSXPCConnection in connectionsCopy {
             connection.invalidate()
         }
     }

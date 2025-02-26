@@ -1,0 +1,1044 @@
+Starting local Bazel server (8.1.0) and connecting to it...
+WARNING: Enabling both --slim_profile and --experimental_profile_include_primary_output: the "out" field will be omitted in merged actions.
+INFO: Invocation ID: 0f4aa220-8164-455b-a99f-fa9d4725e105
+Computing main repo mapping: 
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Loading: 0 packages loaded
+Loading: 0 packages loaded
+Loading: 6 packages loaded
+    currently loading: Sources/UmbraLogging ... (85 packages)
+Analyzing: 93 targets (91 packages loaded)
+Analyzing: 93 targets (93 packages loaded, 7 targets configured)
+Analyzing: 93 targets (93 packages loaded, 7 targets configured)
+
+Analyzing: 93 targets (116 packages loaded, 19 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (149 packages loaded, 197 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (157 packages loaded, 1458 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (195 packages loaded, 2544 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (209 packages loaded, 5436 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (210 packages loaded, 5452 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (210 packages loaded, 5452 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (210 packages loaded, 5452 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (210 packages loaded, 5452 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (212 packages loaded, 15349 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (212 packages loaded, 15362 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (218 packages loaded, 15455 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (221 packages loaded, 15556 targets configured)
+[1 / 1] no actions running
+Analyzing: 93 targets (223 packages loaded, 15691 targets configured)
+[11 / 39] [Prepa] Compiling tools/common/bazel_substitutions.cc [for tool] ... (10 actions, 0 running)
+Analyzing: 93 targets (223 packages loaded, 15753 targets configured)
+[110 / 247] [Prepa] Compiling Swift module //Sources/ErrorHandling/Models:ErrorHandlingModels ... (9 actions, 0 running)
+Analyzing: 93 targets (223 packages loaded, 15771 targets configured)
+[236 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 0s disk-cache, worker ... (9 actions, 4 running)
+INFO: From Compiling Swift module //Sources/TestUtils:TestUtils:
+Sources/TestUtils/TestUtils.swift:69:17: warning: no calls to throwing functions occur within 'try' expression
+67 |     ) async throws {
+68 |         let start = Date()
+69 |         while !(try await condition()) {
+   |                 `- warning: no calls to throwing functions occur within 'try' expression
+70 |             if Date().timeIntervalSince(start) > timeout {
+71 |                 throw TestError.timeout(description)
+INFO: From Compiling Swift module //Sources/SecurityUtils:SecurityUtils:
+Sources/SecurityUtils/SecurityUtils.swift:29:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+27 | 
+28 |         guard result == errSecSuccess else {
+29 |             throw SecurityError.randomGenerationFailed
+   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+30 |         }
+31 | 
+INFO: From Compiling Swift module //Sources/CryptoTypes/Types:CryptoTypesTypes:
+Sources/CryptoTypes/Types/CredentialManager.swift:54:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+52 |     func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
+53 |         guard let item = items[key] else {
+54 |             throw SecurityError.itemNotFound
+   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+55 |         }
+56 |         return (item.data, item.metadata)
+
+Sources/CryptoTypes/Types/CredentialManager.swift:66:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+64 |     func delete(forKey key: String) async throws {
+65 |         guard items.removeValue(forKey: key) != nil else {
+66 |             throw SecurityError.itemNotFound
+   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+67 |         }
+68 |     }
+INFO: From Compiling Swift module //Sources/Repositories:Repositories:
+Sources/Repositories/FileSystemRepository.swift:111:12: warning: non-sendable type 'any Decoder' in parameter of the protocol requirement satisfied by nonisolated initializer 'init(from:)' cannot cross actor boundary; this is an error in the Swift 6 language mode
+109 | 
+110 |     // Fix the Decoder parameter syntax and remove nonisolated modifier
+111 |     public init(from decoder: Decoder) throws {
+    |            `- warning: non-sendable type 'any Decoder' in parameter of the protocol requirement satisfied by nonisolated initializer 'init(from:)' cannot cross actor boundary; this is an error in the Swift 6 language mode
+112 |         let container = try decoder.container(keyedBy: CodingKeys.self)
+113 |         self.identifier = try container.decode(String.self, forKey: .identifier)
+
+Swift.Decoder:1:17: note: protocol 'Decoder' does not conform to the 'Sendable' protocol
+1 | public protocol Decoder {
+  |                 `- note: protocol 'Decoder' does not conform to the 'Sendable' protocol
+2 |     var codingPath: [any CodingKey] { get }
+3 |     var userInfo: [CodingUserInfoKey : Any] { get }
+
+Sources/Repositories/RepositoryService+HealthCheck.swift:67:17: warning: initialization of immutable value 'stats' was never used; consider replacing with assignment to '_' or removing it
+ 65 | 
+ 66 |         do {
+ 67 |             let stats = try await repository.check(
+    |                 `- warning: initialization of immutable value 'stats' was never used; consider replacing with assignment to '_' or removing it
+ 68 |                 readData: options.readData,
+ 69 |                 checkUnused: options.checkUnused
+
+Sources/Repositories/RepositoryService+HealthCheck.swift:116:21: warning: initialization of immutable value 'stats' was never used; consider replacing with assignment to '_' or removing it
+114 | 
+115 |             do {
+116 |                 let stats = try await repository.check(
+    |                     `- warning: initialization of immutable value 'stats' was never used; consider replacing with assignment to '_' or removing it
+117 |                     readData: options.readData,
+118 |                     checkUnused: options.checkUnused
+
+Sources/Repositories/RepositoryService.swift:166:14: warning: immutable value 'identifier' was never used; consider replacing with '_' or removing it
+164 |         )
+165 | 
+166 |         for (identifier, repository) in await repositories {
+    |              `- warning: immutable value 'identifier' was never used; consider replacing with '_' or removing it
+167 |             if await repository.location.path == path {
+168 |                 return repository
+
+Sources/Repositories/RepositoryService.swift:166:41: warning: no 'async' operations occur within 'await' expression
+164 |         )
+165 | 
+166 |         for (identifier, repository) in await repositories {
+    |                                         `- warning: no 'async' operations occur within 'await' expression
+167 |             if await repository.location.path == path {
+168 |                 return repository
+INFO: From Compiling Swift module //Sources/UmbraBookmarkService:UmbraBookmarkService:
+Sources/UmbraBookmarkService/BookmarkServiceProtocol.swift:36:5: warning: @discardableResult declared on a function returning Void is unnecessary
+34 |     /// - Throws: BookmarkError if access cannot be started
+35 |     @preconcurrency
+36 |     @discardableResult
+   |     `- warning: @discardableResult declared on a function returning Void is unnecessary
+37 |     func startAccessing(
+38 |         _ url: URL
+
+Sources/UmbraBookmarkService/BookmarkServiceProtocol.swift:44:5: warning: @discardableResult declared on a function returning Void is unnecessary
+42 |     /// - Parameter url: The URL of the resource to stop accessing
+43 |     @preconcurrency
+44 |     @discardableResult
+   |     `- warning: @discardableResult declared on a function returning Void is unnecessary
+45 |     func stopAccessing(
+46 |         _ url: URL
+
+Sources/UmbraBookmarkService/BookmarkService.swift:94:44: warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
+ 92 |         Task { @MainActor in
+ 93 |             newConnection.exportedInterface = NSXPCInterface(with: BookmarkServiceProtocol.self)
+ 94 |             newConnection.exportedObject = self
+    |                                            |- warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
+    |                                            `- note: task-isolated 'self' is captured by a main actor-isolated closure. main actor-isolated uses in closure may race against later nonisolated uses
+ 95 |             newConnection.resume()
+ 96 |         }
+INFO: From Compiling Swift module //Sources/CryptoTypes/Services:CryptoTypesServices:
+Sources/CryptoTypes/Services/CredentialManager.swift:86:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 84 |     func load(forKey key: String) async throws -> Data {
+ 85 |         guard let item = items[key] else {
+ 86 |             throw SecurityError.accessError("Item not found: \(key)")
+    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 87 |         }
+ 88 |         return item.data
+
+Sources/CryptoTypes/Services/CredentialManager.swift:93:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 91 |     func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
+ 92 |         guard let item = items[key] else {
+ 93 |             throw SecurityError.accessError("Item not found: \(key)")
+    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 94 |         }
+ 95 |         return (item.data, item.metadata)
+
+Sources/CryptoTypes/Services/CredentialManager.swift:100:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 98 |     func delete(forKey key: String) async throws {
+ 99 |         guard items.removeValue(forKey: key) != nil else {
+100 |             throw SecurityError.accessError("Item not found: \(key)")
+    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+101 |         }
+102 |     }
+
+Sources/CryptoTypes/Services/CredentialManager.swift:114:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+112 |     func updateMetadata(_ metadata: [String: String], forKey key: String) async throws {
+113 |         guard var item = items[key] else {
+114 |             throw SecurityError.accessError("Item not found: \(key)")
+    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+115 |         }
+116 |         item.metadata = metadata
+INFO: From Compiling Swift module //Sources/Services/SecurityUtils/Services:SecurityUtilsServices:
+Sources/Services/SecurityUtils/Services/PathURLProvider.swift:8:17: warning: stored property 'fileManager' of 'Sendable'-conforming struct 'PathURLProvider' has non-sendable type 'FileManager'; this is an error in the Swift 6 language mode
+ 6 | 
+ 7 |     /// FileManager instance
+ 8 |     private let fileManager: FileManager
+   |                 `- warning: stored property 'fileManager' of 'Sendable'-conforming struct 'PathURLProvider' has non-sendable type 'FileManager'; this is an error in the Swift 6 language mode
+ 9 | 
+10 |     /// Initialize a new PathURLProvider
+
+Foundation.FileManager:1:12: note: class 'FileManager' does not conform to the 'Sendable' protocol
+  1 | open class FileManager : NSObject {
+    |            `- note: class 'FileManager' does not conform to the 'Sendable' protocol
+  2 |     open class var `default`: FileManager { get }
+  3 |     @available(swift, obsoleted: 3, renamed: "default")
+
+Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift:27:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+25 |         // Start accessing the resource before creating bookmark
+26 |         guard fileURL.startAccessingSecurityScopedResource() else {
+27 |             throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
+   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+28 |         }
+29 |         defer { fileURL.stopAccessingSecurityScopedResource() }
+
+Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift:58:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+56 |             return url
+57 |         } catch {
+58 |             throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+59 |         }
+60 |     }
+
+Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift:77:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+75 |         // Start accessing the resource
+76 |         guard fileURL.startAccessingSecurityScopedResource() else {
+77 |             throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
+   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+78 |         }
+79 | 
+INFO: From Compiling Swift module //Sources/Core/Services:CoreServices:
+Sources/Core/Services/KeyManager.swift:127:9: warning: will never be executed
+125 |         }
+126 | 
+127 |         return identifier
+    |         `- warning: will never be executed
+128 |     }
+129 | 
+INFO: From Compiling Swift module //Sources/Core:Core:
+Sources/Core/Core.swift:114:11: warning: 'catch' block is unreachable because no errors are thrown in 'do' block
+112 |             // Mark framework as initialized
+113 |             isInitialized = true
+114 |         } catch {
+    |           `- warning: 'catch' block is unreachable because no errors are thrown in 'do' block
+115 |             throw CoreError.initialisationError("Failed to initialise services: \(error.localizedDescription)")
+116 |         }
+INFO: From Compiling Swift module //Sources/UmbraCryptoService:UmbraCryptoService:
+Sources/UmbraCryptoService/CryptoServiceListener.swift:54:41: warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
+52 |             // Set up the connection interfaces
+53 |             connection.exportedInterface = interface
+54 |             connection.exportedObject = cryptoService
+   |                                         |- warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
+   |                                         `- note: task-isolated 'self' is captured by a main actor-isolated closure. main actor-isolated uses in closure may race against later nonisolated uses
+55 | 
+56 |             // Configure remote interface
+Analyzing: 93 targets (223 packages loaded, 15771 targets configured)
+[299 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 1s disk-cache, worker ... (9 actions, 8 running)
+Analyzing: 93 targets (237 packages loaded, 15822 targets configured)
+[299 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 2s disk-cache, worker ... (9 actions, 8 running)
+ERROR: /Users/mpy/CascadeProjects/UmbraCore/Sources/UmbraSecurity/Services/BUILD.bazel:4:20: Compiling Swift module //Sources/UmbraSecurity/Services:UmbraSecurityServices failed: (Exit 1): worker failed: error executing SwiftCompile command (from target //Sources/UmbraSecurity/Services:UmbraSecurityServices) 
+  (cd /Users/mpy/.bazel/execroot/_main && \
+  exec env - \
+    APPLE_SDK_PLATFORM=MacOSX \
+    APPLE_SDK_VERSION_OVERRIDE=15.2 \
+    CC=clang \
+    PATH=/Users/mpy/.rbenv/bin:/Users/mpy/.codeium/windsurf/bin:/opt/homebrew/opt/node@18/bin:/opt/homebrew/opt/node@20/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/mpy/.docker/bin:/opt/homebrew/opt/openjdk/bin:/Users/mpy/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/mpy/.cargo/bin:/Applications/kitty.app/Contents/MacOS:/Users/mpy/Library/Python/3.8/bin:/Users/mpy/go/bin:/Users/mpy/.scripts:/Users/mpy/.fzf/bin \
+    XCODE_VERSION_OVERRIDE=16.2.0.16C5032a \
+  bazel-out/darwin_x86_64-opt-exec-ST-d57f47055a04/bin/external/rules_swift+/tools/worker/worker swiftc @bazel-out/darwin_arm64-opt/bin/Sources/UmbraSecurity/Services/UmbraSecurityServices.swiftmodule-0.params)
+# Configuration: ceda03d963f40151499688b15e41be8f143928dc42288f9adca36aef8e5e2d50
+# Execution platform: @@platforms//host:host
+<unknown>:0: error: circular dependency between modules 'Foundation' and 'SecurityInterfacesFoundation'
+Analyzing: 93 targets (237 packages loaded, 15822 targets configured)
+[301 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 3s disk-cache, worker ... (8 actions running)
+Analyzing: 93 targets (239 packages loaded, 15828 targets configured)
+[312 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 4s disk-cache, worker ... (8 actions running)
+
+INFO: Analyzed 93 targets (241 packages loaded, 15873 targets configured).
+[320 / 387] Compiling Swift module //Tests/ModelsTests:ModelsTests; 5s disk-cache, worker ... (7 actions running)
+[341 / 431] Compiling Swift module //Tests/ModelsTests:ModelsTests; 6s disk-cache, worker ... (9 actions, 7 running)
+[390 / 431] Compiling Swift module //Tests/ModelsTests:ModelsTests; 7s disk-cache, worker ... (9 actions, 7 running)
+[393 / 431] Compiling Swift module //Tests/ModelsTests:ModelsTests; 8s disk-cache, worker ... (7 actions running)
+ERROR: /Users/mpy/CascadeProjects/UmbraCore/Tests/XPCTests/BUILD.bazel:4:17: Compiling Swift module //Tests/XPCTests:XPCTests failed: (Exit 1): worker failed: error executing SwiftCompile command (from target //Tests/XPCTests:XPCTests) 
+  (cd /Users/mpy/.bazel/execroot/_main && \
+  exec env - \
+    APPLE_SDK_PLATFORM=MacOSX \
+    APPLE_SDK_VERSION_OVERRIDE=15.2 \
+    CC=clang \
+    PATH=/Users/mpy/.rbenv/bin:/Users/mpy/.codeium/windsurf/bin:/opt/homebrew/opt/node@18/bin:/opt/homebrew/opt/node@20/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/mpy/.docker/bin:/opt/homebrew/opt/openjdk/bin:/Users/mpy/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/mpy/.cargo/bin:/Applications/kitty.app/Contents/MacOS:/Users/mpy/Library/Python/3.8/bin:/Users/mpy/go/bin:/Users/mpy/.scripts:/Users/mpy/.fzf/bin \
+    XCODE_VERSION_OVERRIDE=16.2.0.16C5032a \
+  bazel-out/darwin_x86_64-opt-exec-ST-d57f47055a04/bin/external/rules_swift+/tools/worker/worker swiftc @bazel-out/darwin_arm64-opt/bin/Tests/XPCTests/XPCTests.swiftmodule-0.params)
+# Configuration: f6b5b75f689fb9e2a1eb1a64e2e10182c2e5cb82ab5fbeaf52dd6ebdee3b7ea8
+# Execution platform: @@platforms//host:host
+Tests/XPCTests/MockCryptoXPCServiceDependencies.swift:21:7: error: inheritance from a final class 'UmbraKeychainService'
+19 | 
+20 | /// Mock implementation of UmbraKeychainService for testing
+21 | class MockKeychainService: UmbraKeychainService {
+   |       `- error: inheritance from a final class 'UmbraKeychainService'
+22 |     init() {
+23 |         super.init(identifier: "com.umbra.test.keychain")
+ERROR: /Users/mpy/CascadeProjects/UmbraCore/Tests/CoreTests/BUILD.bazel:4:17: Compiling Swift module //Tests/CoreTests:CoreTests failed: (Exit 1): worker failed: error executing SwiftCompile command (from target //Tests/CoreTests:CoreTests) 
+  (cd /Users/mpy/.bazel/execroot/_main && \
+  exec env - \
+    APPLE_SDK_PLATFORM=MacOSX \
+    APPLE_SDK_VERSION_OVERRIDE=15.2 \
+    CC=clang \
+    PATH=/Users/mpy/.rbenv/bin:/Users/mpy/.codeium/windsurf/bin:/opt/homebrew/opt/node@18/bin:/opt/homebrew/opt/node@20/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/mpy/.docker/bin:/opt/homebrew/opt/openjdk/bin:/Users/mpy/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/mpy/.cargo/bin:/Applications/kitty.app/Contents/MacOS:/Users/mpy/Library/Python/3.8/bin:/Users/mpy/go/bin:/Users/mpy/.scripts:/Users/mpy/.fzf/bin \
+    XCODE_VERSION_OVERRIDE=16.2.0.16C5032a \
+  bazel-out/darwin_x86_64-opt-exec-ST-d57f47055a04/bin/external/rules_swift+/tools/worker/worker swiftc @bazel-out/darwin_arm64-opt/bin/Tests/CoreTests/CoreTests.swiftmodule-0.params)
+# Configuration: f6b5b75f689fb9e2a1eb1a64e2e10182c2e5cb82ab5fbeaf52dd6ebdee3b7ea8
+# Execution platform: @@platforms//host:host
+Tests/CoreTests/CryptoTests.swift:9:28: error: cannot find type 'ServiceContainer' in scope
+  7 |     // MARK: - Properties
+  8 | 
+  9 |     private var container: ServiceContainer!
+    |                            `- error: cannot find type 'ServiceContainer' in scope
+ 10 |     private var service: CryptoService!
+ 11 | 
+
+Tests/CoreTests/CryptoTests.swift:10:26: error: cannot find type 'CryptoService' in scope
+  8 | 
+  9 |     private var container: ServiceContainer!
+ 10 |     private var service: CryptoService!
+    |                          `- error: cannot find type 'CryptoService' in scope
+ 11 | 
+ 12 |     // MARK: - Test Lifecycle
+
+Tests/CoreTests/CryptoTests.swift:15:21: error: cannot find 'ServiceContainer' in scope
+ 13 | 
+ 14 |     override func setUp() async throws {
+ 15 |         container = ServiceContainer()
+    |                     `- error: cannot find 'ServiceContainer' in scope
+ 16 |         service = CryptoService()
+ 17 |     }
+
+Tests/CoreTests/CryptoTests.swift:16:19: error: cannot find 'CryptoService' in scope
+ 14 |     override func setUp() async throws {
+ 15 |         container = ServiceContainer()
+ 16 |         service = CryptoService()
+    |                   `- error: cannot find 'CryptoService' in scope
+ 17 |     }
+ 18 | 
+
+Tests/CoreTests/CryptoTests.swift:20:21: error: 'nil' requires a contextual type
+ 18 | 
+ 19 |     override func tearDown() async throws {
+ 20 |         container = nil
+    |                     `- error: 'nil' requires a contextual type
+ 21 |         service = nil
+ 22 |     }
+
+Tests/CoreTests/CryptoTests.swift:21:19: error: 'nil' requires a contextual type
+ 19 |     override func tearDown() async throws {
+ 20 |         container = nil
+ 21 |         service = nil
+    |                   `- error: 'nil' requires a contextual type
+ 22 |     }
+ 23 | 
+
+Tests/CoreTests/CryptoTests.swift:32:14: error: type 'Equatable' has no member 'uninitialized'
+ 30 |         XCTAssertEqual(
+ 31 |             initialState,
+ 32 |             .uninitialized,
+    |              `- error: type 'Equatable' has no member 'uninitialized'
+ 33 |             "Service should start in uninitialized state"
+ 34 |         )
+
+Tests/CoreTests/CryptoTests.swift:40:14: error: type 'Equatable' has no member 'ready'
+ 38 |         XCTAssertEqual(
+ 39 |             readyState,
+ 40 |             .ready,
+    |              `- error: type 'Equatable' has no member 'ready'
+ 41 |             "Service should transition to ready state after initialization"
+ 42 |         )
+
+Tests/CoreTests/CryptoTests.swift:29:28: warning: no 'async' operations occur within 'await' expression
+ 27 |     func testServiceInitialization() async throws {
+ 28 |         try await container.register(service)
+ 29 |         let initialState = await service.state
+    |                            `- warning: no 'async' operations occur within 'await' expression
+ 30 |         XCTAssertEqual(
+ 31 |             initialState,
+
+Tests/CoreTests/CryptoTests.swift:37:26: warning: no 'async' operations occur within 'await' expression
+ 35 | 
+ 36 |         try await container.initialiseAll()
+ 37 |         let readyState = await service.state
+    |                          `- warning: no 'async' operations occur within 'await' expression
+ 38 |         XCTAssertEqual(
+ 39 |             readyState,
+
+Tests/CoreTests/CryptoTests.swift:145:30: error: cannot find type 'SecurityError' in scope
+143 |             _ = try await service.decrypt(encryptedResult, using: wrongKey)
+144 |             XCTFail("Decryption should fail with wrong key")
+145 |         } catch let error as SecurityError {
+    |                              `- error: cannot find type 'SecurityError' in scope
+146 |             XCTAssertTrue(
+147 |                 error.errorDescription?.contains("Decryption failed") == true,
+
+Tests/CoreTests/CryptoTests.swift:161:30: error: cannot find type 'ServiceError' in scope
+159 |             _ = try await service.generateKey()
+160 |             XCTFail("Service should not allow operations before initialization")
+161 |         } catch let error as ServiceError {
+    |                              `- error: cannot find type 'ServiceError' in scope
+162 |             XCTAssertTrue(
+163 |                 error.errorDescription?.contains("Service not ready") == true,
+
+Tests/CoreTests/CryptoTests.swift:176:30: error: cannot find type 'SecurityError' in scope
+174 |             _ = try await service.encrypt([1, 2, 3], using: invalidKey)
+175 |             XCTFail("Encryption should fail with invalid key size")
+176 |         } catch let error as SecurityError {
+    |                              `- error: cannot find type 'SecurityError' in scope
+177 |             XCTAssertTrue(
+178 |                 error.errorDescription?.contains("Invalid key size") == true,
+
+Tests/CoreTests/KeyManagerTests.swift:9:7: error: actor types do not support inheritance
+  7 | /// Tests for the KeyManager class that handles cryptographic key operations
+  8 | @preconcurrency
+  9 | actor KeyManagerTests: XCTestCase {
+    |       `- error: actor types do not support inheritance
+ 10 |     // MARK: - Properties
+ 11 | 
+
+Tests/CoreTests/KeyManagerTests.swift:12:29: error: cannot find type 'KeyManager' in scope
+ 10 |     // MARK: - Properties
+ 11 | 
+ 12 |     private var keyManager: KeyManager!
+    |                             `- error: cannot find type 'KeyManager' in scope
+ 13 |     private var dependencies: MockKeyManagerDependencies!
+ 14 | 
+
+Tests/CoreTests/KeyManagerTests.swift:102:43: error: cannot find type 'KeyManagerDependencies' in scope
+100 | /// Mock implementation of KeyManagerDependencies for testing
+101 | @preconcurrency
+102 | private actor MockKeyManagerDependencies: KeyManagerDependencies {
+    |                                           `- error: cannot find type 'KeyManagerDependencies' in scope
+103 |     nonisolated(unsafe) let resticCLIHelper: ResticCLIHelper
+104 |     nonisolated(unsafe) let keychain: UmbraKeychainService
+
+Tests/CoreTests/KeyManagerTests.swift:104:5: warning: 'nonisolated(unsafe)' is unnecessary for a constant actor-isolated property with 'Sendable' type 'UmbraKeychainService', consider removing it
+102 | private actor MockKeyManagerDependencies: KeyManagerDependencies {
+103 |     nonisolated(unsafe) let resticCLIHelper: ResticCLIHelper
+104 |     nonisolated(unsafe) let keychain: UmbraKeychainService
+    |     `- warning: 'nonisolated(unsafe)' is unnecessary for a constant actor-isolated property with 'Sendable' type 'UmbraKeychainService', consider removing it
+105 |     nonisolated(unsafe) let securityUtils: SecurityUtils
+106 | 
+
+Tests/CoreTests/KeyManagerTests.swift:105:5: warning: 'nonisolated(unsafe)' is unnecessary for a constant actor-isolated property with 'Sendable' type 'SecurityUtils', consider removing it
+103 |     nonisolated(unsafe) let resticCLIHelper: ResticCLIHelper
+104 |     nonisolated(unsafe) let keychain: UmbraKeychainService
+105 |     nonisolated(unsafe) let securityUtils: SecurityUtils
+    |     `- warning: 'nonisolated(unsafe)' is unnecessary for a constant actor-isolated property with 'Sendable' type 'SecurityUtils', consider removing it
+106 | 
+107 |     init() async throws {
+
+Tests/CoreTests/KeyManagerTests.swift:19:22: error: cannot find 'KeyManager' in scope
+ 17 |     override func setUp() async throws {
+ 18 |         dependencies = try await MockKeyManagerDependencies()
+ 19 |         keyManager = KeyManager(dependencies: dependencies)
+    |                      `- error: cannot find 'KeyManager' in scope
+ 20 |     }
+ 21 | 
+
+Tests/CoreTests/KeyManagerTests.swift:23:22: error: 'nil' requires a contextual type
+ 21 | 
+ 22 |     override func tearDown() async throws {
+ 23 |         keyManager = nil
+    |                      `- error: 'nil' requires a contextual type
+ 24 |         dependencies = nil
+ 25 |     }
+
+Tests/CoreTests/KeyManagerTests.swift:32:32: error: cannot find 'SecurityContext' in scope
+ 30 |     func testImplementationSelection() async throws {
+ 31 |         // Test ResticBar implementation selection
+ 32 |         let resticBarContext = SecurityContext(applicationType: .resticBar)
+    |                                `- error: cannot find 'SecurityContext' in scope
+ 33 |         let resticBarImpl = await keyManager.selectImplementation(for: resticBarContext)
+ 34 |         XCTAssertEqual(
+
+Tests/CoreTests/KeyManagerTests.swift:32:66: error: cannot infer contextual base in reference to member 'resticBar'
+ 30 |     func testImplementationSelection() async throws {
+ 31 |         // Test ResticBar implementation selection
+ 32 |         let resticBarContext = SecurityContext(applicationType: .resticBar)
+    |                                                                  `- error: cannot infer contextual base in reference to member 'resticBar'
+ 33 |         let resticBarImpl = await keyManager.selectImplementation(for: resticBarContext)
+ 34 |         XCTAssertEqual(
+
+Tests/CoreTests/KeyManagerTests.swift:36:14: error: type 'Equatable' has no member 'cryptoKit'
+ 34 |         XCTAssertEqual(
+ 35 |             resticBarImpl,
+ 36 |             .cryptoKit,
+    |              `- error: type 'Equatable' has no member 'cryptoKit'
+ 37 |             "ResticBar should use CryptoKit implementation"
+ 38 |         )
+
+Tests/CoreTests/KeyManagerTests.swift:41:27: error: cannot find 'SecurityContext' in scope
+ 39 | 
+ 40 |         // Test Rbum implementation selection
+ 41 |         let rbumContext = SecurityContext(applicationType: .rbum)
+    |                           `- error: cannot find 'SecurityContext' in scope
+ 42 |         let rbumImpl = await keyManager.selectImplementation(for: rbumContext)
+ 43 |         XCTAssertEqual(
+
+Tests/CoreTests/KeyManagerTests.swift:41:61: error: cannot infer contextual base in reference to member 'rbum'
+ 39 | 
+ 40 |         // Test Rbum implementation selection
+ 41 |         let rbumContext = SecurityContext(applicationType: .rbum)
+    |                                                             `- error: cannot infer contextual base in reference to member 'rbum'
+ 42 |         let rbumImpl = await keyManager.selectImplementation(for: rbumContext)
+ 43 |         XCTAssertEqual(
+
+Tests/CoreTests/KeyManagerTests.swift:45:14: error: type 'Equatable' has no member 'cryptoSwift'
+ 43 |         XCTAssertEqual(
+ 44 |             rbumImpl,
+ 45 |             .cryptoSwift,
+    |              `- error: type 'Equatable' has no member 'cryptoSwift'
+ 46 |             "Rbum should use CryptoSwift implementation"
+ 47 |         )
+
+Tests/CoreTests/KeyManagerTests.swift:50:26: error: cannot find 'SecurityContext' in scope
+ 48 | 
+ 49 |         // Test Rbx implementation selection
+ 50 |         let rbxContext = SecurityContext(applicationType: .rbx)
+    |                          `- error: cannot find 'SecurityContext' in scope
+ 51 |         let rbxImpl = await keyManager.selectImplementation(for: rbxContext)
+ 52 |         XCTAssertEqual(
+
+Tests/CoreTests/KeyManagerTests.swift:50:60: error: cannot infer contextual base in reference to member 'rbx'
+ 48 | 
+ 49 |         // Test Rbx implementation selection
+ 50 |         let rbxContext = SecurityContext(applicationType: .rbx)
+    |                                                            `- error: cannot infer contextual base in reference to member 'rbx'
+ 51 |         let rbxImpl = await keyManager.selectImplementation(for: rbxContext)
+ 52 |         XCTAssertEqual(
+
+Tests/CoreTests/KeyManagerTests.swift:54:14: error: type 'Equatable' has no member 'cryptoSwift'
+ 52 |         XCTAssertEqual(
+ 53 |             rbxImpl,
+ 54 |             .cryptoSwift,
+    |              `- error: type 'Equatable' has no member 'cryptoSwift'
+ 55 |             "Rbx should use CryptoSwift implementation"
+ 56 |         )
+
+Tests/CoreTests/KeyManagerTests.swift:63:23: error: cannot find 'SecurityContext' in scope
+ 61 |     /// Tests successful key generation for a given security context
+ 62 |     func testKeyGenerationSucceeds() async throws {
+ 63 |         let context = SecurityContext(applicationType: .resticBar)
+    |                       `- error: cannot find 'SecurityContext' in scope
+ 64 |         let keyId = try await keyManager.generateKey(for: context)
+ 65 |         XCTAssertNotNil(
+
+Tests/CoreTests/KeyManagerTests.swift:63:57: error: cannot infer contextual base in reference to member 'resticBar'
+ 61 |     /// Tests successful key generation for a given security context
+ 62 |     func testKeyGenerationSucceeds() async throws {
+ 63 |         let context = SecurityContext(applicationType: .resticBar)
+    |                                                         `- error: cannot infer contextual base in reference to member 'resticBar'
+ 64 |         let keyId = try await keyManager.generateKey(for: context)
+ 65 |         XCTAssertNotNil(
+
+Tests/CoreTests/KeyManagerTests.swift:74:23: error: cannot find 'SecurityContext' in scope
+ 72 |     func testKeyValidationSucceeds() async throws {
+ 73 |         // Generate a key first
+ 74 |         let context = SecurityContext(applicationType: .resticBar)
+    |                       `- error: cannot find 'SecurityContext' in scope
+ 75 |         let keyId = try await keyManager.generateKey(for: context)
+ 76 | 
+
+Tests/CoreTests/KeyManagerTests.swift:74:57: error: cannot infer contextual base in reference to member 'resticBar'
+ 72 |     func testKeyValidationSucceeds() async throws {
+ 73 |         // Generate a key first
+ 74 |         let context = SecurityContext(applicationType: .resticBar)
+    |                                                         `- error: cannot infer contextual base in reference to member 'resticBar'
+ 75 |         let keyId = try await keyManager.generateKey(for: context)
+ 76 | 
+
+Tests/CoreTests/KeyManagerTests.swift:87:25: error: cannot find 'KeyIdentifier' in scope
+ 85 |     /// Tests that attempting to validate a non-existent key throws the expected error
+ 86 |     func testKeyValidationFailsForNonExistentKey() async throws {
+ 87 |         let unknownId = KeyIdentifier(id: "unknown")
+    |                         `- error: cannot find 'KeyIdentifier' in scope
+ 88 | 
+ 89 |         do {
+
+Tests/CoreTests/KeyManagerTests.swift:92:17: error: cannot find 'KeyManagerError' in scope
+ 90 |             _ = try await keyManager.validateKey(id: unknownId)
+ 91 |             XCTFail("Should throw keyNotFound error for non-existent key")
+ 92 |         } catch KeyManagerError.keyNotFound {
+    |                 `- error: cannot find 'KeyManagerError' in scope
+ 93 |             // Expected error
+ 94 |         } catch {
+
+Tests/CoreTests/KeyManagerTests.swift:112:25: warning: no calls to throwing functions occur within 'try' expression
+110 | 
+111 |         // Initialize keychain service with mock implementation
+112 |         self.keychain = try UmbraKeychainService(
+    |                         `- warning: no calls to throwing functions occur within 'try' expression
+113 |             identifier: "com.umbracore.tests.keymanager",
+114 |             accessGroup: nil as String?
+
+Tests/CoreTests/SecurityTests.swift:7:25: error: cannot find 'ServiceContainer' in scope
+  5 | final class SecurityTests: XCTestCase {
+  6 |     func testServiceInitialization() async throws {
+  7 |         let container = ServiceContainer()
+    |                         `- error: cannot find 'ServiceContainer' in scope
+  8 |         let service = SecurityService(container: container)
+  9 | 
+
+Tests/CoreTests/SecurityTests.swift:8:23: error: cannot find 'SecurityService' in scope
+  6 |     func testServiceInitialization() async throws {
+  7 |         let container = ServiceContainer()
+  8 |         let service = SecurityService(container: container)
+    |                       `- error: cannot find 'SecurityService' in scope
+  9 | 
+ 10 |         try await container.register(service)
+
+Tests/CoreTests/SecurityTests.swift:12:38: error: cannot find 'ServiceState' in scope
+ 10 |         try await container.register(service)
+ 11 |         let initialState = await service.state
+ 12 |         XCTAssertEqual(initialState, ServiceState.uninitialized)
+    |                                      `- error: cannot find 'ServiceState' in scope
+ 13 | 
+ 14 |         try await container.initialiseAll()
+
+Tests/CoreTests/SecurityTests.swift:16:36: error: cannot find 'ServiceState' in scope
+ 14 |         try await container.initialiseAll()
+ 15 |         let readyState = await service.state
+ 16 |         XCTAssertEqual(readyState, ServiceState.ready)
+    |                                    `- error: cannot find 'ServiceState' in scope
+ 17 |     }
+ 18 | 
+
+Tests/CoreTests/SecurityTests.swift:11:28: warning: no 'async' operations occur within 'await' expression
+  9 | 
+ 10 |         try await container.register(service)
+ 11 |         let initialState = await service.state
+    |                            `- warning: no 'async' operations occur within 'await' expression
+ 12 |         XCTAssertEqual(initialState, ServiceState.uninitialized)
+ 13 | 
+
+Tests/CoreTests/SecurityTests.swift:15:26: warning: no 'async' operations occur within 'await' expression
+ 13 | 
+ 14 |         try await container.initialiseAll()
+ 15 |         let readyState = await service.state
+    |                          `- warning: no 'async' operations occur within 'await' expression
+ 16 |         XCTAssertEqual(readyState, ServiceState.ready)
+ 17 |     }
+
+Tests/CoreTests/SecurityTests.swift:20:25: error: cannot find 'ServiceContainer' in scope
+ 18 | 
+ 19 |     func testBookmarkOperations() async throws {
+ 20 |         let container = ServiceContainer()
+    |                         `- error: cannot find 'ServiceContainer' in scope
+ 21 |         let service = SecurityService(container: container)
+ 22 | 
+
+Tests/CoreTests/SecurityTests.swift:21:23: error: cannot find 'SecurityService' in scope
+ 19 |     func testBookmarkOperations() async throws {
+ 20 |         let container = ServiceContainer()
+ 21 |         let service = SecurityService(container: container)
+    |                       `- error: cannot find 'SecurityService' in scope
+ 22 | 
+ 23 |         try await container.register(service)
+
+Tests/CoreTests/SecurityTests.swift:40:30: error: cannot find type 'SecurityError' in scope
+ 38 |             _ = try await service.resolveBookmark([])
+ 39 |             XCTFail("Expected bookmark resolution error")
+ 40 |         } catch let error as SecurityError {
+    |                              `- error: cannot find type 'SecurityError' in scope
+ 41 |             XCTAssertTrue(error.errorDescription?.contains("Invalid bookmark") == true)
+ 42 |         }
+
+Tests/CoreTests/SecurityTests.swift:46:25: error: cannot find 'ServiceContainer' in scope
+ 44 | 
+ 45 |     func testSecurityScopedAccess() async throws {
+ 46 |         let container = ServiceContainer()
+    |                         `- error: cannot find 'ServiceContainer' in scope
+ 47 |         let service = SecurityService(container: container)
+ 48 | 
+
+Tests/CoreTests/SecurityTests.swift:47:23: error: cannot find 'SecurityService' in scope
+ 45 |     func testSecurityScopedAccess() async throws {
+ 46 |         let container = ServiceContainer()
+ 47 |         let service = SecurityService(container: container)
+    |                       `- error: cannot find 'SecurityService' in scope
+ 48 | 
+ 49 |         try await container.register(service)
+
+Tests/CoreTests/SecurityTests.swift:76:25: error: cannot find 'ServiceContainer' in scope
+ 74 | 
+ 75 |     func testBookmarkStorage() async throws {
+ 76 |         let container = ServiceContainer()
+    |                         `- error: cannot find 'ServiceContainer' in scope
+ 77 |         let service = SecurityService(container: container)
+ 78 | 
+
+Tests/CoreTests/SecurityTests.swift:77:23: error: cannot find 'SecurityService' in scope
+ 75 |     func testBookmarkStorage() async throws {
+ 76 |         let container = ServiceContainer()
+ 77 |         let service = SecurityService(container: container)
+    |                       `- error: cannot find 'SecurityService' in scope
+ 78 | 
+ 79 |         try await container.register(service)
+
+Tests/CoreTests/SecurityTests.swift:100:30: error: cannot find type 'SecurityError' in scope
+ 98 |             _ = try await service.loadBookmark(withIdentifier: identifier)
+ 99 |             XCTFail("Expected bookmark not found error")
+100 |         } catch let error as SecurityError {
+    |                              `- error: cannot find type 'SecurityError' in scope
+101 |             XCTAssertTrue(error.errorDescription?.contains("not found") == true)
+102 |         }
+
+Tests/CoreTests/SecurityTests.swift:106:25: error: cannot find 'ServiceContainer' in scope
+104 | 
+105 |     func testErrorHandling() async throws {
+106 |         let container = ServiceContainer()
+    |                         `- error: cannot find 'ServiceContainer' in scope
+107 |         let service = SecurityService(container: container)
+108 | 
+
+Tests/CoreTests/SecurityTests.swift:107:23: error: cannot find 'SecurityService' in scope
+105 |     func testErrorHandling() async throws {
+106 |         let container = ServiceContainer()
+107 |         let service = SecurityService(container: container)
+    |                       `- error: cannot find 'SecurityService' in scope
+108 | 
+109 |         // Test operations before initialization
+
+Tests/CoreTests/SecurityTests.swift:113:30: error: cannot find type 'ServiceError' in scope
+111 |             _ = try await service.createBookmark(forPath: "/test/path")
+112 |             XCTFail("Expected service not ready error")
+113 |         } catch let error as ServiceError {
+    |                              `- error: cannot find type 'ServiceError' in scope
+114 |             XCTAssertTrue(error.errorDescription?.contains("Service not ready") == true)
+115 |         }
+
+Tests/CoreTests/SecurityTests.swift:124:30: error: cannot find type 'SecurityError' in scope
+122 |             _ = try await service.createBookmark(forPath: "")
+123 |             XCTFail("Expected invalid path error")
+124 |         } catch let error as SecurityError {
+    |                              `- error: cannot find type 'SecurityError' in scope
+125 |             XCTAssertTrue(error.errorDescription?.contains("Invalid path") == true)
+126 |         }
+
+Tests/CoreTests/ServiceTests.swift:8:20: error: cannot find type 'UmbraService' in scope
+  6 | 
+  7 | /// Mock service for testing
+  8 | actor MockService: UmbraService {
+    |                    `- error: cannot find type 'UmbraService' in scope
+  9 |     static let serviceIdentifier = "com.umbracore.mock-service"
+ 10 | 
+
+Tests/CoreTests/ServiceTests.swift:11:25: error: cannot find type 'ServiceState' in scope
+  9 |     static let serviceIdentifier = "com.umbracore.mock-service"
+ 10 | 
+ 11 |     private var _state: ServiceState = .uninitialized
+    |                         `- error: cannot find type 'ServiceState' in scope
+ 12 |     public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
+ 13 | 
+
+Tests/CoreTests/ServiceTests.swift:12:56: error: cannot find type 'ServiceState' in scope
+ 10 | 
+ 11 |     private var _state: ServiceState = .uninitialized
+ 12 |     public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
+    |                                                        `- error: cannot find type 'ServiceState' in scope
+ 13 | 
+ 14 |     private var _initializeCalled = false
+
+Tests/CoreTests/ServiceTests.swift:46:29: error: cannot find type 'UmbraService' in scope
+ 44 | 
+ 45 | /// Mock service with dependencies
+ 46 | actor DependentMockService: UmbraService {
+    |                             `- error: cannot find type 'UmbraService' in scope
+ 47 |     static let serviceIdentifier = "com.umbracore.dependent-mock-service"
+ 48 | 
+
+Tests/CoreTests/ServiceTests.swift:49:25: error: cannot find type 'ServiceState' in scope
+ 47 |     static let serviceIdentifier = "com.umbracore.dependent-mock-service"
+ 48 | 
+ 49 |     private var _state: ServiceState = .uninitialized
+    |                         `- error: cannot find type 'ServiceState' in scope
+ 50 |     public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
+ 51 | 
+
+Tests/CoreTests/ServiceTests.swift:50:56: error: cannot find type 'ServiceState' in scope
+ 48 | 
+ 49 |     private var _state: ServiceState = .uninitialized
+ 50 |     public nonisolated(unsafe) private(set) var state: ServiceState = .uninitialized
+    |                                                        `- error: cannot find type 'ServiceState' in scope
+ 51 | 
+ 52 |     private let dependency: MockService
+
+Tests/CoreTests/ServiceTests.swift:29:17: error: cannot find 'ServiceState' in scope
+ 27 | 
+ 28 |     func initialize() async throws {
+ 29 |         state = ServiceState.initializing
+    |                 `- error: cannot find 'ServiceState' in scope
+ 30 |         _state = ServiceState.initializing
+ 31 |         _initializeCalled = true
+
+Tests/CoreTests/ServiceTests.swift:30:18: error: cannot find 'ServiceState' in scope
+ 28 |     func initialize() async throws {
+ 29 |         state = ServiceState.initializing
+ 30 |         _state = ServiceState.initializing
+    |                  `- error: cannot find 'ServiceState' in scope
+ 31 |         _initializeCalled = true
+ 32 |         state = ServiceState.ready
+
+Tests/CoreTests/ServiceTests.swift:32:17: error: cannot find 'ServiceState' in scope
+ 30 |         _state = ServiceState.initializing
+ 31 |         _initializeCalled = true
+ 32 |         state = ServiceState.ready
+    |                 `- error: cannot find 'ServiceState' in scope
+ 33 |         _state = ServiceState.ready
+ 34 |     }
+
+Tests/CoreTests/ServiceTests.swift:33:18: error: cannot find 'ServiceState' in scope
+ 31 |         _initializeCalled = true
+ 32 |         state = ServiceState.ready
+ 33 |         _state = ServiceState.ready
+    |                  `- error: cannot find 'ServiceState' in scope
+ 34 |     }
+ 35 | 
+
+Tests/CoreTests/ServiceTests.swift:37:17: error: cannot find 'ServiceState' in scope
+ 35 | 
+ 36 |     func shutdown() async {
+ 37 |         state = ServiceState.shuttingDown
+    |                 `- error: cannot find 'ServiceState' in scope
+ 38 |         _state = ServiceState.shuttingDown
+ 39 |         _shutdownCalled = true
+
+Tests/CoreTests/ServiceTests.swift:38:18: error: cannot find 'ServiceState' in scope
+ 36 |     func shutdown() async {
+ 37 |         state = ServiceState.shuttingDown
+ 38 |         _state = ServiceState.shuttingDown
+    |                  `- error: cannot find 'ServiceState' in scope
+ 39 |         _shutdownCalled = true
+ 40 |         state = ServiceState.shutdown
+
+Tests/CoreTests/ServiceTests.swift:40:17: error: cannot find 'ServiceState' in scope
+ 38 |         _state = ServiceState.shuttingDown
+ 39 |         _shutdownCalled = true
+ 40 |         state = ServiceState.shutdown
+    |                 `- error: cannot find 'ServiceState' in scope
+ 41 |         _state = ServiceState.shutdown
+ 42 |     }
+
+Tests/CoreTests/ServiceTests.swift:41:18: error: cannot find 'ServiceState' in scope
+ 39 |         _shutdownCalled = true
+ 40 |         state = ServiceState.shutdown
+ 41 |         _state = ServiceState.shutdown
+    |                  `- error: cannot find 'ServiceState' in scope
+ 42 |     }
+ 43 | }
+
+Tests/CoreTests/ServiceTests.swift:59:17: error: cannot find 'ServiceState' in scope
+ 57 | 
+ 58 |     func initialize() async throws {
+ 59 |         state = ServiceState.initializing
+    |                 `- error: cannot find 'ServiceState' in scope
+ 60 |         _state = ServiceState.initializing
+ 61 |         _ = await dependency.state
+
+Tests/CoreTests/ServiceTests.swift:60:18: error: cannot find 'ServiceState' in scope
+ 58 |     func initialize() async throws {
+ 59 |         state = ServiceState.initializing
+ 60 |         _state = ServiceState.initializing
+    |                  `- error: cannot find 'ServiceState' in scope
+ 61 |         _ = await dependency.state
+ 62 |         state = ServiceState.ready
+
+Tests/CoreTests/ServiceTests.swift:62:17: error: cannot find 'ServiceState' in scope
+ 60 |         _state = ServiceState.initializing
+ 61 |         _ = await dependency.state
+ 62 |         state = ServiceState.ready
+    |                 `- error: cannot find 'ServiceState' in scope
+ 63 |         _state = ServiceState.ready
+ 64 |     }
+
+Tests/CoreTests/ServiceTests.swift:63:18: error: cannot find 'ServiceState' in scope
+ 61 |         _ = await dependency.state
+ 62 |         state = ServiceState.ready
+ 63 |         _state = ServiceState.ready
+    |                  `- error: cannot find 'ServiceState' in scope
+ 64 |     }
+ 65 | 
+
+Tests/CoreTests/ServiceTests.swift:67:17: error: cannot find 'ServiceState' in scope
+ 65 | 
+ 66 |     func shutdown() async {
+ 67 |         state = ServiceState.shuttingDown
+    |                 `- error: cannot find 'ServiceState' in scope
+ 68 |         _state = ServiceState.shuttingDown
+ 69 |         await dependency.shutdown()
+
+Tests/CoreTests/ServiceTests.swift:68:18: error: cannot find 'ServiceState' in scope
+ 66 |     func shutdown() async {
+ 67 |         state = ServiceState.shuttingDown
+ 68 |         _state = ServiceState.shuttingDown
+    |                  `- error: cannot find 'ServiceState' in scope
+ 69 |         await dependency.shutdown()
+ 70 |         state = ServiceState.shutdown
+
+Tests/CoreTests/ServiceTests.swift:70:17: error: cannot find 'ServiceState' in scope
+ 68 |         _state = ServiceState.shuttingDown
+ 69 |         await dependency.shutdown()
+ 70 |         state = ServiceState.shutdown
+    |                 `- error: cannot find 'ServiceState' in scope
+ 71 |         _state = ServiceState.shutdown
+ 72 |     }
+
+Tests/CoreTests/ServiceTests.swift:71:18: error: cannot find 'ServiceState' in scope
+ 69 |         await dependency.shutdown()
+ 70 |         state = ServiceState.shutdown
+ 71 |         _state = ServiceState.shutdown
+    |                  `- error: cannot find 'ServiceState' in scope
+ 72 |     }
+ 73 | }
+
+Tests/CoreTests/ServiceTests.swift:81:25: error: cannot find 'ServiceContainer' in scope
+ 79 |     /// Tests the basic lifecycle of a service: registration, initialization, and shutdown
+ 80 |     func testServiceInitialization() async throws {
+ 81 |         let container = ServiceContainer()
+    |                         `- error: cannot find 'ServiceContainer' in scope
+ 82 |         let service = MockService()
+ 83 | 
+
+Tests/CoreTests/ServiceTests.swift:86:38: error: cannot find 'ServiceState' in scope
+ 84 |         try await container.register(service)
+ 85 |         let initialState = service.state
+ 86 |         XCTAssertEqual(initialState, ServiceState.uninitialized)
+    |                                      `- error: cannot find 'ServiceState' in scope
+ 87 | 
+ 88 |         try await container.initialiseAll()
+
+Tests/CoreTests/ServiceTests.swift:92:36: error: cannot find 'ServiceState' in scope
+ 90 |         let readyState = service.state
+ 91 |         XCTAssertTrue(isInitialized)
+ 92 |         XCTAssertEqual(readyState, ServiceState.ready)
+    |                                    `- error: cannot find 'ServiceState' in scope
+ 93 | 
+ 94 |         await container.shutdownAll()
+
+Tests/CoreTests/ServiceTests.swift:98:36: error: cannot find 'ServiceState' in scope
+ 96 |         let finalState = service.state
+ 97 |         XCTAssertTrue(isShutdown)
+ 98 |         XCTAssertEqual(finalState, ServiceState.shutdown)
+    |                                    `- error: cannot find 'ServiceState' in scope
+ 99 |     }
+100 | 
+
+Tests/CoreTests/ServiceTests.swift:105:25: error: cannot find 'ServiceContainer' in scope
+103 |     /// Tests proper resolution and handling of service dependencies
+104 |     func testDependencyResolution() async throws {
+105 |         let container = ServiceContainer()
+    |                         `- error: cannot find 'ServiceContainer' in scope
+106 |         let dependency = MockService()
+107 |         let service = DependentMockService(dependency: dependency)
+
+Tests/CoreTests/ServiceTests.swift:115:34: error: cannot find 'ServiceState' in scope
+113 |         let depState = dependency.state
+114 |         let svcState = service.state
+115 |         XCTAssertEqual(depState, ServiceState.ready)
+    |                                  `- error: cannot find 'ServiceState' in scope
+116 |         XCTAssertEqual(svcState, ServiceState.ready)
+117 | 
+
+Tests/CoreTests/ServiceTests.swift:116:34: error: cannot find 'ServiceState' in scope
+114 |         let svcState = service.state
+115 |         XCTAssertEqual(depState, ServiceState.ready)
+116 |         XCTAssertEqual(svcState, ServiceState.ready)
+    |                                  `- error: cannot find 'ServiceState' in scope
+117 | 
+118 |         await container.shutdownAll()
+
+Tests/CoreTests/ServiceTests.swift:121:39: error: cannot find 'ServiceState' in scope
+119 |         let depFinalState = dependency.state
+120 |         let svcFinalState = service.state
+121 |         XCTAssertEqual(depFinalState, ServiceState.shutdown)
+    |                                       `- error: cannot find 'ServiceState' in scope
+122 |         XCTAssertEqual(svcFinalState, ServiceState.shutdown)
+123 |     }
+
+Tests/CoreTests/ServiceTests.swift:122:39: error: cannot find 'ServiceState' in scope
+120 |         let svcFinalState = service.state
+121 |         XCTAssertEqual(depFinalState, ServiceState.shutdown)
+122 |         XCTAssertEqual(svcFinalState, ServiceState.shutdown)
+    |                                       `- error: cannot find 'ServiceState' in scope
+123 |     }
+124 | 
+
+Tests/CoreTests/ServiceTests.swift:129:25: error: cannot find 'ServiceContainer' in scope
+127 |     /// Tests handling of multiple services within a single container
+128 |     func testMultipleServices() async throws {
+129 |         let container = ServiceContainer()
+    |                         `- error: cannot find 'ServiceContainer' in scope
+130 |         let services = (0..<5).map { _ in MockService() }
+131 | 
+
+Tests/CoreTests/ServiceTests.swift:139:35: error: cannot find 'ServiceState' in scope
+137 |         for service in services {
+138 |             let state = service.state
+139 |             XCTAssertEqual(state, ServiceState.ready)
+    |                                   `- error: cannot find 'ServiceState' in scope
+140 |         }
+141 | 
+
+Tests/CoreTests/ServiceTests.swift:145:35: error: cannot find 'ServiceState' in scope
+143 |         for service in services {
+144 |             let state = service.state
+145 |             XCTAssertEqual(state, ServiceState.shutdown)
+    |                                   `- error: cannot find 'ServiceState' in scope
+146 |         }
+147 |     }
+
+Tests/CoreTests/ServiceTests.swift:153:25: error: cannot find 'ServiceContainer' in scope
+151 |     /// Tests various error conditions and their proper handling
+152 |     func testErrorHandling() async throws {
+153 |         let container = ServiceContainer()
+    |                         `- error: cannot find 'ServiceContainer' in scope
+154 |         let service = MockService()
+155 | 
+
+Tests/CoreTests/ServiceTests.swift:167:45: error: cannot find 'CryptoService' in scope
+165 |         // Test resolving non-existent service
+166 |         do {
+167 |             _ = try await container.resolve(CryptoService.self)
+    |                                             `- error: cannot find 'CryptoService' in scope
+168 |             XCTFail("Expected service not found error")
+169 |         } catch let error as CoreError {
+ERROR: /Users/mpy/CascadeProjects/UmbraCore/Sources/UmbraTestKit/BUILD.bazel:4:20: Compiling Swift module //Sources/UmbraTestKit:UmbraTestKit failed: (Exit 1): worker failed: error executing SwiftCompile command (from target //Sources/UmbraTestKit:UmbraTestKit) 
+  (cd /Users/mpy/.bazel/execroot/_main && \
+  exec env - \
+    APPLE_SDK_PLATFORM=MacOSX \
+    APPLE_SDK_VERSION_OVERRIDE=15.2 \
+    CC=clang \
+    PATH=/Users/mpy/.rbenv/bin:/Users/mpy/.codeium/windsurf/bin:/opt/homebrew/opt/node@18/bin:/opt/homebrew/opt/node@20/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/mpy/.docker/bin:/opt/homebrew/opt/openjdk/bin:/Users/mpy/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/mpy/.cargo/bin:/Applications/kitty.app/Contents/MacOS:/Users/mpy/Library/Python/3.8/bin:/Users/mpy/go/bin:/Users/mpy/.scripts:/Users/mpy/.fzf/bin \
+    XCODE_VERSION_OVERRIDE=16.2.0.16C5032a \
+  bazel-out/darwin_x86_64-opt-exec-ST-d57f47055a04/bin/external/rules_swift+/tools/worker/worker swiftc @bazel-out/darwin_arm64-opt/bin/Sources/UmbraTestKit/UmbraTestKit.swiftmodule-0.params)
+# Configuration: ceda03d963f40151499688b15e41be8f143928dc42288f9adca36aef8e5e2d50
+# Execution platform: @@platforms//host:host
+Sources/UmbraTestKit/Tests/SecurityErrorTests.swift:2:18: error: module 'SecurityInterfaces' was not compiled for testing
+ 1 | import Core
+ 2 | @testable import SecurityInterfaces
+   |                  `- error: module 'SecurityInterfaces' was not compiled for testing
+ 3 | import XCTest
+ 4 | 
+[419 / 431] Compiling Swift module //Tests/ModelsTests:ModelsTests; 9s disk-cache, worker ... (4 actions running)
+[425 / 431] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 10s disk-cache, worker ... (2 actions running)
+INFO: Build succeeded for only 78 of 93 top-level targets
+[431 / 431] no actions running
+INFO: Found 93 targets...
+INFO: Elapsed time: 43.051s, Critical Path: 13.01s
+INFO: 397 processes: 214 disk cache hit, 177 internal, 1 darwin-sandbox, 5 worker.
+ERROR: Build did NOT complete successfully
