@@ -211,7 +211,7 @@ public final class MockFileManager: FileManager {
             if path.hasPrefix("/") {
                 currentPath = "/"
             }
-            
+
             for component in components {
                 if !component.isEmpty {
                     currentPath = (currentPath as NSString).appendingPathComponent(component)

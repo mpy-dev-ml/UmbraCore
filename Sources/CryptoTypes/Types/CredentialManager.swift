@@ -1,5 +1,6 @@
 // CryptoKit removed - cryptography will be handled in ResticBar
 import Foundation
+import SecurityInterfaces
 import SecurityTypes
 import SecurityTypesProtocols
 
@@ -51,7 +52,7 @@ private actor KeychainAccess: SecureStorageProvider {
 
     func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
         guard let item = items[key] else {
-            throw SecurityError.itemNotFound
+            throw SecurityInterfaces.SecurityError.itemNotFound
         }
         return (item.data, item.metadata)
     }
@@ -63,7 +64,7 @@ private actor KeychainAccess: SecureStorageProvider {
 
     func delete(forKey key: String) async throws {
         guard items.removeValue(forKey: key) != nil else {
-            throw SecurityError.itemNotFound
+            throw SecurityInterfaces.SecurityError.itemNotFound
         }
     }
 

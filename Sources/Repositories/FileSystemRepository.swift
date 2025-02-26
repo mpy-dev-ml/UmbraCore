@@ -21,7 +21,7 @@ import UmbraLogging
 
     /// Current repository statistics
     private var stats: RepositoryStatistics
-    
+
     /// Thread-safe copy of stats for nonisolated access
     /// This is updated whenever the internal stats are updated
     private nonisolated let statsAccessor = StatsAccessor()
@@ -102,7 +102,7 @@ import UmbraLogging
         try container.encode(identifier, forKey: .identifier)
         try container.encode(state, forKey: .state)
         try container.encode(location, forKey: .location)
-        
+
         // Use the thread-safe accessor for stats
         try container.encode(statsAccessor.getStats(), forKey: .stats)
     }
@@ -162,17 +162,17 @@ import UmbraLogging
             "Checking repository",
             metadata: metadata
         )
-        
+
         // If readData is true, verify all repository contents
         if readData {
             try await verifyContents()
         }
-        
+
         // If checkUnused is true, check for unused data
         if checkUnused {
             try await validateIntegrity()
         }
-        
+
         return try await getStats()
     }
 
@@ -193,9 +193,9 @@ import UmbraLogging
     public func rebuildIndex() async throws {
         // Implementation
     }
-    
+
     // MARK: - Private Methods
-    
+
     private func verifyContents() async throws {
         // Implementation for deep content verification
         // This would check all files, directories, and metadata
@@ -209,7 +209,7 @@ import UmbraLogging
         )
         // TODO: Implement deep content verification
     }
-    
+
     private func validateIntegrity() async throws {
         // Implementation for data integrity validation
         // This would verify checksums, signatures, etc.
@@ -223,7 +223,7 @@ import UmbraLogging
         )
         // TODO: Implement integrity validation
     }
-    
+
     /// Calculates the total size of the repository.
     private func calculateTotalSize() async throws -> UInt64 {
         var totalSize: UInt64 = 0
@@ -270,7 +270,7 @@ import UmbraLogging
 
         // Get snapshot count
         let snapshotCount = try await countSnapshots()
-        
+
         // Update stats
         let updatedStats = RepositoryStatistics(
             totalSize: totalSize,
@@ -278,13 +278,13 @@ import UmbraLogging
             lastCheck: Date(),
             totalFileCount: try await calculateTotalFileCount()
         )
-        
+
         // Store updated stats
         stats = updatedStats
-        
+
         // Update the nonisolated accessor
         statsAccessor.updateStats(updatedStats)
-        
+
         return updatedStats
     }
 
@@ -301,7 +301,7 @@ import UmbraLogging
 private final class StatsAccessor: @unchecked Sendable {
     private let lock = NSLock()
     private var _stats: RepositoryStatistics
-    
+
     init() {
         _stats = RepositoryStatistics(
             totalSize: 0,
@@ -310,25 +310,25 @@ private final class StatsAccessor: @unchecked Sendable {
             totalFileCount: 0
         )
     }
-    
+
     var totalSize: Int64 {
         lock.lock()
         defer { lock.unlock() }
         return _stats.totalSize
     }
-    
+
     var totalFileCount: Int {
         lock.lock()
         defer { lock.unlock() }
         return _stats.totalFileCount
     }
-    
+
     func getStats() -> RepositoryStatistics {
         lock.lock()
         defer { lock.unlock() }
         return _stats
     }
-    
+
     func updateStats(_ newStats: RepositoryStatistics) {
         lock.lock()
         defer { lock.unlock() }

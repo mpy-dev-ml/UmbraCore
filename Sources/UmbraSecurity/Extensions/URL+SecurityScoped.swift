@@ -58,7 +58,7 @@ extension URL {
             throw SecurityError.accessError("Failed to access: \(path)")
         }
         defer { us_stopAccessingSecurityScopedResource() }
-        
+
         return try await operation()
     }
 }

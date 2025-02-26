@@ -100,11 +100,11 @@ public actor MockSecurityProvider: SecurityProvider {
         guard !key.isEmpty else {
             throw SecurityError.cryptoError("Empty encryption key")
         }
-        
+
         guard let keyData = key.data(using: .utf8) else {
             throw SecurityError.cryptoError("Invalid key encoding")
         }
-        
+
         return try xorCrypt(data: data, key: keyData)
     }
 
@@ -112,11 +112,11 @@ public actor MockSecurityProvider: SecurityProvider {
         guard !key.isEmpty else {
             throw SecurityError.cryptoError("Empty decryption key")
         }
-        
+
         guard let keyData = key.data(using: .utf8) else {
             throw SecurityError.cryptoError("Invalid key encoding")
         }
-        
+
         return try xorCrypt(data: data, key: keyData)
     }
 
@@ -149,7 +149,7 @@ public actor MockSecurityProvider: SecurityProvider {
             let dataByte = data[i]
             result[i] = dataByte ^ keyByte
         }
-        
+
         return result
     }
 }

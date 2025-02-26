@@ -1,6 +1,6 @@
 Starting local Bazel server (8.1.0) and connecting to it...
 WARNING: Enabling both --slim_profile and --experimental_profile_include_primary_output: the "out" field will be omitted in merged actions.
-INFO: Invocation ID: 0f4aa220-8164-455b-a99f-fa9d4725e105
+INFO: Invocation ID: 2a6675c4-0ebb-47a1-a843-6ac3abc791cc
 Computing main repo mapping: 
 Computing main repo mapping: 
 Loading: 
@@ -8,43 +8,41 @@ Loading: 0 packages loaded
 Loading: 0 packages loaded
 Loading: 0 packages loaded
 Loading: 6 packages loaded
-    currently loading: Sources/UmbraLogging ... (85 packages)
+    currently loading: Tests/UmbraXPCTests ... (85 packages)
 Analyzing: 93 targets (91 packages loaded)
 Analyzing: 93 targets (93 packages loaded, 7 targets configured)
 Analyzing: 93 targets (93 packages loaded, 7 targets configured)
 
-Analyzing: 93 targets (116 packages loaded, 19 targets configured)
+Analyzing: 93 targets (108 packages loaded, 19 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (149 packages loaded, 197 targets configured)
+Analyzing: 93 targets (148 packages loaded, 124 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (157 packages loaded, 1458 targets configured)
+Analyzing: 93 targets (171 packages loaded, 1286 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (195 packages loaded, 2544 targets configured)
+Analyzing: 93 targets (197 packages loaded, 2409 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (209 packages loaded, 5436 targets configured)
+Analyzing: 93 targets (209 packages loaded, 5438 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (210 packages loaded, 5452 targets configured)
+Analyzing: 93 targets (210 packages loaded, 5454 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (210 packages loaded, 5452 targets configured)
+Analyzing: 93 targets (211 packages loaded, 5466 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (210 packages loaded, 5452 targets configured)
+Analyzing: 93 targets (213 packages loaded, 5588 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (210 packages loaded, 5452 targets configured)
+Analyzing: 93 targets (214 packages loaded, 5588 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (212 packages loaded, 15349 targets configured)
+Analyzing: 93 targets (215 packages loaded, 15498 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (212 packages loaded, 15362 targets configured)
+Analyzing: 93 targets (215 packages loaded, 15498 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (218 packages loaded, 15455 targets configured)
+Analyzing: 93 targets (222 packages loaded, 15618 targets configured)
 [1 / 1] no actions running
-Analyzing: 93 targets (221 packages loaded, 15556 targets configured)
-[1 / 1] no actions running
-Analyzing: 93 targets (223 packages loaded, 15691 targets configured)
-[11 / 39] [Prepa] Compiling tools/common/bazel_substitutions.cc [for tool] ... (10 actions, 0 running)
-Analyzing: 93 targets (223 packages loaded, 15753 targets configured)
-[110 / 247] [Prepa] Compiling Swift module //Sources/ErrorHandling/Models:ErrorHandlingModels ... (9 actions, 0 running)
-Analyzing: 93 targets (223 packages loaded, 15771 targets configured)
-[236 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 0s disk-cache, worker ... (9 actions, 4 running)
+Analyzing: 93 targets (223 packages loaded, 15689 targets configured)
+[10 / 39] [Prepa] Compiling tools/common/bazel_substitutions.cc [for tool] ... (10 actions, 1 running)
+Analyzing: 93 targets (223 packages loaded, 15715 targets configured)
+[11 / 39] Compiling cc/runfiles/runfiles.cc [for tool]; 0s disk-cache ... (10 actions, 0 running)
+Analyzing: 93 targets (223 packages loaded, 15773 targets configured)
+[162 / 329] [Prepa] Linking Sources/ErrorHandling/Protocols/libErrorHandlingProtocols.a ... (3 actions, 0 running)
 INFO: From Compiling Swift module //Sources/TestUtils:TestUtils:
 Sources/TestUtils/TestUtils.swift:69:17: warning: no calls to throwing functions occur within 'try' expression
 67 |     ) async throws {
@@ -77,6 +75,132 @@ Sources/CryptoTypes/Types/CredentialManager.swift:66:19: warning: 'SecurityError
    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
 67 |         }
 68 |     }
+INFO: From Compiling Swift module //Sources/UmbraBookmarkService:UmbraBookmarkService:
+Sources/UmbraBookmarkService/BookmarkServiceProtocol.swift:36:5: warning: @discardableResult declared on a function returning Void is unnecessary
+34 |     /// - Throws: BookmarkError if access cannot be started
+35 |     @preconcurrency
+36 |     @discardableResult
+   |     `- warning: @discardableResult declared on a function returning Void is unnecessary
+37 |     func startAccessing(
+38 |         _ url: URL
+
+Sources/UmbraBookmarkService/BookmarkServiceProtocol.swift:44:5: warning: @discardableResult declared on a function returning Void is unnecessary
+42 |     /// - Parameter url: The URL of the resource to stop accessing
+43 |     @preconcurrency
+44 |     @discardableResult
+   |     `- warning: @discardableResult declared on a function returning Void is unnecessary
+45 |     func stopAccessing(
+46 |         _ url: URL
+
+Sources/UmbraBookmarkService/BookmarkService.swift:94:44: warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
+ 92 |         Task { @MainActor in
+ 93 |             newConnection.exportedInterface = NSXPCInterface(with: BookmarkServiceProtocol.self)
+ 94 |             newConnection.exportedObject = self
+    |                                            |- warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
+    |                                            `- note: task-isolated 'self' is captured by a main actor-isolated closure. main actor-isolated uses in closure may race against later nonisolated uses
+ 95 |             newConnection.resume()
+ 96 |         }
+INFO: From Compiling Swift module //Sources/Services/SecurityUtils/Services:SecurityUtilsServices:
+Sources/Services/SecurityUtils/Services/PathURLProvider.swift:8:17: warning: stored property 'fileManager' of 'Sendable'-conforming struct 'PathURLProvider' has non-sendable type 'FileManager'; this is an error in the Swift 6 language mode
+ 6 | 
+ 7 |     /// FileManager instance
+ 8 |     private let fileManager: FileManager
+   |                 `- warning: stored property 'fileManager' of 'Sendable'-conforming struct 'PathURLProvider' has non-sendable type 'FileManager'; this is an error in the Swift 6 language mode
+ 9 | 
+10 |     /// Initialize a new PathURLProvider
+
+Foundation.FileManager:1:12: note: class 'FileManager' does not conform to the 'Sendable' protocol
+  1 | open class FileManager : NSObject {
+    |            `- note: class 'FileManager' does not conform to the 'Sendable' protocol
+  2 |     open class var `default`: FileManager { get }
+  3 |     @available(swift, obsoleted: 3, renamed: "default")
+
+Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift:27:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+25 |         // Start accessing the resource before creating bookmark
+26 |         guard fileURL.startAccessingSecurityScopedResource() else {
+27 |             throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
+   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+28 |         }
+29 |         defer { fileURL.stopAccessingSecurityScopedResource() }
+
+Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift:58:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+56 |             return url
+57 |         } catch {
+58 |             throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+59 |         }
+60 |     }
+
+Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift:77:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+75 |         // Start accessing the resource
+76 |         guard fileURL.startAccessingSecurityScopedResource() else {
+77 |             throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
+   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+78 |         }
+79 | 
+INFO: From Compiling Swift module //Sources/CryptoTypes/Services:CryptoTypesServices:
+Sources/CryptoTypes/Services/CredentialManager.swift:86:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 84 |     func load(forKey key: String) async throws -> Data {
+ 85 |         guard let item = items[key] else {
+ 86 |             throw SecurityError.accessError("Item not found: \(key)")
+    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 87 |         }
+ 88 |         return item.data
+
+Sources/CryptoTypes/Services/CredentialManager.swift:93:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 91 |     func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
+ 92 |         guard let item = items[key] else {
+ 93 |             throw SecurityError.accessError("Item not found: \(key)")
+    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 94 |         }
+ 95 |         return (item.data, item.metadata)
+
+Sources/CryptoTypes/Services/CredentialManager.swift:100:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+ 98 |     func delete(forKey key: String) async throws {
+ 99 |         guard items.removeValue(forKey: key) != nil else {
+100 |             throw SecurityError.accessError("Item not found: \(key)")
+    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+101 |         }
+102 |     }
+
+Sources/CryptoTypes/Services/CredentialManager.swift:114:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+112 |     func updateMetadata(_ metadata: [String: String], forKey key: String) async throws {
+113 |         guard var item = items[key] else {
+114 |             throw SecurityError.accessError("Item not found: \(key)")
+    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
+115 |         }
+116 |         item.metadata = metadata
+Analyzing: 93 targets (223 packages loaded, 15773 targets configured)
+[285 / 351] Compiling Swift module //Sources/SecurityInterfaces:SecurityInterfacesFoundation; 1s disk-cache, worker ... (5 actions running)
+Analyzing: 93 targets (223 packages loaded, 15773 targets configured)
+[285 / 351] Compiling Swift module //Sources/SecurityInterfaces:SecurityInterfacesFoundation; 2s disk-cache, worker ... (5 actions running)
+INFO: From Compiling Swift module //Sources/Core:Core:
+Sources/Core/Core.swift:114:11: warning: 'catch' block is unreachable because no errors are thrown in 'do' block
+112 |             // Mark framework as initialized
+113 |             isInitialized = true
+114 |         } catch {
+    |           `- warning: 'catch' block is unreachable because no errors are thrown in 'do' block
+115 |             throw CoreError.initialisationError("Failed to initialise services: \(error.localizedDescription)")
+116 |         }
+INFO: From Compiling Swift module //Sources/UmbraCryptoService:UmbraCryptoService:
+Sources/UmbraCryptoService/CryptoServiceListener.swift:54:41: warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
+52 |             // Set up the connection interfaces
+53 |             connection.exportedInterface = interface
+54 |             connection.exportedObject = cryptoService
+   |                                         |- warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
+   |                                         `- note: task-isolated 'self' is captured by a main actor-isolated closure. main actor-isolated uses in closure may race against later nonisolated uses
+55 | 
+56 |             // Configure remote interface
+Analyzing: 93 targets (237 packages loaded, 15824 targets configured)
+[297 / 351] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 3s disk-cache, worker ... (8 actions running)
+Analyzing: 93 targets (237 packages loaded, 15824 targets configured)
+[299 / 351] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 4s disk-cache, worker ... (7 actions running)
+Analyzing: 93 targets (237 packages loaded, 15824 targets configured)
+[300 / 351] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 5s disk-cache, worker ... (8 actions, 6 running)
+Analyzing: 93 targets (239 packages loaded, 15830 targets configured)
+[303 / 351] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 6s disk-cache, worker ... (7 actions running)
+INFO: Analyzed 93 targets (241 packages loaded, 15873 targets configured).
+[307 / 401] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 7s disk-cache, worker ... (8 actions, 7 running)
 INFO: From Compiling Swift module //Sources/Repositories:Repositories:
 Sources/Repositories/FileSystemRepository.swift:111:12: warning: non-sendable type 'any Decoder' in parameter of the protocol requirement satisfied by nonisolated initializer 'init(from:)' cannot cross actor boundary; this is an error in the Swift 6 language mode
 109 | 
@@ -123,152 +247,7 @@ Sources/Repositories/RepositoryService.swift:166:41: warning: no 'async' operati
     |                                         `- warning: no 'async' operations occur within 'await' expression
 167 |             if await repository.location.path == path {
 168 |                 return repository
-INFO: From Compiling Swift module //Sources/UmbraBookmarkService:UmbraBookmarkService:
-Sources/UmbraBookmarkService/BookmarkServiceProtocol.swift:36:5: warning: @discardableResult declared on a function returning Void is unnecessary
-34 |     /// - Throws: BookmarkError if access cannot be started
-35 |     @preconcurrency
-36 |     @discardableResult
-   |     `- warning: @discardableResult declared on a function returning Void is unnecessary
-37 |     func startAccessing(
-38 |         _ url: URL
-
-Sources/UmbraBookmarkService/BookmarkServiceProtocol.swift:44:5: warning: @discardableResult declared on a function returning Void is unnecessary
-42 |     /// - Parameter url: The URL of the resource to stop accessing
-43 |     @preconcurrency
-44 |     @discardableResult
-   |     `- warning: @discardableResult declared on a function returning Void is unnecessary
-45 |     func stopAccessing(
-46 |         _ url: URL
-
-Sources/UmbraBookmarkService/BookmarkService.swift:94:44: warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
- 92 |         Task { @MainActor in
- 93 |             newConnection.exportedInterface = NSXPCInterface(with: BookmarkServiceProtocol.self)
- 94 |             newConnection.exportedObject = self
-    |                                            |- warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
-    |                                            `- note: task-isolated 'self' is captured by a main actor-isolated closure. main actor-isolated uses in closure may race against later nonisolated uses
- 95 |             newConnection.resume()
- 96 |         }
-INFO: From Compiling Swift module //Sources/CryptoTypes/Services:CryptoTypesServices:
-Sources/CryptoTypes/Services/CredentialManager.swift:86:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
- 84 |     func load(forKey key: String) async throws -> Data {
- 85 |         guard let item = items[key] else {
- 86 |             throw SecurityError.accessError("Item not found: \(key)")
-    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
- 87 |         }
- 88 |         return item.data
-
-Sources/CryptoTypes/Services/CredentialManager.swift:93:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
- 91 |     func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
- 92 |         guard let item = items[key] else {
- 93 |             throw SecurityError.accessError("Item not found: \(key)")
-    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
- 94 |         }
- 95 |         return (item.data, item.metadata)
-
-Sources/CryptoTypes/Services/CredentialManager.swift:100:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
- 98 |     func delete(forKey key: String) async throws {
- 99 |         guard items.removeValue(forKey: key) != nil else {
-100 |             throw SecurityError.accessError("Item not found: \(key)")
-    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
-101 |         }
-102 |     }
-
-Sources/CryptoTypes/Services/CredentialManager.swift:114:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
-112 |     func updateMetadata(_ metadata: [String: String], forKey key: String) async throws {
-113 |         guard var item = items[key] else {
-114 |             throw SecurityError.accessError("Item not found: \(key)")
-    |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
-115 |         }
-116 |         item.metadata = metadata
-INFO: From Compiling Swift module //Sources/Services/SecurityUtils/Services:SecurityUtilsServices:
-Sources/Services/SecurityUtils/Services/PathURLProvider.swift:8:17: warning: stored property 'fileManager' of 'Sendable'-conforming struct 'PathURLProvider' has non-sendable type 'FileManager'; this is an error in the Swift 6 language mode
- 6 | 
- 7 |     /// FileManager instance
- 8 |     private let fileManager: FileManager
-   |                 `- warning: stored property 'fileManager' of 'Sendable'-conforming struct 'PathURLProvider' has non-sendable type 'FileManager'; this is an error in the Swift 6 language mode
- 9 | 
-10 |     /// Initialize a new PathURLProvider
-
-Foundation.FileManager:1:12: note: class 'FileManager' does not conform to the 'Sendable' protocol
-  1 | open class FileManager : NSObject {
-    |            `- note: class 'FileManager' does not conform to the 'Sendable' protocol
-  2 |     open class var `default`: FileManager { get }
-  3 |     @available(swift, obsoleted: 3, renamed: "default")
-
-Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift:27:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
-25 |         // Start accessing the resource before creating bookmark
-26 |         guard fileURL.startAccessingSecurityScopedResource() else {
-27 |             throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
-   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
-28 |         }
-29 |         defer { fileURL.stopAccessingSecurityScopedResource() }
-
-Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift:58:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
-56 |             return url
-57 |         } catch {
-58 |             throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
-   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
-59 |         }
-60 |     }
-
-Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift:77:19: warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
-75 |         // Start accessing the resource
-76 |         guard fileURL.startAccessingSecurityScopedResource() else {
-77 |             throw SecurityError.accessDenied(reason: "Failed to access: \(url.path)")
-   |                   `- warning: 'SecurityError' is deprecated: Use the SecurityError from SecurityInterfaces module instead
-78 |         }
-79 | 
-INFO: From Compiling Swift module //Sources/Core/Services:CoreServices:
-Sources/Core/Services/KeyManager.swift:127:9: warning: will never be executed
-125 |         }
-126 | 
-127 |         return identifier
-    |         `- warning: will never be executed
-128 |     }
-129 | 
-INFO: From Compiling Swift module //Sources/Core:Core:
-Sources/Core/Core.swift:114:11: warning: 'catch' block is unreachable because no errors are thrown in 'do' block
-112 |             // Mark framework as initialized
-113 |             isInitialized = true
-114 |         } catch {
-    |           `- warning: 'catch' block is unreachable because no errors are thrown in 'do' block
-115 |             throw CoreError.initialisationError("Failed to initialise services: \(error.localizedDescription)")
-116 |         }
-INFO: From Compiling Swift module //Sources/UmbraCryptoService:UmbraCryptoService:
-Sources/UmbraCryptoService/CryptoServiceListener.swift:54:41: warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
-52 |             // Set up the connection interfaces
-53 |             connection.exportedInterface = interface
-54 |             connection.exportedObject = cryptoService
-   |                                         |- warning: sending 'self' risks causing data races; this is an error in the Swift 6 language mode
-   |                                         `- note: task-isolated 'self' is captured by a main actor-isolated closure. main actor-isolated uses in closure may race against later nonisolated uses
-55 | 
-56 |             // Configure remote interface
-Analyzing: 93 targets (223 packages loaded, 15771 targets configured)
-[299 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 1s disk-cache, worker ... (9 actions, 8 running)
-Analyzing: 93 targets (237 packages loaded, 15822 targets configured)
-[299 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 2s disk-cache, worker ... (9 actions, 8 running)
-ERROR: /Users/mpy/CascadeProjects/UmbraCore/Sources/UmbraSecurity/Services/BUILD.bazel:4:20: Compiling Swift module //Sources/UmbraSecurity/Services:UmbraSecurityServices failed: (Exit 1): worker failed: error executing SwiftCompile command (from target //Sources/UmbraSecurity/Services:UmbraSecurityServices) 
-  (cd /Users/mpy/.bazel/execroot/_main && \
-  exec env - \
-    APPLE_SDK_PLATFORM=MacOSX \
-    APPLE_SDK_VERSION_OVERRIDE=15.2 \
-    CC=clang \
-    PATH=/Users/mpy/.rbenv/bin:/Users/mpy/.codeium/windsurf/bin:/opt/homebrew/opt/node@18/bin:/opt/homebrew/opt/node@20/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/mpy/.docker/bin:/opt/homebrew/opt/openjdk/bin:/Users/mpy/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/mpy/.cargo/bin:/Applications/kitty.app/Contents/MacOS:/Users/mpy/Library/Python/3.8/bin:/Users/mpy/go/bin:/Users/mpy/.scripts:/Users/mpy/.fzf/bin \
-    XCODE_VERSION_OVERRIDE=16.2.0.16C5032a \
-  bazel-out/darwin_x86_64-opt-exec-ST-d57f47055a04/bin/external/rules_swift+/tools/worker/worker swiftc @bazel-out/darwin_arm64-opt/bin/Sources/UmbraSecurity/Services/UmbraSecurityServices.swiftmodule-0.params)
-# Configuration: ceda03d963f40151499688b15e41be8f143928dc42288f9adca36aef8e5e2d50
-# Execution platform: @@platforms//host:host
-<unknown>:0: error: circular dependency between modules 'Foundation' and 'SecurityInterfacesFoundation'
-Analyzing: 93 targets (237 packages loaded, 15822 targets configured)
-[301 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 3s disk-cache, worker ... (8 actions running)
-Analyzing: 93 targets (239 packages loaded, 15828 targets configured)
-[312 / 351] Compiling Swift module //Tests/ModelsTests:ModelsTests; 4s disk-cache, worker ... (8 actions running)
-
-INFO: Analyzed 93 targets (241 packages loaded, 15873 targets configured).
-[320 / 387] Compiling Swift module //Tests/ModelsTests:ModelsTests; 5s disk-cache, worker ... (7 actions running)
-[341 / 431] Compiling Swift module //Tests/ModelsTests:ModelsTests; 6s disk-cache, worker ... (9 actions, 7 running)
-[390 / 431] Compiling Swift module //Tests/ModelsTests:ModelsTests; 7s disk-cache, worker ... (9 actions, 7 running)
-[393 / 431] Compiling Swift module //Tests/ModelsTests:ModelsTests; 8s disk-cache, worker ... (7 actions running)
+[333 / 431] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 8s disk-cache, worker ... (8 actions, 6 running)
 ERROR: /Users/mpy/CascadeProjects/UmbraCore/Tests/XPCTests/BUILD.bazel:4:17: Compiling Swift module //Tests/XPCTests:XPCTests failed: (Exit 1): worker failed: error executing SwiftCompile command (from target //Tests/XPCTests:XPCTests) 
   (cd /Users/mpy/.bazel/execroot/_main && \
   exec env - \
@@ -1034,11 +1013,31 @@ Sources/UmbraTestKit/Tests/SecurityErrorTests.swift:2:18: error: module 'Securit
    |                  `- error: module 'SecurityInterfaces' was not compiled for testing
  3 | import XCTest
  4 | 
-[419 / 431] Compiling Swift module //Tests/ModelsTests:ModelsTests; 9s disk-cache, worker ... (4 actions running)
-[425 / 431] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 10s disk-cache, worker ... (2 actions running)
+[389 / 431] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 9s disk-cache, worker ... (4 actions, 3 running)
+INFO: From Compiling Swift module //Sources/Core/Services:CoreServices:
+Sources/Core/Services/KeyManager.swift:127:9: warning: will never be executed
+125 |         }
+126 | 
+127 |         return identifier
+    |         `- warning: will never be executed
+128 |     }
+129 | 
+ERROR: /Users/mpy/CascadeProjects/UmbraCore/Sources/UmbraSecurity/Services/BUILD.bazel:4:20: Compiling Swift module //Sources/UmbraSecurity/Services:UmbraSecurityServices failed: (Exit 1): worker failed: error executing SwiftCompile command (from target //Sources/UmbraSecurity/Services:UmbraSecurityServices) 
+  (cd /Users/mpy/.bazel/execroot/_main && \
+  exec env - \
+    APPLE_SDK_PLATFORM=MacOSX \
+    APPLE_SDK_VERSION_OVERRIDE=15.2 \
+    CC=clang \
+    PATH=/Users/mpy/.rbenv/bin:/Users/mpy/.codeium/windsurf/bin:/opt/homebrew/opt/node@18/bin:/opt/homebrew/opt/node@20/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/mpy/.docker/bin:/opt/homebrew/opt/openjdk/bin:/Users/mpy/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/mpy/.cargo/bin:/Applications/kitty.app/Contents/MacOS:/Users/mpy/Library/Python/3.8/bin:/Users/mpy/go/bin:/Users/mpy/.scripts:/Users/mpy/.fzf/bin \
+    XCODE_VERSION_OVERRIDE=16.2.0.16C5032a \
+  bazel-out/darwin_x86_64-opt-exec-ST-d57f47055a04/bin/external/rules_swift+/tools/worker/worker swiftc @bazel-out/darwin_arm64-opt/bin/Sources/UmbraSecurity/Services/UmbraSecurityServices.swiftmodule-0.params)
+# Configuration: ceda03d963f40151499688b15e41be8f143928dc42288f9adca36aef8e5e2d50
+# Execution platform: @@platforms//host:host
+<unknown>:0: error: circular dependency between modules 'Foundation' and 'SecurityInterfacesFoundation'
+[426 / 431] Compiling Swift module //Tests/ErrorHandlingTests:ErrorHandlingTests; 11s disk-cache, worker ... (2 actions, 1 running)
+
 INFO: Build succeeded for only 78 of 93 top-level targets
-[431 / 431] no actions running
 INFO: Found 93 targets...
-INFO: Elapsed time: 43.051s, Critical Path: 13.01s
-INFO: 397 processes: 214 disk cache hit, 177 internal, 1 darwin-sandbox, 5 worker.
+INFO: Elapsed time: 42.063s, Critical Path: 14.15s
+INFO: 397 processes: 213 disk cache hit, 177 internal, 7 worker.
 ERROR: Build did NOT complete successfully

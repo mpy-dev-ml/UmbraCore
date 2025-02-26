@@ -21,6 +21,7 @@ umbra_swift_test(
         "//Sources/Core",
         "//Sources/CoreTypes",
         "//Sources/ResticCLIHelper",
+        "//Sources/SecurityInterfaces",
         "//Sources/SecurityUtils",
         "//Sources/Services",
         "//Sources/UmbraCryptoService",

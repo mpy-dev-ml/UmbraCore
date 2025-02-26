@@ -45,7 +45,7 @@ extension URLProvider {
         guard let url = URL(string: path) else {
             throw SecurityError.operationFailed("Invalid path: \(path)")
         }
-        
+
         return try await url.us_createSecurityScopedBookmark()
     }
 
@@ -59,7 +59,7 @@ extension URLProvider {
         guard let url = URL(string: path) else {
             return
         }
-        
+
         url.us_stopAccessingSecurityScopedResource()
     }
 
@@ -73,7 +73,7 @@ extension URLProvider {
         guard let url = URL(string: path) else {
             throw SecurityError.operationFailed("Invalid path: \(path)")
         }
-        
+
         if url.us_startAccessingSecurityScopedResource() {
             return true
         } else {
