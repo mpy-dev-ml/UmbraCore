@@ -99,6 +99,21 @@ user.bazelrc
 # Documentation (keep ROADMAP.md in version control)
 # ROADMAP.md is intentionally not ignored as it contains important project planning information
 
+# Symbolic links to team-utils files
+/ROADMAP.md
+/.codecov.yml
+# .gitattributes is kept as a copy, not a symlink due to Git limitations
+/.jazzy.yaml
+/.ruby-version
+/.swiftlint.yml
+/mkdocs.yml
+/requirements.txt
+/update_build_files.sh
+/generate_deps.swift
+/issues.txt
+/project_structure.md
+/xpc_implementation_plan.md
+
 # Temporary and work files
 *.tmp
 *TEMP*
