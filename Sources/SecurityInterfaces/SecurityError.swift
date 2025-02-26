@@ -1,8 +1,7 @@
 import CoreTypes
-import Foundation
 
 /// Errors that can occur during security operations
-public enum SecurityError: LocalizedError, Sendable {
+public enum SecurityError: Error, Sendable {
     /// Bookmark creation failed
     case bookmarkCreationFailed(path: String)
     /// Bookmark resolution failed
@@ -79,5 +78,13 @@ public enum SecurityError: LocalizedError, Sendable {
         default:
             return nil
         }
+    }
+}
+
+// Add LocalizedError conformance in a separate extension
+// This allows us to maintain compatibility without importing Foundation directly
+extension SecurityError {
+    public var localizedDescription: String {
+        return errorDescription ?? "Unknown security error"
     }
 }
