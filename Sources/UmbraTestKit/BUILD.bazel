@@ -14,6 +14,7 @@ umbra_swift_library(
         "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
         "//Sources/ErrorHandling",
         "//Sources/Repositories/Types:RepositoriesTypes",
+        "//Sources/SecurityInterfaces",
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
         "//Sources/UmbraLogging",

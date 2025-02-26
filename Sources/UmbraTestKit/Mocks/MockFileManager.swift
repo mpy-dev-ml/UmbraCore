@@ -96,7 +96,7 @@ public final class MockFileManager: FileManager {
     // MARK: - URL-based File Operations
     public func simulateSetFileContent(_ content: String, at url: URL) {
         let path = url.path
-        simulateCreateFile(atPath: path, contents: content.data(using: .utf8))
+        simulateCreateFile(atPath: path, contents: content.data(using: .utf8), attributes: nil)
     }
 
     @discardableResult
@@ -206,10 +206,14 @@ public final class MockFileManager: FileManager {
     ) throws -> Bool {
         if createIntermediates {
             var currentPath = ""
-            for component in path.pathComponents {
-                if component == "/" {
-                    currentPath = "/"
-                } else {
+            // Split the path manually instead of using pathComponents
+            let components = path.split(separator: "/").map(String.init)
+            if path.hasPrefix("/") {
+                currentPath = "/"
+            }
+            
+            for component in components {
+                if !component.isEmpty {
                     currentPath = (currentPath as NSString).appendingPathComponent(component)
                     setDefaultAccess(forPath: currentPath)
                     storage.directories.insert(currentPath)
