@@ -1,0 +1,20 @@
+load("//tools/build_defs:umbracore_gen_module.bzl", "umbracore_gen_module")
+load("//tools/build_defs:umbracore_module.bzl", "umbracore_quick_module_creator")
+
+package(default_visibility = ["//visibility:public"])
+
+# Module generator scripts using the quick module creator
+umbracore_quick_module_creator(
+    name = "create_secure_string",
+    module_name = "SecureString",
+)
+
+umbracore_quick_module_creator(
+    name = "create_url_path",
+    module_name = "URLPath",
+)
+
+umbracore_quick_module_creator(
+    name = "create_time_types",
+    module_name = "TimeTypes",
+)

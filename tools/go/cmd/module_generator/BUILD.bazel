@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "module_generator_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/umbracore/tools/cmd/module_generator",
+    visibility = ["//visibility:private"],
+)
+
+go_binary(
+    name = "module_generator",
+    embed = [":module_generator_lib"],
+    visibility = ["//visibility:public"],
+)

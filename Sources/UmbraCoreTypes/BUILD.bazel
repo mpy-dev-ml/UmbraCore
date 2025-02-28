@@ -1,0 +1,31 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
+
+swift_library(
+    name = "UmbraCoreTypes",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "UmbraCoreTypes",
+    visibility = ["//visibility:public"],
+    deps = [
+        # No dependencies - this module must be foundation-free
+    ],
+)
+
+swift_library(
+    name = "UmbraCoreTypesTestLib",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "UmbraCoreTypes",
+    visibility = ["//visibility:private"],
+    deps = [
+        # No dependencies - this module must be foundation-free
+    ],
+    testonly = True,
+    copts = ["-enable-testing"],
+)
+
+swift_test(
+    name = "UmbraCoreTypesTests",
+    srcs = glob(["Tests/**/*.swift"]),
+    deps = [
+        ":UmbraCoreTypesTestLib",
+    ],
+)

@@ -1,6 +1,7 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//tools/build_defs:umbracore_module.bzl", "umbracore_foundation_free_module_creator")
 
 # gazelle:prefix github.com/mpy-dev-ml/UmbraCore
 gazelle(
@@ -21,4 +22,40 @@ platform(
         "@platforms//os:macos",
         "@platforms//cpu:arm64",
     ],
+)
+
+# Foundation-free module generators
+umbracore_foundation_free_module_creator(
+    name = "generate_url_path_module",
+    module_name = "URLPath",
+)
+
+umbracore_foundation_free_module_creator(
+    name = "generate_binary_data_module",
+    module_name = "BinaryData",
+)
+
+umbracore_foundation_free_module_creator(
+    name = "generate_binary_stream_module",
+    module_name = "BinaryStream",
+)
+
+umbracore_foundation_free_module_creator(
+    name = "generate_file_path_module",
+    module_name = "FilePath",
+)
+
+umbracore_foundation_free_module_creator(
+    name = "generate_serialization_module",
+    module_name = "Serialization",
+)
+
+umbracore_foundation_free_module_creator(
+    name = "generate_string_conversion_module",
+    module_name = "StringConversion",
+)
+
+umbracore_foundation_free_module_creator(
+    name = "generate_concurrency_primitives_module",
+    module_name = "ConcurrencyPrimitives",
 )
