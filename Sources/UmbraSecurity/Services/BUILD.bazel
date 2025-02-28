@@ -3,15 +3,23 @@ load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
 umbra_swift_library(
     name = "UmbraSecurityServices",
-    srcs = ["SecurityService.swift"],
+    srcs = [
+        "SecurityService.swift",
+        "SecurityProviderFoundationImpl.swift",
+        "SecurityProviderFactory.swift",
+    ],
     deps = [
         "//Sources/Core",
         "//Sources/Core/Services:CoreServices",
         "//Sources/ErrorHandling",
         "//Sources/SecurityInterfaces",
-        "//Sources/SecurityInterfaces:SecurityInterfacesCore",
+        "//Sources/SecurityInterfacesBase",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/UmbraSecurityFoundation",
         "//Sources/SecurityTypes",
         "//Sources/SecurityUtils",
         "//Sources/UmbraLogging",
+        "//Sources/SecurityInterfacesFoundationBridge",
+        "//Sources/FoundationBridgeTypes",
     ],
 )

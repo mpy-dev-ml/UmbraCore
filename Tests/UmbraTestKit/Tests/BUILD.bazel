@@ -1,0 +1,32 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+load("//:bazel/macros/swift.bzl", "umbra_swift_test")
+
+swift_test(
+    name = "UmbraTestKitTests",
+    srcs = glob(
+        ["**/*.swift"],
+        allow_empty = True,
+    ),
+    copts = [
+        "-target", 
+        "arm64-apple-macos14.0",
+        "-Xcc", "-arch", "-Xcc", "arm64",
+    ],
+    env = {
+        "MACOS_DEPLOYMENT_TARGET": "14.0",
+        "SWIFT_DETERMINISTIC_HASHING": "1",
+        "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer",
+        "DYLD_PRINT_LIBRARIES": "1", # Debug library loading
+        "ARCH": "arm64",
+        "XCODE_VERSION_OVERRIDE": "16.2.0",
+    },
+    target_compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:arm64",
+    ],
+    deps = [
+        "//Tests/UmbraTestKit/TestKit",
+        "//Sources/Core",
+        "//Tests/SecurityInterfacesTest",
+    ],
+)

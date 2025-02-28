@@ -16,6 +16,9 @@ umbra_swift_library(
     srcs = ["XPCServiceProtocolAlias.swift"],
     deps = [
         "//Sources/CoreTypes",
+        "//Sources/ObjCBridgingTypes",
         "//Sources/SecurityInterfaces",
+        "//Sources/SecurityInterfacesBase",
+        "//Sources/SecurityInterfacesFoundation",
     ],
 )

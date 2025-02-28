@@ -1,0 +1,66 @@
+UmbraCore Module Structure
+=======================
+
+A. DEPENDENCY HIERARCHY (Layers)
+-------------------------------
+
+[Foundation & System]
+     ^
+     |
+[CoreTypes]
+     ^
+     |
+[SecurityInterfacesBase]  ←→  [CoreServicesTypes]
+     ^                          ^
+     |                          |
+[SecurityInterfaces]  →  [Core/Services/TypeAliases]
+     ^                          ^
+     |                          |
+[SecurityUtils]   →→→→  [Core/Services]
+     ^                          ^
+     |                          |
+[UmbraSecurity/Services]  →  [Core]
+                                ^
+                                |
+                          [UmbraCore App]
+
+
+B. MODULE RESPONSIBILITIES
+-------------------------
+
+1. Foundation Layer
+   - CoreTypes: Basic types and utilities, minimal Foundation dependencies
+   - CoreServicesTypes: Common type definitions used across services
+
+2. Protocol Definitions Layer
+   - SecurityInterfacesBase: Pure protocol definitions
+     * XPCServiceBaseProtocol
+     * XPCServiceProtocolDefinition
+
+3. Protocol Implementations Layer
+   - SecurityInterfaces: Protocol implementations and concrete classes
+   - Core/Services/TypeAliases: Type aliases for protocols and services
+
+4. Service Layer
+   - SecurityUtils: Security-specific utilities and implementations
+   - Core/Services: Core service implementations
+     * KeyManager
+     * ServiceContainer
+
+5. Application Layer
+   - UmbraSecurity/Services: Application-level security services
+   - Core: Top-level core components
+   - UmbraCore: Main application
+
+
+C. TEST STRUCTURE
+----------------
+
+[TestSupport]
+     ^
+     |
+[CoreTests]  [SecurityTests]  [UmbraSecurityTests]
+     ^            ^                  ^
+     |            |                  |
+  Tests Core    Tests Security    Tests UmbraSecurity
+  Components    Components        Components

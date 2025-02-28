@@ -12,6 +12,7 @@ umbra_swift_library(
         "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
         "//Sources/ErrorHandling/Models:ErrorHandlingModels",
         "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
+        "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/SecurityInterfaces",
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",

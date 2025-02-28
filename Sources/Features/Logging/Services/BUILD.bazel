@@ -13,9 +13,9 @@ umbra_swift_library(
         "//Sources/Features/Logging/Models:FeaturesLoggingModels",
         "//Sources/Features/Logging/Protocols:FeaturesLoggingProtocols",
         "//Sources/SecurityInterfaces",
+        "//Sources/SecurityInterfacesFoundation",
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
-        "//Sources/UmbraSecurity",
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
     ],
 )

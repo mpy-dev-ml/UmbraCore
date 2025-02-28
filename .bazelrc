@@ -10,6 +10,11 @@ build --apple_crosstool_top=@local_config_apple_cc//:toolchain
 build --crosstool_top=@local_config_apple_cc//:toolchain
 build --host_crosstool_top=@local_config_apple_cc//:toolchain
 
+# Import Swift-specific configurations
+import %workspace%/.bazelrc.swift
+# Enable Swift ARM64 config by default
+build --config=swift_arm64
+
 # Test configuration
 test --test_output=errors
 test --test_env=DYLD_LIBRARY_PATH
@@ -18,7 +23,7 @@ test --test_env=DEVELOPER_DIR
 test --test_env=SWIFT_DETERMINISTIC_HASHING=1
 test --test_env=SDKROOT
 test --test_env=MACOS_SDK_VERSION=14.0
-test --test_env=XCODE_VERSION_OVERRIDE=15.0.0
+test --test_env=XCODE_VERSION_OVERRIDE=16.2.0
 test --test_env=PLATFORM_NAME=macosx
 test --test_verbose_timeout_warnings
 test --test_summary=detailed

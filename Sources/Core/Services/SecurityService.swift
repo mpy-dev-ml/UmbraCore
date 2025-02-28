@@ -2,9 +2,12 @@ import CoreServicesTypes
 import CoreTypes
 import Foundation
 import SecurityInterfaces
+import SecurityTypes
+import SecurityTypesProtocols
+import UmbraLogging
 
 /// Manages security operations and access control
-public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, SecurityProvider {
+public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, SecurityTypesProtocols.SecurityProvider {
     public static let serviceIdentifier = "com.umbracore.security"
 
     private var _state: ServiceState = .uninitialized
@@ -362,6 +365,58 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
     public func getAccessedPaths() async -> Set<String> {
         accessedPaths
+    }
+
+    // MARK: - SecurityProvider Protocol Implementation
+
+    /// Create a security-scoped bookmark for a URL
+    /// - Parameter url: The URL to create a bookmark for
+    /// - Returns: The bookmark data
+    /// - Throws: Error if bookmark creation fails
+    public nonisolated func createSecurityBookmark(for url: URL) throws -> Data {
+        // Since this is nonisolated, we can't access actor state directly
+        do {
+            let bookmarkData = try url.bookmarkData(
+                options: .withSecurityScope,
+                includingResourceValuesForKeys: nil,
+                relativeTo: nil
+            )
+            return bookmarkData
+        } catch {
+            throw SecurityInterfaces.SecurityError.bookmarkError(
+                "Failed to create security bookmark: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    /// Resolve a security-scoped bookmark to a URL
+    /// - Parameter bookmarkData: The bookmark data to resolve
+    /// - Returns: The resolved URL
+    /// - Throws: Error if bookmark resolution fails
+    public nonisolated func resolveSecurityBookmark(_ bookmarkData: Data) throws -> URL {
+        // Since this is nonisolated, we can't access actor state directly
+        var isStale = false
+        do {
+            let url = try URL(
+                resolvingBookmarkData: bookmarkData,
+                options: .withSecurityScope,
+                relativeTo: nil,
+                bookmarkDataIsStale: &isStale
+            )
+
+            if isStale {
+                // Log that the bookmark is stale but still try to use it
+                // We can't access the logger directly in a nonisolated context
+                // This would ideally be handled by a proper logging mechanism
+                print("Warning: Security bookmark is stale and may need to be recreated")
+            }
+
+            return url
+        } catch {
+            throw SecurityInterfaces.SecurityError.bookmarkError(
+                "Failed to resolve security bookmark: \(error.localizedDescription)"
+            )
+        }
     }
 
     // MARK: - SecurityInterfacesCore.SecurityProviderBase Implementation
