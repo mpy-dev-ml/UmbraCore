@@ -39,6 +39,8 @@ swift_library(
         "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/SecurityInterfacesXPC",
         "//Sources/SecurityInterfacesFoundationBridge",
+        "//Sources/SecurityInterfacesFoundationCore",
+        "//Sources/SecurityInterfacesFoundationNoFoundation",
     ],
     visibility = ["//visibility:public"],
 )
