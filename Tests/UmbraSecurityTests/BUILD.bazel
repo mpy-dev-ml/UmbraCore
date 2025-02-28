@@ -8,6 +8,13 @@ umbra_swift_test(
     deps = [
         "//Sources/ErrorHandling",
         "//Sources/UmbraLogging",
-        "//Sources/UmbraTestKit",
+        "//TestSupport/UmbraTestKit",
+        "//Sources/UmbraSecurity",
+        "//Sources/UmbraSecurity/Services:UmbraSecurityServices",
+        "//Sources/SecurityInterfaces:SecurityInterfacesForTesting",
+        "//Sources/SecurityInterfacesBase:SecurityInterfacesBaseForTesting",
+        "//Sources/SecurityInterfacesProtocols:SecurityInterfacesProtocolsForTesting",
+        "//Sources/SecurityInterfacesFoundationBridge:SecurityInterfacesFoundationBridgeForTesting",
+        "//Sources/FoundationBridgeTypes",
     ],
 )

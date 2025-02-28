@@ -16,6 +16,6 @@ swift_test(
     deps = [
         "//Sources/ResticCLIHelper",
         "//Sources/ResticTypes",
-        "//Sources/UmbraTestKit",
+        "//TestSupport/UmbraTestKit",
     ],
 )

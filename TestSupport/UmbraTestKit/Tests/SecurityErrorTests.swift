@@ -1,5 +1,5 @@
 import Core
-@testable import SecurityInterfaces
+@testable import SecurityInterfacesForTesting
 import XCTest
 
 final class SecurityErrorTests: XCTestCase {
