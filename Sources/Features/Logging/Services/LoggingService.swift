@@ -1,116 +1,105 @@
 import Foundation
-import SecurityInterfaces
+import CoreTypes
+@preconcurrency import SecurityInterfaces
 import SecurityInterfacesFoundation
 import SecurityTypesProtocols
 
-/// Service for managing log files with security-scoped bookmarks
+/// Service for handling logging operations
 @available(macOS 14.0, *)
-public actor LoggingService {
-    /// Shared instance with default security service
-    public static let shared = LoggingService(securityProvider: DefaultSecurityProvider())
-
-    /// The security service to use for file operations
-    private let securityProvider: any SecurityInterfaces.SecurityProviderFoundation
-
-    /// Initialize a new logging service
-    /// - Parameter securityProvider: The security provider to use for file operations
-    public init(securityProvider: any SecurityInterfaces.SecurityProviderFoundation) {
+public class LoggingService {
+    private let securityProvider: SecurityInterfaces.SecurityProviderFoundation
+    
+    /// Initialize with a security provider
+    /// - Parameter securityProvider: The security provider to use
+    public init(securityProvider: SecurityInterfaces.SecurityProviderFoundation) {
         self.securityProvider = securityProvider
     }
-
+    
     /// Create a bookmark for a log file
     /// - Parameter path: Path to the log file
-    /// - Returns: The bookmark data
+    /// - Returns: Bookmark data
     /// - Throws: SecurityError if bookmark creation fails
-    public func createLogBookmark(path: String) async throws -> [UInt8] {
-        let url = URL(fileURLWithPath: path)
-        let data = try await securityProvider.createBookmark(for: url)
-        return Array(data)
+    public nonisolated func createLogBookmark(path: String) async throws -> CoreTypes.BinaryData {
+        return try await securityProvider.createBookmark(for: path)
     }
-
-    /// Resolve a bookmark to a log file
-    /// - Parameter bookmarkData: The bookmark data
-    /// - Returns: The path to the log file and whether the bookmark is stale
+    
+    /// Resolve a bookmark for a log file
+    /// - Parameter bookmarkData: Bookmark data
+    /// - Returns: Tuple containing path and whether the bookmark is stale
     /// - Throws: SecurityError if bookmark resolution fails
-    public func resolveLogBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        let result = try await securityProvider.resolveBookmark(Data(bookmarkData))
-        return (result.url.path, result.isStale)
+    public nonisolated func resolveLogBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> (path: String, isStale: Bool) {
+        let result = try await securityProvider.resolveBookmark(bookmarkData)
+        return (path: result.identifier, isStale: result.isStale)
     }
-
+    
+    /// Validate a bookmark for a log file
+    /// - Parameter bookmarkData: Bookmark data
+    /// - Returns: True if the bookmark is valid
+    /// - Throws: SecurityError if bookmark validation fails
+    public nonisolated func validateLogBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> Bool {
+        return try await securityProvider.validateBookmark(bookmarkData)
+    }
+    
     /// Start accessing a log file
     /// - Parameter path: Path to the log file
     /// - Returns: True if access was granted
-    public func startAccessingLog(path: String) async throws -> Bool {
-        try await securityProvider.startAccessing(url: URL(fileURLWithPath: path))
+    /// - Throws: SecurityError if access fails
+    public nonisolated func startAccessingLog(path: String) async throws -> Bool {
+        return try await securityProvider.startAccessingResource(identifier: path)
     }
-
+    
     /// Stop accessing a log file
     /// - Parameter path: Path to the log file
-    public func stopAccessingLog(path: String) async {
-        // Using isolated call to avoid data race
-        let provider = self.securityProvider
-        await provider.stopAccessing(url: URL(fileURLWithPath: path))
+    public nonisolated func stopAccessingLog(path: String) async {
+        await securityProvider.stopAccessingResource(identifier: path)
     }
-
+    
     /// Stop accessing all log files
-    public func stopAccessingAllLogs() async {
-        // Using isolated call to avoid data race
-        let provider = self.securityProvider
-        await provider.stopAccessingAllResources()
+    public nonisolated func stopAccessingAllLogs() async {
+        await securityProvider.stopAccessingAllResources()
     }
-
+    
     /// Check if a log file is being accessed
     /// - Parameter path: Path to the log file
     /// - Returns: True if the log file is being accessed
-    public func isAccessingLog(path: String) async -> Bool {
-        // Using isolated call to avoid data race
-        let provider = self.securityProvider
-        return await provider.isAccessing(url: URL(fileURLWithPath: path))
+    public nonisolated func isAccessingLog(path: String) async -> Bool {
+        return await securityProvider.isAccessingResource(identifier: path)
     }
-
-    /// Get all log files being accessed
-    /// - Returns: Set of paths to log files being accessed
-    public func getAccessedLogPaths() async -> Set<String> {
-        // Using isolated call to avoid data race
-        let provider = self.securityProvider
-        let urls = await provider.getAccessedUrls()
-        return Set(urls.map { $0.path })
+    
+    /// Get all accessed log files
+    /// - Returns: Set of paths to accessed log files
+    public nonisolated func getAccessedLogs() async -> Set<String> {
+        return await securityProvider.getAccessedResourceIdentifiers()
     }
-
+    
     /// Perform an operation with security-scoped access to a log file
     /// - Parameters:
     ///   - path: Path to the log file
-    ///   - operation: Operation to perform
+    ///   - operation: The operation to perform
     /// - Returns: The result of the operation
-    /// - Throws: Any error that occurs during the operation
-    public func withLogAccess<T: Sendable>(
-        to path: String,
-        perform operation: @Sendable () async throws -> T
-    ) async throws -> T {
-        // Check if we're already accessing the path
-        let wasAlreadyAccessing = await isAccessingLog(path: path)
-
-        // Start accessing if needed
-        if !wasAlreadyAccessing {
-            _ = try await startAccessingLog(path: path)
+    /// - Throws: Any error thrown by the operation
+    public nonisolated func withSecurityScopedAccess<T: Sendable>(to path: String, operation: () async throws -> T) async throws -> T {
+        let accessGranted = try await startAccessingLog(path: path)
+        guard accessGranted else {
+            throw SecurityInterfaces.SecurityInterfacesError.accessError("Failed to access log file at \(path)")
         }
-
-        // Perform the operation
-        do {
-            let result = try await operation()
-
-            // Stop accessing if we weren't already accessing
-            if !wasAlreadyAccessing {
-                await stopAccessingLog(path: path)
+        
+        // Create a cleanup function that doesn't capture any variables
+        // This avoids the task isolation warning
+        func scheduleCleanup(provider: SecurityInterfaces.SecurityProviderFoundation, resourcePath: String) {
+            // Using a separate function to avoid capturing context
+            @Sendable func cleanupResource() async {
+                await provider.stopAccessingResource(identifier: resourcePath)
             }
-
-            return result
-        } catch {
-            // Stop accessing if we weren't already accessing
-            if !wasAlreadyAccessing {
-                await stopAccessingLog(path: path)
-            }
-            throw error
+            
+            Task.detached(operation: cleanupResource)
         }
+        
+        defer {
+            // Schedule cleanup without capturing context in the closure
+            scheduleCleanup(provider: securityProvider, resourcePath: path)
+        }
+        
+        return try await operation()
     }
 }
