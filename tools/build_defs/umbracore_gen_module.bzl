@@ -1,38 +1,53 @@
 """
-UmbraCore module generator rule.
+UmbraCore module generator rule with enhanced type safety.
 
 This rule provides a way to generate new Foundation-free modules with the standard directory structure
 in accordance with the UmbraCore refactoring plan.
 """
 
-def _umbracore_gen_module_impl(ctx):
-    module_name = ctx.attr.module_name
-    
-    # Create a Python script that generates the module structure
-    script_content = """
-#!/usr/bin/env python3
-import os
-import sys
+load("@bazel_skylib//lib:paths.bzl", "paths")
 
-def create_file(path, content):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, 'w') as f:
-        f.write(content)
-    print(f"Created {path}")
+# Define a provider to enforce structure of module data
+ModuleInfo = provider(
+    doc = "Information about an UmbraCore module",
+    fields = {
+        "name": "The module name (string)",
+        "path": "The module path (string)",
+    },
+)
 
-def main():
-    module_name = "{module_name}"
-    module_path = f"Sources/{{module_name}}"
+def _validate_string(value, param_name):
+    """Validates that a value is a string.
     
-    # Create directory structure
-    os.makedirs(f"{{module_path}}/Sources", exist_ok=True)
-    os.makedirs(f"{{module_path}}/Tests", exist_ok=True)
+    Args:
+        value: The value to validate
+        param_name: Name of the parameter for error reporting
+        
+    Returns:
+        The validated string
+        
+    Fails:
+        If value is not a string
+    """
+    if not value or type(value) != "string":
+        fail("%s must be a non-empty string, got %s" % (param_name, type(value)))
+    return value
+
+def _generate_build_file(module_name):
+    """Generates content for BUILD.bazel file.
     
-    # Create BUILD.bazel file
-    build_content = '''load("//tools/build_defs:umbracore_module.bzl", "umbracore_foundation_free_module", "umbracore_test_module")
+    Args:
+        module_name: Name of the module (string)
+        
+    Returns:
+        Content for BUILD.bazel file (string)
+    """
+    _validate_string(module_name, "module_name")
+    
+    return """load("//tools/build_defs:umbracore_module.bzl", "umbracore_foundation_free_module", "umbracore_test_module")
 
 umbracore_foundation_free_module(
-    name = "{module_name}",
+    name = "%s",
     visibility = ["//visibility:public"],
     deps = [
         # Add foundation-free dependencies here
@@ -40,106 +55,162 @@ umbracore_foundation_free_module(
 )
 
 umbracore_test_module(
-    name = "{module_name}Tests",
+    name = "%sTests",
     deps = [
-        ":{module_name}",
+        ":%s",
         # Add test dependencies here
     ],
 )
-'''
+""" % (module_name, module_name, module_name)
+
+def _generate_source_file(module_name):
+    """Generates content for main source file.
     
-    # Create sample source file
-    source_content = '''// {module_name}.swift
-// {module_name}
+    Args:
+        module_name: Name of the module (string)
+        
+    Returns:
+        Content for source file (string)
+    """
+    _validate_string(module_name, "module_name")
+    
+    return """// %s.swift
+// %s
 //
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
-/// Primary entry point for the {module_name} module.
+/// Primary entry point for the %s module.
 /// This module is designed to be fully Foundation-free.
-public enum {module_name} {{
+public enum %s {
     /// Module version
     public static let version = "1.0.0"
-}}
-'''
+}
+""" % (module_name, module_name, module_name, module_name)
+
+def _generate_test_file(module_name):
+    """Generates content for test file.
     
-    # Create sample test file
-    test_content = '''// {module_name}Tests.swift
-// {module_name}
+    Args:
+        module_name: Name of the module (string)
+        
+    Returns:
+        Content for test file (string)
+    """
+    _validate_string(module_name, "module_name")
+    
+    return """// %sTests.swift
+// %s
 //
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
 import XCTest
-@testable import {module_name}
+@testable import %s
 
-class {module_name}Tests: XCTestCase {{
+class %sTests: XCTestCase {
     
-    func testVersion() {{
-        XCTAssertFalse({module_name}.version.isEmpty)
-    }}
-}}
-'''
+    func testVersion() {
+        XCTAssertFalse(%s.version.isEmpty)
+    }
+}
+""" % (module_name, module_name, module_name, module_name, module_name)
 
-    # Write the files
-    create_file(f"{{module_path}}/BUILD.bazel", build_content)
-    create_file(f"{{module_path}}/Sources/{{module_name}}.swift", source_content)
-    create_file(f"{{module_path}}/Tests/{{module_name}}Tests.swift", test_content)
+def _umbracore_gen_module_impl(ctx):
+    """Implementation of the umbracore_gen_module rule.
     
-    print(f"\\nCreated {{module_name}} module at {{module_path}}")
-    print("• Module structure:")
-    print(f"  - {{module_path}}/BUILD.bazel")
-    print(f"  - {{module_path}}/Sources/{{module_name}}.swift")
-    print(f"  - {{module_path}}/Tests/{{module_name}}Tests.swift")
-    print("\\nNext steps:")
-    print(f"1. Add your core types to {{module_path}}/Sources/")
-    print(f"2. Add tests to {{module_path}}/Tests/")
-    print(f"3. Update dependencies in {{module_path}}/BUILD.bazel if needed")
+    Args:
+        ctx: Rule context
+        
+    Returns:
+        Default provider with created files
+    """
+    module_name = _validate_string(ctx.attr.module_name, "module_name")
+    module_path = "Sources/%s" % module_name
+    
+    # Generate file contents for the module
+    build_content = _generate_build_file(module_name)
+    source_content = _generate_source_file(module_name) 
+    test_content = _generate_test_file(module_name)
+    
+    # Create a shell script that will create the module in the source tree
+    script_content = """#!/bin/bash
+# Get the absolute path to the workspace root
+WORKSPACE_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+echo "Workspace root: $WORKSPACE_ROOT"
 
-if __name__ == "__main__":
-    main()
-    """.format(
-        module_name = module_name,
+echo "Creating %s module in $WORKSPACE_ROOT/%s..."
+
+# Create the directory structure
+mkdir -p "$WORKSPACE_ROOT/%s/Sources" "$WORKSPACE_ROOT/%s/Tests"
+
+# Create the BUILD.bazel file
+cat > "$WORKSPACE_ROOT/%s/BUILD.bazel" << 'EOF'
+%s
+EOF
+
+# Create the source file
+cat > "$WORKSPACE_ROOT/%s/Sources/%s.swift" << 'EOF'
+%s
+EOF
+
+# Create the test file
+cat > "$WORKSPACE_ROOT/%s/Tests/%sTests.swift" << 'EOF'
+%s
+EOF
+
+echo "✓ Created %s module in $WORKSPACE_ROOT/%s"
+echo "• Module structure:"
+echo "  - $WORKSPACE_ROOT/%s/BUILD.bazel"
+echo "  - $WORKSPACE_ROOT/%s/Sources/%s.swift"
+echo "  - $WORKSPACE_ROOT/%s/Tests/%sTests.swift"
+echo ""
+echo "Next steps:"
+echo "1. Add your core types to $WORKSPACE_ROOT/%s/Sources/"
+echo "2. Add tests to $WORKSPACE_ROOT/%s/Tests/"
+echo "3. Update dependencies in $WORKSPACE_ROOT/%s/BUILD.bazel if needed"
+""" % (
+        module_name, 
+        module_path,
+        module_path, 
+        module_path,
+        module_path, 
+        build_content,
+        module_path, 
+        module_name, 
+        source_content,
+        module_path, 
+        module_name, 
+        test_content,
+        module_name, 
+        module_path,
+        module_path, 
+        module_path, 
+        module_name, 
+        module_path, 
+        module_name,
+        module_path,
+        module_path,
+        module_path
     )
     
-    # Create the generator script
-    script_file = ctx.actions.declare_file(ctx.label.name + ".py")
-    ctx.actions.write(script_file, script_content, is_executable = True)
-    
-    # Create a wrapper script that executes the Python script
     executable = ctx.actions.declare_file(ctx.label.name)
-    ctx.actions.write(
-        output = executable,
-        content = "#!/bin/bash\npython3 $RUNFILES/{script_path}".format(
-            script_path = script_file.short_path,
-        ),
-        is_executable = True,
-    )
+    ctx.actions.write(executable, script_content, is_executable = True)
     
-    return [DefaultInfo(
-        executable = executable,
-        runfiles = ctx.runfiles([script_file]),
-    )]
+    return [
+        DefaultInfo(
+            executable = executable,
+        ),
+    ]
 
+# Rule definition
 umbracore_gen_module = rule(
     implementation = _umbracore_gen_module_impl,
     attrs = {
         "module_name": attr.string(
+            doc = "Name of the module to generate",
             mandatory = True,
-            doc = "Name of the module to create",
         ),
     },
     executable = True,
 )
-
-def create_gen_module_target(name, **kwargs):
-    """Creates a target to generate a new UmbraCore module.
-    
-    Args:
-        name: Name of the target.
-        **kwargs: Additional arguments to pass to the umbracore_gen_module rule.
-    """
-    umbracore_gen_module(
-        name = name,
-        **kwargs
-    )

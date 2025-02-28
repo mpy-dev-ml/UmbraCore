@@ -1,0 +1,14 @@
+load("//tools/build_defs:umbracore_module.bzl", "umbracore_foundation_free_module")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+
+umbracore_foundation_free_module(
+    name = "BinaryData",
+    visibility = ["//visibility:public"],
+)
+
+swift_test(
+    name = "BinaryDataTests",
+    srcs = glob(["Tests/*.swift"]),
+    deps = [":BinaryData"],
+    tags = ["manual"],
+)

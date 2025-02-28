@@ -12,6 +12,8 @@ build --host_crosstool_top=@local_config_apple_cc//:toolchain
 
 # Import Swift-specific configurations
 import %workspace%/.bazelrc.swift
+# Import test-specific configurations
+import %workspace%/.bazelrc.test
 # Enable Swift ARM64 config by default
 build --config=swift_arm64
 
