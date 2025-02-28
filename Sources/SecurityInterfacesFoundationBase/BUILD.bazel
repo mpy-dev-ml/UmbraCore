@@ -1,0 +1,13 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+# Minimal module containing only the base types needed for Foundation bridge
+# This module has minimal dependencies to avoid circular dependencies
+umbra_swift_library(
+    name = "SecurityInterfacesFoundationBase",
+    srcs = glob(["**/*.swift"]),
+    deps = [
+        "//Sources/CoreTypes",
+        "//Sources/SecurityObjCProtocols",
+    ],
+)

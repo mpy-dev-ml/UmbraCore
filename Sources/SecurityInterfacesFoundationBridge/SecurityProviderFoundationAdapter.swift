@@ -3,6 +3,7 @@ import Foundation
 import ObjCBridgingTypesFoundation
 import SecurityInterfacesBase
 import SecurityInterfacesProtocols
+import SecurityInterfacesFoundationBase
 
 /// Adapter class to bridge between Foundation-dependent and non-Foundation security provider implementations
 @available(macOS 10.15, *)

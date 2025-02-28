@@ -4,6 +4,7 @@ import SecurityInterfaces
 import SecurityInterfacesBase
 import SecurityInterfacesFoundationBridge
 import SecurityInterfacesProtocols
+import SecurityInterfacesFoundationBase
 
 /// Factory class for creating security providers
 public final class SecurityProviderFactory {

@@ -21,5 +21,7 @@ umbra_swift_library(
         "//Sources/UmbraLogging",
         "//Sources/SecurityInterfacesFoundationBridge",
         "//Sources/FoundationBridgeTypes",
+        "//Sources/SecurityObjCProtocols",
+        "//Sources/SecurityInterfacesFoundationBase",
     ],
 )

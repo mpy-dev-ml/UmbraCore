@@ -1,0 +1,5 @@
+{
+    "windsurf.cascadeCommandsAllowList": [
+        "go run umbra_restructure.go --dry-run"
+    ]
+}
