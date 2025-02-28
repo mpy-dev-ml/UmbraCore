@@ -1,7 +1,7 @@
-import CoreTypes
+import SecurityInterfacesBase
 
 /// Errors that can occur during security operations
-public enum SecurityError: Error, Sendable {
+public enum SecurityInterfacesError: Error, Sendable {
     /// Bookmark creation failed
     case bookmarkCreationFailed(path: String)
     /// Bookmark resolution failed
@@ -24,54 +24,43 @@ public enum SecurityError: Error, Sendable {
     case bookmarkError(String)
     /// Custom access error with message
     case accessError(String)
-    /// Wrapped CoreTypes.SecurityErrorBase
-    case wrapped(CoreTypes.SecurityErrorBase)
+    /// Wrapped SecurityInterfacesBase.SecurityError
+    case wrapped(SecurityInterfacesBase.SecurityError)
 
     public var errorDescription: String? {
         switch self {
         case .bookmarkCreationFailed(let path):
-            return "Failed to create bookmark for \(path)"
+            return "Failed to create security bookmark for path: \(path)"
         case .bookmarkResolutionFailed:
-            return "Failed to resolve bookmark"
+            return "Failed to resolve security bookmark"
         case .bookmarkStale(let path):
-            return "Bookmark for \(path) is stale and needs to be recreated"
+            return "Security bookmark is stale for path: \(path)"
         case .bookmarkNotFound(let path):
-            return "Bookmark not found for \(path)"
+            return "Security bookmark not found for path: \(path)"
         case .resourceAccessFailed(let path):
-            return "Failed to access security-scoped resource at \(path)"
+            return "Failed to access security-scoped resource: \(path)"
         case .randomGenerationFailed:
             return "Failed to generate random data"
         case .hashingFailed:
-            return "Failed to hash data"
+            return "Failed to perform hashing operation"
         case .itemNotFound:
-            return "Credential or secure item not found"
+            return "Security item not found"
         case .operationFailed(let message):
             return "Security operation failed: \(message)"
         case .bookmarkError(let message):
-            return "Bookmark error: \(message)"
+            return "Security bookmark error: \(message)"
         case .accessError(let message):
-            return "Access error: \(message)"
-        case .wrapped(let baseError):
-            switch baseError {
-            case .accessDenied(let reason):
-                return "Access denied: \(reason)"
-            case .itemNotFound:
-                return "Item not found"
-            case .bookmarkError(let message):
-                return "Bookmark error: \(message)"
-            case .randomGenerationFailed:
-                return "Random generation failed"
-            case .generalError(let message):
-                return "General security error: \(message)"
-            }
+            return "Security access error: \(message)"
+        case .wrapped(let error):
+            return "Wrapped security error: \(error.localizedDescription)"
         }
     }
 
-    public init(from baseError: CoreTypes.SecurityErrorBase) {
+    public init(from baseError: SecurityInterfacesBase.SecurityError) {
         self = .wrapped(baseError)
     }
 
-    public func toBaseError() -> CoreTypes.SecurityErrorBase? {
+    public func toBaseError() -> SecurityInterfacesBase.SecurityError? {
         switch self {
         case .wrapped(let baseError):
             return baseError
@@ -83,8 +72,11 @@ public enum SecurityError: Error, Sendable {
 
 // Add LocalizedError conformance in a separate extension
 // This allows us to maintain compatibility without importing Foundation directly
-extension SecurityError {
+extension SecurityInterfacesError {
     public var localizedDescription: String {
         return errorDescription ?? "Unknown security error"
     }
 }
+
+// For backward compatibility
+public typealias SecurityError = SecurityInterfacesError

@@ -1,32 +1,30 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-# Security interfaces module
+# ObjC bridging types with minimal dependencies
 umbra_swift_library(
-    name = "SecurityInterfaces",
+    name = "ObjCBridgingTypes",
     srcs = glob(["**/*.swift"]),
     deps = [
         "//Sources/CoreTypes",
-        "//Sources/SecurityInterfacesBase",
-        "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityInterfacesFoundationBridge",
     ],
 )
 
 # Test version for @testable import
 swift_library(
-    name = "SecurityInterfacesForTesting",
+    name = "ObjCBridgingTypesForTesting",
     testonly = True,
     srcs = glob(["**/*.swift"]),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
+        "-strict-concurrency=complete",
+        "-enable-actor-data-race-checks",
+        "-warn-concurrency",
     ],
+    module_name = "ObjCBridgingTypesTest",
+    visibility = ["//visibility:public"],
     deps = [
         "//Sources/CoreTypes",
-        "//Sources/SecurityInterfacesBase",
-        "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityInterfacesFoundationBridge",
     ],
-    visibility = ["//visibility:public"],
 )

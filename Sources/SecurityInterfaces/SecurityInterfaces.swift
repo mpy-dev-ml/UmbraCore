@@ -1,8 +1,10 @@
 /// SecurityInterfaces module
 ///
 /// This module provides the core security interfaces and protocols for the UmbraCore framework.
-/// It is split into two main components:
-/// - Core interfaces (SecurityInterfacesCore): Foundation-independent security operations
-/// - Foundation interfaces (SecurityInterfacesFoundation): Foundation-dependent security operations
-@_exported import SecurityInterfacesCore
-@_exported import SecurityInterfacesFoundation
+/// It contains interfaces for security operations across the system.
+///
+/// Note: For Foundation-dependent interfaces, we've created a layered architecture with
+/// SecurityInterfacesProtocols (foundation-free) at the base, SecurityInterfacesBase building on top,
+/// and SecurityInterfaces providing the high-level interfaces.
+@_exported import SecurityInterfacesBase
+@_exported import SecurityInterfacesProtocols

@@ -1,4 +1,4 @@
-import CoreTypes
+import SecurityInterfacesBase
 
 /// Base protocol defining core security operations that don't require Foundation
 public protocol SecurityProviderBase {

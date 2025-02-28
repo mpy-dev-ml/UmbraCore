@@ -1,32 +1,35 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-# Security interfaces module
+# Bridge module to break circular dependencies between Foundation and SecurityInterfaces
 umbra_swift_library(
-    name = "SecurityInterfaces",
+    name = "SecurityInterfacesFoundationBridge",
     srcs = glob(["**/*.swift"]),
     deps = [
         "//Sources/CoreTypes",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityInterfacesFoundationBridge",
+        "//Sources/ObjCBridgingTypesFoundation",
+        "//Sources/FoundationBridgeTypes",
     ],
 )
 
 # Test version for @testable import
 swift_library(
-    name = "SecurityInterfacesForTesting",
+    name = "SecurityInterfacesFoundationBridgeForTesting",
     testonly = True,
     srcs = glob(["**/*.swift"]),
     copts = [
         "-target",
         "arm64-apple-macos14.0",
+        "-enable-testing",
     ],
     deps = [
         "//Sources/CoreTypes",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityInterfacesFoundationBridge",
+        "//Sources/ObjCBridgingTypesFoundation",
+        "//Sources/FoundationBridgeTypes",
     ],
     visibility = ["//visibility:public"],
 )
