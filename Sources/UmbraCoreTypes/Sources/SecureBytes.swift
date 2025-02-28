@@ -155,7 +155,13 @@ public struct SecureBytes: Sendable, Equatable, Hashable {
     
     /// Returns a hex string representation of the bytes.
     public func hexEncodedString() -> String {
-        return storage.map { String(format: "%02x", $0) }.joined()
+        let hexDigits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
+        var result = ""
+        for byte in storage {
+            result += hexDigits[Int(byte >> 4)]
+            result += hexDigits[Int(byte & 0x0F)]
+        }
+        return result
     }
     
     // MARK: - Secure Operations
