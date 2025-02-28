@@ -8,7 +8,6 @@ swift_library(
     deps = [
         # No dependencies - this module must be foundation-free
     ],
-    testonly = False,
 )
 
 swift_library(
@@ -20,6 +19,7 @@ swift_library(
         # No dependencies - this module must be foundation-free
     ],
     testonly = True,
+    copts = ["-enable-testing"],
 )
 
 swift_test(
