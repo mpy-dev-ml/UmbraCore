@@ -27,7 +27,7 @@ public final class CoreTypesToFoundationBridge: NSObject, ObjCBridgingTypesFound
         // Capture core reference to avoid capturing self in the task
         let coreRef = self.core
 
-        Task {
+        Task { @Sendable in
             do {
                 let result = try await coreRef.ping()
                 reply(result, nil)
@@ -42,16 +42,17 @@ public final class CoreTypesToFoundationBridge: NSObject, ObjCBridgingTypesFound
         // Capture core reference to avoid capturing self in the task
         let coreRef = self.core
 
+        // Make a copy of the data to avoid capturing the original in the Task
         guard let nsData = data as? NSData else {
             reply(XPCServiceProtocolFoundationBridgeError.implementationMissing("Invalid data type"))
             return
         }
-
-        Task {
+        
+        // Convert NSData to [UInt8] safely outside the task
+        let byteArray = nsData.toByteArray()
+        
+        Task { @Sendable in
             do {
-                // Convert NSData to [UInt8] safely
-                let byteArray = nsData.toByteArray()
-                
                 // Convert to BinaryData
                 let binaryData = SecurityInterfacesProtocols.BinaryData(byteArray)
                 
@@ -79,9 +80,6 @@ extension NSData {
 extension ObjCBridgingTypesFoundation.XPCServiceProtocolBaseFoundation {
     /// Implementation for synchronising keys with byte array
     public func synchroniseKeys(_ syncData: [UInt8]) async throws {
-        // Convert to BinaryData first
-        let binaryData = SecurityInterfacesProtocols.BinaryData(syncData)
-
         // Create NSData from the byte array
         let nsData = syncData.withUnsafeBytes { bytes in
             NSData(bytes: bytes.baseAddress!, length: bytes.count)
