@@ -8,12 +8,24 @@ swift_library(
     deps = [
         # No dependencies - this module must be foundation-free
     ],
+    testonly = False,
+)
+
+swift_library(
+    name = "UmbraCoreTypesTestLib",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "UmbraCoreTypes",
+    visibility = ["//visibility:private"],
+    deps = [
+        # No dependencies - this module must be foundation-free
+    ],
+    testonly = True,
 )
 
 swift_test(
     name = "UmbraCoreTypesTests",
     srcs = glob(["Tests/**/*.swift"]),
     deps = [
-        ":UmbraCoreTypes",
+        ":UmbraCoreTypesTestLib",
     ],
 )
