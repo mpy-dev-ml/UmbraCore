@@ -64,7 +64,7 @@ extension RepositoryService {
         }
 
         do {
-            let stats = try await repository.check(
+            _ = try await repository.check(
                 readData: options.readData,
                 checkUnused: options.checkUnused
             )
@@ -113,7 +113,7 @@ extension RepositoryService {
             ])
 
             do {
-                let stats = try await repository.check(
+                _ = try await repository.check(
                     readData: options.readData,
                     checkUnused: options.checkUnused
                 )

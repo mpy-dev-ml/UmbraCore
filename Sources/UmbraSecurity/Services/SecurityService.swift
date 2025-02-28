@@ -2,8 +2,8 @@ import Core
 import CoreServices
 import CoreServicesTypes
 import Foundation
-import SecurityInterfaces
-import SecurityTypes
+import ObjCBridgingTypesFoundation
+import SecurityInterfacesFoundationBridge
 import SecurityUtils
 import UmbraLogging
 import UmbraSecurityUtils
@@ -19,13 +19,14 @@ public final class SecurityService {
 
     // Services
     private let bookmarkService: UmbraSecurityUtils.SecurityBookmarkService
-    private let securityProvider: any SecurityProvider
+    private let securityProvider: any SecurityInterfacesFoundationBridge.SecurityProviderTypeBridge
 
     /// Initialize a new SecurityService instance
     private init() {
         self.activeSecurityScopedResources = []
         self.bookmarkService = UmbraSecurityUtils.SecurityBookmarkService()
-        self.securityProvider = DefaultSecurityProvider()
+        // Use a direct implementation rather than importing FeaturesLoggingServices
+        self.securityProvider = DefaultSecurityProviderImpl()
     }
 
     // MARK: - SecurityProvider Protocol
@@ -50,92 +51,122 @@ public final class SecurityService {
     }
 
     public func stopAccessing(path: String) async {
-        activeSecurityScopedResources.remove(path)
+        if activeSecurityScopedResources.contains(path) {
+            let url = URL(fileURLWithPath: path)
+            await bookmarkService.stopAccessing(url: url)
+            activeSecurityScopedResources.remove(path)
+        }
     }
 
     public func stopAccessingAllResources() async {
         for path in activeSecurityScopedResources {
-            await stopAccessing(path: path)
+            let url = URL(fileURLWithPath: path)
+            await bookmarkService.stopAccessing(url: url)
         }
         activeSecurityScopedResources.removeAll()
     }
 
     public func isAccessing(path: String) async -> Bool {
-        activeSecurityScopedResources.contains(path)
+        return activeSecurityScopedResources.contains(path)
     }
 
     public func getAccessedPaths() async -> Set<String> {
-        activeSecurityScopedResources
+        return activeSecurityScopedResources
     }
 
-    public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
-        do {
-            let (_, isStale) = try await resolveBookmark(bookmarkData)
-            return !isStale
-        } catch {
-            return false
+    public func withSecurityScopedAccess<T>(to path: String, perform operation: @Sendable () async throws -> T) async throws -> T {
+        let url = URL(fileURLWithPath: path)
+        return try await bookmarkService.withSecurityScopedAccess(to: url) {
+            activeSecurityScopedResources.insert(path)
+            defer {
+                Task {
+                    await self.stopAccessing(path: path)
+                }
+            }
+            return try await operation()
         }
     }
 
-    public func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
-        bookmarks[identifier] = bookmarkData
-    }
+    // MARK: - Bookmark Management
 
-    public func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
-        guard let data = bookmarks[identifier] else {
-            throw SecurityError.bookmarkNotFound(path: identifier)
-        }
-        return data
-    }
-
-    public func deleteBookmark(withIdentifier identifier: String) async throws {
-        bookmarks.removeValue(forKey: identifier)
-    }
-
-    // MARK: - Convenience Methods
-
-    /// Create a bookmark for a URL
-    /// - Parameter url: URL to create bookmark for
-    /// - Returns: Bookmark data
-    /// - Throws: SecurityError if bookmark creation fails
-    public func createBookmark(for url: URL) async throws -> Data {
-        try await bookmarkService.createBookmark(for: url)
-    }
-
-    /// Resolve a bookmark to a URL
-    /// - Parameter bookmarkData: Bookmark data to resolve
-    /// - Returns: Tuple containing resolved URL and whether bookmark is stale
-    /// - Throws: SecurityError if bookmark resolution fails
-    public func resolveBookmark(_ bookmarkData: Data) async throws -> (URL, Bool) {
-        let result = try await bookmarkService.resolveBookmark(bookmarkData)
-        return (result.url, result.isStale)
-    }
-
-    /// Execute an operation with security access to a path
+    /// Store a bookmark for a path
     /// - Parameters:
-    ///   - path: Path to access
-    ///   - operation: Operation to execute
-    /// - Returns: Result of operation
-    /// - Throws: SecurityError if access fails
-    private func withSecurityAccess<T>(
-        path: String,
-        operation: () async throws -> T
-    ) async throws -> T {
-        try await startAccessing(path: path)
-        defer { Task { await stopAccessing(path: path) } }
-        return try await operation()
+    ///   - bookmarkData: Bookmark data to store
+    ///   - path: Path associated with the bookmark
+    public func storeBookmark(_ bookmarkData: [UInt8], forPath path: String) {
+        bookmarks[path] = bookmarkData
     }
 
-    /// Validate the security boundary for a given URL
-    /// - Parameter url: URL to validate
-    /// - Returns: ValidationResult indicating whether the URL is within the security boundary
-    /// - Throws: SecurityError if validation fails
-    public func validateSecurityBoundary(for url: URL) throws -> ValidationResult {
-        let result = try securityProvider.validateSecurityBoundary(for: url)
-        if !result.isValid {
-            let message = "Security boundary validation failed: \(result.reason)"
-            throw SecurityError.boundaryViolation(message)
+    /// Retrieve a bookmark for a path
+    /// - Parameter path: Path to get bookmark for
+    /// - Returns: Bookmark data if available
+    public func getBookmark(forPath path: String) -> [UInt8]? {
+        return bookmarks[path]
+    }
+
+    /// Remove a bookmark for a path
+    /// - Parameter path: Path to remove bookmark for
+    public func removeBookmark(forPath path: String) {
+        bookmarks.removeValue(forKey: path)
+    }
+
+    /// Get all paths that have bookmarks
+    /// - Returns: Set of paths with bookmarks
+    public func getBookmarkedPaths() -> Set<String> {
+        return Set(bookmarks.keys)
+    }
+}
+
+/// Default implementation of SecurityProvider
+private final class DefaultSecurityProviderImpl: SecurityInterfacesFoundationBridge.SecurityProviderTypeBridge {
+    func createSecurityBookmark(for url: URL) throws -> Data {
+        // This is a simple implementation that delegates to the SecurityService
+        // We could add proper implementation here or use a different pattern
+        let data = try NSData(contentsOf: url).bookmarkData(options: .securityScopeAllowOnlyReadAccess, includingResourceValuesForKeys: nil, relativeTo: nil)
+        return data as Data
+    }
+
+    func resolveSecurityBookmark(_ bookmarkData: Data) throws -> URL {
+        var isStale = false
+        let url = try URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+        return url
+    }
+
+    func startAccessing(path: String) async throws -> Bool {
+        let url = URL(fileURLWithPath: path)
+        return url.startAccessingSecurityScopedResource()
+    }
+
+    func stopAccessing(path: String) async {
+        let url = URL(fileURLWithPath: path)
+        url.stopAccessingSecurityScopedResource()
+    }
+
+    func stopAccessingAllResources() async {
+        // No implementation needed for this simple provider
+    }
+
+    func isAccessing(path: String) async -> Bool {
+        // No way to check this with standard APIs
+        return false
+    }
+
+    func getAccessedPaths() async -> Set<String> {
+        // No way to get this with standard APIs
+        return []
+    }
+
+    func withSecurityScopedAccess<T>(to path: String, perform operation: @Sendable () async throws -> T) async throws -> T {
+        let url = URL(fileURLWithPath: path)
+        let success = url.startAccessingSecurityScopedResource()
+        if !success {
+            throw NSError(domain: "com.umbra.security", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to access security-scoped resource"])
         }
-        return result
+
+        defer {
+            url.stopAccessingSecurityScopedResource()
+        }
+
+        return try await operation()
     }
 }

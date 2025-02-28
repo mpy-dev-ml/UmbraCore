@@ -1,5 +1,6 @@
 import Foundation
 import SecurityInterfaces
+import SecurityInterfacesFoundation
 import SecurityTypesProtocols
 
 /// Service for managing log files with security-scoped bookmarks
@@ -19,39 +20,28 @@ public actor LoggingService {
 
     /// Create a bookmark for a log file
     /// - Parameter path: Path to the log file
-    /// - Returns: Bookmark data for the file
-    public func createLogBookmark(forPath path: String) async throws -> [UInt8] {
+    /// - Returns: The bookmark data
+    /// - Throws: SecurityError if bookmark creation fails
+    public func createLogBookmark(path: String) async throws -> [UInt8] {
         let url = URL(fileURLWithPath: path)
-        let bookmarkData = try await securityProvider.createBookmark(for: url)
-        return Array(bookmarkData)
+        let data = try await securityProvider.createBookmark(for: url)
+        return Array(data)
     }
 
-    /// Save a bookmark for a log file
-    /// - Parameters:
-    ///   - bookmarkData: The bookmark data to save
-    ///   - identifier: Unique identifier for the bookmark
-    public func saveLogBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
-        try await securityProvider.storeBookmark(bookmarkData, withIdentifier: identifier)
-    }
-
-    /// Load a bookmark for a log file
-    /// - Parameter identifier: Identifier of the bookmark to load
-    /// - Returns: Bookmark data for the file
-    public func loadLogBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
-        try await securityProvider.loadBookmark(withIdentifier: identifier)
-    }
-
-    /// Delete a bookmark for a log file
-    /// - Parameter identifier: Identifier of the bookmark to delete
-    public func deleteLogBookmark(withIdentifier identifier: String) async throws {
-        try await securityProvider.deleteBookmark(withIdentifier: identifier)
+    /// Resolve a bookmark to a log file
+    /// - Parameter bookmarkData: The bookmark data
+    /// - Returns: The path to the log file and whether the bookmark is stale
+    /// - Throws: SecurityError if bookmark resolution fails
+    public func resolveLogBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
+        let result = try await securityProvider.resolveBookmark(Data(bookmarkData))
+        return (result.url.path, result.isStale)
     }
 
     /// Start accessing a log file
     /// - Parameter path: Path to the log file
     /// - Returns: True if access was granted
     public func startAccessingLog(path: String) async throws -> Bool {
-        try await securityProvider.startAccessing(path: path)
+        try await securityProvider.startAccessing(url: URL(fileURLWithPath: path))
     }
 
     /// Stop accessing a log file
@@ -59,7 +49,7 @@ public actor LoggingService {
     public func stopAccessingLog(path: String) async {
         // Using isolated call to avoid data race
         let provider = self.securityProvider
-        await provider.stopAccessing(path: path)
+        await provider.stopAccessing(url: URL(fileURLWithPath: path))
     }
 
     /// Stop accessing all log files
@@ -70,31 +60,57 @@ public actor LoggingService {
     }
 
     /// Check if a log file is being accessed
-    /// - Parameter path: Path to check
-    /// - Returns: True if the file is being accessed
+    /// - Parameter path: Path to the log file
+    /// - Returns: True if the log file is being accessed
     public func isAccessingLog(path: String) async -> Bool {
         // Using isolated call to avoid data race
         let provider = self.securityProvider
-        return await provider.isAccessing(path: path)
+        return await provider.isAccessing(url: URL(fileURLWithPath: path))
     }
 
-    /// Get all currently accessed log file paths
-    /// - Returns: Set of paths that are currently being accessed
+    /// Get all log files being accessed
+    /// - Returns: Set of paths to log files being accessed
     public func getAccessedLogPaths() async -> Set<String> {
         // Using isolated call to avoid data race
         let provider = self.securityProvider
-        return await provider.getAccessedPaths()
+        let urls = await provider.getAccessedUrls()
+        return Set(urls.map { $0.path })
     }
 
     /// Perform an operation with security-scoped access to a log file
     /// - Parameters:
     ///   - path: Path to the log file
-    ///   - operation: Operation to perform while accessing the file
-    /// - Returns: Result of the operation
-    public func withSecurityScopedLogAccess<T: Sendable>(
+    ///   - operation: Operation to perform
+    /// - Returns: The result of the operation
+    /// - Throws: Any error that occurs during the operation
+    public func withLogAccess<T: Sendable>(
         to path: String,
         perform operation: @Sendable () async throws -> T
     ) async throws -> T {
-        try await securityProvider.withSecurityScopedAccess(to: path, perform: operation)
+        // Check if we're already accessing the path
+        let wasAlreadyAccessing = await isAccessingLog(path: path)
+
+        // Start accessing if needed
+        if !wasAlreadyAccessing {
+            _ = try await startAccessingLog(path: path)
+        }
+
+        // Perform the operation
+        do {
+            let result = try await operation()
+
+            // Stop accessing if we weren't already accessing
+            if !wasAlreadyAccessing {
+                await stopAccessingLog(path: path)
+            }
+
+            return result
+        } catch {
+            // Stop accessing if we weren't already accessing
+            if !wasAlreadyAccessing {
+                await stopAccessingLog(path: path)
+            }
+            throw error
+        }
     }
 }

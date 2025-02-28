@@ -1,6 +1,7 @@
 import Foundation
 import SecurityInterfaces
 import SecurityTypes
+import SecurityTypesProtocols
 import SecurityUtilsProtocols
 
 /// Service for managing security-scoped bookmarks

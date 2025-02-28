@@ -87,6 +87,7 @@
 /// - Value types
 
 import Foundation
+import ObjCBridgingTypesFoundation
 
 /// Core framework initialisation and management
 public enum Core {

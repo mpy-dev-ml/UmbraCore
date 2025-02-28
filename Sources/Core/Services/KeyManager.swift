@@ -1,6 +1,8 @@
 import CoreServicesTypes
 import CryptoSwift
 import Foundation
+@preconcurrency import ObjCBridgingTypesFoundation
+import SecurityInterfacesBase
 import UmbraXPC
 
 /// Represents the type of cryptographic implementation to use
@@ -123,8 +125,6 @@ public actor KeyManager {
             // Placeholder implementation - will be replaced by ResticBar
             throw KeyManagerError.keyGenerationError("Key generation moved to ResticBar")
         }
-
-        return identifier
     }
 
     /// Rotate a key
@@ -200,15 +200,31 @@ public actor KeyManager {
     /// - Throws: KeyManagerError if synchronisation fails
     public func synchroniseKeys() async throws {
         // Use XPC to broadcast key updates to other processes
-        guard let xpcConnection = await ServiceContainer.shared.xpcConnection else {
+        let serviceContainer = ServiceContainer.shared
+
+        // Need to await when accessing actor property
+        guard let xpcConnection = await serviceContainer.xpcConnection else {
             throw KeyManagerError.synchronisationError("XPC connection not available or invalid type")
         }
 
         // Create JSON object with sync data
         let syncData = try await createKeySyncData()
 
+        // Check if the XPC connection supports key synchronization
+        guard let synchronizeMethod = xpcConnection.synchroniseKeysRaw else {
+            throw KeyManagerError.synchronisationError("XPC connection does not support key synchronization")
+        }
+
         // Send synchronisation request through XPC
-        try await xpcConnection.synchroniseKeys(syncData)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            synchronizeMethod(syncData) { error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
 
         // Update last sync timestamp
         lastSyncTime = Date()

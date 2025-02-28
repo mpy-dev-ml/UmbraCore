@@ -1,5 +1,6 @@
 import Foundation
 import SecurityInterfaces
+import SecurityTypes
 
 /// Extension to URL for security-scoped bookmark operations
 extension URL {
@@ -15,7 +16,7 @@ extension URL {
                 relativeTo: nil
             )
         } catch {
-            throw SecurityError.bookmarkError("Failed to create bookmark for: \(path)")
+            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to create bookmark for: \(path)")
         }
     }
 
@@ -34,19 +35,14 @@ extension URL {
             )
             return (url, isStale)
         } catch {
-            throw SecurityError.bookmarkError("Failed to resolve bookmark")
+            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to resolve bookmark")
         }
     }
 
-    /// Start accessing a security-scoped resource
-    /// - Returns: True if access was granted
-    public func us_startAccessingSecurityScopedResource() -> Bool {
-        startAccessingSecurityScopedResource()
-    }
-
-    /// Stop accessing a security-scoped resource
-    public func us_stopAccessingSecurityScopedResource() {
-        stopAccessingSecurityScopedResource()
+    /// Check if this URL is a security-scoped bookmark
+    /// - Returns: True if URL is a security-scoped bookmark
+    public var us_isSecurityScoped: Bool {
+        return self.startAccessingSecurityScopedResource()
     }
 
     /// Perform an operation with security-scoped access to this URL
@@ -55,10 +51,21 @@ extension URL {
     /// - Throws: SecurityError if access fails, or any error thrown by the operation
     public func us_withSecurityScopedAccess<T>(perform operation: () async throws -> T) async throws -> T {
         guard us_startAccessingSecurityScopedResource() else {
-            throw SecurityError.accessError("Failed to access: \(path)")
+            throw SecurityInterfaces.SecurityError.accessError("Failed to access: \(path)")
         }
         defer { us_stopAccessingSecurityScopedResource() }
 
         return try await operation()
+    }
+
+    /// Start accessing security-scoped resource
+    /// - Returns: True if access was granted
+    public func us_startAccessingSecurityScopedResource() -> Bool {
+        return self.startAccessingSecurityScopedResource()
+    }
+
+    /// Stop accessing security-scoped resource
+    public func us_stopAccessingSecurityScopedResource() {
+        self.stopAccessingSecurityScopedResource()
     }
 }

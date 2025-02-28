@@ -3,6 +3,7 @@ import CryptoTypesProtocols
 import CryptoTypesTypes
 import Foundation
 import SecurityInterfaces
+import SecurityInterfacesProtocols
 import SecurityTypes
 import SecurityTypesProtocols
 
@@ -84,21 +85,21 @@ private actor KeychainAccess: SecureStorageProvider {
 
     func load(forKey key: String) async throws -> Data {
         guard let item = items[key] else {
-            throw SecurityInterfaces.SecurityError.accessError("Item not found: \(key)")
+            throw SecurityInterfaces.SecurityError.itemNotFound
         }
         return item.data
     }
 
     func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
         guard let item = items[key] else {
-            throw SecurityInterfaces.SecurityError.accessError("Item not found: \(key)")
+            throw SecurityInterfaces.SecurityError.itemNotFound
         }
         return (item.data, item.metadata)
     }
 
     func delete(forKey key: String) async throws {
         guard items.removeValue(forKey: key) != nil else {
-            throw SecurityInterfaces.SecurityError.accessError("Item not found: \(key)")
+            throw SecurityInterfaces.SecurityError.itemNotFound
         }
     }
 
@@ -112,7 +113,7 @@ private actor KeychainAccess: SecureStorageProvider {
 
     func updateMetadata(_ metadata: [String: String], forKey key: String) async throws {
         guard var item = items[key] else {
-            throw SecurityInterfaces.SecurityError.accessError("Item not found: \(key)")
+            throw SecurityInterfaces.SecurityError.itemNotFound
         }
         item.metadata = metadata
         items[key] = item

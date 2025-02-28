@@ -27,7 +27,7 @@ public final class SecurityUtils: @unchecked Sendable {
         }
 
         guard result == errSecSuccess else {
-            throw SecurityInterfaces.SecurityError.randomGenerationFailed
+            throw SecurityInterfaces.SecurityError.operationFailed("Random generation failed")
         }
 
         return data

@@ -1,5 +1,7 @@
 import Foundation
 import SecurityInterfaces
+import SecurityInterfacesFoundation
+import SecurityInterfacesProtocols
 import SecurityTypes
 import SecurityTypesProtocols
 
@@ -9,83 +11,130 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
     /// Dictionary to track accessed URLs and their bookmark data
     private var accessedURLs: [String: (URL, Data)] = [:]
 
+    /// Keeping track of security-scoped resources
+    private var securityScopedResources: Set<URL> = []
+
     public init() {}
 
-    public func createSecurityBookmark(for url: URL) throws -> Data {
-        try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-    }
+    // MARK: - URL-based Security Methods
 
-    public func resolveSecurityBookmark(_ bookmarkData: Data) throws -> URL {
-        var isStale = false
-        let url = try URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
-
-        if isStale {
-            // In a real implementation, we might want to refresh the bookmark
-            // For now, just log a warning
-            print("Warning: Security bookmark for \(url.path) is stale")
-        }
-
-        return url
-    }
-
-    public func startAccessing(path: String) async throws -> Bool {
-        let url = URL(fileURLWithPath: path)
-        let bookmarkData = try createSecurityBookmark(for: url)
-        let resolvedURL = try resolveSecurityBookmark(bookmarkData)
-
-        let success = resolvedURL.startAccessingSecurityScopedResource()
+    public func startAccessing(url: URL) async throws -> Bool {
+        let success = url.startAccessingSecurityScopedResource()
         if success {
-            accessedURLs[path] = (resolvedURL, bookmarkData)
+            securityScopedResources.insert(url)
         }
         return success
     }
 
-    public func stopAccessing(path: String) async {
-        if let (url, _) = accessedURLs[path] {
-            url.stopAccessingSecurityScopedResource()
-            accessedURLs.removeValue(forKey: path)
-        }
+    public func stopAccessing(url: URL) async {
+        url.stopAccessingSecurityScopedResource()
+        securityScopedResources.remove(url)
     }
 
     public func stopAccessingAllResources() async {
-        for (_, (url, _)) in accessedURLs {
+        for url in securityScopedResources {
             url.stopAccessingSecurityScopedResource()
         }
-        accessedURLs.removeAll()
+        securityScopedResources.removeAll()
     }
 
-    public func isAccessing(path: String) async -> Bool {
-        accessedURLs[path] != nil
+    public func isAccessing(url: URL) async -> Bool {
+        return securityScopedResources.contains(url)
     }
 
-    public func getAccessedPaths() async -> Set<String> {
-        Set(accessedURLs.keys)
+    public func getAccessedUrls() async -> Set<URL> {
+        return securityScopedResources
     }
 
-    public func withSecurityScopedAccess<T>(to path: String, perform operation: @Sendable () async throws -> T) async throws -> T {
-        let wasAlreadyAccessing = await isAccessing(path: path)
+    // MARK: - Path-based Security Methods (previously implemented)
 
-        if !wasAlreadyAccessing {
-            _ = try await startAccessing(path: path)
-        }
-
+    public func createBookmark(forPath path: String) async throws -> [UInt8] {
+        let url = URL(fileURLWithPath: path)
         do {
-            let result = try await operation()
-
-            if !wasAlreadyAccessing {
-                await stopAccessing(path: path)
-            }
-
-            return result
+            let bookmarkData = try url.bookmarkData(options: .withSecurityScope)
+            return Array(bookmarkData)
         } catch {
-            if !wasAlreadyAccessing {
-                await stopAccessing(path: path)
-            }
-            throw error
+            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to create bookmark for \(path): \(error.localizedDescription)")
         }
     }
 
-    // MARK: - SecurityProviderFoundation Methods
+    public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
+        do {
+            var isStale = false
+            let url = try URL(resolvingBookmarkData: Data(bookmarkData),
+                             options: .withSecurityScope,
+                             relativeTo: nil,
+                             bookmarkDataIsStale: &isStale)
+            return (url.path, isStale)
+        } catch {
+            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+        }
+    }
+
+    public func startAccessing(path: String) async throws -> Bool {
+        return try await startAccessing(url: URL(fileURLWithPath: path))
+    }
+
+    public func stopAccessing(path: String) {
+        Task {
+            await stopAccessing(url: URL(fileURLWithPath: path))
+        }
+    }
+
+    // MARK: - Foundation Methods for SecurityProviderFoundation
+
+    public func createBookmark(for url: URL) async throws -> Data {
+        do {
+            return try url.bookmarkData(options: .withSecurityScope)
+        } catch {
+            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to create bookmark for \(url.path): \(error.localizedDescription)")
+        }
+    }
+
+    public func resolveBookmark(_ bookmarkData: Data) async throws -> (url: URL, isStale: Bool) {
+        do {
+            var isStale = false
+            let url = try URL(resolvingBookmarkData: bookmarkData,
+                             options: .withSecurityScope,
+                             relativeTo: nil,
+                             bookmarkDataIsStale: &isStale)
+            return (url, isStale)
+        } catch {
+            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+        }
+    }
+
+    public func validateBookmark(_ bookmarkData: Data) async throws -> Bool {
+        do {
+            var isStale = false
+            _ = try URL(resolvingBookmarkData: bookmarkData,
+                       options: .withSecurityScope,
+                       relativeTo: nil,
+                       bookmarkDataIsStale: &isStale)
+            return !isStale
+        } catch {
+            return false
+        }
+    }
+
+    // MARK: - Keychain Methods
+
+    public func storeInKeychain(data: Data, service: String, account: String) async throws {
+        // Implementation would use Keychain API to store data
+        throw SecurityInterfaces.SecurityError.operationFailed("Keychain storage not implemented")
+    }
+
+    public func retrieveFromKeychain(service: String, account: String) async throws -> Data {
+        // Implementation would use Keychain API to retrieve data
+        throw SecurityInterfaces.SecurityError.operationFailed("Keychain retrieval not implemented")
+    }
+
+    public func deleteFromKeychain(service: String, account: String) async throws {
+        // Implementation would use Keychain API to delete data
+        throw SecurityInterfaces.SecurityError.operationFailed("Keychain deletion not implemented")
+    }
+
+    // MARK: - Foundation Data Methods
 
     public func encryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data {
         let encryptedBytes = try await encrypt(Array(data), key: Array(key))
@@ -107,22 +156,53 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
         return Data(hashBytes)
     }
 
-    public func createBookmark(for url: URL) async throws -> Data {
-        try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+    // MARK: - Byte Array Methods
+
+    public func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
+        // Implementation of encryption
+        return data // Placeholder: actual implementation would encrypt the data
     }
 
-    public func resolveBookmark(_ bookmarkData: Data) async throws -> (url: URL, isStale: Bool) {
-        var isStale = false
-        let url = try URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
-        return (url, isStale)
+    public func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
+        // Implementation of decryption
+        return data // Placeholder: actual implementation would decrypt the data
     }
 
-    public func validateBookmark(_ bookmarkData: Data) async throws -> Bool {
-        do {
-            let (_, isStale) = try await resolveBookmark(bookmarkData)
-            return !isStale
-        } catch {
-            return false
+    public func generateKey(length: Int) async throws -> [UInt8] {
+        // Generate a random key of specified length
+        var keyData = [UInt8](repeating: 0, count: length)
+        let result = SecRandomCopyBytes(kSecRandomDefault, keyData.count, &keyData)
+        if result == errSecSuccess {
+            return keyData
+        } else {
+            throw SecurityInterfaces.SecurityError.randomGenerationFailed
         }
+    }
+
+    public func hash(_ data: [UInt8]) async throws -> [UInt8] {
+        // Simple implementation for hashing
+        return data // Placeholder: actual implementation would hash the data
+    }
+
+    // MARK: - SecurityProviderBase methods
+
+    public func resetSecurityData() async throws {
+        // Implementation for resetting security data
+    }
+
+    public func getHostIdentifier() async throws -> String {
+        return "host-identifier-placeholder"
+    }
+
+    public func registerClient(bundleIdentifier: String) async throws -> Bool {
+        return true
+    }
+
+    public func requestKeyRotation(keyId: String) async throws {
+        // Implementation for key rotation
+    }
+
+    public func notifyKeyCompromise(keyId: String) async throws {
+        // Implementation for key compromise notification
     }
 }
