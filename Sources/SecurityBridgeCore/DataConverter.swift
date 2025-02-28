@@ -10,14 +10,14 @@ public enum DataConverter {
     public static func convertToNSData(fromBytes bytes: [UInt8]) -> NSData {
         return NSData(bytes: bytes, length: bytes.count)
     }
-    
+
     /// Convert NSData to bytes
     /// - Parameter nsData: NSData object
     /// - Returns: Array of bytes
     public static func convertToBytes(fromNSData nsData: NSData) -> [UInt8] {
         return [UInt8](Data(referencing: nsData))
     }
-    
+
     /// Convert BinaryData to NSData
     /// - Parameter data: BinaryData object
     /// - Returns: NSData object
@@ -26,7 +26,7 @@ public enum DataConverter {
             NSData(bytes: bytes.baseAddress!, length: bytes.count)
         }
     }
-    
+
     /// Convert NSData to BinaryData
     /// - Parameter nsData: NSData object
     /// - Returns: BinaryData object

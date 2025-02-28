@@ -3,7 +3,7 @@ import Foundation
 /// Protocol defining the base XPC service interface with completion handlers - Foundation version
 @objc public protocol XPCServiceProtocolDefinitionBaseFoundation: NSObjectProtocol {
     /// Base method to test connectivity
-    @objc func ping(withReply reply: @escaping (Bool, Error?) -> Void)
+    @objc func ping(withReply reply: @escaping @Sendable (Bool, Error?) -> Void)
 }
 
 /// Extension providing utility methods for Foundation-based XPC service protocols

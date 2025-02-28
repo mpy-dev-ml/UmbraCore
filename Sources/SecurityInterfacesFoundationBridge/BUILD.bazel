@@ -12,6 +12,7 @@ umbra_swift_library(
         "//Sources/SecurityInterfacesFoundationBase",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/SecurityBridgeCore",  # Add dependency on the new core module
+        "//Sources/ObjCBridgingTypesFoundation",  # Add dependency on ObjCBridgingTypesFoundation
     ],
 )
 
@@ -31,7 +32,8 @@ swift_library(
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesFoundationBase",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityBridgeCore",  # Add dependency on the new core module
+        "//Sources/SecurityBridgeCore",
+        "//Sources/ObjCBridgingTypesFoundation",  # Add dependency on ObjCBridgingTypesFoundation
     ],
     visibility = ["//visibility:public"],
 )

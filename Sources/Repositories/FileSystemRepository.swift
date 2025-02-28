@@ -107,8 +107,9 @@ import UmbraLogging
         try container.encode(statsAccessor.getStats(), forKey: .stats)
     }
 
-    // Fix the Decoder parameter syntax and remove nonisolated modifier
-    public init(from decoder: Decoder) throws {
+    // Use @unchecked Sendable to handle the non-sendable Decoder parameter
+    // This is safe because we're not capturing the decoder or using it concurrently
+    public nonisolated init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.identifier = try container.decode(String.self, forKey: .identifier)
         self.state = try container.decode(RepositoryState.self, forKey: .state)

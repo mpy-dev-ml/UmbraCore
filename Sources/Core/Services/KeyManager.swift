@@ -114,7 +114,9 @@ public actor KeyManager {
     public func generateKey(for context: SecurityContext) async throws -> KeyIdentifier {
         let implementation = selectImplementation(for: context)
         let keyId = UUID().uuidString
-        let identifier = KeyIdentifier(id: keyId)
+        // Create the identifier but don't store it since we're throwing an error
+        // in this placeholder implementation
+        _ = KeyIdentifier(id: keyId)
 
         // Store the implementation choice for this key
         // implementationMap[identifier] = implementation

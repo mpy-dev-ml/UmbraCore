@@ -1,12 +1,16 @@
-import CryptoKit
+import CoreTypes
 import Foundation
 import SecurityInterfacesFoundationBase
 // Removed import SecurityInterfacesFoundationBridge to break circular dependency
-import SecurityInterfacesMinimalBridge
+import FoundationBridgeTypes
+import SecurityInterfacesFoundationCore  // Add our new core module
+import SecurityInterfacesFoundationMinimal  // Add our new minimal module
 import SecurityObjCProtocols
+import SecurityTypes
+import SecurityUtils
 
 /// Concrete implementation of SecurityProviderFoundationImpl
-@objc public final class DefaultSecurityProviderFoundationImpl: NSObject, SecurityInterfacesFoundationBase.SecurityProviderFoundationImpl {
+@objc public final class DefaultSecurityProviderFoundationImpl: NSObject, SecurityInterfacesFoundationBase.SecurityProviderFoundationImpl, SecurityProviderMinimal {
 
     public override init() {
         super.init()
@@ -19,7 +23,7 @@ import SecurityObjCProtocols
             // Convert NSData to Data for CryptoKit
             let dataToEncrypt = Data(referencing: data)
             let keyData = Data(referencing: key)
-            
+
             // Use CryptoKit for encryption
             // This is a simple example using AES-GCM
             guard keyData.count == 32 else {
@@ -48,7 +52,7 @@ import SecurityObjCProtocols
             // Convert NSData to Data for CryptoKit
             let dataToDecrypt = Data(referencing: data)
             let keyData = Data(referencing: key)
-            
+
             // Use CryptoKit for decryption
             guard keyData.count == 32 else {
                 throw NSError(domain: "SecurityProvider", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid key size"])
@@ -101,7 +105,7 @@ import SecurityObjCProtocols
         do {
             // Convert NSData to Data for CryptoKit
             let dataToHash = Data(referencing: data)
-            
+
             // Use SHA-256 for hashing
             let hash = SHA256.hash(data: dataToHash)
             let hashData = Data(hash)
@@ -128,7 +132,7 @@ import SecurityObjCProtocols
         do {
             // Convert NSData to Data
             let data = Data(referencing: bookmarkData)
-            
+
             var isStale = false
             let url = try URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
             return (url, isStale)
@@ -144,5 +148,83 @@ import SecurityObjCProtocols
         } catch {
             return false
         }
+    }
+
+    // MARK: - Minimal Protocol Implementation
+
+    @objc public func encryptDataMinimal(_ data: [UInt8], key: [UInt8]) throws -> [UInt8] {
+        do {
+            let dataToEncrypt = Data(data)
+            let keyData = Data(key)
+
+            let encryptedData = try encryptData(dataToEncrypt as NSData, key: keyData as NSData)
+            return [UInt8](Data(referencing: encryptedData))
+        } catch {
+            throw SecurityProviderMinimalError.securityError
+        }
+    }
+
+    @objc public func decryptDataMinimal(_ data: [UInt8], key: [UInt8]) throws -> [UInt8] {
+        do {
+            let dataToDecrypt = Data(data)
+            let keyData = Data(key)
+
+            let decryptedData = try decryptData(dataToDecrypt as NSData, key: keyData as NSData)
+            return [UInt8](Data(referencing: decryptedData))
+        } catch {
+            throw SecurityProviderMinimalError.securityError
+        }
+    }
+
+    @objc public func generateKeyMinimal(length: Int) throws -> [UInt8] {
+        do {
+            let keyData = try generateDataKey(length: length)
+            return [UInt8](Data(referencing: keyData))
+        } catch {
+            throw SecurityProviderMinimalError.securityError
+        }
+    }
+
+    @objc public func createBookmarkMinimal(for urlPath: String) throws -> [UInt8] {
+        do {
+            guard let url = URL(string: urlPath) else {
+                throw SecurityProviderMinimalError.conversionFailed
+            }
+
+            let bookmarkData = try createBookmark(for: url)
+            return [UInt8](Data(referencing: bookmarkData))
+        } catch {
+            throw SecurityProviderMinimalError.securityError
+        }
+    }
+
+    @objc public func resolveBookmarkMinimal(_ bookmarkData: [UInt8]) throws -> String {
+        do {
+            let bookmark = Data(bookmarkData) as NSData
+            let url = try resolveBookmark(bookmark)
+            return url.absoluteString
+        } catch {
+            throw SecurityProviderMinimalError.securityError
+        }
+    }
+
+    public func startAccessingSecurityScopedResourceMinimal(_ urlPath: String) throws -> Bool {
+        do {
+            guard let url = URL(string: urlPath) else {
+                throw SecurityProviderMinimalError.conversionFailed
+            }
+
+            return try startAccessingSecurityScopedResource(url)
+        } catch {
+            throw SecurityProviderMinimalError.securityError
+        }
+    }
+
+    @objc public func stopAccessingSecurityScopedResourceMinimal(_ urlPath: String) {
+        guard let url = URL(string: urlPath) else {
+            return
+        }
+
+        stopAccessingSecurityScopedResource(url)
     }
 }

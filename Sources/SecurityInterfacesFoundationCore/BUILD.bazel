@@ -1,0 +1,13 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+# Ultra-minimal module containing only the core types needed to break circular dependencies
+# This module has NO Foundation dependencies
+umbra_swift_library(
+    name = "SecurityInterfacesFoundationCore",
+    srcs = glob(["**/*.swift"]),
+    deps = [
+        "//Sources/CoreTypes",
+        "//Sources/FoundationBridgeTypes",
+    ],
+)

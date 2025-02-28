@@ -93,19 +93,10 @@ extension BookmarkService: NSXPCListenerDelegate {
         let exportedInterface = NSXPCInterface(with: BookmarkServiceProtocol.self)
         newConnection.exportedInterface = exportedInterface
 
-        // Create a weak reference to avoid potential retain cycles
-        weak var weakSelf = self
-
-        // Use MainActor.run to properly handle actor isolation
-        Task {
-            // Safely access self on the main actor
-            await MainActor.run {
-                if let strongSelf = weakSelf {
-                    newConnection.exportedObject = strongSelf
-                    newConnection.resume()
-                }
-            }
-        }
+        // Since we're already on the MainActor, we can directly set the exported object
+        // This avoids capturing NSXPCConnection in a Task
+        newConnection.exportedObject = self
+        newConnection.resume()
 
         return true
     }

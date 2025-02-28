@@ -17,5 +17,10 @@ umbra_swift_library(
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+        "//Sources/FoundationBridgeTypes",
+        "//Sources/SecurityInterfacesFoundationCore",
+        "//Sources/SecurityInterfacesFoundationNoFoundation",
+        "//Sources/UmbraSecurityNoFoundation",
+        "//Sources/UmbraSecurityServicesNoFoundation",
     ],
 )

@@ -2,12 +2,13 @@ import Core
 import CoreServices
 import CoreServicesTypes
 import Foundation
+import FoundationBridgeTypes
 import ObjCBridgingTypesFoundation
-import SecurityInterfacesFoundationBridge
+import SecurityBridgeCore
+import SecurityInterfacesFoundationMinimal
 import SecurityUtils
 import UmbraLogging
 import UmbraSecurityUtils
-import FoundationBridgeTypes
 
 /// A service that manages security-scoped resource access and bookmarks
 @MainActor
@@ -20,7 +21,7 @@ public final class SecurityService {
 
     // Services
     private let bookmarkService: UmbraSecurityUtils.SecurityBookmarkService
-    private let securityProvider: any SecurityInterfacesFoundationBridge.SecurityProviderTypeBridge
+    private let securityProvider: any SecurityInterfacesFoundationMinimal.SecurityProviderFoundationMinimal
 
     /// Initialize a new SecurityService instance
     private init() {
@@ -33,36 +34,25 @@ public final class SecurityService {
     // MARK: - SecurityProvider Protocol
 
     public func createBookmark(forPath path: String) async throws -> [UInt8] {
-        let bookmarkData = try await bookmarkService.createBookmark(for: URL(fileURLWithPath: path))
-        return Array(bookmarkData)
+        return try securityProvider.createBookmarkMinimal(for: path)
     }
 
     public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        let result = try await bookmarkService.resolveBookmark(Data(bookmarkData))
-        return (result.url.path, result.isStale)
+        let path = try securityProvider.resolveBookmarkMinimal(bookmarkData)
+        return (path, false)
     }
 
     public func startAccessing(path: String) async throws -> Bool {
-        let url = URL(fileURLWithPath: path)
-        let success = try await bookmarkService.withSecurityScopedAccess(to: url) {
-            activeSecurityScopedResources.insert(path)
-            return true
-        }
-        return success
+        return try securityProvider.startAccessingSecurityScopedResourceMinimal(path)
     }
 
     public func stopAccessing(path: String) async {
-        if activeSecurityScopedResources.contains(path) {
-            let url = URL(fileURLWithPath: path)
-            await bookmarkService.stopAccessing(url: url)
-            activeSecurityScopedResources.remove(path)
-        }
+        securityProvider.stopAccessingSecurityScopedResourceMinimal(path)
     }
 
     public func stopAccessingAllResources() async {
         for path in activeSecurityScopedResources {
-            let url = URL(fileURLWithPath: path)
-            await bookmarkService.stopAccessing(url: url)
+            securityProvider.stopAccessingSecurityScopedResourceMinimal(path)
         }
         activeSecurityScopedResources.removeAll()
     }
@@ -76,16 +66,16 @@ public final class SecurityService {
     }
 
     public func withSecurityScopedAccess<T>(to path: String, perform operation: @Sendable () async throws -> T) async throws -> T {
-        let url = URL(fileURLWithPath: path)
-        return try await bookmarkService.withSecurityScopedAccess(to: url) {
-            activeSecurityScopedResources.insert(path)
-            defer {
-                Task {
-                    await self.stopAccessing(path: path)
-                }
-            }
-            return try await operation()
+        let success = try await startAccessing(path: path)
+        if !success {
+            throw NSError(domain: "com.umbra.security", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to access security-scoped resource"])
         }
+
+        defer {
+            await stopAccessing(path: path)
+        }
+
+        return try await operation()
     }
 
     // MARK: - Bookmark Management
@@ -119,64 +109,62 @@ public final class SecurityService {
 }
 
 /// Default implementation of SecurityProvider
-private final class DefaultSecurityProviderImpl: SecurityInterfacesFoundationBridge.SecurityProviderTypeBridge {
-    func createSecurityBookmark(for url: FoundationBridgeTypes.URLBridge) throws -> FoundationBridgeTypes.DataBridge {
-        // Convert URLBridge to URL
-        let foundationURL = url.toFoundationURL()
-        
-        // Create the bookmark
-        let data = try NSData(contentsOf: foundationURL).bookmarkData(options: .securityScopeAllowOnlyReadAccess, includingResourceValuesForKeys: nil, relativeTo: nil)
-        
-        // Convert Data to DataBridge
-        return FoundationBridgeTypes.DataBridge(data as Data)
+private final class DefaultSecurityProviderImpl: SecurityInterfacesFoundationMinimal.SecurityProviderFoundationMinimal {
+    func createBookmarkMinimal(for urlPath: String) throws -> [UInt8] {
+        // Convert string path to URL
+        guard let url = URL(string: urlPath) else {
+            throw SecurityProviderMinimalError.conversionFailed
+        }
+
+        do {
+            let bookmarkData = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            return [UInt8](bookmarkData)
+        } catch {
+            throw SecurityProviderMinimalError.securityError
+        }
     }
 
-    func resolveSecurityBookmark(_ bookmarkData: FoundationBridgeTypes.DataBridge) throws -> FoundationBridgeTypes.URLBridge {
-        // Convert DataBridge to Data
-        let foundationData = bookmarkData.toFoundationData()
-        
-        var isStale = false
-        let url = try URL(resolvingBookmarkData: foundationData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
-        
-        // Convert URL to URLBridge
-        return FoundationBridgeTypes.URLBridge(url)
+    func resolveBookmarkMinimal(_ bookmarkData: [UInt8]) throws -> String {
+        do {
+            var isStale = false
+            let data = Data(bookmarkData)
+            let url = try URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+
+            if isStale {
+                Logger.shared.warning("Bookmark is stale and needs to be recreated")
+            }
+
+            return url.absoluteString
+        } catch {
+            throw SecurityProviderMinimalError.securityError
+        }
     }
 
-    func startAccessing(path: String) async throws -> Bool {
-        let url = URL(fileURLWithPath: path)
+    func startAccessingSecurityScopedResourceMinimal(_ urlPath: String) throws -> Bool {
+        guard let url = URL(string: urlPath) else {
+            throw SecurityProviderMinimalError.conversionFailed
+        }
+
         return url.startAccessingSecurityScopedResource()
     }
 
-    func stopAccessing(path: String) async {
-        let url = URL(fileURLWithPath: path)
+    func stopAccessingSecurityScopedResourceMinimal(_ urlPath: String) {
+        guard let url = URL(string: urlPath) else {
+            return
+        }
+
         url.stopAccessingSecurityScopedResource()
     }
 
-    func stopAccessingAllResources() async {
-        // No implementation needed for this simple provider
+    func encryptDataMinimal(_ data: [UInt8], key: [UInt8]) throws -> [UInt8] {
+        throw SecurityProviderMinimalError.operationNotSupported
     }
 
-    func isAccessing(path: String) async -> Bool {
-        // No way to check this with standard APIs
-        return false
+    func decryptDataMinimal(_ data: [UInt8], key: [UInt8]) throws -> [UInt8] {
+        throw SecurityProviderMinimalError.operationNotSupported
     }
 
-    func getAccessingPaths() async -> [String] {
-        // No way to get this with standard APIs
-        return []
-    }
-
-    func withSecurityScopedAccess<T>(to path: String, perform operation: @Sendable () async throws -> T) async throws -> T {
-        let url = URL(fileURLWithPath: path)
-        let success = url.startAccessingSecurityScopedResource()
-        if !success {
-            throw NSError(domain: "com.umbra.security", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to access security-scoped resource"])
-        }
-
-        defer {
-            url.stopAccessingSecurityScopedResource()
-        }
-
-        return try await operation()
+    func generateKeyMinimal(length: Int) throws -> [UInt8] {
+        throw SecurityProviderMinimalError.operationNotSupported
     }
 }

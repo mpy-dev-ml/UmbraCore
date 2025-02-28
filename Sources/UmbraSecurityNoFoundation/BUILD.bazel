@@ -1,0 +1,17 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+# Foundation-free version of UmbraSecurity
+# This module has NO dependencies on modules that import Foundation
+umbra_swift_library(
+    name = "UmbraSecurityNoFoundation",
+    srcs = glob(["**/*.swift"]),
+    deps = [
+        "//Sources/CoreTypes",
+        "//Sources/ErrorHandling",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityInterfacesFoundationCore",
+        "//Sources/SecurityInterfacesFoundationNoFoundation",
+        "//Sources/FoundationBridgeTypes",
+    ],
+)

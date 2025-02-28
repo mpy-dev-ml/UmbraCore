@@ -9,7 +9,9 @@ umbra_swift_library(
         "//Sources/CoreTypes",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityInterfacesFoundationBridge",
+        # Removed "//Sources/SecurityInterfacesFoundationBridge" to break circular dependency
+        "//Sources/SecurityInterfacesFoundationMinimal",  # Add our new minimal module
+        "//Sources/FoundationBridgeTypes",  # Add missing dependency
     ],
 )
 
@@ -19,14 +21,15 @@ swift_library(
     testonly = True,
     srcs = glob(["**/*.swift"]),
     copts = [
-        "-target",
-        "arm64-apple-macos14.0",
+        "-enable-testing",
     ],
     deps = [
         "//Sources/CoreTypes",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityInterfacesFoundationBridge",
+        # Removed "//Sources/SecurityInterfacesFoundationBridge" to break circular dependency
+        "//Sources/SecurityInterfacesFoundationMinimal",  # Add our new minimal module
+        "//Sources/FoundationBridgeTypes",  # Add missing dependency
     ],
     visibility = ["//visibility:public"],
 )

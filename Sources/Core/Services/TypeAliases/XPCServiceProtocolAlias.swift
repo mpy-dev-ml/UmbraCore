@@ -2,7 +2,8 @@ import CoreTypes
 import ObjCBridgingTypes
 import SecurityInterfaces
 import SecurityInterfacesBase
-import SecurityInterfacesFoundation
+// Remove direct import of SecurityInterfacesFoundation to break circular dependency
+// import SecurityInterfacesFoundation
 
 /// Re-export XPCServiceProtocol from SecurityInterfaces
 public typealias XPCServiceProtocol = SecurityInterfaces.XPCServiceProtocol

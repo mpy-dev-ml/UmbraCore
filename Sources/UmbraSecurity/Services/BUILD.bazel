@@ -1,15 +1,16 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
+# Create separate targets to break circular dependencies
+# This target includes all Foundation-dependent code
 umbra_swift_library(
-    name = "UmbraSecurityServices",
+    name = "UmbraSecurityServicesFoundation",
     srcs = [
         "SecurityService.swift",
         "SecurityProviderFoundationImpl.swift",
         "SecurityProviderFactory.swift",
         "SecurityProviderMinimalImpl.swift",
         "SecurityProviderFactoryBridgeImpl.swift",
-        "SecurityProviderCoreImpl.swift",  # Add the new core implementation
     ],
     deps = [
         "//Sources/Core",
@@ -18,15 +19,61 @@ umbra_swift_library(
         "//Sources/SecurityInterfaces",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/UmbraSecurityFoundation",
         "//Sources/SecurityTypes",
         "//Sources/SecurityUtils",
         "//Sources/UmbraLogging",
-        # Removed "//Sources/SecurityInterfacesFoundationBridge" to break circular dependency
         "//Sources/FoundationBridgeTypes",
         "//Sources/SecurityObjCProtocols",
         "//Sources/SecurityInterfacesFoundationBase",
         "//Sources/SecurityInterfacesMinimalBridge",
-        "//Sources/SecurityBridgeCore",  # Add dependency on the new core module
+        "//Sources/SecurityBridgeCore",
+        "//Sources/SecurityInterfacesFoundationMinimal",
+        "//Sources/SecurityInterfacesFoundationCore",
+    ],
+)
+
+# This target includes the core implementation that bridges to Foundation
+umbra_swift_library(
+    name = "UmbraSecurityServicesCore",
+    srcs = [
+        "SecurityProviderCoreImpl.swift",
+    ],
+    deps = [
+        "//Sources/CoreTypes",
+        "//Sources/ErrorHandling",
+        "//Sources/SecurityBridgeCore",
+        "//Sources/SecurityInterfacesFoundationBase",
+    ],
+)
+
+# This target includes the Foundation-free bridge
+umbra_swift_library(
+    name = "UmbraSecurityServicesNoFoundationBridge",
+    srcs = [
+        "SecurityProviderNoFoundationBridge.swift",
+    ],
+    deps = [
+        "//Sources/CoreTypes",
+        "//Sources/ErrorHandling",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/FoundationBridgeTypes",
+        "//Sources/SecurityInterfacesFoundationCore",
+        "//Sources/SecurityInterfacesFoundationNoFoundation",
+        "//Sources/UmbraSecurityNoFoundation",
+        "//Sources/UmbraSecurityServicesNoFoundation",
+    ],
+)
+
+# Main target that depends on all the others
+umbra_swift_library(
+    name = "UmbraSecurityServices",
+    srcs = [
+        "UmbraSecurityServicesWrapper.swift",
+    ],
+    deps = [
+        ":UmbraSecurityServicesFoundation",
+        ":UmbraSecurityServicesCore",
+        ":UmbraSecurityServicesNoFoundationBridge",
+        "//Sources/CoreTypes",
     ],
 )

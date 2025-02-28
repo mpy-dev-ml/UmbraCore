@@ -1,8 +1,11 @@
 import Foundation
+import FoundationBridgeTypes
 @preconcurrency import ObjCBridgingTypesFoundation
 import SecurityInterfaces
 import SecurityInterfacesBase
 import SecurityInterfacesFoundation
+import SecurityInterfacesFoundationCore
+import SecurityInterfacesFoundationNoFoundation
 import SecurityInterfacesProtocols
 @preconcurrency import SecurityInterfacesXPC
 
@@ -24,12 +27,14 @@ import SecurityInterfacesProtocols
     // MARK: - XPCServiceProtocolDefinitionBaseFoundation Implementation
 
     /// Test connectivity
-    @MainActor @objc public func ping(withReply reply: @escaping (Bool, Error?) -> Void) {
+    @MainActor @objc public func ping(withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
         let callback = CallbackStore.store(reply)
+        // Capture service reference to avoid capturing self in the task
+        let serviceRef = self.service
 
         Task {
             do {
-                let result = try await service.ping()
+                let result = try await serviceRef.ping()
                 CallbackStore.callPingCallback(id: callback, result: result, error: nil)
             } catch {
                 CallbackStore.callPingCallback(id: callback, result: false, error: error)
@@ -38,7 +43,7 @@ import SecurityInterfacesProtocols
     }
 
     /// Reset security data
-    @objc public func resetSecurityData(withReply reply: @escaping (Error?) -> Void) {
+    @objc public func resetSecurityData(withReply reply: @escaping @Sendable (Error?) -> Void) {
         // Since XPCServiceProtocol doesn't have resetSecurityData, just return success
         reply(nil)
     }
@@ -46,17 +51,19 @@ import SecurityInterfacesProtocols
     // MARK: - XPCServiceProtocolDefinition Implementation
 
     /// Synchronize keys across processes
-    @MainActor @objc public func synchroniseKeys(_ data: NSData, withReply reply: @escaping (Error?) -> Void) {
+    @MainActor @objc public func synchroniseKeys(_ data: NSData, withReply reply: @escaping @Sendable (Error?) -> Void) {
         // Convert NSData to bytes before passing to Task to avoid capturing non-Sendable types
-        let bytes = ObjCBridgingTypesFoundation.DataConverter.convertToBytes(fromNSData: data)
+        let bytes = [UInt8](Data(referencing: data))
         let callback = CallbackStore.store(reply)
+        // Capture service reference to avoid capturing self in the task
+        let serviceRef = self.service
 
         Task {
             do {
                 // Convert bytes to BinaryData
                 let binaryData = SecurityInterfacesProtocols.BinaryData(bytes)
                 // Call the CoreTypes implementation
-                try await service.synchroniseKeys(binaryData)
+                try await serviceRef.synchroniseKeys(binaryData)
                 CallbackStore.callErrorCallback(id: callback, error: nil)
             } catch {
                 CallbackStore.callErrorCallback(id: callback, error: error)
@@ -65,31 +72,31 @@ import SecurityInterfacesProtocols
     }
 
     /// Get the XPC service version
-    @objc public func getVersion(withReply reply: @escaping (NSString?, Error?) -> Void) {
+    @objc public func getVersion(withReply reply: @escaping @Sendable (NSString?, Error?) -> Void) {
         // Since XPCServiceProtocol doesn't have getVersion, return a default version
         reply("1.0.0" as NSString, nil)
     }
 
     /// Get the host identifier
-    @objc public func getHostIdentifier(withReply reply: @escaping (NSString?, Error?) -> Void) {
+    @objc public func getHostIdentifier(withReply reply: @escaping @Sendable (NSString?, Error?) -> Void) {
         // Since XPCServiceProtocol doesn't have getHostIdentifier, return a default host ID
         reply("host-id" as NSString, nil)
     }
 
     /// Register a client application
-    @objc public func registerClient(clientId: NSString, withReply reply: @escaping (Bool, Error?) -> Void) {
+    @objc public func registerClient(clientId: NSString, withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
         // Since XPCServiceProtocol doesn't have registerClient, return success
         reply(true, nil)
     }
 
     /// Deregister a client application
-    @objc public func deregisterClient(clientId: NSString, withReply reply: @escaping (Bool, Error?) -> Void) {
+    @objc public func deregisterClient(clientId: NSString, withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
         // Since XPCServiceProtocol doesn't have deregisterClient, return success
         reply(true, nil)
     }
 
     /// Check if a client is registered
-    @objc public func isClientRegistered(clientId: NSString, withReply reply: @escaping (Bool, Error?) -> Void) {
+    @objc public func isClientRegistered(clientId: NSString, withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
         // Since XPCServiceProtocol doesn't have isClientRegistered, return true
         reply(true, nil)
     }
@@ -98,7 +105,7 @@ import SecurityInterfacesProtocols
 /// Adapter that bridges from SecurityInterfacesXPC.XPCServiceProtocolDefinition to SecurityInterfaces.XPCServiceProtocol
 public final class FoundationToSecurityAdapter: SecurityInterfaces.XPCServiceProtocol {
     // Use a class to wrap the non-Sendable protocol
-    private final class FoundationWrapper: Sendable {
+    private final class FoundationWrapper: @unchecked Sendable {
         let foundation: any SecurityInterfacesXPC.XPCServiceProtocolDefinition
 
         init(foundation: any SecurityInterfacesXPC.XPCServiceProtocolDefinition) {
@@ -123,7 +130,10 @@ public final class FoundationToSecurityAdapter: SecurityInterfaces.XPCServicePro
     /// Test connectivity
     public func ping() async throws -> Bool {
         return try await withCheckedThrowingContinuation { continuation in
-            foundationWrapper.foundation.ping { result, error in
+            // Capture wrapper locally to avoid capturing self
+            let localWrapper = self.foundationWrapper
+
+            localWrapper.foundation.ping { result, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -135,11 +145,14 @@ public final class FoundationToSecurityAdapter: SecurityInterfaces.XPCServicePro
 
     /// Synchronize keys across processes
     public func synchroniseKeys(_ data: SecurityInterfacesProtocols.BinaryData) async throws {
-        // Convert BinaryData to NSData
-        let nsData = ObjCBridgingTypesFoundation.DataConverter.convertToNSData(fromBytes: data.bytes)
+        // Convert BinaryData directly to NSData
+        let nsObject = NSData(bytes: data.bytes, length: data.bytes.count)
 
         return try await withCheckedThrowingContinuation { continuation in
-            foundationWrapper.foundation.synchroniseKeys(nsData) { error in
+            // Capture wrapper locally to avoid capturing self
+            let localWrapper = self.foundationWrapper
+
+            localWrapper.foundation.synchroniseKeys(nsObject) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -148,8 +161,6 @@ public final class FoundationToSecurityAdapter: SecurityInterfaces.XPCServicePro
             }
         }
     }
-
-    // MARK: - XPCServiceProtocol Implementation
 
     /// Encrypt data using the service
     public func encrypt(data: SecurityInterfacesBase.BinaryData) async throws -> SecurityInterfacesBase.BinaryData {
@@ -168,18 +179,18 @@ public final class FoundationToSecurityAdapter: SecurityInterfaces.XPCServicePro
 
 /// Helper class to safely store and call callbacks from async contexts
 @MainActor final class CallbackStore {
-    private static var pingCallbacks: [UUID: (Bool, Error?) -> Void] = [:]
-    private static var errorCallbacks: [UUID: (Error?) -> Void] = [:]
+    private static var pingCallbacks: [UUID: @Sendable (Bool, Error?) -> Void] = [:]
+    private static var errorCallbacks: [UUID: @Sendable (Error?) -> Void] = [:]
 
     /// Store a ping callback and return its ID
-    static func store(_ callback: @escaping (Bool, Error?) -> Void) -> UUID {
+    static func store(_ callback: @escaping @Sendable (Bool, Error?) -> Void) -> UUID {
         let id = UUID()
         pingCallbacks[id] = callback
         return id
     }
 
     /// Store an error callback and return its ID
-    static func store(_ callback: @escaping (Error?) -> Void) -> UUID {
+    static func store(_ callback: @escaping @Sendable (Error?) -> Void) -> UUID {
         let id = UUID()
         errorCallbacks[id] = callback
         return id

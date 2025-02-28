@@ -9,6 +9,7 @@ umbra_swift_library(
         "DataConverter.swift",
         "SecurityBridgeError.swift",
         "SecurityProviderCore.swift",
+        "SecurityProviderTypeMinimalBridge.swift",
         "XPCServiceProtocolCoreBridge.swift",
     ],
     deps = [

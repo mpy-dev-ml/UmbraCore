@@ -10,7 +10,7 @@ public protocol SecurityProviderCore {
     /// - Returns: Encrypted data
     /// - Throws: Error if encryption fails
     func encryptBinary(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData
-    
+
     /// Decrypt binary data
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -18,13 +18,13 @@ public protocol SecurityProviderCore {
     /// - Returns: Decrypted data
     /// - Throws: Error if decryption fails
     func decryptBinary(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData
-    
+
     /// Generate a cryptographically secure random key
     /// - Parameter length: Length of the key in bytes
     /// - Returns: Generated key
     /// - Throws: Error if key generation fails
     func generateBinaryKey(length: Int) async throws -> CoreTypes.BinaryData
-    
+
     /// Hash binary data
     /// - Parameter data: Data to hash
     /// - Returns: Hashed data

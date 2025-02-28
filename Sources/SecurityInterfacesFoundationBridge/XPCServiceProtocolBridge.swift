@@ -10,23 +10,23 @@ import SecurityObjCProtocols
     /// Ping the service to check if it's alive
     /// - Parameter reply: Callback with result and error
     @objc func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void)
-    
+
     /// Synchronize keys
     /// - Parameters:
     ///   - data: Key data
     ///   - reply: Callback with error
     @objc func synchroniseKeysFoundation(_ data: NSData, withReply reply: @escaping @Sendable (Error?) -> Void)
-    
+
     /// Get encryption keys from the service
     /// - Parameter reply: Reply handler with data result and optional error
     @objc func getEncryptionKeysFoundation(withReply reply: @escaping @Sendable (NSData?, Error?) -> Void)
-    
+
     /// Encrypt data using the service
     /// - Parameters:
     ///   - data: The data to encrypt
     ///   - reply: Reply handler with encrypted data and optional error
     @objc func encryptDataFoundation(_ data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void)
-    
+
     /// Decrypt data using the service
     /// - Parameters:
     ///   - data: The data to decrypt
@@ -50,7 +50,7 @@ import SecurityObjCProtocols
     @objc public func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
         // Capture core reference outside the task to avoid capturing self
         let coreRef = self.core
-        
+
         Task {
             do {
                 let result = try await coreRef.pingCore()
@@ -60,12 +60,12 @@ import SecurityObjCProtocols
             }
         }
     }
-    
+
     @objc public func synchroniseKeysFoundation(_ data: NSData, withReply reply: @escaping @Sendable (Error?) -> Void) {
         // Capture data reference and convert to bytes outside the task to avoid capturing non-sendable types
         let coreRef = self.core
         let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: data)
-        
+
         Task {
             do {
                 try await coreRef.synchroniseKeysCore(bytes)
@@ -75,11 +75,11 @@ import SecurityObjCProtocols
             }
         }
     }
-    
+
     @objc public func getEncryptionKeysFoundation(withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
         // Capture core reference outside the task to avoid capturing self
         let coreRef = self.core
-        
+
         Task {
             do {
                 let bytes = try await coreRef.getEncryptionKeysCore()
@@ -95,12 +95,12 @@ import SecurityObjCProtocols
             }
         }
     }
-    
+
     @objc public func encryptDataFoundation(_ data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
         // Capture data reference and convert to bytes outside the task to avoid capturing non-sendable types
         let coreRef = self.core
         let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: data)
-        
+
         Task {
             do {
                 let encryptedBytes = try await coreRef.encryptDataCore(bytes)
@@ -116,12 +116,12 @@ import SecurityObjCProtocols
             }
         }
     }
-    
+
     @objc public func decryptDataFoundation(_ data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
         // Capture data reference and convert to bytes outside the task to avoid capturing non-sendable types
         let coreRef = self.core
         let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: data)
-        
+
         Task {
             do {
                 let decryptedBytes = try await coreRef.decryptDataCore(bytes)
@@ -151,6 +151,69 @@ public final class FoundationToCoreTypesBridgeAdapter: SecurityBridgeCore.XPCSer
         self.wrapper = XPCServiceProtocolWrapper(foundation: foundation)
     }
 
+    // MARK: - Protocol Methods
+
+    public func pingCore(withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
+        wrapper.foundation.pingFoundation(withReply: reply)
+    }
+
+    public func synchroniseKeysCore(_ data: [UInt8], withReply reply: @escaping @Sendable (Error?) -> Void) {
+        // Convert bytes to NSData
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data)
+
+        // Call the foundation implementation
+        wrapper.foundation.synchroniseKeysFoundation(nsData, withReply: reply)
+    }
+
+    public func getEncryptionKeysCore(withReply reply: @escaping @Sendable ([UInt8]?, Error?) -> Void) {
+        wrapper.foundation.getEncryptionKeysFoundation { data, error in
+            if let error = error {
+                reply(nil, error)
+            } else if let data = data {
+                let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: data)
+                reply(bytes, nil)
+            } else {
+                reply(nil, NSError(domain: "com.umbra.security", code: 1_001, userInfo: [NSLocalizedDescriptionKey: "Invalid data type"]))
+            }
+        }
+    }
+
+    public func encryptDataCore(_ data: [UInt8], withReply reply: @escaping @Sendable ([UInt8]?, Error?) -> Void) {
+        // Convert bytes to NSData
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data)
+
+        // Call the foundation implementation
+        wrapper.foundation.encryptDataFoundation(nsData) { nsData, error in
+            if let error = error {
+                reply(nil, error)
+            } else if let nsData = nsData {
+                let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: nsData)
+                reply(bytes, nil)
+            } else {
+                reply(nil, NSError(domain: "com.umbra.security", code: 1_001, userInfo: [NSLocalizedDescriptionKey: "Invalid data type"]))
+            }
+        }
+    }
+
+    public func decryptDataCore(_ data: [UInt8], withReply reply: @escaping @Sendable ([UInt8]?, Error?) -> Void) {
+        // Convert bytes to NSData
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data)
+
+        // Call the foundation implementation
+        wrapper.foundation.decryptDataFoundation(nsData) { nsData, error in
+            if let error = error {
+                reply(nil, error)
+            } else if let nsData = nsData {
+                let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: nsData)
+                reply(bytes, nil)
+            } else {
+                reply(nil, NSError(domain: "com.umbra.security", code: 1_001, userInfo: [NSLocalizedDescriptionKey: "Invalid data type"]))
+            }
+        }
+    }
+
+    // Async versions for convenience
+
     public func pingCore() async throws -> Bool {
         return try await withCheckedThrowingContinuation { continuation in
             wrapper.foundation.pingFoundation { success, error in
@@ -162,11 +225,11 @@ public final class FoundationToCoreTypesBridgeAdapter: SecurityBridgeCore.XPCSer
             }
         }
     }
-    
+
     public func synchroniseKeysCore(_ data: [UInt8]) async throws {
         // Convert bytes to NSData
         let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data)
-        
+
         // Call the foundation implementation
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             wrapper.foundation.synchroniseKeysFoundation(nsData) { error in
@@ -178,7 +241,7 @@ public final class FoundationToCoreTypesBridgeAdapter: SecurityBridgeCore.XPCSer
             }
         }
     }
-    
+
     public func getEncryptionKeysCore() async throws -> [UInt8]? {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[UInt8]?, Error>) in
             wrapper.foundation.getEncryptionKeysFoundation { nsData, error in
@@ -194,11 +257,11 @@ public final class FoundationToCoreTypesBridgeAdapter: SecurityBridgeCore.XPCSer
             }
         }
     }
-    
+
     public func encryptDataCore(_ data: [UInt8]) async throws -> [UInt8]? {
         // Convert bytes to NSData
         let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data)
-        
+
         // Call the foundation implementation
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[UInt8]?, Error>) in
             wrapper.foundation.encryptDataFoundation(nsData) { nsData, error in
@@ -214,11 +277,11 @@ public final class FoundationToCoreTypesBridgeAdapter: SecurityBridgeCore.XPCSer
             }
         }
     }
-    
+
     public func decryptDataCore(_ data: [UInt8]) async throws -> [UInt8]? {
         // Convert bytes to NSData
         let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data)
-        
+
         // Call the foundation implementation
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[UInt8]?, Error>) in
             wrapper.foundation.decryptDataFoundation(nsData) { nsData, error in
@@ -240,7 +303,7 @@ public final class FoundationToCoreTypesBridgeAdapter: SecurityBridgeCore.XPCSer
 /// This is used to avoid capturing self in async contexts
 public struct XPCServiceProtocolWrapper {
     public let foundation: any XPCServiceProtocolFoundationBridge
-    
+
     public init(foundation: any XPCServiceProtocolFoundationBridge) {
         self.foundation = foundation
     }

@@ -1,5 +1,5 @@
-import Foundation
 import CoreTypes
+import Foundation
 @preconcurrency import SecurityInterfaces
 import SecurityInterfacesFoundation
 import SecurityInterfacesProtocols
@@ -9,23 +9,23 @@ import SecurityTypesProtocols
 /// Private actor for managing shared state
 private actor SecurityResourceManager {
     var securityScopedResources: Set<URL> = []
-    
+
     func addResource(_ url: URL) {
         securityScopedResources.insert(url)
     }
-    
+
     func removeResource(_ url: URL) {
         securityScopedResources.remove(url)
     }
-    
+
     func clearResources() {
         securityScopedResources.removeAll()
     }
-    
+
     func containsResource(_ url: URL) -> Bool {
         return securityScopedResources.contains(url)
     }
-    
+
     func getAllResources() -> Set<URL> {
         return securityScopedResources
     }

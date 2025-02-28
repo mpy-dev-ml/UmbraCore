@@ -1,11 +1,11 @@
 import CoreTypes
 import Foundation
 import FoundationBridgeTypes
+import SecurityBridgeCore
 import SecurityInterfacesBase
+import SecurityInterfacesFoundationBase
 import SecurityInterfacesProtocols
 import SecurityObjCProtocols
-import SecurityInterfacesFoundationBase
-import SecurityBridgeCore
 
 /// This adapter class bridges between the Foundation-dependent implementation and the Foundation-free interfaces
 public final class SecurityProviderFoundationAdapter {
@@ -25,12 +25,12 @@ public final class SecurityProviderFoundationAdapter {
     /// - Throws: SecurityError if encryption fails
     public func encryptData(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
         // Convert DataBridge to NSData
-        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data.bytes) as! NSData
-        let nsKey = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: key.bytes) as! NSData
-        
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data.bytes)
+        let nsKey = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: key.bytes)
+
         // Call implementation with NSData
         let encryptedNSData = try await impl.encryptData(nsData, key: nsKey)
-        
+
         // Convert back to DataBridge
         return DataBridge(SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: encryptedNSData))
     }
@@ -43,12 +43,12 @@ public final class SecurityProviderFoundationAdapter {
     /// - Throws: SecurityError if decryption fails
     public func decryptData(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
         // Convert DataBridge to NSData
-        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data.bytes) as! NSData
-        let nsKey = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: key.bytes) as! NSData
-        
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data.bytes)
+        let nsKey = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: key.bytes)
+
         // Call implementation with NSData
         let decryptedNSData = try await impl.decryptData(nsData, key: nsKey)
-        
+
         // Convert back to DataBridge
         return DataBridge(SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: decryptedNSData))
     }
@@ -68,11 +68,11 @@ public final class SecurityProviderFoundationAdapter {
     /// - Throws: SecurityError if hashing fails
     public func hashData(_ data: DataBridge) async throws -> DataBridge {
         // Convert DataBridge to NSData
-        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data.bytes) as! NSData
-        
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data.bytes)
+
         // Call implementation with NSData
         let hashedNSData = try await impl.hashData(nsData)
-        
+
         // Convert back to DataBridge
         return DataBridge(SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: hashedNSData))
     }
@@ -89,10 +89,10 @@ public final class SecurityProviderFoundationAdapter {
         // Convert BinaryData to DataBridge
         let dataToEncrypt = DataBridge(data.bytes)
         let keyData = DataBridge(key.bytes)
-        
+
         // Encrypt using Foundation implementation
         let encryptedData = try await encryptData(dataToEncrypt, key: keyData)
-        
+
         // Convert back to BinaryData
         return SecurityInterfacesProtocols.BinaryData(encryptedData.bytes)
     }
@@ -107,10 +107,10 @@ public final class SecurityProviderFoundationAdapter {
         // Convert BinaryData to DataBridge
         let dataToDecrypt = DataBridge(data.bytes)
         let keyData = DataBridge(key.bytes)
-        
+
         // Decrypt using Foundation implementation
         let decryptedData = try await decryptData(dataToDecrypt, key: keyData)
-        
+
         // Convert back to BinaryData
         return SecurityInterfacesProtocols.BinaryData(decryptedData.bytes)
     }

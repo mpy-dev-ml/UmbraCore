@@ -23,39 +23,39 @@ public final class CoreTypesToFoundationAdapter: NSObject, ObjCBridgingTypesFoun
     }
 
     /// Implement ping using the CoreTypes implementation
-    @objc public func ping(withReply reply: @escaping (Bool, Error?) -> Void) {
-        // Capture reply in a local variable to avoid data races
-        let localReply = reply
+    @objc public func ping(withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
+        // Capture core reference to avoid capturing self in the task
+        let coreRef = self.core
+
         Task {
             do {
-                let result = try await core.ping()
-                localReply(result, nil)
+                let result = try await coreRef.ping()
+                reply(result, nil)
             } catch {
-                localReply(false, error)
+                reply(false, error)
             }
         }
     }
 
     /// Implement synchroniseKeys using the CoreTypes implementation
-    @objc public func synchroniseKeys(_ data: Any, withReply reply: @escaping (Error?) -> Void) {
+    @objc public func synchroniseKeys(_ data: Any, withReply reply: @escaping @Sendable (Error?) -> Void) {
         guard let nsData = data as? NSData else {
             reply(XPCServiceProtocolAdapterError.implementationMissing("Data must be NSData"))
             return
         }
 
-        // Capture reply in a local variable to avoid data races
-        let localReply = reply
+        // Capture core reference and convert NSData to bytes outside the task to avoid capturing non-sendable types
+        let coreRef = self.core
+        let bytes = ObjCBridgingTypesFoundation.DataConverter.convertToBytes(fromNSData: nsData)
+        let binaryData = SecurityInterfacesProtocols.BinaryData(bytes)
+
         Task {
             do {
-                // Convert NSData to bytes
-                let bytes = ObjCBridgingTypesFoundation.DataConverter.convertToBytes(fromNSData: nsData)
-                // Convert bytes to BinaryData
-                let binaryData = SecurityInterfacesProtocols.BinaryData(bytes)
                 // Call the CoreTypes implementation
-                try await core.synchroniseKeys(binaryData)
-                localReply(nil)
+                try await coreRef.synchroniseKeys(binaryData)
+                reply(nil)
             } catch {
-                localReply(error)
+                reply(error)
             }
         }
     }

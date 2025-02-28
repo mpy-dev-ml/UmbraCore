@@ -1,6 +1,7 @@
 import CoreTypes
 import SecurityInterfacesBase
-import SecurityInterfacesFoundationBridge
+// Removed import SecurityInterfacesFoundationBridge to break circular dependency
+import SecurityInterfacesFoundationMinimal
 
 /// Protocol defining Foundation-dependent security operations
 /// This is a non-Foundation dependent version that delegates to the Foundation bridge

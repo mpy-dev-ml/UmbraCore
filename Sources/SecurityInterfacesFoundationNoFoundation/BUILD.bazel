@@ -1,0 +1,15 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+# Foundation-free version of SecurityInterfacesFoundation
+# This module has NO Foundation dependencies to break circular dependencies
+umbra_swift_library(
+    name = "SecurityInterfacesFoundationNoFoundation",
+    srcs = glob(["**/*.swift"]),
+    deps = [
+        "//Sources/CoreTypes",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityInterfacesFoundationCore",
+        "//Sources/FoundationBridgeTypes",
+    ],
+)

@@ -10,6 +10,9 @@ umbra_swift_library(
         "//Sources/ErrorHandling",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/ObjCBridgingTypesFoundation",
+        # Remove these dependencies to break the circular dependency
+        # "//Sources/SecurityInterfacesFoundationCore",
+        # "//Sources/SecurityInterfacesFoundationNoFoundation",
     ],
 )
 
@@ -28,6 +31,9 @@ swift_library(
         "//Sources/ErrorHandling",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/ObjCBridgingTypesFoundation",
+        # Remove these dependencies to break the circular dependency
+        # "//Sources/SecurityInterfacesFoundationCore",
+        # "//Sources/SecurityInterfacesFoundationNoFoundation",
     ],
     visibility = ["//visibility:public"],
 )

@@ -1,10 +1,10 @@
 import CoreTypes
 import Foundation
 import FoundationBridgeTypes
+import SecurityBridgeCore
 import SecurityInterfacesBase
 import SecurityInterfacesFoundationBase
 import SecurityInterfacesProtocols
-import SecurityBridgeCore
 
 /// Adapter class to bridge between Foundation-dependent and non-Foundation security provider implementations
 @available(macOS 10.15, *)

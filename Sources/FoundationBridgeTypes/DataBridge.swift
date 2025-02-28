@@ -51,3 +51,18 @@ public extension DataBridge {
         return DataBridge(subBytes)
     }
 }
+
+// MARK: - Sequence Conformance
+extension DataBridge: Sequence {
+    /// Make DataBridge conform to Sequence protocol
+    /// This allows it to be used with [UInt8] initializer
+    public func makeIterator() -> Array<UInt8>.Iterator {
+        return bytes.makeIterator()
+    }
+
+    /// Element type for Sequence conformance
+    public typealias Element = UInt8
+
+    /// Iterator type for Sequence conformance
+    public typealias Iterator = Array<UInt8>.Iterator
+}

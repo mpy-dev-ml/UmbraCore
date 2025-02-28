@@ -5,7 +5,7 @@
 build --jobs=10
 
 # Memory settings - leverage the 96GB of RAM
-startup --host_jvm_args=-Xmx24g  # Allocate 24GB to JVM (25% of available RAM)
+startup --host_jvm_args=-Xmx64g  # Allocate 24GB to JVM (25% of available RAM)
 startup --host_jvm_args=-XX:+UseParallelGC  # Better GC for multi-core systems
 
 # Local build cache - increase size significantly
@@ -37,5 +37,5 @@ build:debug-extra --verbose_failures
 build:debug-extra --sandbox_debug
 
 # Memory pressure settings
-build --experimental_ui_limit_console_output=1
-build --experimental_ui_actions_shown=16
+# build --experimental_ui_limit_console_output=1
+# build --experimental_ui_actions_shown=16

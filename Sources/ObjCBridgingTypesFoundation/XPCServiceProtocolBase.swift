@@ -12,10 +12,10 @@ public enum FoundationBridgingError: Error, Sendable {
     @objc static var protocolIdentifier: String { get }
 
     /// Base method to test connectivity
-    @objc func ping(withReply reply: @escaping (Bool, Error?) -> Void)
+    @objc func ping(withReply reply: @escaping @Sendable (Bool, Error?) -> Void)
 
     /// Raw method for synchronising keys with Foundation.Data
-    @objc optional func synchroniseKeys(_ data: Any, withReply reply: @escaping (Error?) -> Void)
+    @objc optional func synchroniseKeys(_ data: Any, withReply reply: @escaping @Sendable (Error?) -> Void)
 }
 
 /// Default implementation for XPCServiceProtocolBaseFoundation
@@ -26,7 +26,7 @@ public extension XPCServiceProtocolBaseFoundation {
     }
 
     /// Raw implementation for synchronising keys
-    var synchroniseKeysRaw: ((Any, @escaping (Error?) -> Void) -> Void)? {
+    var synchroniseKeysRaw: ((Any, @escaping @Sendable (Error?) -> Void) -> Void)? {
         return self.synchroniseKeys(_:withReply:)
     }
 

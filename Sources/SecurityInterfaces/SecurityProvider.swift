@@ -1,7 +1,8 @@
 import CoreTypes
 import FoundationBridgeTypes
 import SecurityInterfacesBase
-import SecurityInterfacesFoundationBridge
+// Removed import SecurityInterfacesFoundationBridge to break circular dependency
+import SecurityInterfacesFoundationMinimal
 import SecurityInterfacesProtocols
 
 /// Protocol defining security-related operations for managing secure resource access
