@@ -1,0 +1,17 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+# Core module with absolutely minimal dependencies to break circular dependencies
+# This module must NOT import Foundation or any module that imports Foundation
+umbra_swift_library(
+    name = "SecurityBridgeCore",
+    srcs = [
+        "DataConverter.swift",
+        "SecurityBridgeError.swift",
+        "SecurityProviderCore.swift",
+        "XPCServiceProtocolCoreBridge.swift",
+    ],
+    deps = [
+        "//Sources/CoreTypes",
+    ],
+)

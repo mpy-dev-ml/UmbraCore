@@ -7,6 +7,7 @@ import SecurityInterfacesFoundationBridge
 import SecurityUtils
 import UmbraLogging
 import UmbraSecurityUtils
+import FoundationBridgeTypes
 
 /// A service that manages security-scoped resource access and bookmarks
 @MainActor
@@ -119,17 +120,26 @@ public final class SecurityService {
 
 /// Default implementation of SecurityProvider
 private final class DefaultSecurityProviderImpl: SecurityInterfacesFoundationBridge.SecurityProviderTypeBridge {
-    func createSecurityBookmark(for url: URL) throws -> Data {
-        // This is a simple implementation that delegates to the SecurityService
-        // We could add proper implementation here or use a different pattern
-        let data = try NSData(contentsOf: url).bookmarkData(options: .securityScopeAllowOnlyReadAccess, includingResourceValuesForKeys: nil, relativeTo: nil)
-        return data as Data
+    func createSecurityBookmark(for url: FoundationBridgeTypes.URLBridge) throws -> FoundationBridgeTypes.DataBridge {
+        // Convert URLBridge to URL
+        let foundationURL = url.toFoundationURL()
+        
+        // Create the bookmark
+        let data = try NSData(contentsOf: foundationURL).bookmarkData(options: .securityScopeAllowOnlyReadAccess, includingResourceValuesForKeys: nil, relativeTo: nil)
+        
+        // Convert Data to DataBridge
+        return FoundationBridgeTypes.DataBridge(data as Data)
     }
 
-    func resolveSecurityBookmark(_ bookmarkData: Data) throws -> URL {
+    func resolveSecurityBookmark(_ bookmarkData: FoundationBridgeTypes.DataBridge) throws -> FoundationBridgeTypes.URLBridge {
+        // Convert DataBridge to Data
+        let foundationData = bookmarkData.toFoundationData()
+        
         var isStale = false
-        let url = try URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
-        return url
+        let url = try URL(resolvingBookmarkData: foundationData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+        
+        // Convert URL to URLBridge
+        return FoundationBridgeTypes.URLBridge(url)
     }
 
     func startAccessing(path: String) async throws -> Bool {
@@ -151,7 +161,7 @@ private final class DefaultSecurityProviderImpl: SecurityInterfacesFoundationBri
         return false
     }
 
-    func getAccessedPaths() async -> Set<String> {
+    func getAccessingPaths() async -> [String] {
         // No way to get this with standard APIs
         return []
     }

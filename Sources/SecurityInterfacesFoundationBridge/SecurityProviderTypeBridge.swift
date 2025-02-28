@@ -1,19 +1,20 @@
-import Foundation
+import FoundationBridgeTypes
+import SecurityBridgeCore
 
 /// Protocol for providing security-related operations
 /// This is a bridge version that doesn't depend on SecurityTypes
 public protocol SecurityProviderTypeBridge {
     /// Create a security-scoped bookmark for a URL
-    /// - Parameter url: The URL to create a bookmark for
-    /// - Returns: The bookmark data
+    /// - Parameter url: The URL bridge to create a bookmark for
+    /// - Returns: The bookmark data bridge
     /// - Throws: Error if bookmark creation fails
-    func createSecurityBookmark(for url: URL) throws -> Data
+    func createSecurityBookmark(for url: FoundationBridgeTypes.URLBridge) throws -> FoundationBridgeTypes.DataBridge
 
     /// Resolve a security-scoped bookmark to a URL
-    /// - Parameter bookmarkData: The bookmark data to resolve
-    /// - Returns: The resolved URL
+    /// - Parameter bookmarkData: The bookmark data bridge to resolve
+    /// - Returns: The resolved URL bridge
     /// - Throws: Error if bookmark resolution fails
-    func resolveSecurityBookmark(_ bookmarkData: Data) throws -> URL
+    func resolveSecurityBookmark(_ bookmarkData: FoundationBridgeTypes.DataBridge) throws -> FoundationBridgeTypes.URLBridge
 
     /// Start accessing a security-scoped resource
     /// - Parameter path: Path to the resource
@@ -34,8 +35,8 @@ public protocol SecurityProviderTypeBridge {
     func isAccessing(path: String) async -> Bool
 
     /// Get all paths that are currently being accessed
-    /// - Returns: Set of paths that are currently being accessed
-    func getAccessedPaths() async -> Set<String>
+    /// - Returns: Array of paths
+    func getAccessingPaths() async -> [String]
 
     /// Perform an operation with security-scoped access to a resource
     /// - Parameters:

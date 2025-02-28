@@ -2,9 +2,10 @@ import Foundation
 import FoundationBridgeTypes
 import SecurityInterfaces
 import SecurityInterfacesBase
+import SecurityInterfacesFoundationBase
 import SecurityInterfacesFoundationBridge
 import SecurityInterfacesProtocols
-import SecurityInterfacesFoundationBase
+import SecurityInterfacesMinimalBridge
 
 /// Factory class for creating security providers
 public final class SecurityProviderFactory {
@@ -12,6 +13,9 @@ public final class SecurityProviderFactory {
     /// Create a default security provider
     /// - Returns: A fully configured SecurityProvider instance
     public static func createDefaultProvider() -> SecurityProvider {
+        // Create the minimal implementation first (no Foundation dependency)
+        let minimalImpl = SecurityProviderMinimalImpl()
+        
         // Create the Foundation implementation
         let foundationImpl = DefaultSecurityProviderFoundationImpl()
 

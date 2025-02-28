@@ -7,6 +7,9 @@ umbra_swift_library(
         "SecurityService.swift",
         "SecurityProviderFoundationImpl.swift",
         "SecurityProviderFactory.swift",
+        "SecurityProviderMinimalImpl.swift",
+        "SecurityProviderFactoryBridgeImpl.swift",
+        "SecurityProviderCoreImpl.swift",  # Add the new core implementation
     ],
     deps = [
         "//Sources/Core",
@@ -19,9 +22,11 @@ umbra_swift_library(
         "//Sources/SecurityTypes",
         "//Sources/SecurityUtils",
         "//Sources/UmbraLogging",
-        "//Sources/SecurityInterfacesFoundationBridge",
+        # Removed "//Sources/SecurityInterfacesFoundationBridge" to break circular dependency
         "//Sources/FoundationBridgeTypes",
         "//Sources/SecurityObjCProtocols",
         "//Sources/SecurityInterfacesFoundationBase",
+        "//Sources/SecurityInterfacesMinimalBridge",
+        "//Sources/SecurityBridgeCore",  # Add dependency on the new core module
     ],
 )

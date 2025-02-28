@@ -1,139 +1,175 @@
 import Foundation
-@preconcurrency import ObjCBridgingTypesFoundation
-import SecurityInterfacesProtocols
-
-/// Custom error for security interfaces that doesn't require SecurityInterfaces
-public enum SecurityBridgeError: Error, Sendable {
-    case implementationMissing(String)
-}
+import SecurityBridgeCore
+import SecurityObjCProtocols
 
 /// Bridge protocol to break circular dependencies between Foundation and SecurityInterfaces
 @objc public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol {
     /// Protocol identifier
     @objc static var protocolIdentifier: String { get }
-    
-    /// Test connectivity with Foundation types
+
+    /// Ping the service to check if it's alive
+    /// - Parameter reply: Callback with result and error
     @objc func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void)
     
-    /// Synchronize keys across processes with Foundation types
+    /// Synchronize keys
+    /// - Parameters:
+    ///   - data: Key data
+    ///   - reply: Callback with error
     @objc func synchroniseKeysFoundation(_ data: NSData, withReply reply: @escaping @Sendable (Error?) -> Void)
     
-    /// Encrypt data using the service with Foundation types
-    @objc func encryptFoundation(data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void)
+    /// Get encryption keys from the service
+    /// - Parameter reply: Reply handler with data result and optional error
+    @objc func getEncryptionKeysFoundation(withReply reply: @escaping @Sendable (NSData?, Error?) -> Void)
     
-    /// Decrypt data using the service with Foundation types
-    @objc func decryptFoundation(data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void)
+    /// Encrypt data using the service
+    /// - Parameters:
+    ///   - data: The data to encrypt
+    ///   - reply: Reply handler with encrypted data and optional error
+    @objc func encryptDataFoundation(_ data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void)
+    
+    /// Decrypt data using the service
+    /// - Parameters:
+    ///   - data: The data to decrypt
+    ///   - reply: Reply handler with decrypted data and optional error
+    @objc func decryptDataFoundation(_ data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void)
 }
 
-/// Adapter that bridges from SecurityInterfacesProtocols.XPCServiceProtocolBase to Foundation
+/// Adapter that bridges from SecurityBridgeCore to XPCServiceProtocolFoundationBridge
 @objc public final class CoreTypesToFoundationBridgeAdapter: NSObject, XPCServiceProtocolFoundationBridge, @unchecked Sendable {
-    private let core: any SecurityInterfacesProtocols.XPCServiceProtocolBase
-    private let queue = DispatchQueue(label: "com.umbra.security.bridge", qos: .userInitiated)
-    
-    /// Create a new adapter wrapping a CoreTypes implementation
-    public init(wrapping core: any SecurityInterfacesProtocols.XPCServiceProtocolBase) {
+    private let core: any SecurityBridgeCore.XPCServiceProtocolCoreBridge
+
+    public init(wrapping core: any SecurityBridgeCore.XPCServiceProtocolCoreBridge) {
         self.core = core
         super.init()
     }
-    
-    /// Protocol identifier from the CoreTypes implementation
+
     @objc public static var protocolIdentifier: String {
-        return "com.umbra.xpc.service.adapter.coretypes.bridge"
+        return "com.umbra.security.xpc.foundation"
     }
-    
-    /// Implement ping using the CoreTypes implementation
+
     @objc public func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
-        // Capture the core reference and queue to avoid capturing self
+        // Capture core reference outside the task to avoid capturing self
         let coreRef = self.core
-        let queue = self.queue
         
-        Task.detached { @Sendable in
+        Task {
             do {
-                let result = try await coreRef.ping()
-                queue.async { reply(result, nil) }
+                let result = try await coreRef.pingCore()
+                reply(result, nil)
             } catch {
-                queue.async { reply(false, error) }
+                reply(false, error)
             }
         }
     }
     
-    /// Implement synchroniseKeys using the CoreTypes implementation
     @objc public func synchroniseKeysFoundation(_ data: NSData, withReply reply: @escaping @Sendable (Error?) -> Void) {
-        // Convert NSData to bytes first to avoid capturing it in the task
-        let bytes = ObjCBridgingTypesFoundation.DataConverter.convertToBytes(fromNSData: data)
-        
-        // Capture the core reference and queue to avoid capturing self
+        // Capture data reference and convert to bytes outside the task to avoid capturing non-sendable types
         let coreRef = self.core
-        let queue = self.queue
+        let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: data)
         
-        Task.detached { @Sendable in
+        Task {
             do {
-                // Convert bytes to BinaryData
-                let binaryData = SecurityInterfacesProtocols.BinaryData(bytes)
-                // Call the CoreTypes implementation
-                try await coreRef.synchroniseKeys(binaryData)
-                queue.async { reply(nil) }
+                try await coreRef.synchroniseKeysCore(bytes)
+                reply(nil)
             } catch {
-                queue.async { reply(error) }
+                reply(error)
             }
         }
     }
     
-    /// Implement encrypt using the CoreTypes implementation
-    @objc public func encryptFoundation(data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
-        // This is a placeholder implementation
-        reply(data, nil)
+    @objc public func getEncryptionKeysFoundation(withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
+        // Capture core reference outside the task to avoid capturing self
+        let coreRef = self.core
+        
+        Task {
+            do {
+                let bytes = try await coreRef.getEncryptionKeysCore()
+                if let bytes = bytes {
+                    // Convert bytes back to NSData
+                    let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: bytes)
+                    reply(nsData, nil)
+                } else {
+                    reply(nil, nil)
+                }
+            } catch {
+                reply(nil, error)
+            }
+        }
     }
     
-    /// Implement decrypt using the CoreTypes implementation
-    @objc public func decryptFoundation(data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
-        // This is a placeholder implementation
-        reply(data, nil)
+    @objc public func encryptDataFoundation(_ data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
+        // Capture data reference and convert to bytes outside the task to avoid capturing non-sendable types
+        let coreRef = self.core
+        let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: data)
+        
+        Task {
+            do {
+                let encryptedBytes = try await coreRef.encryptDataCore(bytes)
+                if let encryptedBytes = encryptedBytes {
+                    // Convert bytes back to NSData
+                    let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: encryptedBytes)
+                    reply(nsData, nil)
+                } else {
+                    reply(nil, nil)
+                }
+            } catch {
+                reply(nil, error)
+            }
+        }
+    }
+    
+    @objc public func decryptDataFoundation(_ data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
+        // Capture data reference and convert to bytes outside the task to avoid capturing non-sendable types
+        let coreRef = self.core
+        let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: data)
+        
+        Task {
+            do {
+                let decryptedBytes = try await coreRef.decryptDataCore(bytes)
+                if let decryptedBytes = decryptedBytes {
+                    // Convert bytes back to NSData
+                    let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: decryptedBytes)
+                    reply(nsData, nil)
+                } else {
+                    reply(nil, nil)
+                }
+            } catch {
+                reply(nil, error)
+            }
+        }
     }
 }
 
-/// Adapter that bridges from Foundation to SecurityInterfacesProtocols.XPCServiceProtocolBase
-public final class FoundationToCoreTypesBridgeAdapter: SecurityInterfacesProtocols.XPCServiceProtocolBase {
-    private class FoundationWrapper: @unchecked Sendable {
-        let foundation: any XPCServiceProtocolFoundationBridge
-        
-        init(foundation: any XPCServiceProtocolFoundationBridge) {
-            self.foundation = foundation
-        }
-    }
-    
-    private let foundationWrapper: FoundationWrapper
-    
-    /// Create a new adapter wrapping a Foundation implementation
-    public init(wrapping foundation: any XPCServiceProtocolFoundationBridge) {
-        self.foundationWrapper = FoundationWrapper(foundation: foundation)
-    }
-    
-    /// Protocol identifier from the Foundation implementation
+/// Adapter that bridges from XPCServiceProtocolFoundationBridge to SecurityBridgeCore
+public final class FoundationToCoreTypesBridgeAdapter: SecurityBridgeCore.XPCServiceProtocolCoreBridge, @unchecked Sendable {
+    private let wrapper: XPCServiceProtocolWrapper
+
     public static var protocolIdentifier: String {
-        return "com.umbra.xpc.service.adapter.foundation.bridge"
+        return "com.umbra.security.xpc.core"
     }
-    
-    /// Implement ping using the Foundation implementation
-    public func ping() async throws -> Bool {
+
+    public init(foundation: any XPCServiceProtocolFoundationBridge) {
+        self.wrapper = XPCServiceProtocolWrapper(foundation: foundation)
+    }
+
+    public func pingCore() async throws -> Bool {
         return try await withCheckedThrowingContinuation { continuation in
-            foundationWrapper.foundation.pingFoundation { result, error in
+            wrapper.foundation.pingFoundation { success, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
-                    continuation.resume(returning: result)
+                    continuation.resume(returning: success)
                 }
             }
         }
     }
     
-    /// Implement synchroniseKeys using the Foundation implementation
-    public func synchroniseKeys(_ data: SecurityInterfacesProtocols.BinaryData) async throws {
-        // Convert BinaryData to NSData
-        let nsData = ObjCBridgingTypesFoundation.DataConverter.convertToNSData(fromBytes: data.bytes)
+    public func synchroniseKeysCore(_ data: [UInt8]) async throws {
+        // Convert bytes to NSData
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data)
         
-        return try await withCheckedThrowingContinuation { continuation in
-            foundationWrapper.foundation.synchroniseKeysFoundation(nsData) { error in
+        // Call the foundation implementation
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            wrapper.foundation.synchroniseKeysFoundation(nsData) { error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else {
@@ -141,5 +177,71 @@ public final class FoundationToCoreTypesBridgeAdapter: SecurityInterfacesProtoco
                 }
             }
         }
+    }
+    
+    public func getEncryptionKeysCore() async throws -> [UInt8]? {
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[UInt8]?, Error>) in
+            wrapper.foundation.getEncryptionKeysFoundation { nsData, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let nsData = nsData {
+                    // Convert NSData to bytes
+                    let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: nsData)
+                    continuation.resume(returning: bytes)
+                } else {
+                    continuation.resume(returning: nil)
+                }
+            }
+        }
+    }
+    
+    public func encryptDataCore(_ data: [UInt8]) async throws -> [UInt8]? {
+        // Convert bytes to NSData
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data)
+        
+        // Call the foundation implementation
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[UInt8]?, Error>) in
+            wrapper.foundation.encryptDataFoundation(nsData) { nsData, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let nsData = nsData {
+                    // Convert NSData to bytes
+                    let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: nsData)
+                    continuation.resume(returning: bytes)
+                } else {
+                    continuation.resume(returning: nil)
+                }
+            }
+        }
+    }
+    
+    public func decryptDataCore(_ data: [UInt8]) async throws -> [UInt8]? {
+        // Convert bytes to NSData
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBytes: data)
+        
+        // Call the foundation implementation
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[UInt8]?, Error>) in
+            wrapper.foundation.decryptDataFoundation(nsData) { nsData, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else if let nsData = nsData {
+                    // Convert NSData to bytes
+                    let bytes = SecurityBridgeCore.DataConverter.convertToBytes(fromNSData: nsData)
+                    continuation.resume(returning: bytes)
+                } else {
+                    continuation.resume(returning: nil)
+                }
+            }
+        }
+    }
+}
+
+/// Wrapper to hold a reference to the foundation protocol
+/// This is used to avoid capturing self in async contexts
+public struct XPCServiceProtocolWrapper {
+    public let foundation: any XPCServiceProtocolFoundationBridge
+    
+    public init(foundation: any XPCServiceProtocolFoundationBridge) {
+        self.foundation = foundation
     }
 }

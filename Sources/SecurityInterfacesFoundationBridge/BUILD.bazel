@@ -7,12 +7,11 @@ umbra_swift_library(
     srcs = glob(["**/*.swift"]),
     deps = [
         "//Sources/CoreTypes",
-        "//Sources/SecurityInterfacesBase",
-        "//Sources/SecurityInterfacesProtocols",
-        "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/FoundationBridgeTypes",
-        "//Sources/SecurityObjCProtocols",
+        "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesFoundationBase",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityBridgeCore",  # Add dependency on the new core module
     ],
 )
 
@@ -28,12 +27,11 @@ swift_library(
     ],
     deps = [
         "//Sources/CoreTypes",
-        "//Sources/SecurityInterfacesBase",
-        "//Sources/SecurityInterfacesProtocols",
-        "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/FoundationBridgeTypes",
-        "//Sources/SecurityObjCProtocols",
+        "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesFoundationBase",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityBridgeCore",  # Add dependency on the new core module
     ],
     visibility = ["//visibility:public"],
 )

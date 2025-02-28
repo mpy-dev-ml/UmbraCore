@@ -1,9 +1,10 @@
 import CoreTypes
 import Foundation
-import ObjCBridgingTypesFoundation
+import FoundationBridgeTypes
 import SecurityInterfacesBase
-import SecurityInterfacesProtocols
 import SecurityInterfacesFoundationBase
+import SecurityInterfacesProtocols
+import SecurityBridgeCore
 
 /// Adapter class to bridge between Foundation-dependent and non-Foundation security provider implementations
 @available(macOS 10.15, *)
@@ -32,12 +33,12 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     /// - Returns: Encrypted data
     /// - Throws: SecurityError if encryption fails
     public func encrypt(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData {
-        let nsData = DataConverter.convertToNSData(fromBytes: data.bytes)
-        let nsKey = DataConverter.convertToNSData(fromBytes: key.bytes)
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBinaryData: data)
+        let nsKey = SecurityBridgeCore.DataConverter.convertToNSData(fromBinaryData: key)
 
-        let encryptedData = try await foundationImpl.encryptData(nsData as Data, key: nsKey as Data)
-        let nsEncryptedData = encryptedData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsEncryptedData))
+        // Use NSData directly without force downcasting to Data
+        let encryptedData = try await foundationImpl.encryptData(nsData, key: nsKey)
+        return SecurityBridgeCore.DataConverter.convertToBinaryData(fromNSData: encryptedData)
     }
 
     /// Decrypt binary data using the provider's decryption mechanism
@@ -47,12 +48,12 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     /// - Returns: Decrypted data
     /// - Throws: SecurityError if decryption fails
     public func decrypt(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData {
-        let nsData = DataConverter.convertToNSData(fromBytes: data.bytes)
-        let nsKey = DataConverter.convertToNSData(fromBytes: key.bytes)
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBinaryData: data)
+        let nsKey = SecurityBridgeCore.DataConverter.convertToNSData(fromBinaryData: key)
 
-        let decryptedData = try await foundationImpl.decryptData(nsData as Data, key: nsKey as Data)
-        let nsDecryptedData = decryptedData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsDecryptedData))
+        // Use NSData directly without force downcasting to Data
+        let decryptedData = try await foundationImpl.decryptData(nsData, key: nsKey)
+        return SecurityBridgeCore.DataConverter.convertToBinaryData(fromNSData: decryptedData)
     }
 
     /// Generate a cryptographically secure random key
@@ -61,8 +62,7 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     /// - Throws: SecurityError if key generation fails
     public func generateKey(length: Int) async throws -> CoreTypes.BinaryData {
         let keyData = try await foundationImpl.generateDataKey(length: length)
-        let nsKeyData = keyData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsKeyData))
+        return SecurityBridgeCore.DataConverter.convertToBinaryData(fromNSData: keyData)
     }
 
     /// Hash binary data using the provider's hashing mechanism
@@ -70,11 +70,11 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     /// - Returns: Hash of the data
     /// - Throws: SecurityError if hashing fails
     public func hash(_ data: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData {
-        let nsData = DataConverter.convertToNSData(fromBytes: data.bytes)
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBinaryData: data)
 
-        let hashedData = try await foundationImpl.hashData(nsData as Data)
-        let nsHashedData = hashedData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsHashedData))
+        // Use NSData directly without force downcasting to Data
+        let hashedData = try await foundationImpl.hashData(nsData)
+        return SecurityBridgeCore.DataConverter.convertToBinaryData(fromNSData: hashedData)
     }
 
     /// Create a security-scoped resource bookmark
@@ -87,8 +87,7 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
         }
 
         let bookmarkData = try await foundationImpl.createBookmark(for: url)
-        let nsBookmarkData = bookmarkData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsBookmarkData))
+        return SecurityBridgeCore.DataConverter.convertToBinaryData(fromNSData: bookmarkData)
     }
 
     /// Resolve a previously created security-scoped resource bookmark
@@ -96,9 +95,10 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     /// - Returns: Tuple containing resolved identifier and whether bookmark is stale
     /// - Throws: SecurityError if bookmark resolution fails
     public func resolveResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> (identifier: String, isStale: Bool) {
-        let nsData = DataConverter.convertToNSData(fromBytes: bookmarkData.bytes)
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBinaryData: bookmarkData)
 
-        let (url, isStale) = try await foundationImpl.resolveBookmark(nsData as Data)
+        // Use NSData directly without force downcasting to Data
+        let (url, isStale) = try await foundationImpl.resolveBookmark(nsData)
         return (identifier: url.absoluteString, isStale: isStale)
     }
 
@@ -107,8 +107,9 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     /// - Returns: True if bookmark is valid, false otherwise
     /// - Throws: SecurityError if validation fails
     public func validateResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> Bool {
-        let nsData = DataConverter.convertToNSData(fromBytes: bookmarkData.bytes)
-        return try await foundationImpl.validateBookmark(nsData as Data)
+        let nsData = SecurityBridgeCore.DataConverter.convertToNSData(fromBinaryData: bookmarkData)
+        // Use NSData directly without force downcasting to Data
+        return try await foundationImpl.validateBookmark(nsData)
     }
 }
 
