@@ -1,0 +1,22 @@
+load("//tools/build_defs:umbracore_module.bzl", "umbracore_foundation_free_module")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
+
+swift_library(
+    name = "SecureBytes",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "SecureBytes",
+    visibility = ["//visibility:public"],
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-g",
+        "-swift-version", "5",
+        "-Xfrontend", "-enable-library-evolution",
+    ],
+)
+
+swift_test(
+    name = "SecureBytesTests",
+    srcs = glob(["Tests/*.swift"]),
+    deps = [":SecureBytes"],
+    tags = ["manual"],
+)

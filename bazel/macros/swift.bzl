@@ -23,7 +23,7 @@ def umbra_swift_library(
     """
     copts = [
         "-target",
-        "arm64-apple-macos14.0",
+        "arm64-apple-macos15.4",
         "-strict-concurrency=complete",
         "-enable-actor-data-race-checks",
         "-warn-concurrency",
@@ -91,7 +91,7 @@ def umbra_swift_test(
     
     # Base compiler options for Swift tests
     base_copts = [
-        "-target", "arm64-apple-macos14.0",
+        "-target", "arm64-apple-macos15.4",
         "-enable-testing",
         "-swift-version", "5",
         "-strict-concurrency=complete",
@@ -99,7 +99,7 @@ def umbra_swift_test(
     
     # Base environment variables for Swift tests
     base_env = {
-        "MACOS_DEPLOYMENT_TARGET": "14.0",
+        "MACOS_DEPLOYMENT_TARGET": "15.4",
         "SWIFT_DETERMINISTIC_HASHING": "1",
         "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer",
     }

@@ -1,0 +1,26 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
+
+swift_library(
+    name = "SecurityImplementation",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "SecurityImplementation",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecureBytes",
+        "//Sources/SecurityInterfacesBase",
+    ],
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-g",
+        "-swift-version", "5",
+        "-Xfrontend", "-enable-library-evolution",
+        "-I", "$(GENDIR)/Sources/SecureBytes",
+        "-Xcc", "-I$(GENDIR)/Sources/SecureBytes",
+    ],
+)
+
+swift_test(
+    name = "SecurityImplementationTests",
+    srcs = glob(["Tests/**/*.swift"]),
+    deps = [":SecurityImplementation"],
+)
