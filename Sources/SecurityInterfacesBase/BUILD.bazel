@@ -8,6 +8,9 @@ umbra_swift_library(
     deps = [
         "//Sources/SecurityInterfacesProtocols",
     ],
+    additional_copts = [
+        "-Xfrontend", "-enable-library-evolution",
+    ],
 )
 
 # Test version for @testable import
@@ -17,7 +20,7 @@ swift_library(
     srcs = glob(["**/*.swift"]),
     copts = [
         "-target",
-        "arm64-apple-macos14.0",
+        "arm64-apple-macos15.4",
         "-enable-testing",
     ],
     deps = [
