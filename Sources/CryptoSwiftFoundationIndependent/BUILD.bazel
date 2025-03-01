@@ -1,0 +1,12 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+# Foundation-independent wrapper around CryptoSwift to break circular dependencies
+umbra_swift_library(
+    name = "CryptoSwiftFoundationIndependent",
+    srcs = glob(["**/*.swift"]),
+    deps = [
+        "@swiftpkg_cryptoswift//:CryptoSwift",
+        "//Sources/SecureBytes",
+    ],
+)
