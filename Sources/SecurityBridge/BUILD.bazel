@@ -1,0 +1,39 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
+
+swift_library(
+    name = "SecurityBridge",
+    srcs = glob([
+        "Sources/**/*.swift",
+    ]),
+    module_name = "SecurityBridge",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        # No library evolution for Foundation compatibility
+        "-g",
+        "-swift-version", "5",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        # Foundation-free dependencies
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+        # Foundation is an implicit dependency, imported directly in source files
+    ],
+)
+
+swift_test(
+    name = "SecurityBridgeTests",
+    srcs = [
+        "Tests/TemporaryTests.swift",
+        "Tests/CryptoServiceAdapterTests.swift",
+        "Tests/Mocks/MockFoundationXPCSecurityService.swift",
+    ],
+    module_name = "SecurityBridgeTests",
+    deps = [
+        ":SecurityBridge",
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+    ],
+)
