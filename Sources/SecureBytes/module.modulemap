@@ -1,0 +1,4 @@
+module SecureBytes {
+    header "SecureBytes.h"
+    export *
+}
