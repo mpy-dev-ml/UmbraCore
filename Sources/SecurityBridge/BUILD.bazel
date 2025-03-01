@@ -27,9 +27,117 @@ swift_test(
     srcs = [
         "Tests/TemporaryTests.swift",
         "Tests/CryptoServiceAdapterTests.swift",
+        "Tests/SecurityProviderAdapterTests.swift",
+        "Tests/SanityTests.swift",
         "Tests/Mocks/MockFoundationXPCSecurityService.swift",
+        "Tests/Mocks/MockFoundationSecurityProvider.swift",
     ],
     module_name = "SecurityBridgeTests",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-g",
+        "-swift-version", "5",
+    ],
+    deps = [
+        ":SecurityBridge",
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+    ],
+)
+
+# Diagnostic test target with only essential tests
+swift_test(
+    name = "SecurityBridgeSanityTests",
+    srcs = [
+        "Tests/SanityTests.swift",
+        "Tests/Mocks/MockFoundationSecurityProvider.swift",
+    ],
+    module_name = "SecurityBridgeSanityTests",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-g",
+        "-swift-version", "5",
+    ],
+    deps = [
+        ":SecurityBridge",
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+    ],
+)
+
+# Individual test targets for isolation testing
+swift_test(
+    name = "SecurityProviderAdapterTests",
+    srcs = [
+        "Tests/SecurityProviderAdapterTests.swift",
+        "Tests/Mocks/MockFoundationSecurityProvider.swift",
+        "Tests/Mocks/MockFoundationXPCSecurityService.swift",
+    ],
+    module_name = "SecurityProviderAdapterTests",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-g",
+        "-swift-version", "5",
+    ],
+    deps = [
+        ":SecurityBridge",
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+    ],
+)
+
+swift_test(
+    name = "CryptoServiceAdapterTests",
+    srcs = [
+        "Tests/CryptoServiceAdapterTests.swift",
+        "Tests/Mocks/MockFoundationSecurityProvider.swift",
+        "Tests/Mocks/MockFoundationXPCSecurityService.swift",
+    ],
+    module_name = "CryptoServiceAdapterTests",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-g",
+        "-swift-version", "5",
+    ],
+    deps = [
+        ":SecurityBridge",
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+    ],
+)
+
+swift_test(
+    name = "TemporaryTests",
+    srcs = [
+        "Tests/TemporaryTests.swift",
+        "Tests/Mocks/MockFoundationSecurityProvider.swift",
+        "Tests/Mocks/MockFoundationXPCSecurityService.swift",
+    ],
+    module_name = "TemporaryTests",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-g",
+        "-swift-version", "5",
+    ],
+    deps = [
+        ":SecurityBridge",
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+    ],
+)
+
+swift_test(
+    name = "SanityTests",
+    srcs = [
+        "Tests/SanityTests.swift",
+        "Tests/Mocks/MockFoundationSecurityProvider.swift",
+    ],
+    module_name = "SanityTests",
     copts = [
         "-target", "arm64-apple-macos15.4",
         "-g",
