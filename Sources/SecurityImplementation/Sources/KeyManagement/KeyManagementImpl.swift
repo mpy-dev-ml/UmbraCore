@@ -11,20 +11,44 @@ import SecurityProtocolsCore
 /// In-memory implementation of KeyManagementProtocol
 /// This is a basic implementation that stores keys in memory for demonstration purposes
 /// In a real implementation, keys would be stored securely in a platform-specific secure storage
-public final class KeyManagementImpl: KeyManagementProtocol {
+public actor KeyManagementImpl: KeyManagementProtocol {
     
     // MARK: - Properties
     
-    /// In-memory storage of keys
+    /// Storage provider for secure key storage
+    private let secureStorage: SecureStorageProtocol?
+    
+    /// In-memory storage of keys (used as fallback when secureStorage is nil)
     private var keyStore: [String: SecureBytes] = [:]
     
     // MARK: - Initialization
     
-    public init() {}
+    /// Initialize with a specific secure storage implementation
+    /// - Parameter secureStorage: Implementation of SecureStorageProtocol
+    public init(secureStorage: SecureStorageProtocol? = nil) {
+        self.secureStorage = secureStorage
+    }
     
     // MARK: - KeyManagementProtocol Implementation
     
     public func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, SecurityError> {
+        // If secure storage is available, use it
+        if let secureStorage = self.secureStorage {
+            let result = await secureStorage.retrieveSecurely(identifier: identifier)
+            switch result {
+            case .success(let data):
+                return .success(data)
+            case .failure(let error):
+                switch error {
+                case .keyNotFound:
+                    return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+                default:
+                    return .failure(.storageOperationFailed(reason: "Storage error: \(error)"))
+                }
+            }
+        }
+        
+        // Fallback to in-memory storage
         guard let key = keyStore[identifier] else {
             return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
         }
@@ -32,11 +56,40 @@ public final class KeyManagementImpl: KeyManagementProtocol {
     }
     
     public func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async -> Result<Void, SecurityError> {
+        // If secure storage is available, use it
+        if let secureStorage = self.secureStorage {
+            let result = await secureStorage.storeSecurely(data: key, identifier: identifier)
+            switch result {
+            case .success:
+                return .success(())
+            case .failure(let error):
+                return .failure(.storageOperationFailed(reason: "Storage error: \(error)"))
+            }
+        }
+        
+        // Fallback to in-memory storage
         keyStore[identifier] = key
         return .success(())
     }
     
     public func deleteKey(withIdentifier identifier: String) async -> Result<Void, SecurityError> {
+        // If secure storage is available, use it
+        if let secureStorage = self.secureStorage {
+            let result = await secureStorage.deleteSecurely(identifier: identifier)
+            switch result {
+            case .success:
+                return .success(())
+            case .failure(let error):
+                switch error {
+                case .keyNotFound:
+                    return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+                default:
+                    return .failure(.storageOperationFailed(reason: "Storage error: \(error)"))
+                }
+            }
+        }
+        
+        // Fallback to in-memory storage
         guard keyStore[identifier] != nil else {
             return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
         }
@@ -47,8 +100,12 @@ public final class KeyManagementImpl: KeyManagementProtocol {
     
     public func rotateKey(withIdentifier identifier: String, 
                           dataToReencrypt: SecureBytes?) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), SecurityError> {
-        // Check if the old key exists
-        guard let oldKey = keyStore[identifier] else {
+        // Retrieve the old key
+        let oldKeyResult = await retrieveKey(withIdentifier: identifier)
+        guard case let .success(oldKey) = oldKeyResult else {
+            if case let .failure(error) = oldKeyResult {
+                return .failure(error)
+            }
             return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
         }
         
@@ -59,28 +116,40 @@ public final class KeyManagementImpl: KeyManagementProtocol {
         var reencryptedData: SecureBytes? = nil
         if let dataToReencrypt = dataToReencrypt {
             do {
-                // First decrypt with old key
-                let iv = CryptoWrapper.generateRandomIVSecure()
-                let decryptedData = try CryptoWrapper.decryptAES_GCM(data: dataToReencrypt, key: oldKey, iv: iv)
+                // Extract IV (first 12 bytes) and ciphertext from the combined data
+                let ivSize = 12 // AES GCM IV size is 12 bytes
+                guard dataToReencrypt.count > ivSize else {
+                    return .failure(.invalidInput(reason: "Data is too short to contain IV"))
+                }
+                
+                let (existingIv, existingCiphertext) = try dataToReencrypt.split(at: ivSize)
+                
+                // First decrypt with old key and existing IV
+                let decryptedData = try CryptoWrapper.decryptAES_GCM(data: existingCiphertext, key: oldKey, iv: existingIv)
                 
                 // Then encrypt with new key
                 let newIv = CryptoWrapper.generateRandomIVSecure()
                 let encryptedData = try CryptoWrapper.encryptAES_GCM(data: decryptedData, key: newKey, iv: newIv)
                 
                 // Combine IV with encrypted data
-                reencryptedData = try SecureBytes.combine(newIv, encryptedData)
+                reencryptedData = SecureBytes.combine(newIv, encryptedData)
             } catch {
                 return .failure(.storageOperationFailed(reason: "Failed to re-encrypt data: \(error.localizedDescription)"))
             }
         }
         
         // Store the new key
-        keyStore[identifier] = newKey
+        let storeResult = await storeKey(newKey, withIdentifier: identifier)
+        if case let .failure(error) = storeResult {
+            return .failure(error)
+        }
         
         return .success((newKey: newKey, reencryptedData: reencryptedData))
     }
     
     public func listKeyIdentifiers() async -> Result<[String], SecurityError> {
+        // If secure storage is available, it should provide a way to list keys
+        // For now, we'll just return the in-memory keys
         return .success(Array(keyStore.keys))
     }
 }

@@ -27,11 +27,11 @@ public struct CryptoConfig {
     ///
     /// - Parameters:
     ///   - keySize: Key size in bits. Defaults to 256.
-    ///   - ivSize: IV size in bits. Defaults to 128.
+    ///   - ivSize: IV size in bits. Defaults to 96 (12 bytes) for AES-GCM.
     ///   - iterations: PBKDF2 iterations. Defaults to 10,000.
     public init(
         keySize: Int = 256,
-        ivSize: Int = 128,
+        ivSize: Int = 96,
         iterations: Int = 10_000
     ) {
         self.keySize = keySize

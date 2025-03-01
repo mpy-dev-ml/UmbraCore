@@ -17,6 +17,8 @@
 14. [Versioning and Compatibility](#versioning-and-compatibility)
 15. [Error Handling Strategy](#error-handling-strategy)
 16. [Alternatives to @objc for XPC Protocols](#alternatives-to-objc-for-xpc-protocols)
+17. [Swift Library Evolution Compatibility in Dependency Chains](#swift-library-evolution-compatibility-in-dependency-chains)
+18. [Bazelisk and Build System Integration Lessons](#bazelisk-and-build-system-integration-lessons)
 
 {{ ... }}
 
@@ -618,16 +620,14 @@ def umbra_module(name, layer, srcs, deps = [], **kwargs):
 
 Build-time validation to ensure compliance:
 
-```bash
-# Validate architectural boundaries
-bazel build //... --aspects=//tools/aspects:architecture_validator.bzl%architecture_validator
+1. **Dependency Validation**: Ensures modules only depend on appropriate layers
+2. **Import Validation**: Scans source files for forbidden imports
+3. **Type Usage Validation**: Validates no Foundation types are used in core modules
+4. **XPC Interface Validation**: Ensures XPC interfaces follow proper patterns
 
-# Generate dependency graph
-bazel query --output graph 'deps(//Sources/...)' > dependencies.dot
-dot -Tpng dependencies.dot -o dependencies.png
-```
+For detailed lessons learned from our Bazelisk implementation on macOS 15.4 with arm64 architecture, including AES-GCM IV size standardization and architecture-specific configuration, see the [Bazelisk and Build System Integration Lessons](#bazelisk-and-build-system-integration-lessons) section.
 
-## Code Examples
+### Code Examples
 
 ### Domain-Specific Types
 
@@ -902,6 +902,15 @@ We've consolidated all bridging in a single module rather than distributed adapt
 3. **Dependency Control**: Clear, single point of dependency on Foundation
 4. **Build Performance**: Fewer module boundaries to cross during compilation
 
+### Swift Evolution Watch
+
+We'll monitor these Swift Evolution proposals:
+
+- [SE-0302: Sendable and @Sendable closures](https://github.com/apple/swift-evolution/blob/main/proposals/0302-concurrent-value-and-concurrent-closures.md)
+- [SE-0336: Distributed Actor Runtime](https://github.com/apple/swift-evolution/blob/main/proposals/0336-distributed-actor-runtime.md)
+
+As Swift evolves, we'll adapt our strategy to take advantage of new capabilities that reduce or eliminate the need for @objc in XPC communication.
+
 ## Performance Considerations
 
 The refactoring introduces several changes that may impact performance. This section analyzes these impacts and proposes mitigations.
@@ -1127,3 +1136,138 @@ We'll monitor these Swift Evolution proposals:
 - [SE-0336: Distributed Actor Runtime](https://github.com/apple/swift-evolution/blob/main/proposals/0336-distributed-actor-runtime.md)
 
 As Swift evolves, we'll adapt our strategy to take advantage of new capabilities that reduce or eliminate the need for @objc in XPC communication.
+
+## Swift Library Evolution Compatibility in Dependency Chains
+
+During our refactoring work, we discovered critical constraints when working with Swift library evolution in module dependency chains.
+
+### Key Findings
+
+1. **Dependency Chain Constraints**
+   - All modules in a dependency chain must be compiled with consistent library evolution settings
+   - If any module in a chain doesn't support library evolution, none of the modules in that chain can use it
+   - External dependencies (especially via SPM) may not be compiled with library evolution support
+
+2. **Specific Example: CryptoSwift Dependency Chain**
+   We encountered this issue specifically with:
+   - CryptoSwift (SPM dependency lacking library evolution)
+   - CryptoSwiftFoundationIndependent (our wrapper)
+   - SecureBytes (depends on the wrapper)
+   - SecurityProtocolsCore and SecurityImplementation (depend on SecureBytes)
+
+3. **Error Signature**
+   Attempting to force library evolution in a module that depends on a non-library-evolution module causes:
+   ```
+   error: module 'CryptoSwift' was not compiled with library evolution support; 
+   using it means binary compatibility for 'CryptoSwiftFoundationIndependent' can't be guaranteed
+   ```
+
+### Solution Approaches
+
+1. **Dependency Chain Alignment**
+   - For dependency chains that include modules without library evolution support:
+     - Remove `-Xfrontend -enable-library-evolution` compiler flags from all BUILD.bazel files in the chain
+     - Ensure consistent compilation settings across the entire dependency graph
+     - Make sure target triples are consistent (arm64-apple-macos15.4)
+
+2. **Module Isolation Strategy**
+   - When library evolution is required for certain modules:
+     - Create separate dependency chains that don't cross module boundaries
+     - Isolate evolution-required modules from non-supporting dependencies
+     - Consider using protocol boundaries and dependency injection for isolation
+
+3. **Build System Configuration**
+   - Cannot override external SPM dependency build settings using standard MODULE.bazel configurations
+   - May need to consider creating custom SPM package resolution that adds library evolution support
+   - Always test the entire dependency chain with consistent build settings
+
+### Implementation Guidance
+
+For UmbraCore modules, we've adopted the following practice:
+
+1. **Identify Dependency Chains**
+   - Map out complete dependency chains before setting library evolution flags
+   - Check all external dependencies for their library evolution support status
+
+2. **Consistent Flag Application**
+   - Either all modules in a chain have library evolution enabled, or none do
+   - Document dependency chains and their evolution status in module metadata
+
+3. **Testing Protocol**
+   - Test binary compatibility across module versions when library evolution is enabled
+   - Verify binary compatibility guarantees are maintained
+
+This finding has significant implications for our architecture design, particularly around module boundaries and dependency management. We must carefully consider library evolution requirements when planning module dependencies.
+
+## Bazelisk and Build System Integration Lessons
+
+During our refactoring work on the UmbraCore Security module, we uncovered several important lessons about build system integration with Bazelisk and cryptographic implementation details that impact cross-platform compatibility.
+
+### 1. AES-GCM Implementation Details
+
+We discovered a critical inconsistency in the IV (Initialization Vector) size assumptions across our codebase:
+
+- **Correct IV Size for AES-GCM**: 12 bytes (96 bits) is the recommended size for AES-GCM mode
+- **Inconsistent Assumptions**: Different parts of our codebase were making different assumptions:
+  - CryptoWrapper correctly used 12 bytes
+  - KeyManagementImpl incorrectly assumed 16 bytes
+  - CryptoService was configured to use 128 bits (16 bytes)
+
+This inconsistency caused failures in key rotation operations, as combined data was being incorrectly parsed.
+
+#### Resolution:
+1. Standardized on 12-byte IVs across the entire codebase
+2. Updated all related documentation to clearly indicate the expected IV size
+3. Added explicit parameter documentation to prevent future confusion
+4. Modified CryptoService configuration defaults to use 96 bits instead of 128 bits
+
+### 2. Bazelisk Environment Configuration
+
+Working with Bazelisk 8.1.0 on macOS 15.4 (Apple Silicon) required precise configuration:
+
+- **Architecture Specifics**: 
+  - Target triples must consistently specify arm64-apple-macos15.4
+  - Native arm64 build tools perform significantly better than Rosetta-translated x86_64 tools
+  - .bazelrc modifications were necessary to ensure architecture consistency
+
+- **Testing Configuration**:
+  - `bazel test --test_output=all` provides full test output including debug logs
+  - Test filters require precise formatting that matches Objective-C/Swift test naming conventions
+  - Cached test results may hide recent changes; use `--nocache_test_results` when needed
+
+#### Example .bazelrc Configuration:
+
+```
+# Architecture-specific settings
+build --cpu=darwin_arm64
+build --apple_platform_type=macos
+build --macos_cpus=arm64
+
+# Swift compiler settings for Apple Silicon
+build:swift --swiftcopt="-target arm64-apple-macos15.4"
+
+# Test caching controls
+test --test_env=APPLE_TEST_RUNNER_DEBUG=1
+```
+
+### 3. Lessons for Cross-Platform Security Implementation
+
+Our refactoring efforts revealed several principles for maintaining secure, cross-platform cryptographic implementations:
+
+1. **Explicit Parameterization**: Never rely on defaults for cryptographic parameters; explicitly specify key sizes, IV sizes, and other critical values
+2. **Consistent Documentation**: Document expected parameter sizes and formats in all related functions
+3. **Platform-Independent Base Layer**: Ensure core cryptographic operations work identically across all supported platforms
+4. **Thorough Test Cases**: Include test cases that verify proper handling of combined data formats (IV+ciphertext)
+5. **Defensive Parameter Checks**: Add guard statements to verify parameter sizes before cryptographic operations
+
+### 4. Build System Integration Best Practices
+
+Based on our experiences, we've established the following best practices for build system integration:
+
+1. **Consistent Toolchain**: Use the same Bazelisk version across all development environments
+2. **Architecture-Specific Configuration**: Maintain separate configuration blocks for different architectures
+3. **Compile-Time Flag Consistency**: Ensure compiler flags like library evolution support are consistent across dependency chains
+4. **Testing Workflow**: Standardize on test commands that reveal all necessary information for debugging
+5. **CI/CD Integration**: Configure CI systems with the same Bazelisk version and configuration as development environments
+
+These lessons have been incorporated into our development workflows and will guide future security implementation work across the UmbraCore project.
