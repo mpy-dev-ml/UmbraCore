@@ -30,6 +30,11 @@ swift_test(
         "Tests/Mocks/MockFoundationXPCSecurityService.swift",
     ],
     module_name = "SecurityBridgeTests",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-g",
+        "-swift-version", "5",
+    ],
     deps = [
         ":SecurityBridge",
         "//Sources/SecureBytes",
