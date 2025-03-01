@@ -1,0 +1,32 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
+
+swift_library(
+    name = "SecurityProtocolsCore",
+    srcs = glob([
+        "Sources/**/*.swift",
+    ]),
+    module_name = "SecurityProtocolsCore",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        # Removing library evolution for compatibility with CryptoSwift
+        # "-Xfrontend", "-enable-library-evolution",
+        "-g",
+        "-swift-version", "5",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        # Use the dedicated SecureBytes module instead of UmbraCoreTypes
+        "//Sources/SecureBytes",
+    ],
+)
+
+swift_test(
+    name = "SecurityProtocolsCoreTests",
+    srcs = glob([
+        "Tests/**/*.swift",
+    ]),
+    deps = [
+        ":SecurityProtocolsCore",
+        "//Sources/SecureBytes",
+    ],
+)
