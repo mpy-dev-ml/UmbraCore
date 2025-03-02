@@ -91,6 +91,20 @@ private final class MockCryptoServiceAdapter: FoundationCryptoService, @unchecke
             }
         }
     }
+    
+    func generateRandomData(length: Int) async -> Result<Data, Error> {
+        return await withCheckedContinuation { continuation in
+            mockXPCService.generateRandomData(length: length) { data, error in
+                if let error = error {
+                    continuation.resume(returning: .failure(error))
+                } else if let data = data {
+                    continuation.resume(returning: .success(data))
+                } else {
+                    continuation.resume(returning: .failure(NSError(domain: "com.umbracore.security", code: 500, userInfo: [NSLocalizedDescriptionKey: "Unknown error"])))
+                }
+            }
+        }
+    }
 
     func verify(data: Data, against hash: Data) async -> Bool {
         // This should respect the shouldFail flag from the mock service
@@ -585,5 +599,70 @@ final class CryptoServiceAdapterTests: XCTestCase {
         // Assert
         XCTAssertTrue(result.success)
         XCTAssertEqual(result.data, mockXPCService.decryptedDataToReturn)
+    }
+
+    // MARK: - Random Data Generation Tests
+
+    func testGenerateRandomData() async throws {
+        // Arrange
+        let expectedLength = 32
+        let expectedData = Data(repeating: 42, count: expectedLength)
+        mockXPCService.randomDataToReturn = expectedData
+
+        // Act
+        let result = await adapter.generateRandomData(length: expectedLength)
+
+        // Assert
+        XCTAssertTrue(result.isSuccess)
+        if case .success(let randomData) = result {
+            XCTAssertEqual(randomData.count, expectedLength)
+            XCTAssertEqual(randomData.bytes(), [UInt8](repeating: 42, count: expectedLength))
+        } else {
+            XCTFail("Expected successful random data generation")
+        }
+
+        let methodCalls = mockXPCService.methodCalls
+        XCTAssertTrue(methodCalls.contains("generateRandomData(\(expectedLength))"))
+    }
+
+    func testGenerateRandomDataFailure() async throws {
+        // Arrange
+        let requestedLength = 64
+        mockXPCService.shouldFail = true
+
+        // Act
+        let result = await adapter.generateRandomData(length: requestedLength)
+
+        // Assert
+        XCTAssertTrue(result.isFailure)
+        if case .failure(let error) = result {
+            XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
+        } else {
+            XCTFail("Expected random data generation failure")
+        }
+
+        let methodCalls = mockXPCService.methodCalls
+        XCTAssertTrue(methodCalls.contains("generateRandomData(\(requestedLength))"))
+    }
+
+    func testGenerateRandomDataDefaultGeneration() async throws {
+        // Arrange
+        let requestedLength = 16
+        mockXPCService.randomDataToReturn = nil // Force default generation
+
+        // Act
+        let result = await adapter.generateRandomData(length: requestedLength)
+
+        // Assert
+        XCTAssertTrue(result.isSuccess)
+        if case .success(let randomData) = result {
+            XCTAssertEqual(randomData.count, requestedLength)
+
+            // Default generation should produce sequential bytes
+            let expectedBytes = (0..<requestedLength).map { UInt8($0 % 256) }
+            XCTAssertEqual(randomData.bytes(), expectedBytes)
+        } else {
+            XCTFail("Expected successful random data generation")
+        }
     }
 }

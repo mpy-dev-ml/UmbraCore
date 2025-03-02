@@ -8,8 +8,8 @@ swift_library(
     module_name = "SecurityBridge",
     copts = [
         "-target", "arm64-apple-macos15.4",
-        # Enabling library evolution for consistency with SecurityProtocolsCore
-        "-Xfrontend", "-enable-library-evolution",
+        # Library evolution disabled due to UmbraCoreTypes not supporting it
+        # "-Xfrontend", "-enable-library-evolution",
         "-g",
         "-swift-version", "5",
     ],
@@ -30,10 +30,32 @@ swift_test(
         "Tests/CryptoServiceAdapterTests.swift",
         "Tests/SecurityProviderAdapterTests.swift",
         "Tests/SanityTests.swift",
+        "Tests/RandomDataTests.swift",
         "Tests/Mocks/MockFoundationXPCSecurityService.swift",
         "Tests/Mocks/MockFoundationSecurityProvider.swift",
     ],
     module_name = "SecurityBridgeTests",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-g",
+        "-swift-version", "5",
+    ],
+    deps = [
+        ":SecurityBridge",
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+    ],
+)
+
+# Specific test target for Random Data functionality
+swift_test(
+    name = "RandomDataTests",
+    srcs = [
+        "Tests/RandomDataTests.swift",
+        "Tests/Mocks/MockFoundationXPCSecurityService.swift",
+    ],
+    module_name = "RandomDataTests",
     copts = [
         "-target", "arm64-apple-macos15.4",
         "-g",

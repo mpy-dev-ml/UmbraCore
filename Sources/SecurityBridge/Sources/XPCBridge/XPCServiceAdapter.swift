@@ -59,6 +59,7 @@ public final class XPCServiceAdapter {
     func encrypt(data: Data, key: Data, completion: @escaping (Data?, Error?) -> Void)
     func decrypt(data: Data, key: Data, completion: @escaping (Data?, Error?) -> Void)
     func generateKey(completion: @escaping (Data?, Error?) -> Void)
+    func generateRandomData(length: Int, completion: @escaping (Data?, Error?) -> Void)
 
     // Key management methods
     func retrieveKey(identifier: String, completion: @escaping (Data?, Error?) -> Void)
@@ -206,7 +207,26 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
         }
     }
 
-    // MARK: - Symmetric Encryption Implementation
+    /// Generate cryptographically secure random data of specified length
+    /// - Parameter length: The number of random bytes to generate
+    /// - Returns: A result with the random data or an error
+    func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
+        return await withCheckedContinuation { continuation in
+            self.serviceProxy.generateRandomData(length: length) { randomData, error in
+                if let error = error {
+                    continuation.resume(returning: .failure(self.mapXPCError(error)))
+                    return
+                }
+                
+                guard let randomData = randomData else {
+                    continuation.resume(returning: .failure(.randomGenerationFailed(reason: "XPC service returned nil data")))
+                    return
+                }
+                
+                continuation.resume(returning: .success(DataAdapter.secureBytes(from: randomData)))
+            }
+        }
+    }
 
     func encryptSymmetric(
         data: SecureBytes,
@@ -270,8 +290,6 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
         }
     }
 
-    // MARK: - Asymmetric Encryption Implementation
-
     func encryptAsymmetric(
         data: SecureBytes,
         publicKey: SecureBytes,
@@ -329,8 +347,6 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
             }
         }
     }
-
-    // MARK: - Hashing Implementation
 
     func hash(
         data: SecureBytes,

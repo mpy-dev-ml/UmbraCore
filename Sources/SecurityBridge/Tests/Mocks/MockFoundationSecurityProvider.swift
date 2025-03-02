@@ -49,6 +49,9 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
     /// Data to return from operations
     var dataToReturn: Data?
 
+    /// Random data to return from generateRandomData
+    var randomDataToReturn: Data?
+
     // MARK: - Initialization
 
     init() {
@@ -58,7 +61,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
 
     // MARK: - Tracking
 
-    private func trackMethodCall(_ method: String) {
+    private func recordMethodCall(_ method: String) {
         methodCallsLock.lock()
         _methodCalls.append(method)
         methodCallsLock.unlock()
@@ -67,7 +70,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
     // MARK: - Basic Cryptographic Operations
 
     func encrypt(data: Data, using key: Data) async -> Result<Data, Error> {
-        trackMethodCall("encrypt(data:using:)")
+        recordMethodCall("encrypt(data:using:)")
         if shouldFail {
             return .failure(errorToReturn)
         }
@@ -75,7 +78,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
     }
 
     func decrypt(data: Data, using key: Data) async -> Result<Data, Error> {
-        trackMethodCall("decrypt(data:using:)")
+        recordMethodCall("decrypt(data:using:)")
         if shouldFail {
             return .failure(errorToReturn)
         }
@@ -83,7 +86,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
     }
 
     func generateKey() async -> Result<Data, Error> {
-        trackMethodCall("generateKey()")
+        recordMethodCall("generateKey()")
         if shouldFail {
             return .failure(errorToReturn)
         }
@@ -91,15 +94,41 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
     }
 
     func hash(data: Data) async -> Result<Data, Error> {
-        trackMethodCall("hash(data:)")
+        recordMethodCall("hash(data:)")
         if shouldFail {
             return .failure(errorToReturn)
         }
-        return .success(dataToReturn ?? Data(repeating: 0xBB, count: 32))
+        // Return specific data if configured
+        if let dataToReturn = dataToReturn {
+            return .success(dataToReturn)
+        }
+
+        // Default hash implementation (just return data for test purposes)
+        return .success(data)
+    }
+    
+    func generateRandomData(length: Int) async -> Result<Data, Error> {
+        recordMethodCall("generateRandomData(length: \(length))")
+        
+        if shouldFail {
+            return .failure(errorToReturn)
+        }
+        
+        // Return specific data if configured
+        if let randomData = randomDataToReturn {
+            return .success(randomData)
+        }
+        
+        // Default implementation: create a Data object filled with repeating pattern
+        var randomData = Data(count: length)
+        for i in 0..<randomData.count {
+            randomData[i] = UInt8(i % 256)
+        }
+        return .success(randomData)
     }
 
     func verify(data: Data, against hash: Data) async -> Bool {
-        trackMethodCall("verify(data:against:)")
+        recordMethodCall("verify(data:against:)")
         if shouldFail {
             return false
         }
@@ -118,7 +147,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         aad: Data?,
         options: [String: String]
     ) async -> FoundationSecurityResult {
-        trackMethodCall("encryptSymmetric()")
+        recordMethodCall("encryptSymmetric()")
 
         if shouldFail {
             return FoundationSecurityResult(
@@ -139,7 +168,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         aad: Data?,
         options: [String: String]
     ) async -> FoundationSecurityResult {
-        trackMethodCall("decryptSymmetric()")
+        recordMethodCall("decryptSymmetric()")
 
         if shouldFail {
             return FoundationSecurityResult(
@@ -160,7 +189,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         keySizeInBits: Int,
         options: [String: String]
     ) async -> FoundationSecurityResult {
-        trackMethodCall("encryptAsymmetric()")
+        recordMethodCall("encryptAsymmetric()")
 
         if shouldFail {
             return FoundationSecurityResult(
@@ -179,7 +208,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         keySizeInBits: Int,
         options: [String: String]
     ) async -> FoundationSecurityResult {
-        trackMethodCall("decryptAsymmetric()")
+        recordMethodCall("decryptAsymmetric()")
 
         if shouldFail {
             return FoundationSecurityResult(
@@ -198,7 +227,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         algorithm: String,
         options: [String: String]
     ) async -> FoundationSecurityResult {
-        trackMethodCall("hash(data:algorithm:options:)")
+        recordMethodCall("hash(data:algorithm:options:)")
 
         if shouldFail {
             return FoundationSecurityResult(
@@ -294,7 +323,7 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
 
     // MARK: - Tracking
 
-    private func trackMethodCall(_ method: String) {
+    private func recordMethodCall(_ method: String) {
         methodCallsLock.lock()
         _methodCalls.append(method)
         methodCallsLock.unlock()
@@ -306,7 +335,7 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
         operation: String,
         options: [String: Any]
     ) async -> FoundationSecurityProviderResult {
-        trackMethodCall("performOperation:\(operation)")
+        recordMethodCall("performOperation:\(operation)")
 
         if shouldFail {
             return .failure(errorToReturn)
@@ -366,7 +395,7 @@ final class MockFoundationKeyManagement: FoundationKeyManagement, @unchecked Sen
 
     // MARK: - Tracking
 
-    private func trackMethodCall(_ method: String) {
+    private func recordMethodCall(_ method: String) {
         methodCallsLock.lock()
         _methodCalls.append(method)
         methodCallsLock.unlock()
@@ -375,7 +404,7 @@ final class MockFoundationKeyManagement: FoundationKeyManagement, @unchecked Sen
     // MARK: - FoundationKeyManagement Implementation
 
     func generateKey(type: String, size: Int) async -> Result<Data, Error> {
-        trackMethodCall("generateKey")
+        recordMethodCall("generateKey")
         if shouldFail {
             return .failure(errorToReturn)
         }
@@ -383,7 +412,7 @@ final class MockFoundationKeyManagement: FoundationKeyManagement, @unchecked Sen
     }
 
     func storeKey(_ key: Data, withIdentifier identifier: String) async -> Result<Void, Error> {
-        trackMethodCall("storeKey")
+        recordMethodCall("storeKey")
         if shouldFail {
             return .failure(errorToReturn)
         }
@@ -391,7 +420,7 @@ final class MockFoundationKeyManagement: FoundationKeyManagement, @unchecked Sen
     }
 
     func retrieveKey(withIdentifier identifier: String) async -> Result<Data, Error> {
-        trackMethodCall("retrieveKey")
+        recordMethodCall("retrieveKey")
         if shouldFail {
             return .failure(errorToReturn)
         }
@@ -399,7 +428,7 @@ final class MockFoundationKeyManagement: FoundationKeyManagement, @unchecked Sen
     }
 
     func deleteKey(withIdentifier identifier: String) async -> Result<Void, Error> {
-        trackMethodCall("deleteKey")
+        recordMethodCall("deleteKey")
         if shouldFail {
             return .failure(errorToReturn)
         }
@@ -407,7 +436,7 @@ final class MockFoundationKeyManagement: FoundationKeyManagement, @unchecked Sen
     }
 
     func rotateKey(withIdentifier identifier: String, dataToReencrypt: Data?) async -> Result<(newKey: Data, reencryptedData: Data?), Error> {
-        trackMethodCall("rotateKey")
+        recordMethodCall("rotateKey")
         if shouldFail {
             return .failure(errorToReturn)
         }
@@ -416,7 +445,7 @@ final class MockFoundationKeyManagement: FoundationKeyManagement, @unchecked Sen
     }
 
     func listKeyIdentifiers() async -> Result<[String], Error> {
-        trackMethodCall("listKeyIdentifiers")
+        recordMethodCall("listKeyIdentifiers")
         if shouldFail {
             return .failure(errorToReturn)
         }
