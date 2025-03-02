@@ -102,4 +102,11 @@ public protocol CryptoServiceProtocol: Sendable {
         data: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO
+
+    // MARK: - Random Data Generation
+
+    /// Generate cryptographically secure random data
+    /// - Parameter length: The length of random data to generate in bytes
+    /// - Returns: Result containing random data or error
+    func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError>
 }

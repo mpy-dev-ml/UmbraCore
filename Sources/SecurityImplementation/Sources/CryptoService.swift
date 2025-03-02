@@ -955,6 +955,39 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
         return .success(result)
     }
 
+    // MARK: - Random Data Generation
+    
+    /**
+     Generate cryptographically secure random data.
+     
+     - Parameter length: The length of random data to generate in bytes
+     - Returns: A Result containing the generated random data or an error
+     
+     ⚠️ WARNING: This implementation uses a cryptographically secure random number generator,
+     but it should be reviewed for production use to ensure it meets specific security requirements.
+     */
+    public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
+        // Input validation
+        guard length > 0 else {
+            return .failure(.invalidInput(reason: "Random data length must be greater than zero"))
+        }
+        
+        do {
+            var randomBytes = [UInt8](repeating: 0, count: length)
+            
+            // Generate random bytes using CryptoKit's secure random number generator
+            let status = try CryptoWrapper.generateSecureRandomBytes(&randomBytes, length: length)
+            
+            if status {
+                return .success(SecureBytes(randomBytes))
+            } else {
+                return .failure(.randomGenerationFailed(reason: "Failed to generate secure random bytes"))
+            }
+        } catch {
+            return .failure(.randomGenerationFailed(reason: "Error during random generation: \(error.localizedDescription)"))
+        }
+    }
+
     // MARK: - Test Helper Methods
 
     /**

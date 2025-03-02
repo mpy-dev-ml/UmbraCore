@@ -114,10 +114,26 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
             )
 
         case .randomGeneration:
-            return SecurityResultDTO.failure(
-                code: 501,
-                message: "Random generation not implemented"
-            )
+            // Extract the key size from the config or use a default
+            let bytesLength = (config.keySizeInBits + 7) / 8  // Convert bits to bytes (rounding up)
+            
+            // Generate random data using the crypto service
+            let randomResult = await cryptoService.generateRandomData(length: bytesLength)
+            
+            guard case let .success(randomData) = randomResult else {
+                if case let .failure(error) = randomResult {
+                    return SecurityResultDTO.failure(
+                        code: 500,
+                        message: "Failed to generate random data: \(error.description)"
+                    )
+                }
+                return SecurityResultDTO.failure(
+                    code: 500,
+                    message: "Unknown random generation error"
+                )
+            }
+            
+            return SecurityResultDTO.success(data: randomData)
 
         case .keyGeneration:
             let keyResult = await cryptoService.generateKey()

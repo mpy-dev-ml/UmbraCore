@@ -24,7 +24,7 @@ public enum SecurityError: Error, Sendable, Equatable {
     case hashVerificationFailed
 
     /// Secure random number generation failed
-    case randomGenerationFailed
+    case randomGenerationFailed(reason: String)
 
     /// Input data is in an invalid format
     case invalidInput(reason: String)
@@ -60,8 +60,8 @@ extension SecurityError: CustomStringConvertible {
             return "Invalid key"
         case .hashVerificationFailed:
             return "Hash verification failed"
-        case .randomGenerationFailed:
-            return "Secure random number generation failed"
+        case .randomGenerationFailed(let reason):
+            return "Secure random number generation failed: \(reason)"
         case .invalidInput(let reason):
             return "Invalid input: \(reason)"
         case .storageOperationFailed(let reason):

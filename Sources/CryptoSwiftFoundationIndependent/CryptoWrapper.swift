@@ -5,6 +5,13 @@ import SecureBytes
 /// This helps break circular dependencies between Foundation and CryptoSwift
 public enum CryptoWrapper {
 
+    /// Custom error type for CryptoWrapper operations
+    public enum CryptoWrapperError: Error {
+        case invalidParameters
+        case randomGenerationFailed
+        case cryptoOperationFailed
+    }
+
     // MARK: - AES-GCM Operations
 
     /// Encrypt data using AES-GCM
@@ -93,6 +100,25 @@ public enum CryptoWrapper {
     /// - Returns: SecureBytes containing random key
     public static func generateRandomKeySecure(size: Int = 32) -> SecureBytes {
         return SecureBytes(generateRandomKey(size: size))
+    }
+    
+    /// Generate secure random bytes directly into a buffer
+    /// - Parameters:
+    ///   - buffer: Buffer to fill with random bytes
+    ///   - length: Number of bytes to generate
+    /// - Returns: True if successful, false otherwise
+    /// - Throws: CryptoWrapperError if the parameters are invalid
+    public static func generateSecureRandomBytes(_ buffer: inout [UInt8], length: Int) throws -> Bool {
+        guard length > 0 && buffer.count >= length else {
+            throw CryptoWrapperError.invalidParameters
+        }
+        
+        // Fill buffer with secure random bytes
+        for i in 0..<length {
+            buffer[i] = UInt8.random(in: 0...255)
+        }
+        
+        return true
     }
 
     // MARK: - Hashing Operations
