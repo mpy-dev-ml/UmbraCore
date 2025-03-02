@@ -4,9 +4,9 @@ import SecureBytes
 /// A Foundation-independent wrapper for CryptoSwift functionality
 /// This helps break circular dependencies between Foundation and CryptoSwift
 public enum CryptoWrapper {
-    
+
     // MARK: - AES-GCM Operations
-    
+
     /// Encrypt data using AES-GCM
     /// - Parameters:
     ///   - data: Raw data to encrypt
@@ -18,7 +18,7 @@ public enum CryptoWrapper {
         let aes = try AES(key: key, blockMode: gcm, padding: .noPadding)
         return try aes.encrypt(data)
     }
-    
+
     /// Encrypt data using AES-GCM with SecureBytes
     /// - Parameters:
     ///   - data: SecureBytes data to encrypt
@@ -33,7 +33,7 @@ public enum CryptoWrapper {
         )
         return SecureBytes(encryptedBytes)
     }
-    
+
     /// Decrypt data using AES-GCM
     /// - Parameters:
     ///   - data: Encrypted data
@@ -45,7 +45,7 @@ public enum CryptoWrapper {
         let aes = try AES(key: key, blockMode: gcm, padding: .noPadding)
         return try aes.decrypt(data)
     }
-    
+
     /// Decrypt data using AES-GCM with SecureBytes
     /// - Parameters:
     ///   - data: SecureBytes encrypted data
@@ -60,9 +60,9 @@ public enum CryptoWrapper {
         )
         return SecureBytes(decryptedBytes)
     }
-    
+
     // MARK: - Random Generation
-    
+
     /// Generate a random initialization vector
     /// - Parameter size: Size of the IV in bytes. Default is 12 bytes (96 bits),
     ///                   which is the recommended size for AES-GCM.
@@ -71,7 +71,7 @@ public enum CryptoWrapper {
         // Use CryptoSwift's random method to generate IV
         return (0..<size).map { _ in UInt8.random(in: 0...255) }
     }
-    
+
     /// Generate a random initialization vector as SecureBytes
     /// - Parameter size: Size of the IV in bytes. Default is 12 bytes (96 bits),
     ///                   which is the recommended size for AES-GCM.
@@ -79,7 +79,7 @@ public enum CryptoWrapper {
     public static func generateRandomIVSecure(size: Int = 12) -> SecureBytes {
         return SecureBytes(generateRandomIV(size: size))
     }
-    
+
     /// Generate a random key
     /// - Parameter size: Size of the key in bytes (16, 24, or 32 for AES-128, AES-192, or AES-256)
     /// - Returns: Random key bytes
@@ -87,23 +87,23 @@ public enum CryptoWrapper {
         // Use CryptoSwift's random method to generate key
         return (0..<size).map { _ in UInt8.random(in: 0...255) }
     }
-    
+
     /// Generate a random key as SecureBytes
     /// - Parameter size: Size of the key in bytes (16, 24, or 32 for AES-128, AES-192, or AES-256)
     /// - Returns: SecureBytes containing random key
     public static func generateRandomKeySecure(size: Int = 32) -> SecureBytes {
         return SecureBytes(generateRandomKey(size: size))
     }
-    
+
     // MARK: - Hashing Operations
-    
+
     /// Calculate SHA-256 hash
     /// - Parameter data: Input data
     /// - Returns: SHA-256 hash
     public static func sha256(_ data: [UInt8]) -> [UInt8] {
-        return data.sha256()
+        return data.sha2(.sha256)
     }
-    
+
     /// Calculate SHA-256 hash with SecureBytes
     /// - Parameter data: SecureBytes input data
     /// - Returns: SecureBytes containing SHA-256 hash
@@ -111,16 +111,16 @@ public enum CryptoWrapper {
         let hashBytes = sha256(data.bytes())
         return SecureBytes(hashBytes)
     }
-    
+
     /// Calculate HMAC using SHA-256
     /// - Parameters:
     ///   - data: Input data
     ///   - key: HMAC key
     /// - Returns: HMAC result
     public static func hmacSHA256(data: [UInt8], key: [UInt8]) -> [UInt8] {
-        return try! HMAC(key: key, variant: .sha256).authenticate(data)
+        return try! HMAC(key: key, variant: .sha2(.sha256)).authenticate(data)
     }
-    
+
     /// Calculate HMAC using SHA-256 with SecureBytes
     /// - Parameters:
     ///   - data: SecureBytes input data

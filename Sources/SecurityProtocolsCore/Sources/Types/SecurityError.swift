@@ -37,10 +37,10 @@ public enum SecurityError: Error, Sendable, Equatable {
 
     /// General security service error
     case serviceError(code: Int, reason: String)
-    
+
     /// Internal error within the security system
     case internalError(String)
-    
+
     /// Operation not implemented
     case notImplemented
 }

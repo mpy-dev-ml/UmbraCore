@@ -1,4 +1,5 @@
-load("//tools/build_defs:umbracore_module.bzl", "umbracore_foundation_free_module", "umbracore_test_module")
+load("//tools/build_defs:umbracore_module.bzl", "umbracore_foundation_free_module", "umbracore_module_test")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
 
 umbracore_foundation_free_module(
     name = "SecurityImplementation",
@@ -8,12 +9,31 @@ umbracore_foundation_free_module(
         "//Sources/SecureBytes",
         "//Sources/CryptoSwiftFoundationIndependent",
     ],
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-swift-version", "6",
+        "-g",
+        "-O", # Enable optimizations
+        "-cross-module-optimization", # Enable cross-module optimization
+    ],
 )
 
-umbracore_test_module(
+umbracore_module_test(
     name = "SecurityImplementationTests",
     deps = [
         ":SecurityImplementation",
-        # Add test dependencies here
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/SecureBytes",
     ],
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        "-swift-version", "6",
+        "-g",
+    ],
+)
+
+swift_test(
+    name = "SecurityImplementationTests_runner",
+    deps = [":SecurityImplementationTests"],
+    visibility = ["//visibility:public"],
 )

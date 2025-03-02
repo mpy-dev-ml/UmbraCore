@@ -1,9 +1,7 @@
 import Foundation
 import FoundationBridgeTypes
-import SecurityInterfaces
-import SecurityInterfacesBase
-import SecurityInterfacesFoundationBridge
-import SecurityInterfacesProtocols
+import SecurityBridge
+import SecurityProtocolsCore
 
 /// Factory class for creating security providers
 public final class SecurityProviderFactory {

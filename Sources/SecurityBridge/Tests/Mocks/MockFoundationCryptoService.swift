@@ -5,16 +5,16 @@
 //
 
 import Foundation
-import SecurityBridge
 import SecureBytes
+import SecurityBridge
 import SecurityProtocolsCore
 
 /// A mock implementation of FoundationCryptoService for testing
 @available(*, deprecated, message: "Use MockFoundationXPCSecurityService instead")
 final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sendable {
-    
+
     // These properties can be set in tests to control the behavior of the mock
-    
+
     /// Track method calls for verification
     private let methodCallsLock = NSLock()
     private var _methodCalls: [String] = []
@@ -25,7 +25,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
             return _methodCalls
         }
     }
-    
+
     /// When true, functions will fail with a test error
     private let shouldFailLock = NSLock()
     private var _shouldFail = false
@@ -41,7 +41,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
             _shouldFail = newValue
         }
     }
-    
+
     /// Specific error to return when shouldFail is true
     private let errorToReturnLock = NSLock()
     private var _errorToReturn: Error = NSError(domain: "com.umbra.test", code: 999, userInfo: [NSLocalizedDescriptionKey: "Test failure"])
@@ -57,7 +57,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
             _errorToReturn = newValue
         }
     }
-    
+
     /// Data to return for specific operations
     private let encryptedDataLock = NSLock()
     private var _encryptedData: Data?
@@ -73,7 +73,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
             _encryptedData = newValue
         }
     }
-    
+
     private let decryptedDataLock = NSLock()
     private var _decryptedData: Data?
     var decryptedData: Data? {
@@ -88,7 +88,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
             _decryptedData = newValue
         }
     }
-    
+
     private let hashedDataLock = NSLock()
     private var _hashedData: Data?
     var hashedData: Data? {
@@ -103,7 +103,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
             _hashedData = newValue
         }
     }
-    
+
     private let keyDataToReturnLock = NSLock()
     private var _keyDataToReturn: Data?
     var keyDataToReturn: Data? {
@@ -118,7 +118,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
             _keyDataToReturn = newValue
         }
     }
-    
+
     /// Helper function to generate random key data
     private func generateRandomKey() -> Data {
         var bytes = [UInt8](repeating: 0, count: 32)
@@ -127,22 +127,22 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         }
         return Data(bytes)
     }
-    
+
     /// Adds a method call to the tracking array
     private func trackMethodCall(_ method: String) {
         methodCallsLock.lock()
         defer { methodCallsLock.unlock() }
         _methodCalls.append(method)
     }
-    
+
     // MARK: - FoundationCryptoService Protocol Implementation
-    
+
     func encrypt(data: Data, using key: Data) async -> Result<Data, Error> {
         trackMethodCall("encrypt")
         if shouldFail {
             return .failure(errorToReturn)
         }
-        
+
         // Return provided encrypted data or generate mock encrypted data
         if let encryptedData = self.encryptedData {
             return .success(encryptedData)
@@ -159,63 +159,63 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
             }
         }
     }
-    
+
     func decrypt(data: Data, using key: Data) async -> Result<Data, Error> {
         trackMethodCall("decrypt")
         if shouldFail {
             return .failure(errorToReturn)
         }
-        
+
         // Return provided decrypted data or original data
         let result = decryptedData ?? data // For testing, just return data as-is by default
         return .success(result)
     }
-    
+
     func generateKey() async -> Result<Data, Error> {
         trackMethodCall("generateKey")
         if shouldFail {
             return .failure(errorToReturn)
         }
-        
+
         // Return provided key data or generate random key
         let resultData = keyDataToReturn ?? generateRandomKey()
         return .success(resultData)
     }
-    
+
     // MARK: - Hash and Verify
-    
+
     func hash(data: Data) async -> Result<Data, Error> {
         trackMethodCall("hash")
         if shouldFail {
             return .failure(errorToReturn)
         }
-        
+
         // Return provided hashed data or generate mock hash
         let result = hashedData ?? Data([0, 1, 2, 3]) // Simple mock hash
         return .success(result)
     }
-    
+
     func verify(data: Data, against hash: Data) async -> Bool {
         trackMethodCall("verify")
         if shouldFail {
             return false
         }
-        
+
         // For simplicity, just compare the first few bytes of the data with the hash
         if data.isEmpty || hash.isEmpty {
             return false
         }
-        
+
         // Simple verification - compare first byte of data with first byte of hash
-        if data.count > 0 && hash.count > 0 {
+        if !data.isEmpty && !hash.isEmpty {
             return data[0] == hash[0]
         }
-        
+
         return false
     }
-    
+
     // MARK: - Symmetric Encryption/Decryption
-    
+
     func encryptSymmetric(
         data: Data,
         key: Data,
@@ -229,7 +229,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         if shouldFail {
             return FoundationSecurityResult(errorCode: 999, errorMessage: "Test failure")
         }
-        
+
         // Create mock encrypted data
         var result: Data
         if let encryptedData = self.encryptedData {
@@ -242,10 +242,10 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
                 result = data // No encryption if no key
             }
         }
-        
+
         return FoundationSecurityResult(data: result)
     }
-    
+
     func decryptSymmetric(
         data: Data,
         key: Data,
@@ -259,7 +259,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         if shouldFail {
             return FoundationSecurityResult(errorCode: 999, errorMessage: "Test failure")
         }
-        
+
         // Return provided decrypted data or mock decryption
         var result: Data
         if let decryptedData = self.decryptedData {
@@ -272,12 +272,12 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
                 result = data // No decryption if no key
             }
         }
-        
+
         return FoundationSecurityResult(data: result)
     }
-    
+
     // MARK: - Asymmetric Encryption/Decryption
-    
+
     func encryptAsymmetric(
         data: Data,
         publicKey: Data,
@@ -289,7 +289,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         if shouldFail {
             return FoundationSecurityResult(errorCode: 999, errorMessage: "Test failure")
         }
-        
+
         // Create mock encrypted data
         var result: Data
         if let encryptedData = self.encryptedData {
@@ -302,10 +302,10 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
                 result = data // No encryption if no key
             }
         }
-        
+
         return FoundationSecurityResult(data: result)
     }
-    
+
     func decryptAsymmetric(
         data: Data,
         privateKey: Data,
@@ -317,7 +317,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         if shouldFail {
             return FoundationSecurityResult(errorCode: 999, errorMessage: "Test failure")
         }
-        
+
         // Return provided decrypted data or mock decryption
         var result: Data
         if let decryptedData = self.decryptedData {
@@ -330,12 +330,12 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
                 result = data // No decryption if no key
             }
         }
-        
+
         return FoundationSecurityResult(data: result)
     }
-    
+
     // MARK: - Hashing and Verification
-    
+
     func hash(
         data: Data,
         algorithm: String,
@@ -345,7 +345,7 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         if shouldFail {
             return FoundationSecurityResult(errorCode: 999, errorMessage: "Test failure")
         }
-        
+
         // Return provided hashed data or mock hash
         var hashData: Data
         if let hashedData = self.hashedData {
@@ -353,35 +353,35 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         } else {
             // Create a different hash based on the data
             hashData = Data(count: 32) // Default 32 bytes (256 bits)
-            
+
             // Create a different pattern based on the algorithm
             let seed = "MockHash".utf8.reduce(0) { $0 &+ UInt8($1) }
-            
+
             for i in 0..<hashData.count {
                 hashData[i] = data.reduce(seed + UInt8(i)) { $0 &+ $1 }
             }
         }
-        
+
         return FoundationSecurityResult(data: hashData)
     }
-    
+
     // MARK: - Utility Methods
-    
+
     private func generateMockEncryptedData(from data: Data) -> Data {
         // Add a 16-byte IV and a 16-byte auth tag for simulating AES-GCM
         var bytes = [UInt8](repeating: 0, count: data.count + 32)
-        
+
         // Copy the actual data, slightly modified
         for i in 0..<data.count {
             let index = i + 16 // After IV
             bytes[index] = data[i] ^ 0x42 // Simple XOR with a constant
         }
-        
+
         // Simulated auth tag at the end (just some garbage bytes)
         for i in 0..<16 {
             bytes[data.count + 16 + i] = UInt8(i * 10)
         }
-        
+
         return Data(bytes)
     }
 }

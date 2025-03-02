@@ -31,6 +31,18 @@ public struct SecurityConfigDTO: Sendable, Equatable {
     /// Options dictionary for algorithm-specific parameters
     public let options: [String: String]
 
+    /// Key identifier for retrieving keys from storage
+    public let keyIdentifier: String?
+
+    /// Input data for the security operation
+    public let inputData: SecureBytes?
+
+    /// Key used for operations (alternative to keyIdentifier)
+    public let key: SecureBytes?
+
+    /// Additional data for verification operations
+    public let additionalData: SecureBytes?
+
     // MARK: - Initializers
 
     /// Full initializer with all configuration options
@@ -41,13 +53,21 @@ public struct SecurityConfigDTO: Sendable, Equatable {
     ///   - additionalAuthenticatedData: Optional AAD for AEAD ciphers
     ///   - iterations: Optional iteration count for KDFs
     ///   - options: Additional algorithm-specific options
+    ///   - keyIdentifier: Optional key identifier for key retrieval
+    ///   - inputData: Optional input data for the operation
+    ///   - key: Optional key for the operation
+    ///   - additionalData: Optional additional data for verification
     public init(
         algorithm: String,
         keySizeInBits: Int,
         initializationVector: SecureBytes? = nil,
         additionalAuthenticatedData: SecureBytes? = nil,
         iterations: Int? = nil,
-        options: [String: String] = [:]
+        options: [String: String] = [:],
+        keyIdentifier: String? = nil,
+        inputData: SecureBytes? = nil,
+        key: SecureBytes? = nil,
+        additionalData: SecureBytes? = nil
     ) {
         self.algorithm = algorithm
         self.keySizeInBits = keySizeInBits
@@ -55,6 +75,10 @@ public struct SecurityConfigDTO: Sendable, Equatable {
         self.additionalAuthenticatedData = additionalAuthenticatedData
         self.iterations = iterations
         self.options = options
+        self.keyIdentifier = keyIdentifier
+        self.inputData = inputData
+        self.key = key
+        self.additionalData = additionalData
     }
 
     // MARK: - Factory Methods
@@ -101,6 +125,98 @@ public struct SecurityConfigDTO: Sendable, Equatable {
             algorithm: "PBKDF2",
             keySizeInBits: outputKeySizeInBits,
             iterations: iterations
+        )
+    }
+
+    // MARK: - Builder Methods
+
+    /// Add a key identifier to the configuration
+    /// - Parameter identifier: The key identifier to use
+    /// - Returns: A new configuration with the specified key identifier
+    public func withKeyIdentifier(_ identifier: String) -> SecurityConfigDTO {
+        SecurityConfigDTO(
+            algorithm: self.algorithm,
+            keySizeInBits: self.keySizeInBits,
+            initializationVector: self.initializationVector,
+            additionalAuthenticatedData: self.additionalAuthenticatedData,
+            iterations: self.iterations,
+            options: self.options,
+            keyIdentifier: identifier,
+            inputData: self.inputData,
+            key: self.key,
+            additionalData: self.additionalData
+        )
+    }
+
+    /// Add input data to the configuration
+    /// - Parameter data: The input data to use
+    /// - Returns: A new configuration with the specified input data
+    public func withInputData(_ data: SecureBytes) -> SecurityConfigDTO {
+        SecurityConfigDTO(
+            algorithm: self.algorithm,
+            keySizeInBits: self.keySizeInBits,
+            initializationVector: self.initializationVector,
+            additionalAuthenticatedData: self.additionalAuthenticatedData,
+            iterations: self.iterations,
+            options: self.options,
+            keyIdentifier: self.keyIdentifier,
+            inputData: data,
+            key: self.key,
+            additionalData: self.additionalData
+        )
+    }
+
+    /// Add a key to the configuration
+    /// - Parameter key: The key to use
+    /// - Returns: A new configuration with the specified key
+    public func withKey(_ key: SecureBytes) -> SecurityConfigDTO {
+        SecurityConfigDTO(
+            algorithm: self.algorithm,
+            keySizeInBits: self.keySizeInBits,
+            initializationVector: self.initializationVector,
+            additionalAuthenticatedData: self.additionalAuthenticatedData,
+            iterations: self.iterations,
+            options: self.options,
+            keyIdentifier: self.keyIdentifier,
+            inputData: self.inputData,
+            key: key,
+            additionalData: self.additionalData
+        )
+    }
+
+    /// Add an initialization vector to the configuration
+    /// - Parameter iv: The initialization vector to use
+    /// - Returns: A new configuration with the specified initialization vector
+    public func withInitializationVector(_ iv: SecureBytes) -> SecurityConfigDTO {
+        SecurityConfigDTO(
+            algorithm: self.algorithm,
+            keySizeInBits: self.keySizeInBits,
+            initializationVector: iv,
+            additionalAuthenticatedData: self.additionalAuthenticatedData,
+            iterations: self.iterations,
+            options: self.options,
+            keyIdentifier: self.keyIdentifier,
+            inputData: self.inputData,
+            key: self.key,
+            additionalData: self.additionalData
+        )
+    }
+
+    /// Add additional data to the configuration for verification operations
+    /// - Parameter data: The additional data to use
+    /// - Returns: A new configuration with the specified additional data
+    public func withAdditionalData(_ data: SecureBytes) -> SecurityConfigDTO {
+        SecurityConfigDTO(
+            algorithm: self.algorithm,
+            keySizeInBits: self.keySizeInBits,
+            initializationVector: self.initializationVector,
+            additionalAuthenticatedData: self.additionalAuthenticatedData,
+            iterations: self.iterations,
+            options: self.options,
+            keyIdentifier: self.keyIdentifier,
+            inputData: self.inputData,
+            key: self.key,
+            additionalData: data
         )
     }
 }

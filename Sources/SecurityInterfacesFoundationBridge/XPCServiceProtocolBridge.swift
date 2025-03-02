@@ -11,16 +11,16 @@ public enum SecurityBridgeError: Error, Sendable {
 @objc public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol {
     /// Protocol identifier
     @objc static var protocolIdentifier: String { get }
-    
+
     /// Test connectivity with Foundation types
     @objc func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void)
-    
+
     /// Synchronize keys across processes with Foundation types
     @objc func synchroniseKeysFoundation(_ data: NSData, withReply reply: @escaping @Sendable (Error?) -> Void)
-    
+
     /// Encrypt data using the service with Foundation types
     @objc func encryptFoundation(data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void)
-    
+
     /// Decrypt data using the service with Foundation types
     @objc func decryptFoundation(data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void)
 }
@@ -29,24 +29,24 @@ public enum SecurityBridgeError: Error, Sendable {
 @objc public final class CoreTypesToFoundationBridgeAdapter: NSObject, XPCServiceProtocolFoundationBridge, @unchecked Sendable {
     private let core: any SecurityInterfacesProtocols.XPCServiceProtocolBase
     private let queue = DispatchQueue(label: "com.umbra.security.bridge", qos: .userInitiated)
-    
+
     /// Create a new adapter wrapping a CoreTypes implementation
     public init(wrapping core: any SecurityInterfacesProtocols.XPCServiceProtocolBase) {
         self.core = core
         super.init()
     }
-    
+
     /// Protocol identifier from the CoreTypes implementation
     @objc public static var protocolIdentifier: String {
         return "com.umbra.xpc.service.adapter.coretypes.bridge"
     }
-    
+
     /// Implement ping using the CoreTypes implementation
     @objc public func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
         // Capture the core reference and queue to avoid capturing self
         let coreRef = self.core
         let queue = self.queue
-        
+
         Task.detached { @Sendable in
             do {
                 let result = try await coreRef.ping()
@@ -56,16 +56,16 @@ public enum SecurityBridgeError: Error, Sendable {
             }
         }
     }
-    
+
     /// Implement synchroniseKeys using the CoreTypes implementation
     @objc public func synchroniseKeysFoundation(_ data: NSData, withReply reply: @escaping @Sendable (Error?) -> Void) {
         // Convert NSData to bytes first to avoid capturing it in the task
         let bytes = ObjCBridgingTypesFoundation.DataConverter.convertToBytes(fromNSData: data)
-        
+
         // Capture the core reference and queue to avoid capturing self
         let coreRef = self.core
         let queue = self.queue
-        
+
         Task.detached { @Sendable in
             do {
                 // Convert bytes to BinaryData
@@ -78,13 +78,13 @@ public enum SecurityBridgeError: Error, Sendable {
             }
         }
     }
-    
+
     /// Implement encrypt using the CoreTypes implementation
     @objc public func encryptFoundation(data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
         // This is a placeholder implementation
         reply(data, nil)
     }
-    
+
     /// Implement decrypt using the CoreTypes implementation
     @objc public func decryptFoundation(data: NSData, withReply reply: @escaping @Sendable (NSData?, Error?) -> Void) {
         // This is a placeholder implementation
@@ -96,24 +96,24 @@ public enum SecurityBridgeError: Error, Sendable {
 public final class FoundationToCoreTypesBridgeAdapter: SecurityInterfacesProtocols.XPCServiceProtocolBase {
     private class FoundationWrapper: @unchecked Sendable {
         let foundation: any XPCServiceProtocolFoundationBridge
-        
+
         init(foundation: any XPCServiceProtocolFoundationBridge) {
             self.foundation = foundation
         }
     }
-    
+
     private let foundationWrapper: FoundationWrapper
-    
+
     /// Create a new adapter wrapping a Foundation implementation
     public init(wrapping foundation: any XPCServiceProtocolFoundationBridge) {
         self.foundationWrapper = FoundationWrapper(foundation: foundation)
     }
-    
+
     /// Protocol identifier from the Foundation implementation
     public static var protocolIdentifier: String {
         return "com.umbra.xpc.service.adapter.foundation.bridge"
     }
-    
+
     /// Implement ping using the Foundation implementation
     public func ping() async throws -> Bool {
         return try await withCheckedThrowingContinuation { continuation in
@@ -126,12 +126,12 @@ public final class FoundationToCoreTypesBridgeAdapter: SecurityInterfacesProtoco
             }
         }
     }
-    
+
     /// Implement synchroniseKeys using the Foundation implementation
     public func synchroniseKeys(_ data: SecurityInterfacesProtocols.BinaryData) async throws {
         // Convert BinaryData to NSData
         let nsData = ObjCBridgingTypesFoundation.DataConverter.convertToNSData(fromBytes: data.bytes)
-        
+
         return try await withCheckedThrowingContinuation { continuation in
             foundationWrapper.foundation.synchroniseKeysFoundation(nsData) { error in
                 if let error = error {

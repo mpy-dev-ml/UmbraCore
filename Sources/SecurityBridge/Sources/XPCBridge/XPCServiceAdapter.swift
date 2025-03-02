@@ -15,36 +15,36 @@ import SecurityProtocolsCore
 /// needed for XPC communication while maintaining the domain-specific type system.
 public final class XPCServiceAdapter {
     // MARK: - Properties
-    
+
     /// The XPC connection to the security service
     private let connection: NSXPCConnection
-    
+
     /// The remote XPC service proxy
     private let serviceProxy: any FoundationXPCSecurityService
-    
+
     // MARK: - Initialization
-    
+
     /// Create a new XPCServiceAdapter
     /// - Parameter connection: The XPC connection to use
     public init(connection: NSXPCConnection) {
         self.connection = connection
-        
+
         // Configure the connection
         connection.remoteObjectInterface = NSXPCInterface(with: FoundationXPCSecurityService.self)
         connection.resume()
-        
+
         // Get the service proxy
         self.serviceProxy = connection.remoteObjectProxy as! any FoundationXPCSecurityService
     }
-    
+
     // MARK: - Crypto Service Adapter
-    
+
     /// Create a CryptoServiceProtocol implementation that communicates over XPC
     /// - Returns: A CryptoServiceProtocol implementation
     public func createCryptoService() -> CryptoServiceProtocol {
         return XPCCryptoServiceAdapter(serviceProxy: serviceProxy)
     }
-    
+
     /// Create a KeyManagementProtocol implementation that communicates over XPC
     /// - Returns: A KeyManagementProtocol implementation
     public func createKeyManagement() -> KeyManagementProtocol {
@@ -59,13 +59,13 @@ public final class XPCServiceAdapter {
     func encrypt(data: Data, key: Data, completion: @escaping (Data?, Error?) -> Void)
     func decrypt(data: Data, key: Data, completion: @escaping (Data?, Error?) -> Void)
     func generateKey(completion: @escaping (Data?, Error?) -> Void)
-    
+
     // Key management methods
     func retrieveKey(identifier: String, completion: @escaping (Data?, Error?) -> Void)
     func storeKey(key: Data, identifier: String, completion: @escaping (Error?) -> Void)
     func deleteKey(identifier: String, completion: @escaping (Error?) -> Void)
     func listKeyIdentifiers(completion: @escaping ([String]?, Error?) -> Void)
-    
+
     // Extended methods - these use serializable result types for Objective-C compatibility
     func encryptSymmetricXPC(
         data: Data,
@@ -77,7 +77,7 @@ public final class XPCServiceAdapter {
         optionsJson: String,
         completion: @escaping (Data?, NSNumber?, String?) -> Void
     )
-    
+
     func decryptSymmetricXPC(
         data: Data,
         key: Data,
@@ -88,7 +88,7 @@ public final class XPCServiceAdapter {
         optionsJson: String,
         completion: @escaping (Data?, NSNumber?, String?) -> Void
     )
-    
+
     func encryptAsymmetricXPC(
         data: Data,
         publicKey: Data,
@@ -97,7 +97,7 @@ public final class XPCServiceAdapter {
         optionsJson: String,
         completion: @escaping (Data?, NSNumber?, String?) -> Void
     )
-    
+
     func decryptAsymmetricXPC(
         data: Data,
         privateKey: Data,
@@ -106,7 +106,7 @@ public final class XPCServiceAdapter {
         optionsJson: String,
         completion: @escaping (Data?, NSNumber?, String?) -> Void
     )
-    
+
     func hashDataXPC(
         data: Data,
         algorithm: String,
@@ -118,11 +118,11 @@ public final class XPCServiceAdapter {
 /// Adapter that implements CryptoServiceProtocol using an XPC connection
 private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked Sendable {
     private let serviceProxy: any FoundationXPCSecurityService
-    
+
     init(serviceProxy: any FoundationXPCSecurityService) {
         self.serviceProxy = serviceProxy
     }
-    
+
     func encrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         return await withCheckedContinuation { continuation in
             self.serviceProxy.encrypt(
@@ -133,17 +133,17 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
                     continuation.resume(returning: .failure(self.mapXPCError(error)))
                     return
                 }
-                
+
                 guard let encryptedData = encryptedData else {
                     continuation.resume(returning: .failure(.internalError("XPC service returned nil data")))
                     return
                 }
-                
+
                 continuation.resume(returning: .success(DataAdapter.secureBytes(from: encryptedData)))
             }
         }
     }
-    
+
     func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         return await withCheckedContinuation { continuation in
             self.serviceProxy.decrypt(
@@ -154,17 +154,17 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
                     continuation.resume(returning: .failure(self.mapXPCError(error)))
                     return
                 }
-                
+
                 guard let decryptedData = decryptedData else {
                     continuation.resume(returning: .failure(.internalError("XPC service returned nil data")))
                     return
                 }
-                
+
                 continuation.resume(returning: .success(DataAdapter.secureBytes(from: decryptedData)))
             }
         }
     }
-    
+
     func generateKey() async -> Result<SecureBytes, SecurityError> {
         return await withCheckedContinuation { continuation in
             self.serviceProxy.generateKey { keyData, error in
@@ -172,32 +172,32 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
                     continuation.resume(returning: .failure(self.mapXPCError(error)))
                     return
                 }
-                
+
                 guard let keyData = keyData else {
                     continuation.resume(returning: .failure(.internalError("XPC service returned nil key")))
                     return
                 }
-                
+
                 continuation.resume(returning: .success(DataAdapter.secureBytes(from: keyData)))
             }
         }
     }
-    
+
     func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         // For now, we'll use the hash method from the new implementation
         let result = await hash(data: data, config: SecurityConfigDTO(algorithm: "SHA-256", keySizeInBits: 256))
-        
+
         if result.success, let hashData = result.data {
             return .success(hashData)
         } else {
             return .failure(.internalError(result.errorMessage ?? "Unknown hashing error"))
         }
     }
-    
+
     func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
         // Implementation using XPC - for now, compute the hash and compare
         let hashResult = await self.hash(data: data)
-        
+
         switch hashResult {
         case .success(let computedHash):
             return computedHash == hash
@@ -205,9 +205,9 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
             return false
         }
     }
-    
+
     // MARK: - Symmetric Encryption Implementation
-    
+
     func encryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
@@ -215,9 +215,9 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
     ) async -> SecurityResultDTO {
         return await withCheckedContinuation { continuation in
             // Convert options dictionary to JSON string for XPC compatibility
-            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: [])) 
+            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
                               .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-            
+
             self.serviceProxy.encryptSymmetricXPC(
                 data: DataAdapter.data(from: data),
                 key: DataAdapter.data(from: key),
@@ -238,7 +238,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
             }
         }
     }
-    
+
     func decryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
@@ -246,9 +246,9 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
     ) async -> SecurityResultDTO {
         return await withCheckedContinuation { continuation in
             // Convert options dictionary to JSON string for XPC compatibility
-            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: [])) 
+            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
                               .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-            
+
             self.serviceProxy.decryptSymmetricXPC(
                 data: DataAdapter.data(from: data),
                 key: DataAdapter.data(from: key),
@@ -269,9 +269,9 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
             }
         }
     }
-    
+
     // MARK: - Asymmetric Encryption Implementation
-    
+
     func encryptAsymmetric(
         data: SecureBytes,
         publicKey: SecureBytes,
@@ -279,9 +279,9 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
     ) async -> SecurityResultDTO {
         return await withCheckedContinuation { continuation in
             // Convert options dictionary to JSON string for XPC compatibility
-            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: [])) 
+            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
                               .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-            
+
             self.serviceProxy.encryptAsymmetricXPC(
                 data: DataAdapter.data(from: data),
                 publicKey: DataAdapter.data(from: publicKey),
@@ -300,7 +300,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
             }
         }
     }
-    
+
     func decryptAsymmetric(
         data: SecureBytes,
         privateKey: SecureBytes,
@@ -308,9 +308,9 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
     ) async -> SecurityResultDTO {
         return await withCheckedContinuation { continuation in
             // Convert options dictionary to JSON string for XPC compatibility
-            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: [])) 
+            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
                               .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-            
+
             self.serviceProxy.decryptAsymmetricXPC(
                 data: DataAdapter.data(from: data),
                 privateKey: DataAdapter.data(from: privateKey),
@@ -329,18 +329,18 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
             }
         }
     }
-    
+
     // MARK: - Hashing Implementation
-    
+
     func hash(
         data: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
         return await withCheckedContinuation { continuation in
             // Convert options dictionary to JSON string for XPC compatibility
-            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: [])) 
+            let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
                               .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-            
+
             self.serviceProxy.hashDataXPC(
                 data: DataAdapter.data(from: data),
                 algorithm: config.algorithm,
@@ -357,7 +357,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
             }
         }
     }
-    
+
     // Helper to map XPC errors to SecurityError
     private func mapXPCError(_ error: Error) -> SecurityError {
         // Implement error mapping based on the XPC error types
@@ -368,11 +368,11 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
 /// Adapter that implements KeyManagementProtocol using an XPC connection
 private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked Sendable {
     private let serviceProxy: any FoundationXPCSecurityService
-    
+
     init(serviceProxy: any FoundationXPCSecurityService) {
         self.serviceProxy = serviceProxy
     }
-    
+
     func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, SecurityError> {
         return await withCheckedContinuation { continuation in
             self.serviceProxy.retrieveKey(identifier: identifier) { keyData, error in
@@ -380,17 +380,17 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
                     continuation.resume(returning: .failure(self.mapXPCError(error)))
                     return
                 }
-                
+
                 guard let keyData = keyData else {
                     continuation.resume(returning: .failure(.internalError("XPC service returned nil key")))
                     return
                 }
-                
+
                 continuation.resume(returning: .success(DataAdapter.secureBytes(from: keyData)))
             }
         }
     }
-    
+
     func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async -> Result<Void, SecurityError> {
         return await withCheckedContinuation { continuation in
             self.serviceProxy.storeKey(
@@ -405,7 +405,7 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
             }
         }
     }
-    
+
     func deleteKey(withIdentifier identifier: String) async -> Result<Void, SecurityError> {
         return await withCheckedContinuation { continuation in
             self.serviceProxy.deleteKey(identifier: identifier) { error in
@@ -417,13 +417,13 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
             }
         }
     }
-    
+
     func rotateKey(withIdentifier identifier: String, dataToReencrypt: SecureBytes?) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), SecurityError> {
         // This method would need to be implemented properly with the actual XPC service
         // For now, we'll return a not implemented error
         return .failure(.notImplemented)
     }
-    
+
     func listKeyIdentifiers() async -> Result<[String], SecurityError> {
         return await withCheckedContinuation { continuation in
             self.serviceProxy.listKeyIdentifiers { identifiers, error in
@@ -431,17 +431,17 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
                     continuation.resume(returning: .failure(self.mapXPCError(error)))
                     return
                 }
-                
+
                 guard let identifiers = identifiers else {
                     continuation.resume(returning: .failure(.internalError("XPC service returned nil identifiers")))
                     return
                 }
-                
+
                 continuation.resume(returning: .success(identifiers))
             }
         }
     }
-    
+
     // Helper to map XPC errors to SecurityError
     private func mapXPCError(_ error: Error) -> SecurityError {
         // Implement error mapping based on the XPC error types

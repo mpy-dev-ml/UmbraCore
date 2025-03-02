@@ -10,67 +10,67 @@ import SecurityProtocolsCore
 
 /// Implementation of the CryptoServiceProtocol using CryptoSwiftFoundationIndependent
 public final class CryptoServiceImpl: CryptoServiceProtocol {
-    
+
     // MARK: - Initialization
-    
+
     public init() {}
-    
+
     // MARK: - CryptoServiceProtocol Implementation
-    
+
     public func encrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         do {
             // Default to AES-GCM with a random IV
             let iv = CryptoWrapper.generateRandomIVSecure()
-            
+
             // Combine IV with encrypted data
             let encrypted = try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
-            
+
             // Return IV + encrypted data
             let ivData = iv
-            let combinedData = try SecureBytes.combine(ivData, encrypted)
-            
+            let combinedData = SecureBytes.combine(ivData, encrypted)
+
             return .success(combinedData)
         } catch {
             return .failure(.encryptionFailed(reason: "Failed to encrypt data: \(error.localizedDescription)"))
         }
     }
-    
+
     public func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         do {
             // Extract IV from combined data (first 12 bytes)
             guard data.count > 12 else {
                 return .failure(.invalidInput(reason: "Encrypted data too short"))
             }
-            
+
             let (iv, encryptedData) = try data.split(at: 12)
-            
+
             // Decrypt the data
             let decrypted = try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
-            
+
             return .success(decrypted)
         } catch {
             return .failure(.decryptionFailed(reason: "Failed to decrypt data: \(error.localizedDescription)"))
         }
     }
-    
+
     public func generateKey() async -> Result<SecureBytes, SecurityError> {
         // Generate a 256-bit key (32 bytes)
         let key = CryptoWrapper.generateRandomKeySecure(size: 32)
         return .success(key)
     }
-    
+
     public func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         let hashedData = CryptoWrapper.sha256(data)
         return .success(hashedData)
     }
-    
+
     public func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
         let computedHash = CryptoWrapper.sha256(data)
         return computedHash == hash
     }
-    
+
     // MARK: - Symmetric Encryption
-    
+
     public func encryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
@@ -82,14 +82,14 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
             case "AES-GCM":
                 // Use the provided IV or generate a new one
                 let iv = config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
-                
+
                 // Encrypt the data
                 let encrypted = try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
-                
+
                 // Combine IV with encrypted data
-                let combinedData = try SecureBytes.combine(iv, encrypted)
+                let combinedData = SecureBytes.combine(iv, encrypted)
                 return SecurityResultDTO.success(data: combinedData)
-                
+
             default:
                 return SecurityResultDTO.failure(
                     code: 400,
@@ -103,7 +103,7 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
             )
         }
     }
-    
+
     public func decryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
@@ -125,12 +125,12 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
                             message: "Encrypted data too short"
                         )
                     }
-                    
+
                     let (iv, encryptedData) = try data.split(at: 12)
                     let decrypted = try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
                     return SecurityResultDTO.success(data: decrypted)
                 }
-                
+
             default:
                 return SecurityResultDTO.failure(
                     code: 400,
@@ -144,9 +144,9 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
             )
         }
     }
-    
+
     // MARK: - Asymmetric Encryption
-    
+
     public func encryptAsymmetric(
         data: SecureBytes,
         publicKey: SecureBytes,
@@ -159,7 +159,7 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
             message: "Asymmetric encryption not implemented"
         )
     }
-    
+
     public func decryptAsymmetric(
         data: SecureBytes,
         privateKey: SecureBytes,
@@ -172,9 +172,9 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
             message: "Asymmetric decryption not implemented"
         )
     }
-    
+
     // MARK: - Hashing
-    
+
     public func hash(
         data: SecureBytes,
         config: SecurityConfigDTO

@@ -15,28 +15,28 @@ import SecurityProtocolsCore
 /// CryptoServiceProtocol interface.
 public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     // MARK: - Properties
-    
+
     /// The Foundation-dependent cryptographic implementation
     private let implementation: any FoundationCryptoService
-    
+
     // MARK: - Initialization
-    
+
     /// Create a new CryptoServiceAdapter
     /// - Parameter implementation: The Foundation-dependent crypto implementation
     public init(implementation: any FoundationCryptoService) {
         self.implementation = implementation
     }
-    
+
     // MARK: - CryptoServiceProtocol Implementation
-    
+
     public func encrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         // Convert SecureBytes to Data for the Foundation implementation
         let dataToEncrypt = DataAdapter.data(from: data)
         let keyData = DataAdapter.data(from: key)
-        
+
         // Call the implementation
         let result = await implementation.encrypt(data: dataToEncrypt, using: keyData)
-        
+
         // Convert the result back to the protocol's types
         switch result {
         case .success(let encryptedData):
@@ -45,15 +45,15 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             return .failure(mapError(error))
         }
     }
-    
+
     public func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         // Convert SecureBytes to Data for the Foundation implementation
         let encryptedData = DataAdapter.data(from: data)
         let keyData = DataAdapter.data(from: key)
-        
+
         // Call the implementation
         let result = await implementation.decrypt(data: encryptedData, using: keyData)
-        
+
         // Convert the result back to the protocol's types
         switch result {
         case .success(let decryptedData):
@@ -62,10 +62,10 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             return .failure(mapError(error))
         }
     }
-    
+
     public func generateKey() async -> Result<SecureBytes, SecurityError> {
         let result = await implementation.generateKey()
-        
+
         switch result {
         case .success(let keyData):
             return .success(DataAdapter.secureBytes(from: keyData))
@@ -73,11 +73,11 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             return .failure(mapError(error))
         }
     }
-    
+
     public func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         let dataToHash = DataAdapter.data(from: data)
         let result = await implementation.hash(data: dataToHash)
-        
+
         switch result {
         case .success(let hashData):
             return .success(DataAdapter.secureBytes(from: hashData))
@@ -85,16 +85,16 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             return .failure(mapError(error))
         }
     }
-    
+
     public func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
         let dataToVerify = DataAdapter.data(from: data)
         let hashData = DataAdapter.data(from: hash)
-        
+
         return await implementation.verify(data: dataToVerify, against: hashData)
     }
-    
+
     // MARK: - Symmetric Encryption
-    
+
     public func encryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
@@ -103,11 +103,11 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         // Convert SecureBytes to Data for the Foundation implementation
         let dataToEncrypt = DataAdapter.data(from: data)
         let keyData = DataAdapter.data(from: key)
-        
+
         // Convert config to Foundation types
         let ivData = config.initializationVector.map { DataAdapter.data(from: $0) }
         let aadData = config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
-        
+
         // Call the implementation
         let result = await implementation.encryptSymmetric(
             data: dataToEncrypt,
@@ -118,7 +118,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             aad: aadData,
             options: config.options
         )
-        
+
         // Process the result
         if result.success, let resultData = result.data {
             return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
@@ -129,7 +129,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             )
         }
     }
-    
+
     public func decryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
@@ -138,11 +138,11 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         // Convert SecureBytes to Data for the Foundation implementation
         let encryptedData = DataAdapter.data(from: data)
         let keyData = DataAdapter.data(from: key)
-        
+
         // Convert config to Foundation types
         let ivData = config.initializationVector.map { DataAdapter.data(from: $0) }
         let aadData = config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
-        
+
         // Call the implementation
         let result = await implementation.decryptSymmetric(
             data: encryptedData,
@@ -153,7 +153,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             aad: aadData,
             options: config.options
         )
-        
+
         // Process the result
         if result.success, let resultData = result.data {
             return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
@@ -164,9 +164,9 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             )
         }
     }
-    
+
     // MARK: - Asymmetric Encryption
-    
+
     public func encryptAsymmetric(
         data: SecureBytes,
         publicKey: SecureBytes,
@@ -175,7 +175,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         // Convert SecureBytes to Data for the Foundation implementation
         let dataToEncrypt = DataAdapter.data(from: data)
         let publicKeyData = DataAdapter.data(from: publicKey)
-        
+
         // Call the implementation
         let result = await implementation.encryptAsymmetric(
             data: dataToEncrypt,
@@ -184,7 +184,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             keySizeInBits: config.keySizeInBits,
             options: config.options
         )
-        
+
         // Process the result
         if result.success, let resultData = result.data {
             return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
@@ -195,7 +195,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             )
         }
     }
-    
+
     public func decryptAsymmetric(
         data: SecureBytes,
         privateKey: SecureBytes,
@@ -204,7 +204,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         // Convert SecureBytes to Data for the Foundation implementation
         let encryptedData = DataAdapter.data(from: data)
         let privateKeyData = DataAdapter.data(from: privateKey)
-        
+
         // Call the implementation
         let result = await implementation.decryptAsymmetric(
             data: encryptedData,
@@ -213,7 +213,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             keySizeInBits: config.keySizeInBits,
             options: config.options
         )
-        
+
         // Process the result
         if result.success, let resultData = result.data {
             return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
@@ -224,23 +224,23 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             )
         }
     }
-    
+
     // MARK: - Hashing
-    
+
     public func hash(
         data: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
         // Convert SecureBytes to Data for the Foundation implementation
         let dataToHash = DataAdapter.data(from: data)
-        
+
         // Call the implementation
         let result = await implementation.hash(
             data: dataToHash,
             algorithm: config.algorithm,
             options: config.options
         )
-        
+
         // Process the result
         if result.success, let resultData = result.data {
             return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
@@ -251,16 +251,16 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             )
         }
     }
-    
+
     // MARK: - Helper Methods
-    
+
     /// Map Foundation-specific errors to SecurityError
     private func mapError(_ error: Error) -> SecurityError {
         // If the error is already a SecurityError, return it
         if let securityError = error as? SecurityError {
             return securityError
         }
-        
+
         // Map Foundation-specific errors to SecurityError types
         // This would be expanded based on the specific error types used
         return SecurityError.internalError("Foundation crypto error: \(error.localizedDescription)")
@@ -275,7 +275,7 @@ public protocol FoundationCryptoService: Sendable {
     func generateKey() async -> Result<Data, Error>
     func hash(data: Data) async -> Result<Data, Error>
     func verify(data: Data, against hash: Data) async -> Bool
-    
+
     // Symmetric encryption
     func encryptSymmetric(
         data: Data,
@@ -286,7 +286,7 @@ public protocol FoundationCryptoService: Sendable {
         aad: Data?,
         options: [String: String]
     ) async -> FoundationSecurityResult
-    
+
     // Symmetric decryption
     func decryptSymmetric(
         data: Data,
@@ -297,7 +297,7 @@ public protocol FoundationCryptoService: Sendable {
         aad: Data?,
         options: [String: String]
     ) async -> FoundationSecurityResult
-    
+
     // Asymmetric encryption
     func encryptAsymmetric(
         data: Data,
@@ -306,7 +306,7 @@ public protocol FoundationCryptoService: Sendable {
         keySizeInBits: Int,
         options: [String: String]
     ) async -> FoundationSecurityResult
-    
+
     // Asymmetric decryption
     func decryptAsymmetric(
         data: Data,
@@ -315,7 +315,7 @@ public protocol FoundationCryptoService: Sendable {
         keySizeInBits: Int,
         options: [String: String]
     ) async -> FoundationSecurityResult
-    
+
     // Hashing
     func hash(
         data: Data,
@@ -330,21 +330,21 @@ public struct FoundationSecurityResult: Sendable {
     public let data: Data?
     public let errorCode: Int?
     public let errorMessage: String?
-    
+
     public init(data: Data) {
         self.success = true
         self.data = data
         self.errorCode = nil
         self.errorMessage = nil
     }
-    
+
     public init() {
         self.success = true
         self.data = nil
         self.errorCode = nil
         self.errorMessage = nil
     }
-    
+
     public init(errorCode: Int, errorMessage: String) {
         self.success = false
         self.data = nil

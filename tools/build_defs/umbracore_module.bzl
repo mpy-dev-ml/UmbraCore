@@ -57,7 +57,6 @@ def umbracore_foundation_free_module(
         copts = copts,
         visibility = visibility,
         testonly = testonly,
-        additional_inputs = additional_inputs,
     )
 
 def umbracore_foundation_independent_module(

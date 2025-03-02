@@ -12,7 +12,7 @@ import UmbraCoreTypes
 /// This adapter serves as the bridge for resource locations between Foundation-dependent
 /// and Foundation-independent code.
 public enum URLAdapter {
-    
+
     /// Convert Foundation URL to ResourceLocator
     /// - Parameter url: Foundation URL instance
     /// - Returns: A new ResourceLocator instance representing the same resource
@@ -21,12 +21,12 @@ public enum URLAdapter {
         guard let scheme = url.scheme else {
             throw AdapterError.invalidURLConversion("URL is missing a scheme")
         }
-        
+
         // Extract the components from the URL
         let path = url.path
         let query = url.query
         let fragment = url.fragment
-        
+
         return ResourceLocator(
             scheme: scheme,
             path: path,
@@ -34,7 +34,7 @@ public enum URLAdapter {
             fragment: fragment
         )
     }
-    
+
     /// Convert ResourceLocator to Foundation URL
     /// - Parameter locator: ResourceLocator instance
     /// - Returns: A new URL instance representing the same resource
@@ -42,14 +42,14 @@ public enum URLAdapter {
     public static func url(from locator: ResourceLocator) throws -> URL {
         // Use the string representation to create a URL
         let urlString = locator.toString()
-        
+
         guard let url = URL(string: urlString) else {
             throw AdapterError.invalidURLConversion("Could not create URL from locator: \(urlString)")
         }
-        
+
         return url
     }
-    
+
     /// Create a file URL from a file path ResourceLocator
     /// - Parameter locator: ResourceLocator with scheme "file"
     /// - Returns: A file URL
@@ -58,7 +58,7 @@ public enum URLAdapter {
         guard locator.isFileResource else {
             throw AdapterError.invalidURLConversion("ResourceLocator is not a file resource")
         }
-        
+
         return URL(fileURLWithPath: locator.path)
     }
 }

@@ -1,7 +1,8 @@
 import CommonCrypto
 import Foundation
 import Security
-import SecurityInterfaces
+import SecurityBridge
+import SecurityProtocolsCore
 import SecurityTypes
 import SecurityTypesTypes
 
@@ -27,7 +28,7 @@ public final class SecurityUtils: @unchecked Sendable {
         }
 
         guard result == errSecSuccess else {
-            throw SecurityInterfaces.SecurityError.operationFailed("Random generation failed")
+            throw SecurityProtocolsCore.SecurityError.randomGenerationFailed
         }
 
         return data

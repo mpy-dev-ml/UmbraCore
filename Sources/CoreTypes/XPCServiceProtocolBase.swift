@@ -1,5 +1,5 @@
-// This file is just a re-export of the protocol from SecurityInterfacesProtocols
-@_exported import SecurityInterfacesProtocols
+// This file is just a re-export of the protocol from SecurityProtocolsCore
+@_exported import SecurityProtocolsCore
 
 // Keep the existing typealias for backward compatibility
-public typealias XPCServiceProtocolBase = SecurityInterfacesProtocols.XPCServiceProtocolBase
+public typealias XPCServiceProtocolBase = XPCServiceProtocolCore

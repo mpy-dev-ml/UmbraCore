@@ -1,17 +1,15 @@
 import Foundation
 @preconcurrency import ObjCBridgingTypesFoundation
-import SecurityInterfaces
-import SecurityInterfacesBase
-import SecurityInterfacesFoundation
-import SecurityInterfacesProtocols
+import SecurityBridge
 @preconcurrency import SecurityInterfacesXPC
+import SecurityProtocolsCore
 
 /// Adapter that bridges from SecurityInterfaces.XPCServiceProtocol to ObjCBridgingTypesFoundation.XPCServiceProtocolDefinitionBaseFoundation
 @objc public final class SecurityToFoundationAdapter: NSObject, @preconcurrency SecurityInterfacesXPC.XPCServiceProtocolDefinition {
-    private let service: any SecurityInterfaces.XPCServiceProtocol
+    private let service: any SecurityProtocolsCore.XPCServiceProtocol
 
     /// Create a new adapter wrapping a SecurityInterfaces implementation
-    public init(wrapping service: any SecurityInterfaces.XPCServiceProtocol) {
+    public init(wrapping service: any SecurityProtocolsCore.XPCServiceProtocol) {
         self.service = service
         super.init()
     }
@@ -54,7 +52,7 @@ import SecurityInterfacesProtocols
         Task {
             do {
                 // Convert bytes to BinaryData
-                let binaryData = SecurityInterfacesProtocols.BinaryData(bytes)
+                let binaryData = SecurityProtocolsCore.BinaryData(bytes)
                 // Call the CoreTypes implementation
                 try await service.synchroniseKeys(binaryData)
                 CallbackStore.callErrorCallback(id: callback, error: nil)
@@ -96,7 +94,7 @@ import SecurityInterfacesProtocols
 }
 
 /// Adapter that bridges from SecurityInterfacesXPC.XPCServiceProtocolDefinition to SecurityInterfaces.XPCServiceProtocol
-public final class FoundationToSecurityAdapter: SecurityInterfaces.XPCServiceProtocol {
+public final class FoundationToSecurityAdapter: SecurityProtocolsCore.XPCServiceProtocol {
     // Use a class to wrap the non-Sendable protocol
     private final class FoundationWrapper: Sendable {
         let foundation: any SecurityInterfacesXPC.XPCServiceProtocolDefinition
@@ -134,7 +132,7 @@ public final class FoundationToSecurityAdapter: SecurityInterfaces.XPCServicePro
     }
 
     /// Synchronize keys across processes
-    public func synchroniseKeys(_ data: SecurityInterfacesProtocols.BinaryData) async throws {
+    public func synchroniseKeys(_ data: SecurityProtocolsCore.BinaryData) async throws {
         // Convert BinaryData to NSData
         let nsData = ObjCBridgingTypesFoundation.DataConverter.convertToNSData(fromBytes: data.bytes)
 
@@ -152,14 +150,14 @@ public final class FoundationToSecurityAdapter: SecurityInterfaces.XPCServicePro
     // MARK: - XPCServiceProtocol Implementation
 
     /// Encrypt data using the service
-    public func encrypt(data: SecurityInterfacesBase.BinaryData) async throws -> SecurityInterfacesBase.BinaryData {
+    public func encrypt(data: SecurityProtocolsCore.BinaryData) async throws -> SecurityProtocolsCore.BinaryData {
         // This is just a placeholder implementation
         // In a real implementation, you would implement actual encryption
         return data
     }
 
     /// Decrypt data using the service
-    public func decrypt(data: SecurityInterfacesBase.BinaryData) async throws -> SecurityInterfacesBase.BinaryData {
+    public func decrypt(data: SecurityProtocolsCore.BinaryData) async throws -> SecurityProtocolsCore.BinaryData {
         // This is just a placeholder implementation
         // In a real implementation, you would implement actual decryption
         return data

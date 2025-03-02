@@ -8,7 +8,8 @@ swift_library(
     module_name = "SecurityBridge",
     copts = [
         "-target", "arm64-apple-macos15.4",
-        # No library evolution for Foundation compatibility
+        # Enabling library evolution for consistency with SecurityProtocolsCore
+        "-Xfrontend", "-enable-library-evolution",
         "-g",
         "-swift-version", "5",
     ],

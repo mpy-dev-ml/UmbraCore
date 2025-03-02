@@ -1,22 +1,20 @@
-// This file is just a re-export of BinaryData from SecurityInterfacesProtocols
-@_exported import SecurityInterfacesProtocols
+// This file is now a re-export of SecureBytes from SecurityProtocolsCore
+import SecureBytes
+@_exported import SecurityProtocolsCore
 
-// Add extension methods to maintain backward compatibility
-extension SecurityInterfacesProtocols.BinaryData {
+// Define a typealias to support legacy code
+public typealias BinaryData = SecureBytes
+
+// Note: We don't need to extend SecureBytes with the same methods it already has.
+// The slice method is the only one that needs to be added for backward compatibility.
+extension SecureBytes {
     /// Get a slice of the data
-    public func slice(from: Int, length: Int) -> SecurityInterfacesProtocols.BinaryData {
-        let end = Swift.min(from + length, bytes.count)
-        let slice = bytes[from..<end]
-        return SecurityInterfacesProtocols.BinaryData(Array(slice))
+    public func slice(from: Int, length: Int) -> SecureBytes {
+        let end = Swift.min(from + length, self.count)
+        return self[from..<end]
     }
 
-    /// Access a specific byte by index
-    public subscript(index: Int) -> UInt8 {
-        return bytes[index]
-    }
-
-    /// The number of bytes in the data
-    public var count: Int {
-        return bytes.count
-    }
+    // The following methods are already provided by SecureBytes:
+    // - subscript(index: Int)
+    // - count property
 }

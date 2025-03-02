@@ -12,13 +12,13 @@ import SecurityProtocolsCore
 public enum SecurityImplementation {
     /// Module version
     public static let version = "1.0.0"
-    
+
     /// Create a default security provider with standard implementations
     /// - Returns: A fully configured security provider
     public static func createDefaultProvider() -> SecurityProviderProtocol {
         return SecurityProviderImpl()
     }
-    
+
     /// Create a custom security provider with specified implementations
     /// - Parameters:
     ///   - cryptoService: Custom crypto service implementation

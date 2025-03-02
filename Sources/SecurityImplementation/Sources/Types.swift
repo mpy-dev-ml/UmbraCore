@@ -3,7 +3,7 @@
 // Created on 2025-03-01
 
 import SecureBytes
-import SecurityInterfacesBase
+import SecurityProtocolsCore
 
 // This file contains local types to break dependency cycles
 // Note: Most of these types are now defined in SecurityImplementation.swift
@@ -22,7 +22,7 @@ public enum ExtendedSecurityError: Error, Sendable, Equatable {
     case operationFailed(reason: String)
     case unsupportedOperation
     case keyManagementError(reason: String)
-    
+
     public var description: String {
         switch self {
         case .encryptionFailed(let reason):
