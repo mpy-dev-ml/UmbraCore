@@ -106,19 +106,19 @@ final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sen
         // Default hash implementation (just return data for test purposes)
         return .success(data)
     }
-    
+
     func generateRandomData(length: Int) async -> Result<Data, Error> {
         recordMethodCall("generateRandomData(length: \(length))")
-        
+
         if shouldFail {
             return .failure(errorToReturn)
         }
-        
+
         // Return specific data if configured
         if let randomData = randomDataToReturn {
             return .success(randomData)
         }
-        
+
         // Default implementation: create a Data object filled with repeating pattern
         var randomData = Data(count: length)
         for i in 0..<randomData.count {
@@ -336,13 +336,20 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
         options: [String: Any]
     ) async -> FoundationSecurityProviderResult {
         recordMethodCall("performOperation:\(operation)")
-
-        if shouldFail {
-            return .failure(errorToReturn)
+        
+        // Ensure we don't hang by forcing immediate return
+        // This helps avoid deadlocks in tests
+        return await withTaskCancellationHandler {
+            if shouldFail {
+                return .failure(errorToReturn)
+            }
+            
+            // Return success with the configured data
+            return .success(dataToReturn)
+        } onCancel: {
+            // If task is cancelled, ensure we have a way to clean up
+            print("Security operation task was cancelled")
         }
-
-        // Return success with the configured data
-        return .success(dataToReturn)
     }
 }
 

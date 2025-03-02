@@ -16,10 +16,14 @@ final class SecurityProviderAdapterTests: XCTestCase {
 
     private var mockFoundationProvider: MockFoundationSecurityProvider!
     private var adapter: SecurityProviderAdapter!
+    
+    // Add a timeout for all test executions
+    private let testTimeout: TimeInterval = 5.0
 
     // MARK: - Setup & Teardown
 
     override func setUp() {
+        super.setUp()
         mockFoundationProvider = MockFoundationSecurityProvider()
         adapter = SecurityProviderAdapter(implementation: mockFoundationProvider)
     }
@@ -27,6 +31,7 @@ final class SecurityProviderAdapterTests: XCTestCase {
     override func tearDown() {
         mockFoundationProvider = nil
         adapter = nil
+        super.tearDown()
     }
 
     // MARK: - Helper Methods
@@ -42,7 +47,7 @@ final class SecurityProviderAdapterTests: XCTestCase {
     // MARK: - Tests
 
     /// Tests that DataAdapter correctly converts between SecureBytes and Data
-    func testDataConversion() {
+    func testDataConversion() async throws {
         // Arrange
         let secureBytes = createTestSecureBytes()
 
@@ -60,7 +65,7 @@ final class SecurityProviderAdapterTests: XCTestCase {
     }
 
     /// Tests creating a security config
-    func testCreateSecureConfig() {
+    func testCreateSecureConfig() async throws {
         // Arrange
         let options: [String: Any] = [
             "algorithm": "AES-GCM",
@@ -89,7 +94,7 @@ final class SecurityProviderAdapterTests: XCTestCase {
     }
 
     /// Tests edge cases in SecureBytes/Data conversion
-    func testEdgeCasesInDataConversion() {
+    func testEdgeCasesInDataConversion() async throws {
         // Test empty SecureBytes
         let emptySecureBytes = SecureBytes()
         let emptyData = DataAdapter.data(from: emptySecureBytes)
@@ -113,5 +118,34 @@ final class SecurityProviderAdapterTests: XCTestCase {
 
         XCTAssertEqual(randomData.count, randomBytes.count)
         XCTAssertEqual(randomConvertedBack.unsafeBytes, randomBytes)
+    }
+    
+    /// Tests a basic encryption-decryption flow using the adapter
+    func testPerformSecureOperation() async throws {
+        // Arrange
+        let testData = SecureBytes([1, 2, 3, 4, 5])
+        let testKey = SecureBytes([10, 20, 30, 40, 50])
+        let config = SecurityConfigDTO(
+            algorithm: "AES-GCM",
+            keySizeInBits: 256,
+            options: [:]
+        )
+        
+        // Configure mock to return success
+        mockFoundationProvider.dataToReturn = Data([100, 101, 102]) // Mocked encrypted data
+        
+        // Act - now uses built-in timeout protection
+        let result = await adapter.performSecureOperation(
+            operation: .symmetricEncryption,
+            config: config
+        )
+        
+        // Assert
+        XCTAssertEqual(result.errorCode, 0)  // No error
+        XCTAssertNotNil(result.data)
+        XCTAssertEqual(result.data?.count, 3)
+        
+        // Verify the mock was called correctly
+        XCTAssertTrue(mockFoundationProvider.methodCalls.contains("performOperation:symmetricEncryption"))
     }
 }

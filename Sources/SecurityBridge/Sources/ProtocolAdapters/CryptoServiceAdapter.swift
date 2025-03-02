@@ -92,14 +92,14 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
 
         return await implementation.verify(data: dataToVerify, against: hashData)
     }
-    
+
     /// Generate cryptographically secure random data
-    /// - Parameter length: The length of random data to generate in bytes
+    /// - Parameter length: Number of random bytes to generate
     /// - Returns: Result containing random data or error
     public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
         // Call the implementation
         let result = await implementation.generateRandomData(length: length)
-        
+
         // Convert the result back to the protocol's types
         switch result {
         case .success(let randomData):
@@ -108,8 +108,6 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             return .failure(mapError(error))
         }
     }
-
-    // MARK: - Symmetric Encryption
 
     public func encryptSymmetric(
         data: SecureBytes,
@@ -287,7 +285,7 @@ public protocol FoundationCryptoService: Sendable {
     func generateKey() async -> Result<Data, Error>
     func hash(data: Data) async -> Result<Data, Error>
     func verify(data: Data, against hash: Data) async -> Bool
-    
+
     /// Generate cryptographically secure random data
     /// - Parameter length: The length of random data to generate in bytes 
     /// - Returns: Result containing the random data or an error
