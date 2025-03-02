@@ -1,6 +1,11 @@
+// SecurityProviderFoundationBridge.swift
+// SecurityProviderBridge
+//
+// Created as part of the UmbraCore Foundation Decoupling project
+//
+
 import CoreTypes
-import SecurityInterfacesBase
-import SecurityInterfacesProtocols
+import SecurityProtocolsCore
 
 /// Protocol defining non-Foundation security operations
 /// This bridge protocol helps break circular dependencies between Foundation and SecurityInterfaces
@@ -29,6 +34,12 @@ public protocol SecurityProviderFoundationBridge: Sendable {
     /// - Throws: SecurityError if key generation fails
     func generateKey(length: Int) async throws -> CoreTypes.BinaryData
 
+    /// Generate cryptographically secure random data
+    /// - Parameter length: Length of random data in bytes
+    /// - Returns: Generated random data
+    /// - Throws: SecurityError if random data generation fails
+    func generateRandomData(length: Int) async throws -> CoreTypes.BinaryData
+
     /// Hash binary data using the provider's hashing mechanism
     /// - Parameter data: Data to hash
     /// - Returns: Hash of the data
@@ -37,21 +48,21 @@ public protocol SecurityProviderFoundationBridge: Sendable {
 
     // MARK: - Resource Access
 
-    /// Create a security-scoped resource identifier
-    /// - Parameter identifier: String identifier for the resource
-    /// - Returns: Resource bookmark data
+    /// Create a bookmark for the given URL string
+    /// - Parameter urlString: URL string to create bookmark for
+    /// - Returns: Bookmark data
     /// - Throws: SecurityError if bookmark creation fails
-    func createResourceBookmark(for identifier: String) async throws -> CoreTypes.BinaryData
+    func createBookmark(for urlString: String) async throws -> CoreTypes.BinaryData
 
-    /// Resolve a previously created security-scoped resource bookmark
+    /// Resolve a bookmark to a URL string
     /// - Parameter bookmarkData: Bookmark data to resolve
-    /// - Returns: Tuple containing resolved identifier and whether bookmark is stale
+    /// - Returns: Tuple containing resolved URL string and whether the bookmark is stale
     /// - Throws: SecurityError if bookmark resolution fails
-    func resolveResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> (identifier: String, isStale: Bool)
-
-    /// Validate a resource bookmark to ensure it's still valid
+    func resolveBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> (urlString: String, isStale: Bool)
+    
+    /// Validate a security-scoped bookmark
     /// - Parameter bookmarkData: Bookmark data to validate
-    /// - Returns: True if bookmark is valid, false otherwise
-    /// - Throws: SecurityError if validation fails
-    func validateResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> Bool
+    /// - Returns: True if the bookmark is valid, false otherwise
+    /// - Throws: SecurityError if bookmark validation fails
+    func validateBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> Bool
 }

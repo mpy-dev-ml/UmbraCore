@@ -4,13 +4,16 @@ load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 # Bridge module to break circular dependencies between Foundation and SecurityInterfaces
 umbra_swift_library(
     name = "SecurityInterfacesFoundationBridge",
-    srcs = glob(["**/*.swift"]),
+    srcs = glob(["**/*.swift"], exclude = ["SecurityProviderFoundationBridge.swift"]),
     deps = [
         "//Sources/CoreTypes",
-        "//Sources/SecurityInterfacesBase",
+        "//Sources/SecurityBridge",
+        "//Sources/SecurityProtocolsCore",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/FoundationBridgeTypes",
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProviderBridge",
     ],
 )
 
@@ -18,18 +21,19 @@ umbra_swift_library(
 swift_library(
     name = "SecurityInterfacesFoundationBridgeForTesting",
     testonly = True,
-    srcs = glob(["**/*.swift"]),
+    srcs = glob(["**/*.swift"], exclude = ["SecurityProviderFoundationBridge.swift"]),
     copts = [
-        "-target",
-        "arm64-apple-macos14.0",
+        "-target", "arm64-apple-macos15.4",
         "-enable-testing",
     ],
     deps = [
         "//Sources/CoreTypes",
-        "//Sources/SecurityInterfacesBase",
-        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityBridge",
+        "//Sources/SecurityProtocolsCore",
         "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/FoundationBridgeTypes",
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProviderBridge",
     ],
     visibility = ["//visibility:public"],
 )

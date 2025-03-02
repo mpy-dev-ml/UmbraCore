@@ -1,8 +1,9 @@
 import CoreTypes
 import Foundation
 import ObjCBridgingTypesFoundation
-import SecurityInterfacesBase
-import SecurityInterfacesProtocols
+import SecureBytes
+import SecurityProviderBridge
+import SecurityProtocolsCore
 
 /// Adapter class to bridge between Foundation-dependent and non-Foundation security provider implementations
 @available(macOS 10.15, *)
@@ -30,13 +31,12 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     ///   - key: Encryption key
     /// - Returns: Encrypted data
     /// - Throws: SecurityError if encryption fails
-    public func encrypt(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData {
-        let nsData = DataConverter.convertToNSData(fromBytes: data.bytes)
-        let nsKey = DataConverter.convertToNSData(fromBytes: key.bytes)
+    public func encrypt(_ data: SecureBytes, key: SecureBytes) async throws -> SecureBytes {
+        let nsData = DataConverter.convertToNSData(fromBytes: data.unsafeBytes)
+        let nsKey = DataConverter.convertToNSData(fromBytes: key.unsafeBytes)
 
-        let encryptedData = try await foundationImpl.encryptData(nsData as Data, key: nsKey as Data)
-        let nsEncryptedData = encryptedData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsEncryptedData))
+        let encryptedData = try await foundationImpl.encrypt(nsData as Data, key: nsKey as Data)
+        return SecureBytes(Array(encryptedData))
     }
 
     /// Decrypt binary data using the provider's decryption mechanism
@@ -45,68 +45,64 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     ///   - key: Decryption key
     /// - Returns: Decrypted data
     /// - Throws: SecurityError if decryption fails
-    public func decrypt(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData {
-        let nsData = DataConverter.convertToNSData(fromBytes: data.bytes)
-        let nsKey = DataConverter.convertToNSData(fromBytes: key.bytes)
+    public func decrypt(_ data: SecureBytes, key: SecureBytes) async throws -> SecureBytes {
+        let nsData = DataConverter.convertToNSData(fromBytes: data.unsafeBytes)
+        let nsKey = DataConverter.convertToNSData(fromBytes: key.unsafeBytes)
 
-        let decryptedData = try await foundationImpl.decryptData(nsData as Data, key: nsKey as Data)
-        let nsDecryptedData = decryptedData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsDecryptedData))
+        let decryptedData = try await foundationImpl.decrypt(nsData as Data, key: nsKey as Data)
+        return SecureBytes(Array(decryptedData))
     }
 
     /// Generate a cryptographically secure random key
     /// - Parameter length: Length of the key in bytes
-    /// - Returns: Generated key as BinaryData
+    /// - Returns: Generated key as SecureBytes
     /// - Throws: SecurityError if key generation fails
-    public func generateKey(length: Int) async throws -> CoreTypes.BinaryData {
-        let keyData = try await foundationImpl.generateDataKey(length: length)
-        let nsKeyData = keyData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsKeyData))
+    public func generateKey(length: Int) async throws -> SecureBytes {
+        let keyData = try await foundationImpl.generateKey(length: length)
+        return SecureBytes(Array(keyData))
     }
 
     /// Hash binary data using the provider's hashing mechanism
     /// - Parameter data: Data to hash
     /// - Returns: Hash of the data
     /// - Throws: SecurityError if hashing fails
-    public func hash(_ data: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData {
-        let nsData = DataConverter.convertToNSData(fromBytes: data.bytes)
+    public func hash(_ data: SecureBytes) async throws -> SecureBytes {
+        let nsData = DataConverter.convertToNSData(fromBytes: data.unsafeBytes)
 
-        let hashedData = try await foundationImpl.hashData(nsData as Data)
-        let nsHashedData = hashedData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsHashedData))
+        let hashedData = try await foundationImpl.hash(nsData as Data)
+        return SecureBytes(Array(hashedData))
     }
 
     /// Create a security-scoped resource bookmark
     /// - Parameter identifier: String identifier for the resource (typically a file path)
     /// - Returns: Resource bookmark data
     /// - Throws: SecurityError if bookmark creation fails
-    public func createResourceBookmark(for identifier: String) async throws -> CoreTypes.BinaryData {
+    public func createResourceBookmark(for identifier: String) async throws -> SecureBytes {
         guard let url = URL(string: identifier) else {
-            throw NSError(domain: "SecurityProviderBridgeAdapter", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL string"])
+            throw SecurityError.internalError("Invalid URL string: \(identifier)")
         }
 
         let bookmarkData = try await foundationImpl.createBookmark(for: url)
-        let nsBookmarkData = bookmarkData as NSData
-        return CoreTypes.BinaryData(DataConverter.convertToBytes(fromNSData: nsBookmarkData))
+        return SecureBytes(Array(bookmarkData))
     }
 
     /// Resolve a previously created security-scoped resource bookmark
     /// - Parameter bookmarkData: Bookmark data to resolve
     /// - Returns: Tuple containing resolved identifier and whether bookmark is stale
     /// - Throws: SecurityError if bookmark resolution fails
-    public func resolveResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> (identifier: String, isStale: Bool) {
-        let nsData = DataConverter.convertToNSData(fromBytes: bookmarkData.bytes)
+    public func resolveResourceBookmark(_ bookmarkData: SecureBytes) async throws -> (identifier: String, isStale: Bool) {
+        let nsData = DataConverter.convertToNSData(fromBytes: bookmarkData.unsafeBytes)
 
-        let (url, isStale) = try await foundationImpl.resolveBookmark(nsData as Data)
-        return (identifier: url.absoluteString, isStale: isStale)
+        let (urlString, isStale) = try await foundationImpl.resolveBookmark(nsData as Data)
+        return (identifier: urlString, isStale: isStale)
     }
 
     /// Validate a resource bookmark to ensure it's still valid
     /// - Parameter bookmarkData: Bookmark data to validate
     /// - Returns: True if bookmark is valid, false otherwise
     /// - Throws: SecurityError if validation fails
-    public func validateResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> Bool {
-        let nsData = DataConverter.convertToNSData(fromBytes: bookmarkData.bytes)
+    public func validateResourceBookmark(_ bookmarkData: SecureBytes) async throws -> Bool {
+        let nsData = DataConverter.convertToNSData(fromBytes: bookmarkData.unsafeBytes)
         return try await foundationImpl.validateBookmark(nsData as Data)
     }
 }
@@ -119,31 +115,36 @@ private final class SecurityProviderFoundationBridgeImpl: SecurityProviderFounda
         self.adapter = adapter
     }
 
-    func encrypt(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData {
+    func encrypt(_ data: SecureBytes, key: SecureBytes) async throws -> SecureBytes {
         return try await adapter.encrypt(data, key: key)
     }
 
-    func decrypt(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData {
+    func decrypt(_ data: SecureBytes, key: SecureBytes) async throws -> SecureBytes {
         return try await adapter.decrypt(data, key: key)
     }
 
-    func generateKey(length: Int) async throws -> CoreTypes.BinaryData {
+    func generateKey(length: Int) async throws -> SecureBytes {
+        return try await adapter.generateKey(length: length)
+    }
+    
+    func generateRandomData(length: Int) async throws -> SecureBytes {
         return try await adapter.generateKey(length: length)
     }
 
-    func hash(_ data: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData {
+    func hash(_ data: SecureBytes) async throws -> SecureBytes {
         return try await adapter.hash(data)
     }
 
-    func createResourceBookmark(for identifier: String) async throws -> CoreTypes.BinaryData {
-        return try await adapter.createResourceBookmark(for: identifier)
+    func createBookmark(for urlString: String) async throws -> SecureBytes {
+        return try await adapter.createResourceBookmark(for: urlString)
     }
 
-    func resolveResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> (identifier: String, isStale: Bool) {
-        return try await adapter.resolveResourceBookmark(bookmarkData)
+    func resolveBookmark(_ bookmarkData: SecureBytes) async throws -> (urlString: String, isStale: Bool) {
+        let result = try await adapter.resolveResourceBookmark(bookmarkData)
+        return (urlString: result.identifier, isStale: result.isStale)
     }
 
-    func validateResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> Bool {
+    func validateBookmark(_ bookmarkData: SecureBytes) async throws -> Bool {
         return try await adapter.validateResourceBookmark(bookmarkData)
     }
 }
