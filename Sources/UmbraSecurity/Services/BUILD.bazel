@@ -1,25 +1,25 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-umbra_swift_library(
-    name = "UmbraSecurityServices",
+# Create minimal service implementation without problematic dependencies
+swift_library(
+    name = "UmbraSecurityServicesCore",
     srcs = [
         "SecurityService.swift",
-        "SecurityProviderFoundationImpl.swift",
-        "SecurityProviderFactory.swift",
+        "UmbraSecurityServicesModule.swift",
+    ],
+    copts = [
+        "-target", "arm64-apple-macos15.4",
     ],
     deps = [
-        "//Sources/Core",
-        "//Sources/Core/Services:CoreServices",
+        "//Sources/CoreServicesTypesNoFoundation",
         "//Sources/ErrorHandling",
-        "//Sources/SecurityInterfaces",
-        "//Sources/SecurityInterfacesBase",
+        "//Sources/ObjCBridgingTypesFoundation",
+        "//Sources/SecurityBridge",
+        "//Sources/SecurityInterfacesFoundationBridge",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/UmbraSecurityFoundation",
-        "//Sources/SecurityTypes",
         "//Sources/SecurityUtils",
         "//Sources/UmbraLogging",
-        "//Sources/SecurityInterfacesFoundationBridge",
-        "//Sources/FoundationBridgeTypes",
     ],
+    visibility = ["//visibility:public"],
 )
