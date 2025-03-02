@@ -8,13 +8,15 @@ umbra_swift_library(
     deps = [
         "//Sources/CoreTypes",
         "//Sources/ErrorHandling",
-        "//Sources/SecurityInterfaces",
+        "//Sources/SecurityBridge",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesFoundation",
         "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityProtocolsCore",
         "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/SecurityInterfacesXPC",
         "//Sources/SecurityInterfacesFoundationBridge",
+        "//Sources/SecureBytes",
     ],
 )
 
@@ -30,13 +32,15 @@ swift_library(
     deps = [
         "//Sources/CoreTypes",
         "//Sources/ErrorHandling",
-        "//Sources/SecurityInterfaces",
+        "//Sources/SecurityBridge",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesFoundation",
         "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityProtocolsCore",
         "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/SecurityInterfacesXPC",
         "//Sources/SecurityInterfacesFoundationBridge",
+        "//Sources/SecureBytes",
     ],
     visibility = ["//visibility:public"],
 )

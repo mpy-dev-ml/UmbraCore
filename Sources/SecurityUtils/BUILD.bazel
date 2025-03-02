@@ -9,7 +9,9 @@ umbra_swift_library(
     ),
     deps = [
         "//Sources/ErrorHandling",
+        "//Sources/SecurityBridge",
         "//Sources/SecurityInterfaces",
+        "//Sources/SecurityProtocolsCore",
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Types:SecurityTypesTypes",
         "//Sources/UmbraLogging",
