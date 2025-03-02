@@ -6,7 +6,8 @@ umbra_swift_library(
     srcs = glob(["**/*.swift"], allow_empty = True),
     testonly = True,
     deps = [
-        "//Sources/SecurityInterfaces:SecurityInterfacesCore",
-        "//Sources/SecurityInterfaces:SecurityInterfacesFoundation",
+        "//Sources/SecurityInterfaces",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityProviderBridge",
     ],
 )

@@ -1,6 +1,8 @@
 import Foundation
 import SecurityTypes
 import SecurityTypesProtocols
+import SecurityInterfaces
+import CoreTypes
 
 /// Extension to URL that provides functionality for working with security-scoped bookmarks.
 /// Security-scoped bookmarks allow an app to maintain access to user-selected files and directories
@@ -21,12 +23,18 @@ extension URL {
         relativeTo: nil
       )
     } catch {
-      throw SecurityTypes.SecurityError.bookmarkError(
-        """
-        Failed to create bookmark for: \(path)
-        """
+      throw SecurityInterfaces.SecurityInterfacesError.bookmarkError(
+        "Failed to create bookmark for: \(path)"
       )
     }
+  }
+  
+  /// Creates a security-scoped bookmark for this URL and returns it as BinaryData.
+  /// - Returns: BinaryData containing the security-scoped bookmark
+  /// - Throws: SecurityError.bookmarkError if bookmark creation fails
+  public func createSecurityScopedBookmarkData() async throws -> CoreTypes.BinaryData {
+    let data = try await createSecurityScopedBookmark()
+    return CoreTypes.BinaryData([UInt8](data))
   }
 
   /// Resolves a security-scoped bookmark to its URL.
@@ -49,10 +57,8 @@ extension URL {
       )
       return (url, isStale)
     } catch {
-      throw SecurityTypes.SecurityError.bookmarkError(
-        """
-        Failed to resolve bookmark
-        """
+      throw SecurityInterfaces.SecurityInterfacesError.bookmarkError(
+        "Failed to resolve bookmark"
       )
     }
   }
@@ -75,14 +81,12 @@ extension URL {
   /// - Parameter operation: The operation to perform while access is granted
   /// - Returns: The result of the operation
   /// - Throws: Any error thrown by the operation
-  public func withSecurityScopedAccess<T>(
-    _ operation: () throws -> T
+  public func withSecurityScopedAccess<T: Sendable>(
+    _ operation: @Sendable () throws -> T
   ) throws -> T {
     guard startSecurityScopedAccess() else {
-      throw SecurityTypes.SecurityError.accessDenied(
-        reason: """
-        Failed to access: \(path)
-        """
+      throw SecurityInterfaces.SecurityInterfacesError.accessError(
+        "Failed to access: \(path)"
       )
     }
     defer { stopSecurityScopedAccess() }
@@ -94,14 +98,12 @@ extension URL {
   /// - Parameter operation: The async operation to perform while access is granted
   /// - Returns: The result of the operation
   /// - Throws: Any error thrown by the operation
-  public func withSecurityScopedAccess<T>(
-    _ operation: () async throws -> T
+  public func withSecurityScopedAccess<T: Sendable>(
+    _ operation: @Sendable () async throws -> T
   ) async throws -> T {
     guard startSecurityScopedAccess() else {
-      throw SecurityTypes.SecurityError.accessDenied(
-        reason: """
-        Failed to access: \(path)
-        """
+      throw SecurityInterfaces.SecurityInterfacesError.accessError(
+        "Failed to access: \(path)"
       )
     }
     defer { stopSecurityScopedAccess() }
