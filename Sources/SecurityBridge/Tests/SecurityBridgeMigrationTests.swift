@@ -12,6 +12,7 @@ import SecurityInterfacesProtocols
 import SecurityProtocolsCore
 import SecureBytes
 import XCTest
+import SecurityBridgeProtocolAdapters
 
 final class SecurityBridgeMigrationTests: XCTestCase {
     // MARK: - XPCServiceBridge Tests
@@ -104,7 +105,7 @@ final class SecurityBridgeMigrationTests: XCTestCase {
 
     func testSecurityProviderAdapter() async throws {
         let mockBridge = MockSecurityProviderBridge()
-        let adapter = SecurityProviderProtocolAdapter(bridge: mockBridge)
+        let adapter = SecurityBridgeProtocolAdapters.SecurityProviderProtocolAdapter(bridge: mockBridge)
 
         // Test encryption/decryption
         let protocolsTestData = SecurityInterfacesProtocols.BinaryData([1, 2, 3, 4, 5])
@@ -127,7 +128,7 @@ final class SecurityBridgeMigrationTests: XCTestCase {
 
     func testSecurityProviderAdapterGenerateRandomData() async throws {
         let mockBridge = MockSecurityProviderBridge()
-        let adapter = SecurityProviderProtocolAdapter(bridge: mockBridge)
+        let adapter = SecurityBridgeProtocolAdapters.SecurityProviderProtocolAdapter(bridge: mockBridge)
 
         // Test the newly added generateRandomData
         let randomData = try await adapter.generateRandomData(length: 16)
@@ -242,7 +243,7 @@ private class MockXPCServiceProtocolBase: SecurityInterfacesProtocols.XPCService
     }
 }
 
-private class MockSecurityProviderBridge: SecurityProviderBridge, @unchecked Sendable {
+private class MockSecurityProviderBridge: SecurityBridgeProtocolAdapters.SecurityProviderBridge, @unchecked Sendable {
     static var protocolIdentifier: String = "mock.provider.bridge"
 
     func encrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {

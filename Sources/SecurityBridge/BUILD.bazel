@@ -54,6 +54,8 @@ swift_test(
         "//Sources/UmbraCoreTypes",
         "//Sources/CoreTypes",
         "//Sources/FoundationBridgeTypes",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityBridgeProtocolAdapters",
     ],
 )
 
