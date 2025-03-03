@@ -2,7 +2,7 @@
 import Foundation
 import SecurityInterfaces
 import SecurityInterfacesProtocols
-import SecurityProviderBridge
+import SecurityBridge
 
 /// Mock implementation of SecurityProviderProtocol for testing
 public final class MockSecurityProvider: SecurityInterfacesProtocols.SecurityProviderProtocol {

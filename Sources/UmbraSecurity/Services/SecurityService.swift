@@ -3,7 +3,7 @@ import Foundation
 import ObjCBridgingTypesFoundation
 import SecurityBridge
 import SecurityUtils
-import SecurityInterfacesFoundationBridge
+
 import FoundationBridgeTypes
 
 /// Simple protocol for bookmark services to break dependency cycles
@@ -33,8 +33,8 @@ public final class SecurityService {
     
     /// Security provider adapter that can be used by other components
     @MainActor
-    var securityProviderAdapter: SecurityInterfacesFoundationBridge.SecurityProviderFoundationAdapter {
-        return SecurityInterfacesFoundationBridge.SecurityProviderFoundationAdapter(impl: securityProvider)
+    var securityProviderAdapter: SecurityBridge.SecurityProviderFoundationAdapter {
+        return SecurityBridge.SecurityProviderFoundationAdapter(impl: securityProvider)
     }
     
     /// Create a security-scoped bookmark for a URL
@@ -179,7 +179,7 @@ private final class DefaultBookmarkService: BookmarkServiceType {
 }
 
 /// Default implementation of the security provider that conforms to both required protocols
-private final class DefaultSecurityProviderImpl: SecurityInterfacesFoundationBridge.SecurityProviderFoundationImpl {
+private final class DefaultSecurityProviderImpl: SecurityBridge.SecurityProviderFoundationImpl {
     func encrypt(_ data: Data, key: Data) async throws -> Data {
         do {
             guard key.count >= 32 else {

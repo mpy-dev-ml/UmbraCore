@@ -1,7 +1,7 @@
 import CoreTypes
 import FoundationBridgeTypes
 import SecurityInterfacesBase
-import SecurityInterfacesFoundationBridge
+import SecurityBridge
 import SecurityInterfacesProtocols
 
 /// Protocol defining security-related operations for managing secure resource access

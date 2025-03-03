@@ -1,6 +1,6 @@
 import CryptoKit
 import Foundation
-import SecurityInterfacesFoundationBridge
+import SecurityBridge
 
 /// Concrete implementation of SecurityProviderFoundationImpl
 @objc public final class DefaultSecurityProviderFoundationImpl: NSObject, SecurityProviderFoundationImpl {

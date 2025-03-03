@@ -9,7 +9,7 @@ umbra_swift_library(
         "//Sources/CoreTypes",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityInterfacesFoundationBridge",
+        "//Sources/SecurityBridge",
     ],
 )
 
@@ -26,7 +26,7 @@ swift_library(
         "//Sources/CoreTypes",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityInterfacesFoundationBridge",
+        "//Sources/SecurityBridge",
     ],
     visibility = ["//visibility:public"],
 )

@@ -8,6 +8,6 @@ umbra_swift_library(
     deps = [
         "//Sources/SecurityInterfaces",
         "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityProviderBridge",
+        "//Sources/SecurityBridge",
     ],
 )

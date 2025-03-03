@@ -8,6 +8,6 @@ umbra_swift_library(
         "//Sources/ErrorHandling",
         "//Sources/UmbraLogging",
         "//Sources/UmbraSecurity/Extensions:UmbraSecurityExtensions",
-        "//Sources/UmbraSecurity/Services:UmbraSecurityServices",
+        "//Sources/UmbraSecurity/Services:UmbraSecurityServicesCore",
     ],
 )

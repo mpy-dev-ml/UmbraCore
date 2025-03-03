@@ -17,6 +17,7 @@ swift_library(
     deps = [
         # Use the dedicated SecureBytes module instead of UmbraCoreTypes
         "//Sources/SecureBytes",
+        "//Sources/XPCProtocolsCore",
     ],
 )
 

@@ -16,7 +16,6 @@ swift_library(
         "//Sources/ErrorHandling",
         "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/SecurityBridge",
-        "//Sources/SecurityInterfacesFoundationBridge",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/SecurityUtils",
         "//Sources/UmbraLogging",

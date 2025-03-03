@@ -1,8 +1,7 @@
 import Foundation
 import FoundationBridgeTypes
 import SecurityBridge
-import SecurityInterfacesFoundationBridge
-import SecurityProviderBridge
+
 import SecurityProtocolsCore
 
 /// Factory class for creating security providers
@@ -16,7 +15,7 @@ public final class SecurityProviderFactory {
         let foundationImpl = DefaultSecurityProviderFoundationImpl()
 
         // Create the adapter to convert between Foundation and bridge types
-        let foundationAdapter = SecurityInterfacesFoundationBridge.SecurityProviderFoundationAdapter(impl: foundationImpl)
+        let foundationAdapter = SecurityBridge.SecurityProviderFoundationAdapter(impl: foundationImpl)
 
         // Create the bridge that implements SecurityProviderBridge
         let bridge = DefaultSecurityProviderBridge(adapter: foundationAdapter)
@@ -40,9 +39,9 @@ public final class SecurityProviderFactory {
 /// Default implementation of SecurityProviderBridge
 @MainActor
 final class DefaultSecurityProviderBridge: SecurityProviderBridge.SecurityProviderBridge {
-    private let adapter: SecurityInterfacesFoundationBridge.SecurityProviderFoundationAdapter
+    private let adapter: SecurityBridge.SecurityProviderFoundationAdapter
 
-    init(adapter: SecurityInterfacesFoundationBridge.SecurityProviderFoundationAdapter) {
+    init(adapter: SecurityBridge.SecurityProviderFoundationAdapter) {
         self.adapter = adapter
     }
 

@@ -29,7 +29,7 @@ public struct DataBridge: Sendable {
 
     /// Initialize with BinaryData
     public init(_ binaryData: CoreTypes.BinaryData) {
-        self.bytes = binaryData.bytes
+        self.bytes = binaryData.unsafeBytes
     }
 
     /// Convert to BinaryData
