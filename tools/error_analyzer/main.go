@@ -237,7 +237,8 @@ func scanFileForErrors(filePath string, moduleName string) ([]ErrorDefinition, [
 		// Check for typealias declarations
 		if matches := typealiasRegex.FindStringSubmatch(line); matches != nil {
 			aliasName := matches[2]
-			sourceModule := matches[3]
+			// We're not using sourceModule directly, but it's useful information for future extension
+			// sourceModule := matches[3] // Commented out to avoid unused variable issue
 			sourceName := matches[4]
 			
 			if strings.HasSuffix(aliasName, "Error") || strings.HasSuffix(sourceName, "Error") {
