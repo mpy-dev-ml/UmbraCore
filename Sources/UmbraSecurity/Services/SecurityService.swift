@@ -34,7 +34,7 @@ public final class SecurityService {
     /// Security provider adapter that can be used by other components
     @MainActor
     var securityProviderAdapter: SecurityBridge.SecurityProviderFoundationAdapter {
-        return SecurityBridge.SecurityProviderFoundationAdapter(impl: securityProvider)
+        return SecurityBridge.SecurityProviderFoundationAdapter(implementation: securityProvider)
     }
     
     /// Create a security-scoped bookmark for a URL
