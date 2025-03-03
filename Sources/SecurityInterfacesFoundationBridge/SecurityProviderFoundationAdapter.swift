@@ -35,7 +35,7 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
         let nsData = DataConverter.convertToNSData(fromBytes: data.unsafeBytes)
         let nsKey = DataConverter.convertToNSData(fromBytes: key.unsafeBytes)
 
-        let encryptedData = try await foundationImpl.encrypt(nsData as Data, key: nsKey as Data)
+        let encryptedData = try await foundationImpl.encryptData(nsData as Data, key: nsKey as Data)
         return SecureBytes(Array(encryptedData))
     }
 
@@ -49,7 +49,7 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
         let nsData = DataConverter.convertToNSData(fromBytes: data.unsafeBytes)
         let nsKey = DataConverter.convertToNSData(fromBytes: key.unsafeBytes)
 
-        let decryptedData = try await foundationImpl.decrypt(nsData as Data, key: nsKey as Data)
+        let decryptedData = try await foundationImpl.decryptData(nsData as Data, key: nsKey as Data)
         return SecureBytes(Array(decryptedData))
     }
 
@@ -58,7 +58,7 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     /// - Returns: Generated key as SecureBytes
     /// - Throws: SecurityError if key generation fails
     public func generateKey(length: Int) async throws -> SecureBytes {
-        let keyData = try await foundationImpl.generateKey(length: length)
+        let keyData = try await foundationImpl.generateDataKey(length: length)
         return SecureBytes(Array(keyData))
     }
 
@@ -69,7 +69,7 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     public func hash(_ data: SecureBytes) async throws -> SecureBytes {
         let nsData = DataConverter.convertToNSData(fromBytes: data.unsafeBytes)
 
-        let hashedData = try await foundationImpl.hash(nsData as Data)
+        let hashedData = try await foundationImpl.hashData(nsData as Data)
         return SecureBytes(Array(hashedData))
     }
 
@@ -93,8 +93,8 @@ public final class SecurityProviderBridgeAdapter: @unchecked Sendable {
     public func resolveResourceBookmark(_ bookmarkData: SecureBytes) async throws -> (identifier: String, isStale: Bool) {
         let nsData = DataConverter.convertToNSData(fromBytes: bookmarkData.unsafeBytes)
 
-        let (urlString, isStale) = try await foundationImpl.resolveBookmark(nsData as Data)
-        return (identifier: urlString, isStale: isStale)
+        let (url, isStale) = try await foundationImpl.resolveBookmark(nsData as Data)
+        return (identifier: url.absoluteString, isStale: isStale)
     }
 
     /// Validate a resource bookmark to ensure it's still valid

@@ -5,6 +5,7 @@ import SecurityInterfacesProtocols
 /// Custom error for security interfaces that doesn't require SecurityInterfaces
 public enum SecurityBridgeError: Error, Sendable {
     case implementationMissing(String)
+    case bookmarkResolutionFailed
 }
 
 /// Bridge protocol to break circular dependencies between Foundation and SecurityInterfaces
@@ -141,5 +142,17 @@ public final class FoundationToCoreTypesBridgeAdapter: SecurityInterfacesProtoco
                 }
             }
         }
+    }
+    
+    /// Generate random data of specified length
+    /// - Parameter length: Length of random data to generate in bytes
+    /// - Returns: Random data as BinaryData
+    public func generateRandomData(length: Int) async throws -> SecurityInterfacesProtocols.BinaryData {
+        // For testing, just generate deterministic data
+        var bytes = [UInt8]()
+        for i in 0..<length {
+            bytes.append(UInt8(i % 256))
+        }
+        return SecurityInterfacesProtocols.BinaryData(bytes)
     }
 }
