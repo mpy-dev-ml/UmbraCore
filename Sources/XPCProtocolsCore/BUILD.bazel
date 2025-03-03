@@ -1,0 +1,32 @@
+load("//tools/build_defs:umbracore_module.bzl", "umbracore_foundation_free_module")
+
+umbracore_foundation_free_module(
+    name = "XPCProtocolsCore",
+    srcs = [
+        "Sources/XPCProtocolsCore.swift",
+        "Sources/XPCServiceProtocolBasic.swift",
+        "Sources/XPCServiceProtocolComplete.swift",
+        "Sources/XPCServiceProtocolStandard.swift",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecureBytes",
+    ],
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        # Enabling library evolution for binary compatibility
+        "-Xfrontend", "-enable-library-evolution",
+        "-g",
+        "-swift-version", "5",
+    ],
+)
+
+umbracore_foundation_free_module(
+    name = "XPCProtocolsCoreTests",
+    testonly = True,
+    srcs = glob(["Tests/**/*.swift"]),
+    deps = [
+        ":XPCProtocolsCore",
+        "//Sources/SecureBytes",
+    ],
+)
