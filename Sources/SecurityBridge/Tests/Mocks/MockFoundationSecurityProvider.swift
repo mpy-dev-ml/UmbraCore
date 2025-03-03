@@ -9,8 +9,8 @@ import SecureBytes
 import SecurityBridge
 import SecurityProtocolsCore
 
-/// A mock implementation of FoundationCryptoService for testing
-final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sendable {
+/// A mock implementation of FoundationCryptoServiceImpl for testing
+final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked Sendable {
 
     // MARK: - Test Control Properties
 
@@ -353,8 +353,8 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
     }
 }
 
-/// A mock implementation of FoundationKeyManagement for testing
-final class MockFoundationKeyManagement: FoundationKeyManagement, @unchecked Sendable {
+/// A mock implementation of FoundationKeyManagementImpl for testing
+final class MockFoundationKeyManagement: FoundationKeyManagementImpl, @unchecked Sendable {
 
     // MARK: - Test Control Properties
 
@@ -442,13 +442,12 @@ final class MockFoundationKeyManagement: FoundationKeyManagement, @unchecked Sen
         return .success(())
     }
 
-    func rotateKey(withIdentifier identifier: String, dataToReencrypt: Data?) async -> Result<(newKey: Data, reencryptedData: Data?), Error> {
+    func rotateKey(withIdentifier identifier: String, newKey: Data) async -> Result<Void, Error> {
         recordMethodCall("rotateKey")
         if shouldFail {
             return .failure(errorToReturn)
         }
-        let newKey = keyDataToReturn ?? Data(repeating: 0xCD, count: 32)
-        return .success((newKey: newKey, reencryptedData: dataToReencrypt))
+        return .success(())
     }
 
     func listKeyIdentifiers() async -> Result<[String], Error> {

@@ -17,13 +17,13 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     // MARK: - Properties
 
     /// The Foundation-dependent cryptographic implementation
-    private let implementation: any FoundationCryptoService
+    private let implementation: any FoundationCryptoServiceImpl
 
     // MARK: - Initialization
 
     /// Create a new CryptoServiceAdapter
     /// - Parameter implementation: The Foundation-dependent crypto implementation
-    public init(implementation: any FoundationCryptoService) {
+    public init(implementation: any FoundationCryptoServiceImpl) {
         self.implementation = implementation
     }
 
@@ -279,7 +279,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
 
 /// Protocol for Foundation-dependent cryptographic implementations
 /// that can be adapted to the Foundation-free CryptoServiceProtocol
-public protocol FoundationCryptoService: Sendable {
+public protocol FoundationCryptoServiceImpl: Sendable, RandomDataGenerating {
     func encrypt(data: Data, using key: Data) async -> Result<Data, Error>
     func decrypt(data: Data, using key: Data) async -> Result<Data, Error>
     func generateKey() async -> Result<Data, Error>

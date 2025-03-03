@@ -26,7 +26,7 @@ extension Result {
 }
 
 /// Adapter class to adapt MockFoundationXPCSecurityService to FoundationCryptoService protocol
-private final class MockCryptoServiceAdapter: FoundationCryptoService, @unchecked Sendable {
+private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unchecked Sendable {
     private let mockXPCService: MockFoundationXPCSecurityService
 
     init(mockXPCService: MockFoundationXPCSecurityService) {

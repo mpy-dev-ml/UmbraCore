@@ -5,13 +5,12 @@
 //
 
 import Foundation
-import SecureBytes
-import SecurityBridge
 import SecurityProtocolsCore
 
 /// A mock implementation of FoundationCryptoService for testing
-@available(*, deprecated, message: "Use MockFoundationXPCSecurityService instead")
-final class MockFoundationCryptoService: FoundationCryptoService, @unchecked Sendable {
+/// This mock provides predetermined responses for testing the adapter
+/// pattern without requiring real cryptographic operations.
+final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked Sendable {
 
     // These properties can be set in tests to control the behavior of the mock
 

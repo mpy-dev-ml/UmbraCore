@@ -24,7 +24,7 @@ swift_library(
         "//Sources/CoreTypes",
         "//Sources/FoundationBridgeTypes",
         "//Sources/ObjCBridgingTypesFoundation",
-        "//Sources/SecurityProviderBridge",
+        "//Sources/XPCProtocolsCore",
         # Foundation is an implicit dependency, imported directly in source files
     ],
 )

@@ -139,14 +139,14 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
     }
 }
 
-/// Protocol for Foundation-dependent security provider implementations
-/// that can be adapted to the Foundation-free SecurityProviderProtocol
+/// Protocol for Foundation-based security providers
+/// This adapter allows Foundation-dependent code to conform to the Foundation-independent SecurityProviderProtocol
 public protocol FoundationSecurityProvider: Sendable {
     /// Access to the Foundation-dependent crypto service
-    var cryptoService: any FoundationCryptoService { get }
+    var cryptoService: any FoundationCryptoServiceImpl { get }
 
     /// Access to the Foundation-dependent key manager
-    var keyManager: any FoundationKeyManagement { get }
+    var keyManager: any FoundationKeyManagementImpl { get }
 
     /// Perform a security operation with Foundation types
     /// - Parameters:

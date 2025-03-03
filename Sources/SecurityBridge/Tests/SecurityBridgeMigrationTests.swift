@@ -7,7 +7,7 @@
 import CoreTypes
 import Foundation
 import FoundationBridgeTypes
-import SecurityInterfacesFoundationBridge
+import SecurityBridge
 import SecurityInterfacesProtocols
 import SecurityProtocolsCore
 import SecureBytes

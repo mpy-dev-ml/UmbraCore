@@ -17,13 +17,13 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     // MARK: - Properties
 
     /// The Foundation-dependent key management implementation
-    private let implementation: any FoundationKeyManagement
+    private let implementation: any FoundationKeyManagementImpl
 
     // MARK: - Initialization
 
     /// Create a new KeyManagementAdapter
     /// - Parameter implementation: The Foundation-dependent key management implementation
-    public init(implementation: any FoundationKeyManagement) {
+    public init(implementation: any FoundationKeyManagementImpl) {
         self.implementation = implementation
     }
 
@@ -69,14 +69,20 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
         let dataToReencryptData = dataToReencrypt.map { DataAdapter.data(from: $0) }
 
         // Call the implementation
-        let result = await implementation.rotateKey(withIdentifier: identifier, dataToReencrypt: dataToReencryptData)
+        let result = await implementation.rotateKey(withIdentifier: identifier, newKey: dataToReencryptData ?? Data())
 
         // Convert the result back to the protocol's types
         switch result {
-        case .success(let rotationResult):
-            let newKey = DataAdapter.secureBytes(from: rotationResult.newKey)
-            let reencryptedData = rotationResult.reencryptedData.map { DataAdapter.secureBytes(from: $0) }
-            return .success((newKey: newKey, reencryptedData: reencryptedData))
+        case .success:
+            // Need to retrieve the key after rotation
+            let keyResult = await implementation.retrieveKey(withIdentifier: identifier)
+            switch keyResult {
+            case .success(let keyData):
+                let newKey = DataAdapter.secureBytes(from: keyData)
+                return .success((newKey: newKey, reencryptedData: nil))
+            case .failure(let error):
+                return .failure(mapError(error))
+            }
         case .failure(let error):
             return .failure(mapError(error))
         }
@@ -110,11 +116,10 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
 
 /// Protocol for Foundation-dependent key management implementations
 /// that can be adapted to the Foundation-free KeyManagementProtocol
-public protocol FoundationKeyManagement: Sendable {
+public protocol FoundationKeyManagementImpl: Sendable {
     func retrieveKey(withIdentifier identifier: String) async -> Result<Data, Error>
     func storeKey(_ key: Data, withIdentifier identifier: String) async -> Result<Void, Error>
     func deleteKey(withIdentifier identifier: String) async -> Result<Void, Error>
-    func rotateKey(withIdentifier identifier: String,
-                   dataToReencrypt: Data?) async -> Result<(newKey: Data, reencryptedData: Data?), Error>
+    func rotateKey(withIdentifier identifier: String, newKey: Data) async -> Result<Void, Error>
     func listKeyIdentifiers() async -> Result<[String], Error>
 }
