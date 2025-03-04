@@ -22,4 +22,4 @@ public enum XPCProtocolsCore {
 }
 
 // Export the main protocols
-@_exported import struct SecureBytes.SecureBytes
+@_exported import struct UmbraCoreTypes.SecureBytes

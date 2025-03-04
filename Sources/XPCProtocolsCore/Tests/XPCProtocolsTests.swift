@@ -4,10 +4,12 @@
 // Created as part of the UmbraCore XPC Protocols Refactoring
 //
 
+import XCTest
 import XPCProtocolsCore
 import UmbraCoreTypes
+
 /// Simple validation tests for XPCProtocolsCore
-class XPCProtocolsCoreTests {
+class XPCProtocolsCoreTests: XCTestCase {
     
     /// Test protocol references exist
     func testProtocolsExist() {
@@ -17,30 +19,30 @@ class XPCProtocolsCoreTests {
         let _: any XPCServiceProtocolComplete.Type = MockXPCService.self
         
         // If we got this far, the test passes
-        assert(true, "Protocol type references should exist")
+        XCTAssertTrue(true, "Protocol type references should exist")
     }
     
     /// Test basic protocol methods
     func testBasicProtocolMethods() async throws {
         let service = MockXPCService()
         let isActive = try await service.ping()
-        assert(isActive, "Ping should return true")
+        XCTAssertTrue(isActive, "Ping should return true")
         
         // This should not throw
-        try await service.synchroniseKeys(SecureBytes([1, 2, 3, 4]))
+        try await service.synchroniseKeys(SecureBytes(bytes: [1, 2, 3, 4]))
     }
     
     /// Test complete protocol methods
     func testCompleteProtocolMethods() async {
         let service = MockXPCService()
         let pingResult = await service.pingComplete()
-        assert(pingResult.isSuccess, "pingComplete should succeed")
+        XCTAssertTrue(pingResult.isSuccess, "pingComplete should succeed")
         
-        let syncResult = await service.synchronizeKeys(SecureBytes([1, 2, 3, 4]))
-        assert(syncResult.isSuccess, "synchronizeKeys should succeed")
+        let syncResult = await service.synchronizeKeys(SecureBytes(bytes: [1, 2, 3, 4]))
+        XCTAssertTrue(syncResult.isSuccess, "synchronizeKeys should succeed")
         
-        let encryptResult = await service.encrypt(data: SecureBytes([5, 6, 7, 8]))
-        assert(encryptResult.isSuccess, "encrypt should succeed")
+        let encryptResult = await service.encrypt(data: SecureBytes(bytes: [5, 6, 7, 8]))
+        XCTAssertTrue(encryptResult.isSuccess, "encrypt should succeed")
     }
     
     /// Run all tests
@@ -62,7 +64,7 @@ class XPCProtocolsCoreTests {
 
 /// Mock implementation of all XPC protocols for testing
 private final class MockXPCService: XPCServiceProtocolComplete {
-    static var protocolIdentifier: String = "com.test.mock.xpc.service"
+    static let protocolIdentifier: String = "com.test.mock.xpc.service"
     
     func pingComplete() async -> Result<Bool, SecurityError> {
         return .success(true)
@@ -81,7 +83,7 @@ private final class MockXPCService: XPCServiceProtocolComplete {
     }
     
     func generateKey() async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([0, 1, 2, 3]))
+        return .success(SecureBytes(bytes: [0, 1, 2, 3]))
     }
     
     func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
@@ -90,7 +92,7 @@ private final class MockXPCService: XPCServiceProtocolComplete {
     
     // Standard protocol methods
     func generateRandomData(length: Int) async throws -> SecureBytes {
-        return SecureBytes(Array(repeating: 0, count: length))
+        return SecureBytes(bytes: Array(repeating: 0, count: length))
     }
     
     func encryptData(_ data: SecureBytes, keyIdentifier: String?) async throws -> SecureBytes {
@@ -101,6 +103,15 @@ private final class MockXPCService: XPCServiceProtocolComplete {
         return data
     }
     
+    func synchroniseKeys(_ syncData: SecureBytes) async throws {
+        // No-op for test
+    }
+    
+    func ping() async throws -> Bool {
+        return true
+    }
+    
+    // Add missing methods required by XPCServiceProtocolStandard
     func hashData(_ data: SecureBytes) async throws -> SecureBytes {
         return data
     }
