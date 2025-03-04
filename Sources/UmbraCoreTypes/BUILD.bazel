@@ -6,7 +6,11 @@ swift_library(
     module_name = "UmbraCoreTypes",
     visibility = ["//visibility:public"],
     deps = [
-        # No dependencies - this module must be foundation-free
+        # Add dependency on our subpackage for CoreErrors
+        "//Sources/UmbraCoreTypes/CoreErrors:UmbraCoreTypesCoreErrors",
+    ],
+    copts = [
+        "-target", "arm64-apple-macos15.4",
     ],
 )
 
@@ -16,10 +20,14 @@ swift_library(
     module_name = "UmbraCoreTypes",
     visibility = ["//visibility:private"],
     deps = [
-        # No dependencies - this module must be foundation-free
+        # Add dependency on our subpackage for CoreErrors
+        "//Sources/UmbraCoreTypes/CoreErrors:UmbraCoreTypesCoreErrors",
     ],
     testonly = True,
-    copts = ["-enable-testing"],
+    copts = [
+        "-enable-testing",
+        "-target", "arm64-apple-macos15.4",
+    ],
 )
 
 swift_test(
@@ -27,5 +35,10 @@ swift_test(
     srcs = glob(["Tests/**/*.swift"]),
     deps = [
         ":UmbraCoreTypesTestLib",
+        "//Sources/UmbraCoreTypes/CoreErrors:UmbraCoreTypesCoreErrors",
+        "//Sources/CoreErrors",
+    ],
+    copts = [
+        "-target", "arm64-apple-macos15.4",
     ],
 )
