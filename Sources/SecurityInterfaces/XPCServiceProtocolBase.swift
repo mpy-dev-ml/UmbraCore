@@ -1,6 +1,11 @@
 import CoreTypes
 
 /// Protocol defining the core XPC service interface without Foundation dependencies
+/// 
+/// @available(*, deprecated, message: "Use XPCProtocolsCore.XPCServiceProtocolBasic instead")
+/// This protocol is deprecated. Please migrate to XPCProtocolsCore.XPCServiceProtocolBasic instead.
+/// Use the XPCProtocolMigrationFactory to bridge between protocol versions during migration.
+@available(*, deprecated, message: "Use XPCProtocolsCore.XPCServiceProtocolBasic instead")
 public protocol XPCServiceProtocolBase: Sendable {
     /// Base method to test connectivity
     func ping() async throws -> Bool

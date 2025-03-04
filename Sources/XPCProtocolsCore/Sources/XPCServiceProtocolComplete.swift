@@ -5,7 +5,10 @@
 //
 
 import UmbraCoreTypes
-/// Security-related error types without Foundation dependency
+
+/// @available(*, deprecated, message: "Use XPCSecurityError instead")
+/// SecurityError is now deprecated. Use XPCSecurityError from the XPCProtocolsCore module instead.
+@available(*, deprecated, message: "Use XPCSecurityError instead")
 public enum SecurityError: Error, Sendable, Equatable {
     case notImplemented
     case invalidData
@@ -44,31 +47,31 @@ public protocol XPCServiceProtocolComplete: XPCServiceProtocolStandard {
 
     /// Test connectivity with the XPC service
     /// - Returns: Boolean indicating whether the service is responsive
-    func pingComplete() async -> Result<Bool, SecurityError>
+    func pingComplete() async -> Result<Bool, XPCSecurityError>
 
     /// Synchronize encryption keys across processes
     /// - Parameter syncData: Key synchronization data
     /// - Returns: Success or a descriptive error
-    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, SecurityError>
+    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError>
 
     /// Encrypt data using the service's encryption implementation
     /// - Parameter data: Data to encrypt
     /// - Returns: Encrypted data or error
-    func encrypt(data: SecureBytes) async -> Result<SecureBytes, SecurityError>
+    func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError>
 
     /// Decrypt data using the service's decryption implementation
     /// - Parameter data: Data to decrypt
     /// - Returns: Decrypted data or error
-    func decrypt(data: SecureBytes) async -> Result<SecureBytes, SecurityError>
+    func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError>
 
     /// Generate a cryptographic key using the service
     /// - Returns: Generated key or error
-    func generateKey() async -> Result<SecureBytes, SecurityError>
+    func generateKey() async -> Result<SecureBytes, XPCSecurityError>
 
     /// Hash data using the service's hashing implementation
     /// - Parameter data: Data to hash
     /// - Returns: Hash value or error
-    func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError>
+    func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError>
 }
 
 // MARK: - Default Implementations
@@ -80,32 +83,32 @@ public extension XPCServiceProtocolComplete {
     }
 
     /// Default ping implementation - always successful in the base protocol
-    func pingComplete() async -> Result<Bool, SecurityError> {
+    func pingComplete() async -> Result<Bool, XPCSecurityError> {
         return .success(true)
     }
 
     /// Default implementation that returns a not implemented error
-    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, SecurityError> {
+    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
         return .failure(.notImplemented)
     }
 
     /// Default implementation that returns a not implemented error
-    func encrypt(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
+    func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
         return .failure(.notImplemented)
     }
 
     /// Default implementation that returns a not implemented error
-    func decrypt(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
+    func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
         return .failure(.notImplemented)
     }
 
     /// Default implementation that returns a not implemented error
-    func generateKey() async -> Result<SecureBytes, SecurityError> {
+    func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
         return .failure(.notImplemented)
     }
 
     /// Default implementation that returns a not implemented error
-    func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
+    func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
         return .failure(.notImplemented)
     }
     

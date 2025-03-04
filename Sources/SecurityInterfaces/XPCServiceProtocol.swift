@@ -3,6 +3,11 @@ import SecurityInterfacesProtocols
 
 /// Protocol for security-specific XPC services
 /// This extends the base protocol with security-specific methods
+///
+/// @available(*, deprecated, message: "Use XPCProtocolsCore.XPCServiceProtocolStandard instead")
+/// This protocol is deprecated. Please migrate to XPCProtocolsCore.XPCServiceProtocolStandard instead.
+/// Use the XPCProtocolMigrationFactory to bridge between protocol versions during migration.
+@available(*, deprecated, message: "Use XPCProtocolsCore.XPCServiceProtocolStandard instead")
 public protocol XPCServiceProtocol: SecurityInterfacesBase.XPCServiceProtocolBase {
     /// Encrypt data using the service
     /// - Parameter data: The data to encrypt

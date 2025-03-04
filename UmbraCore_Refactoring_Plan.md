@@ -1,26 +1,3 @@
-# UmbraCore Foundation Decoupling and Architecture Refactoring Plan
-
-## Table of Contents
-1. [Current State Analysis](#current-state-analysis)
-2. [Core Issues Identified](#core-issues-identified)
-3. [Refactoring Strategy](#refactoring-strategy)
-4. [Proposed Architecture](#proposed-architecture)
-5. [Implementation Plan](#implementation-plan)
-6. [Refactoring Priority Matrix](#refactoring-priority-matrix)
-7. [Module Consolidation Strategy](#module-consolidation-strategy)
-8. [Module Structure and Organization](#module-structure-and-organization)
-9. [Build System Integration](#build-system-integration)
-10. [Code Examples](#code-examples)
-11. [Implementation Workflow](#implementation-workflow)
-12. [Design Decisions and Rationale](#design-decisions-and-rationale)
-13. [Performance Considerations](#performance-considerations)
-14. [Versioning and Compatibility](#versioning-and-compatibility)
-15. [Error Handling Strategy](#error-handling-strategy)
-16. [Alternatives to @objc for XPC Protocols](#alternatives-to-objc-for-xpc-protocols)
-17. [Swift Library Evolution Compatibility in Dependency Chains](#swift-library-evolution-compatibility-in-dependency-chains)
-18. [Bazelisk and Build System Integration Lessons](#bazelisk-and-build-system-integration-lessons)
-19. [Implementation Status (Updated 1 March 2025)](#implementation-status-updated-1-march-2025)
-
 {{ ... }}
 
 We have updated our priority matrix to include these consolidation tasks, with SecureBytes implementation and SecurityInterfaces consolidation as our highest priorities.
@@ -256,7 +233,7 @@ Key characteristics:
 
 #### 2.2 SecurityProtocolsCore
 
-This module defines security interfaces using only core types with no Foundation dependencies:
+This module defines security interfaces using only UmbraCoreTypes and Swift standard library:
 
 ```
 SecurityProtocolsCore/
@@ -455,404 +432,6 @@ When implementing code within these modules, follow these guidelines:
 - Provide factory methods for object creation
 - Implement comprehensive error handling
 - Include detailed logging
-
-### 7. Interaction Flows
-
-This section illustrates how common operations flow through this module structure:
-
-#### 7.1 Data Encryption Flow
-
-```
-┌─────────────┐    ┌────────────────┐    ┌─────────────────┐
-│ Client Code │───►│ CryptoProtocol │───►│ CryptoService   │
-└─────────────┘    └────────────────┘    │ Implementation  │
-                                         └─────────────────┘
-                                                  │
-                   ┌────────────────┐             │
-                   │ SecureBytes    │◄────────────┘
-                   └────────────────┘
-```
-
-For Foundation interoperability:
-
-```
-┌─────────────┐    ┌────────────────┐    ┌─────────────────┐
-│ Client with │───►│ SecurityBridge │───►│ Data            │
-│ SecureBytes │    └────────────────┘    └─────────────────┘
-└─────────────┘
-```
-
-#### 7.2 XPC Service Call Flow
-
-```
-┌─────────────┐    ┌────────────────┐    ┌─────────────────┐
-│ Client Code │───►│ XPCProtocolCore│───►│ XPCService      │
-└─────────────┘    └────────────────┘    │ Implementation  │
-                                         └─────────────────┘
-                                                  │
-                   ┌────────────────┐             │
-                   │ Bridge Module  │◄────────────┘
-                   └────────────────┘
-                           │
-                           ▼
-                   ┌────────────────┐
-                   │ Foundation API │
-                   └────────────────┘
-```
-
-### 8. Example Implementation
-
-Below is an example of how a protocol would be defined in the new structure:
-
-**Before (SecurityInterfaces with Foundation dependency):**
-
-```swift
-import Foundation
-
-public protocol CryptoServiceProtocol {
-    func encrypt(_ data: Data, key: Data) throws -> Data
-    func decrypt(_ data: Data, key: Data) throws -> Data
-    func generateKey(size: Int) -> Data
-}
-```
-
-**After (SecurityProtocolsCore with no Foundation):**
-
-```swift
-import UmbraCoreTypes
-
-public protocol CryptoServiceProtocol {
-    func encrypt(_ data: SecureBytes, key: SecureBytes) throws -> SecureBytes
-    func decrypt(_ data: SecureBytes, key: SecureBytes) throws -> SecureBytes
-    func generateKey(size: Int) -> SecureBytes
-}
-```
-
-**Bridge Implementation:**
-
-```swift
-import Foundation
-import UmbraCoreTypes
-import SecurityProtocolsCore
-
-public class CryptoServiceBridge: CryptoServiceProtocol {
-    private let foundationService: FoundationCryptoService
-    
-    public init(foundationService: FoundationCryptoService) {
-        self.foundationService = foundationService
-    }
-    
-    public func encrypt(_ data: SecureBytes, key: SecureBytes) throws -> SecureBytes {
-        let foundationData = Data(secureBytes: data)
-        let foundationKey = Data(secureBytes: key)
-        let result = try foundationService.encrypt(foundationData, key: foundationKey)
-        return SecureBytes(data: result)
-    }
-    
-    // Other methods follow similar pattern
-}
-```
-
-This example demonstrates how the architecture cleanly separates Foundation dependencies while maintaining type safety and clear interfaces.
-
-## Build System Integration
-
-### Custom Starlark Rules
-
-These rules enforce architectural boundaries and validate module dependencies:
-
-#### Foundation-Free Module Rule
-
-```python
-# In //:bazel/macros/swift.bzl
-def foundation_free_swift_library(name, srcs, deps = [], **kwargs):
-    """
-    A swift_library that enforces no Foundation dependencies.
-    """
-    # Validation aspects
-    _validate_no_foundation_imports(name = name + "_validation", srcs = srcs)
-    
-    # Standard swift_library with constraints
-    swift_library(
-        name = name,
-        srcs = srcs,
-        deps = deps,
-        copts = [
-            "-strict-concurrency=complete",
-            "-warn-concurrency",
-            "-enable-actor-data-race-checks",
-        ] + kwargs.get("copts", []),
-        **{k: v for k, v in kwargs.items() if k != "copts"}
-    )
-```
-
-#### Layer-Aware Module Rule
-
-```python
-def umbra_module(name, layer, srcs, deps = [], **kwargs):
-    """
-    Defines a module with explicit layer membership that enforces
-    architectural boundaries.
-    """
-    if layer not in _MODULE_LAYERS:
-        fail("Unknown layer: %s" % layer)
-        
-    # Validate dependencies against layer rules
-    for dep in deps:
-        if dep.startswith("//Sources/"):
-            module_name = dep.split("/")[-1].split(":")[0]
-            dep_layer = _get_module_layer(module_name)
-            
-            if dep_layer in _MODULE_LAYERS[layer]["forbidden_deps"]:
-                fail("Module %s (%s) cannot depend on %s (%s)" % (
-                    name, layer, module_name, dep_layer
-                ))
-    
-    # Select appropriate library rule
-    if layer == "core":
-        foundation_free_swift_library(name = name, srcs = srcs, deps = deps, **kwargs)
-    elif layer == "foundation_bridge":
-        foundation_bridge_swift_library(name = name, srcs = srcs, deps = deps, **kwargs)
-    else:
-        swift_library(name = name, srcs = srcs, deps = deps, **kwargs)
-```
-
-### Validation and Enforcement
-
-Build-time validation to ensure compliance:
-
-1. **Dependency Validation**: Ensures modules only depend on appropriate layers
-2. **Import Validation**: Scans source files for forbidden imports
-3. **Type Usage Validation**: Validates no Foundation types are used in core modules
-4. **XPC Interface Validation**: Ensures XPC interfaces follow proper patterns
-
-For detailed lessons learned from our Bazelisk implementation on macOS 15.4 with arm64 architecture, including AES-GCM IV size standardization and architecture-specific configuration, see the [Bazelisk and Build System Integration Lessons](#bazelisk-and-build-system-integration-lessons) section.
-
-### Code Examples
-
-### Domain-Specific Types
-
-```swift
-// Sources/UmbraCoreTypes/SecureBytes.swift
-// NO import Foundation!
-
-public struct SecureBytes: Hashable, Sendable {
-    private let bytes: [UInt8]
-    
-    public init(_ bytes: [UInt8]) {
-        self.bytes = bytes
-    }
-    
-    public var isEmpty: Bool { bytes.isEmpty }
-    public var count: Int { bytes.count }
-    
-    public func subdata(in range: Range<Int>) -> SecureBytes {
-        SecureBytes(Array(bytes[range]))
-    }
-    
-    // Method to securely clear contents when no longer needed
-    public func secureClear() -> SecureBytes {
-        var mutableBytes = Array(bytes)
-        for i in 0..<mutableBytes.count {
-            mutableBytes[i] = 0
-        }
-        return SecureBytes([])
-    }
-}
-```
-
-### Foundation-Free Protocol
-
-```swift
-// Sources/SecurityProtocolsCore/SecurityProvider.swift
-// NO import Foundation!
-import UmbraCoreTypes
-
-public protocol SecurityProvider: Sendable {
-    func encrypt(_ content: SecureBytes, using key: EncryptionKey) async throws -> SecureBytes
-    func decrypt(_ content: SecureBytes, using key: EncryptionKey) async throws -> SecureBytes
-    func generateKey() async throws -> EncryptionKey
-}
-```
-
-### Bridge Implementation
-
-```swift
-// Sources/FoundationBridge/SecureBytesBridge.swift
-import Foundation
-import UmbraCoreTypes
-
-public extension SecureBytes {
-    init(_ data: Foundation.Data) {
-        self.init([UInt8](data))
-    }
-    
-    func asData() -> Foundation.Data {
-        return Foundation.Data(self.bytes)
-    }
-}
-
-public extension Foundation.Data {
-    func asSecureBytes() -> SecureBytes {
-        return SecureBytes([UInt8](self))
-    }
-}
-```
-
-### XPC Protocol with @Sendable
-
-```swift
-// Sources/XPCProtocolsBridge/XPCCryptoServiceProtocol.swift
-import Foundation
-
-@objc public protocol XPCCryptoServiceProtocol: NSObjectProtocol {
-    @objc func encryptData(_ data: NSData, 
-                        withReply reply: @escaping @Sendable (NSData?, NSError?) -> Void)
-                        
-    @objc func decryptData(_ data: NSData, 
-                        withReply reply: @escaping @Sendable (NSData?, NSError?) -> Void)
-                        
-    @objc func generateKey(withReply reply: @escaping @Sendable (NSData?, NSError?) -> Void)
-}
-```
-
-## Implementation Workflow
-
-### Branching Strategy
-
-To facilitate our refactoring effort while minimizing risk and ensuring proper testing, we will implement a structured branching strategy:
-
-#### 1. Long-running Integration Branch
-
-We will create a long-running integration branch called `umbracore-alpha` from `main`:
-
-```bash
-git checkout main
-git checkout -b umbracore-alpha
-```
-
-This branch serves as:
-- An integration branch for all refactoring changes
-- A safe testing ground without affecting production code
-- A complete implementation of the new architecture before merging to main
-
-#### 2. Feature Branches for Each Module
-
-For each module identified in our consolidation strategy, we will create focused feature branches from `umbracore-alpha`:
-
-```bash
-git checkout umbracore-alpha
-git checkout -b feature/UmbraCoreTypes
-git checkout umbracore-alpha
-git checkout -b feature/SecurityProtocolsCore
-git checkout umbracore-alpha
-git checkout -b feature/SecurityBridge
-# And so on for each module
-```
-
-The primary feature branches will include:
-- `feature/UmbraCoreTypes` - Foundation-free domain types
-- `feature/SecurityProtocolsCore` - Core security protocols
-- `feature/SecurityBridge` - Foundation bridging layer
-- `feature/SecurityImplementation` - Foundation-free implementation
-- `feature/SecurityImplementationFoundation` - Foundation-dependent implementation
-- `feature/XPCProtocolsCore` - XPC protocol definitions
-
-#### 3. Integration Process
-
-Our workflow for integrating changes follows these steps:
-
-1. **Develop in Feature Branch**
-   - Complete implementation of a specific module
-   - Add unit tests and documentation
-   - Ensure code compiles and tests pass
-
-2. **Create Pull Request to umbracore-alpha**
-   - Submit PR for code review
-   - Address review feedback
-   - Verify that integration tests still pass
-
-3. **Merge to Integration Branch**
-   - Once approved, merge feature branch to `umbracore-alpha`
-   - Run integration tests on `umbracore-alpha`
-   - Verify no regressions occur
-
-4. **Update Dependent Feature Branches**
-   - For in-progress feature branches that depend on the merged changes:
-   ```bash
-   git checkout feature/DependentFeature
-   git fetch origin
-   git merge origin/umbracore-alpha
-   # Resolve any conflicts
-   git push origin feature/DependentFeature
-   ```
-
-5. **Repeat Process**
-   - Continue with remaining feature branches
-   - Follow priority order from our refactoring matrix
-
-#### 4. Final Integration to Main
-
-Once all modules have been merged and thoroughly tested in `umbracore-alpha`:
-
-1. **Complete Integration Testing**
-   - Run comprehensive test suite on `umbracore-alpha`
-   - Verify all functionality across the system
-   - Perform performance benchmarking
-
-2. **Create Final PR**
-   - Create a PR to merge `umbracore-alpha` into `main`
-   - Request thorough review of the complete architecture
-
-3. **Deploy to Production**
-   - Once approved, merge to `main`
-   - Tag with appropriate version
-   - Deploy through normal CI/CD process
-
-### Migration Strategy for Existing Code
-
-When refactoring existing functionality, follow these guidelines:
-
-1. **Parallel Implementation**
-   - Begin by implementing the new structure alongside existing code
-   - Don't remove old code until the new implementation is proven
-
-2. **Feature Flagging**
-   - Use feature flags to toggle between old and new implementations
-   - This enables gradual migration and easy rollback if needed
-
-3. **Incremental Migration**
-   - Move functionality one module at a time
-   - Maintain backward compatibility where possible
-   - Update clients to use new APIs incrementally
-
-4. **Comprehensive Testing**
-   - Write tests that verify equivalent functionality between old and new implementations
-   - Test both implementations with the same input data
-   - Verify outputs match or any differences are expected and documented
-
-### Commit Guidelines
-
-For all work within this refactoring project, adhere to these commit guidelines:
-
-1. **Atomic Commits**
-   - Each commit should represent a single logical change
-   - Group related changes within a single commit
-   - Keep unrelated changes in separate commits
-
-2. **Descriptive Commit Messages**
-   - Format: `[Module] Brief description of change`
-   - Example: `[UmbraCoreTypes] Implement SecureBytes with Sendable conformance`
-   - Include detailed description in commit body when necessary
-
-3. **Reference Plan in Commits**
-   - Link commits to the relevant section of this refactoring plan
-   - Example: `Implements Section 2.1 of refactoring plan`
-
-4. **Code Quality**
-   - Run linters and formatters before committing
-   - Ensure tests pass for all commits
-   - Follow the style guidelines established for the project
 
 By following this structured branching and implementation strategy, we can manage the complexity of this large refactoring project, maintain code quality, and minimize disruption to ongoing development.
 
@@ -1138,142 +717,7 @@ We'll monitor these Swift Evolution proposals:
 
 As Swift evolves, we'll adapt our strategy to take advantage of new capabilities that reduce or eliminate the need for @objc in XPC communication.
 
-## Swift Library Evolution Compatibility in Dependency Chains
-
-During our refactoring work, we discovered critical constraints when working with Swift library evolution in module dependency chains.
-
-### Key Findings
-
-1. **Dependency Chain Constraints**
-   - All modules in a dependency chain must be compiled with consistent library evolution settings
-   - If any module in a chain doesn't support library evolution, none of the modules in that chain can use it
-   - External dependencies (especially via SPM) may not be compiled with library evolution support
-
-2. **Specific Example: CryptoSwift Dependency Chain**
-   We encountered this issue specifically with:
-   - CryptoSwift (SPM dependency lacking library evolution)
-   - CryptoSwiftFoundationIndependent (our wrapper)
-   - SecureBytes (depends on the wrapper)
-   - SecurityProtocolsCore and SecurityImplementation (depend on SecureBytes)
-
-3. **Error Signature**
-   Attempting to force library evolution in a module that depends on a non-library-evolution module causes:
-   ```
-   error: module 'CryptoSwift' was not compiled with library evolution support; 
-   using it means binary compatibility for 'CryptoSwiftFoundationIndependent' can't be guaranteed
-   ```
-
-### Solution Approaches
-
-1. **Dependency Chain Alignment**
-   - For dependency chains that include modules without library evolution support:
-     - Remove `-Xfrontend -enable-library-evolution` compiler flags from all BUILD.bazel files in the chain
-     - Ensure consistent compilation settings across the entire dependency graph
-     - Make sure target triples are consistent (arm64-apple-macos15.4)
-
-2. **Module Isolation Strategy**
-   - When library evolution is required for certain modules:
-     - Create separate dependency chains that don't cross module boundaries
-     - Isolate evolution-required modules from non-supporting dependencies
-     - Consider using protocol boundaries and dependency injection for isolation
-
-3. **Build System Configuration**
-   - Cannot override external SPM dependency build settings using standard MODULE.bazel configurations
-   - May need to consider creating custom SPM package resolution that adds library evolution support
-   - Always test the entire dependency chain with consistent build settings
-
-### Implementation Guidance
-
-For UmbraCore modules, we've adopted the following practice:
-
-1. **Identify Dependency Chains**
-   - Map out complete dependency chains before setting library evolution flags
-   - Check all external dependencies for their library evolution support status
-
-2. **Consistent Flag Application**
-   - Either all modules in a chain have library evolution enabled, or none do
-   - Document dependency chains and their evolution status in module metadata
-
-3. **Testing Protocol**
-   - Test binary compatibility across module versions when library evolution is enabled
-   - Verify binary compatibility guarantees are maintained
-
-This finding has significant implications for our architecture design, particularly around module boundaries and dependency management. We must carefully consider library evolution requirements when planning module dependencies.
-
-## Bazelisk and Build System Integration Lessons
-
-During our refactoring work on the UmbraCore Security module, we uncovered several important lessons about build system integration with Bazelisk and cryptographic implementation details that impact cross-platform compatibility.
-
-### 1. AES-GCM Implementation Details
-
-We discovered a critical inconsistency in the IV (Initialization Vector) size assumptions across our codebase:
-
-- **Correct IV Size for AES-GCM**: 12 bytes (96 bits) is the recommended size for AES-GCM mode
-- **Inconsistent Assumptions**: Different parts of our codebase were making different assumptions:
-  - CryptoWrapper correctly used 12 bytes
-  - KeyManagementImpl incorrectly assumed 16 bytes
-  - CryptoService was configured to use 128 bits (16 bytes)
-
-This inconsistency caused failures in key rotation operations, as combined data was being incorrectly parsed.
-
-#### Resolution:
-1. Standardized on 12-byte IVs across the entire codebase
-2. Updated all related documentation to clearly indicate the expected IV size
-3. Added explicit parameter documentation to prevent future confusion
-4. Modified CryptoService configuration defaults to use 96 bits instead of 128 bits
-
-### 2. Bazelisk Environment Configuration
-
-Working with Bazelisk 8.1.0 on macOS 15.4 (Apple Silicon) required precise configuration:
-
-- **Architecture Specifics**: 
-  - Target triples must consistently specify arm64-apple-macos15.4
-  - Native arm64 build tools perform significantly better than Rosetta-translated x86_64 tools
-  - .bazelrc modifications were necessary to ensure architecture consistency
-
-- **Testing Configuration**:
-  - `bazel test --test_output=all` provides full test output including debug logs
-  - Test filters require precise formatting that matches Objective-C/Swift test naming conventions
-  - Cached test results may hide recent changes; use `--nocache_test_results` when needed
-
-#### Example .bazelrc Configuration:
-
-```
-# Architecture-specific settings
-build --cpu=darwin_arm64
-build --apple_platform_type=macos
-build --macos_cpus=arm64
-
-# Swift compiler settings for Apple Silicon
-build:swift --swiftcopt="-target arm64-apple-macos15.4"
-
-# Test caching controls
-test --test_env=APPLE_TEST_RUNNER_DEBUG=1
-```
-
-### 3. Lessons for Cross-Platform Security Implementation
-
-Our refactoring efforts revealed several principles for maintaining secure, cross-platform cryptographic implementations:
-
-1. **Explicit Parameterization**: Never rely on defaults for cryptographic parameters; explicitly specify key sizes, IV sizes, and other critical values
-2. **Consistent Documentation**: Document expected parameter sizes and formats in all related functions
-3. **Platform-Independent Base Layer**: Ensure core cryptographic operations work identically across all supported platforms
-4. **Thorough Test Cases**: Include test cases that verify proper handling of combined data formats (IV+ciphertext)
-5. **Defensive Parameter Checks**: Add guard statements to verify parameter sizes before cryptographic operations
-
-### 4. Build System Integration Best Practices
-
-Based on our experiences, we've established the following best practices for build system integration:
-
-1. **Consistent Toolchain**: Use the same Bazelisk version across all development environments
-2. **Architecture-Specific Configuration**: Maintain separate configuration blocks for different architectures
-3. **Compile-Time Flag Consistency**: Ensure compiler flags like library evolution support are consistent across dependency chains
-4. **Testing Workflow**: Standardize on test commands that reveal all necessary information for debugging
-5. **CI/CD Integration**: Configure CI systems with the same Bazelisk version and configuration as development environments
-
-These lessons have been incorporated into our development workflows and will guide future security implementation work across the UmbraCore project.
-
-## 19. Implementation Status (Updated 1 March 2025)
+## Implementation Status (Updated 1 March 2025)
 
 This section tracks the implementation progress of the refactoring plan and identifies what should be prioritised next.
 
@@ -1281,7 +725,7 @@ This section tracks the implementation progress of the refactoring plan and iden
 
 **Completed:**
 - ✅ Created `SecurityProtocolsCore` with foundation-free types and protocols
-- ✅ Implemented `SecurityBridge` for Foundation conversions
+- ✅ Implemented `SecurityBridge` for all Foundation conversions
 - ✅ Added tests for both modules to validate functionality
 - ✅ Established correct dependency structure (SecurityBridge depends on SecurityProtocolsCore)
 
@@ -1378,3 +822,267 @@ Current build status with new modules:
 - **April 2025:** Complete Umbra Security Services consolidation
 - **May 2025:** Address Core Services Types and ObjC Bridging Types
 - **June 2025:** Complete CryptoSwift integration and final cleanup
+
+## Implementation Status Update (4 March 2025)
+
+A comprehensive code review has been conducted to identify redundancies and consolidation opportunities in the UmbraCore codebase. The following findings and recommendations will help guide the next steps in our refactoring effort.
+
+### XPC Protocol Consolidation Progress (75% Complete)
+
+✓ Created XPCProtocolsCore foundation-free module
+✓ Defined three-tier protocol hierarchy (Basic, Standard, Complete)
+✓ Added standardized error handling via UmbraCoreTypes.CESecurityError alias
+✓ Created migration adapters for legacy code compatibility
+✓ Deprecated legacy protocols in SecurityInterfaces module
+✓ Added comprehensive migration documentation
+✓ Implemented example service using new protocols
+
+Remaining tasks:
+- Update all clients of the legacy protocols to use the new hierarchy
+- Add comprehensive tests for the new protocol implementations
+- Remove legacy protocol definitions after migration period
+
+### Code Review Findings
+
+#### 1. XPC Protocol Redundancies
+
+We have identified multiple overlapping XPC protocol definitions across several modules:
+
+- **XPCProtocolsCore** defines `XPCServiceProtocolBasic`, `XPCServiceProtocolStandard`, and `XPCServiceProtocolComplete` 
+- **SecurityProtocolsCore** defines `XPCServiceProtocolCore` with similar functionality
+- **SecurityInterfacesProtocols** defines `XPCServiceProtocolBase` with basic functionality
+- **SecurityInterfacesBase** re-exports `XPCServiceProtocolBase` from SecurityInterfacesProtocols
+- **SecurityInterfaces** includes `XPCServiceProtocol` and `XPCServiceProtocolBase`
+
+#### 2. Bridge Implementation Duplication
+
+Multiple modules implement bridge functionality between Foundation types and domain types:
+
+- **SecurityBridge** contains comprehensive adapters (`DataAdapter`, `DateAdapter`, etc.)
+- **SecurityInterfacesFoundation** contains similar conversion functions
+- **UmbraSecurity/Extensions** contains extension methods for similar conversions
+
+#### 3. Security Provider Protocol Hierarchy
+
+The security provider protocol hierarchy is fragmented across several modules:
+
+- **SecurityProtocolsCore** defines `SecurityProviderProtocol`
+- **SecurityInterfacesProtocols** defines a similar `SecurityProviderProtocol`
+- **SecurityInterfacesBase** defines `SecurityProviderBase`
+- **SecurityInterfaces** defines additional security provider abstractions
+
+#### 4. Error Type Duplication
+
+Various error types related to security operations are defined in multiple places:
+
+- **SecurityProtocolsCore** defines `SecurityError`
+- **SecurityInterfacesProtocols** defines `SecurityProtocolError`
+- **XPCProtocolsCore** defines `SecurityProtocolError`
+- **UmbraCoreTypes/CoreErrors** includes common error definitions
+
+### Consolidation Recommendations
+
+Based on the above findings, the following specific consolidation steps are recommended:
+
+#### 1. XPC Protocol Consolidation
+
+1. **Immediate Actions:**
+   - Migrate all XPC protocol definitions from SecurityInterfacesProtocols and SecurityInterfacesBase to XPCProtocolsCore
+   - Update SecurityProtocolsCore to import XPCProtocolsCore instead of defining its own XPC protocols
+   - Define clear protocol hierarchy within XPCProtocolsCore with documentation of each level's purpose
+
+2. **Redundant Module Removal:**
+   - Remove XPC-related protocols from SecurityInterfacesProtocols
+   - Remove XPC-related re-exports from SecurityInterfacesBase
+   - Remove XPC-related protocols from SecurityInterfaces where they duplicate XPCProtocolsCore
+
+#### 2. Bridge Layer Consolidation
+
+1. **Immediate Actions:**
+   - Standardize on SecurityBridge as the primary bridge module
+   - Migrate any unique functionality from SecurityInterfacesFoundation to SecurityBridge
+   - Ensure all adapter implementations follow the same pattern as existing SecurityBridge adapters
+
+2. **Redundant Module Removal:**
+   - Deprecate and eventually remove SecurityInterfacesFoundation
+   - Refactor UmbraSecurity/Extensions to use SecurityBridge adapters
+
+#### 3. Security Provider Consolidation
+
+1. **Immediate Actions:**
+   - Standardize on SecurityProtocolsCore.SecurityProviderProtocol as the canonical definition
+   - Update other modules to use this definition instead of duplicating it
+   - Document the purpose and responsibility of each protocol in the hierarchy
+
+2. **Redundant Module Removal:**
+   - Remove SecurityProviderProtocol from SecurityInterfacesProtocols
+   - Remove SecurityProviderBase from SecurityInterfacesBase if redundant
+
+#### 4. Error Handling Standardization
+
+1. **Immediate Actions:**
+   - Centralize all security-related error definitions in UmbraCoreTypes/CoreErrors
+   - Create mappings between different error types in SecurityBridge
+   - Ensure all modules consistently use the centralized error types
+
+### Updated Timeline
+
+Based on the findings, the following updates to our existing timeline are recommended:
+
+#### March 2025:
+- Complete XPC protocol consolidation into XPCProtocolsCore (High Priority)
+- Standardize bridge implementation in SecurityBridge (High Priority)
+- Update error handling approach with centralized definitions (Medium Priority)
+
+#### April 2025:
+- Complete Security Provider protocol hierarchy consolidation (High Priority)
+- Finish UmbraSecurityBridge implementation (Medium Priority)
+- Begin deprecation of redundant modules (Medium Priority)
+
+#### May 2025:
+- Remove redundant modules following deprecation period (High Priority)
+- Complete Core Services Types consolidation (Medium Priority)
+- Address ObjC Bridging Types (Medium Priority)
+
+#### June 2025:
+- Complete CryptoSwift integration (Medium Priority)
+- Final testing and validation of consolidated architecture (High Priority)
+- Prepare umbracore-alpha for promotion to main branch (High Priority)
+
+### Conclusion
+
+The current module structure contains significant redundancy and overlap, particularly in the areas of XPC protocols, security providers, and bridge implementations. By following the consolidation recommendations outlined above, we can substantially reduce the number of modules while creating a clearer, more maintainable architecture.
+
+The foundational work done so far with SecurityProtocolsCore, SecurityBridge, and XPCProtocolsCore provides a solid basis for this consolidation effort. The next phase should focus on standardizing on these modules and removing redundant implementations.
+
+## Implementation Status Update (4 March 2025)
+
+A comprehensive code review has been conducted to identify redundancies and consolidation opportunities in the UmbraCore codebase. The following findings and recommendations will help guide the next steps in our refactoring effort.
+
+### XPC Protocol Consolidation Progress (75% Complete)
+
+✓ Created XPCProtocolsCore foundation-free module
+✓ Defined three-tier protocol hierarchy (Basic, Standard, Complete)
+✓ Added standardized error handling via UmbraCoreTypes.CESecurityError alias
+✓ Created migration adapters for legacy code compatibility
+✓ Deprecated legacy protocols in SecurityInterfaces module
+✓ Added comprehensive migration documentation
+✓ Implemented example service using new protocols
+
+Remaining tasks:
+- Update all clients of the legacy protocols to use the new hierarchy
+- Add comprehensive tests for the new protocol implementations
+- Remove legacy protocol definitions after migration period
+
+### Code Review Findings
+
+#### 1. XPC Protocol Redundancies
+
+We have identified multiple overlapping XPC protocol definitions across several modules:
+
+- **XPCProtocolsCore** defines `XPCServiceProtocolBasic`, `XPCServiceProtocolStandard`, and `XPCServiceProtocolComplete` 
+- **SecurityProtocolsCore** defines `XPCServiceProtocolCore` with similar functionality
+- **SecurityInterfacesProtocols** defines `XPCServiceProtocolBase` with basic functionality
+- **SecurityInterfacesBase** re-exports `XPCServiceProtocolBase` from SecurityInterfacesProtocols
+- **SecurityInterfaces** includes `XPCServiceProtocol` and `XPCServiceProtocolBase`
+
+#### 2. Bridge Implementation Duplication
+
+Multiple modules implement bridge functionality between Foundation types and domain types:
+
+- **SecurityBridge** contains comprehensive adapters (`DataAdapter`, `DateAdapter`, etc.)
+- **SecurityInterfacesFoundation** contains similar conversion functions
+- **UmbraSecurity/Extensions** contains extension methods for similar conversions
+
+#### 3. Security Provider Protocol Hierarchy
+
+The security provider protocol hierarchy is fragmented across several modules:
+
+- **SecurityProtocolsCore** defines `SecurityProviderProtocol`
+- **SecurityInterfacesProtocols** defines a similar `SecurityProviderProtocol`
+- **SecurityInterfacesBase** defines `SecurityProviderBase`
+- **SecurityInterfaces** defines additional security provider abstractions
+
+#### 4. Error Type Duplication
+
+Various error types related to security operations are defined in multiple places:
+
+- **SecurityProtocolsCore** defines `SecurityError`
+- **SecurityInterfacesProtocols** defines `SecurityProtocolError`
+- **XPCProtocolsCore** defines `SecurityProtocolError`
+- **UmbraCoreTypes/CoreErrors** includes common error definitions
+
+### Consolidation Recommendations
+
+Based on the above findings, the following specific consolidation steps are recommended:
+
+#### 1. XPC Protocol Consolidation
+
+1. **Immediate Actions:**
+   - Migrate all XPC protocol definitions from SecurityInterfacesProtocols and SecurityInterfacesBase to XPCProtocolsCore
+   - Update SecurityProtocolsCore to import XPCProtocolsCore instead of defining its own XPC protocols
+   - Define clear protocol hierarchy within XPCProtocolsCore with documentation of each level's purpose
+
+2. **Redundant Module Removal:**
+   - Remove XPC-related protocols from SecurityInterfacesProtocols
+   - Remove XPC-related re-exports from SecurityInterfacesBase
+   - Remove XPC-related protocols from SecurityInterfaces where they duplicate XPCProtocolsCore
+
+#### 2. Bridge Layer Consolidation
+
+1. **Immediate Actions:**
+   - Standardize on SecurityBridge as the primary bridge module
+   - Migrate any unique functionality from SecurityInterfacesFoundation to SecurityBridge
+   - Ensure all adapter implementations follow the same pattern as existing SecurityBridge adapters
+
+2. **Redundant Module Removal:**
+   - Deprecate and eventually remove SecurityInterfacesFoundation
+   - Refactor UmbraSecurity/Extensions to use SecurityBridge adapters
+
+#### 3. Security Provider Consolidation
+
+1. **Immediate Actions:**
+   - Standardize on SecurityProtocolsCore.SecurityProviderProtocol as the canonical definition
+   - Update other modules to use this definition instead of duplicating it
+   - Document the purpose and responsibility of each protocol in the hierarchy
+
+2. **Redundant Module Removal:**
+   - Remove SecurityProviderProtocol from SecurityInterfacesProtocols
+   - Remove SecurityProviderBase from SecurityInterfacesBase if redundant
+
+#### 4. Error Handling Standardization
+
+1. **Immediate Actions:**
+   - Centralize all security-related error definitions in UmbraCoreTypes/CoreErrors
+   - Create mappings between different error types in SecurityBridge
+   - Ensure all modules consistently use the centralized error types
+
+### Updated Timeline
+
+Based on the findings, the following updates to our existing timeline are recommended:
+
+#### March 2025:
+- Complete XPC protocol consolidation into XPCProtocolsCore (High Priority)
+- Standardize bridge implementation in SecurityBridge (High Priority)
+- Update error handling approach with centralized definitions (Medium Priority)
+
+#### April 2025:
+- Complete Security Provider protocol hierarchy consolidation (High Priority)
+- Finish UmbraSecurityBridge implementation (Medium Priority)
+- Begin deprecation of redundant modules (Medium Priority)
+
+#### May 2025:
+- Remove redundant modules following deprecation period (High Priority)
+- Complete Core Services Types consolidation (Medium Priority)
+- Address ObjC Bridging Types (Medium Priority)
+
+#### June 2025:
+- Complete CryptoSwift integration (Medium Priority)
+- Final testing and validation of consolidated architecture (High Priority)
+- Prepare umbracore-alpha for promotion to main branch (High Priority)
+
+### Conclusion
+
+The current module structure contains significant redundancy and overlap, particularly in the areas of XPC protocols, security providers, and bridge implementations. By following the consolidation recommendations outlined above, we can substantially reduce the number of modules while creating a clearer, more maintainable architecture.
+
+The foundational work done so far with SecurityProtocolsCore, SecurityBridge, and XPCProtocolsCore provides a solid basis for this consolidation effort. The next phase should focus on standardizing on these modules and removing redundant implementations.
