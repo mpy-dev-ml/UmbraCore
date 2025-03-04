@@ -11,30 +11,19 @@ swift_library(
     ],
     copts = [
         "-target", "arm64-apple-macos15.4",
+        # Enabling library evolution for binary compatibility
+        "-Xfrontend", "-enable-library-evolution",
     ],
 )
 
-swift_library(
-    name = "UmbraCoreTypesTestLib",
-    srcs = glob(["Sources/**/*.swift"]),
-    module_name = "UmbraCoreTypes",
-    visibility = ["//visibility:private"],
-    deps = [
-        # Add dependency on our subpackage for CoreErrors
-        "//Sources/UmbraCoreTypes/CoreErrors:UmbraCoreTypesCoreErrors",
-    ],
-    testonly = True,
-    copts = [
-        "-enable-testing",
-        "-target", "arm64-apple-macos15.4",
-    ],
-)
+# No need for a separate test library with the same sources
+# Instead create tests that depend on the main library
 
 swift_test(
     name = "UmbraCoreTypesTests",
     srcs = glob(["Tests/**/*.swift"]),
     deps = [
-        ":UmbraCoreTypesTestLib",
+        ":UmbraCoreTypes",
         "//Sources/UmbraCoreTypes/CoreErrors:UmbraCoreTypesCoreErrors",
         "//Sources/CoreErrors",
     ],

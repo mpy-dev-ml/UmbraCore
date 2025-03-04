@@ -36,7 +36,7 @@ final class DefaultCryptoServiceTests: XCTestCase {
     }
     
     func testEncryptDecrypt() async {
-        let testData = SecureBytes([1, 2, 3, 4, 5])
+        let testData = SecureBytes(bytes: [1, 2, 3, 4, 5])
         let keyResult = await cryptoService.generateKey()
         
         guard case .success(let key) = keyResult else {
@@ -64,7 +64,7 @@ final class DefaultCryptoServiceTests: XCTestCase {
     }
     
     func testHashingFunctionality() async {
-        let testData = SecureBytes([1, 2, 3, 4, 5])
+        let testData = SecureBytes(bytes: [1, 2, 3, 4, 5])
         let hashResult = await cryptoService.hash(data: testData)
         
         guard case .success(let hash) = hashResult else {
@@ -78,7 +78,7 @@ final class DefaultCryptoServiceTests: XCTestCase {
     // MARK: - Test Symmetric Encryption
     
     func testSymmetricEncryptionDecryption() async {
-        let testData = SecureBytes([1, 2, 3, 4, 5])
+        let testData = SecureBytes(bytes: [1, 2, 3, 4, 5])
         let keyResult = await cryptoService.generateKey()
         
         guard case .success(let key) = keyResult else {

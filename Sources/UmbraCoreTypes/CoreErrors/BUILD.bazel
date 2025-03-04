@@ -8,6 +8,8 @@ swift_library(
     module_name = "UmbraCoreTypes_CoreErrors",
     copts = [
         "-target", "arm64-apple-macos15.4",
+        # Enabling library evolution for binary compatibility
+        "-Xfrontend", "-enable-library-evolution",
     ],
     deps = [
         "//Sources/CoreErrors",

@@ -39,16 +39,16 @@ class SecurityProtocolsCoreTests: XCTestCase {
 
     func testSecurityOperationDescription() {
         // Test operation descriptions
-        XCTAssertEqual(SecurityOperation.encryption.description, "Encryption")
-        XCTAssertEqual(SecurityOperation.keyGeneration.description, "Key Generation")
-        XCTAssertEqual(SecurityOperation.custom("Test").description, "Custom: Test")
+        XCTAssertEqual(SecurityOperation.asymmetricEncryption.rawValue, "asymmetricEncryption")
+        XCTAssertEqual(SecurityOperation.keyGeneration.rawValue, "keyGeneration")
+        XCTAssertEqual(SecurityOperation.hashing.rawValue, "hashing")
     }
 
     func testSecurityOperationEquatable() {
         // Test operations are equatable
-        let op1 = SecurityOperation.encryption
-        let op2 = SecurityOperation.encryption
-        let op3 = SecurityOperation.decryption
+        let op1 = SecurityOperation.asymmetricEncryption
+        let op2 = SecurityOperation.asymmetricEncryption
+        let op3 = SecurityOperation.symmetricDecryption
 
         XCTAssertEqual(op1, op2)
         XCTAssertNotEqual(op1, op3)
@@ -58,19 +58,18 @@ class SecurityProtocolsCoreTests: XCTestCase {
 
     func testSecurityConfigDTODefaults() {
         // Test default configuration
-        let config = SecurityConfigDTO.default
+        let config = SecurityConfigDTO.aesGCM()
 
-        XCTAssertEqual(config.algorithm, .aes256)
-        XCTAssertEqual(config.hashAlgorithm, .sha256)
-        XCTAssertNil(config.keyDerivation)
-        XCTAssertEqual(config.timeoutSeconds, 30)
+        XCTAssertEqual(config.algorithm, "AES-GCM")
+        XCTAssertEqual(config.keySizeInBits, 256)
+        XCTAssertNil(config.initializationVector)
     }
 
     func testSecurityConfigDTOEquatable() {
         // Test configurations are equatable
-        let config1 = SecurityConfigDTO(algorithm: .aes256, hashAlgorithm: .sha256)
-        let config2 = SecurityConfigDTO(algorithm: .aes256, hashAlgorithm: .sha256)
-        let config3 = SecurityConfigDTO(algorithm: .chacha20Poly1305, hashAlgorithm: .sha256)
+        let config1 = SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
+        let config2 = SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
+        let config3 = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2048)
 
         XCTAssertEqual(config1, config2)
         XCTAssertNotEqual(config1, config3)
@@ -78,39 +77,23 @@ class SecurityProtocolsCoreTests: XCTestCase {
 
     // MARK: - SecurityResultDTO Tests
 
-    func testSecurityResultDTOSuccess() {
+    func testSuccessResultCreation() {
         // Test successful result creation
-        let data = SecureBytes([0x01, 0x02, 0x03])
-        let result = SecurityResultDTO.success(
-            operation: .encryption,
-            resultData: data,
-            metadata: ["key": "value"],
-            durationMilliseconds: 100
-        )
+        let data = SecureBytes(bytes: [1, 2, 3])
+        let result = SecurityResultDTO.success(data: data)
 
-        XCTAssertEqual(result.operation, .encryption)
-        XCTAssertEqual(result.resultData, data)
-        XCTAssertEqual(result.metadata["key"], "value")
-        XCTAssertEqual(result.durationMilliseconds, 100)
-        XCTAssertTrue(result.isSuccess)
+        XCTAssertTrue(result.success)
+        XCTAssertEqual(result.data, data)
         XCTAssertNil(result.error)
     }
 
-    func testSecurityResultDTOFailure() {
+    func testFailureResultCreation() {
         // Test failure result creation
         let error = SecurityError.encryptionFailed(reason: "test")
-        let result = SecurityResultDTO.failure(
-            operation: .encryption,
-            error: error,
-            metadata: ["key": "value"],
-            durationMilliseconds: 100
-        )
+        let result = SecurityResultDTO.failure(error: error, details: "Operation failed")
 
-        XCTAssertEqual(result.operation, .encryption)
-        XCTAssertNil(result.resultData)
-        XCTAssertEqual(result.metadata["key"], "value")
-        XCTAssertEqual(result.durationMilliseconds, 100)
-        XCTAssertFalse(result.isSuccess)
+        XCTAssertFalse(result.success)
+        XCTAssertNil(result.data)
         XCTAssertEqual(result.error, error)
     }
 }

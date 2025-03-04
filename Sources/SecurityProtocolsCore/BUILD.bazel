@@ -15,8 +15,8 @@ swift_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        # Use the dedicated SecureBytes module instead of UmbraCoreTypes
-        "//Sources/SecureBytes",
+        # Use UmbraCoreTypes which now includes SecureBytes functionality
+        "//Sources/UmbraCoreTypes",
         "//Sources/XPCProtocolsCore",
     ],
 )
@@ -28,6 +28,6 @@ swift_test(
     ]),
     deps = [
         ":SecurityProtocolsCore",
-        "//Sources/SecureBytes",
+        "//Sources/UmbraCoreTypes",
     ],
 )

@@ -53,13 +53,13 @@ final class CryptoServiceAdaptersTests: XCTestCase {
         let mockSecurityResult: SecurityResultDTO
         
         init(
-            mockEncryptResult: Result<SecureBytes, SecurityError> = .success(SecureBytes([0x01, 0x02, 0x03])),
-            mockDecryptResult: Result<SecureBytes, SecurityError> = .success(SecureBytes([0x04, 0x05, 0x06])),
-            mockHashResult: Result<SecureBytes, SecurityError> = .success(SecureBytes([0x07, 0x08, 0x09])),
-            mockGenerateKeyResult: Result<SecureBytes, SecurityError> = .success(SecureBytes([0x0A, 0x0B, 0x0C])),
+            mockEncryptResult: Result<SecureBytes, SecurityError> = .success(SecureBytes(bytes: [0x01, 0x02, 0x03])),
+            mockDecryptResult: Result<SecureBytes, SecurityError> = .success(SecureBytes(bytes: [0x04, 0x05, 0x06])),
+            mockHashResult: Result<SecureBytes, SecurityError> = .success(SecureBytes(bytes: [0x07, 0x08, 0x09])),
+            mockGenerateKeyResult: Result<SecureBytes, SecurityError> = .success(SecureBytes(bytes: [0x0A, 0x0B, 0x0C])),
             mockVerifyResult: Bool = true,
-            mockGenerateRandomDataResult: Result<SecureBytes, SecurityError> = .success(SecureBytes([0x10, 0x11, 0x12])),
-            mockSecurityResult: SecurityResultDTO = SecurityResultDTO(data: SecureBytes([0x13, 0x14, 0x15]))
+            mockGenerateRandomDataResult: Result<SecureBytes, SecurityError> = .success(SecureBytes(bytes: [0x10, 0x11, 0x12])),
+            mockSecurityResult: SecurityResultDTO = SecurityResultDTO(data: SecureBytes(bytes: [0x13, 0x14, 0x15]))
         ) {
             self.mockEncryptResult = mockEncryptResult
             self.mockDecryptResult = mockDecryptResult
@@ -184,27 +184,27 @@ final class CryptoServiceAdaptersTests: XCTestCase {
         let anyService = AnyCryptoService(mockService)
         
         // Test that calls are forwarded correctly
-        _ = await anyService.encrypt(data: SecureBytes([0x01]), using: SecureBytes([0x02]))
+        _ = await anyService.encrypt(data: SecureBytes(bytes: [0x01]), using: SecureBytes(bytes: [0x02]))
         await assertAsync(mockService.getEncryptCalled(), true, "Encrypt should be called on the underlying service")
         
-        _ = await anyService.decrypt(data: SecureBytes([0x03]), using: SecureBytes([0x04]))
+        _ = await anyService.decrypt(data: SecureBytes(bytes: [0x03]), using: SecureBytes(bytes: [0x04]))
         await assertAsync(mockService.getDecryptCalled(), true, "Decrypt should be called on the underlying service")
         
-        _ = await anyService.hash(data: SecureBytes([0x05]))
+        _ = await anyService.hash(data: SecureBytes(bytes: [0x05]))
         await assertAsync(mockService.getHashCalled(), true, "Hash should be called on the underlying service")
         
         _ = await anyService.generateKey()
         await assertAsync(mockService.getGenerateKeyCalled(), true, "GenerateKey should be called on the underlying service")
         
-        _ = await anyService.verify(data: SecureBytes([0x06]), against: SecureBytes([0x07]))
+        _ = await anyService.verify(data: SecureBytes(bytes: [0x06]), against: SecureBytes(bytes: [0x07]))
         await assertAsync(mockService.getVerifyCalled(), true, "Verify should be called on the underlying service")
         
         _ = await anyService.generateRandomData(length: 10)
         await assertAsync(mockService.getGenerateRandomDataCalled(), true, "GenerateRandomData should be called on the underlying service")
         
         _ = await anyService.encryptSymmetric(
-            data: SecureBytes([0x08]), 
-            key: SecureBytes([0x09]), 
+            data: SecureBytes(bytes: [0x08]), 
+            key: SecureBytes(bytes: [0x09]), 
             config: SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
         )
         await assertAsync(mockService.getEncryptSymmetricCalled(), true, "EncryptSymmetric should be called on the underlying service")
@@ -214,8 +214,8 @@ final class CryptoServiceAdaptersTests: XCTestCase {
     
     func testCryptoServiceTypeAdapter() async {
         // Define mock results
-        let expectedEncryptResult = SecureBytes([0x01, 0x02, 0x03])
-        let expectedDecryptResult = SecureBytes([0x04, 0x05, 0x06])
+        let expectedEncryptResult = SecureBytes(bytes: [0x01, 0x02, 0x03])
+        let expectedDecryptResult = SecureBytes(bytes: [0x04, 0x05, 0x06])
         
         // Create mock with the expected results
         let mockService = MockCryptoService(
@@ -227,7 +227,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
         let adapter = CryptoServiceTypeAdapter(adaptee: mockService)
         
         // Test that basic functionality works with identity transformations
-        let encryptResult = await adapter.encrypt(data: SecureBytes([0x01]), using: SecureBytes([0x02]))
+        let encryptResult = await adapter.encrypt(data: SecureBytes(bytes: [0x01]), using: SecureBytes(bytes: [0x02]))
         await assertAsync(mockService.getEncryptCalled(), true, "Encrypt should be called on the underlying service")
         
         if case .success(let encryptData) = encryptResult {
@@ -236,7 +236,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
             XCTFail("Encryption should succeed")
         }
         
-        let decryptResult = await adapter.decrypt(data: SecureBytes([0x03]), using: SecureBytes([0x04]))
+        let decryptResult = await adapter.decrypt(data: SecureBytes(bytes: [0x03]), using: SecureBytes(bytes: [0x04]))
         await assertAsync(mockService.getDecryptCalled(), true, "Decrypt should be called on the underlying service")
         
         if case .success(let decryptData) = decryptResult {
@@ -254,17 +254,21 @@ final class CryptoServiceAdaptersTests: XCTestCase {
         let transformations = CryptoServiceTypeAdapter<MockCryptoService>.Transformations(
             transformInputData: { @Sendable originalData in
                 var newData = [UInt8]()
-                for byte in originalData.unsafeBytes {
-                    newData.append(contentsOf: [byte, byte, byte])
+                originalData.withUnsafeBytes { buffer in
+                    for byte in buffer {
+                        newData.append(contentsOf: [byte, byte, byte])
+                    }
                 }
-                return SecureBytes(newData)
+                return SecureBytes(bytes: newData)
             },
             transformOutputData: { @Sendable originalData in
                 var newData = [UInt8]()
-                for byte in originalData.unsafeBytes {
-                    newData.append(contentsOf: [byte, byte])
+                originalData.withUnsafeBytes { buffer in
+                    for byte in buffer {
+                        newData.append(contentsOf: [byte, byte])
+                    }
                 }
-                return SecureBytes(newData)
+                return SecureBytes(bytes: newData)
             }
         )
         
@@ -272,13 +276,18 @@ final class CryptoServiceAdaptersTests: XCTestCase {
         let adapter = CryptoServiceTypeAdapter(adaptee: mockService, transformations: transformations)
         
         // Test with simple input
-        let inputData = SecureBytes([0x01, 0x02])
-        let encryptResult = await adapter.encrypt(data: inputData, using: SecureBytes([0x03]))
+        let inputData = SecureBytes(bytes: [0x01, 0x02])
+        let encryptResult = await adapter.encrypt(data: inputData, using: SecureBytes(bytes: [0x03]))
         
         // The mock returns SecureBytes([0x01, 0x02, 0x03]), and our transformation doubles that
         if case .success(let outputData) = encryptResult {
             XCTAssertEqual(outputData.count, 6, "Output should be 6 bytes (3 bytes doubled)")
-            XCTAssertEqual(outputData.unsafeBytes, [0x01, 0x01, 0x02, 0x02, 0x03, 0x03], "Output transformation should double each byte")
+            
+            var outputBytes = [UInt8]()
+            outputData.withUnsafeBytes { buffer in
+                outputBytes = Array(buffer)
+            }
+            XCTAssertEqual(outputBytes, [0x01, 0x01, 0x02, 0x02, 0x03, 0x03], "Output transformation should double each byte")
         } else {
             XCTFail("Encryption should succeed")
         }
