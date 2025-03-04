@@ -1,158 +1,164 @@
 import CoreTypes
+import Foundation
 import FoundationBridgeTypes
-import SecurityInterfacesBase
 import SecurityBridge
-import SecurityInterfacesProtocols
+import SecurityInterfacesBase
+// Import our helper package to avoid namespace conflicts
+import SecurityInterfaces_SecurityProtocolsCore
 
 /// Protocol defining security-related operations for managing secure resource access
 public protocol SecurityProvider: SecurityProviderBase {
-    // MARK: - Security Operations
-
-    /// Encrypt data using the provider's encryption mechanism
+    /// Perform a security operation with the given parameters
     /// - Parameters:
-    ///   - data: Data to encrypt
-    ///   - key: Encryption key
-    /// - Returns: Encrypted data
-    /// - Throws: SecurityError if encryption fails
-    func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8]
+    ///   - operation: The security operation to perform
+    ///   - parameters: Parameters for the operation
+    /// - Returns: The result of the operation
+    /// - Throws: SecurityInterfacesError if the operation fails
+    func performSecurityOperation(
+        operation: SecurityOperation,
+        parameters: [String: Any]
+    ) async throws -> SecurityResult
 
-    /// Decrypt data using the provider's decryption mechanism
-    /// - Parameters:
-    ///   - data: Data to decrypt
-    ///   - key: Decryption key
-    /// - Returns: Decrypted data
-    /// - Throws: SecurityError if decryption fails
-    func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8]
-
-    /// Generate a secure random key
-    /// - Parameter length: Length of the key in bytes
-    /// - Returns: Generated key
-    /// - Throws: SecurityError if key generation fails
-    func generateKey(length: Int) async throws -> [UInt8]
-
-    /// Hash data using the provider's hashing mechanism
-    /// - Parameter data: Data to hash
-    /// - Returns: Hash value
-    /// - Throws: SecurityError if hashing fails
-    func hash(_ data: [UInt8]) async throws -> [UInt8]
-
-    // MARK: - Resource Access
-
-    /// Create a security bookmark for a path
-    /// - Parameter path: Path to create bookmark for
-    /// - Returns: Bookmark data that can be persisted
-    /// - Throws: SecurityError if bookmark creation fails
-    func createBookmark(for path: String) async throws -> [UInt8]
-
-    /// Resolve a previously created security bookmark
-    /// - Parameter bookmarkData: Bookmark data to resolve
-    /// - Returns: Tuple containing resolved path and whether bookmark is stale
-    /// - Throws: SecurityError if bookmark resolution fails
-    func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool)
-
-    /// Validate a bookmark to ensure it's still valid
-    /// - Parameter bookmarkData: Bookmark data to validate
-    /// - Returns: True if bookmark is valid, false otherwise
-    /// - Throws: SecurityError if validation fails
-    func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool
+    /// Get the current security status
+    /// - Returns: The current security status
+    func getSecurityStatus() async -> SecurityStatus
 }
 
-/// Adapter class to convert between SecurityProviderBridge and SecurityProvider
+/// Adapter class to convert between SecurityProtocolsCore and SecurityProvider
 public final class SecurityProviderAdapter: SecurityProvider {
-    private let bridge: any SecurityProviderBridge
+    // Use our isolated provider wrapper to avoid namespace conflicts
+    private let bridge: SPCProvider
 
-    public init(bridge: any SecurityProviderBridge) {
+    public init(bridge: SPCProvider) {
         self.bridge = bridge
     }
+
+    // MARK: - SecurityProviderBase Implementation
 
     public static var protocolIdentifier: String {
         return "com.umbra.security.provider.adapter"
     }
 
-    public func isAvailable() async throws -> Bool {
-        // Delegate to the bridge's implementation
-        return true
-    }
-
-    public func getVersion() async -> String {
-        // Delegate to the bridge's implementation
-        return "1.0.0"
-    }
-
-    // MARK: - SecurityProviderBase Conformance
-
     public func resetSecurityData() async throws {
-        // Delegate to the bridge's implementation if available
-        // For now, implement a basic version
-        throw SecurityInterfacesError.operationFailed("Not implemented")
+        // Since the base protocol doesn't have this, implement a stub
+        throw SecurityInterfacesError.operationFailed("Operation not supported in provider")
     }
 
     public func getHostIdentifier() async throws -> String {
-        // Delegate to the bridge's implementation if available
-        // For now, implement a basic version using a simple identifier
-        return "host-identifier-\(Int.random(in: 1_000...9_999))"
+        // Since the base protocol doesn't have this, implement a stub
+        return "host-id-\(Int.random(in: 1_000...9_999))"
     }
 
     public func registerClient(bundleIdentifier: String) async throws -> Bool {
-        // Delegate to the bridge's implementation if available
-        // For now, implement a basic version
+        // Since the base protocol doesn't have this, implement a stub
         return true
     }
 
     public func requestKeyRotation(keyId: String) async throws {
-        // Delegate to the bridge's implementation if available
-        // For now, implement a basic version
-        throw SecurityInterfacesError.operationFailed("Not implemented")
+        // Since the base protocol doesn't have this, implement a stub
+        throw SecurityInterfacesError.operationFailed("Operation not supported in provider")
     }
 
     public func notifyKeyCompromise(keyId: String) async throws {
-        // Delegate to the bridge's implementation if available
-        // For now, implement a basic version
-        throw SecurityInterfacesError.operationFailed("Not implemented")
+        // Since the base protocol doesn't have this, implement a stub
+        throw SecurityInterfacesError.operationFailed("Operation not supported in provider")
     }
 
-    public func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
-        let dataBridge = DataBridge(data)
-        let keyBridge = DataBridge(key)
+    public func performOperation(identifier: String, parameters: [UInt8]) async throws -> [UInt8] {
+        // Handle low-level operations by converting to a more specific operation type
+        let parametersDict = try decodeParameters(parameters)
+        let operationType = parametersDict["operation"] as? String ?? "encrypt"
 
-        let encryptedData = try await bridge.encrypt(dataBridge, key: keyBridge)
-        return encryptedData.bytes
+        let operation: SecurityOperation
+        switch operationType {
+        case "encrypt":
+            operation = .encrypt
+        case "decrypt":
+            operation = .decrypt
+        case "sign":
+            operation = .sign
+        case "verify":
+            operation = .verify
+        case "hash":
+            operation = .hash
+        default:
+            operation = .custom(operationType)
+        }
+
+        let result = try await performSecurityOperation(
+            operation: operation,
+            parameters: parametersDict
+        )
+
+        // Convert result back to byte array
+        return try encodeResult(result)
     }
 
-    public func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
-        let dataBridge = DataBridge(data)
-        let keyBridge = DataBridge(key)
+    // MARK: - Helper Methods
 
-        let decryptedData = try await bridge.decrypt(dataBridge, key: keyBridge)
-        return decryptedData.bytes
+    private func decodeParameters(_ bytes: [UInt8]) throws -> [String: Any] {
+        // Simulate decoding of parameters for example purposes
+        // In a real implementation, this would parse the byte array into a dictionary
+        // based on your specific binary format
+
+        // For this example, we'll just return a mock dictionary
+        let mockParameters: [String: Any] = [
+            "operation": "encrypt",
+            "data": Data(bytes),
+            "key": "test-key",
+            "algorithm": "AES"
+        ]
+
+        return mockParameters
     }
 
-    public func generateKey(length: Int) async throws -> [UInt8] {
-        let keyData = try await bridge.generateKey(length: length)
-        return keyData.bytes
+    private func encodeResult(_ result: SecurityResult) throws -> [UInt8] {
+        // Simulate encoding of result for example purposes
+        // In a real implementation, this would serialize the result to a byte array
+        // based on your specific binary format
+
+        if let data = result.data {
+            return [UInt8](data)
+        }
+
+        // Return empty array if no data
+        return []
     }
 
-    public func hash(_ data: [UInt8]) async throws -> [UInt8] {
-        let dataBridge = DataBridge(data)
+    // MARK: - SecurityProvider Implementation
 
-        let hashedData = try await bridge.hash(dataBridge)
-        return hashedData.bytes
+    public func performSecurityOperation(
+        operation: SecurityOperation,
+        parameters: [String: Any]
+    ) async throws -> SecurityResult {
+        // Use our isolated mapping functions to convert between types
+        let coreOperation = mapToSPCOperation(operation.rawValue) ?? .symmetricEncryption
+        let coreConfig = createSPCConfig(from: parameters)
+
+        // Call the core implementation through our wrapper
+        let result = try await bridge.performOperation(coreOperation, config: coreConfig)
+
+        // Convert the result and handle errors
+        if !result.success, let error = result.error {
+            // Use our SPCError-specific mapping function
+            throw mapSPCError(error)
+        }
+
+        // Map the result using our isolated function
+        let (success, data, metadata) = mapFromSPCResult(result)
+        return SecurityResult(
+            success: success,
+            data: data,
+            metadata: metadata
+        )
     }
 
-    public func createBookmark(for path: String) async throws -> [UInt8] {
-        let bookmarkData = try await bridge.createBookmark(for: path)
-        return bookmarkData.bytes
-    }
-
-    public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-        let dataBridge = DataBridge(bookmarkData)
-
-        let (urlString, isStale) = try await bridge.resolveBookmark(dataBridge)
-        return (path: urlString, isStale: isStale)
-    }
-
-    public func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
-        let dataBridge = DataBridge(bookmarkData)
-        return try await bridge.validateBookmark(dataBridge)
+    public func getSecurityStatus() async -> SecurityStatus {
+        // Since the core provider doesn't have this method, we'll implement a stub
+        return SecurityStatus(
+            isActive: true,
+            statusCode: 200,
+            statusMessage: "Security provider is active"
+        )
     }
 }
