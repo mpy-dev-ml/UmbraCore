@@ -14,8 +14,7 @@
 /// It serves as a foundation for concrete implementations that can be either
 /// Foundation-dependent or FoundationIndependent as required.
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// Main entry point for accessing the SecurityProtocolsCore module
 public enum SecurityProtocolsCore {
     /// Current module version

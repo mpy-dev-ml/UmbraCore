@@ -5,7 +5,7 @@
 //
 
 import XCTest
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 @testable import UmbraSecurityCore
 

@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import SecureBytes
+import UmbraCoreTypes
 import SecurityBridge
 import SecurityProtocolsCore
 

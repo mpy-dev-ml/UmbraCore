@@ -10,7 +10,7 @@ import FoundationBridgeTypes
 import SecurityBridge
 import SecurityInterfacesProtocols
 import SecurityProtocolsCore
-import SecureBytes
+import UmbraCoreTypes
 import XCTest
 import SecurityBridgeProtocolAdapters
 

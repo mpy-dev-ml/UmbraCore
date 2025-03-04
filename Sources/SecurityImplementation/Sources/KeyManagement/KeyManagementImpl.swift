@@ -5,7 +5,7 @@
 //
 
 import CryptoSwiftFoundationIndependent
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 /// In-memory implementation of KeyManagementProtocol

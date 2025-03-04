@@ -4,8 +4,7 @@
 // Created as part of the UmbraCore XPC Protocols Refactoring
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// Security-related error types without Foundation dependency
 public enum SecurityError: Error, Sendable, Equatable {
     case notImplemented

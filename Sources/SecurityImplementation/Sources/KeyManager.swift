@@ -73,7 +73,7 @@
  ```
  */
 
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 /// A concrete implementation of `KeyManagementProtocol` that stores and manages cryptographic keys.

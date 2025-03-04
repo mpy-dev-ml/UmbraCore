@@ -5,8 +5,7 @@
 //
 
 import SecurityProtocolsCore
-import SecureBytes
-
+import UmbraCoreTypes
 /// Type-erased wrapper for CryptoServiceProtocol
 /// This allows for cleaner interfaces without exposing implementation details
 public final class AnyCryptoService: CryptoServiceProtocol {

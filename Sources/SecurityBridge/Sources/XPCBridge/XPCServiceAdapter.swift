@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 /// XPCServiceAdapter provides a bridge for XPC service communication that requires Foundation types.

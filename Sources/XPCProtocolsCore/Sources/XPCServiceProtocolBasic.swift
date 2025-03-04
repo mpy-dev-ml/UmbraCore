@@ -4,8 +4,7 @@
 // Created as part of the UmbraCore XPC Protocols Refactoring
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// Custom error for security interfaces that doesn't require Foundation
 public enum SecurityProtocolError: Error, Sendable, Equatable {
     case implementationMissing(String)

@@ -1,0 +1,3 @@
+#!/bin/bash
+# Build and run all tests
+bazel test --config=dev //...

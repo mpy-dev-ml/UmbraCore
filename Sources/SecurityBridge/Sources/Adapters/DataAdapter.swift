@@ -5,8 +5,7 @@
 //
 
 import Foundation
-import SecureBytes
-
+import UmbraCoreTypes
 /// DataAdapter provides bidirectional conversion between Foundation Data and SecureBytes.
 ///
 /// This adapter serves as the primary bridge for binary data between Foundation-dependent

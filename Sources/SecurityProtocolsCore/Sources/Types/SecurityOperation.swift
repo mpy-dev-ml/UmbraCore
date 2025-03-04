@@ -4,8 +4,7 @@
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// FoundationIndependent representation of security operations.
 /// Defines the possible security operations that can be performed.
 public enum SecurityOperation: String, Sendable, Equatable, CaseIterable {

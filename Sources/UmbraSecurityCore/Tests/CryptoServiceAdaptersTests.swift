@@ -6,7 +6,7 @@
 
 import XCTest
 import SecurityProtocolsCore
-import SecureBytes
+import UmbraCoreTypes
 @testable import UmbraSecurityCore
 
 final class CryptoServiceAdaptersTests: XCTestCase {

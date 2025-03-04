@@ -1,0 +1,51 @@
+# .swiftformat configuration file for Google Swift Style Guide
+
+# Indentation & Whitespace
+indent 2
+tabwidth 2
+linebreaks lf
+wraparguments beforefirst
+wrapcollections beforefirst
+spacearoundoperators true
+spacearoundcomments true
+nospaceoperators = false
+
+# Line Length
+maxwidth 100
+wrapconditions beforefirst
+wrapparameters beforefirst
+
+# Spacing
+stripunusedargs closure-only
+trimwhitespace always
+commas inline
+semicolons inline
+disable redundantSelf
+disable redundantBackticks
+disable redundantParens
+
+# Braces & Control Flow
+closingbrace same-line
+elseposition same-line
+hoistpatternlet true
+indentconditionalcompilationblocks true
+
+# Function & Variable Naming
+modifierorder acl, typeMethods, staticMethods, instanceMethods
+selfrequired true
+shortoptionals always
+redundantself remove
+
+# Structs & Enums
+structthreshold 100
+enumthreshold 100
+extensionacl private
+
+# Miscellaneous
+patternlet inline
+ranges nospace
+disable strongOutlets
+trimwhitespace always
+header strip
+importgrouping alphabetized
+swiftversion 5.9

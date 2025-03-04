@@ -4,8 +4,7 @@
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// Top-level protocol defining a complete security provider in a FoundationIndependent manner.
 /// This protocol consolidates cryptographic operations, key management, and security configuration
 /// into a cohesive interface for secure operations.

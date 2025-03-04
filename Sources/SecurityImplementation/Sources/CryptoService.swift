@@ -69,7 +69,7 @@
  */
 
 import CryptoSwiftFoundationIndependent
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 /// Implementation of CryptoServiceProtocol that provides cryptographic operations

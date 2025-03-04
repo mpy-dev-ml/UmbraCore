@@ -5,8 +5,7 @@
 //
 
 import SecurityProtocolsCore
-import SecureBytes
-
+import UmbraCoreTypes
 /// Default implementation of CryptoServiceProtocol
 /// This implementation is completely foundation-free and serves as the primary
 /// cryptographic service for UmbraSecurityCore.

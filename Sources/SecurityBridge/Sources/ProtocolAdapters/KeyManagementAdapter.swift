@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 /// KeyManagementAdapter provides a bridge between Foundation-based key management implementations

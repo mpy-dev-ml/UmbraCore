@@ -5,8 +5,7 @@
 //
 
 import Foundation
-import SecureBytes
-
+import UmbraCoreTypes
 /// Extension to the SecurityBridge namespace
 extension SecurityBridge {
     /// A bridge type that encapsulates data without exposing Foundation

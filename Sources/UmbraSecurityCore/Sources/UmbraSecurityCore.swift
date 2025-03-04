@@ -5,8 +5,7 @@
 //
 
 import SecurityProtocolsCore
-import SecureBytes
-
+import UmbraCoreTypes
 /// UmbraSecurityCore
 ///
 /// Main entry point for the UmbraSecurityCore module.

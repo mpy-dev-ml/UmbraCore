@@ -1,0 +1,3 @@
+#!/bin/bash
+# Build only production code
+bazel build --config=prod //Sources/...

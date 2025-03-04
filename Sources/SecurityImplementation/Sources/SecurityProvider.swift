@@ -82,7 +82,7 @@
      - More robust error handling
  */
 
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 /// A concrete implementation of `SecurityProviderProtocol` that provides a unified

@@ -5,8 +5,7 @@
 //
 
 import SecurityProtocolsCore
-import SecureBytes
-
+import UmbraCoreTypes
 /// Type adapter that converts between different crypto service implementations
 /// This allows us to adapt between different implementations of crypto services
 /// without requiring them to directly implement each other's interfaces

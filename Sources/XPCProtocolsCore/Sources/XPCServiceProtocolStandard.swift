@@ -4,8 +4,7 @@
 // Created as part of the UmbraCore XPC Protocols Refactoring
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// Extended XPC service protocol that builds upon the base protocol
 /// by adding additional security operations
 public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {

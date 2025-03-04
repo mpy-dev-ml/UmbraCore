@@ -4,8 +4,7 @@
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// Protocol defining core XPC service functionality without Foundation dependencies.
 /// This protocol uses SecureBytes for binary data to avoid custom type definitions
 /// and ensure compatibility with the rest of the security architecture.

@@ -4,8 +4,7 @@
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// Protocol defining secure key management operations in a FoundationIndependent manner.
 /// All operations use only primitive types and FoundationIndependent custom types.
 public protocol KeyManagementProtocol: Sendable {

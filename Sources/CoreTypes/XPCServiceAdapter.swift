@@ -1,6 +1,6 @@
 // Foundation-free adapter for XPC services
 // Provides a bridge between Foundation-dependent and Foundation-free implementations
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 /// Protocol for Foundation-based XPC service interfaces

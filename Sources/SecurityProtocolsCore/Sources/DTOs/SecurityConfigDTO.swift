@@ -4,8 +4,7 @@
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// FoundationIndependent configuration for security operations.
 /// This struct provides configuration options for various security operations
 /// without using any Foundation types.

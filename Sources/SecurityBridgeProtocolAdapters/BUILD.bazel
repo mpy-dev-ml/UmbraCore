@@ -1,0 +1,30 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "SecurityBridgeProtocolAdapters",
+    srcs = glob([
+        "Sources/**/*.swift",
+    ]),
+    module_name = "SecurityBridgeProtocolAdapters",
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        # Library evolution disabled due to UmbraCoreTypes not supporting it
+        # "-Xfrontend", "-enable-library-evolution",
+        "-g",
+        "-swift-version", "5",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        # Foundation-free dependencies only
+        "//Sources/CoreTypes", 
+        "//Sources/FoundationBridgeTypes",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/XPCProtocolsCore",
+        
+        # Do NOT add these dependencies to avoid cycles:
+        # "//Sources/SecurityBridge",
+        # "//Sources/SecurityInterfacesFoundationBridge",
+        # "//Sources/SecurityProviderBridge",
+    ],
+)

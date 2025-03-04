@@ -4,8 +4,7 @@
 // Created on 28/02/2025.
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// Protocol defining cryptographic operations in a FoundationIndependent manner.
 /// This protocol uses only primitive types and FoundationIndependent custom types.
 public protocol CryptoServiceProtocol: Sendable {

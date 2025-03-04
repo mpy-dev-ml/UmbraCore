@@ -5,8 +5,7 @@
 //
 
 import XPCProtocolsCore
-import SecureBytes
-
+import UmbraCoreTypes
 /// Simple validation tests for XPCProtocolsCore
 class XPCProtocolsCoreTests {
     

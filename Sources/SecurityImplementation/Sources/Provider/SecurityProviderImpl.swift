@@ -4,7 +4,7 @@
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 /// Default implementation of SecurityProviderProtocol using CryptoSwiftFoundationIndependent

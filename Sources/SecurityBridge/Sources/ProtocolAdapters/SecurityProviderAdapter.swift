@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 /// SecurityProviderAdapter provides a bridge between Foundation-based security provider implementations

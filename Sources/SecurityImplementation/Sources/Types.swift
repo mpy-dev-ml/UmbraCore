@@ -2,7 +2,7 @@
 // Part of UmbraCore Security Module
 // Created on 2025-03-01
 
-import SecureBytes
+import UmbraCoreTypes
 import SecurityProtocolsCore
 
 // This file contains local types to break dependency cycles

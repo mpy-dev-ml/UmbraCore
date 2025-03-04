@@ -1,6 +1,6 @@
 import Foundation
 import SecurityProtocolsCore
-import SecureBytes
+import UmbraCoreTypes
 import CoreTypes
 import XPCProtocolsCore
 

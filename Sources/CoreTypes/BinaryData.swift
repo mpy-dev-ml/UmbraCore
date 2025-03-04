@@ -1,5 +1,5 @@
 // This file is now a re-export of SecureBytes from SecurityProtocolsCore
-import SecureBytes
+import UmbraCoreTypes
 @_exported import SecurityProtocolsCore
 
 // Define a typealias to support legacy code

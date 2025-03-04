@@ -1,6 +1,5 @@
 import CryptoSwift
-import SecureBytes
-
+import UmbraCoreTypes
 /// A Foundation-independent wrapper for CryptoSwift functionality
 /// This helps break circular dependencies between Foundation and CryptoSwift
 public enum CryptoWrapper {

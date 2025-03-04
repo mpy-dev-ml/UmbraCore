@@ -4,8 +4,7 @@
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
-import SecureBytes
-
+import UmbraCoreTypes
 /// Result type for key storage operations
 public enum KeyStorageResult: Sendable {
     case success

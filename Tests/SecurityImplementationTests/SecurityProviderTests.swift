@@ -1,5 +1,5 @@
 import CryptoSwiftFoundationIndependent
-import SecureBytes
+import UmbraCoreTypes
 import SecurityImplementation
 import SecurityProtocolsCore
 import XCTest
