@@ -1,6 +1,6 @@
 import Foundation
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// FoundationConversions provides utilities for converting between Foundation types
 /// and foundation-free types when communicating through XPC or with legacy systems.
@@ -8,17 +8,21 @@ public enum FoundationConversions {
 
   // MARK: - Dictionary Conversions
 
-  /// Convert a Dictionary with String keys and UmbraCoreTypes.SecureBytes values to a Dictionary with Data values
+  /// Convert a Dictionary with String keys and UmbraCoreTypes.SecureBytes values to a Dictionary
+  /// with Data values
   /// - Parameter dictionary: Dictionary with UmbraCoreTypes.SecureBytes values
   /// - Returns: Dictionary with equivalent Data values
-  public static func toFoundation(dictionary: [String: UmbraCoreTypes.SecureBytes]) -> [String: Data] {
+  public static func toFoundation(dictionary: [String: UmbraCoreTypes.SecureBytes])
+  -> [String: Data] {
     dictionary.mapValues { DataAdapter.data(from: $0) }
   }
 
-  /// Convert a Dictionary with String keys and Data values to a Dictionary with UmbraCoreTypes.SecureBytes values
+  /// Convert a Dictionary with String keys and Data values to a Dictionary with
+  /// UmbraCoreTypes.SecureBytes values
   /// - Parameter dictionary: Dictionary with Data values
   /// - Returns: Dictionary with equivalent UmbraCoreTypes.SecureBytes values
-  public static func fromFoundation(dictionary: [String: Data]) -> [String: UmbraCoreTypes.SecureBytes] {
+  public static func fromFoundation(dictionary: [String: Data])
+  -> [String: UmbraCoreTypes.SecureBytes] {
     dictionary.mapValues { DataAdapter.secureBytes(from: $0) }
   }
 

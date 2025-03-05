@@ -33,11 +33,11 @@ public final class XPCServiceAdapter: XPCServiceProtocolCore {
   public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, SecurityError> {
     do {
       // Convert SecureBytes to [UInt8] array for compatibility
-      var byteArray = [UInt8]()
+      var byteArray=[UInt8]()
       syncData.withUnsafeBytes { buffer in
-        byteArray = Array(buffer)
+        byteArray=Array(buffer)
       }
-      
+
       // Pass the byte array to the service
       try await service.synchroniseKeys(byteArray)
       return .success(())

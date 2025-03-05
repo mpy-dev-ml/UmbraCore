@@ -28,7 +28,7 @@ extension SecurityBridge {
     /// Initialize with secure bytes
     /// - Parameter secureBytes: SecureBytes object
     public init(_ secureBytes: SecureBytes) {
-      data = DataAdapter.data(from: secureBytes)
+      data=DataAdapter.data(from: secureBytes)
     }
 
     // MARK: - Conversion Methods

@@ -3,7 +3,11 @@ import SecurityInterfacesProtocols
 
 /// Protocol for security-specific XPC services
 /// This extends the base protocol with security-specific methods
-@available(*, deprecated, message: "Use XPCProtocolsCore.XPCServiceProtocolStandard or XPCServiceProtocolComplete instead")
+@available(
+  *,
+  deprecated,
+  message: "Use XPCProtocolsCore.XPCServiceProtocolStandard or XPCServiceProtocolComplete instead"
+)
 public protocol XPCServiceProtocol: SecurityInterfacesBase.XPCServiceProtocolBase {
   /// Encrypt data using the service
   /// - Parameter data: The data to encrypt
@@ -19,7 +23,11 @@ public protocol XPCServiceProtocol: SecurityInterfacesBase.XPCServiceProtocolBas
 }
 
 /// Extension providing default implementations for the protocol
-@available(*, deprecated, message: "Use XPCProtocolsCore.XPCServiceProtocolStandard or XPCServiceProtocolComplete instead")
+@available(
+  *,
+  deprecated,
+  message: "Use XPCProtocolsCore.XPCServiceProtocolStandard or XPCServiceProtocolComplete instead"
+)
 extension XPCServiceProtocol {
   /// Default implementation of encrypt
   public func encrypt(

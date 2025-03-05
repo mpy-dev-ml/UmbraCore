@@ -21,9 +21,9 @@ public enum DataAdapter {
   /// - Returns: A new Data instance containing the same bytes
   public static func data(from secureBytes: SecureBytes) -> Data {
     // Create Data from SecureBytes' bytes by converting to array first
-    var byteArray = [UInt8]()
+    var byteArray=[UInt8]()
     secureBytes.withUnsafeBytes { buffer in
-      byteArray = Array(buffer)
+      byteArray=Array(buffer)
     }
     return Data(byteArray)
   }

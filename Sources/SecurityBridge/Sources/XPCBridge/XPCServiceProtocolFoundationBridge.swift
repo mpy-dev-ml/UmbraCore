@@ -188,7 +188,7 @@ extension SecurityBridge {
 
     public func synchroniseKeys(_ syncData: SecureBytes) async throws {
       // Convert SecureBytes to Data using DataAdapter
-      let data = DataAdapter.data(from: syncData)
+      let data=DataAdapter.data(from: syncData)
 
       return try await withCheckedThrowingContinuation { continuation in
         foundation.synchroniseKeysFoundation(data) { error in
@@ -201,8 +201,11 @@ extension SecurityBridge {
       }
     }
 
-    public func resetSecurityData() async throws -> Void {
-      try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+    public func resetSecurityData() async throws {
+      try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<
+        Void,
+        Error
+      >) in
         foundation.resetSecurityDataFoundation { error in
           if let error {
             continuation.resume(throwing: error)

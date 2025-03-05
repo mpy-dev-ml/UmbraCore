@@ -53,48 +53,57 @@ public protocol SecurityXPCServiceProtocol: XPCServiceProtocolStandard {
 /// Adapter to bridge between SecurityXPCServiceProtocol and XPCServiceProtocolStandard
 public class SecurityXPCServiceAdapter {
   private let standardService: any XPCServiceProtocolStandard
-  
+
   public init(standardService: any XPCServiceProtocolStandard) {
-    self.standardService = standardService
+    self.standardService=standardService
   }
-  
+
   // Bridge implementations between the protocols can be added here
 }
 
 /// Extension adding support for Swift concurrency to the legacy objective-C compatible protocol
-public extension SecurityXPCServiceProtocol {
-  func createBookmarkAsync(forPath path: String) async throws -> [UInt8] {
-    return try await withCheckedThrowingContinuation { continuation in
+extension SecurityXPCServiceProtocol {
+  public func createBookmarkAsync(forPath path: String) async throws -> [UInt8] {
+    try await withCheckedThrowingContinuation { continuation in
       createBookmark(forPath: path) { data, error in
-        if let error = error {
+        if let error {
           continuation.resume(throwing: error)
-        } else if let data = data {
+        } else if let data {
           continuation.resume(returning: data)
         } else {
-          continuation.resume(throwing: NSError(domain: "SecurityXPCService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown error creating bookmark"]))
+          continuation.resume(throwing: NSError(
+            domain: "SecurityXPCService",
+            code: -1,
+            userInfo: [NSLocalizedDescriptionKey: "Unknown error creating bookmark"]
+          ))
         }
       }
     }
   }
-  
-  func resolveBookmarkAsync(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
-    return try await withCheckedThrowingContinuation { continuation in
+
+  public func resolveBookmarkAsync(_ bookmarkData: [UInt8]) async throws
+  -> (path: String, isStale: Bool) {
+    try await withCheckedThrowingContinuation { continuation in
       resolveBookmark(bookmarkData) { path, isStale, error in
-        if let error = error {
+        if let error {
           continuation.resume(throwing: error)
-        } else if let path = path {
+        } else if let path {
           continuation.resume(returning: (path, isStale))
         } else {
-          continuation.resume(throwing: NSError(domain: "SecurityXPCService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown error resolving bookmark"]))
+          continuation.resume(throwing: NSError(
+            domain: "SecurityXPCService",
+            code: -1,
+            userInfo: [NSLocalizedDescriptionKey: "Unknown error resolving bookmark"]
+          ))
         }
       }
     }
   }
-  
-  func validateBookmarkAsync(_ bookmarkData: [UInt8]) async throws -> Bool {
-    return try await withCheckedThrowingContinuation { continuation in
+
+  public func validateBookmarkAsync(_ bookmarkData: [UInt8]) async throws -> Bool {
+    try await withCheckedThrowingContinuation { continuation in
       validateBookmark(bookmarkData) { isValid, error in
-        if let error = error {
+        if let error {
           continuation.resume(throwing: error)
         } else {
           continuation.resume(returning: isValid)
@@ -102,11 +111,11 @@ public extension SecurityXPCServiceProtocol {
       }
     }
   }
-  
-  func validateConnectionAsync() async throws -> Bool {
-    return try await withCheckedThrowingContinuation { continuation in
+
+  public func validateConnectionAsync() async throws -> Bool {
+    try await withCheckedThrowingContinuation { continuation in
       validateConnection { isValid, error in
-        if let error = error {
+        if let error {
           continuation.resume(throwing: error)
         } else {
           continuation.resume(returning: isValid)
@@ -114,9 +123,9 @@ public extension SecurityXPCServiceProtocol {
       }
     }
   }
-  
-  func getServiceVersionAsync() async -> String {
-    return await withCheckedContinuation { continuation in
+
+  public func getServiceVersionAsync() async -> String {
+    await withCheckedContinuation { continuation in
       getServiceVersion { version in
         continuation.resume(returning: version)
       }

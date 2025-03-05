@@ -29,11 +29,11 @@ public struct DataBridge: Sendable {
 
   /// Initialize with BinaryData (SecureBytes)
   public init(_ binaryData: CoreTypes.BinaryData) {
-    var tempBytes = [UInt8]()
+    var tempBytes=[UInt8]()
     binaryData.withUnsafeBytes { buffer in
-      tempBytes = Array(buffer)
+      tempBytes=Array(buffer)
     }
-    self.bytes = tempBytes
+    bytes=tempBytes
   }
 
   /// Convert to BinaryData (SecureBytes)

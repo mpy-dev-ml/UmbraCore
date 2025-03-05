@@ -19,12 +19,18 @@ class XPCProtocolsCoreTests: XCTestCase {
   /// Test protocol inheritance hierarchy
   func testProtocolHierarchy() {
     // Verify that XPCServiceProtocolStandard extends XPCServiceProtocolBasic
-    let standardIsBasic = XPCServiceProtocolStandard.self is XPCServiceProtocolBasic.Type
-    XCTAssertTrue(standardIsBasic, "XPCServiceProtocolStandard should extend XPCServiceProtocolBasic")
-    
+    let standardIsBasic=XPCServiceProtocolStandard.self is XPCServiceProtocolBasic.Type
+    XCTAssertTrue(
+      standardIsBasic,
+      "XPCServiceProtocolStandard should extend XPCServiceProtocolBasic"
+    )
+
     // Verify that XPCServiceProtocolComplete extends XPCServiceProtocolStandard
-    let completeIsStandard = XPCServiceProtocolComplete.self is XPCServiceProtocolStandard.Type
-    XCTAssertTrue(completeIsStandard, "XPCServiceProtocolComplete should extend XPCServiceProtocolStandard")
+    let completeIsStandard=XPCServiceProtocolComplete.self is XPCServiceProtocolStandard.Type
+    XCTAssertTrue(
+      completeIsStandard,
+      "XPCServiceProtocolComplete should extend XPCServiceProtocolStandard"
+    )
   }
 
   /// Test basic protocol methods
@@ -35,49 +41,61 @@ class XPCProtocolsCoreTests: XCTestCase {
 
     // This should not throw
     try await service.synchroniseKeys(SecureBytes(bytes: [1, 2, 3, 4]))
-    
+
     // Test with empty data
     try await service.synchroniseKeys(SecureBytes(bytes: []))
   }
-  
+
   /// Test throwing methods in standard protocol
   func testStandardProtocolMethods() async throws {
     let service=MockXPCService()
-    
+
     // Test generateRandomData
-    let randomData = try await service.generateRandomData(length: 16)
+    let randomData=try await service.generateRandomData(length: 16)
     XCTAssertEqual(randomData.count, 16, "Random data should be of requested length")
-    
+
     // Test encryptData
-    let testData = SecureBytes(bytes: [1, 2, 3, 4, 5])
-    let encryptedData = try await service.encryptData(testData, keyIdentifier: "test-key")
-    XCTAssertEqual(encryptedData.count, testData.count, "Encrypted data should have same length in mock")
-    
+    let testData=SecureBytes(bytes: [1, 2, 3, 4, 5])
+    let encryptedData=try await service.encryptData(testData, keyIdentifier: "test-key")
+    XCTAssertEqual(
+      encryptedData.count,
+      testData.count,
+      "Encrypted data should have same length in mock"
+    )
+
     // Test decryptData
-    let decryptedData = try await service.decryptData(encryptedData, keyIdentifier: "test-key")
-    XCTAssertEqual(decryptedData.count, testData.count, "Decrypted data should have same length as original")
-    
+    let decryptedData=try await service.decryptData(encryptedData, keyIdentifier: "test-key")
+    XCTAssertEqual(
+      decryptedData.count,
+      testData.count,
+      "Decrypted data should have same length as original"
+    )
+
     // Test hashData
-    let hashedData = try await service.hashData(testData)
+    let hashedData=try await service.hashData(testData)
     XCTAssertGreaterThan(hashedData.count, 0, "Hashed data should not be empty")
-    
+
     // Test signData
-    let signature = try await service.signData(testData, keyIdentifier: "test-key")
+    let signature=try await service.signData(testData, keyIdentifier: "test-key")
     XCTAssertGreaterThan(signature.count, 0, "Signature should not be empty")
-    
+
     // Test verifySignature
-    let verified = try await service.verifySignature(signature, for: testData, keyIdentifier: "test-key")
+    let verified=try await service.verifySignature(
+      signature,
+      for: testData,
+      keyIdentifier: "test-key"
+    )
     XCTAssertTrue(verified, "Signature verification should succeed")
   }
 
   /// Test complete protocol methods
   func testCompleteProtocolMethods() async {
     let service=MockXPCService()
-    
+
     // Test pingComplete
     let pingResult=await service.pingComplete()
     XCTAssertTrue(pingResult.isSuccess, "pingComplete should succeed")
-    if case let .success(value) = pingResult {
+    if case let .success(value)=pingResult {
       XCTAssertTrue(value, "Ping should return true")
     }
 
@@ -86,90 +104,101 @@ class XPCProtocolsCoreTests: XCTestCase {
     XCTAssertTrue(syncResult.isSuccess, "synchronizeKeys should succeed")
 
     // Test encrypt
-    let testData = SecureBytes(bytes: [5, 6, 7, 8])
+    let testData=SecureBytes(bytes: [5, 6, 7, 8])
     let encryptResult=await service.encrypt(data: testData)
     XCTAssertTrue(encryptResult.isSuccess, "encrypt should succeed")
-    if case let .success(encrypted) = encryptResult {
-      XCTAssertEqual(encrypted.count, testData.count, "Encrypted data should have same length in mock")
+    if case let .success(encrypted)=encryptResult {
+      XCTAssertEqual(
+        encrypted.count,
+        testData.count,
+        "Encrypted data should have same length in mock"
+      )
     }
-    
+
     // Test decrypt
-    let decryptResult = await service.decrypt(data: testData)
+    let decryptResult=await service.decrypt(data: testData)
     XCTAssertTrue(decryptResult.isSuccess, "decrypt should succeed")
-    if case let .success(decrypted) = decryptResult {
-      XCTAssertEqual(decrypted.count, testData.count, "Decrypted data should have same length as original")
+    if case let .success(decrypted)=decryptResult {
+      XCTAssertEqual(
+        decrypted.count,
+        testData.count,
+        "Decrypted data should have same length as original"
+      )
     }
-    
+
     // Test generateKey
-    let keyResult = await service.generateKey()
+    let keyResult=await service.generateKey()
     XCTAssertTrue(keyResult.isSuccess, "generateKey should succeed")
-    if case let .success(key) = keyResult {
+    if case let .success(key)=keyResult {
       XCTAssertEqual(key.count, 4, "Key should be 4 bytes in mock")
     }
-    
+
     // Test hash
-    let hashResult = await service.hash(data: testData)
+    let hashResult=await service.hash(data: testData)
     XCTAssertTrue(hashResult.isSuccess, "hash should succeed")
-    if case let .success(hash) = hashResult {
+    if case let .success(hash)=hashResult {
       XCTAssertEqual(hash.count, testData.count, "Hash should have same length as original in mock")
     }
   }
-  
+
   /// Test error conditions in a failing mock service
   func testErrorConditions() async {
-    let service = FailingMockXPCService()
-    
+    let service=FailingMockXPCService()
+
     // Test error handling for Complete protocol
-    let pingResult = await service.pingComplete()
+    let pingResult=await service.pingComplete()
     XCTAssertFalse(pingResult.isSuccess, "pingComplete should fail")
-    if case let .failure(error) = pingResult {
+    if case let .failure(error)=pingResult {
       XCTAssertEqual(error, .cryptoError, "Error should be cryptoError")
     }
-    
-    let syncResult = await service.synchronizeKeys(SecureBytes(bytes: [1, 2, 3, 4]))
+
+    let syncResult=await service.synchronizeKeys(SecureBytes(bytes: [1, 2, 3, 4]))
     XCTAssertFalse(syncResult.isSuccess, "synchronizeKeys should fail")
-    
-    let encryptResult = await service.encrypt(data: SecureBytes(bytes: [5, 6, 7, 8]))
+
+    let encryptResult=await service.encrypt(data: SecureBytes(bytes: [5, 6, 7, 8]))
     XCTAssertFalse(encryptResult.isSuccess, "encrypt should fail")
-    
-    let decryptResult = await service.decrypt(data: SecureBytes(bytes: [5, 6, 7, 8]))
+
+    let decryptResult=await service.decrypt(data: SecureBytes(bytes: [5, 6, 7, 8]))
     XCTAssertFalse(decryptResult.isSuccess, "decrypt should fail")
-    
-    let keyResult = await service.generateKey()
+
+    let keyResult=await service.generateKey()
     XCTAssertFalse(keyResult.isSuccess, "generateKey should fail")
-    
-    let hashResult = await service.hash(data: SecureBytes(bytes: [5, 6, 7, 8]))
+
+    let hashResult=await service.hash(data: SecureBytes(bytes: [5, 6, 7, 8]))
     XCTAssertFalse(hashResult.isSuccess, "hash should fail")
   }
-  
+
   /// Test throwing error conditions in a failing mock service
   func testThrowingErrorConditions() async {
-    let service = FailingMockXPCService()
-    
+    let service=FailingMockXPCService()
+
     // Test error handling for Basic and Standard protocols
     do {
-      _ = try await service.ping()
+      _=try await service.ping()
       XCTFail("ping should throw an error")
     } catch {
       XCTAssertTrue(true, "ping should throw an error")
     }
-    
+
     do {
       try await service.synchroniseKeys(SecureBytes(bytes: [1, 2, 3, 4]))
       XCTFail("synchroniseKeys should throw an error")
     } catch {
       XCTAssertTrue(true, "synchroniseKeys should throw an error")
     }
-    
+
     do {
-      _ = try await service.generateRandomData(length: 16)
+      _=try await service.generateRandomData(length: 16)
       XCTFail("generateRandomData should throw an error")
     } catch {
       XCTAssertTrue(true, "generateRandomData should throw an error")
     }
-    
+
     do {
-      _ = try await service.encryptData(SecureBytes(bytes: [1, 2, 3, 4, 5]), keyIdentifier: "test-key")
+      _=try await service.encryptData(
+        SecureBytes(bytes: [1, 2, 3, 4, 5]),
+        keyIdentifier: "test-key"
+      )
       XCTFail("encryptData should throw an error")
     } catch {
       XCTAssertTrue(true, "encryptData should throw an error")
@@ -189,7 +218,7 @@ class XPCProtocolsCoreTests: XCTestCase {
     try await tests.testStandardProtocolMethods()
     await tests.testCompleteProtocolMethods()
     await tests.testErrorConditions()
-    
+
     do {
       try await tests.testThrowingErrorConditions()
     } catch {
@@ -282,11 +311,11 @@ private final class FailingMockXPCService: XPCServiceProtocolComplete {
     .failure(.cryptoError)
   }
 
-  func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+  func encrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
     .failure(.cryptoError)
   }
 
-  func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+  func decrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
     .failure(.cryptoError)
   }
 
@@ -294,20 +323,20 @@ private final class FailingMockXPCService: XPCServiceProtocolComplete {
     .failure(.cryptoError)
   }
 
-  func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+  func hash(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
     .failure(.cryptoError)
   }
 
   // Standard protocol methods that throw
-  func generateRandomData(length: Int) async throws -> SecureBytes {
+  func generateRandomData(length _: Int) async throws -> SecureBytes {
     throw CoreErrors.CryptoError.randomGenerationFailed(reason: "Test error")
   }
 
-  func encryptData(_ data: SecureBytes, keyIdentifier _: String?) async throws -> SecureBytes {
+  func encryptData(_: SecureBytes, keyIdentifier _: String?) async throws -> SecureBytes {
     throw CoreErrors.CryptoError.encryptionFailed(reason: "Test error")
   }
 
-  func decryptData(_ data: SecureBytes, keyIdentifier _: String?) async throws -> SecureBytes {
+  func decryptData(_: SecureBytes, keyIdentifier _: String?) async throws -> SecureBytes {
     throw CoreErrors.CryptoError.decryptionFailed(reason: "Test error")
   }
 
@@ -319,11 +348,11 @@ private final class FailingMockXPCService: XPCServiceProtocolComplete {
     throw CoreErrors.CryptoError.serviceFailed(reason: "Test error")
   }
 
-  func hashData(_ data: SecureBytes) async throws -> SecureBytes {
+  func hashData(_: SecureBytes) async throws -> SecureBytes {
     throw CoreErrors.CryptoError.hashingFailed(reason: "Test error")
   }
 
-  func signData(_ data: SecureBytes, keyIdentifier _: String) async throws -> SecureBytes {
+  func signData(_: SecureBytes, keyIdentifier _: String) async throws -> SecureBytes {
     throw CoreErrors.CryptoError.cryptoOperationFailed(reason: "Test error")
   }
 
