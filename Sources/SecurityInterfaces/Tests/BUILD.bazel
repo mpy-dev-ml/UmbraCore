@@ -9,6 +9,5 @@ swift_test(
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityProtocolsCore", 
         "//Sources/CoreErrors",
-        "//Sources/SecurityInterfaces:SecurityInterfacesSPCore",
     ],
 )

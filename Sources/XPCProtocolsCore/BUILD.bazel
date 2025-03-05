@@ -29,6 +29,10 @@ umbra_swift_test(
     module_name = "XPCProtocolsCoreTests",
     deps = [
         ":XPCProtocolsCore",
-        "//Sources/UmbraCoreTypes",
+        "//Sources/UmbraCoreTypes",  # Using SecureBytes from UmbraCoreTypes, not the standalone module
+        "//Sources/SecurityInterfaces",
+        "//Sources/SecurityInterfacesBase",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/CryptoTypes",
     ],
 )

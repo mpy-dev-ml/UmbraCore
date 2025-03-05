@@ -28,7 +28,7 @@ extension SecurityBridge {
     /// Initialize with secure bytes
     /// - Parameter secureBytes: SecureBytes object
     public init(_ secureBytes: SecureBytes) {
-      data=Data(secureBytes.unsafeBytes)
+      data = DataAdapter.data(from: secureBytes)
     }
 
     // MARK: - Conversion Methods
@@ -42,7 +42,7 @@ extension SecurityBridge {
     /// Convert to SecureBytes
     /// - Returns: SecureBytes
     public func toSecureBytes() -> SecureBytes {
-      SecureBytes(Array(data))
+      SecureBytes(bytes: Array(data))
     }
 
     /// Get as array of bytes

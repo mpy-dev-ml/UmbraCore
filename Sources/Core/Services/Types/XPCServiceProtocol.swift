@@ -1,5 +1,5 @@
 import Foundation
-import SecurityInterfaces
+import XPCProtocolsCore
 
-// Re-export XPCServiceProtocol from SecurityInterfaces
-public typealias XPCServiceProtocol=SecurityInterfaces.XPCServiceProtocol
+// Use the modern XPC service protocol
+public typealias XPCServiceProtocol = XPCProtocolsCore.XPCServiceProtocolStandard

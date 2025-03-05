@@ -3,6 +3,7 @@ Swift macros for UmbraCore build system.
 """
 
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
+load("//tools/swift:compiler_options.bzl", "get_swift_copts")
 
 def umbra_swift_library(
         name,
@@ -10,6 +11,7 @@ def umbra_swift_library(
         deps = [],
         testonly = False,
         additional_copts = [],
+        swift_mode = "default",
         **kwargs):
     """Standard Swift library configuration for UmbraCore.
 
@@ -19,16 +21,10 @@ def umbra_swift_library(
         deps: Dependencies
         testonly: Whether this is a test-only library
         additional_copts: Additional compiler options
+        swift_mode: Swift compilation mode ("default", "release", or "debug")
         **kwargs: Additional arguments to pass to swift_library
     """
-    copts = [
-        "-target",
-        "arm64-apple-macos15.4",
-        "-strict-concurrency=complete",
-        "-enable-actor-data-race-checks",
-        "-warn-concurrency",
-        "-enable-testing",
-    ] + additional_copts
+    copts = get_swift_copts(swift_mode) + additional_copts
 
     swift_library(
         name = name,
@@ -61,7 +57,8 @@ def umbra_test_library(
         srcs = srcs,
         deps = deps,
         testonly = True,
-        additional_copts = additional_copts,
+        additional_copts = additional_copts + ["-enable-testing"],
+        swift_mode = "debug",
         **kwargs
     )
 
@@ -89,17 +86,12 @@ def umbra_swift_test(
         **kwargs: Additional arguments to pass to swift_test.
     """
     
-    # Base compiler options for Swift tests
-    base_copts = [
-        "-target", "arm64-apple-macos15.4",
-        "-enable-testing",
-        "-swift-version", "5",
-        "-strict-concurrency=complete",
-    ]
+    # Get compiler options for tests
+    test_copts = get_swift_copts("debug") + ["-enable-testing"] + copts
     
     # Base environment variables for Swift tests
     base_env = {
-        "MACOS_DEPLOYMENT_TARGET": "15.4",
+        "MACOS_DEPLOYMENT_TARGET": "14.0",
         "SWIFT_DETERMINISTIC_HASHING": "1",
         "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer",
     }
@@ -114,7 +106,7 @@ def umbra_swift_test(
         srcs = srcs,
         deps = deps,
         data = data,
-        copts = base_copts + copts,
+        copts = test_copts,
         swiftc_inputs = swiftc_inputs,
         env = test_env,
         target_compatible_with = [

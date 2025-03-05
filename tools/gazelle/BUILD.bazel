@@ -18,7 +18,7 @@ gazelle(
     name = "gazelle",
     args = [
         "-swift_module_naming=true",
-        "-swift_copts=-target,arm64-apple-macos14.0,-strict-concurrency=complete,-enable-actor-data-race-checks,-warn-concurrency",
+        "-swift_copts=-target,arm64-apple-macos14.0,-strict-concurrency=complete,-enable-actor-data-race-checks,-warn-concurrency,-enable-upcoming-feature,Isolated,-enable-upcoming-feature,ExistentialAny,-enable-upcoming-feature,StrictConcurrency,-enable-upcoming-feature,InternalImportsByDefault,-warn-swift-5-to-swift-6-path",
     ],
     prefix = "github.com/mpy-dev-ml/UmbraCore",
 )

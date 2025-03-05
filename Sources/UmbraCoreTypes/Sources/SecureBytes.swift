@@ -24,10 +24,10 @@ public struct SecureBytes: Sendable, Equatable, Hashable, Codable {
   /// - Parameter count: The number of bytes to allocate
   /// - Throws: `SecureBytesError.allocationFailed` if memory allocation fails
   public init(count: Int) throws {
-    guard isEmpty else {
-      throw SecureBytesError.outOfBounds
+    storage = [UInt8](repeating: 0, count: count)
+    guard !storage.isEmpty else {
+      throw SecureBytesError.allocationFailed
     }
-    storage=[UInt8](repeating: 0, count: count)
   }
 
   /// Create a SecureBytes instance with the specified capacity, filled with zeros

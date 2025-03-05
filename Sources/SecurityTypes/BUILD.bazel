@@ -11,5 +11,6 @@ umbra_swift_library(
         "//Sources/ErrorHandling",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
         "//Sources/SecurityTypes/Types:SecurityTypesTypes",
+        "//Sources/CoreErrors",
     ],
 )

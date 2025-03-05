@@ -1,13 +1,14 @@
 import CoreErrors
 import SecurityInterfacesBase
 import SecurityInterfacesProtocols
+import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
 
 /// Type aliases for convenience
 typealias SecureBytes=UmbraCoreTypes.SecureBytes
 typealias BinaryData=SecurityInterfacesBase.BinaryData
-typealias XPCSecurityError=CoreErrors.SecurityError
+typealias XPCSecurityError=SecurityProtocolsCore.SecurityError
 
 /// Import the SecurityProtocolError directly
 @_exported import enum XPCProtocolsCore.SecurityProtocolError

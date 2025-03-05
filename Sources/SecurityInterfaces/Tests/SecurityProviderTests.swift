@@ -1,8 +1,7 @@
 import Foundation
 @testable import SecurityInterfaces
-import SecurityInterfaces_SecurityProtocolsCore
-import SecurityInterfacesBase
 import SecurityProtocolsCore
+import SecurityInterfacesBase
 import XCTest
 
 /// Test suite for the SecurityProvider implementation

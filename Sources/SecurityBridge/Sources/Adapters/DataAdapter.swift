@@ -13,15 +13,19 @@ public enum DataAdapter {
   /// - Returns: A new SecureBytes instance containing the same bytes
   public static func secureBytes(from data: Data) -> SecureBytes {
     // Create SecureBytes from Data's bytes
-    SecureBytes([UInt8](data))
+    SecureBytes(bytes: [UInt8](data))
   }
 
   /// Convert SecureBytes to Foundation Data
   /// - Parameter secureBytes: SecureBytes instance
   /// - Returns: A new Data instance containing the same bytes
   public static func data(from secureBytes: SecureBytes) -> Data {
-    // Create Data from SecureBytes' bytes
-    Data(secureBytes.unsafeBytes)
+    // Create Data from SecureBytes' bytes by converting to array first
+    var byteArray = [UInt8]()
+    secureBytes.withUnsafeBytes { buffer in
+      byteArray = Array(buffer)
+    }
+    return Data(byteArray)
   }
 
   /// Create SecureBytes from JSON encodable object

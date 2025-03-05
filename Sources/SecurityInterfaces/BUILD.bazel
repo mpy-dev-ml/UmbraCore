@@ -1,32 +1,48 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+load("//tools/swift:build_rules.bzl", "umbracore_swift_library", "umbracore_swift_test_library")
 
-# Security interfaces module
-umbra_swift_library(
+# Security interfaces module using Swift 6 compatibility options
+umbracore_swift_library(
     name = "SecurityInterfaces",
-    srcs = glob(["**/*.swift"]),
+    srcs = glob(["**/*.swift"], exclude=["Tests/**"]),
     deps = [
         "//Sources/CoreTypes",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/SecurityBridge",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/XPCProtocolsCore",
     ],
+    swift_mode = "default",
+    visibility = ["//visibility:public"],
 )
 
 # Test version for @testable import
-swift_library(
+umbracore_swift_test_library(
     name = "SecurityInterfacesForTesting",
-    testonly = True,
-    srcs = glob(["**/*.swift"]),
-    copts = [
-        "-target",
-        "arm64-apple-macos14.0",
-    ],
+    srcs = glob(["**/*.swift"], exclude=["Tests/**"]),
     deps = [
         "//Sources/CoreTypes",
         "//Sources/SecurityInterfacesBase",
-        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityInterfacesProtocols", 
         "//Sources/SecurityBridge",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/XPCProtocolsCore",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# Tests for SecurityInterfaces
+umbracore_swift_test_library(
+    name = "SecurityInterfacesTests",
+    srcs = glob(["Tests/**/*.swift"]),
+    deps = [
+        ":SecurityInterfacesForTesting",
+        "//Sources/CoreTypes",
+        "//Sources/SecurityInterfacesBase",
+        "//Sources/SecurityInterfacesProtocols",
+        "//Sources/SecurityProtocolsCore",
     ],
     visibility = ["//visibility:public"],
 )

@@ -27,14 +27,18 @@ public struct DataBridge: Sendable {
     self.bytes=bytes
   }
 
-  /// Initialize with BinaryData
+  /// Initialize with BinaryData (SecureBytes)
   public init(_ binaryData: CoreTypes.BinaryData) {
-    bytes=binaryData.unsafeBytes
+    var tempBytes = [UInt8]()
+    binaryData.withUnsafeBytes { buffer in
+      tempBytes = Array(buffer)
+    }
+    self.bytes = tempBytes
   }
 
-  /// Convert to BinaryData
+  /// Convert to BinaryData (SecureBytes)
   public func toBinaryData() -> CoreTypes.BinaryData {
-    CoreTypes.BinaryData(bytes)
+    CoreTypes.BinaryData(bytes: bytes)
   }
 }
 

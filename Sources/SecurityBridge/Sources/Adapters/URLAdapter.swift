@@ -21,7 +21,7 @@ public enum URLAdapter {
     let query=url.query
     let fragment=url.fragment
 
-    return ResourceLocator(
+    return try ResourceLocator(
       scheme: scheme,
       path: path,
       query: query,
