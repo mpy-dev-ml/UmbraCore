@@ -105,7 +105,8 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
         queue.async { reply(
           false,
           error as? KeychainError ?? KeychainError.unhandledError(status: 0)
-        ) }
+        )
+        }
       }
     }
   }

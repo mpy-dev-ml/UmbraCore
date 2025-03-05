@@ -1,5 +1,3 @@
-// import XPCProtocolsCore - Module not yet available
-
 // MARK: - Migration Guide
 
 /// This file serves as a guide for migrating from SecurityProtocolsCore's XPC protocols

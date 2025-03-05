@@ -1,9 +1,3 @@
-// XPCProtocolsCore.swift
-// XPCProtocolsCore
-//
-// Created as part of the UmbraCore XPC Protocols Refactoring
-//
-
 /// XPCProtocolsCore
 ///
 /// Provides a comprehensive set of XPC service protocols for the UmbraCore security infrastructure.
@@ -17,13 +11,14 @@
 
 /// Provides access to module-level functionality and version information
 public enum XPCProtocolsCore {
-    /// Current module version
-    public static let version = "1.0.0"
+  /// Current module version
+  public static let version="1.0.0"
 }
+
+@_exported import CoreErrors
 
 // Export the main protocols
 @_exported import struct UmbraCoreTypes.SecureBytes
-@_exported import CoreErrors
 
 /// Type alias to standardize on CoreErrors.SecurityError for all XPC security error handling
-public typealias XPCSecurityError = CoreErrors.SecurityError
+public typealias XPCSecurityError=CoreErrors.SecurityError

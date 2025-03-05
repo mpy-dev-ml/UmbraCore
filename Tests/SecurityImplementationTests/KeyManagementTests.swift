@@ -118,7 +118,8 @@ final class KeyManagementTests: XCTestCase {
       data: testData,
       key: initialKey,
       iv: iv
-    ) }
+    )
+    }
 
     guard case let .success(encryptedData)=encryptionResult else {
       if case let .failure(error)=encryptionResult {
@@ -201,7 +202,8 @@ final class KeyManagementTests: XCTestCase {
         data: newCiphertext,
         key: newKey,
         iv: newIv
-      ) }
+      )
+      }
 
       switch decryptResult {
         case let .success(decryptedData):
