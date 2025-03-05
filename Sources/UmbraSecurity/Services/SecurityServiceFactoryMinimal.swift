@@ -1,9 +1,9 @@
 import CoreServicesTypesNoFoundation
 import SecurityInterfaces
-import SecurityInterfacesBase
-import SecurityInterfacesProtocols
-import SecurityTypes
-import SecurityUtils
+import XPCProtocolsCoreimport SecurityInterfacesBase
+import UmbraCoreTypesimport XPCProtocolsCoreimport XPCProtocolsCoreimport SecurityInterfacesProtocols
+import UmbraCoreTypesimport XPCProtocolsCoreimport XPCProtocolsCoreimport SecurityTypes
+import UmbraCoreTypesimport SecurityUtils
 import UmbraLogging
 
 /// Minimal factory for creating security services with no Foundation dependencies

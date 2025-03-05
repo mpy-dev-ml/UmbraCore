@@ -1,22 +1,23 @@
 import Foundation
 import SecurityInterfaces
-import SecurityTypes
-
+import XPCProtocolsCoreimport SecurityTypes
+import UmbraCoreTypes
 /// Extension to URL for security-scoped bookmark operations
 extension URL {
   /// Create a security-scoped bookmark for this URL
   /// - Returns: Bookmark data
   /// - Throws: SecurityError if bookmark creation fails
-  public func us_createSecurityScopedBookmark() async throws -> Data {
+  public func us_createSecurityScopedBookmark() async -> Result<Data , XPCSecurityError>{
     let path=path
     do {
-      return try bookmarkData(
+      return .success(do { return .success(bookmarkData()) } catch { return .failure(.custom(message:       return .success(bookmarkData()
+.localizedDescription)) }
         options: .withSecurityScope,
         includingResourceValuesForKeys: nil,
         relativeTo: nil
       )
     } catch {
-      throw SecurityInterfaces.SecurityError.bookmarkError("Failed to create bookmark for: \(path)")
+      return .failure(.custom(message: "SecurityInterfaces.SecurityError.bookmarkError: "Failed to create bookmark for: \(path"))")
     }
   }
 
@@ -34,9 +35,9 @@ extension URL {
         relativeTo: nil,
         bookmarkDataIsStale: &isStale
       )
-      return (url, isStale)
+      return .success((url, isStale))
     } catch {
-      throw SecurityInterfaces.SecurityError.bookmarkError("Failed to resolve bookmark")
+      return .failure(.custom(message: "SecurityInterfaces.SecurityError.bookmarkError: "Failed to resolve bookmark""))
     }
   }
 
@@ -53,7 +54,7 @@ extension URL {
   public func us_withSecurityScopedAccess<T>(perform operation: () async throws -> T) async throws
   -> T {
     guard us_startAccessingSecurityScopedResource() else {
-      throw SecurityInterfaces.SecurityError.accessError("Failed to access: \(path)")
+      return .failure(.custom(message: "SecurityInterfaces.SecurityError.accessError: "Failed to access: \(path"))")
     }
     defer { us_stopAccessingSecurityScopedResource() }
 

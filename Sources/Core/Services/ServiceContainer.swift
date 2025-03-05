@@ -4,16 +4,16 @@ import CoreServicesTypes
 import CoreTypes
 import Foundation
 import ObjCBridgingTypes
-import ObjCBridgingTypesFoundation
+import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Thread-safe container for managing service instances and their dependencies.
 public actor ServiceContainer {
   /// Shared instance of the service container
   public static let shared=ServiceContainer()
 
-  /// XPC connection for inter-process communication
-  public private(set) var xpcConnection: ObjCBridgingTypesFoundation
-    .XPCServiceProtocolBaseFoundation?
+  /// XPC service for inter-process communication
+  public private(set) var xpcService: (any XPCServiceProtocolStandard)?
 
   /// Registered services keyed by their identifiers.
   private var services: [String: any UmbraService]
@@ -29,16 +29,13 @@ public actor ServiceContainer {
     services=[:]
     dependencyGraph=[:]
     serviceStates=[:]
-    xpcConnection=nil
+    xpcService=nil
   }
 
-  /// Set the XPC connection
-  /// - Parameter connection: The XPC connection to use
-  public func setXPCConnection(
-    _ connection: ObjCBridgingTypesFoundation
-      .XPCServiceProtocolBaseFoundation
-  ) {
-    xpcConnection=connection
+  /// Set the XPC service for inter-process communication
+  /// - Parameter service: The XPC service to use
+  public func setXPCService(_ service: any XPCServiceProtocolStandard) {
+    xpcService = service
   }
 
   // MARK: - Service Registration
@@ -101,191 +98,168 @@ public actor ServiceContainer {
     await shutdownServices(sortedServices)
   }
 
-  // MARK: - Service State Management
+  // MARK: - Private Helper Methods
 
-  /// Get the current state of a service.
-  /// - Parameter identifier: Service identifier.
-  /// - Returns: Current service state.
-  public func getServiceState(_ identifier: String) -> ServiceState? {
-    serviceStates[identifier]
-  }
-
-  /// Check if all services are in a ready state.
-  /// - Returns: true if all services are ready.
-  public func areAllServicesReady() async -> Bool {
-    for (identifier, service) in services {
-      guard await service.isUsable() else {
-        return false
-      }
-      guard serviceStates[identifier] == .ready || serviceStates[identifier] == .running else {
-        return false
-      }
-    }
-    return true
-  }
-
-  /// Reset services to uninitialized state.
-  /// - Parameter preserveRegistration: If true, keeps services registered but uninitialised.
-  public func reset(preserveRegistration: Bool=false) async {
-    if preserveRegistration {
-      // Reset states but keep registrations
-      for identifier in services.keys {
-        serviceStates[identifier] = .uninitialized
-      }
-    } else {
-      // Clear everything
-      services.removeAll()
-      dependencyGraph.removeAll()
-      serviceStates.removeAll()
-    }
-  }
-
-  // MARK: - Private Helpers
-
-  /// Validate service dependencies and update dependency graph.
+  /// Initialize services in the specified order.
   /// - Parameters:
-  ///   - identifier: Service identifier.
-  ///   - dependencies: List of dependencies to validate.
-  /// - Throws: ServiceError if validation fails.
-  private func validateDependencies(identifier: String, dependencies: [String]) throws {
-    for dependency in dependencies {
-      guard services[dependency] != nil else {
-        throw ServiceError.dependencyError("Required dependency \(dependency) not found")
+  ///   - serviceIds: Ordered list of service identifiers to initialize.
+  ///   - timeout: Maximum time to wait for each service initialization.
+  /// - Throws: ServiceError if initialization fails.
+  private func initializeServices(_ serviceIds: [String], timeout: TimeInterval) async throws {
+    for serviceId in serviceIds {
+      guard let service=services[serviceId] else { continue }
+      guard await service.state == .uninitialized else { continue }
+
+      let initializer: () async throws -> Void = { [weak self] in
+        guard let self=self else { return }
+        await self.updateServiceState(serviceId, newState: .initializing)
+        try await service.initialize()
+        await self.updateServiceState(serviceId, newState: .ready)
       }
 
-      if dependencyGraph[identifier] == nil {
-        dependencyGraph[identifier]=Set()
-      }
-      dependencyGraph[identifier]?.insert(dependency)
-
-      if hasCircularDependency(from: identifier) {
-        dependencyGraph[identifier]?.remove(dependency)
-        throw ServiceError.dependencyError("Circular dependency detected for \(identifier)")
+      do {
+        try await withTimeout(timeout) {
+          try await initializer()
+        }
+      } catch {
+        await updateServiceState(serviceId, newState: .failed)
+        throw ServiceError.initializationError("Failed to initialize \(serviceId): \(error.localizedDescription)")
       }
     }
   }
 
-  /// Initialize services in the specified order with timeout.
+  /// Shut down services in the specified order.
+  /// - Parameter serviceIds: Ordered list of service identifiers to shut down.
+  private func shutdownServices(_ serviceIds: [String]) async {
+    for serviceId in serviceIds {
+      guard let service=services[serviceId],
+        await service.state == .ready
+      else { continue }
+
+      await updateServiceState(serviceId, newState: .shuttingDown)
+      await service.shutdown()
+      await updateServiceState(serviceId, newState: .uninitialized)
+    }
+  }
+
+  /// Update the state of a service.
   /// - Parameters:
-  ///   - services: Ordered list of service identifiers.
-  ///   - timeout: Maximum time to wait for initialisation.
-  /// - Throws: ServiceError if initialisation fails.
-  private func initializeServices(_ services: [String], timeout: TimeInterval) async throws {
-    try await withThrowingTaskGroup(of: Void.self) { [self] group in
-      // Start the timeout task
-      group.addTask {
-        try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
-        throw ServiceError.operationFailed("Operation timed out after \(timeout) seconds")
-      }
-
-      // Start service initialization tasks
-      for identifier in services {
-        guard let service=self.services[identifier] else { continue }
-
-        group.addTask { [self] in
-          await updateServiceState(identifier, to: .initializing)
-
-          do {
-            try await service.initialize()
-            await updateServiceState(identifier, to: .ready)
-          } catch {
-            await updateServiceState(identifier, to: .error)
-            let errorMessage=[
-              "Failed to initialise \(identifier): ",
-              error.localizedDescription
-            ].joined()
-            throw ServiceError.initialisationFailed(errorMessage)
-          }
-        }
-      }
-
-      // Wait for either timeout or completion
-      try await group.next()
-      group.cancelAll()
-    }
-  }
-
-  /// Shutdown services in the specified order.
-  /// - Parameter services: Ordered list of service identifiers.
-  private func shutdownServices(_ services: [String]) async {
-    await withTaskGroup(of: Void.self) { [self] group in
-      for identifier in services {
-        guard let service=self.services[identifier] else { continue }
-
-        group.addTask { [self] in
-          await updateServiceState(identifier, to: .shuttingDown)
-          await service.shutdown()
-          await updateServiceState(identifier, to: .shutdown)
-        }
-      }
-
-      await group.waitForAll()
-    }
+  ///   - serviceId: Identifier of the service to update.
+  ///   - newState: New state to set.
+  private func updateServiceState(_ serviceId: String, newState: ServiceState) {
+    serviceStates[serviceId]=newState
   }
 
   /// Sort services by dependency order.
-  /// - Returns: Ordered list of service identifiers.
-  /// - Throws: ServiceError if circular dependency detected.
+  /// - Returns: List of service identifiers in dependency order.
+  /// - Throws: ServiceError if circular dependencies are detected.
   private func sortServicesByDependency() throws -> [String] {
+    var visited: Set<String>=[:]
     var sorted: [String]=[]
-    var visited: Set<String>=[]
-    var temporary: Set<String>=[]
+    var temp: Set<String>=[:]
 
-    func visit(_ identifier: String) throws {
-      if temporary.contains(identifier) {
-        throw ServiceError.dependencyError("Circular dependency detected")
+    func visit(_ id: String) throws {
+      if temp.contains(id) {
+        throw ServiceError.circularDependency("Circular dependency detected involving \(id)")
       }
 
-      if !visited.contains(identifier) {
-        temporary.insert(identifier)
-
-        if let dependencies=dependencyGraph[identifier] {
-          for dependency in dependencies {
-            try visit(dependency)
-          }
+      if !visited.contains(id) {
+        temp.insert(id)
+        for dep in dependencyGraph[id] ?? [] {
+          try visit(dep)
         }
-
-        visited.insert(identifier)
-        temporary.remove(identifier)
-        sorted.append(identifier)
+        temp.remove(id)
+        visited.insert(id)
+        sorted.append(id)
       }
     }
 
-    for identifier in services.keys {
-      try visit(identifier)
+    for id in services.keys {
+      if !visited.contains(id) {
+        try visit(id)
+      }
     }
 
     return sorted
   }
 
-  /// Check if a service has a circular dependency.
-  /// - Parameter identifier: Service identifier.
-  /// - Returns: true if circular dependency detected.
-  private func hasCircularDependency(from identifier: String, visited: Set<String>=[]) -> Bool {
-    guard let dependencies=dependencyGraph[identifier] else {
-      return false
-    }
-
-    var visited=visited
-    visited.insert(identifier)
-
+  /// Validate dependencies of a service.
+  /// - Parameters:
+  ///   - identifier: Identifier of the service being registered.
+  ///   - dependencies: List of service identifiers this service depends on.
+  /// - Throws: ServiceError if dependencies are invalid.
+  private func validateDependencies(identifier: String, dependencies: [String]) throws {
     for dependency in dependencies {
-      if visited.contains(dependency) {
-        return true
-      }
-      if hasCircularDependency(from: dependency, visited: visited) {
-        return true
+      guard services[dependency] != nil else {
+        throw ServiceError.dependencyError("Required dependency \(dependency) not found")
       }
     }
 
-    return false
+    dependencyGraph[identifier]=Set(dependencies)
+
+    // Verify no circular dependencies
+    _ = try sortServicesByDependency()
   }
 
-  /// Update the state of a service.
+  /// Execute a task with a timeout.
   /// - Parameters:
-  ///   - identifier: Service identifier.
-  ///   - state: New state.
-  private func updateServiceState(_ identifier: String, to state: ServiceState) {
-    serviceStates[identifier]=state
+  ///   - seconds: Maximum time to wait for completion.
+  ///   - task: Task to execute.
+  /// - Throws: ServiceError if the task times out or fails.
+  private func withTimeout(_ seconds: TimeInterval, _ task: @escaping () async throws -> Void) async throws {
+    try await withThrowingTaskGroup(of: Void.self) { group in
+      group.addTask {
+        try await task()
+      }
+
+      group.addTask {
+        try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+        throw ServiceError.timeout("Operation timed out after \(seconds) seconds")
+      }
+
+      // Take the first task to complete
+      let _ = try await group.next()
+      
+      // Cancel any remaining tasks
+      group.cancelAll()
+    }
+  }
+}
+
+/// Error types for service operations
+public enum ServiceError: Error, Sendable {
+  /// Error due to invalid configuration
+  case configurationError(String)
+  /// Error due to dependency issues
+  case dependencyError(String)
+  /// Error during service initialization
+  case initializationError(String)
+  /// Error due to invalid service state
+  case invalidState(String)
+  /// Error due to circular dependency
+  case circularDependency(String)
+  /// Error due to operation timeout
+  case timeout(String)
+}
+
+/// Protocol for services that can be registered with the container
+public protocol UmbraService: AnyObject, Sendable {
+  /// Unique identifier for the service type
+  static var serviceIdentifier: String { get }
+  /// Current state of the service
+  var state: ServiceState { get }
+  /// Initialize the service
+  func initialize() async throws
+  /// Shut down the service
+  func shutdown() async
+  /// Check if the service is in a usable state
+  func isUsable() async -> Bool
+}
+
+/// Default implementations for UmbraService
+extension UmbraService {
+  /// Default implementation to check if service is usable
+  public func isUsable() async -> Bool {
+    state == .ready
   }
 }

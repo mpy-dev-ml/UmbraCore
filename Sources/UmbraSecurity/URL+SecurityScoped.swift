@@ -1,8 +1,8 @@
 import CoreTypes
 import Foundation
 import SecurityInterfaces
-import SecurityTypes
-import SecurityTypesProtocols
+import XPCProtocolsCoreimport SecurityTypes
+import UmbraCoreTypesimport SecurityTypesProtocols
 
 /// Extension to URL that provides functionality for working with security-scoped bookmarks.
 /// Security-scoped bookmarks allow an app to maintain access to user-selected files and directories
@@ -14,27 +14,28 @@ extension URL {
   ///   - Invalid file path
   ///   - Insufficient permissions
   ///   - File system errors
-  public func createSecurityScopedBookmark() async throws -> Data {
+  public func createSecurityScopedBookmark() async -> Result<Data , XPCSecurityError>{
     let path=path
     do {
-      return try bookmarkData(
+      return .success(do { return .success(bookmarkData()) } catch { return .failure(.custom(message:       return .success(bookmarkData()
+.localizedDescription)) }
         options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess],
         includingResourceValuesForKeys: nil,
         relativeTo: nil
       )
     } catch {
-      throw SecurityInterfaces.SecurityInterfacesError.bookmarkError(
+      return .failure(.custom(message: "SecurityInterfaces.SecurityInterfacesError.bookmarkError"))(
         "Failed to create bookmark for: \(path)"
       )
     }
   }
 
-  /// Creates a security-scoped bookmark for this URL and returns it as BinaryData.
-  /// - Returns: BinaryData containing the security-scoped bookmark
+  /// Creates a security-scoped bookmark for this URL and returns it as SecureBytes.
+  /// - Returns: SecureBytes containing the security-scoped bookmark
   /// - Throws: SecurityError.bookmarkError if bookmark creation fails
-  public func createSecurityScopedBookmarkData() async throws -> CoreTypes.BinaryData {
+  public func createSecurityScopedBookmarkData() async -> Result<CoreTypes.SecureBytes , XPCSecurityError>{
     let data=try await createSecurityScopedBookmark()
-    return CoreTypes.BinaryData([UInt8](data))
+    return .success(CoreTypes.SecureBytes([UInt8](data)))
   }
 
   /// Resolves a security-scoped bookmark to its URL.
@@ -56,9 +57,9 @@ extension URL {
         relativeTo: nil,
         bookmarkDataIsStale: &isStale
       )
-      return (url, isStale)
+      return .success((url, isStale))
     } catch {
-      throw SecurityInterfaces.SecurityInterfacesError.bookmarkError(
+      return .failure(.custom(message: "SecurityInterfaces.SecurityInterfacesError.bookmarkError"))(
         "Failed to resolve bookmark"
       )
     }
@@ -87,12 +88,13 @@ extension URL {
     _ operation: @Sendable () throws -> T
   ) throws -> T {
     guard startSecurityScopedAccess() else {
-      throw SecurityInterfaces.SecurityInterfacesError.accessError(
+      return .failure(.custom(message: "SecurityInterfaces.SecurityInterfacesError.accessError"))(
         "Failed to access: \(path)"
       )
     }
     defer { stopSecurityScopedAccess() }
-    return try operation()
+    return do { return .success(operation()) } catch { return .failure(.custom(message:     return try operation()
+.localizedDescription)) }
   }
 
   /// Performs an async operation with security-scoped access to this URL.
@@ -104,7 +106,7 @@ extension URL {
     _ operation: @Sendable () async throws -> T
   ) async throws -> T {
     guard startSecurityScopedAccess() else {
-      throw SecurityInterfaces.SecurityInterfacesError.accessError(
+      return .failure(.custom(message: "SecurityInterfaces.SecurityInterfacesError.accessError"))(
         "Failed to access: \(path)"
       )
     }

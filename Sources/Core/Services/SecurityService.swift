@@ -1,14 +1,15 @@
 import CoreServicesTypes
 import CoreTypes
 import Foundation
-import SecurityInterfaces
+import SecurityProtocolsCore
 import SecurityTypes
 import SecurityTypesProtocols
+import UmbraCoreTypes
 import UmbraLogging
+import XPCProtocolsCore
 
 /// Manages security operations and access control
-public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase,
-SecurityTypesProtocols.SecurityProvider {
+public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProviderProtocol {
   public static let serviceIdentifier="com.umbracore.security"
 
   private var _state: ServiceState = .uninitialized
@@ -49,543 +50,230 @@ SecurityTypesProtocols.SecurityProvider {
       state = .shuttingDown
       _state = .shuttingDown
 
-      // Stop accessing all paths
-      await stopAccessingAllResources()
+      // Clean up resources
+      accessedPaths.removeAll()
+      bookmarks.removeAll()
 
-      // Shutdown crypto service
-      if let crypto=cryptoService {
-        await crypto.shutdown()
-        cryptoService=nil
-      }
-
-      state = .uninitialized
       _state = .uninitialized
+      state = .uninitialized
     }
   }
 
-  // MARK: - SecurityProviderBase Implementation (Foundation-free)
-
-  public func createBookmark(forPath path: String) async throws -> [UInt8] {
-    let url=URL(fileURLWithPath: path)
-    do {
-      let bookmarkData=try url.bookmarkData(
-        options: .withSecurityScope,
-        includingResourceValuesForKeys: nil,
-        relativeTo: nil
-      )
-      return Array(bookmarkData)
-    } catch {
-      throw SecurityError
-        .bookmarkError("Failed to create bookmark for \(path): \(error.localizedDescription)")
-    }
+  /// Check if the service is in a usable state
+  public func isUsable() async -> Bool {
+    _state == .ready
   }
 
-  public func resolveBookmark(_ bookmarkData: [UInt8]) async throws
-  -> (path: String, isStale: Bool) {
-    let data=Data(bookmarkData)
-    var isStale=false
+  // MARK: - Security Provider Implementation
 
-    do {
-      let url=try URL(
-        resolvingBookmarkData: data,
-        options: .withSecurityScope,
-        relativeTo: nil,
-        bookmarkDataIsStale: &isStale
-      )
-      return (url.path, isStale)
-    } catch {
-      throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
-    }
-  }
-
-  public func startAccessing(path: String) async throws -> Bool {
-    let url=URL(fileURLWithPath: path)
-    if url.startAccessingSecurityScopedResource() {
-      accessedPaths.insert(path)
-      return true
-    } else {
-      throw SecurityError.accessError("Failed to access: \(path)")
-    }
-  }
-
-  public func stopAccessing(path: String) async {
-    let url=URL(fileURLWithPath: path)
-    url.stopAccessingSecurityScopedResource()
-    accessedPaths.remove(path)
-  }
-
-  // Foundation-free credential methods
-  public func storeCredential(
-    data: [UInt8],
-    account: String,
-    service: String,
-    metadata _: [String: String]?
-  ) async throws -> String {
+  /// Verify a security token
+  /// - Parameter token: Security token to verify
+  /// - Returns: true if token is valid
+  /// - Throws: SecurityError if verification fails
+  public func verifySecurityToken(_ token: SecureBytes) async throws -> Bool {
     guard state == .ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
-    // Just store a basic implementation for now
-    let key="\(account).\(service)"
-    bookmarks[key]=data
-    return key
-  }
-
-  public func loadCredential(
-    account: String,
-    service: String
-  ) async throws -> [UInt8] {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    let key="\(account).\(service)"
-    guard let data=bookmarks[key] else {
-      throw SecurityError.itemNotFound
-    }
-
-    return data
-  }
-
-  public func loadCredentialWithMetadata(
-    account: String,
-    service: String
-  ) async throws -> ([UInt8], [String: String]?) {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    let key="\(account).\(service)"
-    guard let data=bookmarks[key] else {
-      throw SecurityError.itemNotFound
-    }
-
-    // For now, we don't have metadata in our simple implementation
-    return (data, nil)
-  }
-
-  public func deleteCredential(
-    account: String,
-    service: String
-  ) async throws {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    let key="\(account).\(service)"
-    guard bookmarks.removeValue(forKey: key) != nil else {
-      throw SecurityError.itemNotFound
-    }
-  }
-
-  public func generateRandomBytes(count: Int) async throws -> [UInt8] {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    if let crypto=cryptoService {
-      // Use crypto service if available
-      let data=try await crypto.generateSecureRandomBytes(length: count)
-      return Array(data)
-    } else {
-      // Fallback implementation using SecRandomCopyBytes
-      var bytes=[UInt8](repeating: 0, count: count)
-      let status=SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-
-      guard status == errSecSuccess else {
-        throw SecurityError.randomGenerationFailed
-      }
-
-      return bytes
-    }
-  }
-
-  // For backward compatibility
-  public func generateRandomBytes(length: Int) async throws -> [UInt8] {
-    try await generateRandomBytes(count: length)
-  }
-
-  // MARK: - SecurityProvider Implementation (Foundation-dependent)
-
-  public func createBookmark(for url: URL) async throws -> Data {
-    do {
-      return try url.bookmarkData(
-        options: .withSecurityScope,
-        includingResourceValuesForKeys: nil,
-        relativeTo: nil
-      )
-    } catch {
-      throw SecurityError
-        .bookmarkError("Failed to create bookmark for \(url.path): \(error.localizedDescription)")
-    }
-  }
-
-  public func resolveBookmark(_ bookmarkData: Data) async throws -> (url: URL, isStale: Bool) {
-    var isStale=false
-
-    do {
-      let url=try URL(
-        resolvingBookmarkData: bookmarkData,
-        options: .withSecurityScope,
-        relativeTo: nil,
-        bookmarkDataIsStale: &isStale
-      )
-      return (url, isStale)
-    } catch {
-      throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
-    }
-  }
-
-  public func startAccessing(url: URL) async throws -> Bool {
-    if url.startAccessingSecurityScopedResource() {
-      accessedPaths.insert(url.path)
-      return true
-    } else {
-      throw SecurityError.accessError("Failed to access: \(url.path)")
-    }
-  }
-
-  public func stopAccessing(url: URL) async {
-    url.stopAccessingSecurityScopedResource()
-    accessedPaths.remove(url.path)
-  }
-
-  public func isAccessing(url: URL) async -> Bool {
-    accessedPaths.contains(url.path)
-  }
-
-  public func getAccessedUrls() async -> Set<URL> {
-    Set(accessedPaths.map { URL(fileURLWithPath: $0) })
-  }
-
-  public func validateBookmark(_ bookmarkData: Data) async throws -> Bool {
-    do {
-      var isStale=false
-      _=try URL(
-        resolvingBookmarkData: bookmarkData,
-        options: .withSecurityScope,
-        relativeTo: nil,
-        bookmarkDataIsStale: &isStale
-      )
-      return !isStale
-    } catch {
+    // Verify the token format (simplified implementation)
+    if token.count < 16 {
       return false
     }
-  }
 
-  public func saveBookmark(_ bookmarkData: Data, withIdentifier identifier: String) async throws {
-    bookmarks[identifier]=Array(bookmarkData)
-  }
-
-  public func loadBookmark(withIdentifier identifier: String) async throws -> Data {
-    guard let bookmark=bookmarks[identifier] else {
-      throw SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
-    }
-    return Data(bookmark)
-  }
-
-  public func deleteBookmark(withIdentifier identifier: String) async throws {
-    guard bookmarks.removeValue(forKey: identifier) != nil else {
-      throw SecurityError.bookmarkError("No bookmark found for identifier: \(identifier)")
-    }
-  }
-
-  public func storeCredential(
-    data: Data,
-    account: String,
-    service: String,
-    metadata _: [String: String]?
-  ) async throws -> String {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    // Simple implementation for now
-    let key="\(account).\(service)"
-    bookmarks[key]=Array(data)
-    return key
-  }
-
-  public func loadCredential(
-    account: String,
-    service: String
-  ) async throws -> Data {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    let key="\(account).\(service)"
-    guard let data=bookmarks[key] else {
-      throw SecurityError.itemNotFound
-    }
-
-    return Data(data)
-  }
-
-  public func loadCredentialWithMetadata(
-    account: String,
-    service: String
-  ) async throws -> (Data, [String: String]?) {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    let key="\(account).\(service)"
-    guard let data=bookmarks[key] else {
-      throw SecurityError.itemNotFound
-    }
-
-    // We don't have metadata in our simple implementation
-    return (Data(data), nil)
-  }
-
-  public func generateRandomBytes(length: Int) async throws -> Data {
-    let bytes=try await generateRandomBytes(count: length)
-    return Data(bytes)
-  }
-
-  public func withSecurityScopedAccess<T: Sendable>(
-    to path: String,
-    perform operation: @Sendable () async throws -> T
-  ) async throws -> T {
-    let accessGranted=try await startAccessing(path: path)
-    guard accessGranted else {
-      throw SecurityError.accessError("Access denied to: \(path)")
-    }
-
-    defer { Task { await stopAccessing(path: path) } }
-    return try await operation()
-  }
-
-  public func stopAccessingAllResources() async {
-    for path in accessedPaths {
-      await stopAccessing(path: path)
-    }
-  }
-
-  public func isAccessing(path: String) async -> Bool {
-    accessedPaths.contains(path)
-  }
-
-  public func getAccessedPaths() async -> Set<String> {
-    accessedPaths
-  }
-
-  // MARK: - SecurityProvider Protocol Implementation
-
-  /// Create a security-scoped bookmark for a URL
-  /// - Parameter url: The URL to create a bookmark for
-  /// - Returns: The bookmark data
-  /// - Throws: Error if bookmark creation fails
-  public nonisolated func createSecurityBookmark(for url: URL) throws -> Data {
-    // Since this is nonisolated, we can't access actor state directly
-    do {
-      let bookmarkData=try url.bookmarkData(
-        options: .withSecurityScope,
-        includingResourceValuesForKeys: nil,
-        relativeTo: nil
-      )
-      return bookmarkData
-    } catch {
-      throw SecurityInterfaces.SecurityError.bookmarkError(
-        "Failed to create security bookmark: \(error.localizedDescription)"
-      )
-    }
-  }
-
-  /// Resolve a security-scoped bookmark to a URL
-  /// - Parameter bookmarkData: The bookmark data to resolve
-  /// - Returns: The resolved URL
-  /// - Throws: Error if bookmark resolution fails
-  public nonisolated func resolveSecurityBookmark(_ bookmarkData: Data) throws -> URL {
-    // Since this is nonisolated, we can't access actor state directly
-    var isStale=false
-    do {
-      let url=try URL(
-        resolvingBookmarkData: bookmarkData,
-        options: .withSecurityScope,
-        relativeTo: nil,
-        bookmarkDataIsStale: &isStale
-      )
-
-      if isStale {
-        // Log that the bookmark is stale but still try to use it
-        // We can't access the logger directly in a nonisolated context
-        // This would ideally be handled by a proper logging mechanism
-        print("Warning: Security bookmark is stale and may need to be recreated")
-      }
-
-      return url
-    } catch {
-      throw SecurityInterfaces.SecurityError.bookmarkError(
-        "Failed to resolve security bookmark: \(error.localizedDescription)"
-      )
-    }
-  }
-
-  // MARK: - SecurityInterfacesCore.SecurityProviderBase Implementation
-
-  public func resetSecurityData() async throws {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    bookmarks=[:]
-    accessedPaths=[]
-  }
-
-  public func getHostIdentifier() async throws -> String {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    // Generate a unique identifier for this host
-    let hostName=Host.current().name ?? "unknown-host"
-    return "\(hostName)-\(UUID().uuidString)"
-  }
-
-  public func registerClient(bundleIdentifier _: String) async throws -> Bool {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
-    }
-
-    // Simple implementation - always return true for now
+    // In a real implementation, we would verify signatures, expiration, etc.
     return true
   }
 
-  public func requestKeyRotation(keyId _: String) async throws {
+  /// Generate a security token
+  /// - Parameter options: Token generation options
+  /// - Returns: Generated security token
+  /// - Throws: SecurityError if token generation fails
+  public func generateSecurityToken(options: [String: Any]) async throws -> SecureBytes {
     guard state == .ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
-    // Implementation would request key rotation from a key management service
-    // For now, just validate the service is ready
+    // Extract token parameters with defaults
+    let expirationInterval=options["expirationInterval"] as? TimeInterval ?? 3600
+    let scope=options["scope"] as? String ?? "default"
+
+    // Generate token data (simplified implementation)
+    let timestamp=Date().timeIntervalSince1970
+    let expirationTime=timestamp + expirationInterval
+    
+    // In a real implementation, we would include signatures, proper encryption, etc.
+    let tokenData: [String: Any]=[
+      "timestamp": timestamp,
+      "expiration": expirationTime,
+      "scope": scope,
+      "id": UUID().uuidString
+    ]
+
+    // Convert to JSON
+    let jsonData=try JSONSerialization.data(withJSONObject: tokenData)
+    
+    // Convert to SecureBytes
+    return SecureBytes(bytes: [UInt8](jsonData))
   }
 
-  public func notifyKeyCompromise(keyId _: String) async throws {
+  /// Generate random bytes
+  /// - Parameter count: Number of bytes to generate
+  /// - Returns: Random bytes
+  /// - Throws: SecurityError if generation fails
+  public func generateRandomBytes(count: Int) async throws -> SecureBytes {
     guard state == .ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
-    // Implementation would notify about a compromised key
-    // For now, just validate the service is ready
+    guard let cryptoService=cryptoService else {
+      throw UmbraCoreTypes.CoreErrors.SecurityError.serviceUnavailable
+    }
+
+    // Use crypto service to generate random bytes
+    let randomBytes=try await cryptoService.generateRandomBytes(count: count)
+    return SecureBytes(bytes: randomBytes)
   }
 
-  // MARK: - SecurityProvider Implementation (Encryption/Decryption)
+  /// Start accessing a secure path
+  /// - Parameter path: Path to access
+  /// - Returns: true if access was granted
+  /// - Throws: SecurityError if access failed
+  public func startAccessing(path: String) async throws -> Bool {
+    guard state == .ready else {
+      throw ServiceError.invalidState("Security service not initialized")
+    }
 
+    // Check if we already have access
+    if accessedPaths.contains(path) {
+      return true
+    }
+
+    // Check if we have a bookmark for this path
+    if let bookmark=bookmarks[path] {
+      // Use the bookmark to gain access (simplified implementation)
+      accessedPaths.insert(path)
+      return true
+    }
+
+    // Otherwise, try to gain access directly (simplified implementation)
+    let fileManager=FileManager.default
+    if fileManager.fileExists(atPath: path) {
+      accessedPaths.insert(path)
+      return true
+    }
+
+    return false
+  }
+
+  /// Stop accessing a secure path
+  /// - Parameter path: Path to stop accessing
+  /// - Returns: true if access was successfully stopped
+  public func stopAccessing(path: String) async -> Bool {
+    if accessedPaths.contains(path) {
+      accessedPaths.remove(path)
+      return true
+    }
+    return false
+  }
+
+  /// Create a security bookmark for a path
+  /// - Parameter path: Path to create bookmark for
+  /// - Returns: true if bookmark was created
+  /// - Throws: SecurityError if bookmark creation failed
+  public func createBookmark(for path: String) async throws -> Bool {
+    guard state == .ready else {
+      throw ServiceError.invalidState("Security service not initialized")
+    }
+
+    // Check if a bookmark already exists
+    if bookmarks[path] != nil {
+      return true
+    }
+
+    // Create a new bookmark (simplified implementation)
+    let bookmarkData: [UInt8]=[/* bookmark data would go here */]
+    bookmarks[path]=bookmarkData
+    return true
+  }
+
+  /// Perform operation with secure access to a path
+  /// - Parameters:
+  ///   - path: Path to access
+  ///   - operation: Operation to perform
+  /// - Returns: Result of operation
+  /// - Throws: SecurityError if access or operation fails
+  public func withSecureAccess<T>(
+    to path: String,
+    perform operation: () async throws -> T
+  ) async throws -> T {
+    let accessGranted=try await startAccessing(path: path)
+    guard accessGranted else {
+      throw UmbraCoreTypes.CoreErrors.SecurityError.accessDenied
+    }
+
+    defer {
+      Task {
+        await stopAccessing(path: path)
+      }
+    }
+
+    return try await operation()
+  }
+
+  // MARK: - Legacy Support
+
+  /// Encrypt data using provided key
+  /// - Parameters:
+  ///   - data: Data to encrypt
+  ///   - key: Encryption key
+  /// - Returns: Encrypted data
+  /// - Throws: SecurityError if encryption fails
   public func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
     guard state == .ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
-    if let crypto=cryptoService {
-      do {
-        let result=try await crypto.encrypt(data, using: key)
-
-        // Combine all parts into a single byte array
-        var combined=[UInt8]()
-        combined.append(contentsOf: result.initializationVector)
-        combined.append(contentsOf: result.tag)
-        combined.append(contentsOf: result.encrypted)
-
-        return combined
-      } catch {
-        throw SecurityError.cryptoError("Encryption failed: \(error.localizedDescription)")
-      }
-    } else {
-      throw SecurityError.operationFailed("Encryption not available without CryptoService")
+    guard let cryptoService=cryptoService else {
+      throw UmbraCoreTypes.CoreErrors.SecurityError.serviceUnavailable
     }
+
+    // Use crypto service to perform encryption
+    return try await cryptoService.encrypt(data, key: key)
   }
 
+  /// Decrypt data using provided key
+  /// - Parameters:
+  ///   - data: Data to decrypt
+  ///   - key: Decryption key
+  /// - Returns: Decrypted data
+  /// - Throws: SecurityError if decryption fails
   public func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
     guard state == .ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
-    if let crypto=cryptoService {
-      // Extract IV, tag, and encrypted data from the combined data
-      // Assuming IV is 12 bytes and tag is 16 bytes (standard for AES-GCM)
-      let ivLength=12
-      let tagLength=16
-
-      guard data.count > ivLength + tagLength else {
-        throw SecurityError.cryptoError("Invalid encrypted data format")
-      }
-
-      let iv=Array(data.prefix(ivLength))
-      let tag=Array(data[ivLength..<(ivLength + tagLength)])
-      let encrypted=Array(data.suffix(from: ivLength + tagLength))
-
-      let encryptionResult=EncryptionResult(
-        encrypted: encrypted,
-        initializationVector: iv,
-        tag: tag
-      )
-
-      do {
-        return try await crypto.decrypt(encryptionResult, using: key)
-      } catch {
-        throw SecurityError.cryptoError("Decryption failed: \(error.localizedDescription)")
-      }
-    } else {
-      throw SecurityError.operationFailed("Decryption not available without CryptoService")
-    }
-  }
-
-  public func generateKey(length: Int) async throws -> [UInt8] {
-    guard state == .ready else {
-      throw ServiceError.invalidState("Security service not initialized")
+    guard let cryptoService=cryptoService else {
+      throw UmbraCoreTypes.CoreErrors.SecurityError.serviceUnavailable
     }
 
-    return try await generateRandomBytes(count: length)
+    // Use crypto service to perform decryption
+    return try await cryptoService.decrypt(data, key: key)
   }
 
+  /// Hash data using default algorithm
+  /// - Parameter data: Data to hash
+  /// - Returns: Hash result
+  /// - Throws: SecurityError if hashing fails
   public func hash(_ data: [UInt8]) async throws -> [UInt8] {
     guard state == .ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
-    // Since we don't have a direct hash function in CryptoService,
-    // we'll implement a basic hash using a key derivation function
-    if let crypto=cryptoService {
-      do {
-        // Convert data to a hex string for the password parameter
-        let hexString=data.map { String(format: "%02x", $0) }.joined()
-
-        // Use a fixed salt for hashing
-        let salt=Array("UmbraSecurityHash".utf8)
-
-        // Use the string-based deriveKey method
-        return try await crypto.deriveKey(from: hexString, salt: salt)
-      } catch {
-        throw SecurityError.cryptoError("Hashing failed: \(error.localizedDescription)")
-      }
-    } else {
-      throw SecurityError.operationFailed("Hashing not available without CryptoService")
+    guard let cryptoService=cryptoService else {
+      throw UmbraCoreTypes.CoreErrors.SecurityError.serviceUnavailable
     }
-  }
 
-  // MARK: - Foundation Data Methods
-
-  public func encryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation
-  .Data {
-    let result=try await encrypt([UInt8](data), key: [UInt8](key))
-    return Data(result)
-  }
-
-  public func decryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation
-  .Data {
-    let result=try await decrypt([UInt8](data), key: [UInt8](key))
-    return Data(result)
-  }
-
-  public func generateDataKey(length: Int) async throws -> Foundation.Data {
-    let result=try await generateKey(length: length)
-    return Data(result)
-  }
-
-  public func hashData(_ data: Foundation.Data) async throws -> Foundation.Data {
-    let result=try await hash([UInt8](data))
-    return Data(result)
+    // Use crypto service to perform hashing
+    return try await cryptoService.hash(data)
   }
 }

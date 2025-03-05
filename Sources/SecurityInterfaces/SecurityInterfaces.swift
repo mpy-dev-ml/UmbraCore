@@ -8,4 +8,5 @@
 /// top,
 /// and SecurityInterfaces providing the high-level interfaces.
 @_exported import SecurityInterfacesBase
-@_exported import SecurityInterfacesProtocols
+import XPCProtocolsCoreimport XPCProtocolsCore@_exported import SecurityInterfacesProtocols
+import UmbraCoreTypesimport XPCProtocolsCoreimport XPCProtocolsCoreimport UmbraCoreTypes

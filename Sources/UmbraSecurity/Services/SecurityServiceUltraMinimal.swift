@@ -1,7 +1,7 @@
 import SecurityInterfacesBase
-import SecurityInterfacesProtocols
-import UmbraLogging
-
+import XPCProtocolsCoreimport XPCProtocolsCoreimport SecurityInterfacesProtocols
+import UmbraCoreTypesimport XPCProtocolsCoreimport XPCProtocolsCoreimport UmbraLogging
+import UmbraCoreTypes
 /// Ultra minimal security service with absolutely no dependencies on Foundation or CryptoSwift
 /// This demonstrates the most basic implementation possible to avoid circular dependencies
 public final class SecurityServiceUltraMinimal {

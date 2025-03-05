@@ -1,37 +1,43 @@
 import Foundation
 import SecurityBridge
-import SecurityInterfacesBase
-import SecurityInterfacesProtocols
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Factory protocol for creating security providers
+@available(
+  *,
+  deprecated,
+  message: "Use SecurityProtocolsCore.SecurityProviderFactoryProtocol instead"
+)
 public protocol SecurityProviderFactory {
   /// Create a security provider using the specified configuration
   /// - Parameter config: The configuration to use
   /// - Returns: A new security provider instance
-  func createSecurityProvider(config: SecurityConfiguration) -> SecurityProvider
+  func createSecurityProvider(config: SecurityConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol
 
   /// Create a security provider using the default configuration
   /// - Returns: A new security provider instance
-  func createDefaultSecurityProvider() -> SecurityProvider
+  func createDefaultSecurityProvider() -> any SecurityProtocolsCore.SecurityProviderProtocol
 }
 
 /// Default implementation of the security provider factory
+@available(
+  *,
+  deprecated,
+  message: "Use SecurityProtocolsCore.StandardSecurityProviderFactory instead"
+)
 public class StandardSecurityProviderFactory: SecurityProviderFactory {
   public init() {}
 
-  public func createSecurityProvider(config: SecurityConfiguration) -> SecurityProvider {
+  public func createSecurityProvider(config: SecurityConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol {
     // Create a bridge provider with the given configuration
-    let coreProvider=createCoreProvider(with: config)
-
-    // Wrap it in our adapter
-    return SecurityProviderAdapter(bridge: coreProvider)
+    createCoreProvider(with: config)
   }
 
-  public func createDefaultSecurityProvider() -> SecurityProvider {
+  public func createDefaultSecurityProvider() -> any SecurityProtocolsCore.SecurityProviderProtocol {
     // Create a default configuration
-    let defaultConfig=SecurityConfiguration(
+    let defaultConfig = SecurityConfiguration(
       securityLevel: .standard,
       encryptionAlgorithm: "AES-256",
       hashAlgorithm: "SHA-256",
@@ -43,8 +49,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
 
   // MARK: - Private Helper Methods
 
-  private func createCoreProvider(with _: SecurityConfiguration) -> any SecurityProtocolsCore
-  .SecurityProviderProtocol {
+  private func createCoreProvider(with _: SecurityConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol {
     // This would create an appropriate concrete implementation
     // based on the provided configuration
 
@@ -149,7 +154,7 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
 
   func generateRandomData(length: Int) async
   -> Result<UmbraCoreTypes.SecureBytes, SecurityProtocolsCore.SecurityError> {
-    let bytes=[UInt8](repeating: 0, count: length)
+    let bytes = [UInt8](repeating: 0, count: length)
     return .success(UmbraCoreTypes.SecureBytes(bytes))
   }
 }
@@ -200,6 +205,6 @@ private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol
 
   func listKeyIdentifiers() async -> Result<[String], SecurityProtocolsCore.SecurityError> {
     // Dummy implementation
-    .success(["dummy-key-1", "dummy-key-2"])
+    .success(["key1", "key2", "key3"])
   }
 }

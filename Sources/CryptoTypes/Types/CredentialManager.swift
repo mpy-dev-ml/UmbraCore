@@ -1,17 +1,16 @@
 // CryptoKit removed - cryptography will be handled in ResticBar
 import Foundation
-import SecurityInterfaces
-import SecurityTypes
-import SecurityTypesProtocols
+import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Manages secure storage and retrieval of credentials
 public actor CredentialManager {
-  private let keychain: any SecureStorageProvider
+  private let keychain: any SecureStorageServiceProtocol
   private let config: CryptoConfig
 
   public init(service: String, config: CryptoConfig) {
-    keychain=KeychainAccess(service: service)
-    self.config=config
+    keychain = KeychainAccess(service: service)
+    self.config = config
   }
 
   /// Save a credential securely
@@ -19,66 +18,59 @@ public actor CredentialManager {
   ///   - identifier: Identifier for the credential
   ///   - data: Data to store
   public func save(_ data: Data, forIdentifier identifier: String) async throws {
-    try await keychain.save(data, forKey: identifier, metadata: nil)
+    let secureBytes = SecureBytes(data: data)
+    try await keychain.storeSecurely(secureBytes, identifier: identifier, metadata: nil)
   }
 
   /// Retrieve a credential
   /// - Parameter identifier: Identifier for the credential
   /// - Returns: Stored data
   public func retrieve(forIdentifier identifier: String) async throws -> Data {
-    let (data, _)=try await keychain.loadWithMetadata(forKey: identifier)
-    return data
+    let secureBytes = try await keychain.retrieveSecurely(identifier: identifier)
+    return secureBytes.asData()
   }
 
   /// Delete a credential
   /// - Parameter identifier: Identifier for the credential
   public func delete(forIdentifier identifier: String) async throws {
-    try await keychain.delete(forKey: identifier)
+    try await keychain.deleteSecurely(identifier: identifier)
   }
 }
 
 /// Access to the system keychain
-private actor KeychainAccess: SecureStorageProvider {
+private actor KeychainAccess: SecureStorageServiceProtocol {
   private let service: String
-  private var items: [String: (data: Data, metadata: [String: String]?)]=[:]
+  private var items: [String: (data: SecureBytes, metadata: [String: String]?)] = [:]
 
   init(service: String) {
-    self.service=service
+    self.service = service
   }
 
-  func save(_ data: Data, forKey key: String, metadata: [String: String]?) async throws {
-    items[key]=(data: data, metadata: metadata)
+  func storeSecurely(_ data: SecureBytes, identifier: String, metadata: [String: String]?) async throws {
+    items[identifier] = (data: data, metadata: metadata)
   }
 
-  func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
-    guard let item=items[key] else {
-      throw SecurityInterfaces.SecurityError.itemNotFound
+  func retrieveSecurely(identifier: String) async throws -> SecureBytes {
+    guard let item = items[identifier] else {
+      throw CoreErrors.SecurityError.itemNotFound
     }
-    return (item.data, item.metadata)
+    return item.data
   }
 
-  func load(forKey key: String) async throws -> Data {
-    let (data, _)=try await loadWithMetadata(forKey: key)
-    return data
-  }
-
-  func delete(forKey key: String) async throws {
-    guard items.removeValue(forKey: key) != nil else {
-      throw SecurityInterfaces.SecurityError.itemNotFound
+  func deleteSecurely(identifier: String) async throws {
+    guard items.removeValue(forKey: identifier) != nil else {
+      throw CoreErrors.SecurityError.itemNotFound
     }
   }
 
-  func exists(forKey key: String) async -> Bool {
-    items[key] != nil
-  }
-
-  func allKeys() async throws -> [String] {
+  func listIdentifiers() async throws -> [String] {
     Array(items.keys)
   }
 
-  func reset(preserveKeys: Bool) async {
-    if !preserveKeys {
-      items.removeAll()
+  func getMetadata(for identifier: String) async throws -> [String: String]? {
+    guard let item = items[identifier] else {
+      throw CoreErrors.SecurityError.itemNotFound
     }
+    return item.metadata
   }
 }

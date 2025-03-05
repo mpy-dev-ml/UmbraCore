@@ -1,25 +1,22 @@
 import Foundation
-import SecurityInterfaces
-import SecurityInterfacesFoundation
-import SecurityInterfacesProtocols
-import SecurityTypes
-import SecurityTypesProtocols
+import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Default implementation of SecurityProvider for production use
 @available(macOS 14.0, *)
-public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundation {
+public class DefaultSecurityProvider: SecurityProviderProtocol {
   /// Dictionary to track accessed URLs and their bookmark data
-  private var accessedURLs: [String: (URL, Data)]=[:]
+  private var accessedURLs: [String: (URL, Data)] = [:]
 
   /// Keeping track of security-scoped resources
-  private var securityScopedResources: Set<URL>=[]
+  private var securityScopedResources: Set<URL> = []
 
   public init() {}
 
   // MARK: - URL-based Security Methods
 
   public func startAccessing(url: URL) async throws -> Bool {
-    let success=url.startAccessingSecurityScopedResource()
+    let success = url.startAccessingSecurityScopedResource()
     if success {
       securityScopedResources.insert(url)
     }
@@ -48,31 +45,29 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
 
   // MARK: - Path-based Security Methods (previously implemented)
 
-  public func createBookmark(forPath path: String) async throws -> [UInt8] {
-    let url=URL(fileURLWithPath: path)
+  public func createBookmark(forPath path: String) async throws -> SecureBytes {
+    let url = URL(fileURLWithPath: path)
     do {
-      let bookmarkData=try url.bookmarkData(options: .withSecurityScope)
-      return Array(bookmarkData)
+      let bookmarkData = try url.bookmarkData(options: .withSecurityScope)
+      return SecureBytes(data: bookmarkData)
     } catch {
-      throw SecurityInterfaces.SecurityError
-        .bookmarkError("Failed to create bookmark for \(path): \(error.localizedDescription)")
+      throw CoreErrors.SecurityError.bookmarkError
     }
   }
 
-  public func resolveBookmark(_ bookmarkData: [UInt8]) async throws
+  public func resolveBookmark(_ bookmarkData: SecureBytes) async throws
   -> (path: String, isStale: Bool) {
     do {
-      var isStale=false
-      let url=try URL(
-        resolvingBookmarkData: Data(bookmarkData),
+      var isStale = false
+      let url = try URL(
+        resolvingBookmarkData: bookmarkData.asData(),
         options: .withSecurityScope,
         relativeTo: nil,
         bookmarkDataIsStale: &isStale
       )
       return (url.path, isStale)
     } catch {
-      throw SecurityInterfaces.SecurityError
-        .bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+      throw CoreErrors.SecurityError.bookmarkError
     }
   }
 
@@ -92,15 +87,14 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
     do {
       return try url.bookmarkData(options: .withSecurityScope)
     } catch {
-      throw SecurityInterfaces.SecurityError
-        .bookmarkError("Failed to create bookmark for \(url.path): \(error.localizedDescription)")
+      throw CoreErrors.SecurityError.bookmarkError
     }
   }
 
   public func resolveBookmark(_ bookmarkData: Data) async throws -> (url: URL, isStale: Bool) {
     do {
-      var isStale=false
-      let url=try URL(
+      var isStale = false
+      let url = try URL(
         resolvingBookmarkData: bookmarkData,
         options: .withSecurityScope,
         relativeTo: nil,
@@ -108,15 +102,14 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
       )
       return (url, isStale)
     } catch {
-      throw SecurityInterfaces.SecurityError
-        .bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+      throw CoreErrors.SecurityError.bookmarkError
     }
   }
 
   public func validateBookmark(_ bookmarkData: Data) async throws -> Bool {
     do {
-      var isStale=false
-      _=try URL(
+      var isStale = false
+      _ = try URL(
         resolvingBookmarkData: bookmarkData,
         options: .withSecurityScope,
         relativeTo: nil,
@@ -132,90 +125,110 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
 
   public func storeInKeychain(data _: Data, service _: String, account _: String) async throws {
     // Implementation would use Keychain API to store data
-    throw SecurityInterfaces.SecurityError.operationFailed("Keychain storage not implemented")
+    throw CoreErrors.SecurityError.operationFailed
   }
 
   public func retrieveFromKeychain(service _: String, account _: String) async throws -> Data {
     // Implementation would use Keychain API to retrieve data
-    throw SecurityInterfaces.SecurityError.operationFailed("Keychain retrieval not implemented")
+    throw CoreErrors.SecurityError.operationFailed
   }
 
   public func deleteFromKeychain(service _: String, account _: String) async throws {
     // Implementation would use Keychain API to delete data
-    throw SecurityInterfaces.SecurityError.operationFailed("Keychain deletion not implemented")
+    throw CoreErrors.SecurityError.operationFailed
   }
 
   // MARK: - Foundation Data Methods
 
-  public func encryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation
-  .Data {
-    let encryptedBytes=try await encrypt(Array(data), key: Array(key))
-    return Data(encryptedBytes)
+  public func encryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data {
+    let encryptedBytes = try await encrypt(SecureBytes(data: data), key: SecureBytes(data: key))
+    return encryptedBytes.asData()
   }
 
-  public func decryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation
-  .Data {
-    let decryptedBytes=try await decrypt(Array(data), key: Array(key))
-    return Data(decryptedBytes)
+  public func decryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data {
+    let decryptedBytes = try await decrypt(SecureBytes(data: data), key: SecureBytes(data: key))
+    return decryptedBytes.asData()
   }
 
   public func generateDataKey(length: Int) async throws -> Foundation.Data {
-    let keyBytes=try await generateKey(length: length)
-    return Data(keyBytes)
+    let keyBytes = try await generateRandomData(length: length)
+    return keyBytes.asData()
   }
 
   public func hashData(_ data: Foundation.Data) async throws -> Foundation.Data {
-    let hashBytes=try await hash(Array(data))
-    return Data(hashBytes)
+    let hashBytes = try await hash(SecureBytes(data: data))
+    return hashBytes.asData()
   }
 
-  // MARK: - Byte Array Methods
+  // MARK: - SecureBytes Methods
 
-  public func encrypt(_ data: [UInt8], key _: [UInt8]) async throws -> [UInt8] {
+  public func encrypt(_ data: SecureBytes, key: SecureBytes) async throws -> SecureBytes {
     // Implementation of encryption
     data // Placeholder: actual implementation would encrypt the data
   }
 
-  public func decrypt(_ data: [UInt8], key _: [UInt8]) async throws -> [UInt8] {
+  public func decrypt(_ data: SecureBytes, key: SecureBytes) async throws -> SecureBytes {
     // Implementation of decryption
     data // Placeholder: actual implementation would decrypt the data
   }
 
-  public func generateKey(length: Int) async throws -> [UInt8] {
+  public func generateRandomData(length: Int) async throws -> SecureBytes {
     // Generate a random key of specified length
-    var keyData=[UInt8](repeating: 0, count: length)
-    let result=SecRandomCopyBytes(kSecRandomDefault, keyData.count, &keyData)
+    var keyData = [UInt8](repeating: 0, count: length)
+    let result = SecRandomCopyBytes(kSecRandomDefault, keyData.count, &keyData)
     if result == errSecSuccess {
-      return keyData
+      return SecureBytes(bytes: keyData)
     } else {
-      throw SecurityInterfaces.SecurityError.randomGenerationFailed
+      throw CoreErrors.SecurityError.randomGenerationFailed
     }
   }
 
-  public func hash(_ data: [UInt8]) async throws -> [UInt8] {
+  public func hash(_ data: SecureBytes) async throws -> SecureBytes {
     // Simple implementation for hashing
     data // Placeholder: actual implementation would hash the data
   }
-
-  // MARK: - SecurityProviderBase methods
-
-  public func resetSecurityData() async throws {
-    // Implementation for resetting security data
+  
+  // MARK: - XPCServiceProtocolStandard implementation
+  
+  public func ping() async throws -> Bool {
+    return true
   }
-
-  public func getHostIdentifier() async throws -> String {
-    "host-identifier-placeholder"
+  
+  public func synchroniseKeys(_ syncData: SecureBytes) async throws {
+    // No-op for this implementation
   }
-
-  public func registerClient(bundleIdentifier _: String) async throws -> Bool {
-    true
+  
+  public func encryptData(_ data: SecureBytes, keyIdentifier: String?) async throws -> SecureBytes {
+    if let keyId = keyIdentifier {
+      // Retrieve key from keychain by ID and use it
+      let keyData = try await retrieveFromKeychain(service: "umbra.security", account: keyId)
+      return try await encrypt(data, key: SecureBytes(data: keyData))
+    } else {
+      throw CoreErrors.SecurityError.invalidParameter
+    }
   }
-
-  public func requestKeyRotation(keyId _: String) async throws {
-    // Implementation for key rotation
+  
+  public func decryptData(_ data: SecureBytes, keyIdentifier: String?) async throws -> SecureBytes {
+    if let keyId = keyIdentifier {
+      // Retrieve key from keychain by ID and use it
+      let keyData = try await retrieveFromKeychain(service: "umbra.security", account: keyId)
+      return try await decrypt(data, key: SecureBytes(data: keyData))
+    } else {
+      throw CoreErrors.SecurityError.invalidParameter
+    }
   }
-
-  public func notifyKeyCompromise(keyId _: String) async throws {
-    // Implementation for key compromise notification
+  
+  public func hashData(_ data: SecureBytes) async throws -> SecureBytes {
+    return try await hash(data)
+  }
+  
+  public func signData(_ data: SecureBytes, keyIdentifier: String) async throws -> SecureBytes {
+    // Not implemented
+    throw CoreErrors.SecurityError.operationFailed
+  }
+  
+  public func verifySignature(_ signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async throws -> Bool {
+    // Not implemented
+    throw CoreErrors.SecurityError.operationFailed
   }
 }

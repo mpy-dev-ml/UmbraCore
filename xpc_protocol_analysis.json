@@ -1,12 +1,10 @@
 {
   "totalFiles": 2657,
-  "filesWithLegacyImports": 50,
-  "filesWithModernImports": 77,
-  "filesNeedingRefactoring": 54,
+  "filesWithLegacyImports": 40,
+  "filesWithModernImports": 87,
+  "filesNeedingRefactoring": 44,
   "modulesToRefactor": [
-    "Core",
     "CoreTypes",
-    "CryptoTypes",
     "Features",
     "ObjCBridgingTypes",
     "ObjCBridgingTypesFoundation",
@@ -21248,15 +21246,15 @@
     },
     {
       "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/Core/Services/KeyManager.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces",
-        "import SecurityInterfacesBase"
-      ],
+      "hasLegacyImports": false,
       "hasLegacyProtocols": false,
-      "hasModernImports": false,
+      "hasModernImports": true,
+      "modernImports": [
+        "import UmbraCoreTypes",
+        "import XPCProtocolsCore"
+      ],
       "hasModernProtocols": false,
-      "needsRefactoring": true,
+      "needsRefactoring": false,
       "module": "Core",
       "language": "swift"
     },
@@ -21272,14 +21270,15 @@
     },
     {
       "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/Core/Services/SecurityService.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces"
-      ],
+      "hasLegacyImports": false,
       "hasLegacyProtocols": false,
-      "hasModernImports": false,
+      "hasModernImports": true,
+      "modernImports": [
+        "import UmbraCoreTypes",
+        "import XPCProtocolsCore"
+      ],
       "hasModernProtocols": false,
-      "needsRefactoring": true,
+      "needsRefactoring": false,
       "module": "Core",
       "language": "swift"
     },
@@ -21291,9 +21290,17 @@
         "XPCServiceProtocol",
         "XPCServiceProtocol"
       ],
-      "hasModernImports": false,
-      "hasModernProtocols": false,
-      "needsRefactoring": true,
+      "hasModernImports": true,
+      "modernImports": [
+        "import UmbraCoreTypes",
+        "import XPCProtocolsCore"
+      ],
+      "hasModernProtocols": true,
+      "modernProtocols": [
+        "XPCServiceProtocolStandard",
+        "XPCServiceProtocolStandard"
+      ],
+      "needsRefactoring": false,
       "module": "Core",
       "language": "swift"
     },
@@ -21309,13 +21316,7 @@
     },
     {
       "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/Core/Services/TypeAliases/XPCServiceProtocolAlias.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces",
-        "import SecurityInterfaces",
-        "import SecurityInterfacesBase",
-        "import SecurityInterfaces"
-      ],
+      "hasLegacyImports": false,
       "hasLegacyProtocols": true,
       "legacyProtocols": [
         "XPCServiceProtocol",
@@ -21326,11 +21327,15 @@
       ],
       "hasModernImports": true,
       "modernImports": [
+        "import UmbraCoreTypes",
         "import XPCProtocolsCore"
       ],
       "hasModernProtocols": true,
       "modernProtocols": [
         "XPCServiceProtocolStandard",
+        "XPCServiceProtocolBasic",
+        "XPCServiceProtocolComplete",
+        "XPCSecurityError",
         "XPCServiceProtocolStandard"
       ],
       "needsRefactoring": false,
@@ -21734,16 +21739,25 @@
     },
     {
       "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/CryptoTypes/Services/CredentialManager.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces",
-        "import SecurityInterfaces",
-        "import SecurityInterfacesProtocols"
+      "hasLegacyImports": false,
+      "hasLegacyProtocols": true,
+      "legacyProtocols": [
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol"
       ],
-      "hasLegacyProtocols": false,
-      "hasModernImports": false,
-      "hasModernProtocols": false,
-      "needsRefactoring": true,
+      "hasModernImports": true,
+      "modernImports": [
+        "import UmbraCoreTypes",
+        "import XPCProtocolsCore"
+      ],
+      "hasModernProtocols": true,
+      "modernProtocols": [
+        "XPCSecurityError",
+        "XPCSecurityError"
+      ],
+      "needsRefactoring": false,
       "module": "CryptoTypes",
       "language": "swift"
     },
@@ -21762,11 +21776,46 @@
       "hasLegacyImports": false,
       "hasLegacyProtocols": true,
       "legacyProtocols": [
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
+        "XPCServiceProtocol",
         "XPCServiceProtocol"
       ],
-      "hasModernImports": false,
-      "hasModernProtocols": false,
-      "needsRefactoring": true,
+      "hasModernImports": true,
+      "modernImports": [
+        "import XPCProtocolsCore",
+        "import UmbraCoreTypes"
+      ],
+      "hasModernProtocols": true,
+      "modernProtocols": [
+        "XPCServiceProtocolStandard",
+        "XPCSecurityError",
+        "XPCSecurityError",
+        "XPCSecurityError",
+        "XPCSecurityError",
+        "XPCSecurityError",
+        "XPCSecurityError",
+        "XPCSecurityError",
+        "XPCSecurityError",
+        "XPCServiceProtocolBasic",
+        "XPCSecurityError",
+        "XPCServiceProtocolStandard"
+      ],
+      "needsRefactoring": false,
       "module": "CryptoTypes",
       "language": "swift"
     },
@@ -21782,14 +21831,15 @@
     },
     {
       "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/CryptoTypes/Types/CredentialManager.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces"
-      ],
+      "hasLegacyImports": false,
       "hasLegacyProtocols": false,
-      "hasModernImports": false,
+      "hasModernImports": true,
+      "modernImports": [
+        "import UmbraCoreTypes",
+        "import XPCProtocolsCore"
+      ],
       "hasModernProtocols": false,
-      "needsRefactoring": true,
+      "needsRefactoring": false,
       "module": "CryptoTypes",
       "language": "swift"
     },
@@ -22015,17 +22065,21 @@
     },
     {
       "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/Features/Logging/Services/DefaultSecurityProvider.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces",
-        "import SecurityInterfaces",
-        "import SecurityInterfaces",
-        "import SecurityInterfacesProtocols"
+      "hasLegacyImports": false,
+      "hasLegacyProtocols": true,
+      "legacyProtocols": [
+        "XPCServiceProtocol"
       ],
-      "hasLegacyProtocols": false,
-      "hasModernImports": false,
-      "hasModernProtocols": false,
-      "needsRefactoring": true,
+      "hasModernImports": true,
+      "modernImports": [
+        "import UmbraCoreTypes",
+        "import XPCProtocolsCore"
+      ],
+      "hasModernProtocols": true,
+      "modernProtocols": [
+        "XPCServiceProtocolStandard"
+      ],
+      "needsRefactoring": false,
       "module": "Features",
       "language": "swift"
     },
@@ -23380,27 +23434,7 @@
     },
     {
       "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/SecurityInterfaces/SecurityProviderBase.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces",
-        "import SecurityInterfacesBase"
-      ],
-      "hasLegacyProtocols": false,
-      "hasModernImports": false,
-      "hasModernProtocols": false,
-      "needsRefactoring": true,
-      "module": "SecurityInterfaces",
-      "language": "swift"
-    },
-    {
-      "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/SecurityInterfaces/SecurityProviderFactory.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces",
-        "import SecurityInterfacesBase",
-        "import SecurityInterfaces",
-        "import SecurityInterfacesProtocols"
-      ],
+      "hasLegacyImports": false,
       "hasLegacyProtocols": false,
       "hasModernImports": true,
       "modernImports": [
@@ -23412,16 +23446,30 @@
       "language": "swift"
     },
     {
-      "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/SecurityInterfaces/SecurityProviderFoundation.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces",
-        "import SecurityInterfacesBase"
-      ],
+      "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/SecurityInterfaces/SecurityProviderFactory.swift",
+      "hasLegacyImports": false,
       "hasLegacyProtocols": false,
-      "hasModernImports": false,
+      "hasModernImports": true,
+      "modernImports": [
+        "import UmbraCoreTypes",
+        "import XPCProtocolsCore"
+      ],
       "hasModernProtocols": false,
-      "needsRefactoring": true,
+      "needsRefactoring": false,
+      "module": "SecurityInterfaces",
+      "language": "swift"
+    },
+    {
+      "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/SecurityInterfaces/SecurityProviderFoundation.swift",
+      "hasLegacyImports": false,
+      "hasLegacyProtocols": false,
+      "hasModernImports": true,
+      "modernImports": [
+        "import UmbraCoreTypes",
+        "import XPCProtocolsCore"
+      ],
+      "hasModernProtocols": false,
+      "needsRefactoring": false,
       "module": "SecurityInterfaces",
       "language": "swift"
     },
@@ -23516,13 +23564,7 @@
     },
     {
       "filePath": "/Users/mpy/CascadeProjects/UmbraCore/Sources/SecurityInterfaces/XPCServiceProtocol.swift",
-      "hasLegacyImports": true,
-      "legacyImports": [
-        "import SecurityInterfaces",
-        "import SecurityInterfacesBase",
-        "import SecurityInterfaces",
-        "import SecurityInterfacesProtocols"
-      ],
+      "hasLegacyImports": false,
       "hasLegacyProtocols": true,
       "legacyProtocols": [
         "XPCServiceProtocol",
@@ -23536,15 +23578,28 @@
         "XPCServiceProtocol",
         "XPCServiceProtocol"
       ],
-      "hasModernImports": false,
+      "hasModernImports": true,
+      "modernImports": [
+        "import XPCProtocolsCore",
+        "import UmbraCoreTypes"
+      ],
       "hasModernProtocols": true,
       "modernProtocols": [
         "XPCServiceProtocolStandard",
         "XPCServiceProtocolComplete",
+        "XPCServiceProtocolBasic",
+        "XPCSecurityError",
+        "XPCSecurityError",
         "XPCServiceProtocolStandard",
-        "XPCServiceProtocolComplete"
+        "XPCServiceProtocolComplete",
+        "XPCSecurityError",
+        "XPCSecurityError",
+        "XPCServiceProtocolBasic",
+        "XPCServiceProtocolBasic",
+        "XPCSecurityError",
+        "XPCSecurityError"
       ],
-      "needsRefactoring": true,
+      "needsRefactoring": false,
       "module": "SecurityInterfaces",
       "language": "swift"
     },
@@ -25081,7 +25136,8 @@
         "XPCSecurityError",
         "XPCSecurityError",
         "XPCServiceProtocolStandard",
-        "XPCServiceProtocolStandard"
+        "XPCServiceProtocolStandard",
+        "XPCSecurityError"
       ],
       "needsRefactoring": false,
       "module": "XPCProtocolsCore",
@@ -25240,7 +25296,9 @@
       "hasModernProtocols": true,
       "modernProtocols": [
         "XPCServiceProtocolBasic",
-        "XPCServiceProtocolBasic"
+        "XPCSecurityError",
+        "XPCServiceProtocolBasic",
+        "XPCSecurityError"
       ],
       "needsRefactoring": false,
       "module": "XPCProtocolsCore",
@@ -25433,8 +25491,10 @@
         "XPCSecurityError",
         "XPCSecurityError",
         "XPCSecurityError",
+        "XPCSecurityError",
         "XPCServiceProtocolStandard",
         "XPCServiceProtocolComplete",
+        "XPCSecurityError",
         "XPCSecurityError",
         "XPCSecurityError",
         "XPCSecurityError",

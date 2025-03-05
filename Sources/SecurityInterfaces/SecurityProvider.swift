@@ -23,7 +23,7 @@ public protocol SecurityProvider: SecurityProviderBase {
   /// Get the current security configuration
   /// - Returns: The active security configuration
   /// - Throws: SecurityInterfacesError if retrieving configuration fails
-  func getSecurityConfiguration() async throws -> SecurityConfiguration
+  func getSecurityConfiguration async -> Result<SecurityConfiguration, XPCSecurityError>
 
   /// Update the security configuration
   /// - Parameter configuration: The new configuration to apply
@@ -70,7 +70,8 @@ public final class SecurityProviderAdapter: SecurityProvider {
 
   public func performOperation(identifier _: String, parameters: [UInt8]) async throws -> [UInt8] {
     // Handle low-level operations by converting to a more specific operation type
-    let parametersDict=try decodeParameters(parameters)
+    let parametersDict=do { return .success(decodeParameters(parameters)) } catch { return .failure(.custom(message:     let parametersDict=try decodeParameters(parameters)
+.localizedDescription)) }
     let operationType=parametersDict["operation"] as? String ?? "encrypt"
 
     let operation: SecurityOperation=switch operationType {
@@ -102,14 +103,14 @@ public final class SecurityProviderAdapter: SecurityProvider {
     // In a real implementation, this would parse the byte array into a dictionary
     // based on your specific binary format
 
-    // For this example, we'll just return a mock dictionary
+    // For this example, we'll just return .success(a mock dictionary)
     let mockParameters: [String: Any]=[
       "operation": "encrypt",
       "data": Data(bytes),
       "key": "test-key"
     ]
 
-    return mockParameters
+    return .success(mockParameters)
   }
 
   private func encodeResult(_ result: SecurityResult) -> [UInt8] {
@@ -117,7 +118,7 @@ public final class SecurityProviderAdapter: SecurityProvider {
     // based on your specific binary format
 
     if let data=result.data {
-      return [UInt8](data)
+      return .success([UInt8](data))
     }
 
     return []
@@ -140,20 +141,20 @@ public final class SecurityProviderAdapter: SecurityProvider {
     )
 
     // Convert the result back to SecurityInterfaces types
-    return mapFromSPCResult(coreResult)
+    return .success(mapFromSPCResult(coreResult))
   }
 
-  public func getSecurityConfiguration() async throws -> SecurityConfiguration {
+  public func getSecurityConfiguration async -> Result<SecurityConfiguration, XPCSecurityError> {
     // Call the XPC service to get the latest configuration
     let result=await xpcService.pingStandard()
 
     switch result {
       case .success:
         // In a real implementation, we would fetch the actual configuration from the XPC service
-        return SecurityConfiguration.default
+        return .success(SecurityConfiguration.default)
       case let .failure(error):
-        throw error
-    }
+        return .failure(.custom(message: "error
+"))    }
   }
 
   public func updateSecurityConfiguration(_ configuration: SecurityConfiguration) async throws {
@@ -168,8 +169,8 @@ public final class SecurityProviderAdapter: SecurityProvider {
 
     // Handle errors
     if case let .failure(error)=result {
-      throw error
-    }
+      return .failure(.custom(message: "error
+"))    }
   }
 
   // MARK: - Type Mapping Methods
@@ -199,7 +200,7 @@ public final class SecurityProviderAdapter: SecurityProvider {
     let algorithm=parameters["algorithm"] as? String ?? "AES-GCM"
     let keySize=parameters["keySize"] as? Int ?? 256
 
-    return SecurityProtocolsCore.SecurityConfigDTO(
+    return .success(SecurityProtocolsCore.SecurityConfigDTO()
       algorithm: algorithm,
       keySizeInBits: keySize
     )
@@ -344,7 +345,7 @@ private final class MockXPCService: XPCServiceProtocolStandard {
 extension SecurityConfiguration {
   func toSecurityProtocolsConfig() -> SecurityProtocolsCore.SecurityConfigDTO {
     // Implement conversion to SecurityProtocolsCore.SecurityConfigDTO
-    // For this example, we'll just return a mock config
+    // For this example, we'll just return .success(a mock config)
     SecurityProtocolsCore.SecurityConfigDTO(
       algorithm: "AES-GCM",
       keySizeInBits: 256

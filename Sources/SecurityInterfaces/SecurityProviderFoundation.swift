@@ -1,9 +1,16 @@
 import CoreTypes
 import SecurityBridge
-import SecurityInterfacesBase
+import SecurityProtocolsCore
+import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Protocol defining Foundation-dependent security operations
 /// This is a non-Foundation dependent version that delegates to the Foundation bridge
+@available(
+  *,
+  deprecated,
+  message: "Use SecurityProtocolsCore.SecurityProviderFoundationProtocol instead"
+)
 public protocol SecurityProviderFoundation {
   // MARK: - Binary Data Methods
 
@@ -11,81 +18,66 @@ public protocol SecurityProviderFoundation {
   /// - Parameters:
   ///   - data: Data to encrypt
   ///   - key: Encryption key
-  /// - Returns: Encrypted data
-  /// - Throws: SecurityError if encryption fails
-  func encrypt(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes
-    .BinaryData
+  /// - Returns: Encrypted data or error
+  func encrypt(_ data: SecureBytes, key: SecureBytes) async -> Result<SecureBytes, SecurityError>
 
   /// Decrypt binary data using the provider's decryption mechanism
   /// - Parameters:
   ///   - data: Data to decrypt
   ///   - key: Decryption key
-  /// - Returns: Decrypted data
-  /// - Throws: SecurityError if decryption fails
-  func decrypt(_ data: CoreTypes.BinaryData, key: CoreTypes.BinaryData) async throws -> CoreTypes
-    .BinaryData
+  /// - Returns: Decrypted data or error
+  func decrypt(_ data: SecureBytes, key: SecureBytes) async -> Result<SecureBytes, SecurityError>
 
   /// Generate a cryptographically secure random key
   /// - Parameter length: Length of the key in bytes
-  /// - Returns: Generated key as BinaryData
-  /// - Throws: SecurityError if key generation fails
-  func generateKey(length: Int) async throws -> CoreTypes.BinaryData
+  /// - Returns: Generated key as SecureBytes or error
+  func generateKey(length: Int) async -> Result<SecureBytes, SecurityError>
 
   /// Hash binary data using the provider's hashing mechanism
   /// - Parameter data: Data to hash
-  /// - Returns: Hash of the data
-  /// - Throws: SecurityError if hashing fails
-  func hash(_ data: CoreTypes.BinaryData) async throws -> CoreTypes.BinaryData
+  /// - Returns: Hash of the data or error
+  func hash(_ data: SecureBytes) async -> Result<SecureBytes, SecurityError>
 
   // MARK: - Resource Access
 
   /// Create a security-scoped resource identifier
   /// - Parameter identifier: String identifier for the resource
-  /// - Returns: Resource bookmark data
-  /// - Throws: SecurityError if bookmark creation fails
-  func createResourceBookmark(for identifier: String) async throws -> CoreTypes.BinaryData
+  /// - Returns: Resource bookmark data or error
+  func createResourceBookmark(for identifier: String) async -> Result<SecureBytes, SecurityError>
 
   /// Resolve a previously created security-scoped resource bookmark
   /// - Parameter bookmarkData: Bookmark data to resolve
-  /// - Returns: Tuple containing resolved identifier and whether bookmark is stale
-  /// - Throws: SecurityError if bookmark resolution fails
-  func resolveResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws
-    -> (identifier: String, isStale: Bool)
+  /// - Returns: Tuple containing resolved identifier and whether bookmark is stale, or error
+  func resolveResourceBookmark(_ bookmarkData: SecureBytes) async -> Result<(identifier: String, isStale: Bool), SecurityError>
 
   /// Validate a resource bookmark to ensure it's still valid
   /// - Parameter bookmarkData: Bookmark data to validate
-  /// - Returns: True if bookmark is valid, false otherwise
-  /// - Throws: SecurityError if validation fails
-  func validateResourceBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> Bool
+  /// - Returns: True if bookmark is valid, false otherwise, or error
+  func validateResourceBookmark(_ bookmarkData: SecureBytes) async -> Result<Bool, SecurityError>
 
   // MARK: - Bookmark Management
 
   /// Create a security-scoped bookmark for a resource
   /// - Parameter identifier: String identifier for the resource
-  /// - Returns: Bookmark data that can be persisted
-  /// - Throws: SecurityError if bookmark creation fails
-  func createBookmark(for identifier: String) async throws -> CoreTypes.BinaryData
+  /// - Returns: Bookmark data that can be persisted, or error
+  func createBookmark(for identifier: String) async -> Result<SecureBytes, SecurityError>
 
   /// Resolve a previously created security-scoped bookmark
   /// - Parameter bookmarkData: Bookmark data to resolve
-  /// - Returns: Tuple containing resolved identifier and whether bookmark is stale
-  /// - Throws: SecurityError if bookmark resolution fails
-  func resolveBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws
-    -> (identifier: String, isStale: Bool)
+  /// - Returns: Tuple containing resolved identifier and whether bookmark is stale, or error
+  func resolveBookmark(_ bookmarkData: SecureBytes) async -> Result<(identifier: String, isStale: Bool), SecurityError>
 
   /// Validate a bookmark to ensure it's still valid
   /// - Parameter bookmarkData: Bookmark data to validate
-  /// - Returns: Boolean indicating if the bookmark is valid
-  /// - Throws: SecurityError if validation fails
-  func validateBookmark(_ bookmarkData: CoreTypes.BinaryData) async throws -> Bool
+  /// - Returns: Boolean indicating if the bookmark is valid, or error
+  func validateBookmark(_ bookmarkData: SecureBytes) async -> Result<Bool, SecurityError>
 
   // MARK: - Resource Access Control
 
   /// Start accessing a security-scoped resource
   /// - Parameter identifier: String identifier for the resource
-  /// - Returns: A boolean indicating if access was granted
-  /// - Throws: SecurityError if access fails or is denied
-  func startAccessingResource(identifier: String) async throws -> Bool
+  /// - Returns: A boolean indicating if access was granted, or error
+  func startAccessingResource(identifier: String) async -> Result<Bool, SecurityError>
 
   /// Stop accessing a security-scoped resource
   /// - Parameter identifier: String identifier for the resource to stop accessing
@@ -110,26 +102,46 @@ public protocol SecurityProviderFoundation {
   ///   - data: Data to store
   ///   - service: Service identifier
   ///   - account: Account identifier
-  /// - Throws: SecurityError if keychain operation fails
-  func storeInKeychain(data: CoreTypes.BinaryData, service: String, account: String) async throws
+  /// - Returns: Success or error
+  func storeInKeychain(data: SecureBytes, service: String, account: String) async -> Result<Void, SecurityError>
 
   /// Retrieve data from the keychain
   /// - Parameters:
   ///   - service: Service identifier
   ///   - account: Account identifier
-  /// - Returns: Retrieved data
-  /// - Throws: SecurityError if keychain operation fails
-  func retrieveFromKeychain(service: String, account: String) async throws -> CoreTypes.BinaryData
+  /// - Returns: Retrieved data or error
+  func retrieveFromKeychain(service: String, account: String) async -> Result<SecureBytes, SecurityError>
 
   /// Delete data from the keychain
   /// - Parameters:
   ///   - service: Service identifier
   ///   - account: Account identifier
-  /// - Throws: SecurityError if keychain operation fails
-  func deleteFromKeychain(service: String, account: String) async throws
+  /// - Returns: Success or error
+  func deleteFromKeychain(service: String, account: String) async -> Result<Void, SecurityError>
 }
 
 /// Extension to provide default implementations for SecurityProviderFoundation
+@available(
+  *,
+  deprecated,
+  message: "Use SecurityProtocolsCore.SecurityProviderFoundationProtocol instead"
+)
 extension SecurityProviderFoundation {
   // Default implementations can be added here if needed
+}
+
+/// Adapter to convert between the legacy and new protocols
+@available(
+  *,
+  deprecated,
+  message: "Use SecurityProtocolsCore.SecurityProviderFoundationProtocol directly instead"
+)
+public struct SecurityProviderFoundationAdapter {
+  private let legacy: any SecurityProviderFoundation
+  
+  public init(legacy: any SecurityProviderFoundation) {
+    self.legacy = legacy
+  }
+  
+  // Add implementation methods as needed for backward compatibility
 }
