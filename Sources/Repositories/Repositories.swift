@@ -78,7 +78,7 @@
 /// # Usage Example
 /// ```swift
 /// let manager = RepositoryManager.shared
-/// 
+///
 /// let repo = try await manager.initialize(
 ///     path: path,
 ///     config: config
@@ -103,11 +103,11 @@
 /// - Safe maintenance
 /// - Atomic operations
 public enum Repositories {
-    /// Current version of the Repositories module
-    public static let version = "1.0.0"
+  /// Current version of the Repositories module
+  public static let version="1.0.0"
 
-    /// Initialise Repositories with default configuration
-    public static func initialize() {
-        // Configure repository system
-    }
+  /// Initialise Repositories with default configuration
+  public static func initialize() {
+    // Configure repository system
+  }
 }

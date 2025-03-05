@@ -65,7 +65,7 @@
 /// # Usage Example
 /// ```swift
 /// let logger = Logger.shared
-/// 
+///
 /// logger.info("Operation completed",
 ///            metadata: [
 ///                "duration": duration,
@@ -85,11 +85,11 @@
 /// - Atomic operations
 /// - Queue isolation
 public enum UmbraLogging {
-    /// Current version of the UmbraLogging module
-    public static let version = "1.0.0"
+  /// Current version of the UmbraLogging module
+  public static let version="1.0.0"
 
-    /// Initialise UmbraLogging with default configuration
-    public static func initialise() {
-        // Configure logging system
-    }
+  /// Initialise UmbraLogging with default configuration
+  public static func initialise() {
+    // Configure logging system
+  }
 }

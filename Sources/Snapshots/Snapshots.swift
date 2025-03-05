@@ -78,7 +78,7 @@
 /// # Usage Example
 /// ```swift
 /// let manager = SnapshotManager.shared
-/// 
+///
 /// let snapshot = try await manager.create(
 ///     path: path,
 ///     policy: policy
@@ -105,11 +105,11 @@
 /// - Safe restoration
 /// - Atomic operations
 public enum Snapshots {
-    /// Current version of the Snapshots module
-    public static let version = "1.0.0"
+  /// Current version of the Snapshots module
+  public static let version="1.0.0"
 
-    /// Initialise Snapshots with default configuration
-    public static func initialize() {
-        // Configure snapshot system
-    }
+  /// Initialise Snapshots with default configuration
+  public static func initialize() {
+    // Configure snapshot system
+  }
 }

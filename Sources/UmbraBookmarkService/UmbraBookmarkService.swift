@@ -78,7 +78,7 @@
 /// # Usage Example
 /// ```swift
 /// let service = BookmarkService.shared
-/// 
+///
 /// let bookmark = try await service.createBookmark(
 ///     for: url,
 ///     scope: .readWrite
@@ -105,11 +105,11 @@
 /// - State protection
 /// - Resource locking
 public enum UmbraBookmarkService {
-    /// Current version of the UmbraBookmarkService module
-    public static let version = "1.0.0"
+  /// Current version of the UmbraBookmarkService module
+  public static let version="1.0.0"
 
-    /// Initialise UmbraBookmarkService with default configuration
-    public static func initialize() {
-        // Configure bookmark service
-    }
+  /// Initialise UmbraBookmarkService with default configuration
+  public static func initialize() {
+    // Configure bookmark service
+  }
 }

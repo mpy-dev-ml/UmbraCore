@@ -4,7 +4,8 @@
 /// It contains interfaces for security operations across the system.
 ///
 /// Note: For Foundation-dependent interfaces, we've created a layered architecture with
-/// SecurityInterfacesProtocols (foundation-free) at the base, SecurityInterfacesBase building on top,
+/// SecurityInterfacesProtocols (foundation-free) at the base, SecurityInterfacesBase building on
+/// top,
 /// and SecurityInterfaces providing the high-level interfaces.
 @_exported import SecurityInterfacesBase
 @_exported import SecurityInterfacesProtocols

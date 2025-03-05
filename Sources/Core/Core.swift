@@ -74,7 +74,7 @@
 /// # Usage Example
 /// ```swift
 /// let config = CoreConfig.current
-/// 
+///
 /// if config.isDebugBuild {
 ///     // Enable additional debugging
 /// }
@@ -91,38 +91,39 @@ import ObjCBridgingTypesFoundation
 
 /// Core framework initialisation and management
 public enum Core {
-    /// Current version of the Core module
-    public static let version = "1.0.0"
+  /// Current version of the Core module
+  public static let version="1.0.0"
 
-    /// Flag indicating whether the Core framework has been initialised
-    @MainActor private static var isInitialized = false
+  /// Flag indicating whether the Core framework has been initialised
+  @MainActor
+  private static var isInitialized=false
 
-    /// Initialises the core framework and its essential services.
-    /// - Throws: CoreError if framework is already initialised or if service initialisation fails
-    @MainActor
-    public static func initialize() async throws {
-        // Ensure framework is in a valid state for initialisation
-        guard !isInitialized else {
-            throw CoreError.initialisationError("Core framework is already initialised")
-        }
-
-        // Mark framework as initialized
-        isInitialized = true
-
-        // Note: When ServiceContainer is implemented, add:
-        // try await ServiceContainer.shared.initialize()
+  /// Initialises the core framework and its essential services.
+  /// - Throws: CoreError if framework is already initialised or if service initialisation fails
+  @MainActor
+  public static func initialize() async throws {
+    // Ensure framework is in a valid state for initialisation
+    guard !isInitialized else {
+      throw CoreError.initialisationError("Core framework is already initialised")
     }
+
+    // Mark framework as initialized
+    isInitialized=true
+
+    // Note: When ServiceContainer is implemented, add:
+    // try await ServiceContainer.shared.initialize()
+  }
 }
 
 /// Errors that can occur during Core operations
 public enum CoreError: Foundation.LocalizedError {
-    /// Error during initialisation
-    case initialisationError(String)
+  /// Error during initialisation
+  case initialisationError(String)
 
-    public var errorDescription: String? {
-        switch self {
-        case .initialisationError(let message):
-            return "Initialisation error: \(message)"
-        }
+  public var errorDescription: String? {
+    switch self {
+      case let .initialisationError(message):
+        "Initialisation error: \(message)"
     }
+  }
 }

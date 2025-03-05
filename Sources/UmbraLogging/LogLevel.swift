@@ -15,49 +15,49 @@ import SwiftyBeaver
 /// ```
 @frozen
 public enum UmbraLogLevel: Int, Sendable, Comparable {
-    /// Detailed information, typically only useful for debugging.
-    case verbose
+  /// Detailed information, typically only useful for debugging.
+  case verbose
 
-    /// Debug-level messages with more detail than info.
-    case debug
+  /// Debug-level messages with more detail than info.
+  case debug
 
-    /// General information about program execution.
-    case info
+  /// General information about program execution.
+  case info
 
-    /// Potentially harmful situations that might need attention.
-    case warning
+  /// Potentially harmful situations that might need attention.
+  case warning
 
-    /// Error conditions that should be addressed.
-    case error
+  /// Error conditions that should be addressed.
+  case error
 
-    /// Critical errors that may lead to program termination.
-    case critical
+  /// Critical errors that may lead to program termination.
+  case critical
 
-    /// System-level faults requiring immediate attention.
-    case fault
+  /// System-level faults requiring immediate attention.
+  case fault
 
-    /// Converts this level to the equivalent SwiftyBeaver logging level.
-    ///
-    /// Note that SwiftyBeaver doesn't support levels above error, so critical
-    /// and fault are mapped to error.
-    var asSBLevel: SwiftyBeaver.Level {
-        switch self {
-        case .verbose: return .verbose
-        case .debug: return .debug
-        case .info: return .info
-        case .warning: return .warning
-        case .error: return .error
-        case .critical, .fault: return .error // SwiftyBeaver doesn't have critical/fault levels
-        }
+  /// Converts this level to the equivalent SwiftyBeaver logging level.
+  ///
+  /// Note that SwiftyBeaver doesn't support levels above error, so critical
+  /// and fault are mapped to error.
+  var asSBLevel: SwiftyBeaver.Level {
+    switch self {
+      case .verbose: .verbose
+      case .debug: .debug
+      case .info: .info
+      case .warning: .warning
+      case .error: .error
+      case .critical, .fault: .error // SwiftyBeaver doesn't have critical/fault levels
     }
+  }
 
-    /// Compares two log levels based on their severity.
-    ///
-    /// - Parameters:
-    ///   - lhs: The first log level to compare.
-    ///   - rhs: The second log level to compare.
-    /// - Returns: `true` if the first level is less severe than the second.
-    public static func < (lhs: UmbraLogLevel, rhs: UmbraLogLevel) -> Bool {
-        lhs.rawValue < rhs.rawValue
-    }
+  /// Compares two log levels based on their severity.
+  ///
+  /// - Parameters:
+  ///   - lhs: The first log level to compare.
+  ///   - rhs: The second log level to compare.
+  /// - Returns: `true` if the first level is less severe than the second.
+  public static func < (lhs: UmbraLogLevel, rhs: UmbraLogLevel) -> Bool {
+    lhs.rawValue < rhs.rawValue
+  }
 }

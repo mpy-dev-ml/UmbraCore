@@ -2,4 +2,4 @@
 @_exported import SecurityProtocolsCore
 
 // Keep the existing typealias for backward compatibility
-public typealias XPCServiceProtocolBase = XPCServiceProtocolCore
+public typealias XPCServiceProtocolBase=XPCServiceProtocolCore

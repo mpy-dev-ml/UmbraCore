@@ -6,34 +6,34 @@ import XCTest
 final class ProgressTests: XCTestCase {
   /// Mock progress handler for testing.
   private class MockProgressHandler: ResticProgressReporting {
-    var backupProgress: [BackupProgress] = []
-    var restoreProgress: [RestoreProgress] = []
+    var backupProgress: [BackupProgress]=[]
+    var restoreProgress: [RestoreProgress]=[]
 
     func progressUpdated(_ progress: Any) {
-      if let progress = progress as? BackupProgress {
+      if let progress=progress as? BackupProgress {
         backupProgress.append(progress)
-      } else if let progress = progress as? RestoreProgress {
+      } else if let progress=progress as? RestoreProgress {
         restoreProgress.append(progress)
       }
     }
   }
 
   func testBackupProgressParsing() throws {
-    let handler = MockProgressHandler()
-    let parser = ProgressParser(delegate: handler)
+    let handler=MockProgressHandler()
+    let parser=ProgressParser(delegate: handler)
 
     // Test scanning phase
-    let scanningJSON = """
-    {
-      "message_type": "scanning",
-      "total_files": 100,
-      "total_bytes": 1048576,
-      "files_done": 50,
-      "bytes_done": 524288,
-      "current_file": "/path/to/file.txt",
-      "seconds_elapsed": 5.5
-    }
-    """
+    let scanningJSON="""
+      {
+        "message_type": "scanning",
+        "total_files": 100,
+        "total_bytes": 1048576,
+        "files_done": 50,
+        "bytes_done": 524288,
+        "current_file": "/path/to/file.txt",
+        "seconds_elapsed": 5.5
+      }
+      """
     XCTAssertTrue(parser.parseLine(scanningJSON))
     XCTAssertEqual(handler.backupProgress.count, 1)
     XCTAssertEqual(handler.backupProgress[0].status, .scanning)
@@ -45,17 +45,17 @@ final class ProgressTests: XCTestCase {
     XCTAssertEqual(handler.backupProgress[0].secondsElapsed, 5.5)
 
     // Test processing phase
-    let processingJSON = """
-    {
-      "message_type": "processing",
-      "total_files": 100,
-      "total_bytes": 1048576,
-      "files_done": 75,
-      "bytes_done": 786432,
-      "current_file": "/path/to/another.txt",
-      "seconds_elapsed": 8.2
-    }
-    """
+    let processingJSON="""
+      {
+        "message_type": "processing",
+        "total_files": 100,
+        "total_bytes": 1048576,
+        "files_done": 75,
+        "bytes_done": 786432,
+        "current_file": "/path/to/another.txt",
+        "seconds_elapsed": 8.2
+      }
+      """
     XCTAssertTrue(parser.parseLine(processingJSON))
     XCTAssertEqual(handler.backupProgress.count, 2)
     XCTAssertEqual(handler.backupProgress[1].status, .processing)
@@ -68,20 +68,20 @@ final class ProgressTests: XCTestCase {
   }
 
   func testRestoreProgressParsing() throws {
-    let handler = MockProgressHandler()
-    let parser = ProgressParser(delegate: handler)
+    let handler=MockProgressHandler()
+    let parser=ProgressParser(delegate: handler)
 
-    let restoreJSON = """
-    {
-      "message_type": "restoring",
-      "total_files": 50,
-      "total_bytes": 524288,
-      "files_done": 25,
-      "bytes_done": 262144,
-      "current_file": "/path/to/restore.txt",
-      "seconds_elapsed": 3.2
-    }
-    """
+    let restoreJSON="""
+      {
+        "message_type": "restoring",
+        "total_files": 50,
+        "total_bytes": 524288,
+        "files_done": 25,
+        "bytes_done": 262144,
+        "current_file": "/path/to/restore.txt",
+        "seconds_elapsed": 3.2
+      }
+      """
     XCTAssertTrue(parser.parseLine(restoreJSON))
     XCTAssertEqual(handler.restoreProgress.count, 1)
     XCTAssertEqual(handler.restoreProgress[0].status, .restoring)
@@ -94,8 +94,8 @@ final class ProgressTests: XCTestCase {
   }
 
   func testInvalidInput() throws {
-    let handler = MockProgressHandler()
-    let parser = ProgressParser(delegate: handler)
+    let handler=MockProgressHandler()
+    let parser=ProgressParser(delegate: handler)
 
     // Test empty input
     XCTAssertFalse(parser.parseLine(""))
@@ -105,9 +105,9 @@ final class ProgressTests: XCTestCase {
 
     // Test valid JSON but wrong format
     XCTAssertFalse(parser.parseLine("""
-    {
-      "wrong": "format"
-    }
-    """))
+      {
+        "wrong": "format"
+      }
+      """))
   }
 }

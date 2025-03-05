@@ -1,9 +1,3 @@
-// XPCServiceProtocolCompat.swift
-// SecurityProtocolsCore
-//
-// Created as part of the UmbraCore XPC Protocols Refactoring
-//
-
 // import XPCProtocolsCore - Module not yet available
 
 // MARK: - Migration Guide
@@ -41,15 +35,21 @@
 
 @available(*, deprecated, message: "Use XPCServiceProtocolBasic from XPCProtocolsCore instead")
 public func migrateFromXPCServiceProtocolBase() -> Never {
-    fatalError("This is a migration helper function. Use XPCServiceProtocolBasic from XPCProtocolsCore instead.")
+  fatalError(
+    "This is a migration helper function. Use XPCServiceProtocolBasic from XPCProtocolsCore instead."
+  )
 }
 
 @available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 public func migrateFromXPCServiceProtocolCore() -> Never {
-    fatalError("This is a migration helper function. Use XPCServiceProtocolComplete from XPCProtocolsCore instead.")
+  fatalError(
+    "This is a migration helper function. Use XPCServiceProtocolComplete from XPCProtocolsCore instead."
+  )
 }
 
 @available(*, deprecated, message: "Use XPCServiceProtocolStandard from XPCProtocolsCore instead")
 public func migrateFromXPCServiceProtocolExtended() -> Never {
-    fatalError("This is a migration helper function. Use XPCServiceProtocolStandard from XPCProtocolsCore instead.")
+  fatalError(
+    "This is a migration helper function. Use XPCServiceProtocolStandard from XPCProtocolsCore instead."
+  )
 }

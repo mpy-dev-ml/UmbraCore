@@ -1,8 +1,8 @@
+import CoreTypes
 import Foundation
+import SecurityInterfaces
 import SecurityTypes
 import SecurityTypesProtocols
-import SecurityInterfaces
-import CoreTypes
 
 /// Extension to URL that provides functionality for working with security-scoped bookmarks.
 /// Security-scoped bookmarks allow an app to maintain access to user-selected files and directories
@@ -15,7 +15,7 @@ extension URL {
   ///   - Insufficient permissions
   ///   - File system errors
   public func createSecurityScopedBookmark() async throws -> Data {
-    let path = self.path
+    let path=path
     do {
       return try bookmarkData(
         options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess],
@@ -28,12 +28,12 @@ extension URL {
       )
     }
   }
-  
+
   /// Creates a security-scoped bookmark for this URL and returns it as BinaryData.
   /// - Returns: BinaryData containing the security-scoped bookmark
   /// - Throws: SecurityError.bookmarkError if bookmark creation fails
   public func createSecurityScopedBookmarkData() async throws -> CoreTypes.BinaryData {
-    let data = try await createSecurityScopedBookmark()
+    let data=try await createSecurityScopedBookmark()
     return CoreTypes.BinaryData([UInt8](data))
   }
 
@@ -46,10 +46,11 @@ extension URL {
   ///   - Invalid bookmark data
   ///   - File no longer exists
   ///   - Insufficient permissions
-  public static func resolveSecurityScopedBookmark(_ bookmarkData: Data) async throws -> (URL, Bool) {
+  public static func resolveSecurityScopedBookmark(_ bookmarkData: Data) async throws
+  -> (URL, Bool) {
     do {
-      var isStale = false
-      let url = try URL(
+      var isStale=false
+      let url=try URL(
         resolvingBookmarkData: bookmarkData,
         options: .withSecurityScope,
         relativeTo: nil,
@@ -64,7 +65,8 @@ extension URL {
   }
 
   /// Starts accessing a security-scoped resource.
-  /// This must be called before accessing the resource and paired with a call to stopSecurityScopedAccess.
+  /// This must be called before accessing the resource and paired with a call to
+  /// stopSecurityScopedAccess.
   /// - Returns: True if access was granted, false otherwise
   public func startSecurityScopedAccess() -> Bool {
     startAccessingSecurityScopedResource()

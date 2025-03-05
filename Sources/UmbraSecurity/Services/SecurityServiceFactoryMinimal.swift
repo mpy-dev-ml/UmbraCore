@@ -10,9 +10,10 @@ import UmbraLogging
 /// This demonstrates how to use the components we've created to break circular dependencies
 public enum SecurityServiceFactoryMinimal {
 
-    /// Create a minimal security service with no crypto dependencies
-    /// This is useful when you need basic security functionality but want to avoid circular dependencies
-    public static func createMinimalService() -> SecurityServiceNoCrypto {
-        return SecurityServiceNoCrypto()
-    }
+  /// Create a minimal security service with no crypto dependencies
+  /// This is useful when you need basic security functionality but want to avoid circular
+  /// dependencies
+  public static func createMinimalService() -> SecurityServiceNoCrypto {
+    SecurityServiceNoCrypto()
+  }
 }

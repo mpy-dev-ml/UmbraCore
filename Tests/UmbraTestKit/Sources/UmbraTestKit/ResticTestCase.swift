@@ -1,4 +1,3 @@
 import XCTest
 
-open class ResticTestCase: XCTestCase {
-}
+open class ResticTestCase: XCTestCase {}

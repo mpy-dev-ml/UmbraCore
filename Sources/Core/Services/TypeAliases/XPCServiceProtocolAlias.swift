@@ -5,7 +5,7 @@ import SecurityInterfacesBase
 import SecurityInterfacesFoundation
 
 /// Re-export XPCServiceProtocol from SecurityInterfaces
-public typealias XPCServiceProtocol = SecurityInterfaces.XPCServiceProtocol
+public typealias XPCServiceProtocol=SecurityInterfaces.XPCServiceProtocol
 
 /// Re-export XPCServiceProtocolBase from SecurityInterfacesBase
-public typealias XPCServiceProtocolBase = SecurityInterfacesBase.XPCServiceProtocolBase
+public typealias XPCServiceProtocolBase=SecurityInterfacesBase.XPCServiceProtocolBase

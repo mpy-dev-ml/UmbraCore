@@ -88,11 +88,11 @@
 /// - Thread-safe logging
 /// - Concurrent recovery handling
 public enum ErrorHandling {
-    /// Current version of the ErrorHandling module
-    public static let version = "1.0.0"
+  /// Current version of the ErrorHandling module
+  public static let version="1.0.0"
 
-    /// Initialise ErrorHandling with default configuration
-    public static func initialize() {
-        // Configure error handling system
-    }
+  /// Initialise ErrorHandling with default configuration
+  public static func initialize() {
+    // Configure error handling system
+  }
 }
