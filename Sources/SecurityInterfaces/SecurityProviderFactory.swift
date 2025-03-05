@@ -14,7 +14,8 @@ public protocol SecurityProviderFactory {
   /// Create a security provider using the specified configuration
   /// - Parameter config: The configuration to use
   /// - Returns: A new security provider instance
-  func createSecurityProvider(config: SecurityConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol
+  func createSecurityProvider(config: SecurityConfiguration) -> any SecurityProtocolsCore
+    .SecurityProviderProtocol
 
   /// Create a security provider using the default configuration
   /// - Returns: A new security provider instance
@@ -30,14 +31,16 @@ public protocol SecurityProviderFactory {
 public class StandardSecurityProviderFactory: SecurityProviderFactory {
   public init() {}
 
-  public func createSecurityProvider(config: SecurityConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol {
+  public func createSecurityProvider(config: SecurityConfiguration) -> any SecurityProtocolsCore
+  .SecurityProviderProtocol {
     // Create a bridge provider with the given configuration
     createCoreProvider(with: config)
   }
 
-  public func createDefaultSecurityProvider() -> any SecurityProtocolsCore.SecurityProviderProtocol {
+  public func createDefaultSecurityProvider() -> any SecurityProtocolsCore
+  .SecurityProviderProtocol {
     // Create a default configuration
-    let defaultConfig = SecurityConfiguration(
+    let defaultConfig=SecurityConfiguration(
       securityLevel: .standard,
       encryptionAlgorithm: "AES-256",
       hashAlgorithm: "SHA-256",
@@ -49,7 +52,8 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
 
   // MARK: - Private Helper Methods
 
-  private func createCoreProvider(with _: SecurityConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol {
+  private func createCoreProvider(with _: SecurityConfiguration) -> any SecurityProtocolsCore
+  .SecurityProviderProtocol {
     // This would create an appropriate concrete implementation
     // based on the provided configuration
 
@@ -154,7 +158,7 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
 
   func generateRandomData(length: Int) async
   -> Result<UmbraCoreTypes.SecureBytes, SecurityProtocolsCore.SecurityError> {
-    let bytes = [UInt8](repeating: 0, count: length)
+    let bytes=[UInt8](repeating: 0, count: length)
     return .success(UmbraCoreTypes.SecureBytes(bytes))
   }
 }

@@ -1,7 +1,7 @@
-import CoreTypes
-import XPCProtocolsCore
-import UmbraCoreTypes
 import CoreErrors
+import CoreTypes
+import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Protocol defining the base XPC service interface with completion handlers - minimal version
 /// without Foundation dependencies
@@ -27,19 +27,19 @@ extension XPCServiceProtocolDefinitionBase {
 /// Private adapter class that converts XPCServiceProtocolDefinitionBase to XPCServiceProtocolBasic
 private class DefinitionBaseToModernAdapter: XPCServiceProtocolBasic {
   private let legacyService: XPCServiceProtocolDefinitionBase
-  
+
   init(wrapping service: XPCServiceProtocolDefinitionBase) {
-    self.legacyService = service
+    legacyService=service
   }
-  
+
   public static var protocolIdentifier: String {
     "com.umbra.xpc.service.definition.adapter.modern"
   }
-  
+
   public func ping() async -> Result<Bool, XPCSecurityError> {
     await withCheckedContinuation { continuation in
       legacyService.ping { success, error in
-        if let error = error {
+        if let error {
           continuation.resume(returning: .failure(.cryptoError))
         } else {
           continuation.resume(returning: .success(success))
@@ -47,13 +47,13 @@ private class DefinitionBaseToModernAdapter: XPCServiceProtocolBasic {
       }
     }
   }
-  
-  public func synchroniseKeys(_ data: SecureBytes) async -> Result<Void, XPCSecurityError> {
+
+  public func synchroniseKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
     // Use the resetSecurityData as an approximation since the legacy protocol
     // doesn't have a direct equivalent
     await withCheckedContinuation { continuation in
       legacyService.resetSecurityData { error in
-        if let error = error {
+        if let error {
           continuation.resume(returning: .failure(.cryptoError))
         } else {
           continuation.resume(returning: .success(()))

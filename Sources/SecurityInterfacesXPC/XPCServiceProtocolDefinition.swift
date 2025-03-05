@@ -1,13 +1,14 @@
 import Foundation
 import ObjCBridgingTypesFoundation
 import SecurityInterfacesBase
-import XPCProtocolsCore
 import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Protocol defining the XPC service interface for key management using Objective-C compatible
 /// methods
 @objc
-public protocol XPCServiceProtocolDefinition: ObjCBridgingTypesFoundation.XPCServiceProtocolDefinitionBaseFoundation {
+public protocol XPCServiceProtocolDefinition: ObjCBridgingTypesFoundation
+.XPCServiceProtocolDefinitionBaseFoundation {
   /// Synchronize keys across processes with raw bytes using NSData
   /// - Parameter data: The key data to synchronize
   @objc
@@ -39,7 +40,7 @@ public protocol XPCServiceProtocolDefinition: ObjCBridgingTypesFoundation.XPCSer
 
 /// Implementation of XPCServiceProtocolDefinitionBaseFoundation interface
 public class XPCServiceProtocolDefinitionImpl: NSObject,
-  ObjCBridgingTypesFoundation.XPCServiceProtocolDefinitionBaseFoundation {
+ObjCBridgingTypesFoundation.XPCServiceProtocolDefinitionBaseFoundation {
   /// Protocol identifier for XPC service registration
   public static var protocolIdentifier: String {
     "com.umbra.xpc.service.protocol"
@@ -47,7 +48,8 @@ public class XPCServiceProtocolDefinitionImpl: NSObject,
 
   /// Creates an instance of the XPC service protocol
   /// - Returns: A protocol-conforming implementation
-  public static func createInstance() -> any ObjCBridgingTypesFoundation.XPCServiceProtocolBaseFoundation {
+  public static func createInstance() -> any ObjCBridgingTypesFoundation
+  .XPCServiceProtocolBaseFoundation {
     // This implementation would typically connect to the XPC service
     // In a real implementation, this would create an NSXPCConnection and configure it
 

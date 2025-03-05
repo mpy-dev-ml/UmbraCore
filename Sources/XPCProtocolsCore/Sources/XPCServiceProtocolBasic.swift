@@ -20,7 +20,7 @@ public protocol XPCServiceProtocolBasic: Sendable {
 
   /// Test connectivity
   func ping() async -> Result<Bool, XPCSecurityError>
-  
+
   /// Synchronize keys across processes
   /// - Parameter syncData: The key data to synchronize
   /// - Returns: Result with void success or error
@@ -36,13 +36,13 @@ extension XPCServiceProtocolBasic {
   }
 
   /// Default implementation of ping - can be overridden by conforming types
-  public func ping() async -> Result<Bool, XPCSecurityError>{
+  public func ping() async -> Result<Bool, XPCSecurityError> {
     .success(true)
   }
 
   /// Implementation for synchronising keys with byte array (for legacy compatibility)
   public func synchroniseKeys(_ bytes: [UInt8]) async -> Result<Void, XPCSecurityError> {
-    let secureBytes = SecureBytes(bytes: bytes)
+    let secureBytes=SecureBytes(bytes: bytes)
     return await synchroniseKeys(secureBytes)
   }
 }

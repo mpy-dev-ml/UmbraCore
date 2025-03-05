@@ -12,13 +12,15 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
   ///   - data: Data to encrypt
   ///   - keyIdentifier: Optional key identifier to use
   /// - Returns: Encrypted data
-  func encryptData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError>
+  func encryptData(_ data: SecureBytes, keyIdentifier: String?) async
+    -> Result<SecureBytes, XPCSecurityError>
   /// Decrypt data using the service's decryption mechanism
   /// - Parameters:
   ///   - data: Data to decrypt
   ///   - keyIdentifier: Optional key identifier to use
   /// - Returns: Decrypted data
-  func decryptData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError>
+  func decryptData(_ data: SecureBytes, keyIdentifier: String?) async
+    -> Result<SecureBytes, XPCSecurityError>
   /// Hash data using the service's hashing mechanism
   /// - Parameter data: Data to hash
   /// - Returns: Hash result
@@ -28,7 +30,8 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
   ///   - data: Data to sign
   ///   - keyIdentifier: Key identifier to use for signing
   /// - Returns: Signature data
-  func signData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError>
+  func signData(_ data: SecureBytes, keyIdentifier: String) async
+    -> Result<SecureBytes, XPCSecurityError>
   /// Verify signature for data
   /// - Parameters:
   ///   - signature: Signature to verify
@@ -96,7 +99,8 @@ public protocol KeyManagementServiceProtocol: Sendable {
   /// Get metadata for a key
   /// - Parameter keyIdentifier: Identifier for the key
   /// - Returns: Associated metadata
-  func getKeyMetadata(for keyIdentifier: String) async -> Result<[String: String]?, XPCSecurityError>
+  func getKeyMetadata(for keyIdentifier: String) async
+    -> Result<[String: String]?, XPCSecurityError>
 }
 
 /// Key types supported by the security service
@@ -107,7 +111,8 @@ public enum KeyType: String, Sendable {
 }
 
 /// Comprehensive security service protocol that combines multiple security capabilities
-public protocol ComprehensiveSecurityServiceProtocol: XPCServiceProtocolStandard, SecureStorageServiceProtocol, KeyManagementServiceProtocol {
+public protocol ComprehensiveSecurityServiceProtocol: XPCServiceProtocolStandard,
+SecureStorageServiceProtocol, KeyManagementServiceProtocol {
   /// Get the service version
   func getServiceVersion() async -> Result<String, XPCSecurityError>
   /// Get the service status

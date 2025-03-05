@@ -1,6 +1,6 @@
 import SecurityInterfacesProtocols
-import XPCProtocolsCore
 import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Base protocol for security providers
 /// This protocol is designed to be Foundation-free and serve as a base for more specific security
@@ -28,7 +28,7 @@ extension SecurityProviderBase {
 
   /// Default implementation that assumes the provider is available
   public func isAvailable() async -> Result<Bool, XPCSecurityError> {
-    return .success(true)
+    .success(true)
   }
 
   /// Default version string
@@ -42,7 +42,7 @@ public final class SecurityProviderBaseAdapter: SecurityProviderBase {
   private let provider: any SecurityProviderProtocol
 
   public init(provider: any SecurityProviderProtocol) {
-    self.provider = provider
+    self.provider=provider
   }
 
   public static var protocolIdentifier: String {
@@ -52,7 +52,7 @@ public final class SecurityProviderBaseAdapter: SecurityProviderBase {
   public func isAvailable() async -> Result<Bool, XPCSecurityError> {
     // This is a simple implementation that assumes the provider is available
     // In a real implementation, you might want to perform some checks
-    return .success(true)
+    .success(true)
   }
 
   public func getVersion() async -> String {

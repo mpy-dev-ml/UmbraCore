@@ -23,14 +23,14 @@ public final class XPCServiceAdapter {
   /// Create a new XPCServiceAdapter
   /// - Parameter connection: The XPC connection to use
   public init(connection: NSXPCConnection) {
-    self.connection = connection
+    self.connection=connection
 
     // Configure the connection
-    connection.remoteObjectInterface = NSXPCInterface(with: FoundationXPCSecurityService.self)
+    connection.remoteObjectInterface=NSXPCInterface(with: FoundationXPCSecurityService.self)
     connection.resume()
 
     // Get the service proxy
-    serviceProxy = connection.remoteObjectProxy as! any FoundationXPCSecurityService
+    serviceProxy=connection.remoteObjectProxy as! any FoundationXPCSecurityService
   }
 
   // MARK: - Crypto Service Adapter
@@ -118,7 +118,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
   private let serviceProxy: any FoundationXPCSecurityService
 
   init(serviceProxy: any FoundationXPCSecurityService) {
-    self.serviceProxy = serviceProxy
+    self.serviceProxy=serviceProxy
   }
 
   func encrypt(
@@ -189,12 +189,12 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
 
   func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
     // For now, we'll use the hash method from the new implementation
-    let result = await hash(
+    let result=await hash(
       data: data,
       config: SecurityConfigDTO(algorithm: "SHA-256", keySizeInBits: 256)
     )
 
-    if result.success, let hashData = result.data {
+    if result.success, let hashData=result.data {
       return .success(hashData)
     } else {
       return .failure(.internalError(result.errorMessage ?? "Unknown hashing error"))
@@ -203,7 +203,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
 
   func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
     // Implementation using XPC - for now, compute the hash and compare
-    let hashResult = await self.hash(data: data)
+    let hashResult=await self.hash(data: data)
 
     switch hashResult {
       case let .success(computedHash):
@@ -244,7 +244,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
   ) async -> SecurityResultDTO {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: config.options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       self.serviceProxy.encryptSymmetricXPC(
@@ -279,7 +279,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
   ) async -> SecurityResultDTO {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: config.options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       self.serviceProxy.decryptSymmetricXPC(
@@ -314,7 +314,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
   ) async -> SecurityResultDTO {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: config.options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       self.serviceProxy.encryptAsymmetricXPC(
@@ -347,7 +347,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
   ) async -> SecurityResultDTO {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: config.options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       self.serviceProxy.decryptAsymmetricXPC(
@@ -379,7 +379,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
   ) async -> SecurityResultDTO {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: config.options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: config.options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       self.serviceProxy.hashDataXPC(
@@ -412,7 +412,7 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
   private let serviceProxy: any FoundationXPCSecurityService
 
   init(serviceProxy: any FoundationXPCSecurityService) {
-    self.serviceProxy = serviceProxy
+    self.serviceProxy=serviceProxy
   }
 
   func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, SecurityError> {

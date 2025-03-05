@@ -3,4 +3,4 @@
 
 // Deprecated typealias - for backward compatibility only
 @available(*, deprecated, message: "Use XPCServiceProtocolBasic from XPCProtocolsCore instead")
-public typealias XPCServiceProtocolBase = XPCServiceProtocolBasic
+public typealias XPCServiceProtocolBase=XPCServiceProtocolBasic

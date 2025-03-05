@@ -51,27 +51,27 @@ extension SecurityProviderBase {
 )
 private struct SecurityProviderBaseAdapter: SecurityProviderProtocol {
   private let provider: any SecurityProviderBase
-  
+
   init(provider: any SecurityProviderBase) {
-    self.provider = provider
+    self.provider=provider
   }
-  
+
   func resetSecurityData() async -> Result<Void, SecurityError> {
     await provider.resetSecurityData()
   }
-  
+
   func getHostIdentifier() async -> Result<String, SecurityError> {
     await provider.getHostIdentifier()
   }
-  
+
   func registerClient(bundleIdentifier: String) async -> Result<Bool, SecurityError> {
     await provider.registerClient(bundleIdentifier: bundleIdentifier)
   }
-  
+
   func requestKeyRotation(keyId: String) async -> Result<Void, SecurityError> {
     await provider.requestKeyRotation(keyId: keyId)
   }
-  
+
   func notifyKeyCompromise(keyId: String) async -> Result<Void, SecurityError> {
     await provider.notifyKeyCompromise(keyId: keyId)
   }

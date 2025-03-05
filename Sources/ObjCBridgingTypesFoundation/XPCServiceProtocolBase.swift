@@ -36,7 +36,7 @@ extension XPCServiceProtocolBaseFoundation {
   }
 
   /// Async ping implementation
-  public func ping() async -> Result<Bool , XPCSecurityError>{
+  public func ping() async -> Result<Bool, XPCSecurityError> {
     do {
       return try await withCheckedThrowingContinuation { continuation in
         ping { success, error in

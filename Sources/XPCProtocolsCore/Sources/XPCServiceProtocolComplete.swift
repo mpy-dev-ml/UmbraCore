@@ -85,7 +85,8 @@ public protocol XPCServiceProtocolComplete: XPCServiceProtocolStandard {
   ///   - keyData: Key data to import
   ///   - identifier: Optional identifier to assign
   /// - Returns: Key identifier for the imported key
-  func importKey(_ keyData: SecureBytes, identifier: String?) async -> Result<String, XPCSecurityError>
+  func importKey(_ keyData: SecureBytes, identifier: String?) async
+    -> Result<String, XPCSecurityError>
 }
 
 // MARK: - Default Implementations
@@ -122,7 +123,10 @@ extension XPCServiceProtocolComplete {
   }
 
   /// Default implementation that returns a not implemented error
-  public func generateKey(type _: KeyType, bits _: Int) async -> Result<SecureBytes, XPCSecurityError> {
+  public func generateKey(
+    type _: KeyType,
+    bits _: Int
+  ) async -> Result<SecureBytes, XPCSecurityError> {
     .failure(.cryptoError)
   }
 
@@ -137,7 +141,10 @@ extension XPCServiceProtocolComplete {
   }
 
   /// Default implementation that returns a not implemented error
-  public func importKey(_: SecureBytes, identifier _: String?) async -> Result<String, XPCSecurityError> {
+  public func importKey(
+    _: SecureBytes,
+    identifier _: String?
+  ) async -> Result<String, XPCSecurityError> {
     .failure(.cryptoError)
   }
 

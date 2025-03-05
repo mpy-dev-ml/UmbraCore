@@ -65,20 +65,20 @@ extension SecurityBridge {
 /// Adapter to convert between Core and Foundation XPC service protocols
 extension SecurityBridge {
   public final class CoreTypesToFoundationBridgeAdapter: NSObject,
-    XPCServiceProtocolFoundationBridge, @unchecked Sendable {
-    public static var protocolIdentifier: String = "com.umbra.xpc.service.adapter.coretypes.bridge"
+  XPCServiceProtocolFoundationBridge, @unchecked Sendable {
+    public static var protocolIdentifier: String="com.umbra.xpc.service.adapter.coretypes.bridge"
 
     private let coreService: any XPCServiceProtocolBasic
 
     public init(wrapping coreService: any XPCServiceProtocolBasic) {
-      self.coreService = coreService
+      self.coreService=coreService
       super.init()
     }
 
     public func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
       Task {
         do {
-          let result = try await coreService.ping()
+          let result=try await coreService.ping()
           reply(result, nil)
         } catch {
           reply(false, error)
@@ -92,15 +92,15 @@ extension SecurityBridge {
     ) {
       Task {
         // Convert from Foundation Data to SecureBytes
-        let bytes = [UInt8](syncData)
-        let secureBytes = SecureBytes(bytes: bytes)
+        let bytes=[UInt8](syncData)
+        let secureBytes=SecureBytes(bytes: bytes)
 
-        let result = await coreService.synchroniseKeys(secureBytes)
+        let result=await coreService.synchroniseKeys(secureBytes)
         switch result {
-        case .success:
-          reply(nil)
-        case .failure(let error):
-          reply(error)
+          case .success:
+            reply(nil)
+          case let .failure(error):
+            reply(error)
         }
       }
     }
@@ -111,14 +111,14 @@ extension SecurityBridge {
       _: Int,
       withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'generateRandomData' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
     }
 
     public func resetSecurityDataFoundation(withReply reply: @escaping @Sendable (Error?) -> Void) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'resetSecurityData' not available in XPCServiceProtocolBasic"
       ])
       reply(error)
@@ -127,7 +127,7 @@ extension SecurityBridge {
     public func getVersionFoundation(
       withReply reply: @escaping @Sendable (String?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'getVersion' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
@@ -136,7 +136,7 @@ extension SecurityBridge {
     public func getHostIdentifierFoundation(
       withReply reply: @escaping @Sendable (String?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'getHostIdentifier' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
@@ -146,7 +146,7 @@ extension SecurityBridge {
       data _: Data,
       withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'encrypt' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
@@ -156,7 +156,7 @@ extension SecurityBridge {
       data _: Data,
       withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'decrypt' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
@@ -164,13 +164,13 @@ extension SecurityBridge {
   }
 
   public final class FoundationToCoreTypesBridgeAdapter: XPCServiceProtocolBasic,
-    @unchecked Sendable {
-    public static var protocolIdentifier: String = "com.umbra.xpc.service.adapter.foundation.bridge"
+  @unchecked Sendable {
+    public static var protocolIdentifier: String="com.umbra.xpc.service.adapter.foundation.bridge"
 
     private let foundation: any XPCServiceProtocolFoundationBridge
 
     public init(wrapping foundation: any XPCServiceProtocolFoundationBridge) {
-      self.foundation = foundation
+      self.foundation=foundation
     }
 
     public func ping() async throws -> Bool {
@@ -187,10 +187,13 @@ extension SecurityBridge {
 
     public func synchroniseKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
       // Convert SecureBytes to Data using DataAdapter
-      let data = DataAdapter.data(from: syncData)
+      let data=DataAdapter.data(from: syncData)
 
       do {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<
+          Void,
+          Error
+        >) in
           foundation.synchroniseKeysFoundation(data) { error in
             if let error {
               continuation.resume(throwing: error)
@@ -262,7 +265,7 @@ extension SecurityBridge {
           if let error {
             continuation.resume(throwing: error)
           } else if let data {
-            let bytes = [UInt8](data)
+            let bytes=[UInt8](data)
             continuation.resume(returning: BinaryData(bytes: bytes))
           } else {
             continuation

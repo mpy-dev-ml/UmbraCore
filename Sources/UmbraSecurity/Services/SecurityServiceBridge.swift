@@ -3,12 +3,12 @@ import CryptoSwiftFoundationIndependent
 import Foundation
 import FoundationBridgeTypes
 import SecurityInterfaces
-import XPCProtocolsCoreimport SecurityInterfacesBase
+import UmbraCoreTypesimport SecurityUtils
 import UmbraCoreTypesimport XPCProtocolsCoreimport XPCProtocolsCoreimport SecurityInterfacesProtocols
 import UmbraCoreTypesimport XPCProtocolsCoreimport XPCProtocolsCoreimport SecurityTypes
-import UmbraCoreTypesimport SecurityUtils
 import UmbraLogging
 import UmbraSecurityCryptoNoFoundation
+import XPCProtocolsCoreimport SecurityInterfacesBase
 
 /// A bridge adapter that connects Foundation-free crypto operations with Foundation-based services
 /// This helps break circular dependencies between Foundation and CryptoSwift

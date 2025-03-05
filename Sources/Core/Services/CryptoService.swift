@@ -31,13 +31,13 @@ public struct CryptoConfig {
   ///   - ivSize: IV size in bits. Defaults to 96 (12 bytes) for AES-GCM.
   ///   - iterations: PBKDF2 iterations. Defaults to 10,000.
   public init(
-    keySize: Int = 256,
-    ivSize: Int = 96,
-    iterations: Int = 10000
+    keySize: Int=256,
+    ivSize: Int=96,
+    iterations: Int=10000
   ) {
-    self.keySize = keySize
-    self.ivSize = ivSize
-    self.iterations = iterations
+    self.keySize=keySize
+    self.ivSize=ivSize
+    self.iterations=iterations
   }
 }
 
@@ -69,7 +69,7 @@ public struct EncryptionResult: Sendable {
 /// ```
 public actor CryptoService: UmbraService {
   /// The unique identifier for this service.
-  public static let serviceIdentifier = "com.umbracore.crypto"
+  public static let serviceIdentifier="com.umbracore.crypto"
 
   /// The internal state of the service.
   private var _state: ServiceState = .uninitialized
@@ -84,8 +84,8 @@ public actor CryptoService: UmbraService {
   ///
   /// - Parameter config: The configuration to use for cryptographic operations.
   ///                    Defaults to standard secure parameters.
-  public init(config: CryptoConfig = CryptoConfig()) {
-    self.config = config
+  public init(config: CryptoConfig=CryptoConfig()) {
+    self.config=config
   }
 
   /// Initializes the service and validates its configuration.
@@ -133,8 +133,8 @@ public actor CryptoService: UmbraService {
       throw ServiceError.invalidState("Service not ready")
     }
 
-    var key = [UInt8](repeating: 0, count: config.keySize / 8)
-    let status = SecRandomCopyBytes(kSecRandomDefault, key.count, &key)
+    var key=[UInt8](repeating: 0, count: config.keySize / 8)
+    let status=SecRandomCopyBytes(kSecRandomDefault, key.count, &key)
     guard status == errSecSuccess else {
       throw CryptoError.keyGenerationFailed
     }
@@ -150,8 +150,8 @@ public actor CryptoService: UmbraService {
       throw ServiceError.invalidState("Service not ready")
     }
 
-    var iv = [UInt8](repeating: 0, count: config.ivSize / 8)
-    let status = SecRandomCopyBytes(kSecRandomDefault, iv.count, &iv)
+    var iv=[UInt8](repeating: 0, count: config.ivSize / 8)
+    let status=SecRandomCopyBytes(kSecRandomDefault, iv.count, &iv)
     guard status == errSecSuccess else {
       throw CryptoError.ivGenerationFailed
     }
@@ -173,9 +173,9 @@ public actor CryptoService: UmbraService {
       throw ServiceError.invalidState("Service not ready")
     }
 
-    let initializationVector = try generateIV()
-    let encrypted = try encrypt(data, key: key, iv: initializationVector)
-    let tag = try generateTag(data: data, key: key, iv: initializationVector)
+    let initializationVector=try generateIV()
+    let encrypted=try encrypt(data, key: key, iv: initializationVector)
+    let tag=try generateTag(data: data, key: key, iv: initializationVector)
     return EncryptionResult(
       encrypted: encrypted,
       initializationVector: initializationVector,
@@ -252,8 +252,8 @@ public actor CryptoService: UmbraService {
       throw ServiceError.invalidState("Service not ready")
     }
 
-    var bytes = [UInt8](repeating: 0, count: length)
-    let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+    var bytes=[UInt8](repeating: 0, count: length)
+    let status=SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
 
     guard status == errSecSuccess else {
       throw CryptoError.randomGenerationFailed
@@ -272,8 +272,8 @@ public actor CryptoService: UmbraService {
       throw ServiceError.invalidState("Service not ready")
     }
 
-    var bytes = [UInt8](repeating: 0, count: count)
-    let status = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
+    var bytes=[UInt8](repeating: 0, count: count)
+    let status=SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
     guard status == errSecSuccess else {
       throw CryptoError.randomGenerationFailed
     }

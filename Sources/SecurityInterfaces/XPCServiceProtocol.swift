@@ -1,5 +1,5 @@
-import XPCProtocolsCore
 import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Protocol for security-specific XPC services
 /// This extends the base protocol with security-specific methods
@@ -12,12 +12,14 @@ public protocol XPCServiceProtocol: XPCProtocolsCore.XPCServiceProtocolBasic {
   /// Encrypt data using the service
   /// - Parameter data: The data to encrypt
   /// - Returns: The encrypted data
-  func encrypt(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.XPCSecurityError>
+  func encrypt(data: UmbraCoreTypes.SecureBytes) async
+    -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.XPCSecurityError>
 
   /// Decrypt data using the service
   /// - Parameter data: The data to decrypt
   /// - Returns: The decrypted data
-  func decrypt(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.XPCSecurityError>
+  func decrypt(data: UmbraCoreTypes.SecureBytes) async
+    -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.XPCSecurityError>
 }
 
 /// Extension providing default implementations for the protocol
@@ -28,14 +30,20 @@ public protocol XPCServiceProtocol: XPCProtocolsCore.XPCServiceProtocolBasic {
 )
 extension XPCServiceProtocol {
   /// Default implementation of encrypt
-  public func encrypt(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.XPCSecurityError> {
+  public func encrypt(
+    data: UmbraCoreTypes
+      .SecureBytes
+  ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.XPCSecurityError> {
     // This is just a placeholder implementation
     // In a real implementation, you would implement actual encryption
     .success(data)
   }
 
   /// Default implementation of decrypt
-  public func decrypt(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.XPCSecurityError> {
+  public func decrypt(
+    data: UmbraCoreTypes
+      .SecureBytes
+  ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.XPCSecurityError> {
     // This is just a placeholder implementation
     // In a real implementation, you would implement actual decryption
     .success(data)
@@ -50,7 +58,7 @@ public struct XPCServiceAdapter: XPCProtocolsCore.XPCServiceProtocolBasic {
 
   /// Create a new adapter wrapping an XPCServiceProtocol implementation
   public init(wrapping service: any XPCServiceProtocol) {
-    self.service = service
+    self.service=service
   }
 
   /// Protocol identifier from the wrapped service
@@ -64,7 +72,10 @@ public struct XPCServiceAdapter: XPCProtocolsCore.XPCServiceProtocolBasic {
   }
 
   /// Implement synchronizeKeys using the wrapped service
-  public func synchronizeKeys(_ data: UmbraCoreTypes.SecureBytes) async -> Result<Void, XPCProtocolsCore.XPCSecurityError> {
+  public func synchronizeKeys(
+    _ data: UmbraCoreTypes
+      .SecureBytes
+  ) async -> Result<Void, XPCProtocolsCore.XPCSecurityError> {
     await service.synchronizeKeys(data)
   }
 }

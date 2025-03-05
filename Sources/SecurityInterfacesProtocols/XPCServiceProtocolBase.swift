@@ -31,8 +31,10 @@ public protocol XPCServiceProtocolBase: Sendable {
   static var protocolIdentifier: String { get }
 
   /// Test connectivity
-  func ping() async -> Result<Bool
-, XPCSecurityError>
+  func ping() async -> Result<
+    Bool,
+    XPCSecurityError
+  >
   /// Synchronize keys across processes
   /// - Parameter syncData: The key data to synchronize
   func synchroniseKeys(_ syncData: SecureBytes) async throws

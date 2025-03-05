@@ -5,8 +5,8 @@ import CryptoTypes
 import CryptoTypesServices
 import Foundation
 import SecurityUtils
-import UmbraXPC
 import UmbraCoreTypes
+import UmbraXPC
 import XPCProtocolsCore
 
 /// Extension to generate random data using SecRandomCopyBytes
@@ -56,7 +56,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   public func encrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError> {
     do {
       try Task.checkCancellation()
-      
+
       return try await withCheckedThrowingContinuation { continuation in
         cryptoQueue.async {
           do {
@@ -100,13 +100,13 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
             // Extract IV and ciphertext
             let iv=data.prefix(12)
             let ciphertext=data.dropFirst(12)
-            
+
             // Create AES-GCM
             let aes=try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
-            
+
             // Decrypt
             let decrypted=try aes.decrypt(ciphertext.bytes)
-            
+
             continuation.resume(returning: .success(Data(decrypted)))
           } catch {
             continuation.resume(returning: .failure(.decryptionFailed))
@@ -137,12 +137,12 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   public func hash(_ data: Data) async -> Result<Data, XPCSecurityError> {
     do {
       try Task.checkCancellation()
-      
+
       return try await withCheckedThrowingContinuation { continuation in
         cryptoQueue.async {
           do {
-            let digest = SHA2(variant: .sha256)
-            let hash = try digest.calculate(for: data.bytes)
+            let digest=SHA2(variant: .sha256)
+            let hash=try digest.calculate(for: data.bytes)
             continuation.resume(returning: .success(Data(hash)))
           } catch {
             continuation.resume(returning: .failure(.hashingFailed))
@@ -159,14 +159,17 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   ///   - credential: Credential data to store
   ///   - identifier: Identifier for the credential
   /// - Throws: CoreErrors.CryptoError if storage fails
-  public func storeCredential(_ credential: Data, forIdentifier identifier: String) async -> Result<Void, XPCSecurityError> {
+  public func storeCredential(
+    _ credential: Data,
+    forIdentifier identifier: String
+  ) async -> Result<Void, XPCSecurityError> {
     do {
       try Task.checkCancellation()
-      
+
       guard !identifier.isEmpty else {
         return .failure(.invalidData)
       }
-      
+
       try await dependencies.keychain.save(data: credential, forKey: identifier)
       return .success(())
     } catch {
@@ -178,15 +181,16 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   /// - Parameter identifier: Identifier for the credential
   /// - Returns: Credential data
   /// - Throws: CoreErrors.CryptoError if retrieval fails
-  public func retrieveCredential(forIdentifier identifier: String) async -> Result<Data, XPCSecurityError> {
+  public func retrieveCredential(forIdentifier identifier: String) async
+  -> Result<Data, XPCSecurityError> {
     do {
       try Task.checkCancellation()
-      
+
       guard !identifier.isEmpty else {
         return .failure(.invalidData)
       }
-      
-      let credential = try await dependencies.keychain.getData(forKey: identifier)
+
+      let credential=try await dependencies.keychain.getData(forKey: identifier)
       return .success(credential)
     } catch {
       return .failure(.serviceFailed)
@@ -196,14 +200,15 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   /// Delete credential from keychain
   /// - Parameter identifier: Identifier for the credential
   /// - Throws: CoreErrors.CryptoError if deletion fails
-  public func deleteCredential(forIdentifier identifier: String) async -> Result<Void, XPCSecurityError> {
+  public func deleteCredential(forIdentifier identifier: String) async
+  -> Result<Void, XPCSecurityError> {
     do {
       try Task.checkCancellation()
-      
+
       guard !identifier.isEmpty else {
         return .failure(.invalidData)
       }
-      
+
       try await dependencies.keychain.delete(forKey: identifier)
       return .success(())
     } catch {

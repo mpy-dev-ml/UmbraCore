@@ -1,6 +1,7 @@
 import SecurityInterfacesBase
+import UmbraCoreTypes /// Errors that can occur during security operations
 import XPCProtocolsCoreimport XPCProtocolsCore
-import UmbraCoreTypes/// Errors that can occur during security operations
+
 public enum SecurityInterfacesError: Error, Sendable {
   /// Bookmark creation failed
   case bookmarkCreationFailed(path: String)

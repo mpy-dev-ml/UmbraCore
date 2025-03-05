@@ -1,8 +1,9 @@
 import Foundation
 import SecurityInterfaces
-import XPCProtocolsCoreimport SecurityInterfacesFoundation
-import UmbraCoreTypesimport XPCProtocolsCoreimport SecurityTypesProtocols
 import UmbraCoreTypes
+import UmbraCoreTypesimport XPCProtocolsCoreimport SecurityTypesProtocols
+import XPCProtocolsCoreimport SecurityInterfacesFoundation
+
 /// Service for managing log files with security-scoped bookmarks
 @available(macOS 14.0, *)
 public actor LoggingService {
@@ -22,7 +23,7 @@ public actor LoggingService {
   /// - Parameter path: Path to the log file
   /// - Returns: The bookmark data
   /// - Throws: SecurityError if bookmark creation fails
-  public func createLogBookmark(path: String) async -> Result<[UInt8] , XPCSecurityError>{
+  public func createLogBookmark(path: String) async -> Result<[UInt8], XPCSecurityError> {
     let url=URL(fileURLWithPath: path)
     let data=try await securityProvider.createBookmark(for: url)
     return Array(data)
@@ -41,7 +42,7 @@ public actor LoggingService {
   /// Start accessing a log file
   /// - Parameter path: Path to the log file
   /// - Returns: True if access was granted
-  public func startAccessingLog(path: String) async -> Result<Bool , XPCSecurityError>{
+  public func startAccessingLog(path: String) async -> Result<Bool, XPCSecurityError> {
     try await securityProvider.startAccessing(url: URL(fileURLWithPath: path))
   }
 

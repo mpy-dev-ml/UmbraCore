@@ -1,6 +1,6 @@
 import SecurityInterfacesProtocols
-import XPCProtocolsCore
 import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Extension for XPCServiceProtocolBase to provide security-specific functionality
 extension SecurityInterfacesProtocols.XPCServiceProtocolBase {

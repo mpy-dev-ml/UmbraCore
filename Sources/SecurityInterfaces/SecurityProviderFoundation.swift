@@ -48,7 +48,10 @@ public protocol SecurityProviderFoundation {
   /// Resolve a previously created security-scoped resource bookmark
   /// - Parameter bookmarkData: Bookmark data to resolve
   /// - Returns: Tuple containing resolved identifier and whether bookmark is stale, or error
-  func resolveResourceBookmark(_ bookmarkData: SecureBytes) async -> Result<(identifier: String, isStale: Bool), SecurityError>
+  func resolveResourceBookmark(_ bookmarkData: SecureBytes) async -> Result<(
+    identifier: String,
+    isStale: Bool
+  ), SecurityError>
 
   /// Validate a resource bookmark to ensure it's still valid
   /// - Parameter bookmarkData: Bookmark data to validate
@@ -65,7 +68,10 @@ public protocol SecurityProviderFoundation {
   /// Resolve a previously created security-scoped bookmark
   /// - Parameter bookmarkData: Bookmark data to resolve
   /// - Returns: Tuple containing resolved identifier and whether bookmark is stale, or error
-  func resolveBookmark(_ bookmarkData: SecureBytes) async -> Result<(identifier: String, isStale: Bool), SecurityError>
+  func resolveBookmark(_ bookmarkData: SecureBytes) async -> Result<(
+    identifier: String,
+    isStale: Bool
+  ), SecurityError>
 
   /// Validate a bookmark to ensure it's still valid
   /// - Parameter bookmarkData: Bookmark data to validate
@@ -103,14 +109,16 @@ public protocol SecurityProviderFoundation {
   ///   - service: Service identifier
   ///   - account: Account identifier
   /// - Returns: Success or error
-  func storeInKeychain(data: SecureBytes, service: String, account: String) async -> Result<Void, SecurityError>
+  func storeInKeychain(data: SecureBytes, service: String, account: String) async
+    -> Result<Void, SecurityError>
 
   /// Retrieve data from the keychain
   /// - Parameters:
   ///   - service: Service identifier
   ///   - account: Account identifier
   /// - Returns: Retrieved data or error
-  func retrieveFromKeychain(service: String, account: String) async -> Result<SecureBytes, SecurityError>
+  func retrieveFromKeychain(service: String, account: String) async
+    -> Result<SecureBytes, SecurityError>
 
   /// Delete data from the keychain
   /// - Parameters:
@@ -138,10 +146,10 @@ extension SecurityProviderFoundation {
 )
 public struct SecurityProviderFoundationAdapter {
   private let legacy: any SecurityProviderFoundation
-  
+
   public init(legacy: any SecurityProviderFoundation) {
-    self.legacy = legacy
+    self.legacy=legacy
   }
-  
+
   // Add implementation methods as needed for backward compatibility
 }

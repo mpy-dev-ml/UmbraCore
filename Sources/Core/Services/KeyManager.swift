@@ -142,7 +142,7 @@ public actor KeyManager {
     self.keyFormat=keyFormat
     self.securityContext=securityContext
     self.cryptoImpl=cryptoImpl
-    self.keyMetadata=[:]
+    keyMetadata=[:]
   }
 
   /// Initialize the key manager
@@ -227,24 +227,25 @@ public actor KeyManager {
   /// - Throws: KeyManagerError if synchronisation fails
   public func synchroniseKeys() async throws {
     // Use XPC to broadcast key updates to other processes
-    let serviceContainer = ServiceContainer.shared
+    let serviceContainer=ServiceContainer.shared
 
     // Need to await when accessing actor property
-    guard let xpcService = await serviceContainer.xpcService else {
+    guard let xpcService=await serviceContainer.xpcService else {
       throw KeyManagerError.synchronisationError("XPC service not available")
     }
 
     // Create JSON object with sync data
-    let syncData = try await createKeySyncData()
+    let syncData=try await createKeySyncData()
 
     // Send synchronisation request through XPC using the modern Result-based approach
-    let result = try await xpcService.synchroniseKeys(syncData)
+    let result=try await xpcService.synchroniseKeys(syncData)
     switch result {
-    case .success:
-      // Update last sync timestamp
-      lastSyncTime = Date()
-    case .failure(let error):
-      throw KeyManagerError.synchronisationError("XPC synchronization failed: \(error.localizedDescription)")
+      case .success:
+        // Update last sync timestamp
+        lastSyncTime=Date()
+      case let .failure(error):
+        throw KeyManagerError
+          .synchronisationError("XPC synchronization failed: \(error.localizedDescription)")
     }
   }
 
@@ -280,29 +281,35 @@ public actor KeyManager {
         options: .skipsHiddenFiles
       )
     } catch {
-      throw KeyManagerError.storageError("Failed to read key storage: \(error.localizedDescription)")
+      throw KeyManagerError
+        .storageError("Failed to read key storage: \(error.localizedDescription)")
     }
 
     for file in files.filter({ $0.pathExtension == "meta" }) {
       do {
         let data=try Data(contentsOf: file)
-        guard let json=try JSONSerialization.jsonObject(with: data) as? [String: Any],
+        guard
+          let json=try JSONSerialization.jsonObject(with: data) as? [String: Any],
           let id=json["id"] as? String,
           let purpose=json["purpose"] as? String,
           let algorithm=json["algorithm"] as? String,
           let strength=json["strength"] as? Int,
           let creationDateTimestamp=json["creationDate"] as? TimeInterval
         else {
-          throw KeyManagerError.metadataError("Invalid metadata format in \(file.lastPathComponent)")
+          throw KeyManagerError
+            .metadataError("Invalid metadata format in \(file.lastPathComponent)")
         }
 
         let keyId=KeyIdentifier(id: id)
         let creationDate=Date(timeIntervalSince1970: creationDateTimestamp)
-        let expirationDate: Date?
-        if let expirationTimestamp=json["expirationDate"] as? TimeInterval {
-          expirationDate=Date(timeIntervalSince1970: expirationTimestamp)
+        let expirationDate: Date?=if
+          let expirationTimestamp=json[
+            "expirationDate"
+          ] as? TimeInterval
+        {
+          Date(timeIntervalSince1970: expirationTimestamp)
         } else {
-          expirationDate=nil
+          nil
         }
 
         metadata[id]=KeyMetadata(
@@ -314,7 +321,8 @@ public actor KeyManager {
           strength: strength
         )
       } catch {
-        throw KeyManagerError.metadataError("Failed to parse metadata: \(error.localizedDescription)")
+        throw KeyManagerError
+          .metadataError("Failed to parse metadata: \(error.localizedDescription)")
       }
     }
 
@@ -347,7 +355,8 @@ public actor KeyManager {
     do {
       jsonData=try JSONSerialization.data(withJSONObject: syncData)
     } catch {
-      throw KeyManagerError.synchronisationError("Failed to create sync data: \(error.localizedDescription)")
+      throw KeyManagerError
+        .synchronisationError("Failed to create sync data: \(error.localizedDescription)")
     }
 
     return SecureBytes(data: jsonData)
@@ -356,7 +365,7 @@ public actor KeyManager {
   /// Check if a key is stored in the secure enclave
   /// - Parameter id: Key ID
   /// - Returns: True if stored in secure enclave
-  private func isStoredInSecureEnclave(id: String) -> Bool {
+  private func isStoredInSecureEnclave(id _: String) -> Bool {
     // Implementation would depend on the platform
     // This is a simplified placeholder
     true
@@ -365,7 +374,7 @@ public actor KeyManager {
   /// Get list of all key identifiers
   /// - Returns: Array of key identifiers
   public func getKeyIdentifiers() -> [KeyIdentifier] {
-    keyMetadata.values.map { $0.identifier }
+    keyMetadata.values.map(\.identifier)
   }
 
   /// Get metadata for a specific key
@@ -398,17 +407,17 @@ public enum KeyManagerError: LocalizedError {
   public var errorDescription: String? {
     switch self {
       case .notInitialized:
-        return "Key manager not initialized"
-      case .keyNotFound(let id):
-        return "Key not found: \(id)"
-      case .storageError(let message):
-        return "Storage error: \(message)"
-      case .metadataError(let message):
-        return "Metadata error: \(message)"
-      case .synchronisationError(let message):
-        return "Synchronisation error: \(message)"
-      case .securityBoundaryViolation(let message):
-        return "Security boundary violation: \(message)"
+        "Key manager not initialized"
+      case let .keyNotFound(id):
+        "Key not found: \(id)"
+      case let .storageError(message):
+        "Storage error: \(message)"
+      case let .metadataError(message):
+        "Metadata error: \(message)"
+      case let .synchronisationError(message):
+        "Synchronisation error: \(message)"
+      case let .securityBoundaryViolation(message):
+        "Security boundary violation: \(message)"
     }
   }
 }

@@ -275,7 +275,7 @@ private final class MockXPCService: XPCServiceProtocolComplete {
 
   func synchroniseKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
     // No-op for test
-    return .success(())
+    .success(())
   }
 
   func ping() async throws -> Bool {
@@ -309,7 +309,7 @@ private final class FailingMockXPCService: XPCServiceProtocolComplete {
   }
 
   func synchronizeKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
-    return .failure(.operationFailed)
+    .failure(.operationFailed)
   }
 
   func encrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
@@ -342,7 +342,7 @@ private final class FailingMockXPCService: XPCServiceProtocolComplete {
   }
 
   func synchroniseKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
-    return .failure(.operationFailed)
+    .failure(.operationFailed)
   }
 
   func ping() async throws -> Bool {

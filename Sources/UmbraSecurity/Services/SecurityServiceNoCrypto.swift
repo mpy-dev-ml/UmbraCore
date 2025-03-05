@@ -3,11 +3,11 @@ import CoreServicesTypesNoFoundation
 import Foundation
 import FoundationBridgeTypes
 import SecurityInterfaces
-import XPCProtocolsCoreimport SecurityInterfacesBase
+import UmbraCoreTypesimport SecurityUtils
 import UmbraCoreTypesimport XPCProtocolsCoreimport XPCProtocolsCoreimport SecurityInterfacesProtocols
 import UmbraCoreTypesimport XPCProtocolsCoreimport XPCProtocolsCoreimport SecurityTypes
-import UmbraCoreTypesimport SecurityUtils
 import UmbraLogging
+import XPCProtocolsCoreimport SecurityInterfacesBase
 
 /// A minimal implementation of the security service that doesn't depend on CryptoSwift
 /// This helps break circular dependencies between Foundation and CryptoSwift
@@ -91,7 +91,7 @@ public actor SecurityServiceNoCrypto {
 
   /// Placeholder for encrypt operation
   /// In a real implementation, this would use a security provider
-  public func encrypt(data: Data, key _: Data) async -> Result<Data , XPCSecurityError>{
+  public func encrypt(data: Data, key _: Data) async -> Result<Data, XPCSecurityError> {
     // This is just a placeholder implementation to satisfy the compiler
     // In a real implementation, this would use a security provider
     data
@@ -99,7 +99,7 @@ public actor SecurityServiceNoCrypto {
 
   /// Placeholder for decrypt operation
   /// In a real implementation, this would use a security provider
-  public func decrypt(data: Data, key _: Data) async -> Result<Data , XPCSecurityError>{
+  public func decrypt(data: Data, key _: Data) async -> Result<Data, XPCSecurityError> {
     // This is just a placeholder implementation to satisfy the compiler
     // In a real implementation, this would use a security provider
     data
@@ -107,7 +107,7 @@ public actor SecurityServiceNoCrypto {
 
   /// Placeholder for key generation
   /// In a real implementation, this would use a security provider
-  public func generateKey(size: Int=32) async -> Result<Data , XPCSecurityError>{
+  public func generateKey(size: Int=32) async -> Result<Data, XPCSecurityError> {
     // This is just a placeholder implementation to satisfy the compiler
     // In a real implementation, this would use a security provider
     Data(count: size)

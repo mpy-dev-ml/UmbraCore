@@ -3,9 +3,9 @@ import Foundation
 import Security
 import SecurityBridge
 import SecurityInterfaces
-import XPCProtocolsCoreimport SecurityProtocolsCore
-import UmbraCoreTypesimport SecurityTypes
 import SecurityTypesTypes
+import UmbraCoreTypesimport SecurityTypes
+import XPCProtocolsCoreimport SecurityProtocolsCore
 
 /// SecurityUtils Module
 ///
