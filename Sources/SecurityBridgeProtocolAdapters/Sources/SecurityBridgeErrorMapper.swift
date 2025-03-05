@@ -3,8 +3,8 @@ import SecurityProtocolsCore
 import XPCProtocolsCore
 
 /// Type aliases to disambiguate between similarly named types from different modules
-typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
-typealias XPCSecurityError=XPCProtocolsCore.SecurityError
+typealias SPCSecurityError = SecurityProtocolsCore.SecurityError
+typealias XPCSecurityError = XPCProtocolsCore.SecurityError
 
 /// Error type specific to the security bridge layer
 public enum SecurityBridgeError: Error {
@@ -23,10 +23,10 @@ public enum SecurityBridgeErrorMapper {
   /// - Returns: A SecurityError representation of the error
   public static func mapToSecurityError(_ error: Error) -> SPCSecurityError {
     // Handle different error types
-    if let secError=error as? SPCSecurityError {
+    if let secError = error as? SPCSecurityError {
       // Already a SecurityError
       return secError
-    } else if let xpcError=error as? XPCSecurityError {
+    } else if let xpcError = error as? XPCSecurityError {
       // Map from SecurityError
       switch xpcError {
         case .notImplemented:
@@ -46,7 +46,7 @@ public enum SecurityBridgeErrorMapper {
         case let .general(message):
           return .internalError("XPC general error: \(message)")
       }
-    } else if let bridgeError=error as? SecurityBridgeError {
+    } else if let bridgeError = error as? SecurityBridgeError {
       // Map from bridge-specific errors
       switch bridgeError {
         case .invalidInputType:
@@ -60,7 +60,7 @@ public enum SecurityBridgeErrorMapper {
       }
     } else {
       // Default case for unknown error types
-      let errorString=String(describing: error)
+      let errorString = String(describing: error)
       return .internalError("Unknown error: \(errorString)")
     }
   }
@@ -70,10 +70,10 @@ public enum SecurityBridgeErrorMapper {
   /// - Returns: A SecurityError representation of the error
   public static func mapToXPCError(_ error: Error) -> XPCSecurityError {
     // Handle different error types
-    if let xpcError=error as? XPCSecurityError {
+    if let xpcError = error as? XPCSecurityError {
       // Already a SecurityError
       return xpcError
-    } else if let secError=error as? SPCSecurityError {
+    } else if let secError = error as? SPCSecurityError {
       // Map from SecurityError
       switch secError {
         case .encryptionFailed:
@@ -101,7 +101,7 @@ public enum SecurityBridgeErrorMapper {
         case .notImplemented:
           return .notImplemented
       }
-    } else if let bridgeError=error as? SecurityBridgeError {
+    } else if let bridgeError = error as? SecurityBridgeError {
       // Map from bridge-specific errors
       switch bridgeError {
         case .invalidInputType:
@@ -111,7 +111,7 @@ public enum SecurityBridgeErrorMapper {
       }
     } else {
       // Default case for unknown error types
-      let errorString=String(describing: error)
+      let errorString = String(describing: error)
       return .general("Unknown error: \(errorString)")
     }
   }

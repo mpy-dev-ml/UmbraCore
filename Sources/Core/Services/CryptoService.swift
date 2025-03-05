@@ -1,5 +1,6 @@
 import CoreServicesTypes
 import Foundation
+import CoreErrors
 
 // CryptoKit removed - cryptography will be handled in ResticBar
 
@@ -136,7 +137,7 @@ public actor CryptoService: UmbraService {
     var key=[UInt8](repeating: 0, count: config.keySize / 8)
     let status=SecRandomCopyBytes(kSecRandomDefault, key.count, &key)
     guard status == errSecSuccess else {
-      throw CryptoError.keyGenerationFailed
+      throw CoreErrors.CryptoError.keyGenerationFailed
     }
     return key
   }
@@ -153,7 +154,7 @@ public actor CryptoService: UmbraService {
     var iv=[UInt8](repeating: 0, count: config.ivSize / 8)
     let status=SecRandomCopyBytes(kSecRandomDefault, iv.count, &iv)
     guard status == errSecSuccess else {
-      throw CryptoError.ivGenerationFailed
+      throw CoreErrors.CryptoError.ivGenerationFailed
     }
     return iv
   }
@@ -185,12 +186,12 @@ public actor CryptoService: UmbraService {
 
   private func encrypt(_: [UInt8], key _: [UInt8], iv _: [UInt8]) throws -> [UInt8] {
     // Placeholder implementation - will be replaced by ResticBar
-    throw CryptoError.encryptionFailed
+    throw CoreErrors.CryptoError.encryptionFailed
   }
 
   private func generateTag(data _: [UInt8], key _: [UInt8], iv _: [UInt8]) throws -> [UInt8] {
     // Placeholder implementation - will be replaced by ResticBar
-    throw CryptoError.tagGenerationFailed
+    throw CoreErrors.CryptoError.tagGenerationFailed
   }
 
   /// Decrypts data using AES-GCM.
@@ -223,7 +224,7 @@ public actor CryptoService: UmbraService {
     tag _: [UInt8]
   ) throws -> [UInt8] {
     // Placeholder implementation - will be replaced by ResticBar
-    throw CryptoError.decryptionFailed
+    throw CoreErrors.CryptoError.decryptionFailed
   }
 
   /// Derives a key from a password using PBKDF2.
@@ -239,7 +240,7 @@ public actor CryptoService: UmbraService {
     }
 
     // Placeholder implementation - will be replaced by ResticBar
-    throw CryptoError.keyDerivationFailed
+    throw CoreErrors.CryptoError.keyDerivationFailed
   }
 
   /// Generates secure random bytes for cryptographic operations.
@@ -256,7 +257,7 @@ public actor CryptoService: UmbraService {
     let status=SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
 
     guard status == errSecSuccess else {
-      throw CryptoError.randomGenerationFailed
+      throw CoreErrors.CryptoError.randomGenerationFailed
     }
 
     return Data(bytes)
@@ -275,7 +276,7 @@ public actor CryptoService: UmbraService {
     var bytes=[UInt8](repeating: 0, count: count)
     let status=SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
     guard status == errSecSuccess else {
-      throw CryptoError.randomGenerationFailed
+      throw CoreErrors.CryptoError.randomGenerationFailed
     }
     return bytes
   }
