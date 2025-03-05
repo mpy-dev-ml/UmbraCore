@@ -212,9 +212,10 @@ extension CryptoXPCServiceAdapter: XPCServiceProtocolStandard {
     true
   }
 
-  public func synchroniseKeys(_: SecureBytes) async throws {
+  public func synchroniseKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
     // CryptoXPCService doesn't have a synchroniseKeys method
-    // No-op implementation
+    // No-op implementation that returns success
+    return .success(())
   }
 
   public func ping() async throws -> Bool {

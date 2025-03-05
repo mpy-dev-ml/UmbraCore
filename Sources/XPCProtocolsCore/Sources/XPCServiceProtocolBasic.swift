@@ -23,7 +23,8 @@ public protocol XPCServiceProtocolBasic: Sendable {
 
   /// Synchronize keys across processes
   /// - Parameter syncData: The key data to synchronize
-  func synchroniseKeys(_ syncData: SecureBytes) async throws
+  /// - Returns: Result with void success or error
+  func synchroniseKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError>
 }
 
 // MARK: - Extensions
@@ -40,8 +41,8 @@ extension XPCServiceProtocolBasic {
   }
 
   /// Implementation for synchronising keys with byte array (for legacy compatibility)
-  public func synchroniseKeys(_ bytes: [UInt8]) async throws {
-    let secureBytes=SecureBytes(bytes: bytes)
-    try await synchroniseKeys(secureBytes)
+  public func synchroniseKeys(_ bytes: [UInt8]) async -> Result<Void, XPCSecurityError> {
+    let secureBytes = SecureBytes(bytes: bytes)
+    return await synchroniseKeys(secureBytes)
   }
 }

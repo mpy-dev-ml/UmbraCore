@@ -1,6 +1,6 @@
 # XPC Protocol Migration Report
 
-Generated on: Wed Mar  5 14:50:04 GMT 2025
+Generated on: Wed Mar  5 16:06:26 GMT 2025
 
 ## Summary
 
@@ -8,18 +8,17 @@ This report identifies files and modules in the UmbraCore project that need to b
 to use the new XPC protocols defined in XPCProtocolsCore.
 
 - **Total files analyzed**: 2657
-- **Files with legacy imports**: 50
-- **Files with modern imports**: 77
-- **Files needing refactoring**: 54
-- **Modules to refactor**: 16
+- **Files with legacy imports**: 40
+- **Files with modern imports**: 87
+- **Files needing refactoring**: 44
+- **Modules to refactor**: 14
+- **Migration completion**: 92%
 
 ## Modules Needing Refactoring
 
 | Module | Files Needing Refactoring | Priority |
 |--------|---------------------------|----------|
-| Core | 21 | High |
 | CoreTypes | 6 | Medium |
-| CryptoTypes | 14 | High |
 | Features | 10 | Medium |
 | ObjCBridgingTypes | 2 | Low |
 | ObjCBridgingTypesFoundation | 3 | Medium |
@@ -52,12 +51,12 @@ Below is a list of the top files that need to be refactored in priority order:
 - **null**: /Users/mpy/CascadeProjects/UmbraCore/Tests/UmbraTestKit/Tests/SecurityErrorHandlerTests.swift
 - **null**: /Users/mpy/CascadeProjects/UmbraCore/Tests/UmbraTestKit/Tests/SecurityErrorTests.swift
 - **null**: /Users/mpy/CascadeProjects/UmbraCore/Tests/XPCTests/MockCryptoXPCServiceDependencies.swift
-- **Core**: /Users/mpy/CascadeProjects/UmbraCore/Sources/Core/Services/KeyManager.swift
-- **Core**: /Users/mpy/CascadeProjects/UmbraCore/Sources/Core/Services/SecurityService.swift
-- **Core**: /Users/mpy/CascadeProjects/UmbraCore/Sources/Core/Services/ServiceContainer.swift
 - **CoreTypes**: /Users/mpy/CascadeProjects/UmbraCore/Sources/CoreTypes/XPCServiceProtocolBase.swift
-- **CryptoTypes**: /Users/mpy/CascadeProjects/UmbraCore/Sources/CryptoTypes/Services/CredentialManager.swift
-- **CryptoTypes**: /Users/mpy/CascadeProjects/UmbraCore/Sources/CryptoTypes/Services/CryptoXPCServiceProtocol.swift
+- **Features**: /Users/mpy/CascadeProjects/UmbraCore/Sources/Features/Logging/Services/LoggingService.swift
+- **ObjCBridgingTypes**: /Users/mpy/CascadeProjects/UmbraCore/Sources/ObjCBridgingTypes/XPCServiceProtocolBase.swift
+- **ObjCBridgingTypes**: /Users/mpy/CascadeProjects/UmbraCore/Sources/ObjCBridgingTypes/XPCServiceProtocolDefinitionBase.swift
+- **ObjCBridgingTypesFoundation**: /Users/mpy/CascadeProjects/UmbraCore/Sources/ObjCBridgingTypesFoundation/XPCServiceProtocolBase.swift
+- **ObjCBridgingTypesFoundation**: /Users/mpy/CascadeProjects/UmbraCore/Sources/ObjCBridgingTypesFoundation/XPCServiceProtocolDefinitionBase.swift
 
 ## Migration Steps
 
@@ -103,4 +102,3 @@ Track migration progress by running this analysis tool regularly.
 For detailed migration guidance, see:
 - [XPC_PROTOCOLS_MIGRATION_GUIDE.md](../XPC_PROTOCOLS_MIGRATION_GUIDE.md)
 - [UmbraCore_Refactoring_Plan.md](../UmbraCore_Refactoring_Plan.md)
-
