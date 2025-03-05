@@ -1,8 +1,8 @@
 import Foundation
 @preconcurrency import ObjCBridgingTypesFoundation
 import SecurityInterfacesProtocols
-
-/// Custom error for security interfaces that doesn't require Foundation
+import XPCProtocolsCoreimport XPCProtocolsCore
+import UmbraCoreTypes/// Custom error for security interfaces that doesn't require Foundation
 public enum XPCServiceProtocolAdapterError: Error, Sendable {
   case implementationMissing(String)
 }
@@ -54,8 +54,8 @@ ObjCBridgingTypesFoundation.XPCServiceProtocolBaseFoundation, @unchecked Sendabl
       do {
         // Convert NSData to bytes
         let bytes=ObjCBridgingTypesFoundation.DataConverter.convertToBytes(fromNSData: nsData)
-        // Convert bytes to BinaryData
-        let binaryData=SecurityInterfacesProtocols.BinaryData(bytes)
+        // Convert bytes to SecureBytes
+        let binaryData=SecurityInterfacesProtocols.SecureBytes(bytes)
         // Call the CoreTypes implementation
         try await core.synchroniseKeys(binaryData)
         localReply(nil)
@@ -87,7 +87,7 @@ public final class FoundationToCoreTypesAdapter: SecurityInterfacesProtocols
   }
 
   /// Implement ping using the Foundation implementation
-  public func ping() async throws -> Bool {
+  public func ping() async -> Result<Bool , XPCSecurityError>{
     try await withCheckedThrowingContinuation { continuation in
       foundation.ping { success, error in
         if let error {
@@ -100,8 +100,8 @@ public final class FoundationToCoreTypesAdapter: SecurityInterfacesProtocols
   }
 
   /// Implement synchroniseKeys using the Foundation implementation
-  public func synchroniseKeys(_ data: SecurityInterfacesProtocols.BinaryData) async throws {
-    // Convert BinaryData to byte array
+  public func synchroniseKeys(_ data: SecurityInterfacesProtocols.SecureBytes) async throws {
+    // Convert SecureBytes to byte array
     let bytes=data.bytes
 
     // Convert byte array to NSData
@@ -112,7 +112,7 @@ public final class FoundationToCoreTypesAdapter: SecurityInterfacesProtocols
       guard let synchroniseKeysRaw=foundation.synchroniseKeysRaw else {
         continuation
           .resume(
-            throwing: XPCServiceProtocolAdapterError
+            throwing: XPCServiceProtocolStandardAdapterError
               .implementationMissing("synchroniseKeys not implemented")
           )
         return
@@ -133,15 +133,15 @@ public final class FoundationToCoreTypesAdapter: SecurityInterfacesProtocols
 extension ObjCBridgingTypesFoundation.XPCServiceProtocolBaseFoundation {
   /// Implementation for synchronising keys with byte array
   func synchroniseKeys(_ syncData: [UInt8]) async throws {
-    // Convert to BinaryData first
-    let binaryData=SecurityInterfacesProtocols.BinaryData(syncData)
+    // Convert to SecureBytes first
+    let binaryData=SecurityInterfacesProtocols.SecureBytes(syncData)
 
-    // Convert BinaryData to NSData through ObjCBridgingTypesFoundation
+    // Convert SecureBytes to NSData through ObjCBridgingTypesFoundation
     let nsData=ObjCBridgingTypesFoundation.DataConverter
       .convertToNSData(fromBytes: binaryData.bytes)
 
     guard let synchroniseKeysRaw else {
-      throw XPCServiceProtocolAdapterError.implementationMissing("synchroniseKeys not implemented")
+      return .failure(.implementationMissing)
     }
 
     return try await withCheckedThrowingContinuation { continuation in

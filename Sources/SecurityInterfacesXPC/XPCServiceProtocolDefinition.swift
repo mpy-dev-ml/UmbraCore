@@ -1,8 +1,8 @@
 import Foundation
 import ObjCBridgingTypesFoundation
 import SecurityInterfacesBase
-
-/// Protocol defining the XPC service interface for key management using Objective-C compatible
+import XPCProtocolsCoreimport XPCProtocolsCore
+import UmbraCoreTypes/// Protocol defining the XPC service interface for key management using Objective-C compatible
 /// methods
 @objc
 public protocol XPCServiceProtocolDefinition: ObjCBridgingTypesFoundation

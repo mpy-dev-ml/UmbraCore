@@ -1,3 +1,6 @@
+import CoreTypes
+import XPCProtocolsCore
+
 /// Protocol defining the core security provider interface without Foundation dependencies
 /// This is the base protocol that all security providers must implement
 public protocol SecurityProviderProtocol: Sendable {

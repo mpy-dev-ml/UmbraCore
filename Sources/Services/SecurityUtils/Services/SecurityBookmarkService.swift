@@ -1,7 +1,7 @@
 import Foundation
 import SecurityInterfaces
-import SecurityTypes
-import SecurityTypesProtocols
+import XPCProtocolsCoreimport SecurityTypes
+import UmbraCoreTypesimport SecurityTypesProtocols
 import SecurityUtilsProtocols
 
 /// Service for managing security-scoped bookmarks
@@ -20,7 +20,7 @@ public actor SecurityBookmarkService {
   /// - Parameter url: URL to create bookmark for
   /// - Returns: Bookmark data
   /// - Throws: SecurityError if bookmark creation fails
-  public func createBookmark(for url: URL) async throws -> Data {
+  public func createBookmark(for url: URL) async -> Result<Data , XPCSecurityError>{
     // Ensure we have a file URL
     let fileURL=url.isFileURL ? url : URL(fileURLWithPath: url.path)
 
@@ -43,7 +43,7 @@ public actor SecurityBookmarkService {
   /// - Parameter bookmarkData: Bookmark data
   /// - Returns: Resolved URL
   /// - Throws: SecurityError if bookmark resolution fails
-  public func resolveBookmark(_ bookmarkData: Data) async throws -> URL {
+  public func resolveBookmark(_ bookmarkData: Data) async -> Result<URL , XPCSecurityError>{
     var isStale=false
     let options: NSURL.BookmarkResolutionOptions=[.withSecurityScope, .withoutUI]
 

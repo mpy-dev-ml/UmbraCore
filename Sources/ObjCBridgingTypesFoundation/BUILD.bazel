@@ -7,6 +7,7 @@ umbra_swift_library(
     srcs = glob(["**/*.swift"]),
     deps = [
         "//Sources/CoreTypes",
+        "//Sources/XPCProtocolsCore",  # Added for XPCSecurityError
         # Removed dependency on ObjCBridgingTypes to break circular dependency
     ],
 )
@@ -27,6 +28,7 @@ swift_library(
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/CoreTypes",
+        "//Sources/XPCProtocolsCore",  # Added for XPCSecurityError
         # Removed dependency on ObjCBridgingTypes to break circular dependency
     ],
 )

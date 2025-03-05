@@ -1,4 +1,5 @@
 import Foundation
+import XPCProtocolsCore
 
 /// Custom error for Foundation bridging that doesn't require direct NSError use
 public enum FoundationBridgingError: Error, Sendable {
@@ -35,15 +36,19 @@ extension XPCServiceProtocolBaseFoundation {
   }
 
   /// Async ping implementation
-  public func ping() async throws -> Bool {
-    try await withCheckedThrowingContinuation { continuation in
-      ping { success, error in
-        if let error {
-          continuation.resume(throwing: error)
-        } else {
-          continuation.resume(returning: success)
+  public func ping() async -> Result<Bool , XPCSecurityError>{
+    do {
+      return try await withCheckedThrowingContinuation { continuation in
+        ping { success, error in
+          if let error {
+            continuation.resume(throwing: error)
+          } else {
+            continuation.resume(returning: .success(success))
+          }
         }
       }
+    } catch {
+      return .failure(XPCSecurityError.cryptoError)
     }
   }
 

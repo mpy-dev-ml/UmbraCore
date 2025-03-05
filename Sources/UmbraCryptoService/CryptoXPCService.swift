@@ -52,7 +52,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   ///   - key: Encryption key
   /// - Returns: Encrypted data
   /// - Throws: CoreErrors.CryptoError if encryption fails
-  public func encrypt(_ data: Data, key: Data) async throws -> Data {
+  public func encrypt(_ data: Data, key: Data) async -> Result<Data , XPCSecurityError>{
     try Task.checkCancellation()
 
     return try await withCheckedThrowingContinuation { continuation in
@@ -90,7 +90,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   ///   - key: Decryption key
   /// - Returns: Decrypted data
   /// - Throws: CoreErrors.CryptoError if decryption fails
-  public func decrypt(_ data: Data, key: Data) async throws -> Data {
+  public func decrypt(_ data: Data, key: Data) async -> Result<Data , XPCSecurityError>{
     try Task.checkCancellation()
 
     return try await withCheckedThrowingContinuation { continuation in
@@ -122,7 +122,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   /// - Parameter bits: Bit length (128 or 256 bits)
   /// - Returns: Generated key data
   /// - Throws: CoreErrors.CryptoError if bit length is invalid
-  public func generateKey(bits: Int) async throws -> Data {
+  public func generateKey(bits: Int) async -> Result<Data , XPCSecurityError>{
     try Task.checkCancellation()
 
     guard bits == 128 || bits == 256 else {
@@ -138,7 +138,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   /// - Parameter length: Length in bytes
   /// - Returns: Generated salt data
   /// - Throws: CoreErrors.CryptoError if length is invalid
-  public func generateSalt(length: Int) async throws -> Data {
+  public func generateSalt(length: Int) async -> Result<Data , XPCSecurityError>{
     try Task.checkCancellation()
 
     guard length > 0 && length <= 64 else {
@@ -153,7 +153,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   /// - Returns: Generated key as Data
   /// - Throws: CoreErrors.CryptoError if generation fails
   @MainActor
-  public func generateSecureRandomKey(length: Int) async throws -> Data {
+  public func generateSecureRandomKey(length: Int) async -> Result<Data , XPCSecurityError>{
     try Task.checkCancellation()
     return Data.random(count: length)
   }
@@ -162,7 +162,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   /// - Returns: Generated IV as Data
   /// - Throws: CoreErrors.CryptoError if generation fails
   @MainActor
-  public func generateInitializationVector() async throws -> Data {
+  public func generateInitializationVector() async -> Result<Data , XPCSecurityError>{
     try Task.checkCancellation()
     return Data.random(count: 12) // 12 bytes is standard for GCM mode
   }
@@ -199,7 +199,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   /// - Parameter forIdentifier: Identifier of the credential to retrieve
   /// - Returns: Retrieved credential
   /// - Throws: CoreErrors.CryptoError if retrieval fails
-  public func retrieveCredential(forIdentifier identifier: String) async throws -> Data {
+  public func retrieveCredential(forIdentifier identifier: String) async -> Result<Data , XPCSecurityError>{
     try Task.checkCancellation()
 
     guard !identifier.isEmpty else {

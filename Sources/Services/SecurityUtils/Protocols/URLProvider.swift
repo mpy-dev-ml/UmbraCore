@@ -1,27 +1,27 @@
 import Foundation
 import SecurityInterfaces
-import UmbraSecurity
-
+import XPCProtocolsCoreimport UmbraSecurity
+import UmbraCoreTypes
 /// Protocol for URL-based operations
 public protocol URLProvider: Sendable {
   /// Create a bookmark for a path
   /// - Parameter path: Path to create bookmark for
   /// - Returns: Bookmark data
   /// - Throws: SecurityError if bookmark creation fails
-  func createBookmark(forPath path: String) async throws -> Data
-
+  func createBookmark(forPath path: String) async -> Result<Data
+, XPCSecurityError>
   /// Resolve a bookmark to a path
   /// - Parameter bookmarkData: Bookmark data to resolve
   /// - Returns: Tuple containing resolved path and whether bookmark is stale
   /// - Throws: SecurityError if bookmark resolution fails
-  func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool)
-
+  func resolveBookmark(_ bookmarkData: [UInt8]) async -> Result<(path: String, isStale: Bool)
+, XPCSecurityError>
   /// Start accessing a path
   /// - Parameter path: Path to access
   /// - Returns: True if access was granted
   /// - Throws: SecurityError if access fails
-  func startAccessing(path: String) async throws -> Bool
-
+  func startAccessing(path: String) async -> Result<Bool
+, XPCSecurityError>
   /// Stop accessing a path
   /// - Parameter path: Path to stop accessing
   func stopAccessing(path: String) async
@@ -41,9 +41,9 @@ public protocol URLProvider: Sendable {
 
 /// Default implementation of URLProvider using Foundation
 extension URLProvider {
-  public func createBookmark(forPath path: String) async throws -> Data {
+  public func createBookmark(forPath path: String) async -> Result<Data , XPCSecurityError>{
     guard let url=URL(string: path) else {
-      throw SecurityError.operationFailed("Invalid path: \(path)")
+      return .failure(.operationFailed)")
     }
 
     return try await url.us_createSecurityScopedBookmark()
@@ -70,15 +70,15 @@ extension URLProvider {
     false
   }
 
-  public func startAccessing(path: String) async throws -> Bool {
+  public func startAccessing(path: String) async -> Result<Bool , XPCSecurityError>{
     guard let url=URL(string: path) else {
-      throw SecurityError.operationFailed("Invalid path: \(path)")
+      return .failure(.operationFailed)")
     }
 
     if url.us_startAccessingSecurityScopedResource() {
       return true
     } else {
-      throw SecurityError.accessError("Failed to access: \(path)")
+      return .failure(.accessError)")
     }
   }
 

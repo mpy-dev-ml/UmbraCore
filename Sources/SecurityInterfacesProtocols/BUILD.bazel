@@ -7,6 +7,8 @@ umbra_swift_library(
     srcs = glob(["**/*.swift"]),
     deps = [
         "//Sources/ErrorHandling",
+        "//Sources/CoreTypes",  # For BinaryData
+        "//Sources/XPCProtocolsCore",  # For XPCSecurityError
     ],
     additional_copts = [
         "-Xfrontend", "-enable-library-evolution",
@@ -26,6 +28,8 @@ swift_library(
     ],
     deps = [
         "//Sources/ErrorHandling",
+        "//Sources/CoreTypes",  # For BinaryData
+        "//Sources/XPCProtocolsCore",  # For XPCSecurityError
     ],
     visibility = ["//visibility:public"],
 )

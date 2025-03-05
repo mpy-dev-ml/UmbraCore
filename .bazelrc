@@ -1,6 +1,3 @@
-# Enable bzlmod
-common --enable_bzlmod
-
 # Platform configuration
 build --apple_platform_type=macos
 build --macos_minimum_os=14.0
@@ -12,9 +9,9 @@ build --crosstool_top=@local_config_apple_cc//:toolchain
 build --host_crosstool_top=@local_config_apple_cc//:toolchain
 
 # Import Swift-specific configurations
-import %workspace%/.bazelrc.swift
+# import ./.bazelrc.swift
 # Enable Swift ARM64 config by default
-build --config=swift_6_ready
+# build --config=swift_arm64
 
 # Test configuration
 test --test_output=errors

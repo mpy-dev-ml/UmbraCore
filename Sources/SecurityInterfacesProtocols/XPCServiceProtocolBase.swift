@@ -1,15 +1,18 @@
+import CoreTypes
+import XPCProtocolsCore
+
 /// Binary data representation without Foundation dependencies
 @available(*, deprecated, message: "Use UmbraCoreTypes.SecureBytes instead")
-public struct BinaryData: Sendable {
+public struct SecureBytes: Sendable {
   /// Raw byte array
   public let bytes: [UInt8]
 
-  /// Create a new BinaryData instance from a byte array
+  /// Create a new SecureBytes instance from a byte array
   public init(_ bytes: [UInt8]) {
     self.bytes=bytes
   }
 
-  /// Create an empty BinaryData instance
+  /// Create an empty SecureBytes instance
   public init() {
     bytes=[]
   }
@@ -28,11 +31,11 @@ public protocol XPCServiceProtocolBase: Sendable {
   static var protocolIdentifier: String { get }
 
   /// Test connectivity
-  func ping() async throws -> Bool
-
+  func ping() async -> Result<Bool
+, XPCSecurityError>
   /// Synchronize keys across processes
   /// - Parameter syncData: The key data to synchronize
-  func synchroniseKeys(_ syncData: BinaryData) async throws
+  func synchroniseKeys(_ syncData: SecureBytes) async throws
 }
 
 /// Default implementation for XPCServiceProtocolBase

@@ -91,14 +91,15 @@ extension SecurityBridge {
       withReply reply: @escaping @Sendable (Error?) -> Void
     ) {
       Task {
-        do {
-          // Convert from Foundation Data to SecureBytes
-          let bytes=[UInt8](syncData)
-          let secureBytes=SecureBytes(bytes: bytes)
+        // Convert from Foundation Data to SecureBytes
+        let bytes=[UInt8](syncData)
+        let secureBytes=SecureBytes(bytes: bytes)
 
-          try await coreService.synchroniseKeys(secureBytes)
+        let result = await coreService.synchroniseKeys(secureBytes)
+        switch result {
+        case .success:
           reply(nil)
-        } catch {
+        case .failure(let error):
           reply(error)
         }
       }
@@ -186,18 +187,23 @@ extension SecurityBridge {
       }
     }
 
-    public func synchroniseKeys(_ syncData: SecureBytes) async throws {
+    public func synchroniseKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
       // Convert SecureBytes to Data using DataAdapter
       let data=DataAdapter.data(from: syncData)
 
-      return try await withCheckedThrowingContinuation { continuation in
-        foundation.synchroniseKeysFoundation(data) { error in
-          if let error {
-            continuation.resume(throwing: error)
-          } else {
-            continuation.resume(returning: ())
+      do {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+          foundation.synchroniseKeysFoundation(data) { error in
+            if let error {
+              continuation.resume(throwing: error)
+            } else {
+              continuation.resume(returning: ())
+            }
           }
         }
+        return .success(())
+      } catch {
+        return .failure(XPCSecurityError.cryptoError)
       }
     }
 

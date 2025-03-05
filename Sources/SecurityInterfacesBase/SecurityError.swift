@@ -1,4 +1,6 @@
 import SecurityInterfacesProtocols
+import XPCProtocolsCore
+import UmbraCoreTypes
 
 /// Base errors that can occur during security operations
 /// This is a Foundation-free version of SecurityError
@@ -16,7 +18,7 @@ public enum SecurityError: Error, Sendable {
   /// General operation failed
   case operationFailed(String)
   /// Wrapped protocol error
-  case wrapped(SecurityProtocolError)
+  case wrapped(XPCProtocolsCore.SecurityProtocolError)
 
   /// Get a description of the error
   public var localizedDescription: String {
@@ -42,12 +44,12 @@ public enum SecurityError: Error, Sendable {
   }
 
   /// Initialize from a protocol error
-  public init(from protocolError: SecurityProtocolError) {
+  public init(from protocolError: XPCProtocolsCore.SecurityProtocolError) {
     self = .wrapped(protocolError)
   }
 
   /// Convert to a protocol error if possible
-  public func toProtocolError() -> SecurityProtocolError? {
+  public func toProtocolError() -> XPCProtocolsCore.SecurityProtocolError? {
     switch self {
       case let .wrapped(protocolError):
         protocolError

@@ -36,7 +36,7 @@ umbracore_swift_test_library(
 # Tests for SecurityInterfaces
 umbracore_swift_test_library(
     name = "SecurityInterfacesTests",
-    srcs = glob(["Tests/**/*.swift"]),
+    srcs = glob(["Tests/**/*.swift"], allow_empty = True),
     deps = [
         ":SecurityInterfacesForTesting",
         "//Sources/CoreTypes",

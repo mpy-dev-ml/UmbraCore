@@ -3,11 +3,12 @@
 
 # Swift 6 preparation options
 SWIFT_6_PREP_OPTIONS = [
-    "-enable-upcoming-feature", "Isolated",
-    "-enable-upcoming-feature", "ExistentialAny",
-    "-enable-upcoming-feature", "StrictConcurrency",
-    "-enable-upcoming-feature", "InternalImportsByDefault",
-    "-warn-swift-5-to-swift-6-path",
+    # Commenting out Swift 6 preparation flags that are causing issues
+    # "-enable-upcoming-feature", "Isolated",
+    # "-enable-upcoming-feature", "ExistentialAny",
+    # "-enable-upcoming-feature", "StrictConcurrency",
+    # "-enable-upcoming-feature", "InternalImportsByDefault",
+    # "-warn-swift-5-to-swift-6-path",
 ]
 
 # Concurrency safety options

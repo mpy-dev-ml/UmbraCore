@@ -1,4 +1,5 @@
 import Foundation
+import XPCProtocolsCore
 
 /// Protocol defining the base XPC service interface with completion handlers - Foundation version
 @objc
@@ -16,15 +17,19 @@ extension XPCServiceProtocolDefinitionBaseFoundation {
   }
 
   /// Async ping implementation
-  public func ping() async throws -> Bool {
-    try await withCheckedThrowingContinuation { continuation in
-      ping { success, error in
-        if let error {
-          continuation.resume(throwing: error)
-        } else {
-          continuation.resume(returning: success)
+  public func ping() async -> Result<Bool , XPCSecurityError>{
+    do {
+      return try await withCheckedThrowingContinuation { continuation in
+        ping { success, error in
+          if let error {
+            continuation.resume(throwing: error)
+          } else {
+            continuation.resume(returning: .success(success))
+          }
         }
       }
+    } catch {
+      return .failure(XPCSecurityError.cryptoError)
     }
   }
 }
