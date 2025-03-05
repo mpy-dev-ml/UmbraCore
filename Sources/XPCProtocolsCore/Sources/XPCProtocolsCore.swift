@@ -23,7 +23,7 @@ public enum XPCProtocolsCore {
 
 // Export the main protocols
 @_exported import struct UmbraCoreTypes.SecureBytes
-@_exported import UmbraCoreTypes.CoreErrors
+@_exported import UmbraCoreTypes_CoreErrors
 
-/// Type alias to standardize on CoreErrors.SecurityError for all XPC security error handling
-public typealias XPCSecurityError = UmbraCoreTypes.CoreErrors.SecurityError
+/// Type alias to standardize on CoreErrors.CESecurityError for all XPC security error handling
+public typealias XPCSecurityError = UmbraCoreTypes_CoreErrors.CESecurityError

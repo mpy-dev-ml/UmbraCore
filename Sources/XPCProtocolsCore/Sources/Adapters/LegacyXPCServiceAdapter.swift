@@ -89,9 +89,9 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolComplete {
     
     public func pingComplete() async -> Result<Bool, XPCSecurityError> {
         // If the legacy service supports ping, use it
-        if let pingable = service as? { () async -> Result<Bool, Error> } {
+        if let pingable = service as? PingableService {
             do {
-                let result = await pingable()
+                let result = await pingable.ping()
                 switch result {
                 case .success(let value):
                     return .success(value)
@@ -132,4 +132,8 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolComplete {
         // Try to adapt to legacy hashing methods if available
         return .failure(.notImplemented)
     }
+}
+
+protocol PingableService {
+    func ping() async -> Result<Bool, Error>
 }

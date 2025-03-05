@@ -4,9 +4,9 @@
 // Created as part of the UmbraCore XPC Protocols Refactoring
 //
 
-import XPCProtocolsCore
 import SecurityInterfacesBase
 import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Migration support for XPC protocols
 /// 
@@ -49,11 +49,11 @@ extension SecurityInterfaces.XPCServiceProtocol {
 /// Adapter to implement XPCServiceProtocolBasic from SecurityInterfacesBase.XPCServiceProtocolBase
 private struct XPCBasicAdapter: XPCServiceProtocolBasic {
     private let base: any SecurityInterfacesBase.XPCServiceProtocolBase
-    
+
     init(wrapping base: any SecurityInterfacesBase.XPCServiceProtocolBase) {
         self.base = base
     }
-    
+
     func pingBasic() async -> Result<Bool, XPCSecurityError> {
         do {
             let result = try await base.ping()
@@ -62,7 +62,7 @@ private struct XPCBasicAdapter: XPCServiceProtocolBasic {
             return .failure(.accessError)
         }
     }
-    
+
     func getServiceVersion() async -> Result<String, XPCSecurityError> {
         do {
             let version = try await base.getVersion()
@@ -71,7 +71,7 @@ private struct XPCBasicAdapter: XPCServiceProtocolBasic {
             return .failure(.accessError)
         }
     }
-    
+
     func getDeviceIdentifier() async -> Result<String, XPCSecurityError> {
         do {
             let hostId = try await base.getHostIdentifier()
@@ -85,11 +85,11 @@ private struct XPCBasicAdapter: XPCServiceProtocolBasic {
 /// Adapter to implement XPCServiceProtocolStandard from SecurityInterfaces.XPCServiceProtocol
 private struct XPCStandardAdapter: XPCServiceProtocolStandard {
     private let service: any SecurityInterfaces.XPCServiceProtocol
-    
+
     init(wrapping service: any SecurityInterfaces.XPCServiceProtocol) {
         self.service = service
     }
-    
+
     // Implement XPCServiceProtocolBasic methods
     func pingBasic() async -> Result<Bool, XPCSecurityError> {
         do {
@@ -99,7 +99,7 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
             return .failure(.accessError)
         }
     }
-    
+
     func getServiceVersion() async -> Result<String, XPCSecurityError> {
         do {
             let version = try await service.getVersion()
@@ -108,7 +108,7 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
             return .failure(.accessError)
         }
     }
-    
+
     func getDeviceIdentifier() async -> Result<String, XPCSecurityError> {
         do {
             let hostId = try await service.getHostIdentifier()
@@ -117,7 +117,7 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
             return .failure(.accessError)
         }
     }
-    
+
     // Implement XPCServiceProtocolStandard methods
     func resetSecurity() async -> Result<Void, XPCSecurityError> {
         do {
@@ -127,11 +127,11 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
             return .failure(.accessError)
         }
     }
-    
+
     func pingStandard() async -> Result<Bool, XPCSecurityError> {
         return await pingBasic()
     }
-    
+
     func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
         do {
             try await service.synchroniseKeys(Array(syncData.bytes))
@@ -152,7 +152,7 @@ public enum XPCProtocolMigrationFactory {
     public static func createStandardAdapter(from service: any SecurityInterfaces.XPCServiceProtocol) -> any XPCServiceProtocolStandard {
         return XPCStandardAdapter(wrapping: service)
     }
-    
+
     /// Create an adapter that implements XPCServiceProtocolBasic from a legacy XPCServiceProtocolBase
     /// - Parameter service: Legacy service to adapt
     /// - Returns: Adapter implementing XPCServiceProtocolBasic

@@ -18,7 +18,8 @@ public enum SecurityError: Error, Sendable, Equatable {
     case hashingFailed
     case serviceFailed
     case general(String)
-    
+    case cryptoError
+
     /// Equatable implementation for SecurityError
     public static func == (lhs: SecurityError, rhs: SecurityError) -> Bool {
         switch (lhs, rhs) {
@@ -28,7 +29,8 @@ public enum SecurityError: Error, Sendable, Equatable {
              (.decryptionFailed, .decryptionFailed),
              (.keyGenerationFailed, .keyGenerationFailed),
              (.hashingFailed, .hashingFailed),
-             (.serviceFailed, .serviceFailed):
+             (.serviceFailed, .serviceFailed),
+             (.cryptoError, .cryptoError):
             return true
         case (.general(let lhsMessage), .general(let rhsMessage)):
             return lhsMessage == rhsMessage
@@ -89,29 +91,29 @@ public extension XPCServiceProtocolComplete {
 
     /// Default implementation that returns a not implemented error
     func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
-        return .failure(.notImplemented)
+        return .failure(.cryptoError)
     }
 
     /// Default implementation that returns a not implemented error
     func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-        return .failure(.notImplemented)
+        return .failure(.cryptoError)
     }
 
     /// Default implementation that returns a not implemented error
     func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-        return .failure(.notImplemented)
+        return .failure(.cryptoError)
     }
 
     /// Default implementation that returns a not implemented error
     func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
-        return .failure(.notImplemented)
+        return .failure(.cryptoError)
     }
 
     /// Default implementation that returns a not implemented error
     func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-        return .failure(.notImplemented)
+        return .failure(.cryptoError)
     }
-    
+
     /// Bridge method to implement XPCServiceProtocolBasic.ping() using pingComplete()
     func ping() async throws -> Bool {
         let result = await pingComplete()
@@ -122,7 +124,7 @@ public extension XPCServiceProtocolComplete {
             throw error
         }
     }
-    
+
     /// Bridge method to implement XPCServiceProtocolBasic.synchroniseKeys() using synchronizeKeys()
     func synchroniseKeys(_ syncData: SecureBytes) async throws {
         let result = await synchronizeKeys(syncData)
