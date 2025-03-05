@@ -1,5 +1,4 @@
 import UmbraCoreTypes
-import XPCProtocolsCore
 
 /// @available(*, deprecated, message: "Use XPCSecurityError instead")
 /// SecurityError is now deprecated. Use XPCSecurityError from the XPCProtocolsCore module instead.
@@ -123,7 +122,7 @@ extension XPCServiceProtocolComplete {
   }
 
   /// Default implementation that returns a not implemented error
-  public func generateKey(type: KeyType, bits: Int) async -> Result<SecureBytes, XPCSecurityError> {
+  public func generateKey(type _: KeyType, bits _: Int) async -> Result<SecureBytes, XPCSecurityError> {
     .failure(.cryptoError)
   }
 
@@ -133,34 +132,22 @@ extension XPCServiceProtocolComplete {
   }
 
   /// Default implementation that returns a not implemented error
-  public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+  public func exportKey(keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
     .failure(.cryptoError)
   }
 
   /// Default implementation that returns a not implemented error
-  public func importKey(_ keyData: SecureBytes, identifier: String?) async -> Result<String, XPCSecurityError> {
+  public func importKey(_: SecureBytes, identifier _: String?) async -> Result<String, XPCSecurityError> {
     .failure(.cryptoError)
   }
 
   /// Bridge method to implement XPCServiceProtocolBasic.ping() using pingComplete()
   public func ping() async -> Result<Bool, XPCSecurityError> {
-    let result = await pingComplete()
-    switch result {
-      case let .success(value):
-        return value
-      case let .failure(error):
-        throw error
-    }
+    await pingComplete()
   }
 
   /// Bridge method to implement XPCServiceProtocolBasic.synchroniseKeys() using synchronizeKeys()
-  public func synchroniseKeys(_ syncData: SecureBytes) async throws {
-    let result = await synchronizeKeys(syncData)
-    switch result {
-      case .success:
-        return
-      case let .failure(error):
-        throw error
-    }
+  public func synchroniseKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
+    await synchronizeKeys(syncData)
   }
 }

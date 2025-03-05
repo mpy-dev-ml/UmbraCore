@@ -1,6 +1,8 @@
 import CoreTypes
 import XPCProtocolsCore
 import UmbraCoreTypes
+import CoreErrors
+
 /// Base protocol for XPC service communication - minimal version without Foundation dependencies
 /// @available(*, deprecated, message: "Use XPCServiceProtocolBasic from XPCProtocolsCore instead")
 @available(*, deprecated, message: "Use XPCServiceProtocolBasic from XPCProtocolsCore instead")
@@ -25,15 +27,15 @@ public enum XPCServiceProtocolAdapter {
   /// Create a modern XPCServiceProtocolBasic from a legacy XPCServiceProtocolBase
   /// - Parameter legacyService: The legacy service to adapt
   /// - Returns: An adapter conforming to XPCServiceProtocolBasic
-  public static func createModernAdapter(from legacyService: XPCServiceProtocolStandardBase) -> XPCServiceProtocolBasic {
+  public static func createModernAdapter(from legacyService: XPCServiceProtocolBase) -> XPCServiceProtocolBasic {
     LegacyToModernXPCAdapter(wrapping: legacyService)
   }
   
   /// Private adapter implementation
-  private class LegacyToModernXPCAdapter: XPCServiceProtocolStandardBasic {
-    private let legacyService: XPCServiceProtocolStandardBase
+  private class LegacyToModernXPCAdapter: XPCServiceProtocolBasic {
+    private let legacyService: XPCServiceProtocolBase
     
-    init(wrapping service: XPCServiceProtocolStandardBase) {
+    init(wrapping service: XPCServiceProtocolBase) {
       self.legacyService = service
     }
     
@@ -45,7 +47,7 @@ public enum XPCServiceProtocolAdapter {
       await withCheckedContinuation { continuation in
         legacyService.ping { success, error in
           if let error = error {
-            continuation.resume(returning: .failure(.general))
+            continuation.resume(returning: .failure(.cryptoError))
           } else {
             continuation.resume(returning: .success(success))
           }
@@ -53,23 +55,18 @@ public enum XPCServiceProtocolAdapter {
       }
     }
     
-    public func synchronizeKeys(_ data: SecureBytes) async -> Result<Void, XPCSecurityError> {
+    public func synchroniseKeys(_ data: SecureBytes) async -> Result<Void, XPCSecurityError> {
       // Use the resetSecurityData as an approximation since the legacy protocol
       // doesn't have a direct equivalent
       await withCheckedContinuation { continuation in
         legacyService.resetSecurityData { error in
           if let error = error {
-            continuation.resume(returning: .failure(.general))
+            continuation.resume(returning: .failure(.cryptoError))
           } else {
             continuation.resume(returning: .success(()))
           }
         }
       }
-    }
-    
-    public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
-      // Legacy protocol doesn't support this, so return a not implemented error
-      .failure(.notImplemented)
     }
   }
 }

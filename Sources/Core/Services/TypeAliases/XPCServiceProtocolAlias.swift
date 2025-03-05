@@ -14,9 +14,5 @@ public typealias XPCServiceProtocolComplete = XPCProtocolsCore.XPCServiceProtoco
 public typealias XPCSecurityError = UmbraCoreTypes.CoreErrors.SecurityError
 
 /// Legacy XPC service protocol (deprecated)
-@available(
-  *,
-  deprecated, 
-  message: "Use XPCServiceProtocol instead which points to XPCProtocolsCore.XPCServiceProtocolStandard"
-)
+@available(*, deprecated, message: "Use XPCServiceProtocol instead which points to XPCProtocolsCore.XPCServiceProtocolStandard")
 public typealias LegacyXPCServiceProtocol = XPCServiceProtocol

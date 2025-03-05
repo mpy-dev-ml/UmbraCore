@@ -1,5 +1,4 @@
 import UmbraCoreTypes
-import XPCProtocolsCore
 
 /// Custom error for security interfaces that doesn't require Foundation
 public enum SecurityProtocolError: Error, Sendable, Equatable {
@@ -38,7 +37,7 @@ extension XPCServiceProtocolBasic {
 
   /// Default implementation of ping - can be overridden by conforming types
   public func ping() async -> Result<Bool, XPCSecurityError>{
-    true
+    .success(true)
   }
 
   /// Implementation for synchronising keys with byte array (for legacy compatibility)

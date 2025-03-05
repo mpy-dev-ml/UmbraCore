@@ -1,5 +1,4 @@
 import UmbraCoreTypes
-import XPCProtocolsCore
 
 /// Extended XPC service protocol that builds upon the base protocol
 /// by adding additional security operations

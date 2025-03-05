@@ -22,12 +22,11 @@ public enum XPCProtocolsCore {
 }
 
 // Export all necessary types and modules
-@_exported import CoreErrors
 @_exported import UmbraCoreTypes
+@_exported import CoreErrors
 
 // Export core types that are needed across the XPC boundary
 @_exported import struct UmbraCoreTypes.SecureBytes
-@_exported import enum UmbraCoreTypes.CoreErrors
 
 // Define standard error type for XPC protocols
-public typealias XPCSecurityError = CoreErrors.CESecurityError
+public typealias XPCSecurityError = CoreErrors.SecurityError

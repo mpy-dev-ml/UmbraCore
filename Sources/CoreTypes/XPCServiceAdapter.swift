@@ -3,6 +3,7 @@
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
+import CoreErrors
 
 /// Protocol for Foundation-based XPC service interfaces
 /// Use this to define what we expect from Foundation-based XPC implementations
@@ -25,8 +26,8 @@ public final class XPCServiceAdapter: XPCServiceProtocolStandard {
     return await service.ping()
   }
 
-  /// Implement synchronizeKeys with SecureBytes
-  public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
+  /// Implement synchroniseKeys with SecureBytes
+  public func synchroniseKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
     // Convert SecureBytes to [UInt8] array for compatibility
     var byteArray = [UInt8]()
     syncData.withUnsafeBytes { buffer in
@@ -38,21 +39,34 @@ public final class XPCServiceAdapter: XPCServiceProtocolStandard {
   }
 
   // Implement required methods with not implemented error
-
-  public func encrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented)
+  
+  /// Generate random data of the specified length
+  public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+    .failure(.cryptoError)
   }
-
-  public func decrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented)
+  
+  public func encryptData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    .failure(.cryptoError)
   }
-
-  public func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented)
+  
+  public func decryptData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    .failure(.cryptoError)
   }
-
-  public func hash(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented)
+  
+  public func generateKeyPair(identifier: String) async -> Result<Void, XPCSecurityError> {
+    .failure(.cryptoError)
+  }
+  
+  public func hashData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    .failure(.cryptoError)
+  }
+  
+  public func signData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+    .failure(.cryptoError)
+  }
+  
+  public func verifySignature(_ signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async throws -> Bool {
+    throw XPCSecurityError.cryptoError
   }
 
   /// Protocol identifier

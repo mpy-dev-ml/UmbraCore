@@ -1,6 +1,8 @@
 import CoreTypes
 import XPCProtocolsCore
 import UmbraCoreTypes
+import CoreErrors
+
 /// Protocol defining the base XPC service interface with completion handlers - minimal version
 /// without Foundation dependencies
 /// This protocol is deprecated. Use XPCServiceProtocolBasic from XPCProtocolsCore instead.
@@ -23,10 +25,10 @@ extension XPCServiceProtocolDefinitionBase {
 }
 
 /// Private adapter class that converts XPCServiceProtocolDefinitionBase to XPCServiceProtocolBasic
-private class DefinitionBaseToModernAdapter: XPCServiceProtocolStandardBasic {
-  private let legacyService: XPCServiceProtocolStandardDefinitionBase
+private class DefinitionBaseToModernAdapter: XPCServiceProtocolBasic {
+  private let legacyService: XPCServiceProtocolDefinitionBase
   
-  init(wrapping service: XPCServiceProtocolStandardDefinitionBase) {
+  init(wrapping service: XPCServiceProtocolDefinitionBase) {
     self.legacyService = service
   }
   
@@ -38,7 +40,7 @@ private class DefinitionBaseToModernAdapter: XPCServiceProtocolStandardBasic {
     await withCheckedContinuation { continuation in
       legacyService.ping { success, error in
         if let error = error {
-          continuation.resume(returning: .failure(.general))
+          continuation.resume(returning: .failure(.cryptoError))
         } else {
           continuation.resume(returning: .success(success))
         }
@@ -46,22 +48,17 @@ private class DefinitionBaseToModernAdapter: XPCServiceProtocolStandardBasic {
     }
   }
   
-  public func synchronizeKeys(_ data: SecureBytes) async -> Result<Void, XPCSecurityError> {
+  public func synchroniseKeys(_ data: SecureBytes) async -> Result<Void, XPCSecurityError> {
     // Use the resetSecurityData as an approximation since the legacy protocol
     // doesn't have a direct equivalent
     await withCheckedContinuation { continuation in
       legacyService.resetSecurityData { error in
         if let error = error {
-          continuation.resume(returning: .failure(.general))
+          continuation.resume(returning: .failure(.cryptoError))
         } else {
           continuation.resume(returning: .success(()))
         }
       }
     }
-  }
-  
-  public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
-    // Legacy protocol doesn't support this, so return a not implemented error
-    .failure(.notImplemented)
   }
 }
