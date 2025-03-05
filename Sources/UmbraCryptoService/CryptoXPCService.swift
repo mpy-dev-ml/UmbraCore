@@ -6,6 +6,8 @@ import CryptoTypesServices
 import Foundation
 import SecurityUtils
 import UmbraXPC
+import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Extension to generate random data using SecRandomCopyBytes
 extension Data {
@@ -50,37 +52,36 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   /// - Parameters:
   ///   - data: Data to encrypt
   ///   - key: Encryption key
-  /// - Returns: Encrypted data
-  /// - Throws: CoreErrors.CryptoError if encryption fails
-  public func encrypt(_ data: Data, key: Data) async -> Result<Data , XPCSecurityError>{
-    try Task.checkCancellation()
+  /// - Returns: Encrypted data as Result with Data or XPCSecurityError
+  public func encrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError> {
+    do {
+      try Task.checkCancellation()
+      
+      return try await withCheckedThrowingContinuation { continuation in
+        cryptoQueue.async {
+          do {
+            // Generate random IV
+            let iv=Data.random(count: 12)
 
-    return try await withCheckedThrowingContinuation { continuation in
-      cryptoQueue.async {
-        do {
-          // Generate random IV
-          let iv=Data.random(count: 12)
+            // Create AES-GCM
+            let aes=try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
 
-          // Create AES-GCM
-          let aes=try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
+            // Encrypt
+            let encrypted=try aes.encrypt(data.bytes)
 
-          // Encrypt
-          let encrypted=try aes.encrypt(data.bytes)
+            // Combine IV and ciphertext
+            var result=Data()
+            result.append(iv)
+            result.append(Data(encrypted))
 
-          // Combine IV and ciphertext
-          var result=Data()
-          result.append(iv)
-          result.append(Data(encrypted))
-
-          continuation.resume(returning: result)
-        } catch {
-          continuation
-            .resume(
-              throwing: CoreErrors.CryptoError
-                .encryptionFailed(reason: error.localizedDescription)
-            )
+            continuation.resume(returning: .success(result))
+          } catch {
+            continuation.resume(returning: .failure(.encryptionFailed))
+          }
         }
       }
+    } catch {
+      return .failure(.serviceFailed)
     }
   }
 
@@ -88,150 +89,125 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
   /// - Parameters:
   ///   - data: Data to decrypt
   ///   - key: Decryption key
-  /// - Returns: Decrypted data
-  /// - Throws: CoreErrors.CryptoError if decryption fails
-  public func decrypt(_ data: Data, key: Data) async -> Result<Data , XPCSecurityError>{
-    try Task.checkCancellation()
+  /// - Returns: Decrypted data as Result with Data or XPCSecurityError
+  public func decrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError> {
+    do {
+      try Task.checkCancellation()
 
-    return try await withCheckedThrowingContinuation { continuation in
-      cryptoQueue.async {
-        do {
-          // Extract IV and ciphertext
-          let iv=data.prefix(12)
-          let ciphertext=data.dropFirst(12)
-
-          // Create AES-GCM
-          let aes=try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
-
-          // Decrypt
-          let decrypted=try aes.decrypt(ciphertext.bytes)
-
-          continuation.resume(returning: Data(decrypted))
-        } catch {
-          continuation
-            .resume(
-              throwing: CoreErrors.CryptoError
-                .decryptionFailed(reason: error.localizedDescription)
-            )
+      return try await withCheckedThrowingContinuation { continuation in
+        cryptoQueue.async {
+          do {
+            // Extract IV and ciphertext
+            let iv=data.prefix(12)
+            let ciphertext=data.dropFirst(12)
+            
+            // Create AES-GCM
+            let aes=try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
+            
+            // Decrypt
+            let decrypted=try aes.decrypt(ciphertext.bytes)
+            
+            continuation.resume(returning: .success(Data(decrypted)))
+          } catch {
+            continuation.resume(returning: .failure(.decryptionFailed))
+          }
         }
       }
+    } catch {
+      return .failure(.serviceFailed)
     }
   }
 
-  /// Generates a random key of the specified bit length
-  /// - Parameter bits: Bit length (128 or 256 bits)
-  /// - Returns: Generated key data
-  /// - Throws: CoreErrors.CryptoError if bit length is invalid
-  public func generateKey(bits: Int) async -> Result<Data , XPCSecurityError>{
-    try Task.checkCancellation()
-
-    guard bits == 128 || bits == 256 else {
-      throw CoreErrors.CryptoError.invalidKeySize(reason: "Key size must be 128 or 256 bits")
+  /// Generate a random encryption key
+  /// - Returns: Random key data of 32 bytes (256 bits)
+  /// - Throws: CoreErrors.CryptoError if key generation fails
+  public func generateKey() async -> Result<Data, XPCSecurityError> {
+    do {
+      try Task.checkCancellation()
+      return .success(Data.random(count: 32))
+    } catch {
+      return .failure(.keyGenerationFailed)
     }
-
-    // Convert bits to bytes
-    let bytes=bits / 8
-    return Data.random(count: bytes)
   }
 
-  /// Generates a random salt of the specified length
-  /// - Parameter length: Length in bytes
-  /// - Returns: Generated salt data
-  /// - Throws: CoreErrors.CryptoError if length is invalid
-  public func generateSalt(length: Int) async -> Result<Data , XPCSecurityError>{
-    try Task.checkCancellation()
-
-    guard length > 0 && length <= 64 else {
-      throw CoreErrors.CryptoError.invalidSaltLength(expected: 64, got: length)
+  /// Hash data using SHA-256
+  /// - Parameter data: Data to hash
+  /// - Returns: SHA-256 hash of the data
+  /// - Throws: CoreErrors.CryptoError if hashing fails
+  public func hash(_ data: Data) async -> Result<Data, XPCSecurityError> {
+    do {
+      try Task.checkCancellation()
+      
+      return try await withCheckedThrowingContinuation { continuation in
+        cryptoQueue.async {
+          do {
+            let digest = SHA2(variant: .sha256)
+            let hash = try digest.calculate(for: data.bytes)
+            continuation.resume(returning: .success(Data(hash)))
+          } catch {
+            continuation.resume(returning: .failure(.hashingFailed))
+          }
+        }
+      }
+    } catch {
+      return .failure(.serviceFailed)
     }
-
-    return Data.random(count: length)
   }
 
-  /// Generate a secure random key of specified length
-  /// - Parameter length: Length of the key in bytes
-  /// - Returns: Generated key as Data
-  /// - Throws: CoreErrors.CryptoError if generation fails
-  @MainActor
-  public func generateSecureRandomKey(length: Int) async -> Result<Data , XPCSecurityError>{
-    try Task.checkCancellation()
-    return Data.random(count: length)
-  }
-
-  /// Generate an initialization vector for AES-GCM
-  /// - Returns: Generated IV as Data
-  /// - Throws: CoreErrors.CryptoError if generation fails
-  @MainActor
-  public func generateInitializationVector() async -> Result<Data , XPCSecurityError>{
-    try Task.checkCancellation()
-    return Data.random(count: 12) // 12 bytes is standard for GCM mode
-  }
-
-  /// Store a credential securely
+  /// Store credential in keychain
   /// - Parameters:
-  ///   - credential: Credential to store
-  ///   - identifier: Unique identifier for the credential
+  ///   - credential: Credential data to store
+  ///   - identifier: Identifier for the credential
   /// - Throws: CoreErrors.CryptoError if storage fails
-  public func storeCredential(_ credential: Data, forIdentifier identifier: String) async throws {
-    try Task.checkCancellation()
-
-    guard !identifier.isEmpty else {
-      throw CoreErrors.CryptoError
-        .invalidCredentialIdentifier(reason: "Credential identifier cannot be empty")
+  public func storeCredential(_ credential: Data, forIdentifier identifier: String) async -> Result<Void, XPCSecurityError> {
+    do {
+      try Task.checkCancellation()
+      
+      guard !identifier.isEmpty else {
+        return .failure(.invalidData)
+      }
+      
+      try await dependencies.keychain.save(data: credential, forKey: identifier)
+      return .success(())
+    } catch {
+      return .failure(.serviceFailed)
     }
-
-    // Generate a random key for the credential
-    let key=try await generateKey(bits: 256)
-
-    // Encrypt the credential
-    _=try await encrypt(credential, key: key)
-
-    // Store the key in the keychain
-    try dependencies.keychain.store(
-      password: key.base64EncodedString(),
-      for: identifier
-    )
-
-    // TODO: Store encrypted credential in secure storage
   }
 
-  /// Retrieve a credential
-  /// - Parameter forIdentifier: Identifier of the credential to retrieve
-  /// - Returns: Retrieved credential
+  /// Retrieve credential from keychain
+  /// - Parameter identifier: Identifier for the credential
+  /// - Returns: Credential data
   /// - Throws: CoreErrors.CryptoError if retrieval fails
-  public func retrieveCredential(forIdentifier identifier: String) async -> Result<Data , XPCSecurityError>{
-    try Task.checkCancellation()
-
-    guard !identifier.isEmpty else {
-      throw CoreErrors.CryptoError
-        .invalidCredentialIdentifier(reason: "Credential identifier cannot be empty")
+  public func retrieveCredential(forIdentifier identifier: String) async -> Result<Data, XPCSecurityError> {
+    do {
+      try Task.checkCancellation()
+      
+      guard !identifier.isEmpty else {
+        return .failure(.invalidData)
+      }
+      
+      let credential = try await dependencies.keychain.getData(forKey: identifier)
+      return .success(credential)
+    } catch {
+      return .failure(.serviceFailed)
     }
-
-    // Retrieve the key from the keychain
-    let keyString=try dependencies.keychain.retrievePassword(for: identifier)
-    guard Data(base64Encoded: keyString) != nil else {
-      throw CoreErrors.CryptoError.invalidKeyFormat(reason: "Invalid key format")
-    }
-
-    // TODO: Retrieve encrypted credential from secure storage
-    // For now, return empty data
-    return Data()
   }
 
-  /// Delete a credential
-  /// - Parameter forIdentifier: Identifier of the credential to delete
+  /// Delete credential from keychain
+  /// - Parameter identifier: Identifier for the credential
   /// - Throws: CoreErrors.CryptoError if deletion fails
-  public func deleteCredential(forIdentifier identifier: String) async throws {
-    try Task.checkCancellation()
-
-    guard !identifier.isEmpty else {
-      throw CoreErrors.CryptoError
-        .invalidCredentialIdentifier(reason: "Credential identifier cannot be empty")
+  public func deleteCredential(forIdentifier identifier: String) async -> Result<Void, XPCSecurityError> {
+    do {
+      try Task.checkCancellation()
+      
+      guard !identifier.isEmpty else {
+        return .failure(.invalidData)
+      }
+      
+      try await dependencies.keychain.delete(forKey: identifier)
+      return .success(())
+    } catch {
+      return .failure(.serviceFailed)
     }
-
-    // Delete the key from the keychain
-    try dependencies.keychain.deletePassword(for: identifier)
-
-    // TODO: Delete encrypted credential from secure storage
   }
 }

@@ -1,4 +1,5 @@
 import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Extended XPC service protocol that builds upon the base protocol
 /// by adding additional security operations
@@ -6,34 +7,29 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
   /// Generate random data of the specified length
   /// - Parameter length: Length of random data in bytes
   /// - Returns: Random data
-  func generateRandomData(length: Int) async throws -> SecureBytes
-
+  func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError>
   /// Encrypt data using the service's encryption mechanism
   /// - Parameters:
   ///   - data: Data to encrypt
   ///   - keyIdentifier: Optional key identifier to use
   /// - Returns: Encrypted data
-  func encryptData(_ data: SecureBytes, keyIdentifier: String?) async throws -> SecureBytes
-
+  func encryptData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError>
   /// Decrypt data using the service's decryption mechanism
   /// - Parameters:
   ///   - data: Data to decrypt
   ///   - keyIdentifier: Optional key identifier to use
   /// - Returns: Decrypted data
-  func decryptData(_ data: SecureBytes, keyIdentifier: String?) async throws -> SecureBytes
-
+  func decryptData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError>
   /// Hash data using the service's hashing mechanism
   /// - Parameter data: Data to hash
   /// - Returns: Hash result
-  func hashData(_ data: SecureBytes) async throws -> SecureBytes
-
+  func hashData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError>
   /// Sign data using the service's signing mechanism
   /// - Parameters:
   ///   - data: Data to sign
   ///   - keyIdentifier: Key identifier to use for signing
   /// - Returns: Signature data
-  func signData(_ data: SecureBytes, keyIdentifier: String) async throws -> SecureBytes
-
+  func signData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError>
   /// Verify signature for data
   /// - Parameters:
   ///   - signature: Signature to verify
@@ -63,20 +59,18 @@ public protocol SecureStorageServiceProtocol: Sendable {
   /// Retrieve securely stored data
   /// - Parameter identifier: Unique identifier for the data
   /// - Returns: The securely stored data
-  func retrieveSecurely(identifier: String) async throws -> SecureBytes
-
+  func retrieveSecurely(identifier: String) async -> Result<SecureBytes, XPCSecurityError>
   /// Delete securely stored data
   /// - Parameter identifier: Unique identifier for the data
   func deleteSecurely(identifier: String) async throws
 
   /// List all secure storage identifiers
   /// - Returns: Array of identifiers
-  func listIdentifiers() async throws -> [String]
-
+  func listIdentifiers() async -> Result<[String], XPCSecurityError>
   /// Get metadata for secure storage item
   /// - Parameter identifier: Unique identifier for the data
   /// - Returns: Associated metadata
-  func getMetadata(for identifier: String) async throws -> [String: String]?
+  func getMetadata(for identifier: String) async -> Result<[String: String]?, XPCSecurityError>
 }
 
 /// Protocol for security service that provides key management
@@ -99,12 +93,11 @@ public protocol KeyManagementServiceProtocol: Sendable {
 
   /// List all key identifiers
   /// - Returns: Array of key identifiers
-  func listKeyIdentifiers() async throws -> [String]
-
+  func listKeyIdentifiers() async -> Result<[String], XPCSecurityError>
   /// Get metadata for a key
   /// - Parameter keyIdentifier: Identifier for the key
   /// - Returns: Associated metadata
-  func getKeyMetadata(for keyIdentifier: String) async throws -> [String: String]?
+  func getKeyMetadata(for keyIdentifier: String) async -> Result<[String: String]?, XPCSecurityError>
 }
 
 /// Key types supported by the security service
@@ -115,13 +108,11 @@ public enum KeyType: String, Sendable {
 }
 
 /// Comprehensive security service protocol that combines multiple security capabilities
-public protocol ComprehensiveSecurityServiceProtocol: XPCServiceProtocolStandard,
-SecureStorageServiceProtocol, KeyManagementServiceProtocol {
+public protocol ComprehensiveSecurityServiceProtocol: XPCServiceProtocolStandard, SecureStorageServiceProtocol, KeyManagementServiceProtocol {
   /// Get the service version
-  func getServiceVersion() async throws -> String
-
+  func getServiceVersion() async -> Result<String, XPCSecurityError>
   /// Get the service status
-  func getServiceStatus() async throws -> ServiceStatus
+  func getServiceStatus() async -> Result<ServiceStatus, XPCSecurityError>
 }
 
 /// Status of the security service

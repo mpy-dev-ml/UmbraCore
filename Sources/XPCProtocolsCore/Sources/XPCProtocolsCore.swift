@@ -12,13 +12,22 @@
 /// Provides access to module-level functionality and version information
 public enum XPCProtocolsCore {
   /// Current module version
-  public static let version="1.0.0"
+  public static let version = "1.0.0"
+  
+  /// Migration status
+  public static let migrationVersion = "2.0.0"
+  
+  /// Migration date
+  public static let migrationDate = "2025-03-05"
 }
 
+// Export all necessary types and modules
 @_exported import CoreErrors
+@_exported import UmbraCoreTypes
 
-// Export the main protocols
+// Export core types that are needed across the XPC boundary
 @_exported import struct UmbraCoreTypes.SecureBytes
+@_exported import enum UmbraCoreTypes.CoreErrors
 
-/// Type alias to standardize on CoreErrors.SecurityError for all XPC security error handling
-public typealias XPCSecurityError=CoreErrors.SecurityError
+// Define standard error type for XPC protocols
+public typealias XPCSecurityError = CoreErrors.CESecurityError

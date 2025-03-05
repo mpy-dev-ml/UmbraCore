@@ -5,7 +5,7 @@ import UmbraCoreTypes
 /// This example demonstrates how to implement the XPCServiceProtocolComplete
 /// protocol using the new XPCProtocolsCore module. It shows proper error handling
 /// using Result types and SecureBytes for secure data transfer.
-public class ExampleXPCService: XPCServiceProtocolComplete {
+public class ExampleXPCService: XPCServiceProtocolStandardStandardStandardComplete {
 
   /// Optional protocol identifier override
   public static var protocolIdentifier: String {

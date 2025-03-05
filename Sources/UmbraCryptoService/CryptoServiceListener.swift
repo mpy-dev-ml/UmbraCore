@@ -5,6 +5,7 @@ import SecurityUtils
 import UmbraKeychainService
 import UmbraXPC
 import XPC
+import XPCProtocolsCore
 
 @available(macOS 14.0, *)
 @MainActor
