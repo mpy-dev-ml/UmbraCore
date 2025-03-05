@@ -1,51 +1,86 @@
 # .swiftformat configuration file for Google Swift Style Guide
 
-# Indentation & Whitespace
-indent 2
-tabwidth 2
-linebreaks lf
-wraparguments beforefirst
-wrapcollections beforefirst
-spacearoundoperators true
-spacearoundcomments true
-nospaceoperators = false
+# File options
+--swiftversion 5.9
 
-# Line Length
-maxwidth 100
-wrapconditions beforefirst
-wrapparameters beforefirst
+# Indentation
+--indent 2
+--tabwidth 2
+--xcodeindentation enabled
+--indentcase true
+--indentstrings true
+--linebreaks lf
+
+# Line length
+--maxwidth 100
+
+# Wrapping
+--wraparguments before-first
+--wrapcollections before-first
+--wrapparameters before-first
+--wrapconditions before-first
+--closingparen balanced
 
 # Spacing
-stripunusedargs closure-only
-trimwhitespace always
-commas inline
-semicolons inline
-disable redundantSelf
-disable redundantBackticks
-disable redundantParens
+--trimwhitespace always
+--ranges no-space
+--commas inline
+--semicolons inline
+--operatorfunc spaced
+--nospaceoperators =,..<
+--typeattributes prev-line
+--funcattributes prev-line
+--storedvarattrs prev-line
+--computedvarattrs prev-line
 
 # Braces & Control Flow
-closingbrace same-line
-elseposition same-line
-hoistpatternlet true
-indentconditionalcompilationblocks true
+--allman false
+--elseposition same-line
+--guardelse next-line
+--patternlet hoist
+--self remove
 
-# Function & Variable Naming
-modifierorder acl, typeMethods, staticMethods, instanceMethods
-selfrequired true
-shortoptionals always
-redundantself remove
+# Organization
+--header strip
+--importgrouping alphabetized
+--modifierorder public,open,package,internal,private,fileprivate,override,dynamic,mutating,lazy,final,required,convenience,typemethods,static
+--extensionacl on-declarations
 
-# Structs & Enums
-structthreshold 100
-enumthreshold 100
-extensionacl private
+# Exclusions (paths to ignore)
+--exclude Pods,**/.build,**/bazel-*
 
-# Miscellaneous
-patternlet inline
-ranges nospace
-disable strongOutlets
-trimwhitespace always
-header strip
-importgrouping alphabetized
-swiftversion 5.9
+# Rules (disable/enable)
+--disable strongOutlets
+--disable initCoderUnavailable
+--disable blankLinesAtStartOfScope
+--disable redundantBackticks
+--disable redundantParens
+--disable andOperator
+--enable blankLinesBetweenScopes
+--enable blankLinesAroundMark
+--enable consecutiveSpaces
+--enable duplicateImports
+--enable emptyBraces
+--enable leadingDelimiters
+--enable linebreakAtEndOfFile
+--enable redundantGet
+--enable redundantLet
+--enable redundantNilInit
+--enable redundantObjc
+--enable redundantRawValues
+--enable redundantReturn
+--enable redundantVoidReturnType
+--enable sortImports
+--enable spaceAroundBraces
+--enable spaceAroundBrackets
+--enable spaceAroundComments
+--enable spaceAroundGenerics
+--enable spaceAroundOperators
+--enable spaceAroundParens
+--enable spaceInsideBraces
+--enable spaceInsideBrackets
+--enable spaceInsideComments
+--enable spaceInsideGenerics
+--enable spaceInsideParens
+--enable trailingClosures
+--enable trailingCommas

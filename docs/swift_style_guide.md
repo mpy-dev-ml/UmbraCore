@@ -388,3 +388,52 @@ func testUserAuthentication_WithValidCredentials_ReturnsSuccess() {
 - [Google Swift Style Guide](https://google.github.io/swift/)
 - [Swift API Design Guidelines](https://swift.org/documentation/api-design-guidelines/)
 - [Swift.org Documentation](https://swift.org/documentation/)
+
+## Automated Formatting with SwiftFormat
+
+UmbraCore uses [SwiftFormat](https://github.com/nicklockwood/SwiftFormat) version 0.55.5 to automatically enforce many style rules in this guide. The configuration is defined in the `.swiftformat` file at the project root.
+
+### Usage
+
+Run the formatting script to format all Swift files in the project:
+
+```bash
+./scripts/format_code.sh
+```
+
+To only check if files are formatted without modifying them:
+
+```bash
+./scripts/format_code.sh --check
+```
+
+To format only staged files:
+
+```bash
+./scripts/format_code.sh --staged-only
+```
+
+### Key Formatting Rules
+
+The SwiftFormat configuration enforces the following key style elements:
+
+- 2-space indentation
+- 100 character line length
+- Consistent brace styles (same-line opening braces)
+- Trailing commas in multi-line arrays and dictionaries
+- Consistent spacing around operators and parentheses
+- Alphabetized imports
+- Standard modifier ordering (`public`, `open`, `package`, `internal`, `private`, `fileprivate`, etc.)
+- Hoisted pattern let bindings
+- No trailing whitespace
+- And many other rules...
+
+For a complete list of rules, refer to the [SwiftFormat documentation](https://github.com/nicklockwood/SwiftFormat#rules) and the `.swiftformat` file in the project root.
+
+### Integration with Build System
+
+To ensure consistent code style across the project, consider adding the SwiftFormat check to your pre-commit hook or CI pipeline.
+
+### Conflicts with Existing Style Guide
+
+In cases where the automated formatting conflicts with this style guide, the SwiftFormat configuration takes precedence. If you believe the configuration should be adjusted, please open a discussion with the team.
