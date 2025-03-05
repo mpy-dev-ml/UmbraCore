@@ -91,27 +91,27 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
 
         completion(keyData, nil)
     }
-    
+
     func generateRandomData(length: Int, completion: @escaping (Data?, Error?) -> Void) {
         methodCalls.append("generateRandomData(\(length))")
-        
+
         if shouldFail {
             completion(nil, errorToThrow ?? NSError(domain: "com.umbracore.mock", code: 500, userInfo: [NSLocalizedDescriptionKey: "Random data generation failed"]))
             return
         }
-        
+
         // If there's specific test data to return, prioritize it
         if let randomData = randomDataToReturn {
             completion(randomData, nil)
             return
         }
-        
+
         // Generate mock random data
         var randomData = Data(count: length)
         for i in 0..<randomData.count {
             randomData[i] = UInt8(i % 256)
         }
-        
+
         completion(randomData, nil)
     }
 

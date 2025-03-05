@@ -8,6 +8,7 @@ umbra_swift_library(
         exclude = ["Types/**/*.swift", "Protocols/**/*.swift"],
     ),
     deps = [
+        "//Sources/CoreErrors",
         "//Sources/ErrorHandling",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
         "//Sources/SecurityTypes/Types:SecurityTypesTypes",

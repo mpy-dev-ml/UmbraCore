@@ -93,6 +93,25 @@ let newService: XPCServiceProtocolStandard = MyNewService()
 let legacyCompatAdapter = LegacyXPCServiceAdapter(service: newService)
 ```
 
+### 5. Using the XPCProtocolMigrationFactory
+
+The `XPCProtocolMigrationFactory` provides convenience methods for creating protocol adapters:
+
+```swift
+// Create a standard protocol adapter
+let standardAdapter = XPCProtocolMigrationFactory.createStandardAdapter(from: legacyService)
+
+// Create a complete protocol adapter with all functionality
+let completeAdapter = XPCProtocolMigrationFactory.createCompleteAdapter(from: legacyService)
+
+// Create a basic protocol adapter with minimal functionality
+let basicAdapter = XPCProtocolMigrationFactory.createBasicAdapter(from: legacyService)
+
+// Convert errors between legacy and new formats
+let standardError = XPCProtocolMigrationFactory.convertToStandardError(legacyError)
+let legacyError = XPCProtocolMigrationFactory.convertToLegacyError(standardError)
+```
+
 ## Key Method Mappings
 
 | Legacy Method (SecurityInterfaces) | New Method (XPCProtocolsCore) |

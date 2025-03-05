@@ -18,20 +18,20 @@ import UmbraCoreTypes
 public enum UmbraSecurityCore {
     /// Current module version
     public static let version = "1.0.0"
-    
+
     /// Create a default foundation-free crypto service
     /// - Returns: A CryptoServiceProtocol implementation
     public static func createDefaultCryptoService() -> CryptoServiceProtocol {
         return DefaultCryptoService()
     }
-    
+
     /// Create a type-erased crypto service wrapper
     /// - Parameter service: The service to wrap
     /// - Returns: A type-erased wrapper around the provided service
     public static func createAnyCryptoService<T: CryptoServiceProtocol>(_ service: T) -> AnyCryptoService {
         return AnyCryptoService(service)
     }
-    
+
     /// Create a crypto service type adapter with custom transformations
     /// - Parameters:
     ///   - service: The service to adapt

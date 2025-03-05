@@ -69,8 +69,8 @@
  */
 
 import CryptoSwiftFoundationIndependent
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// Implementation of CryptoServiceProtocol that provides cryptographic operations
 /// without any dependency on Foundation. This implementation handles encryption,
@@ -956,7 +956,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     }
 
     // MARK: - Random Data Generation
-    
+
     /**
      Generate cryptographically secure random data.
      
@@ -971,13 +971,13 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
         guard length > 0 else {
             return .failure(.invalidInput(reason: "Random data length must be greater than zero"))
         }
-        
+
         do {
             var randomBytes = [UInt8](repeating: 0, count: length)
-            
+
             // Generate random bytes using CryptoKit's secure random number generator
             let status = try CryptoWrapper.generateSecureRandomBytes(&randomBytes, length: length)
-            
+
             if status {
                 return .success(SecureBytes(randomBytes))
             } else {
@@ -1036,7 +1036,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     /// secure random number generation functionality.
     public nonisolated func generateSecureRandomBytes(count: Int) async -> Result<SecureBytes, SecurityError> {
         // Check for valid count
-        if count <= 0 {
+        if isEmpty {
             return .failure(.invalidInput(reason: "Byte count must be positive"))
         }
 

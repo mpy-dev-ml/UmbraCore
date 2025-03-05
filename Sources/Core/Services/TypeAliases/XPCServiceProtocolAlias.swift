@@ -1,11 +1,11 @@
 import CoreTypes
 import ObjCBridgingTypes
-import SecurityInterfaces
-import SecurityInterfacesBase
-import SecurityInterfacesFoundation
+import XPCProtocolsCore
 
-/// Re-export XPCServiceProtocol from SecurityInterfaces
-public typealias XPCServiceProtocol = SecurityInterfaces.XPCServiceProtocol
+/// Re-export XPCServiceProtocolStandard from XPCProtocolsCore
+/// This replaces the deprecated SecurityInterfaces.XPCServiceProtocol
+public typealias XPCServiceProtocol = XPCProtocolsCore.XPCServiceProtocolStandard
 
-/// Re-export XPCServiceProtocolBase from SecurityInterfacesBase
-public typealias XPCServiceProtocolBase = SecurityInterfacesBase.XPCServiceProtocolBase
+/// Re-export XPCServiceProtocolBasic from XPCProtocolsCore
+/// This replaces the deprecated SecurityInterfacesBase.XPCServiceProtocolBase
+public typealias XPCServiceProtocolBase = XPCProtocolsCore.XPCServiceProtocolBasic

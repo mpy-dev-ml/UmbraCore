@@ -1,8 +1,8 @@
 // CryptoKit removed - cryptography will be handled in ResticBar
 import Foundation
-import SecurityInterfaces
 import SecurityTypes
 import SecurityTypesProtocols
+import XPCProtocolsCore
 
 /// Manages secure storage and retrieval of credentials
 public actor CredentialManager {
@@ -52,7 +52,7 @@ private actor KeychainAccess: SecureStorageProvider {
 
     func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
         guard let item = items[key] else {
-            throw SecurityInterfaces.SecurityError.itemNotFound
+            throw XPCSecurityError.itemNotFound
         }
         return (item.data, item.metadata)
     }
@@ -64,7 +64,7 @@ private actor KeychainAccess: SecureStorageProvider {
 
     func delete(forKey key: String) async throws {
         guard items.removeValue(forKey: key) != nil else {
-            throw SecurityInterfaces.SecurityError.itemNotFound
+            throw XPCSecurityError.itemNotFound
         }
     }
 

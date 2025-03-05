@@ -2,12 +2,10 @@ import CoreServices
 import CoreServicesTypesNoFoundation
 import Foundation
 import FoundationBridgeTypes
-import SecurityInterfaces
-import SecurityInterfacesBase
-import SecurityInterfacesProtocols
 import SecurityTypes
 import SecurityUtils
 import UmbraLogging
+import XPCProtocolsCore
 
 /// A minimal implementation of the security service that doesn't depend on CryptoSwift
 /// This helps break circular dependencies between Foundation and CryptoSwift

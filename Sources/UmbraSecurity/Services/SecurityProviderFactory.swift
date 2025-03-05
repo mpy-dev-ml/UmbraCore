@@ -23,14 +23,14 @@ public final class SecurityProviderFactory {
         // Create the final adapter that implements SecurityProvider
         return SecurityProtocolsCore.SecurityProviderAdapter(bridge: bridge)
     }
-    
+
     /// Creates a simple security provider using the built-in implementation
     /// - Returns: A security provider bridged through our internal implementation
     public static func createSimpleProvider() -> SecurityProtocolsCore.SecurityProvider {
         // Use our internal implementation directly
         let securityService = SecurityService.shared
         let bridge = DefaultSecurityProviderBridge(adapter: securityService.securityProviderAdapter)
-        
+
         // Create the final adapter that implements SecurityProvider
         return SecurityProtocolsCore.SecurityProviderAdapter(bridge: bridge)
     }
@@ -52,31 +52,31 @@ final class DefaultSecurityProviderBridge: SecurityProviderBridge.SecurityProvid
     func encrypt(_ data: FoundationBridgeTypes.DataBridge, key: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes.DataBridge {
         return try await adapter.encrypt(data, key: key)
     }
-    
+
     func decrypt(_ data: FoundationBridgeTypes.DataBridge, key: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes.DataBridge {
         return try await adapter.decrypt(data, key: key)
     }
-    
+
     func generateKey(length: Int) async throws -> FoundationBridgeTypes.DataBridge {
         return try await adapter.generateKey(length: length)
     }
-    
+
     func generateRandomData(length: Int) async throws -> FoundationBridgeTypes.DataBridge {
         return try await adapter.generateRandomData(length: length)
     }
-    
+
     func hash(_ data: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes.DataBridge {
         return try await adapter.hash(data)
     }
-    
+
     func createBookmark(for urlString: String) async throws -> FoundationBridgeTypes.DataBridge {
         return try await adapter.createBookmark(for: urlString)
     }
-    
+
     func resolveBookmark(_ data: FoundationBridgeTypes.DataBridge) async throws -> String {
         return try await adapter.resolveBookmark(data)
     }
-    
+
     func validateBookmark(_ bookmarkData: FoundationBridgeTypes.DataBridge) async throws -> Bool {
         return try await adapter.validateBookmark(bookmarkData)
     }

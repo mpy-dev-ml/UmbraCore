@@ -12,20 +12,20 @@ extension SecurityBridge {
     /// the Foundation-free SecurityProviderProtocol
     public final class SecurityProviderFoundationAdapter: Sendable {
         // MARK: - Properties
-        
+
         /// The Foundation-dependent implementation
         private let implementation: FoundationSecurityProvider
-        
+
         // MARK: - Initialization
-        
+
         /// Initialize with a Foundation-dependent implementation
         /// - Parameter implementation: The Foundation-based implementation
         public init(implementation: FoundationSecurityProvider) {
             self.implementation = implementation
         }
-        
+
         // MARK: - SecurityProviderFoundationProtocol Implementation
-        
+
         /// Encrypt data using the Foundation implementation
         /// - Parameters:
         ///   - data: Data to encrypt
@@ -34,9 +34,9 @@ extension SecurityBridge {
         public func encrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
             let foundationData = data.toFoundationData()
             let foundationKey = key.toFoundationData()
-            
+
             let result = await implementation.cryptoService.encrypt(data: foundationData, using: foundationKey)
-            
+
             switch result {
             case .success(let encryptedData):
                 return DataBridge(encryptedData)
@@ -44,7 +44,7 @@ extension SecurityBridge {
                 throw SecurityBridgeErrorMapper.mapToBridgeError(error)
             }
         }
-        
+
         /// Decrypt data using the Foundation implementation
         /// - Parameters:
         ///   - data: Data to decrypt
@@ -53,9 +53,9 @@ extension SecurityBridge {
         public func decrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
             let foundationData = data.toFoundationData()
             let foundationKey = key.toFoundationData()
-            
+
             let result = await implementation.cryptoService.decrypt(data: foundationData, using: foundationKey)
-            
+
             switch result {
             case .success(let decryptedData):
                 return DataBridge(decryptedData)
@@ -63,12 +63,12 @@ extension SecurityBridge {
                 throw SecurityBridgeErrorMapper.mapToBridgeError(error)
             }
         }
-        
+
         /// Generate a new encryption key
         /// - Returns: The generated key
         public func generateKey() async throws -> DataBridge {
             let result = await implementation.cryptoService.generateKey()
-            
+
             switch result {
             case .success(let keyData):
                 return DataBridge(keyData)
@@ -76,13 +76,13 @@ extension SecurityBridge {
                 throw SecurityBridgeErrorMapper.mapToBridgeError(error)
             }
         }
-        
+
         /// Generate secure random data
         /// - Parameter length: Length of random data to generate
         /// - Returns: Random data
         public func generateRandomData(length: Int) async throws -> DataBridge {
             let result = await implementation.cryptoService.generateRandomData(length: length)
-            
+
             switch result {
             case .success(let randomData):
                 return DataBridge(randomData)

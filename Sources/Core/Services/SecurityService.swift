@@ -1,10 +1,10 @@
 import CoreServicesTypes
 import CoreTypes
 import Foundation
-import SecurityInterfaces
 import SecurityTypes
 import SecurityTypesProtocols
 import UmbraLogging
+import XPCProtocolsCore
 
 /// Manages security operations and access control
 public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, SecurityTypesProtocols.SecurityProvider {
@@ -74,7 +74,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             )
             return Array(bookmarkData)
         } catch {
-            throw SecurityError.bookmarkError("Failed to create bookmark for \(path): \(error.localizedDescription)")
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -91,7 +91,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             )
             return (url.path, isStale)
         } catch {
-            throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -101,7 +101,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             accessedPaths.insert(path)
             return true
         } else {
-            throw SecurityError.accessError("Failed to access: \(path)")
+            throw XPCSecurityError.accessDenied
         }
     }
 
@@ -138,7 +138,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
         let key = "\(account).\(service)"
         guard let data = bookmarks[key] else {
-            throw SecurityError.itemNotFound
+            throw XPCSecurityError.itemNotFound
         }
 
         return data
@@ -154,7 +154,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
         let key = "\(account).\(service)"
         guard let data = bookmarks[key] else {
-            throw SecurityError.itemNotFound
+            throw XPCSecurityError.itemNotFound
         }
 
         // For now, we don't have metadata in our simple implementation
@@ -171,7 +171,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
         let key = "\(account).\(service)"
         guard bookmarks.removeValue(forKey: key) != nil else {
-            throw SecurityError.itemNotFound
+            throw XPCSecurityError.itemNotFound
         }
     }
 
@@ -190,7 +190,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
 
             guard status == errSecSuccess else {
-                throw SecurityError.randomGenerationFailed
+                throw XPCSecurityError.randomGenerationError
             }
 
             return bytes
@@ -212,7 +212,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
                 relativeTo: nil
             )
         } catch {
-            throw SecurityError.bookmarkError("Failed to create bookmark for \(url.path): \(error.localizedDescription)")
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -228,7 +228,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             )
             return (url, isStale)
         } catch {
-            throw SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -237,7 +237,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             accessedPaths.insert(url.path)
             return true
         } else {
-            throw SecurityError.accessError("Failed to access: \(url.path)")
+            throw XPCSecurityError.accessDenied
         }
     }
 
@@ -275,14 +275,14 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
     public func loadBookmark(withIdentifier identifier: String) async throws -> Data {
         guard let bookmark = bookmarks[identifier] else {
-            throw SecurityError.bookmarkError("Bookmark not found for identifier: \(identifier)")
+            throw XPCSecurityError.bookmarkError
         }
         return Data(bookmark)
     }
 
     public func deleteBookmark(withIdentifier identifier: String) async throws {
         guard bookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityError.bookmarkError("No bookmark found for identifier: \(identifier)")
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -312,7 +312,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
         let key = "\(account).\(service)"
         guard let data = bookmarks[key] else {
-            throw SecurityError.itemNotFound
+            throw XPCSecurityError.itemNotFound
         }
 
         return Data(data)
@@ -328,7 +328,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
         let key = "\(account).\(service)"
         guard let data = bookmarks[key] else {
-            throw SecurityError.itemNotFound
+            throw XPCSecurityError.itemNotFound
         }
 
         // We don't have metadata in our simple implementation
@@ -346,7 +346,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
     ) async throws -> T {
         let accessGranted = try await startAccessing(path: path)
         guard accessGranted else {
-            throw SecurityError.accessError("Access denied to: \(path)")
+            throw XPCSecurityError.accessDenied
         }
 
         defer { Task { await stopAccessing(path: path) } }
@@ -383,9 +383,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             )
             return bookmarkData
         } catch {
-            throw SecurityInterfaces.SecurityError.bookmarkError(
-                "Failed to create security bookmark: \(error.localizedDescription)"
-            )
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -413,9 +411,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
             return url
         } catch {
-            throw SecurityInterfaces.SecurityError.bookmarkError(
-                "Failed to resolve security bookmark: \(error.localizedDescription)"
-            )
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -486,10 +482,10 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
 
                 return combined
             } catch {
-                throw SecurityError.cryptoError("Encryption failed: \(error.localizedDescription)")
+                throw XPCSecurityError.cryptoError
             }
         } else {
-            throw SecurityError.operationFailed("Encryption not available without CryptoService")
+            throw XPCSecurityError.operationFailed
         }
     }
 
@@ -505,7 +501,7 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             let tagLength = 16
 
             guard data.count > ivLength + tagLength else {
-                throw SecurityError.cryptoError("Invalid encrypted data format")
+                throw XPCSecurityError.cryptoError
             }
 
             let iv = Array(data.prefix(ivLength))
@@ -521,10 +517,10 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
             do {
                 return try await crypto.decrypt(encryptionResult, using: key)
             } catch {
-                throw SecurityError.cryptoError("Decryption failed: \(error.localizedDescription)")
+                throw XPCSecurityError.cryptoError
             }
         } else {
-            throw SecurityError.operationFailed("Decryption not available without CryptoService")
+            throw XPCSecurityError.operationFailed
         }
     }
 
@@ -554,10 +550,10 @@ public actor SecurityService: UmbraService, CoreTypes.SecurityProviderBase, Secu
                 // Use the string-based deriveKey method
                 return try await crypto.deriveKey(from: hexString, salt: salt)
             } catch {
-                throw SecurityError.cryptoError("Hashing failed: \(error.localizedDescription)")
+                throw XPCSecurityError.cryptoError
             }
         } else {
-            throw SecurityError.operationFailed("Hashing not available without CryptoService")
+            throw XPCSecurityError.operationFailed
         }
     }
 

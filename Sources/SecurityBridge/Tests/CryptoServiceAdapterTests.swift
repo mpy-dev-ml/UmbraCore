@@ -5,9 +5,9 @@
 //
 
 import Foundation
-import UmbraCoreTypes
 @testable import SecurityBridge
 import SecurityProtocolsCore
+import UmbraCoreTypes
 import XCTest
 
 // MARK: - Result Extension
@@ -91,7 +91,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
             }
         }
     }
-    
+
     func generateRandomData(length: Int) async -> Result<Data, Error> {
         return await withCheckedContinuation { continuation in
             mockXPCService.generateRandomData(length: length) { data, error in

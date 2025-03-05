@@ -1,7 +1,7 @@
 # .swiftformat configuration file for Google Swift Style Guide
 
 # Indentation & Whitespace
-indent 2
+--indent 2
 tabwidth 2
 linebreaks lf
 wraparguments beforefirst

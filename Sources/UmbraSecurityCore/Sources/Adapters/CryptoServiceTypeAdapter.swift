@@ -11,15 +11,15 @@ import UmbraCoreTypes
 /// without requiring them to directly implement each other's interfaces
 public struct CryptoServiceTypeAdapter<Adaptee: CryptoServiceProtocol>: CryptoServiceProtocol {
     // MARK: - Properties
-    
+
     /// The adaptee being wrapped
     private let adaptee: Adaptee
-    
+
     /// Transformation functions for custom type conversions
     private let transformations: Transformations
-    
+
     // MARK: - Initialization
-    
+
     /// Create a new adapter wrapping an existing crypto service
     /// - Parameters:
     ///   - adaptee: The crypto service to adapt
@@ -31,56 +31,56 @@ public struct CryptoServiceTypeAdapter<Adaptee: CryptoServiceProtocol>: CryptoSe
         self.adaptee = adaptee
         self.transformations = transformations
     }
-    
+
     // MARK: - CryptoServiceProtocol Implementation
-    
+
     public func encrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         let transformedData = transformations.transformInputData?(data) ?? data
         let transformedKey = transformations.transformInputKey?(key) ?? key
-        
+
         let result = await adaptee.encrypt(data: transformedData, using: transformedKey)
-        
+
         return result.map { transformations.transformOutputData?($0) ?? $0 }
     }
-    
+
     public func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         let transformedData = transformations.transformInputData?(data) ?? data
         let transformedKey = transformations.transformInputKey?(key) ?? key
-        
+
         let result = await adaptee.decrypt(data: transformedData, using: transformedKey)
-        
+
         return result.map { transformations.transformOutputData?($0) ?? $0 }
     }
-    
+
     public func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
         let transformedData = transformations.transformInputData?(data) ?? data
-        
+
         let result = await adaptee.hash(data: transformedData)
-        
+
         return result.map { transformations.transformOutputData?($0) ?? $0 }
     }
-    
+
     public func generateKey() async -> Result<SecureBytes, SecurityError> {
         let result = await adaptee.generateKey()
-        
+
         return result.map { transformations.transformOutputKey?($0) ?? $0 }
     }
-    
+
     public func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
         let transformedData = transformations.transformInputData?(data) ?? data
         let transformedHash = transformations.transformInputData?(hash) ?? hash
-        
+
         return await adaptee.verify(data: transformedData, against: transformedHash)
     }
-    
+
     public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
         let result = await adaptee.generateRandomData(length: length)
-        
+
         return result.map { transformations.transformOutputData?($0) ?? $0 }
     }
-    
+
     // MARK: - New required methods
-    
+
     public func encryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
@@ -88,14 +88,14 @@ public struct CryptoServiceTypeAdapter<Adaptee: CryptoServiceProtocol>: CryptoSe
     ) async -> SecurityResultDTO {
         let transformedData = transformations.transformInputData?(data) ?? data
         let transformedKey = transformations.transformInputKey?(key) ?? key
-        
+
         return await adaptee.encryptSymmetric(
             data: transformedData,
             key: transformedKey,
             config: config
         )
     }
-    
+
     public func decryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
@@ -103,14 +103,14 @@ public struct CryptoServiceTypeAdapter<Adaptee: CryptoServiceProtocol>: CryptoSe
     ) async -> SecurityResultDTO {
         let transformedData = transformations.transformInputData?(data) ?? data
         let transformedKey = transformations.transformInputKey?(key) ?? key
-        
+
         return await adaptee.decryptSymmetric(
             data: transformedData,
             key: transformedKey,
             config: config
         )
     }
-    
+
     public func encryptAsymmetric(
         data: SecureBytes,
         publicKey: SecureBytes,
@@ -118,14 +118,14 @@ public struct CryptoServiceTypeAdapter<Adaptee: CryptoServiceProtocol>: CryptoSe
     ) async -> SecurityResultDTO {
         let transformedData = transformations.transformInputData?(data) ?? data
         let transformedKey = transformations.transformInputKey?(publicKey) ?? publicKey
-        
+
         return await adaptee.encryptAsymmetric(
             data: transformedData,
             publicKey: transformedKey,
             config: config
         )
     }
-    
+
     public func decryptAsymmetric(
         data: SecureBytes,
         privateKey: SecureBytes,
@@ -133,52 +133,52 @@ public struct CryptoServiceTypeAdapter<Adaptee: CryptoServiceProtocol>: CryptoSe
     ) async -> SecurityResultDTO {
         let transformedData = transformations.transformInputData?(data) ?? data
         let transformedKey = transformations.transformInputKey?(privateKey) ?? privateKey
-        
+
         return await adaptee.decryptAsymmetric(
             data: transformedData,
             privateKey: transformedKey,
             config: config
         )
     }
-    
+
     public func hash(
         data: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
         let transformedData = transformations.transformInputData?(data) ?? data
-        
+
         return await adaptee.hash(
             data: transformedData,
             config: config
         )
     }
-    
+
     // MARK: - Types
-    
+
     /// Functions for transforming input and output types
     /// This allows customized adapting between different implementations
     public struct Transformations: Sendable {
         /// Transform input data before passing to the adapted service
         public let transformInputData: ((@Sendable (SecureBytes) -> SecureBytes))?
-        
+
         /// Transform input keys before passing to the adapted service
         public let transformInputKey: ((@Sendable (SecureBytes) -> SecureBytes))?
-        
+
         /// Transform input signatures before passing to the adapted service
         public let transformInputSignature: ((@Sendable (SecureBytes) -> SecureBytes))?
-        
+
         /// Transform output data after receiving from the adapted service
         public let transformOutputData: ((@Sendable (SecureBytes) -> SecureBytes))?
-        
+
         /// Transform output keys after receiving from the adapted service
         public let transformOutputKey: ((@Sendable (SecureBytes) -> SecureBytes))?
-        
+
         /// Transform output signatures after receiving from the adapted service
         public let transformOutputSignature: ((@Sendable (SecureBytes) -> SecureBytes))?
-        
+
         /// Transform errors if needed between the wrapped and exposed service
         public let transformError: ((@Sendable (SecurityError) -> SecurityError))?
-        
+
         /// Initialize a new set of transformations
         ///
         /// - Parameters:

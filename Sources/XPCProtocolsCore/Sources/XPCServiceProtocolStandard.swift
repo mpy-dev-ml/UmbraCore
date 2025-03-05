@@ -12,33 +12,33 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
     /// - Parameter length: Length of random data in bytes
     /// - Returns: Random data
     func generateRandomData(length: Int) async throws -> SecureBytes
-    
+
     /// Encrypt data using the service's encryption mechanism
     /// - Parameters:
     ///   - data: Data to encrypt
     ///   - keyIdentifier: Optional key identifier to use
     /// - Returns: Encrypted data
     func encryptData(_ data: SecureBytes, keyIdentifier: String?) async throws -> SecureBytes
-    
+
     /// Decrypt data using the service's decryption mechanism
     /// - Parameters:
     ///   - data: Data to decrypt
     ///   - keyIdentifier: Optional key identifier to use
     /// - Returns: Decrypted data
     func decryptData(_ data: SecureBytes, keyIdentifier: String?) async throws -> SecureBytes
-    
+
     /// Hash data using the service's hashing mechanism
     /// - Parameter data: Data to hash
     /// - Returns: Hash result
     func hashData(_ data: SecureBytes) async throws -> SecureBytes
-    
+
     /// Sign data using the service's signing mechanism
     /// - Parameters:
     ///   - data: Data to sign
     ///   - keyIdentifier: Key identifier to use for signing
     /// - Returns: Signature data
     func signData(_ data: SecureBytes, keyIdentifier: String) async throws -> SecureBytes
-    
+
     /// Verify signature for data
     /// - Parameters:
     ///   - signature: Signature to verify
@@ -56,20 +56,20 @@ public protocol SecureStorageServiceProtocol: Sendable {
     ///   - identifier: Unique identifier for the data
     ///   - metadata: Optional metadata to associate with the data
     func storeSecurely(_ data: SecureBytes, identifier: String, metadata: [String: String]?) async throws
-    
+
     /// Retrieve securely stored data
     /// - Parameter identifier: Unique identifier for the data
     /// - Returns: The securely stored data
     func retrieveSecurely(identifier: String) async throws -> SecureBytes
-    
+
     /// Delete securely stored data
     /// - Parameter identifier: Unique identifier for the data
     func deleteSecurely(identifier: String) async throws
-    
+
     /// List all secure storage identifiers
     /// - Returns: Array of identifiers
     func listIdentifiers() async throws -> [String]
-    
+
     /// Get metadata for secure storage item
     /// - Parameter identifier: Unique identifier for the data
     /// - Returns: Associated metadata
@@ -85,15 +85,15 @@ public protocol KeyManagementServiceProtocol: Sendable {
     ///   - metadata: Optional metadata to associate with the key
     /// - Returns: Identifier for the generated key
     func generateKey(keyType: KeyType, keyIdentifier: String?, metadata: [String: String]?) async throws -> String
-    
+
     /// Delete a key
     /// - Parameter keyIdentifier: Identifier for the key to delete
     func deleteKey(keyIdentifier: String) async throws
-    
+
     /// List all key identifiers
     /// - Returns: Array of key identifiers
     func listKeyIdentifiers() async throws -> [String]
-    
+
     /// Get metadata for a key
     /// - Parameter keyIdentifier: Identifier for the key
     /// - Returns: Associated metadata
@@ -111,7 +111,7 @@ public enum KeyType: String, Sendable {
 public protocol ComprehensiveSecurityServiceProtocol: XPCServiceProtocolStandard, SecureStorageServiceProtocol, KeyManagementServiceProtocol {
     /// Get the service version
     func getServiceVersion() async throws -> String
-    
+
     /// Get the service status
     func getServiceStatus() async throws -> ServiceStatus
 }
@@ -128,16 +128,16 @@ public enum ServiceStatus: String, Sendable {
 public protocol SecurityServiceFactoryProtocol: Sendable {
     /// Create a basic XPC service
     func createXPCService() -> XPCServiceProtocolBasic
-    
+
     /// Create an extended XPC service
     func createExtendedXPCService() -> XPCServiceProtocolStandard
-    
+
     /// Create a secure storage service
     func createSecureStorageService() -> SecureStorageServiceProtocol
-    
+
     /// Create a key management service
     func createKeyManagementService() -> KeyManagementServiceProtocol
-    
+
     /// Create a comprehensive security service
     func createComprehensiveSecurityService() -> ComprehensiveSecurityServiceProtocol
 }

@@ -2,8 +2,8 @@
 // IMPORTANT: This file only imports SecurityProtocolsCore to avoid type conflicts
 
 import Foundation
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 // MARK: - Provider Implementation
 

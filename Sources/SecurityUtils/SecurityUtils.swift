@@ -1,11 +1,11 @@
+import CommonCrypto
 import Foundation
 import Security
 import SecurityBridge
-import SecurityInterfaces
 import SecurityProtocolsCore
 import SecurityTypes
 import SecurityTypesTypes
-import CommonCrypto
+import XPCProtocolsCore
 
 /// SecurityUtils Module
 ///
@@ -21,7 +21,7 @@ public final class SecurityUtils: @unchecked Sendable {
     /// Generate cryptographically secure random data
     /// - Parameter length: Length of random data to generate
     /// - Returns: Random data of specified length
-    /// - Throws: SecurityInterfaces.SecurityError if random generation fails
+    /// - Throws: XPCSecurityError if random generation fails
     public func generateRandomData(_ length: Int) throws -> Data {
         var data = Data(count: length)
         let result = data.withUnsafeMutableBytes { bytes in
@@ -29,7 +29,7 @@ public final class SecurityUtils: @unchecked Sendable {
         }
 
         guard result == errSecSuccess else {
-            throw SecurityInterfaces.SecurityError.randomGenerationFailed
+            throw XPCSecurityError.randomGenerationFailed
         }
 
         return data
@@ -40,7 +40,7 @@ public final class SecurityUtils: @unchecked Sendable {
     ///   - data: Data to hash
     ///   - algorithm: Hash algorithm to use
     /// - Returns: Hashed data
-    /// - Throws: SecurityInterfaces.SecurityError if hashing fails
+    /// - Throws: XPCSecurityError if hashing fails
     public func hash(_ data: Data, using algorithm: SecurityTypesTypes.HashAlgorithm) throws -> Data {
         switch algorithm {
         case .sha256:
@@ -51,7 +51,7 @@ public final class SecurityUtils: @unchecked Sendable {
                 }
             }
             return hashData
-            
+
         case .sha512:
             var hashData = Data(count: Int(CC_SHA512_DIGEST_LENGTH))
             _ = hashData.withUnsafeMutableBytes { hashBytes in

@@ -4,8 +4,8 @@
 // Created as part of the UmbraCore Foundation Decoupling project
 //
 
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// Default implementation of SecurityProviderProtocol using CryptoSwiftFoundationIndependent
 public final class SecurityProviderImpl: SecurityProviderProtocol {
@@ -116,10 +116,10 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
         case .randomGeneration:
             // Extract the key size from the config or use a default
             let bytesLength = (config.keySizeInBits + 7) / 8  // Convert bits to bytes (rounding up)
-            
+
             // Generate random data using the crypto service
             let randomResult = await cryptoService.generateRandomData(length: bytesLength)
-            
+
             guard case let .success(randomData) = randomResult else {
                 if case let .failure(error) = randomResult {
                     return SecurityResultDTO.failure(
@@ -132,7 +132,7 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
                     message: "Unknown random generation error"
                 )
             }
-            
+
             return SecurityResultDTO.success(data: randomData)
 
         case .keyGeneration:

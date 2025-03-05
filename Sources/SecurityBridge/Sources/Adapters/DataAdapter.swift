@@ -6,6 +6,7 @@
 
 import Foundation
 import UmbraCoreTypes
+
 /// DataAdapter provides bidirectional conversion between Foundation Data and SecureBytes.
 ///
 /// This adapter serves as the primary bridge for binary data between Foundation-dependent
@@ -18,15 +19,19 @@ public enum DataAdapter {
     /// - Returns: A new SecureBytes instance containing the same bytes
     public static func secureBytes(from data: Data) -> SecureBytes {
         // Create SecureBytes from Data's bytes
-        return SecureBytes([UInt8](data))
+        return SecureBytes(bytes: [UInt8](data))
     }
 
     /// Convert SecureBytes to Foundation Data
     /// - Parameter secureBytes: SecureBytes instance
     /// - Returns: A new Data instance containing the same bytes
     public static func data(from secureBytes: SecureBytes) -> Data {
-        // Create Data from SecureBytes' bytes
-        return Data(secureBytes.unsafeBytes)
+        // Create Data from the bytes in SecureBytes
+        var rawBytes: [UInt8] = []
+        secureBytes.withUnsafeBytes { buffer in
+            rawBytes = Array(buffer)
+        }
+        return Data(rawBytes)
     }
 
     /// Create SecureBytes from JSON encodable object

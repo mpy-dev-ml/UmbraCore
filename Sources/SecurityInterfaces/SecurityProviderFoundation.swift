@@ -1,6 +1,6 @@
 import CoreTypes
-import SecurityInterfacesBase
 import SecurityBridge
+import SecurityInterfacesBase
 
 /// Protocol defining Foundation-dependent security operations
 /// This is a non-Foundation dependent version that delegates to the Foundation bridge

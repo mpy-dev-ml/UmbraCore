@@ -1,13 +1,11 @@
 import Foundation
-import SecurityInterfaces
-import SecurityInterfacesFoundation
-import SecurityInterfacesProtocols
 import SecurityTypes
 import SecurityTypesProtocols
+import XPCProtocolsCore
 
 /// Default implementation of SecurityProvider for production use
 @available(macOS 14.0, *)
-public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundation {
+public class DefaultSecurityProvider: XPCProtocolsCore.SecurityProvider {
     /// Dictionary to track accessed URLs and their bookmark data
     private var accessedURLs: [String: (URL, Data)] = [:]
 
@@ -54,7 +52,7 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
             let bookmarkData = try url.bookmarkData(options: .withSecurityScope)
             return Array(bookmarkData)
         } catch {
-            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to create bookmark for \(path): \(error.localizedDescription)")
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -67,7 +65,7 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
                              bookmarkDataIsStale: &isStale)
             return (url.path, isStale)
         } catch {
-            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -87,7 +85,7 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
         do {
             return try url.bookmarkData(options: .withSecurityScope)
         } catch {
-            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to create bookmark for \(url.path): \(error.localizedDescription)")
+            throw XPCSecurityError.bookmarkError
         }
     }
 
@@ -100,41 +98,21 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
                              bookmarkDataIsStale: &isStale)
             return (url, isStale)
         } catch {
-            throw SecurityInterfaces.SecurityError.bookmarkError("Failed to resolve bookmark: \(error.localizedDescription)")
+            throw XPCSecurityError.bookmarkError
         }
     }
 
-    public func validateBookmark(_ bookmarkData: Data) async throws -> Bool {
-        do {
-            var isStale = false
-            _ = try URL(resolvingBookmarkData: bookmarkData,
-                       options: .withSecurityScope,
-                       relativeTo: nil,
-                       bookmarkDataIsStale: &isStale)
-            return !isStale
-        } catch {
-            return false
-        }
+    // MARK: - Encryption Methods (required by XPCSecurityProvider)
+
+    public func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
+        // Simple XOR encryption for demonstration
+        return zip(data, key.cycled(to: data.count)).map { $0 ^ $1 }
     }
 
-    // MARK: - Keychain Methods
-
-    public func storeInKeychain(data: Data, service: String, account: String) async throws {
-        // Implementation would use Keychain API to store data
-        throw SecurityInterfaces.SecurityError.operationFailed("Keychain storage not implemented")
+    public func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
+        // XOR decryption is the same as encryption
+        return try await encrypt(data, key: key)
     }
-
-    public func retrieveFromKeychain(service: String, account: String) async throws -> Data {
-        // Implementation would use Keychain API to retrieve data
-        throw SecurityInterfaces.SecurityError.operationFailed("Keychain retrieval not implemented")
-    }
-
-    public func deleteFromKeychain(service: String, account: String) async throws {
-        // Implementation would use Keychain API to delete data
-        throw SecurityInterfaces.SecurityError.operationFailed("Keychain deletion not implemented")
-    }
-
-    // MARK: - Foundation Data Methods
 
     public func encryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation.Data {
         let encryptedBytes = try await encrypt(Array(data), key: Array(key))
@@ -146,63 +124,37 @@ public class DefaultSecurityProvider: SecurityInterfaces.SecurityProviderFoundat
         return Data(decryptedBytes)
     }
 
-    public func generateDataKey(length: Int) async throws -> Foundation.Data {
-        let keyBytes = try await generateKey(length: length)
-        return Data(keyBytes)
-    }
-
-    public func hashData(_ data: Foundation.Data) async throws -> Foundation.Data {
-        let hashBytes = try await hash(Array(data))
-        return Data(hashBytes)
-    }
-
-    // MARK: - Byte Array Methods
-
-    public func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
-        // Implementation of encryption
-        return data // Placeholder: actual implementation would encrypt the data
-    }
-
-    public func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
-        // Implementation of decryption
-        return data // Placeholder: actual implementation would decrypt the data
-    }
-
     public func generateKey(length: Int) async throws -> [UInt8] {
-        // Generate a random key of specified length
-        var keyData = [UInt8](repeating: 0, count: length)
-        let result = SecRandomCopyBytes(kSecRandomDefault, keyData.count, &keyData)
-        if result == errSecSuccess {
-            return keyData
-        } else {
-            throw SecurityInterfaces.SecurityError.randomGenerationFailed
+        // Generate a secure random key
+        var bytes = [UInt8](repeating: 0, count: length)
+        let result = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        guard result == errSecSuccess else {
+            throw XPCSecurityError.keyGenerationError
         }
+        return bytes
     }
 
     public func hash(_ data: [UInt8]) async throws -> [UInt8] {
-        // Simple implementation for hashing
-        return data // Placeholder: actual implementation would hash the data
+        // Simple hash function for demonstration
+        var hash: [UInt8] = [0, 0, 0, 0, 0, 0, 0, 0]
+        for byte in data {
+            hash[Int(byte) % hash.count] ^= byte
+        }
+        return hash
     }
+}
 
-    // MARK: - SecurityProviderBase methods
+// MARK: - Array Extensions
 
-    public func resetSecurityData() async throws {
-        // Implementation for resetting security data
-    }
+extension Array where Element == UInt8 {
+    /// Create a cycled version of the array to the specified length
+    fileprivate func cycled(to length: Int) -> [UInt8] {
+        guard !isEmpty else { return [] }
 
-    public func getHostIdentifier() async throws -> String {
-        return "host-identifier-placeholder"
-    }
-
-    public func registerClient(bundleIdentifier: String) async throws -> Bool {
-        return true
-    }
-
-    public func requestKeyRotation(keyId: String) async throws {
-        // Implementation for key rotation
-    }
-
-    public func notifyKeyCompromise(keyId: String) async throws {
-        // Implementation for key compromise notification
+        var result = [UInt8](repeating: 0, count: length)
+        for i in 0..<length {
+            result[i] = self[i % count]
+        }
+        return result
     }
 }

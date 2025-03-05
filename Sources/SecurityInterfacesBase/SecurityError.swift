@@ -37,6 +37,8 @@ public enum SecurityError: Error, Sendable {
             switch error {
             case .implementationMissing(let name):
                 return "Implementation missing: \(name)"
+            @unknown default:
+                return "Unknown protocol error: \(error)"
             }
         }
     }

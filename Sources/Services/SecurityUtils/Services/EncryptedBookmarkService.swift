@@ -4,6 +4,7 @@ import CryptoTypesTypes
 import Foundation
 import SecurityTypes
 import SecurityUtilsProtocols
+import XPCProtocolsCore
 
 /// Service for managing encrypted security-scoped bookmarks
 public actor EncryptedBookmarkService {
@@ -34,7 +35,7 @@ public actor EncryptedBookmarkService {
     /// Create an encrypted security-scoped bookmark for a URL
     /// - Parameter url: URL to create bookmark for
     /// - Returns: Encrypted bookmark data
-    /// - Throws: SecurityError or CryptoError if bookmark creation fails
+    /// - Throws: XPCSecurityError or CryptoError if bookmark creation fails
     public func createBookmark(for url: URL) async throws -> Data {
         let bookmarkData = try await bookmarkService.createBookmark(for: url)
         let key = try await generateKey()
@@ -45,7 +46,7 @@ public actor EncryptedBookmarkService {
     /// Resolve an encrypted security-scoped bookmark to a URL
     /// - Parameter encryptedData: Encrypted bookmark data
     /// - Returns: Resolved URL
-    /// - Throws: SecurityError or CryptoError if bookmark resolution fails
+    /// - Throws: XPCSecurityError or CryptoError if bookmark resolution fails
     public func resolveBookmark(_ encryptedData: Data) async throws -> URL {
         let key = try await getKey()
         // Generate a new IV for decryption - this should be stored with the encrypted data in a real implementation
@@ -57,7 +58,7 @@ public actor EncryptedBookmarkService {
     /// Resolve an encrypted security-scoped bookmark by identifier
     /// - Parameter identifier: Bookmark identifier
     /// - Returns: Resolved URL
-    /// - Throws: SecurityError or CryptoError if bookmark resolution fails
+    /// - Throws: XPCSecurityError or CryptoError if bookmark resolution fails
     public func resolveBookmark(withIdentifier identifier: String) async throws -> URL {
         let encryptedData = try await credentialManager.load(forIdentifier: identifier)
         let key = try await getKey()

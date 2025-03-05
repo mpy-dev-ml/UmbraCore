@@ -10,4 +10,6 @@ public enum SecurityError: Error {
     case cryptoError
     case bookmarkCreationFailed
     case bookmarkResolutionFailed
+    case itemNotFound
+    case randomGenerationFailed
 }

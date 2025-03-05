@@ -2,8 +2,8 @@
 // IMPORTANT: This file only imports SecurityProtocolsCore to avoid type conflicts
 
 import Foundation
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 // MARK: - Mock Implementations
 
@@ -42,11 +42,11 @@ private class SecurityProviderMock: SecurityProviderProtocol, @unchecked Sendabl
 
     /// Other required protocol methods
     func generateKey(size: Int, type: String) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 
     func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 
     func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async -> Result<Void, SecurityError> {
@@ -61,7 +61,7 @@ private class SecurityProviderMock: SecurityProviderProtocol, @unchecked Sendabl
         withIdentifier identifier: String,
         dataToReencrypt: SecureBytes?
     ) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), SecurityError> {
-        return .success((newKey: SecureBytes([]), reencryptedData: nil))
+        return .success((newKey: SecureBytes(bytes: []), reencryptedData: nil))
     }
 
     func listKeyIdentifiers() async -> Result<[String], SecurityError> {
@@ -104,11 +104,11 @@ private class StandardSecurityProvider: SecurityProviderProtocol, @unchecked Sen
 
     /// Other required protocol methods
     func generateKey(size: Int, type: String) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 
     func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 
     func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async -> Result<Void, SecurityError> {
@@ -123,7 +123,7 @@ private class StandardSecurityProvider: SecurityProviderProtocol, @unchecked Sen
         withIdentifier identifier: String,
         dataToReencrypt: SecureBytes?
     ) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), SecurityError> {
-        return .success((newKey: SecureBytes([]), reencryptedData: nil))
+        return .success((newKey: SecureBytes(bytes: []), reencryptedData: nil))
     }
 
     func listKeyIdentifiers() async -> Result<[String], SecurityError> {
@@ -136,65 +136,65 @@ private class StandardSecurityProvider: SecurityProviderProtocol, @unchecked Sen
 /// Mock implementation of CryptoServiceProtocol for testing
 private class MockCryptoService: CryptoServiceProtocol, @unchecked Sendable {
     func encrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
-    
+
     func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
-    
+
     func generateKey() async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
-    
+
     func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
-    
+
     func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
         return true
     }
-    
+
     func encryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func decryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func encryptAsymmetric(
         data: SecureBytes,
         publicKey: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func decryptAsymmetric(
         data: SecureBytes,
         privateKey: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func sign(
         data: SecureBytes,
         privateKey: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func verify(
         signature: SecureBytes,
         data: SecureBytes,
@@ -203,27 +203,27 @@ private class MockCryptoService: CryptoServiceProtocol, @unchecked Sendable {
     ) async -> SecurityResultDTO {
         return SecurityResultDTO(success: true)
     }
-    
+
     func hash(
         data: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 }
 
 /// Mock implementation of KeyManagementProtocol for testing
 private class MockKeyManager: KeyManagementProtocol, @unchecked Sendable {
     func generateKey(size: Int, type: String) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 
     func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 
     func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async -> Result<Void, SecurityError> {
@@ -238,7 +238,7 @@ private class MockKeyManager: KeyManagementProtocol, @unchecked Sendable {
         withIdentifier identifier: String,
         dataToReencrypt: SecureBytes?
     ) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), SecurityError> {
-        return .success((newKey: SecureBytes([]), reencryptedData: nil))
+        return .success((newKey: SecureBytes(bytes: []), reencryptedData: nil))
     }
 
     func listKeyIdentifiers() async -> Result<[String], SecurityError> {
@@ -251,65 +251,65 @@ private class MockKeyManager: KeyManagementProtocol, @unchecked Sendable {
 /// Standard implementation of CryptoServiceProtocol 
 private class StandardCryptoService: CryptoServiceProtocol, @unchecked Sendable {
     func encrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
-    
+
     func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
-    
+
     func generateKey() async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
-    
+
     func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
-    
+
     func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
         return true
     }
-    
+
     func encryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func decryptSymmetric(
         data: SecureBytes,
         key: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func encryptAsymmetric(
         data: SecureBytes,
         publicKey: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func decryptAsymmetric(
         data: SecureBytes,
         privateKey: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func sign(
         data: SecureBytes,
         privateKey: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func verify(
         signature: SecureBytes,
         data: SecureBytes,
@@ -318,27 +318,27 @@ private class StandardCryptoService: CryptoServiceProtocol, @unchecked Sendable 
     ) async -> SecurityResultDTO {
         return SecurityResultDTO(success: true)
     }
-    
+
     func hash(
         data: SecureBytes,
         config: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-        return SecurityResultDTO(success: true, data: SecureBytes([]))
+        return SecurityResultDTO(success: true, data: SecureBytes(bytes: []))
     }
-    
+
     func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 }
 
 /// Standard implementation of KeyManagementProtocol
 private class StandardKeyManager: KeyManagementProtocol, @unchecked Sendable {
     func generateKey(size: Int, type: String) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 
     func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, SecurityError> {
-        return .success(SecureBytes([]))
+        return .success(SecureBytes(bytes: []))
     }
 
     func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async -> Result<Void, SecurityError> {
@@ -353,7 +353,7 @@ private class StandardKeyManager: KeyManagementProtocol, @unchecked Sendable {
         withIdentifier identifier: String,
         dataToReencrypt: SecureBytes?
     ) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), SecurityError> {
-        return .success((newKey: SecureBytes([]), reencryptedData: nil))
+        return .success((newKey: SecureBytes(bytes: []), reencryptedData: nil))
     }
 
     func listKeyIdentifiers() async -> Result<[String], SecurityError> {

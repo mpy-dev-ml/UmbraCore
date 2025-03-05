@@ -8,11 +8,11 @@ import CoreTypes
 import Foundation
 import FoundationBridgeTypes
 import SecurityBridge
+import SecurityBridgeProtocolAdapters
 import SecurityInterfacesProtocols
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
-import SecurityBridgeProtocolAdapters
 
 final class SecurityBridgeMigrationTests: XCTestCase {
     // MARK: - XPCServiceBridge Tests
@@ -71,10 +71,10 @@ final class SecurityBridgeMigrationTests: XCTestCase {
     func testFoundationDataBridge() throws {
         // Create CoreTypes BinaryData
         let originalData = CoreTypes.BinaryData([1, 2, 3, 4, 5])
-        
+
         // Create DataBridge from it
         let dataBridge = DataBridge(originalData.unsafeBytes)
-        
+
         // Check data integrity
         XCTAssertEqual(dataBridge.bytes.count, originalData.unsafeBytes.count)
         for i in 0..<originalData.unsafeBytes.count {
@@ -85,10 +85,10 @@ final class SecurityBridgeMigrationTests: XCTestCase {
     func testSecurityErrorBridging() {
         // Create a SecurityError
         let originalError = SecurityError.internalError("Test error")
-        
+
         // Create bridge error from it
         let bridgeError = SecurityBridgeErrorMapper.mapToBridgeError(originalError)
-        
+
         // Check error mapping
         if case .implementationMissing(let message) = bridgeError {
             XCTAssertTrue(message.contains("Test error"))
@@ -110,17 +110,17 @@ final class SecurityBridgeMigrationTests: XCTestCase {
         // Test encryption/decryption
         let protocolsTestData = SecurityInterfacesProtocols.BinaryData([1, 2, 3, 4, 5])
         let protocolsTestKey = SecurityInterfacesProtocols.BinaryData([10, 20, 30, 40, 50])
-        
+
         let encrypted = try await adapter.encrypt(protocolsTestData, key: protocolsTestKey)
         XCTAssertNotEqual(encrypted.bytes, protocolsTestData.bytes)
-        
+
         let decrypted = try await adapter.decrypt(encrypted, key: protocolsTestKey)
         XCTAssertEqual(decrypted.bytes, protocolsTestData.bytes)
-        
+
         // Test key generation
         let generatedKey = try await adapter.generateKey(length: 16)
         XCTAssertEqual(generatedKey.bytes.count, 16)
-        
+
         // Test hashing
         let hashedData = try await adapter.hash(protocolsTestData)
         XCTAssertEqual(hashedData.bytes.count, 32) // Mock hash is 32 bytes
@@ -154,7 +154,7 @@ private class MockXPCServiceProtocolBase: SecurityInterfacesProtocols.XPCService
     func ping() async throws -> Bool {
         return true
     }
-    
+
     func synchroniseKeys(_ syncData: SecurityInterfacesProtocols.BinaryData) async throws {
         // No-op for mock
     }

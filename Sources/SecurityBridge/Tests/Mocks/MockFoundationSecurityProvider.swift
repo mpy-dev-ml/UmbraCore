@@ -5,9 +5,9 @@
 //
 
 import Foundation
-import UmbraCoreTypes
 import SecurityBridge
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// A mock implementation of FoundationCryptoServiceImpl for testing
 final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked Sendable {
@@ -336,14 +336,14 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
         options: [String: Any]
     ) async -> FoundationSecurityProviderResult {
         recordMethodCall("performOperation:\(operation)")
-        
+
         // Ensure we don't hang by forcing immediate return
         // This helps avoid deadlocks in tests
         return await withTaskCancellationHandler {
             if shouldFail {
                 return .failure(errorToReturn)
             }
-            
+
             // Return success with the configured data
             return .success(dataToReturn)
         } onCancel: {

@@ -2,8 +2,8 @@
 // IMPORTANT: This file only imports SecurityProtocolsCore to avoid type conflicts
 
 import Foundation
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 // MARK: - Error Definitions
 
@@ -66,20 +66,20 @@ public func createSecurityProtocolsCoreConfig(from params: [String: Any]) -> Sec
     // Handle optional data parameters
     var inputData: SecureBytes?
     if let data = params["data"] as? Data {
-        inputData = SecureBytes([UInt8](data))
+        inputData = SecureBytes(bytes: [UInt8](data))
     } else if let string = params["data"] as? String {
         if let data = string.data(using: .utf8) {
-            inputData = SecureBytes([UInt8](data))
+            inputData = SecureBytes(bytes: [UInt8](data))
         }
     }
 
     // Handle optional key data
     var key: SecureBytes?
     if let keyData = params["key"] as? Data {
-        key = SecureBytes([UInt8](keyData))
+        key = SecureBytes(bytes: [UInt8](keyData))
     } else if let keyString = params["key"] as? String {
         if let keyData = Data(base64Encoded: keyString) {
-            key = SecureBytes([UInt8](keyData))
+            key = SecureBytes(bytes: [UInt8](keyData))
         }
     }
 
@@ -130,7 +130,9 @@ public func mapSecurityProtocolsCoreResult(_ result: SecurityResultDTO) -> [Stri
 
     // Convert SecureBytes to Base64 if available
     if let secureBytes = result.data {
-        let data = Data(secureBytes.unsafeBytes)
+        let data = secureBytes.withUnsafeBytes { bytes in
+            return Data(bytes)
+        }
         resultDict["secureData"] = data.base64EncodedString()
     }
 

@@ -1,4 +1,5 @@
 import Core
+import CoreErrors
 import CryptoSwift
 import CryptoTypes
 import CryptoTypesServices
@@ -50,7 +51,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
     ///   - data: Data to encrypt
     ///   - key: Encryption key
     /// - Returns: Encrypted data
-    /// - Throws: CryptoError if encryption fails
+    /// - Throws: CoreErrors.CryptoError if encryption fails
     public func encrypt(_ data: Data, key: Data) async throws -> Data {
         try Task.checkCancellation()
 
@@ -73,7 +74,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
 
                     continuation.resume(returning: result)
                 } catch {
-                    continuation.resume(throwing: CryptoError.encryptionFailed(error.localizedDescription))
+                    continuation.resume(throwing: CoreErrors.CryptoError.encryptionFailed(reason: error.localizedDescription))
                 }
             }
         }
@@ -84,7 +85,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
     ///   - data: Data to decrypt
     ///   - key: Decryption key
     /// - Returns: Decrypted data
-    /// - Throws: CryptoError if decryption fails
+    /// - Throws: CoreErrors.CryptoError if decryption fails
     public func decrypt(_ data: Data, key: Data) async throws -> Data {
         try Task.checkCancellation()
 
@@ -103,7 +104,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
 
                     continuation.resume(returning: Data(decrypted))
                 } catch {
-                    continuation.resume(throwing: CryptoError.decryptionFailed(error.localizedDescription))
+                    continuation.resume(throwing: CoreErrors.CryptoError.decryptionFailed(reason: error.localizedDescription))
                 }
             }
         }
@@ -112,12 +113,12 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
     /// Generates a random key of the specified bit length
     /// - Parameter bits: Bit length (128 or 256 bits)
     /// - Returns: Generated key data
-    /// - Throws: Error if bit length is invalid
+    /// - Throws: CoreErrors.CryptoError if bit length is invalid
     public func generateKey(bits: Int) async throws -> Data {
         try Task.checkCancellation()
 
         guard bits == 128 || bits == 256 else {
-            throw XPCError.invalidRequest(message: "Key size must be 128 or 256 bits")
+            throw CoreErrors.CryptoError.invalidKeySize(reason: "Key size must be 128 or 256 bits")
         }
 
         // Convert bits to bytes
@@ -128,12 +129,12 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
     /// Generates a random salt of the specified length
     /// - Parameter length: Length in bytes
     /// - Returns: Generated salt data
-    /// - Throws: Error if length is invalid
+    /// - Throws: CoreErrors.CryptoError if length is invalid
     public func generateSalt(length: Int) async throws -> Data {
         try Task.checkCancellation()
 
         guard length > 0 && length <= 64 else {
-            throw XPCError.invalidRequest(message: "Salt length must be between 1 and 64 bytes")
+            throw CoreErrors.CryptoError.invalidSaltLength(expected: 64, got: length)
         }
 
         return Data.random(count: length)
@@ -142,7 +143,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
     /// Generate a secure random key of specified length
     /// - Parameter length: Length of the key in bytes
     /// - Returns: Generated key as Data
-    /// - Throws: XPCError if generation fails
+    /// - Throws: CoreErrors.CryptoError if generation fails
     @MainActor public func generateSecureRandomKey(length: Int) async throws -> Data {
         try Task.checkCancellation()
         return Data.random(count: length)
@@ -150,7 +151,7 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
 
     /// Generate an initialization vector for AES-GCM
     /// - Returns: Generated IV as Data
-    /// - Throws: XPCError if generation fails
+    /// - Throws: CoreErrors.CryptoError if generation fails
     @MainActor public func generateInitializationVector() async throws -> Data {
         try Task.checkCancellation()
         return Data.random(count: 12) // 12 bytes is standard for GCM mode
@@ -160,12 +161,12 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
     /// - Parameters:
     ///   - credential: Credential to store
     ///   - identifier: Unique identifier for the credential
-    /// - Throws: XPCError if storage fails
+    /// - Throws: CoreErrors.CryptoError if storage fails
     public func storeCredential(_ credential: Data, forIdentifier identifier: String) async throws {
         try Task.checkCancellation()
 
         guard !identifier.isEmpty else {
-            throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
+            throw CoreErrors.CryptoError.invalidCredentialIdentifier(reason: "Credential identifier cannot be empty")
         }
 
         // Generate a random key for the credential
@@ -186,18 +187,18 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
     /// Retrieve a credential
     /// - Parameter forIdentifier: Identifier of the credential to retrieve
     /// - Returns: Retrieved credential
-    /// - Throws: XPCError if retrieval fails
+    /// - Throws: CoreErrors.CryptoError if retrieval fails
     public func retrieveCredential(forIdentifier identifier: String) async throws -> Data {
         try Task.checkCancellation()
 
         guard !identifier.isEmpty else {
-            throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
+            throw CoreErrors.CryptoError.invalidCredentialIdentifier(reason: "Credential identifier cannot be empty")
         }
 
         // Retrieve the key from the keychain
         let keyString = try dependencies.keychain.retrievePassword(for: identifier)
         guard Data(base64Encoded: keyString) != nil else {
-            throw XPCError.invalidData(message: "Invalid key format")
+            throw CoreErrors.CryptoError.invalidKeyFormat(reason: "Invalid key format")
         }
 
         // TODO: Retrieve encrypted credential from secure storage
@@ -207,12 +208,12 @@ public final class CryptoXPCService: NSObject, CryptoXPCServiceProtocol {
 
     /// Delete a credential
     /// - Parameter forIdentifier: Identifier of the credential to delete
-    /// - Throws: XPCError if deletion fails
+    /// - Throws: CoreErrors.CryptoError if deletion fails
     public func deleteCredential(forIdentifier identifier: String) async throws {
         try Task.checkCancellation()
 
         guard !identifier.isEmpty else {
-            throw XPCError.invalidRequest(message: "Credential identifier cannot be empty")
+            throw CoreErrors.CryptoError.invalidCredentialIdentifier(reason: "Credential identifier cannot be empty")
         }
 
         // Delete the key from the keychain

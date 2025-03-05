@@ -1,8 +1,8 @@
+import CoreTypes
 import Foundation
 import SecurityTypes
 import SecurityTypesProtocols
-import SecurityInterfaces
-import CoreTypes
+import XPCProtocolsCore
 
 /// Extension to URL that provides functionality for working with security-scoped bookmarks.
 /// Security-scoped bookmarks allow an app to maintain access to user-selected files and directories
@@ -10,7 +10,7 @@ import CoreTypes
 extension URL {
   /// Creates a security-scoped bookmark for this URL.
   /// - Returns: Data containing the security-scoped bookmark
-  /// - Throws: SecurityError.bookmarkError if bookmark creation fails due to:
+  /// - Throws: XPCSecurityError.bookmarkError if bookmark creation fails due to:
   ///   - Invalid file path
   ///   - Insufficient permissions
   ///   - File system errors
@@ -23,15 +23,13 @@ extension URL {
         relativeTo: nil
       )
     } catch {
-      throw SecurityInterfaces.SecurityInterfacesError.bookmarkError(
-        "Failed to create bookmark for: \(path)"
-      )
+      throw XPCSecurityError.bookmarkError
     }
   }
-  
+
   /// Creates a security-scoped bookmark for this URL and returns it as BinaryData.
   /// - Returns: BinaryData containing the security-scoped bookmark
-  /// - Throws: SecurityError.bookmarkError if bookmark creation fails
+  /// - Throws: XPCSecurityError.bookmarkError if bookmark creation fails
   public func createSecurityScopedBookmarkData() async throws -> CoreTypes.BinaryData {
     let data = try await createSecurityScopedBookmark()
     return CoreTypes.BinaryData([UInt8](data))
@@ -42,7 +40,7 @@ extension URL {
   /// - Returns: A tuple containing:
   ///   - URL: The resolved URL
   ///   - Bool: Whether the bookmark is stale and should be recreated
-  /// - Throws: SecurityError.bookmarkError if bookmark resolution fails due to:
+  /// - Throws: XPCSecurityError.bookmarkError if bookmark resolution fails due to:
   ///   - Invalid bookmark data
   ///   - File no longer exists
   ///   - Insufficient permissions
@@ -57,9 +55,7 @@ extension URL {
       )
       return (url, isStale)
     } catch {
-      throw SecurityInterfaces.SecurityInterfacesError.bookmarkError(
-        "Failed to resolve bookmark"
-      )
+      throw XPCSecurityError.bookmarkResolutionFailed
     }
   }
 
@@ -85,9 +81,7 @@ extension URL {
     _ operation: @Sendable () throws -> T
   ) throws -> T {
     guard startSecurityScopedAccess() else {
-      throw SecurityInterfaces.SecurityInterfacesError.accessError(
-        "Failed to access: \(path)"
-      )
+      throw XPCSecurityError.accessError
     }
     defer { stopSecurityScopedAccess() }
     return try operation()
@@ -102,9 +96,7 @@ extension URL {
     _ operation: @Sendable () async throws -> T
   ) async throws -> T {
     guard startSecurityScopedAccess() else {
-      throw SecurityInterfaces.SecurityInterfacesError.accessError(
-        "Failed to access: \(path)"
-      )
+      throw XPCSecurityError.accessError
     }
     defer { stopSecurityScopedAccess() }
     return try await operation()

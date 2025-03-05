@@ -22,6 +22,8 @@ public func mapCoreSecurityError(_ error: CoreSecurityError) -> SecurityError {
         return SecurityError.storageOperationFailed(reason: "Bookmark creation failed")
     case .bookmarkResolutionFailed:
         return SecurityError.storageOperationFailed(reason: "Bookmark resolution failed")
+    @unknown default:
+        return SecurityError.internalError("Unknown core error: \(error)")
     }
 }
 

@@ -1,7 +1,7 @@
 // Foundation-free adapter for XPC services
 // Provides a bridge between Foundation-dependent and Foundation-free implementations
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// Protocol for Foundation-based XPC service interfaces
 /// Use this to define what we expect from Foundation-based XPC implementations
@@ -32,8 +32,13 @@ public final class XPCServiceAdapter: XPCServiceProtocolCore {
     /// Implement synchronizeKeys with SecureBytes
     public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, SecurityError> {
         do {
+            // Convert SecureBytes to a [UInt8] array for XPC transport
+            var rawBytes: [UInt8] = []
+            syncData.withUnsafeBytes { buffer in
+                rawBytes = Array(buffer)
+            }
             // Pass the binary data as the raw bytes
-            try await service.synchroniseKeys(syncData.unsafeBytes)
+            try await service.synchroniseKeys(rawBytes)
             return .success(())
         } catch {
             return .failure(.serviceError(code: -1, reason: "XPC service key synchronization failed"))

@@ -5,8 +5,8 @@
 //
 
 import CryptoSwiftFoundationIndependent
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// Implementation of the CryptoServiceProtocol using CryptoSwiftFoundationIndependent
 public final class CryptoServiceImpl: CryptoServiceProtocol {
@@ -68,17 +68,17 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
         let computedHash = CryptoWrapper.sha256(data)
         return computedHash == hash
     }
-    
+
     /// Generate cryptographically secure random data
     /// - Parameter length: The length of random data to generate in bytes
     /// - Returns: Result containing random data or error
     public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
         do {
             var randomBytes = [UInt8](repeating: 0, count: length)
-            
+
             // Generate random bytes using CryptoKit's secure random number generator
             let status = try CryptoWrapper.generateSecureRandomBytes(&randomBytes, length: length)
-            
+
             if status {
                 return .success(SecureBytes(randomBytes))
             } else {

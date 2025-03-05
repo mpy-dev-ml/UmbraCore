@@ -5,9 +5,9 @@
 //
 
 import Foundation
-import UmbraCoreTypes
 @testable import SecurityBridge
 import SecurityProtocolsCore
+import UmbraCoreTypes
 import XCTest
 
 final class SecurityProviderAdapterTests: XCTestCase {
@@ -16,7 +16,7 @@ final class SecurityProviderAdapterTests: XCTestCase {
 
     private var mockFoundationProvider: MockFoundationSecurityProvider!
     private var adapter: SecurityProviderAdapter!
-    
+
     // Add a timeout for all test executions
     private let testTimeout: TimeInterval = 5.0
 
@@ -119,7 +119,7 @@ final class SecurityProviderAdapterTests: XCTestCase {
         XCTAssertEqual(randomData.count, randomBytes.count)
         XCTAssertEqual(randomConvertedBack.unsafeBytes, randomBytes)
     }
-    
+
     /// Tests a basic encryption-decryption flow using the adapter
     func testPerformSecureOperation() async throws {
         // Arrange
@@ -130,21 +130,21 @@ final class SecurityProviderAdapterTests: XCTestCase {
             keySizeInBits: 256,
             options: [:]
         )
-        
+
         // Configure mock to return success
         mockFoundationProvider.dataToReturn = Data([100, 101, 102]) // Mocked encrypted data
-        
+
         // Act - now uses built-in timeout protection
         let result = await adapter.performSecureOperation(
             operation: .symmetricEncryption,
             config: config
         )
-        
+
         // Assert
         XCTAssertEqual(result.errorCode, 0)  // No error
         XCTAssertNotNil(result.data)
         XCTAssertEqual(result.data?.count, 3)
-        
+
         // Verify the mock was called correctly
         XCTAssertTrue(mockFoundationProvider.methodCalls.contains("performOperation:symmetricEncryption"))
     }

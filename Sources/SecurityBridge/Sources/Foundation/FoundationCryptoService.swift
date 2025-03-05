@@ -15,35 +15,35 @@ public protocol FoundationCryptoService: Sendable {
     ///   - key: Encryption key
     /// - Returns: Result containing encrypted data or error
     func encrypt(data: Data, using key: Data) async -> Result<Data, Error>
-    
+
     /// Decrypt data using the provided key
     /// - Parameters:
     ///   - data: Data to decrypt
     ///   - key: Decryption key
     /// - Returns: Result containing decrypted data or error
     func decrypt(data: Data, using key: Data) async -> Result<Data, Error>
-    
+
     /// Generate a new cryptographic key
     /// - Returns: Result containing the generated key or error
     func generateKey() async -> Result<Data, Error>
-    
+
     /// Generate cryptographic hash of data
     /// - Parameter data: Data to hash
     /// - Returns: Result containing the hash value or error
     func hash(data: Data) async -> Result<Data, Error>
-    
+
     /// Verify that data matches a hash
     /// - Parameters:
     ///   - data: Original data
     ///   - hash: Hash to verify against
     /// - Returns: True if the hash matches, false otherwise
     func verify(data: Data, against hash: Data) async -> Bool
-    
+
     /// Generate secure random data
     /// - Parameter length: Length of random data in bytes
     /// - Returns: Result containing random data or error
     func generateRandomData(length: Int) async -> Result<Data, Error>
-    
+
     /// Encrypt data using symmetric encryption
     /// - Parameters:
     ///   - data: Data to encrypt
@@ -63,7 +63,7 @@ public protocol FoundationCryptoService: Sendable {
         aad: Data?,
         options: [String: String]
     ) async -> FoundationCryptoResult
-    
+
     /// Decrypt data using symmetric encryption
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -83,7 +83,7 @@ public protocol FoundationCryptoService: Sendable {
         aad: Data?,
         options: [String: String]
     ) async -> FoundationCryptoResult
-    
+
     /// Encrypt data using asymmetric encryption
     /// - Parameters:
     ///   - data: Data to encrypt
@@ -99,7 +99,7 @@ public protocol FoundationCryptoService: Sendable {
         keySizeInBits: Int,
         options: [String: String]
     ) async -> FoundationCryptoResult
-    
+
     /// Decrypt data using asymmetric encryption
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -115,7 +115,7 @@ public protocol FoundationCryptoService: Sendable {
         keySizeInBits: Int,
         options: [String: String]
     ) async -> FoundationCryptoResult
-    
+
     /// Create a hash of data using specified algorithm
     /// - Parameters:
     ///   - data: Data to hash
@@ -133,24 +133,24 @@ public protocol FoundationCryptoService: Sendable {
 public struct FoundationCryptoResult {
     /// The operation result data
     public let data: Data?
-    
+
     /// Error if operation failed
     public let error: Error?
-    
+
     /// Initialize with data
     /// - Parameter data: Result data
     public init(data: Data?) {
         self.data = data
         self.error = nil
     }
-    
+
     /// Initialize with error
     /// - Parameter error: Result error
     public init(error: Error) {
         self.data = nil
         self.error = error
     }
-    
+
     /// Convert to Swift Result type
     /// - Returns: Swift Result containing data or error
     public func toResult() -> Result<Data, Error> {

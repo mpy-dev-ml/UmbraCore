@@ -1,7 +1,13 @@
 import Foundation
 import XPC
 
+/// Protocol for crypto-specific XPC services
+/// 
+/// @available(*, deprecated, message: "Use XPCProtocolsCore.XPCServiceProtocolStandard instead")
+/// This protocol is deprecated. Please migrate to XPCProtocolsCore.XPCServiceProtocolStandard instead.
+/// Use the CryptoXPCServiceAdapterFactory to bridge between protocol versions during migration.
 @available(macOS 14.0, *)
+@available(*, deprecated, message: "Use XPCProtocolsCore.XPCServiceProtocolStandard instead")
 @objc public protocol CryptoXPCServiceProtocol {
     /// Generates a random key of the specified bit length (128 or 256 bits)
     func generateKey(bits: Int) async throws -> Data

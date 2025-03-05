@@ -1,3 +1,5 @@
+import CoreErrors
+import CryptoTypes
 import Foundation
 import SecurityUtils
 import UmbraKeychainService
@@ -17,10 +19,4 @@ public struct DefaultCryptoXPCServiceDependencies: CryptoXPCServiceDependencies 
         self.securityUtils = securityUtils
         self.keychain = keychain
     }
-}
-
-public enum CryptoError: Error, Sendable {
-    case invalidData(String)
-    case encryptionFailed(String)
-    case decryptionFailed(String)
 }

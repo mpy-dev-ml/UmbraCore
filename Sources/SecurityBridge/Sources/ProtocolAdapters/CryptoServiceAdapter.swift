@@ -5,8 +5,8 @@
 //
 
 import Foundation
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// CryptoServiceAdapter provides a bridge between Foundation-based cryptographic implementations
 /// and the Foundation-free CryptoServiceProtocol.

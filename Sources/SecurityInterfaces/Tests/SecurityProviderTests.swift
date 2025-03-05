@@ -46,11 +46,11 @@ class SecurityProviderTests: XCTestCase {
         // All errors in Swift bridge to NSError
         let nsError = mappedError as NSError
         let description = nsError.localizedDescription
-        
+
         // Verify the error message contains our expected text
-        XCTAssertTrue(description.contains("Encryption failed"), 
+        XCTAssertTrue(description.contains("Encryption failed"),
                       "Expected error description to contain 'Encryption failed' but got: \(description)")
-        
+
         // Verify the domain is correct
         XCTAssertEqual(nsError.domain, "com.umbracore.SecurityProtocolsCore")
     }
@@ -60,10 +60,10 @@ class SecurityProviderTests: XCTestCase {
         // Test 1: Verify SecurityError types from different modules
         // Create a SecurityProtocolsCore error using the imported type
         let spcError = SecurityError.encryptionFailed(reason: "SPC error")
-        
+
         // Test 2: Create a SecurityError using our local type
         let interfaceError = SecurityInterfacesError.operationFailed("Interface error")
-        
+
         // Test 3: Verify they're distinct types
         XCTAssertEqual(String(describing: type(of: spcError)), "SecurityError")
         XCTAssertEqual(String(describing: type(of: interfaceError)), "SecurityInterfacesError")
@@ -105,23 +105,23 @@ class SecurityProviderTests: XCTestCase {
         XCTAssertEqual(status.statusCode, 200)
         XCTAssertTrue(status.statusMessage.contains("active"))
     }
-    
+
     func testLowLevelOperation() async throws {
         // Get a test provider
         let provider = try SecurityProviderFactory.createProvider(ofType: "test")
-        
+
         // Set up parameters
         let parameters: [String: Any] = [
             "data": Data("Test data".utf8),
             "key": "test-key"
         ]
-        
+
         // Call the security operation with the renamed method
         let result = try await provider.performSecurityOperation(
             operation: .encrypt,
             parameters: parameters
         )
-        
+
         XCTAssertTrue(result.success)
     }
 

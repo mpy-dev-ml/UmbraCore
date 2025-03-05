@@ -1,7 +1,7 @@
 import CryptoSwiftFoundationIndependent
-import UmbraCoreTypes
 import SecurityImplementation
 import SecurityProtocolsCore
+import UmbraCoreTypes
 import XCTest
 
 final class CryptoServiceTests: XCTestCase {

@@ -1,20 +1,19 @@
 import Foundation
-import SecurityInterfaces
-import SecurityInterfacesFoundation
 import SecurityTypesProtocols
+import XPCProtocolsCore
 
 /// Service for managing log files with security-scoped bookmarks
 @available(macOS 14.0, *)
 public actor LoggingService {
-    /// Shared instance with default security service
+    /// Shared instance with default security provider
     public static let shared = LoggingService(securityProvider: DefaultSecurityProvider())
 
     /// The security service to use for file operations
-    private let securityProvider: any SecurityInterfaces.SecurityProviderFoundation
+    private let securityProvider: any XPCProtocolsCore.SecurityProvider
 
     /// Initialize a new logging service
     /// - Parameter securityProvider: The security provider to use for file operations
-    public init(securityProvider: any SecurityInterfaces.SecurityProviderFoundation) {
+    public init(securityProvider: any XPCProtocolsCore.SecurityProvider) {
         self.securityProvider = securityProvider
     }
 

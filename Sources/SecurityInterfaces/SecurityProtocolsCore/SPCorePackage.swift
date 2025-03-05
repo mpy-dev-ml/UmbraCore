@@ -52,7 +52,7 @@ typealias SPCResult = SecurityResultDTO
     // Convert the SPCSecurityError to a detailed NSError
     let errorDomain = "com.umbracore.SecurityProtocolsCore"
     var userInfo: [String: Any] = [:]
-    
+
     // Include descriptive information based on the error case
     switch error {
     case .encryptionFailed(let reason):
@@ -82,12 +82,12 @@ typealias SPCResult = SecurityResultDTO
     @unknown default:
         userInfo[NSLocalizedDescriptionKey] = "Unknown security error"
     }
-    
+
     // Add the original error as underlying error
     userInfo[NSUnderlyingErrorKey] = error as Error
-    
+
     // Create an NSError with appropriate code and information
-    return NSError(domain: errorDomain, code: 1001, userInfo: userInfo)
+    return NSError(domain: errorDomain, code: 1_001, userInfo: userInfo)
 }
 
 // MARK: - Configuration Helpers
@@ -130,20 +130,22 @@ typealias SPCResult = SecurityResultDTO
 /// - Returns: A mapped result for the client
 @Sendable public func mapFromSPCResult(_ result: SPCResultDTO) -> (success: Bool, data: Data?, metadata: [String: String]) {
     // Convert SecureBytes to Data if present
-    var data: Data? = nil
+    var data: Data?
     if let secureBytes = result.data {
-        data = Data(secureBytes.unsafeBytes)
+        data = secureBytes.withUnsafeBytes { bytes in
+            return Data(bytes)
+        }
     } else if result.success {
         // For successful operations without data, create an empty Data object
         // This ensures tests expecting non-nil data won't fail
         data = Data()
     }
-    
+
     // Create a simple metadata dictionary, potentially populated from result properties
     let metadata: [String: String] = [
         "success": String(result.success),
         "errorCode": result.errorCode.map { String($0) } ?? "none"
     ]
-    
+
     return (result.success, data, metadata)
 }

@@ -27,7 +27,7 @@ public enum URLAdapter {
         let query = url.query
         let fragment = url.fragment
 
-        return ResourceLocator(
+        return try ResourceLocator(
             scheme: scheme,
             path: path,
             query: query,
@@ -40,11 +40,15 @@ public enum URLAdapter {
     /// - Returns: A new URL instance representing the same resource
     /// - Throws: AdapterError if the ResourceLocator cannot be converted
     public static func url(from locator: ResourceLocator) throws -> URL {
-        // Use the string representation to create a URL
-        let urlString = locator.toString()
+        // Construct URL components
+        var components = URLComponents()
+        components.scheme = locator.scheme
+        components.path = locator.path
+        components.query = locator.query
+        components.fragment = locator.fragment
 
-        guard let url = URL(string: urlString) else {
-            throw AdapterError.invalidURLConversion("Could not create URL from locator: \(urlString)")
+        guard let url = components.url else {
+            throw AdapterError.invalidURLConversion("Could not create URL from ResourceLocator components")
         }
 
         return url

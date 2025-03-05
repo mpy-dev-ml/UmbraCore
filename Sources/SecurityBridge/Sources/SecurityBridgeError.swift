@@ -27,7 +27,7 @@ public struct SecurityBridgeErrorMapper {
         guard let securityError = error as? SecurityError else {
             return SecurityBridge.SecurityBridgeError.implementationMissing("Unknown error: \(error.localizedDescription)")
         }
-        
+
         switch securityError {
         case .internalError(let message):
             return SecurityBridge.SecurityBridgeError.implementationMissing(message)
@@ -57,7 +57,7 @@ public struct SecurityBridgeErrorMapper {
             return SecurityBridge.SecurityBridgeError.implementationMissing("Unknown security error: \(securityError)")
         }
     }
-    
+
     /// Map a bridge error to a SecurityError
     /// - Parameter error: The bridge error to map
     /// - Returns: A SecurityError
@@ -65,7 +65,7 @@ public struct SecurityBridgeErrorMapper {
         guard let bridgeError = error as? SecurityBridge.SecurityBridgeError else {
             return SecurityError.internalError("Unknown bridge error: \(error.localizedDescription)")
         }
-        
+
         switch bridgeError {
         case .bookmarkResolutionFailed:
             return SecurityError.storageOperationFailed(reason: "Bookmark resolution failed")

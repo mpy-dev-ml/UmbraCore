@@ -1,6 +1,6 @@
 // This file is now a re-export of SecureBytes from SecurityProtocolsCore
-import UmbraCoreTypes
 @_exported import SecurityProtocolsCore
+import UmbraCoreTypes
 
 // Define a typealias to support legacy code
 public typealias BinaryData = SecureBytes

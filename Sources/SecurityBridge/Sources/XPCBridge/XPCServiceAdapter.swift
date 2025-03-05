@@ -5,8 +5,8 @@
 //
 
 import Foundation
-import UmbraCoreTypes
 import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// XPCServiceAdapter provides a bridge for XPC service communication that requires Foundation types.
 ///
@@ -217,12 +217,12 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
                     continuation.resume(returning: .failure(self.mapXPCError(error)))
                     return
                 }
-                
+
                 guard let randomData = randomData else {
                     continuation.resume(returning: .failure(.randomGenerationFailed(reason: "XPC service returned nil data")))
                     return
                 }
-                
+
                 continuation.resume(returning: .success(DataAdapter.secureBytes(from: randomData)))
             }
         }

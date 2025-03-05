@@ -2,8 +2,8 @@ import CoreServicesTypes
 import CryptoSwift
 import Foundation
 @preconcurrency import ObjCBridgingTypesFoundation
-import SecurityInterfacesBase
 import UmbraXPC
+import XPCProtocolsCore
 
 /// Represents the type of cryptographic implementation to use
 public enum CryptoImplementation: Sendable {
@@ -110,7 +110,7 @@ public actor KeyManager {
     /// Generate a new key for the given context
     /// - Parameter context: The security context for key generation
     /// - Returns: The identifier for the generated key
-    /// - Throws: KeyManagerError if key generation fails
+    /// - Throws: XPCSecurityError if key generation fails
     public func generateKey(for context: SecurityContext) async throws -> KeyIdentifier {
         let implementation = selectImplementation(for: context)
         let keyId = UUID().uuidString
@@ -123,16 +123,16 @@ public actor KeyManager {
         case .cryptoSwift:
             // Generate a new key using CryptoSwift
             // Placeholder implementation - will be replaced by ResticBar
-            throw KeyManagerError.keyGenerationError("Key generation moved to ResticBar")
+            throw XPCSecurityError.keyGenerationError("Key generation moved to ResticBar")
         }
     }
 
     /// Rotate a key
     /// - Parameter id: The key identifier to rotate
-    /// - Throws: KeyManagerError if rotation fails
+    /// - Throws: XPCSecurityError if rotation fails
     public func rotateKey(id: KeyIdentifier) async throws {
         // guard let implementation = implementationMap[id] else {
-        //     throw KeyManagerError.keyNotFound
+        //     throw XPCSecurityError.keyNotFound
         // }
 
         // Generate a new key with the same implementation
@@ -155,11 +155,11 @@ public actor KeyManager {
     /// Validate a key
     /// - Parameter id: The key identifier to validate
     /// - Returns: A validation result indicating the key's status
-    /// - Throws: KeyManagerError if validation fails
+    /// - Throws: XPCSecurityError if validation fails
     public func validateKey(id: KeyIdentifier) async throws -> KeyValidationResult {
         // guard let implementation = implementationMap[id],
         //       let key = keyStore[id] else {
-        //     throw KeyManagerError.keyNotFound
+        //     throw XPCSecurityError.keyNotFound
         // }
 
         // Check key metadata
@@ -197,14 +197,14 @@ public actor KeyManager {
     }
 
     /// Synchronise keys across processes if necessary
-    /// - Throws: KeyManagerError if synchronisation fails
+    /// - Throws: XPCSecurityError if synchronisation fails
     public func synchroniseKeys() async throws {
         // Use XPC to broadcast key updates to other processes
         let serviceContainer = ServiceContainer.shared
 
         // Need to await when accessing actor property
         guard let xpcConnection = await serviceContainer.xpcConnection else {
-            throw KeyManagerError.synchronisationError("XPC connection not available or invalid type")
+            throw XPCSecurityError.synchronisationError("XPC connection not available or invalid type")
         }
 
         // Create JSON object with sync data
@@ -212,7 +212,7 @@ public actor KeyManager {
 
         // Check if the XPC connection supports key synchronization
         guard let synchronizeMethod = xpcConnection.synchroniseKeysRaw else {
-            throw KeyManagerError.synchronisationError("XPC connection does not support key synchronization")
+            throw XPCSecurityError.synchronisationError("XPC connection does not support key synchronization")
         }
 
         // Send synchronisation request through XPC
@@ -231,24 +231,24 @@ public actor KeyManager {
     }
 
     /// Validate security boundaries for all keys
-    /// - Throws: KeyManagerError if validation fails
+    /// - Throws: XPCSecurityError if validation fails
     public func validateSecurityBoundaries() async throws {
         for (id, _) in keyMetadata {
             // Check key storage location
             guard isStoredInSecureEnclave(id: id) else {
-                throw KeyManagerError.securityBoundaryViolation("Key \(id) is not stored in secure enclave")
+                throw XPCSecurityError.securityBoundaryViolation("Key \(id) is not stored in secure enclave")
             }
 
             // Verify access controls
             // guard await validateAccessControls(for: id) else {
-            //     throw KeyManagerError.securityBoundaryViolation("Invalid access controls for key \(id)")
+            //     throw XPCSecurityError.securityBoundaryViolation("Invalid access controls for key \(id)")
             // }
 
             // Check for any cross-boundary violations
             // if let violations = await detectCrossBoundaryViolations(for: id),
             //    !violations.isEmpty {
             //     let message = "Cross-boundary violations detected for key \(id): \(violations)"
-            //     throw KeyManagerError.securityBoundaryViolation(message)
+            //     throw XPCSecurityError.securityBoundaryViolation(message)
             // }
         }
     }
@@ -257,7 +257,7 @@ public actor KeyManager {
 
     private func scheduleKeyDeletion(id: String, afterDelay: TimeInterval) async throws {
         guard let metadata = keyMetadata[id] else {
-            throw KeyManagerError.keyNotFound("Key \(id) not found")
+            throw XPCSecurityError.keyNotFound("Key \(id) not found")
         }
 
         let deletionTime = Date().addingTimeInterval(afterDelay)
@@ -283,7 +283,7 @@ public actor KeyManager {
 }
 
 /// Errors that can occur during key management operations
-public enum KeyManagerError: LocalizedError {
+public enum XPCSecurityError: LocalizedError {
     /// The requested key was not found
     case keyNotFound(String)
     /// The key is stored in an unsupported location

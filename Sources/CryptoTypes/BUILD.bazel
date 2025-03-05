@@ -8,6 +8,7 @@ umbra_swift_library(
         allow_empty = True,
     ),
     deps = [
+        "//Sources/CryptoTypes/Adapters:CryptoTypesAdapters",
         "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
         "//Sources/CryptoTypes/Types:CryptoTypesTypes",
         "//Sources/ErrorHandling",

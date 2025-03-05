@@ -4,12 +4,14 @@ load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 # Security interfaces module
 umbra_swift_library(
     name = "SecurityInterfaces",
-    srcs = glob(["**/*.swift"]),
+    srcs = glob(["**/*.swift"], exclude=["SecurityProtocolsCore/**"]),
     deps = [
         "//Sources/CoreTypes",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/SecurityBridge",
+        "//Sources/SecurityInterfaces/SecurityProtocolsCore:SecurityInterfaces_SecurityProtocolsCore",
+        "//Sources/XPCProtocolsCore",
     ],
 )
 
@@ -27,6 +29,7 @@ swift_library(
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/SecurityBridge",
+        "//Sources/XPCProtocolsCore",
     ],
     visibility = ["//visibility:public"],
 )

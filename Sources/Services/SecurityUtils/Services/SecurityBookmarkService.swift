@@ -1,8 +1,8 @@
 import Foundation
-import SecurityInterfaces
 import SecurityTypes
 import SecurityTypesProtocols
 import SecurityUtilsProtocols
+import XPCProtocolsCore
 
 /// Service for managing security-scoped bookmarks
 public actor SecurityBookmarkService {
@@ -19,14 +19,14 @@ public actor SecurityBookmarkService {
     /// Create a security-scoped bookmark for a URL
     /// - Parameter url: URL to create bookmark for
     /// - Returns: Bookmark data
-    /// - Throws: SecurityError if bookmark creation fails
+    /// - Throws: XPCSecurityError if bookmark creation fails
     public func createBookmark(for url: URL) async throws -> Data {
         // Ensure we have a file URL
         let fileURL = url.isFileURL ? url : URL(fileURLWithPath: url.path)
 
         // Start accessing the resource before creating bookmark
         guard fileURL.startAccessingSecurityScopedResource() else {
-            throw SecurityInterfaces.SecurityError.resourceAccessFailed(path: url.path)
+            throw XPCSecurityError.resourceAccessFailed(path: url.path)
         }
         defer { fileURL.stopAccessingSecurityScopedResource() }
 
@@ -42,7 +42,7 @@ public actor SecurityBookmarkService {
     /// Resolve a security-scoped bookmark to a URL
     /// - Parameter bookmarkData: Bookmark data
     /// - Returns: Resolved URL
-    /// - Throws: SecurityError if bookmark resolution fails
+    /// - Throws: XPCSecurityError if bookmark resolution fails
     public func resolveBookmark(_ bookmarkData: Data) async throws -> URL {
         var isStale = false
         let options: NSURL.BookmarkResolutionOptions = [.withSecurityScope, .withoutUI]
@@ -57,7 +57,7 @@ public actor SecurityBookmarkService {
 
             return url
         } catch {
-            throw SecurityInterfaces.SecurityError.bookmarkResolutionFailed
+            throw XPCSecurityError.bookmarkResolutionFailed
         }
     }
 
@@ -66,7 +66,7 @@ public actor SecurityBookmarkService {
     ///   - url: URL to access
     ///   - operation: Operation to perform while URL is accessible
     /// - Returns: Result of the operation
-    /// - Throws: SecurityError if access fails
+    /// - Throws: XPCSecurityError if access fails
     public func withSecurityScopedAccess<T: Sendable>(
         to url: URL,
         operation: @Sendable () async throws -> T
@@ -76,7 +76,7 @@ public actor SecurityBookmarkService {
 
         // Start accessing the resource
         guard fileURL.startAccessingSecurityScopedResource() else {
-            throw SecurityInterfaces.SecurityError.resourceAccessFailed(path: url.path)
+            throw XPCSecurityError.resourceAccessFailed(path: url.path)
         }
 
         // Track the active resource

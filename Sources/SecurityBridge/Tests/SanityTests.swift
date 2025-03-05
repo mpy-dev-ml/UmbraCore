@@ -5,9 +5,9 @@
 //
 
 import Foundation
-import UmbraCoreTypes
 @testable import SecurityBridge
 import SecurityProtocolsCore
+import UmbraCoreTypes
 import XCTest
 
 /// Sanity tests that verify basic test functionality with both sync and async testing

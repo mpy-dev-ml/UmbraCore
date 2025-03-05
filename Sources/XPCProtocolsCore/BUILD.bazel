@@ -5,6 +5,8 @@ load("//:bazel/macros/swift.bzl", "umbra_swift_test")
 umbracore_foundation_free_module(
     name = "XPCProtocolsCore",
     srcs = [
+        "Sources/Adapters/LegacyXPCServiceAdapter.swift",
+        "Sources/XPCProtocolMigrationFactory.swift",
         "Sources/XPCProtocolsCore.swift",
         "Sources/XPCServiceProtocolBasic.swift",
         "Sources/XPCServiceProtocolComplete.swift",
@@ -12,6 +14,7 @@ umbracore_foundation_free_module(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "//Sources/CoreErrors",
         "//Sources/UmbraCoreTypes",
     ],
     copts = [
@@ -29,6 +32,7 @@ umbra_swift_test(
     module_name = "XPCProtocolsCoreTests",
     deps = [
         ":XPCProtocolsCore",
+        "//Sources/CoreErrors",
         "//Sources/UmbraCoreTypes",
     ],
 )

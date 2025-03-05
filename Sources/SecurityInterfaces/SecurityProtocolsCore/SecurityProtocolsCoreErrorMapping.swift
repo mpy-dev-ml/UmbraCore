@@ -129,7 +129,7 @@ public func mapFromSecurityProtocolsCore(_ error: Error) -> NSError {
                     NSLocalizedDescriptionKey: "Operation not implemented"
                 ]
             )
-            
+
         // Handle any future cases that might be added in future Swift versions
         @unknown default:
             return NSError(

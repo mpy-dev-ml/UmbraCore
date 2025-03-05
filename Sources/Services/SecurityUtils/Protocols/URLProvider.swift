@@ -1,25 +1,25 @@
 import Foundation
-import SecurityInterfaces
 import UmbraSecurity
+import XPCProtocolsCore
 
 /// Protocol for URL-based operations
 public protocol URLProvider: Sendable {
     /// Create a bookmark for a path
     /// - Parameter path: Path to create bookmark for
     /// - Returns: Bookmark data
-    /// - Throws: SecurityError if bookmark creation fails
+    /// - Throws: XPCSecurityError if bookmark creation fails
     func createBookmark(forPath path: String) async throws -> Data
 
     /// Resolve a bookmark to a path
     /// - Parameter bookmarkData: Bookmark data to resolve
     /// - Returns: Tuple containing resolved path and whether bookmark is stale
-    /// - Throws: SecurityError if bookmark resolution fails
+    /// - Throws: XPCSecurityError if bookmark resolution fails
     func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool)
 
     /// Start accessing a path
     /// - Parameter path: Path to access
     /// - Returns: True if access was granted
-    /// - Throws: SecurityError if access fails
+    /// - Throws: XPCSecurityError if access fails
     func startAccessing(path: String) async throws -> Bool
 
     /// Stop accessing a path
@@ -43,7 +43,7 @@ public protocol URLProvider: Sendable {
 extension URLProvider {
     public func createBookmark(forPath path: String) async throws -> Data {
         guard let url = URL(string: path) else {
-            throw SecurityError.operationFailed("Invalid path: \(path)")
+            throw XPCSecurityError.operationFailed("Invalid path: \(path)")
         }
 
         return try await url.us_createSecurityScopedBookmark()
@@ -71,13 +71,13 @@ extension URLProvider {
 
     public func startAccessing(path: String) async throws -> Bool {
         guard let url = URL(string: path) else {
-            throw SecurityError.operationFailed("Invalid path: \(path)")
+            throw XPCSecurityError.operationFailed("Invalid path: \(path)")
         }
 
         if url.us_startAccessingSecurityScopedResource() {
             return true
         } else {
-            throw SecurityError.accessError("Failed to access: \(path)")
+            throw XPCSecurityError.accessError("Failed to access: \(path)")
         }
     }
 

@@ -100,7 +100,7 @@ public enum CryptoWrapper {
     public static func generateRandomKeySecure(size: Int = 32) -> SecureBytes {
         return SecureBytes(generateRandomKey(size: size))
     }
-    
+
     /// Generate secure random bytes directly into a buffer
     /// - Parameters:
     ///   - buffer: Buffer to fill with random bytes
@@ -111,12 +111,12 @@ public enum CryptoWrapper {
         guard length > 0 && buffer.count >= length else {
             throw CryptoWrapperError.invalidParameters
         }
-        
+
         // Fill buffer with secure random bytes
         for i in 0..<length {
             buffer[i] = UInt8.random(in: 0...255)
         }
-        
+
         return true
     }
 

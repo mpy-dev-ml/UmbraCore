@@ -45,7 +45,7 @@ public struct ResourceLocator: Sendable, Equatable, Hashable {
         guard !path.isEmpty else {
             throw ResourceLocatorError.invalidPath
         }
-        
+
         self.scheme = scheme
         self.path = path
         self.query = query
@@ -71,7 +71,7 @@ public struct ResourceLocator: Sendable, Equatable, Hashable {
         guard !host.isEmpty else {
             throw ResourceLocatorError.invalidPath
         }
-        
+
         let fullPath = host + (path.hasPrefix("/") ? path : "/" + path)
         return try ResourceLocator(scheme: "http", path: fullPath, query: query)
     }
@@ -87,7 +87,7 @@ public struct ResourceLocator: Sendable, Equatable, Hashable {
         guard !host.isEmpty else {
             throw ResourceLocatorError.invalidPath
         }
-        
+
         let fullPath = host + (path.hasPrefix("/") ? path : "/" + path)
         return try ResourceLocator(scheme: "https", path: fullPath, query: query)
     }
@@ -98,36 +98,36 @@ public struct ResourceLocator: Sendable, Equatable, Hashable {
     /// - Returns: String representation in the format "scheme://path?query#fragment"
     public func toString() -> String {
         var result = "\(scheme)://\(path)"
-        
+
         if let query = query, !query.isEmpty {
             result += "?\(query)"
         }
-        
+
         if let fragment = fragment, !fragment.isEmpty {
             result += "#\(fragment)"
         }
-        
+
         return result
     }
-    
+
     // MARK: - Resource Validation
-    
+
     /// Validates that the resource exists and is accessible
     /// - Returns: true if the resource exists and is accessible
     /// - Throws: ResourceLocatorError if the resource does not exist or is not accessible
     public func validate() throws -> Bool {
         // This is a placeholder implementation that would need to be
         // implemented with platform-specific code for actual resource validation
-        
+
         // For demonstration purposes, we'll throw errors for certain patterns
         if path.contains("nonexistent") {
             throw ResourceLocatorError.resourceNotFound
         }
-        
+
         if path.contains("restricted") {
             throw ResourceLocatorError.accessDenied
         }
-        
+
         return true
     }
 }

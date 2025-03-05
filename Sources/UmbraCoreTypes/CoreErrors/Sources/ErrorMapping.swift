@@ -23,7 +23,7 @@ import CoreErrors
             return CoreErrors.ResourceError.operationFailed
         }
     }
-    
+
     // ResourceLocator errors mapping
     if let resourceError = error as? ResourceLocatorError {
         switch resourceError {
@@ -41,7 +41,7 @@ import CoreErrors
             return CoreErrors.ResourceError.operationFailed
         }
     }
-    
+
     // TimePoint errors mapping
     if let timeError = error as? TimePointError {
         switch timeError {
@@ -53,7 +53,7 @@ import CoreErrors
             return CoreErrors.ResourceError.operationFailed
         }
     }
-    
+
     // Default mapping for unknown errors
     return CoreErrors.ResourceError.operationFailed
 }
@@ -79,7 +79,7 @@ import CoreErrors
             return ResourceLocatorError.generalError("Unknown resource error")
         }
     }
-    
+
     // Map from SecurityError
     if let securityError = error as? CoreErrors.SecurityError {
         switch securityError {
@@ -93,11 +93,15 @@ import CoreErrors
             return ResourceLocatorError.generalError("Bookmark creation failed")
         case .bookmarkResolutionFailed:
             return ResourceLocatorError.generalError("Bookmark resolution failed")
+        case .itemNotFound:
+            return ResourceLocatorError.generalError("Item not found")
+        case .randomGenerationFailed:
+            return ResourceLocatorError.generalError("Random generation failed")
         @unknown default:
             return ResourceLocatorError.generalError("Unknown security error")
         }
     }
-    
+
     // Default mapping
     return ResourceLocatorError.generalError("Unknown error")
 }
@@ -109,7 +113,7 @@ public struct ErrorContainer: Error {
     public let domain: String
     public let code: Int
     public let userInfo: [String: Any]
-    
+
     public init(domain: String, code: Int, userInfo: [String: Any]) {
         self.domain = domain
         self.code = code
