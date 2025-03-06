@@ -1,5 +1,5 @@
 @testable import Core
-import CoreTypes
+import CoreTypesInterfaces
 import CryptoTypes
 import Services
 import XCTest

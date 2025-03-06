@@ -1,4 +1,4 @@
-@testable import CoreTypes
+@testable import CoreTypesInterfaces
 @testable import ErrorHandling
 @testable import ErrorHandlingModels
 import Testing

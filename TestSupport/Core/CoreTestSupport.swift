@@ -1,5 +1,5 @@
 import Core
-import CoreTypes
+import CoreTypesInterfaces
 
 // TestSupport for Core module
 import Foundation

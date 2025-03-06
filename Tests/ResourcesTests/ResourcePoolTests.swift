@@ -1,4 +1,4 @@
-import CoreTypes
+import CoreTypesInterfaces
 @testable import Resources
 import ResourcesProtocols
 import ResourcesTypes
