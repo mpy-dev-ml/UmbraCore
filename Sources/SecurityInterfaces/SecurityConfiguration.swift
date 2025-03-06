@@ -4,10 +4,10 @@ import SecurityProtocolsCore
 /// Security level options for the security provider
 @frozen
 public enum SecurityLevel: Int, Sendable {
-  case basic = 0
-  case standard = 1
-  case advanced = 2
-  case maximum = 3
+  case basic=0
+  case standard=1
+  case advanced=2
+  case maximum=3
 }
 
 /// Configuration for security operations
@@ -36,14 +36,14 @@ public struct SecurityConfiguration: Sendable {
     hashAlgorithm: String,
     options: [String: String]?
   ) {
-    self.securityLevel = securityLevel
-    self.encryptionAlgorithm = encryptionAlgorithm
-    self.hashAlgorithm = hashAlgorithm
-    self.options = options
+    self.securityLevel=securityLevel
+    self.encryptionAlgorithm=encryptionAlgorithm
+    self.hashAlgorithm=hashAlgorithm
+    self.options=options
   }
 
   /// Default configuration with standard security settings
-  public static let `default` = SecurityConfiguration(
+  public static let `default`=SecurityConfiguration(
     securityLevel: .standard,
     encryptionAlgorithm: "AES-256",
     hashAlgorithm: "SHA-256",
@@ -51,7 +51,7 @@ public struct SecurityConfiguration: Sendable {
   )
 
   /// Configuration with minimal security settings for testing
-  public static let minimal = SecurityConfiguration(
+  public static let minimal=SecurityConfiguration(
     securityLevel: .basic,
     encryptionAlgorithm: "AES-128",
     hashAlgorithm: "SHA-1",
@@ -59,7 +59,7 @@ public struct SecurityConfiguration: Sendable {
   )
 
   /// Configuration with maximum security settings
-  public static let maximum = SecurityConfiguration(
+  public static let maximum=SecurityConfiguration(
     securityLevel: .maximum,
     encryptionAlgorithm: "AES-GCM-256",
     hashAlgorithm: "SHA-512",
@@ -69,7 +69,7 @@ public struct SecurityConfiguration: Sendable {
   /// Convert to a dictionary representation for interoperability
   /// - Returns: Dictionary representation of this configuration
   public func toDictionary() -> [String: Any] {
-    var result: [String: Any] = [
+    var result: [String: Any]=[
       "securityLevel": securityLevel.rawValue,
       "encryptionAlgorithm": encryptionAlgorithm,
       "hashAlgorithm": hashAlgorithm
@@ -77,7 +77,7 @@ public struct SecurityConfiguration: Sendable {
 
     if let options {
       for (key, value) in options {
-        result[key] = value
+        result[key]=value
       }
     }
 

@@ -6,6 +6,6 @@ umbra_swift_library(
     srcs = glob(["**/*.swift"]),
     testonly = True,
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
     ],
 )

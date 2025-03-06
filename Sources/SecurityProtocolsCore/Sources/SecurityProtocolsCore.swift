@@ -13,9 +13,9 @@ import UmbraCoreTypes
 /// Main entry point for accessing the SecurityProtocolsCore module
 public enum SecurityProtocolsCore {
   /// Current module version
-  public static let version = "1.0.0"
+  public static let version="1.0.0"
 }
 
 // Export key types and protocols
-public typealias SecurityResult = SecurityResultDTO
-public typealias SecurityConfig = SecurityConfigDTO
+public typealias SecurityResult=SecurityResultDTO
+public typealias SecurityConfig=SecurityConfigDTO

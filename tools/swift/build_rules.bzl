@@ -75,9 +75,21 @@ def umbracore_swift_test_library(
         visibility: Visibility specifier
         **kwargs: Additional arguments to pass to swift_library
     """
+    # Handle empty source lists by providing a default empty source file
+    final_srcs = srcs
+    if not final_srcs:
+        # Create an empty Swift file to satisfy the non-empty requirement
+        empty_src_name = name + "_Empty.swift"
+        native.genrule(
+            name = name + "_empty_src",
+            outs = [empty_src_name],
+            cmd = "echo '// Empty file generated for test library\n// This file is required because swift_library requires non-empty srcs' > $@",
+        )
+        final_srcs = [empty_src_name]
+    
     umbracore_swift_library(
         name = name,
-        srcs = srcs,
+        srcs = final_srcs,
         deps = deps,
         data = data,
         copts = copts,

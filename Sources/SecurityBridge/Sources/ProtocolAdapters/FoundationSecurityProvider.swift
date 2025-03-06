@@ -88,7 +88,7 @@ public final class FoundationOperationResultImpl: NSObject, FoundationOperationR
   private let result: ResultType
 
   private init(_ result: ResultType) {
-    self.result = result
+    self.result=result
     super.init()
   }
 
@@ -137,34 +137,34 @@ extension SecurityProviderFoundationImpl {
     do {
       switch operation {
         case "encrypt":
-          guard let data = options["data"] as? Data, let key = options["key"] as? Data else {
+          guard let data=options["data"] as? Data, let key=options["key"] as? Data else {
             return FoundationOperationResultImpl.failure(NSError(
               domain: "SecurityProvider",
               code: 100,
               userInfo: [NSLocalizedDescriptionKey: "Invalid parameters for encrypt operation"]
             ))
           }
-          let result = try await encryptData(data, key: key)
+          let result=try await encryptData(data, key: key)
           return FoundationOperationResultImpl.success(result)
 
         case "decrypt":
-          guard let data = options["data"] as? Data, let key = options["key"] as? Data else {
+          guard let data=options["data"] as? Data, let key=options["key"] as? Data else {
             return FoundationOperationResultImpl.failure(NSError(
               domain: "SecurityProvider",
               code: 101,
               userInfo: [NSLocalizedDescriptionKey: "Invalid parameters for decrypt operation"]
             ))
           }
-          let result = try await decryptData(data, key: key)
+          let result=try await decryptData(data, key: key)
           return FoundationOperationResultImpl.success(result)
 
         case "generateKey":
-          let length = options["length"] as? Int ?? 32 // Default to 32 bytes (256 bits)
-          let result = try await generateDataKey(length: length)
+          let length=options["length"] as? Int ?? 32 // Default to 32 bytes (256 bits)
+          let result=try await generateDataKey(length: length)
           return FoundationOperationResultImpl.success(result)
 
         case "generateRandomData":
-          guard let length = options["length"] as? Int else {
+          guard let length=options["length"] as? Int else {
             return FoundationOperationResultImpl.failure(NSError(
               domain: "SecurityProvider",
               code: 102,
@@ -173,22 +173,22 @@ extension SecurityProviderFoundationImpl {
               ]
             ))
           }
-          let result = try await generateDataKey(length: length)
+          let result=try await generateDataKey(length: length)
           return FoundationOperationResultImpl.success(result)
 
         case "hash":
-          guard let data = options["data"] as? Data else {
+          guard let data=options["data"] as? Data else {
             return FoundationOperationResultImpl.failure(NSError(
               domain: "SecurityProvider",
               code: 103,
               userInfo: [NSLocalizedDescriptionKey: "Invalid parameters for hash operation"]
             ))
           }
-          let result = try await hashData(data)
+          let result=try await hashData(data)
           return FoundationOperationResultImpl.success(result)
 
         case "createBookmark":
-          guard let urlString = options["url"] as? String, let url = URL(string: urlString) else {
+          guard let urlString=options["url"] as? String, let url=URL(string: urlString) else {
             return FoundationOperationResultImpl.failure(NSError(
               domain: "SecurityProvider",
               code: 104,
@@ -197,11 +197,11 @@ extension SecurityProviderFoundationImpl {
               ]
             ))
           }
-          let result = try await createBookmark(for: url)
+          let result=try await createBookmark(for: url)
           return FoundationOperationResultImpl.success(result)
 
         case "resolveBookmark":
-          guard let bookmarkData = options["bookmarkData"] as? Data else {
+          guard let bookmarkData=options["bookmarkData"] as? Data else {
             return FoundationOperationResultImpl.failure(NSError(
               domain: "SecurityProvider",
               code: 105,
@@ -210,11 +210,11 @@ extension SecurityProviderFoundationImpl {
               ]
             ))
           }
-          let (url, _) = try await resolveBookmark(bookmarkData)
+          let (url, _)=try await resolveBookmark(bookmarkData)
           return FoundationOperationResultImpl.success(url.absoluteString.data(using: .utf8))
 
         case "validateBookmark":
-          guard let bookmarkData = options["bookmarkData"] as? Data else {
+          guard let bookmarkData=options["bookmarkData"] as? Data else {
             return FoundationOperationResultImpl.failure(NSError(
               domain: "SecurityProvider",
               code: 106,
@@ -223,8 +223,8 @@ extension SecurityProviderFoundationImpl {
               ]
             ))
           }
-          let isValid = try await validateBookmark(bookmarkData)
-          let result = isValid ? Data([1]) : Data([0])
+          let isValid=try await validateBookmark(bookmarkData)
+          let result=isValid ? Data([1]) : Data([0])
           return FoundationOperationResultImpl.success(result)
 
         default:

@@ -19,10 +19,10 @@ public enum SecurityBridgeErrorMapper {
   /// - Returns: A SecurityError representation of the error
   public static func mapToSecurityError(_ error: Error) -> SecurityError {
     // Handle different error types
-    if let secError = error as? SecurityError {
+    if let secError=error as? SecurityError {
       // Already a SecurityError
       return secError
-    } else if let xpcError = error as? XPCProtocolsCore.SecurityError {
+    } else if let xpcError=error as? XPCProtocolsCore.SecurityError {
       // Map from SecurityError
       switch xpcError {
         case .notImplemented:
@@ -44,7 +44,7 @@ public enum SecurityBridgeErrorMapper {
         case .cryptoError:
           return SecurityError.internalError("Crypto operation failed")
       }
-    } else if let bridgeError = error as? SecurityBridgeError {
+    } else if let bridgeError=error as? SecurityBridgeError {
       // Map from bridge-specific errors
       switch bridgeError {
         case .invalidInputType:
@@ -58,7 +58,7 @@ public enum SecurityBridgeErrorMapper {
       }
     } else {
       // Default case for unknown error types
-      let errorString = String(describing: error)
+      let errorString=String(describing: error)
       return SecurityError.internalError("Unknown error: \(errorString)")
     }
   }
@@ -68,10 +68,10 @@ public enum SecurityBridgeErrorMapper {
   /// - Returns: A SecurityError representation of the error
   public static func mapToXPCError(_ error: Error) -> XPCServiceProtocolComplete.SecurityError {
     // Handle different error types
-    if let xpcError = error as? XPCServiceProtocolComplete.SecurityError {
+    if let xpcError=error as? XPCServiceProtocolComplete.SecurityError {
       // Already a SecurityError
       return xpcError
-    } else if let secError = error as? SecurityError {
+    } else if let secError=error as? SecurityError {
       // Map from SecurityError
       switch secError {
         case .encryptionFailed:
@@ -99,7 +99,7 @@ public enum SecurityBridgeErrorMapper {
         case .notImplemented:
           return XPCServiceProtocolComplete.SecurityError.notImplemented
       }
-    } else if let bridgeError = error as? SecurityBridgeError {
+    } else if let bridgeError=error as? SecurityBridgeError {
       // Map from bridge-specific errors
       switch bridgeError {
         case .invalidInputType:
@@ -109,7 +109,7 @@ public enum SecurityBridgeErrorMapper {
       }
     } else {
       // Default case for unknown error types
-      let errorString = String(describing: error)
+      let errorString=String(describing: error)
       return XPCServiceProtocolComplete.SecurityError.general("Unknown error: \(errorString)")
     }
   }

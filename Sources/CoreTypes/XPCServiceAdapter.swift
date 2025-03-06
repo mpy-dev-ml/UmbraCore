@@ -8,15 +8,16 @@ import XPCProtocolsCore
 
 // Use our isolation files instead of direct imports
 // This prevents namespace conflicts with enum types that share module names
-public typealias SecureBytes = UmbraCoreTypes.SecureBytes
-public typealias SecureValue = UmbraCoreTypes.SecureValue
-public typealias XPCSecurityError = CoreErrors.SecurityError
+public typealias SecureBytes=UmbraCoreTypes.SecureBytes
+public typealias SecureValue=UmbraCoreTypes.SecureValue
+public typealias XPCSecurityError=CoreErrors.SecurityError
 
 /// Protocol for Foundation-based XPC service implementations
 /// This is implemented by the concrete service classes
 public protocol FoundationBasedXPCService {
   func processRequest(_ requestData: Data) async -> Result<Data, Error>
-  func callSecureFunction(_ name: String, parameters: [String: Any]) async -> Result<[String: Any], Error>
+  func callSecureFunction(_ name: String, parameters: [String: Any]) async
+    -> Result<[String: Any], Error>
   func validateCredential(_ credential: Data) async -> Result<Bool, Error>
   func getSystemInfo() async -> Result<[String: String], Error>
 }
@@ -27,25 +28,25 @@ public final class XPCServiceAdapter: XPCServiceProtocolStandard {
 
   /// Create a new adapter wrapping a Foundation-based service implementation
   public init(wrapping service: any FoundationBasedXPCService) {
-    self.service = service
+    self.service=service
   }
 
   /// Convert an NSDictionary to a secure dictionary format
   /// - Parameter dict: Original NSDictionary from XPC
   /// - Returns: Dictionary with SecureValue values
   private func convertToSecureDict(_ dict: NSDictionary) -> [String: SecureValue] {
-    var secureDict = [String: SecureValue]()
+    var secureDict=[String: SecureValue]()
 
     for (key, value) in dict {
-      guard let key = key as? String else { continue }
+      guard let key=key as? String else { continue }
 
-      if let stringValue = value as? String {
+      if let stringValue=value as? String {
         secureDict[key] = .string(stringValue)
-      } else if let intValue = value as? Int {
+      } else if let intValue=value as? Int {
         secureDict[key] = .integer(intValue)
-      } else if let boolValue = value as? Bool {
+      } else if let boolValue=value as? Bool {
         secureDict[key] = .boolean(boolValue)
-      } else if let dataValue = value as? Data {
+      } else if let dataValue=value as? Data {
         secureDict[key] = .data(SecureBytes(data: dataValue))
       } else if value is NSNull {
         secureDict[key] = .null
@@ -59,12 +60,12 @@ public final class XPCServiceAdapter: XPCServiceProtocolStandard {
   /// Map from any error to XPCSecurityError
   private func mapError(_ error: Error) -> XPCSecurityError {
     // If we already have a SecurityError, return it
-    if let securityError = error as? XPCSecurityError {
+    if let securityError=error as? XPCSecurityError {
       return securityError
     }
 
     // Handle SecurityProtocolsCore's SecurityError types
-    if let securityError = error as? SPCoreSecurityError {
+    if let securityError=error as? SPCoreSecurityError {
       switch securityError {
         case .encryptionFailed:
           return .encryptionError(reason: "Encryption failed")
@@ -91,7 +92,7 @@ public final class XPCServiceAdapter: XPCServiceProtocolStandard {
     }
 
     // Handle general Error types
-    let nsError = error as NSError
+    let nsError=error as NSError
     switch nsError.domain {
       case NSURLErrorDomain:
         return .networkError(reason: "Network error")
@@ -106,57 +107,61 @@ public final class XPCServiceAdapter: XPCServiceProtocolStandard {
 
   // MARK: - XPCServiceProtocolStandard Implementation
 
-  public func processRequest(_ requestData: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    let dataResult = await service.processRequest(Data(requestData.bytes))
+  public func processRequest(_ requestData: SecureBytes) async
+  -> Result<SecureBytes, XPCSecurityError> {
+    let dataResult=await service.processRequest(Data(requestData.bytes))
 
     switch dataResult {
-      case .success(let responseData):
+      case let .success(responseData):
         return .success(SecureBytes(bytes: [UInt8](responseData)))
-      case .failure(let error):
+      case let .failure(error):
         return .failure(mapError(error))
     }
   }
 
-  public func callSecureFunction(_ name: String, parameters: [String: SecureValue]) async -> Result<[String: SecureValue], XPCSecurityError> {
+  public func callSecureFunction(
+    _ name: String,
+    parameters: [String: SecureValue]
+  ) async -> Result<[String: SecureValue], XPCSecurityError> {
     // Convert SecureValue dictionary to [String: Any]
-    var jsonParameters: [String: Any] = [:]
+    var jsonParameters: [String: Any]=[:]
 
     for (key, value) in parameters {
       switch value {
-        case .string(let stringValue):
-          jsonParameters[key] = stringValue
-        case .number(let numberValue):
-          jsonParameters[key] = numberValue
-        case .boolean(let boolValue):
-          jsonParameters[key] = boolValue
-        case .data(let bytes):
-          jsonParameters[key] = Data(bytes.bytes)
+        case let .string(stringValue):
+          jsonParameters[key]=stringValue
+        case let .number(numberValue):
+          jsonParameters[key]=numberValue
+        case let .boolean(boolValue):
+          jsonParameters[key]=boolValue
+        case let .data(bytes):
+          jsonParameters[key]=Data(bytes.bytes)
         case .null:
-          jsonParameters[key] = NSNull()
-        case .array(let array):
+          jsonParameters[key]=NSNull()
+        case let .array(array):
           // Simplified - would need recursive conversion in practice
-          jsonParameters[key] = array
-        case .dictionary(let dict):
+          jsonParameters[key]=array
+        case let .dictionary(dict):
           // Simplified - would need recursive conversion in practice
-          jsonParameters[key] = dict
+          jsonParameters[key]=dict
       }
     }
 
-    let result = await service.callSecureFunction(name, parameters: jsonParameters)
+    let result=await service.callSecureFunction(name, parameters: jsonParameters)
 
     switch result {
-      case .success(let resultDict):
+      case let .success(resultDict):
         // Convert back to SecureValue dictionary
-        var secureDict: [String: SecureValue] = [:]
+        var secureDict: [String: SecureValue]=[:]
 
         for (key, value) in resultDict {
-          if let stringValue = value as? String {
+          if let stringValue=value as? String {
             secureDict[key] = .string(stringValue)
-          } else if let numberValue = value as? Double {
+          } else if let numberValue=value as? Double {
             secureDict[key] = .number(numberValue)
-          } else if let boolValue = value as? Bool {
+          } else if let boolValue=value as? Bool {
             secureDict[key] = .boolean(boolValue)
-          } else if let dataValue = value as? Data {
+          } else if let dataValue=value as? Data {
             secureDict[key] = .data(SecureBytes(bytes: [UInt8](dataValue)))
           } else if value is NSNull {
             secureDict[key] = .null
@@ -165,29 +170,30 @@ public final class XPCServiceAdapter: XPCServiceProtocolStandard {
         }
 
         return .success(secureDict)
-      case .failure(let error):
+      case let .failure(error):
         return .failure(mapError(error))
     }
   }
 
-  public func validateCredential(_ credential: SecureBytes) async -> Result<Bool, XPCSecurityError> {
-    let result = await service.validateCredential(Data(credential.bytes))
+  public func validateCredential(_ credential: SecureBytes) async
+  -> Result<Bool, XPCSecurityError> {
+    let result=await service.validateCredential(Data(credential.bytes))
 
     switch result {
-      case .success(let isValid):
+      case let .success(isValid):
         return .success(isValid)
-      case .failure(let error):
+      case let .failure(error):
         return .failure(mapError(error))
     }
   }
 
   public func getSystemInfo() async -> Result<[String: String], XPCSecurityError> {
-    let result = await service.getSystemInfo()
+    let result=await service.getSystemInfo()
 
     switch result {
-      case .success(let info):
+      case let .success(info):
         return .success(info)
-      case .failure(let error):
+      case let .failure(error):
         return .failure(mapError(error))
     }
   }

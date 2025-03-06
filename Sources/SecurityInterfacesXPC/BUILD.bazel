@@ -5,7 +5,7 @@ umbra_swift_library(
     name = "SecurityInterfacesXPC",
     srcs = glob(["**/*.swift"]),
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
@@ -22,7 +22,7 @@ swift_library(
         "arm64-apple-macos14.0",
     ],
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/ObjCBridgingTypesFoundation",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",

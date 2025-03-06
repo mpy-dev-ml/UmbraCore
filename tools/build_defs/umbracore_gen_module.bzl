@@ -18,15 +18,15 @@ def create_file(path, content):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'w') as f:
         f.write(content)
-    print(f"Created {path}")
+    print("Created " + path)
 
 def main():
     module_name = "{module_name}"
-    module_path = f"Sources/{{module_name}}"
+    module_path = "Sources/" + module_name
     
     # Create directory structure
-    os.makedirs(f"{{module_path}}/Sources", exist_ok=True)
-    os.makedirs(f"{{module_path}}/Tests", exist_ok=True)
+    os.makedirs(module_path + "/Sources", exist_ok=True)
+    os.makedirs(module_path + "/Tests", exist_ok=True)
     
     # Create BUILD.bazel file
     build_content = '''load("//tools/build_defs:umbracore_module.bzl", "umbracore_foundation_free_module", "umbracore_test_module")
@@ -82,19 +82,19 @@ class {module_name}Tests: XCTestCase {{
 '''
 
     # Write the files
-    create_file(f"{{module_path}}/BUILD.bazel", build_content)
-    create_file(f"{{module_path}}/Sources/{{module_name}}.swift", source_content)
-    create_file(f"{{module_path}}/Tests/{{module_name}}Tests.swift", test_content)
+    create_file(module_path + "/BUILD.bazel", build_content.format(module_name=module_name))
+    create_file(module_path + "/Sources/" + module_name + ".swift", source_content.format(module_name=module_name))
+    create_file(module_path + "/Tests/" + module_name + "Tests.swift", test_content.format(module_name=module_name))
     
-    print(f"\\nCreated {{module_name}} module at {{module_path}}")
+    print("\\nCreated " + module_name + " module at " + module_path)
     print("• Module structure:")
-    print(f"  - {{module_path}}/BUILD.bazel")
-    print(f"  - {{module_path}}/Sources/{{module_name}}.swift")
-    print(f"  - {{module_path}}/Tests/{{module_name}}Tests.swift")
+    print("  - " + module_path + "/BUILD.bazel")
+    print("  - " + module_path + "/Sources/" + module_name + ".swift")
+    print("  - " + module_path + "/Tests/" + module_name + "Tests.swift")
     print("\\nNext steps:")
-    print(f"1. Add your core types to {{module_path}}/Sources/")
-    print(f"2. Add tests to {{module_path}}/Tests/")
-    print(f"3. Update dependencies in {{module_path}}/BUILD.bazel if needed")
+    print("1. Add your core types to " + module_path + "/Sources/")
+    print("2. Add tests to " + module_path + "/Tests/")
+    print("3. Update dependencies in " + module_path + "/BUILD.bazel if needed")
 
 if __name__ == "__main__":
     main()
@@ -110,8 +110,8 @@ if __name__ == "__main__":
     executable = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.write(
         output = executable,
-        content = "#!/bin/bash\npython3 $RUNFILES/{script_path}".format(
-            script_path = script_file.short_path,
+        content = "#!/bin/bash\npython3 $RUNFILES/{path} $@".format(
+            path = script_file.short_path,
         ),
         is_executable = True,
     )

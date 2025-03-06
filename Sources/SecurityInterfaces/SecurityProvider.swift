@@ -1,4 +1,4 @@
-import CoreTypes
+import CoreTypesInterfaces
 import Foundation
 import FoundationBridgeTypes
 import SecurityBridge
@@ -70,8 +70,12 @@ public final class SecurityProviderAdapter: SecurityProvider {
 
   public func performOperation(identifier _: String, parameters: [UInt8]) async throws -> [UInt8] {
     // Handle low-level operations by converting to a more specific operation type
-    let parametersDict=do { return .success(decodeParameters(parameters)) } catch { return .failure(.custom(message:     let parametersDict=try decodeParameters(parameters)
-.localizedDescription)) }
+    let parametersDict=do { return .success(decodeParameters(parameters)) } catch {
+      return try .failure(.custom(
+        message: let parametersDict=decodeParameters(parameters)
+          .localizedDescription
+      ))
+    }
     let operationType=parametersDict["operation"] as? String ?? "encrypt"
 
     let operation: SecurityOperation=switch operationType {
@@ -144,7 +148,7 @@ public final class SecurityProviderAdapter: SecurityProvider {
     return .success(mapFromSPCResult(coreResult))
   }
 
-  public func getSecurityConfiguration async -> Result<SecurityConfiguration, XPCSecurityError> {
+  public func getSecurityConfiguration async -> Result<XPCSecurityError> {
     // Call the XPC service to get the latest configuration
     let result=await xpcService.pingStandard()
 
@@ -153,11 +157,15 @@ public final class SecurityProviderAdapter: SecurityProvider {
         // In a real implementation, we would fetch the actual configuration from the XPC service
         return .success(SecurityConfiguration.default)
       case let .failure(error):
-        return .failure(.custom(message: "error
-"))    }
+        return .failure(
+          .custom(
+            message: "Failed to retrieve security configuration: \(error.localizedDescription)"
+          )
+        )
+    }
   }
 
-  public func updateSecurityConfiguration(_ configuration: SecurityConfiguration) async throws {
+  public func updateSecurityConfiguration(_ configuration: some Any) async throws {
     // Convert the configuration to a secure format for transmission
     let configDTO=configuration.toSecurityProtocolsConfig()
 
@@ -169,8 +177,10 @@ public final class SecurityProviderAdapter: SecurityProvider {
 
     // Handle errors
     if case let .failure(error)=result {
-      return .failure(.custom(message: "error
-"))    }
+      return .failure(
+        .custom(message: "Failed to update security configuration: \(error.localizedDescription)")
+      )
+    }
   }
 
   // MARK: - Type Mapping Methods
@@ -200,10 +210,10 @@ public final class SecurityProviderAdapter: SecurityProvider {
     let algorithm=parameters["algorithm"] as? String ?? "AES-GCM"
     let keySize=parameters["keySize"] as? Int ?? 256
 
-    return .success(SecurityProtocolsCore.SecurityConfigDTO()
+    return .success(SecurityProtocolsCore.SecurityConfigDTO(
       algorithm: algorithm,
       keySizeInBits: keySize
-    )
+    ))
   }
 
   private func mapFromSPCResult(

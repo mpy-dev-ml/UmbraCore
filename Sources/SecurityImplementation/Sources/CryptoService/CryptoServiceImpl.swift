@@ -17,14 +17,14 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
   ) async -> Result<SecureBytes, SecurityError> {
     do {
       // Default to AES-GCM with a random IV
-      let iv = CryptoWrapper.generateRandomIVSecure()
+      let iv=CryptoWrapper.generateRandomIVSecure()
 
       // Combine IV with encrypted data
-      let encrypted = try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
+      let encrypted=try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
 
       // Return IV + encrypted data
-      let ivData = iv
-      let combinedData = SecureBytes.combine(ivData, encrypted)
+      let ivData=iv
+      let combinedData=SecureBytes.combine(ivData, encrypted)
 
       return .success(combinedData)
     } catch {
@@ -44,10 +44,10 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
         return .failure(.invalidInput(reason: "Encrypted data too short"))
       }
 
-      let (iv, encryptedData) = try data.split(at: 12)
+      let (iv, encryptedData)=try data.split(at: 12)
 
       // Decrypt the data
-      let decrypted = try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
+      let decrypted=try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
 
       return .success(decrypted)
     } catch {
@@ -59,17 +59,17 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
 
   public func generateKey() async -> Result<SecureBytes, SecurityError> {
     // Generate a 256-bit key (32 bytes)
-    let key = CryptoWrapper.generateRandomKeySecure(size: 32)
+    let key=CryptoWrapper.generateRandomKeySecure(size: 32)
     return .success(key)
   }
 
   public func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-    let hashedData = CryptoWrapper.sha256(data)
+    let hashedData=CryptoWrapper.sha256(data)
     return .success(hashedData)
   }
 
   public func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
-    let computedHash = CryptoWrapper.sha256(data)
+    let computedHash=CryptoWrapper.sha256(data)
     return computedHash == hash
   }
 
@@ -78,10 +78,10 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
   /// - Returns: Result containing random data or error
   public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
     do {
-      var randomBytes = [UInt8](repeating: 0, count: length)
+      var randomBytes=[UInt8](repeating: 0, count: length)
 
       // Generate random bytes using CryptoKit's secure random number generator
-      let status = try CryptoWrapper.generateSecureRandomBytes(&randomBytes, length: length)
+      let status=try CryptoWrapper.generateSecureRandomBytes(&randomBytes, length: length)
 
       if status {
         return .success(SecureBytes(randomBytes))
@@ -109,13 +109,13 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
       switch config.algorithm {
         case "AES-GCM":
           // Use the provided IV or generate a new one
-          let iv = config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
+          let iv=config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
 
           // Encrypt the data
-          let encrypted = try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
+          let encrypted=try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
 
           // Combine IV with encrypted data
-          let combinedData = SecureBytes.combine(iv, encrypted)
+          let combinedData=SecureBytes.combine(iv, encrypted)
           return SecurityResultDTO.success(data: combinedData)
 
         default:
@@ -141,9 +141,9 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
       switch config.algorithm {
         case "AES-GCM":
           // If IV is provided, use it, otherwise extract from data
-          if let iv = config.initializationVector {
+          if let iv=config.initializationVector {
             // Use the provided IV directly with the data
-            let decrypted = try CryptoWrapper.decryptAES_GCM(data: data, key: key, iv: iv)
+            let decrypted=try CryptoWrapper.decryptAES_GCM(data: data, key: key, iv: iv)
             return SecurityResultDTO.success(data: decrypted)
           } else {
             // Extract IV from combined data (first 12 bytes)
@@ -154,8 +154,8 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
               )
             }
 
-            let (iv, encryptedData) = try data.split(at: 12)
-            let decrypted = try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
+            let (iv, encryptedData)=try data.split(at: 12)
+            let decrypted=try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
             return SecurityResultDTO.success(data: decrypted)
           }
 
@@ -208,7 +208,7 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     config _: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Currently only supporting SHA-256
-    let hashedData = CryptoWrapper.sha256(data)
+    let hashedData=CryptoWrapper.sha256(data)
     return SecurityResultDTO.success(data: hashedData)
   }
 }

@@ -11,7 +11,7 @@ umbra_swift_library(
         "//Sources/Core/Services/TypeAliases:CoreServicesTypeAliases",
         "//Sources/Core/Services/TypeAliases:CoreServicesSecurityTypeAliases",
         "//Sources/Core/Services/Types:CoreServicesTypes",
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/ErrorHandling",
         "//Sources/ObjCBridgingTypes",
         "//Sources/ObjCBridgingTypesFoundation",

@@ -1,4 +1,4 @@
-import CoreTypes
+import CoreTypesInterfaces
 import XPCProtocolsCore
 
 /// Protocol defining the core security provider interface without Foundation dependencies

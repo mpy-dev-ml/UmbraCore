@@ -1,4 +1,4 @@
-import CoreTypes
+import CoreTypesInterfaces
 
 /// Protocol that defines the minimal interface needed for Foundation.Data operations
 /// This allows us to break circular dependencies between Foundation and other modules
@@ -24,21 +24,18 @@ public struct DataBridge: Sendable {
 
   /// Initialize with bytes
   public init(_ bytes: [UInt8]) {
-    self.bytes = bytes
+    self.bytes=bytes
   }
 
   /// Initialize with BinaryData (SecureBytes)
-  public init(_ binaryData: CoreTypes.BinaryData) {
-    var tempBytes = [UInt8]()
-    binaryData.withUnsafeBytes { buffer in
-      tempBytes = Array(buffer)
-    }
-    bytes = tempBytes
+  public init(_ binaryData: CoreTypesInterfaces.BinaryData) {
+    // Access the raw bytes directly from the SecureData
+    bytes=binaryData.rawBytes
   }
 
   /// Convert to BinaryData (SecureBytes)
-  public func toBinaryData() -> CoreTypes.BinaryData {
-    CoreTypes.BinaryData(bytes: bytes)
+  public func toBinaryData() -> CoreTypesInterfaces.BinaryData {
+    CoreTypesInterfaces.BinaryData(bytes: bytes)
   }
 }
 
@@ -51,7 +48,7 @@ extension DataBridge {
 
   /// Get a subset of the data
   public func subdata(in range: Range<Int>) -> DataBridge {
-    let subBytes = Array(bytes[range])
+    let subBytes=Array(bytes[range])
     return DataBridge(subBytes)
   }
 }

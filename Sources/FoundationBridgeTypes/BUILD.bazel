@@ -6,7 +6,7 @@ umbra_swift_library(
     name = "FoundationBridgeTypes",
     srcs = glob(["**/*.swift"]),
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
     ],
 )
 
@@ -21,6 +21,6 @@ swift_library(
         "-enable-testing",
     ],
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
     ],
 )

@@ -27,7 +27,7 @@ public final class LegacyXPCServiceAdapter: @unchecked Sendable {
   /// Type erasure constructor for any legacy XPC service
   /// - Parameter service: The legacy service to adapt
   public init(service: Any) {
-    self.service = service
+    self.service=service
   }
 
   /// Map from legacy error types to XPCSecurityError
@@ -35,7 +35,7 @@ public final class LegacyXPCServiceAdapter: @unchecked Sendable {
   /// - Returns: Standard XPCSecurityError
   public static func mapError(_ error: Error) -> XPCSecurityError {
     // Handle SecurityProtocolsCore.SecurityError
-    if let securityError = error as? SecurityProtocolsCore.SecurityError {
+    if let securityError=error as? SecurityProtocolsCore.SecurityError {
       switch securityError {
         case let .encryptionFailed(reason):
           return .encryptionFailed
@@ -65,7 +65,7 @@ public final class LegacyXPCServiceAdapter: @unchecked Sendable {
     }
 
     // Handle legacy SecurityError types
-    if let legacyError = error as? SecurityError {
+    if let legacyError=error as? SecurityError {
       switch legacyError {
         case .notImplemented:
           return .notImplemented
@@ -91,7 +91,7 @@ public final class LegacyXPCServiceAdapter: @unchecked Sendable {
     }
 
     // Handle CoreErrors.CryptoError
-    if let cryptoError = error as? CoreErrors.CryptoError {
+    if let cryptoError=error as? CoreErrors.CryptoError {
       switch cryptoError {
         case .encryptionFailed:
           return .encryptionFailed
@@ -115,7 +115,7 @@ public final class LegacyXPCServiceAdapter: @unchecked Sendable {
     }
 
     // Handle NSError
-    let nsError = error as NSError
+    let nsError=error as NSError
     switch nsError.domain {
       case "com.umbra.security":
         return .cryptoError
@@ -166,7 +166,7 @@ public final class LegacyXPCServiceAdapter: @unchecked Sendable {
   /// - Returns: Legacy SecureBytes
   private func convertToSecureBytes(_ bytes: SecureBytes) -> Any {
     // If the legacy service implements conversion, use that
-    if let legacyEncryptor = service as? LegacyEncryptor {
+    if let legacyEncryptor=service as? LegacyEncryptor {
       return legacyEncryptor.createSecureBytes(from: bytes.withUnsafeBytes { Array($0) })
     }
 
@@ -179,12 +179,12 @@ public final class LegacyXPCServiceAdapter: @unchecked Sendable {
   /// - Returns: SecureBytes
   private func convertToSecureBytes(_ binaryData: Any) -> SecureBytes {
     // Try to extract bytes using a protocol extension
-    if let legacyEncryptor = service as? LegacyEncryptor {
+    if let legacyEncryptor=service as? LegacyEncryptor {
       return legacyEncryptor.extractBytesFromSecureBytes(binaryData)
     }
 
     // If we can extract the bytes directly
-    if let bytesArray = binaryData as? [UInt8] {
+    if let bytesArray=binaryData as? [UInt8] {
       return SecureBytes(bytes: bytesArray)
     }
 
@@ -202,18 +202,18 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolComplete {
 
   public func pingComplete() async -> Result<Bool, XPCSecurityError> {
     // If the legacy service supports ping, use it
-    if let pingable = service as? PingableService {
-      let result = await pingable.ping()
+    if let pingable=service as? PingableService {
+      let result=await pingable.ping()
       switch result {
         case let .success(value):
           return .success(value)
         case let .failure(error):
           return .failure(Self.mapError(error))
       }
-    } else if let legacyBase = service as? LegacyXPCBase {
+    } else if let legacyBase=service as? LegacyXPCBase {
       // Try the legacy XPC base protocol
       do {
-        let pingResult = try await legacyBase.ping()
+        let pingResult=try await legacyBase.ping()
         return .success(pingResult)
       } catch {
         return .failure(Self.mapError(error))
@@ -225,10 +225,10 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolComplete {
   }
 
   public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
-    if let legacyBase = service as? LegacyXPCBase {
+    if let legacyBase=service as? LegacyXPCBase {
       do {
         // Convert SecureBytes to legacy SecureBytes
-        let binaryData = convertToSecureBytes(syncData)
+        let binaryData=convertToSecureBytes(syncData)
         try await legacyBase.synchroniseKeys(binaryData)
         return .success(())
       } catch {
@@ -241,14 +241,14 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolComplete {
   }
 
   public func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    if let encryptor = service as? LegacyEncryptor {
+    if let encryptor=service as? LegacyEncryptor {
       do {
         // Convert SecureBytes to legacy SecureBytes
-        let binaryData = convertToSecureBytes(data)
-        let encryptedData = try await encryptor.encrypt(data: binaryData)
+        let binaryData=convertToSecureBytes(data)
+        let encryptedData=try await encryptor.encrypt(data: binaryData)
 
         // Convert result back to SecureBytes
-        let secureBytes = convertToSecureBytes(encryptedData)
+        let secureBytes=convertToSecureBytes(encryptedData)
         return .success(secureBytes)
       } catch {
         return .failure(Self.mapError(error))
@@ -260,14 +260,14 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolComplete {
   }
 
   public func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    if let encryptor = service as? LegacyEncryptor {
+    if let encryptor=service as? LegacyEncryptor {
       do {
         // Convert SecureBytes to legacy SecureBytes
-        let binaryData = convertToSecureBytes(data)
-        let decryptedData = try await encryptor.decrypt(data: binaryData)
+        let binaryData=convertToSecureBytes(data)
+        let decryptedData=try await encryptor.decrypt(data: binaryData)
 
         // Convert result back to SecureBytes
-        let secureBytes = convertToSecureBytes(decryptedData)
+        let secureBytes=convertToSecureBytes(decryptedData)
         return .success(secureBytes)
       } catch {
         return .failure(Self.mapError(error))
@@ -279,10 +279,10 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolComplete {
   }
 
   public func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
-    if let keyGenerator = service as? LegacyKeyGenerator {
+    if let keyGenerator=service as? LegacyKeyGenerator {
       do {
-        let keyData = try await keyGenerator.generateKey()
-        let secureBytes = convertToSecureBytes(keyData)
+        let keyData=try await keyGenerator.generateKey()
+        let secureBytes=convertToSecureBytes(keyData)
         return .success(secureBytes)
       } catch {
         return .failure(Self.mapError(error))
@@ -294,14 +294,14 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolComplete {
   }
 
   public func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    if let hasher = service as? LegacyHasher {
+    if let hasher=service as? LegacyHasher {
       do {
         // Convert SecureBytes to legacy SecureBytes
-        let binaryData = convertToSecureBytes(data)
-        let hashedData = try await hasher.hash(data: binaryData)
+        let binaryData=convertToSecureBytes(data)
+        let hashedData=try await hasher.hash(data: binaryData)
 
         // Convert result back to SecureBytes
-        let secureBytes = convertToSecureBytes(hashedData)
+        let secureBytes=convertToSecureBytes(hashedData)
         return .success(secureBytes)
       } catch {
         return .failure(Self.mapError(error))
@@ -317,8 +317,8 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolComplete {
 
 extension LegacyXPCServiceAdapter: XPCServiceProtocolStandard {
   public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
-    if let randomGenerator = service as? LegacyRandomGenerator {
-      let randomData = try await randomGenerator.generateRandomData(length: length)
+    if let randomGenerator=service as? LegacyRandomGenerator {
+      let randomData=try await randomGenerator.generateRandomData(length: length)
       return convertToSecureBytes(randomData)
     }
 
@@ -330,14 +330,14 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolStandard {
     _ data: SecureBytes,
     keyIdentifier: String?
   ) async -> Result<SecureBytes, XPCSecurityError> {
-    if let encryptor = service as? LegacyAdvancedEncryptor {
-      let binaryData = convertToSecureBytes(data)
-      let encryptedData = try await encryptor.encryptData(binaryData, keyIdentifier: keyIdentifier)
+    if let encryptor=service as? LegacyAdvancedEncryptor {
+      let binaryData=convertToSecureBytes(data)
+      let encryptedData=try await encryptor.encryptData(binaryData, keyIdentifier: keyIdentifier)
       return convertToSecureBytes(encryptedData)
     }
 
     // Fall back to basic encryption if advanced is not available
-    let result = await encrypt(data: data)
+    let result=await encrypt(data: data)
     switch result {
       case let .success(secureBytes):
         return secureBytes
@@ -350,14 +350,14 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolStandard {
     _ data: SecureBytes,
     keyIdentifier: String?
   ) async -> Result<SecureBytes, XPCSecurityError> {
-    if let encryptor = service as? LegacyAdvancedEncryptor {
-      let binaryData = convertToSecureBytes(data)
-      let decryptedData = try await encryptor.decryptData(binaryData, keyIdentifier: keyIdentifier)
+    if let encryptor=service as? LegacyAdvancedEncryptor {
+      let binaryData=convertToSecureBytes(data)
+      let decryptedData=try await encryptor.decryptData(binaryData, keyIdentifier: keyIdentifier)
       return convertToSecureBytes(decryptedData)
     }
 
     // Fall back to basic decryption if advanced is not available
-    let result = await decrypt(data: data)
+    let result=await decrypt(data: data)
     switch result {
       case let .success(secureBytes):
         return secureBytes
@@ -367,7 +367,7 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolStandard {
   }
 
   public func hashData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    let result = await hash(data: data)
+    let result=await hash(data: data)
     switch result {
       case let .success(secureBytes):
         return secureBytes
@@ -380,9 +380,9 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolStandard {
     _ data: SecureBytes,
     keyIdentifier: String
   ) async -> Result<SecureBytes, XPCSecurityError> {
-    if let signer = service as? LegacySigner {
-      let binaryData = convertToSecureBytes(data)
-      let signatureData = try await signer.signData(binaryData, keyIdentifier: keyIdentifier)
+    if let signer=service as? LegacySigner {
+      let binaryData=convertToSecureBytes(data)
+      let signatureData=try await signer.signData(binaryData, keyIdentifier: keyIdentifier)
       return convertToSecureBytes(signatureData)
     }
 
@@ -394,9 +394,9 @@ extension LegacyXPCServiceAdapter: XPCServiceProtocolStandard {
     for data: SecureBytes,
     keyIdentifier: String
   ) async throws -> Bool {
-    if let verifier = service as? LegacyVerifier {
-      let signatureSecureBytes = convertToSecureBytes(signature)
-      let dataSecureBytes = convertToSecureBytes(data)
+    if let verifier=service as? LegacyVerifier {
+      let signatureSecureBytes=convertToSecureBytes(signature)
+      let dataSecureBytes=convertToSecureBytes(data)
       return try await verifier.verifySignature(
         signatureSecureBytes,
         for: dataSecureBytes,

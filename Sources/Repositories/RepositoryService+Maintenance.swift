@@ -18,16 +18,16 @@ extension RepositoryService {
   ///           `RepositoryError.maintenanceFailed` if the operation fails
   public func maintain(
     _ identifier: String,
-    rebuildIndex: Bool = false
+    rebuildIndex: Bool=false
   ) async throws {
-    let metadata = LogMetadata([
+    let metadata=LogMetadata([
       "repository_id": identifier,
       "rebuild_index": String(rebuildIndex)
     ])
 
     await logger.info("Starting repository maintenance", metadata: metadata)
 
-    guard let repository = repositories[identifier] else {
+    guard let repository=repositories[identifier] else {
       await logger.error("Repository not found", metadata: metadata)
       throw RepositoryError.repositoryNotFound(
         "No repository found with identifier '\(identifier)'"
@@ -63,12 +63,12 @@ extension RepositoryService {
   /// - Returns: Whether the repository was successfully repaired
   /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found
   public func repairRepository(at url: URL) async throws -> Bool {
-    let metadata = LogMetadataBuilder.forRepository(
+    let metadata=LogMetadataBuilder.forRepository(
       path: url.path
     )
     await logger.info("Starting repository repair", metadata: metadata)
 
-    guard let repository = await getRepository(at: url) else {
+    guard let repository=await getRepository(at: url) else {
       await logger.error("Repository not found", metadata: metadata)
       throw RepositoryError.notFound(
         identifier: url.path
@@ -76,7 +76,7 @@ extension RepositoryService {
     }
 
     do {
-      let result = try await repository.repair()
+      let result=try await repository.repair()
       if result {
         await logger.info(
           "Repository repair completed successfully",

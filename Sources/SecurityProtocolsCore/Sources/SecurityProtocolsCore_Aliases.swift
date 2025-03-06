@@ -3,7 +3,7 @@ import Foundation
 
 /// Type alias for backward compatibility
 /// Renamed to avoid conflict with native SecurityProtocolsCore.SecurityError
-public typealias CoreSecurityError = CoreErrors.SecurityError
+public typealias CoreSecurityError=CoreErrors.SecurityError
 
 /// Create a mapping function to convert between CoreErrors.SecurityError and local SecurityError
 /// types
@@ -31,10 +31,10 @@ public func mapCoreSecurityError(_ error: CoreSecurityError) -> SecurityError {
     case .hashingFailed:
       return SecurityError.hashVerificationFailed
     case .serviceFailed:
-      return SecurityError.serviceError(code: 1_001, reason: "Service operation failed")
+      return SecurityError.serviceError(code: 1001, reason: "Service operation failed")
     case .notImplemented:
       return SecurityError.notImplemented
-    case .general(let message):
+    case let .general(message):
       return SecurityError.internalError(message)
     @unknown default:
       return SecurityError.internalError("Unknown security error")

@@ -3,7 +3,7 @@ import XCTest
 
 final class SnapshotInfoTests: XCTestCase {
   func testSnapshotInfoDecoding() throws {
-    let json = """
+    let json="""
       {
           "time": "2025-02-20T12:00:00Z",
           "parent": "abc123",
@@ -21,9 +21,9 @@ final class SnapshotInfoTests: XCTestCase {
       }
       """
 
-    let data = json.data(using: .utf8)!
-    let decoder = JSONDecoder()
-    let snapshot = try decoder.decode(SnapshotInfo.self, from: data)
+    let data=json.data(using: .utf8)!
+    let decoder=JSONDecoder()
+    let snapshot=try decoder.decode(SnapshotInfo.self, from: data)
 
     XCTAssertEqual(snapshot.hostname, "test-host")
     XCTAssertEqual(snapshot.username, "test-user")

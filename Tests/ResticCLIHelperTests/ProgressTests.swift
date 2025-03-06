@@ -6,24 +6,24 @@ import XCTest
 final class ProgressTests: XCTestCase {
   /// Mock progress handler for testing.
   private class MockProgressHandler: ResticProgressReporting {
-    var backupProgress: [BackupProgress] = []
-    var restoreProgress: [RestoreProgress] = []
+    var backupProgress: [BackupProgress]=[]
+    var restoreProgress: [RestoreProgress]=[]
 
     func progressUpdated(_ progress: Any) {
-      if let progress = progress as? BackupProgress {
+      if let progress=progress as? BackupProgress {
         backupProgress.append(progress)
-      } else if let progress = progress as? RestoreProgress {
+      } else if let progress=progress as? RestoreProgress {
         restoreProgress.append(progress)
       }
     }
   }
 
   func testBackupProgressParsing() throws {
-    let handler = MockProgressHandler()
-    let parser = ProgressParser(delegate: handler)
+    let handler=MockProgressHandler()
+    let parser=ProgressParser(delegate: handler)
 
     // Test scanning phase
-    let scanningJSON = """
+    let scanningJSON="""
       {
         "message_type": "scanning",
         "total_files": 100,
@@ -45,7 +45,7 @@ final class ProgressTests: XCTestCase {
     XCTAssertEqual(handler.backupProgress[0].secondsElapsed, 5.5)
 
     // Test processing phase
-    let processingJSON = """
+    let processingJSON="""
       {
         "message_type": "processing",
         "total_files": 100,
@@ -68,10 +68,10 @@ final class ProgressTests: XCTestCase {
   }
 
   func testRestoreProgressParsing() throws {
-    let handler = MockProgressHandler()
-    let parser = ProgressParser(delegate: handler)
+    let handler=MockProgressHandler()
+    let parser=ProgressParser(delegate: handler)
 
-    let restoreJSON = """
+    let restoreJSON="""
       {
         "message_type": "restoring",
         "total_files": 50,
@@ -94,8 +94,8 @@ final class ProgressTests: XCTestCase {
   }
 
   func testInvalidInput() throws {
-    let handler = MockProgressHandler()
-    let parser = ProgressParser(delegate: handler)
+    let handler=MockProgressHandler()
+    let parser=ProgressParser(delegate: handler)
 
     // Test empty input
     XCTAssertFalse(parser.parseLine(""))

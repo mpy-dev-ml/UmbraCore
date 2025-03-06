@@ -97,8 +97,8 @@ public final class SecurityProvider: SecurityProviderProtocol {
 
   /// Creates a new instance with default services
   public init() {
-    cryptoService = CryptoService()
-    keyManager = KeyManager()
+    cryptoService=CryptoService()
+    keyManager=KeyManager()
   }
 
   /// Creates a new instance with the specified services
@@ -106,8 +106,8 @@ public final class SecurityProvider: SecurityProviderProtocol {
   ///   - cryptoService: The crypto service to use
   ///   - keyManager: The key manager to use
   public init(cryptoService: CryptoServiceProtocol, keyManager: KeyManagementProtocol) {
-    self.cryptoService = cryptoService
-    self.keyManager = keyManager
+    self.cryptoService=cryptoService
+    self.keyManager=keyManager
   }
 
   // MARK: - SecurityProviderProtocol
@@ -123,8 +123,8 @@ public final class SecurityProvider: SecurityProviderProtocol {
   ) async -> SecurityResultDTO {
     switch operation {
       case .symmetricEncryption:
-        if let keyID = config.keyIdentifier {
-          let keyResult = await keyManager.retrieveKey(withIdentifier: keyID)
+        if let keyID=config.keyIdentifier {
+          let keyResult=await keyManager.retrieveKey(withIdentifier: keyID)
           switch keyResult {
             case let .success(key):
               return await cryptoService.encryptSymmetric(
@@ -137,7 +137,7 @@ public final class SecurityProvider: SecurityProviderProtocol {
                 error: .serviceError(code: 100, reason: "Key not found: \(keyID)")
               )
           }
-        } else if let key = config.key {
+        } else if let key=config.key {
           return await cryptoService.encryptSymmetric(
             data: config.inputData ?? SecureBytes([]),
             key: key,
@@ -150,8 +150,8 @@ public final class SecurityProvider: SecurityProviderProtocol {
         }
 
       case .symmetricDecryption:
-        if let keyID = config.keyIdentifier {
-          let keyResult = await keyManager.retrieveKey(withIdentifier: keyID)
+        if let keyID=config.keyIdentifier {
+          let keyResult=await keyManager.retrieveKey(withIdentifier: keyID)
           switch keyResult {
             case let .success(key):
               return await cryptoService.decryptSymmetric(
@@ -164,7 +164,7 @@ public final class SecurityProvider: SecurityProviderProtocol {
                 error: .serviceError(code: 100, reason: "Key not found: \(keyID)")
               )
           }
-        } else if let key = config.key {
+        } else if let key=config.key {
           return await cryptoService.decryptSymmetric(
             data: config.inputData ?? SecureBytes([]),
             key: key,
@@ -243,28 +243,29 @@ public final class SecurityProvider: SecurityProviderProtocol {
    */
   public func createSecureConfig(options: [String: Any]?) -> SecurityConfigDTO {
     // Extract options from the dictionary or use defaults
-    let algorithm = options?["algorithm"] as? String ?? "AES-GCM"
-    let keySize = options?["keySize"] as? Int ?? 256
+    let algorithm=options?["algorithm"] as? String ?? "AES-GCM"
+    let keySize=options?["keySize"] as? Int ?? 256
 
     // Create a basic configuration
-    var config = SecurityConfigDTO(
+    var config=SecurityConfigDTO(
       algorithm: algorithm,
       keySizeInBits: keySize
     )
 
     // Add any additional options that were provided
-    if let ivHex = options?["iv"] as? String, let ivData = hexStringToData(ivHex) {
-      config = config.withInitializationVector(SecureBytes(ivData))
+    if let ivHex=options?["iv"] as? String, let ivData=hexStringToData(ivHex) {
+      config=config.withInitializationVector(SecureBytes(ivData))
     }
 
-    if let keyID = options?["keyIdentifier"] as? String {
-      config = config.withKeyIdentifier(keyID)
+    if let keyID=options?["keyIdentifier"] as? String {
+      config=config.withKeyIdentifier(keyID)
     }
 
     if
-      let inputBase64 = options?["inputData"] as? String,
-      let inputData = base64StringToData(inputBase64) {
-      config = config.withInputData(SecureBytes(inputData))
+      let inputBase64=options?["inputData"] as? String,
+      let inputData=base64StringToData(inputBase64)
+    {
+      config=config.withInputData(SecureBytes(inputData))
     }
 
     return config
@@ -295,22 +296,22 @@ public final class SecurityProvider: SecurityProviderProtocol {
    "00 FF" -> [0x00, 0xFF]
    */
   private func hexStringToData(_ hexString: String) -> [UInt8]? {
-    var data = [UInt8]()
-    let hexString = hexString.replacingOccurrences(of: " ", with: "")
+    var data=[UInt8]()
+    let hexString=hexString.replacingOccurrences(of: " ", with: "")
 
     // Make sure the string has an even number of characters
     guard hexString.count % 2 == 0 else { return nil }
 
     // Convert each pair of hex characters to a byte
-    var index = hexString.startIndex
+    var index=hexString.startIndex
     while index < hexString.endIndex {
-      let nextIndex = hexString.index(index, offsetBy: 2)
-      if let byte = UInt8(hexString[index..<nextIndex], radix: 16) {
+      let nextIndex=hexString.index(index, offsetBy: 2)
+      if let byte=UInt8(hexString[index..<nextIndex], radix: 16) {
         data.append(byte)
       } else {
         return nil
       }
-      index = nextIndex
+      index=nextIndex
     }
 
     return data

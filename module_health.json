@@ -407,6 +407,96 @@
     ]
   },
   {
+    "name": "SecurityInterfaces",
+    "path": "Sources/SecurityInterfaces",
+    "files": [
+      "Sources/SecurityInterfaces/Models/SecurityModels.swift",
+      "Sources/SecurityInterfaces/SecurityConfiguration.swift",
+      "Sources/SecurityInterfaces/SecurityError.swift",
+      "Sources/SecurityInterfaces/SecurityInterfaces.swift",
+      "Sources/SecurityInterfaces/SecurityProvider.swift",
+      "Sources/SecurityInterfaces/SecurityProviderBase.swift",
+      "Sources/SecurityInterfaces/SecurityProviderFactory.swift",
+      "Sources/SecurityInterfaces/SecurityProviderFoundation.swift",
+      "Sources/SecurityInterfaces/Tests/SecurityProviderTests.swift",
+      "Sources/SecurityInterfaces/XPCProtocolsMigration.swift"
+    ],
+    "build_files": [
+      "Sources/SecurityInterfaces/BUILD.bazel",
+      "Sources/SecurityInterfaces/Tests/BUILD.bazel"
+    ],
+    "health_score": 6,
+    "detected_issues": [
+      "No Extensions file for namespacing"
+    ]
+  },
+  {
+    "name": "SecurityInterfacesBase",
+    "path": "Sources/SecurityInterfacesBase",
+    "files": [
+      "Sources/SecurityInterfacesBase/SecurityError.swift",
+      "Sources/SecurityInterfacesBase/SecurityInterfacesBase_Aliases.swift",
+      "Sources/SecurityInterfacesBase/SecurityProviderBase.swift"
+    ],
+    "build_files": [
+      "Sources/SecurityInterfacesBase/BUILD.bazel"
+    ],
+    "health_score": 6,
+    "detected_issues": [
+      "No Extensions file for namespacing"
+    ]
+  },
+  {
+    "name": "Features",
+    "path": "Sources/Features",
+    "files": [
+      "Sources/Features/Crypto/Models/SecureStorageData.swift",
+      "Sources/Features/Crypto/Protocols/SecureStorageProvider.swift",
+      "Sources/Features/Features.swift",
+      "Sources/Features/Features_Aliases.swift",
+      "Sources/Features/Logging/Errors/LoggingError.swift",
+      "Sources/Features/Logging/Models/LogEntry.swift",
+      "Sources/Features/Logging/Protocols/LoggingProtocol.swift",
+      "Sources/Features/Logging/Services/DefaultSecurityProvider.swift",
+      "Sources/Features/Logging/Services/LoggingService.swift",
+      "Sources/Features/Logging/Services/SwiftyBeaverLoggingService.swift"
+    ],
+    "build_files": [
+      "Sources/Features/BUILD.bazel",
+      "Sources/Features/Crypto/Models/BUILD.bazel",
+      "Sources/Features/Crypto/Protocols/BUILD.bazel",
+      "Sources/Features/Logging/Errors/BUILD.bazel",
+      "Sources/Features/Logging/Models/BUILD.bazel",
+      "Sources/Features/Logging/Protocols/BUILD.bazel",
+      "Sources/Features/Logging/Services/BUILD.bazel"
+    ],
+    "health_score": 6,
+    "detected_issues": [
+      "No Extensions file for namespacing"
+    ]
+  },
+  {
+    "name": "CoreTypesImplementation",
+    "path": "Sources/CoreTypesImplementation",
+    "files": [
+      "Sources/CoreTypesImplementation/Sources/CoreTypesImplementation.swift",
+      "Sources/CoreTypesImplementation/Sources/DefaultCoreProvider.swift",
+      "Sources/CoreTypesImplementation/Sources/ErrorAdapters.swift",
+      "Sources/CoreTypesImplementation/Sources/SecureDataAdapters.swift",
+      "Sources/CoreTypesImplementation/Tests/CoreProviderTests.swift",
+      "Sources/CoreTypesImplementation/Tests/ErrorAdaptersTests.swift",
+      "Sources/CoreTypesImplementation/Tests/SecureDataAdaptersTests.swift"
+    ],
+    "build_files": [
+      "Sources/CoreTypesImplementation/BUILD.bazel",
+      "Sources/CoreTypesImplementation/Tests/BUILD.bazel"
+    ],
+    "health_score": 6,
+    "detected_issues": [
+      "No Extensions file for namespacing"
+    ]
+  },
+  {
     "name": "CoreServicesTypesNoFoundation",
     "path": "Sources/CoreServicesTypesNoFoundation",
     "files": [
@@ -417,39 +507,6 @@
     ],
     "build_files": [
       "Sources/CoreServicesTypesNoFoundation/BUILD.bazel"
-    ],
-    "health_score": 6,
-    "detected_issues": [
-      "No Extensions file for namespacing"
-    ]
-  },
-  {
-    "name": "CoreServicesTypes",
-    "path": "Sources/CoreServicesTypes",
-    "files": [
-      "Sources/CoreServicesTypes/KeyMetadata.swift",
-      "Sources/CoreServicesTypes/KeyStatus.swift",
-      "Sources/CoreServicesTypes/ServiceState.swift",
-      "Sources/CoreServicesTypes/StorageLocation.swift"
-    ],
-    "build_files": [
-      "Sources/CoreServicesTypes/BUILD.bazel"
-    ],
-    "health_score": 6,
-    "detected_issues": [
-      "No Extensions file for namespacing"
-    ]
-  },
-  {
-    "name": "ObjCBridgingTypesFoundation",
-    "path": "Sources/ObjCBridgingTypesFoundation",
-    "files": [
-      "Sources/ObjCBridgingTypesFoundation/DataConverter.swift",
-      "Sources/ObjCBridgingTypesFoundation/EmptyPlaceholder.swift",
-      "Sources/ObjCBridgingTypesFoundation/XPCServiceProtocolBase.swift"
-    ],
-    "build_files": [
-      "Sources/ObjCBridgingTypesFoundation/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -484,30 +541,15 @@
     ]
   },
   {
-    "name": "Repositories",
-    "path": "Sources/Repositories",
+    "name": "ObjCBridgingTypesFoundation",
+    "path": "Sources/ObjCBridgingTypesFoundation",
     "files": [
-      "Sources/Repositories/FileSystemRepository.swift",
-      "Sources/Repositories/Protocols/RepositoryProtocol.swift",
-      "Sources/Repositories/Repositories.swift",
-      "Sources/Repositories/Repositories_Aliases.swift",
-      "Sources/Repositories/RepositoryService+HealthCheck.swift",
-      "Sources/Repositories/RepositoryService+Locking.swift",
-      "Sources/Repositories/RepositoryService+Maintenance.swift",
-      "Sources/Repositories/RepositoryService+Stats.swift",
-      "Sources/Repositories/RepositoryService+Validation.swift",
-      "Sources/Repositories/RepositoryService.swift",
-      "Sources/Repositories/Types/LogMetadataBuilder.swift",
-      "Sources/Repositories/Types/Repository.swift",
-      "Sources/Repositories/Types/RepositoryError.swift",
-      "Sources/Repositories/Types/RepositoryProtocols.swift",
-      "Sources/Repositories/Types/RepositoryState.swift",
-      "Sources/Repositories/Types/RepositoryStats.swift"
+      "Sources/ObjCBridgingTypesFoundation/DataConverter.swift",
+      "Sources/ObjCBridgingTypesFoundation/EmptyPlaceholder.swift",
+      "Sources/ObjCBridgingTypesFoundation/XPCServiceProtocolBase.swift"
     ],
     "build_files": [
-      "Sources/Repositories/BUILD.bazel",
-      "Sources/Repositories/Protocols/BUILD.bazel",
-      "Sources/Repositories/Types/BUILD.bazel"
+      "Sources/ObjCBridgingTypesFoundation/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -554,20 +596,30 @@
     ]
   },
   {
-    "name": "Resources",
-    "path": "Sources/Resources",
+    "name": "Repositories",
+    "path": "Sources/Repositories",
     "files": [
-      "Sources/Resources/Protocols/ManagedResource.swift",
-      "Sources/Resources/Protocols/ResourceProtocol.swift",
-      "Sources/Resources/ResourcePool.swift",
-      "Sources/Resources/Resources_Aliases.swift",
-      "Sources/Resources/Types/ResourceError.swift",
-      "Sources/Resources/Types/ResourceState.swift"
+      "Sources/Repositories/FileSystemRepository.swift",
+      "Sources/Repositories/Protocols/RepositoryProtocol.swift",
+      "Sources/Repositories/Repositories.swift",
+      "Sources/Repositories/Repositories_Aliases.swift",
+      "Sources/Repositories/RepositoryService+HealthCheck.swift",
+      "Sources/Repositories/RepositoryService+Locking.swift",
+      "Sources/Repositories/RepositoryService+Maintenance.swift",
+      "Sources/Repositories/RepositoryService+Stats.swift",
+      "Sources/Repositories/RepositoryService+Validation.swift",
+      "Sources/Repositories/RepositoryService.swift",
+      "Sources/Repositories/Types/LogMetadataBuilder.swift",
+      "Sources/Repositories/Types/Repository.swift",
+      "Sources/Repositories/Types/RepositoryError.swift",
+      "Sources/Repositories/Types/RepositoryProtocols.swift",
+      "Sources/Repositories/Types/RepositoryState.swift",
+      "Sources/Repositories/Types/RepositoryStats.swift"
     ],
     "build_files": [
-      "Sources/Resources/BUILD.bazel",
-      "Sources/Resources/Protocols/BUILD.bazel",
-      "Sources/Resources/Types/BUILD.bazel"
+      "Sources/Repositories/BUILD.bazel",
+      "Sources/Repositories/Protocols/BUILD.bazel",
+      "Sources/Repositories/Types/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -595,6 +647,27 @@
       "Sources/Services/SecurityUtils/BUILD.bazel",
       "Sources/Services/SecurityUtils/Protocols/BUILD.bazel",
       "Sources/Services/SecurityUtils/Services/BUILD.bazel"
+    ],
+    "health_score": 6,
+    "detected_issues": [
+      "No Extensions file for namespacing"
+    ]
+  },
+  {
+    "name": "Resources",
+    "path": "Sources/Resources",
+    "files": [
+      "Sources/Resources/Protocols/ManagedResource.swift",
+      "Sources/Resources/Protocols/ResourceProtocol.swift",
+      "Sources/Resources/ResourcePool.swift",
+      "Sources/Resources/Resources_Aliases.swift",
+      "Sources/Resources/Types/ResourceError.swift",
+      "Sources/Resources/Types/ResourceState.swift"
+    ],
+    "build_files": [
+      "Sources/Resources/BUILD.bazel",
+      "Sources/Resources/Protocols/BUILD.bazel",
+      "Sources/Resources/Types/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -667,6 +740,40 @@
     ]
   },
   {
+    "name": "CoreServicesTypes",
+    "path": "Sources/CoreServicesTypes",
+    "files": [
+      "Sources/CoreServicesTypes/KeyMetadata.swift",
+      "Sources/CoreServicesTypes/KeyStatus.swift",
+      "Sources/CoreServicesTypes/ServiceState.swift",
+      "Sources/CoreServicesTypes/StorageLocation.swift"
+    ],
+    "build_files": [
+      "Sources/CoreServicesTypes/BUILD.bazel"
+    ],
+    "health_score": 6,
+    "detected_issues": [
+      "No Extensions file for namespacing"
+    ]
+  },
+  {
+    "name": "UmbraBookmarkService",
+    "path": "Sources/UmbraBookmarkService",
+    "files": [
+      "Sources/UmbraBookmarkService/BookmarkError.swift",
+      "Sources/UmbraBookmarkService/BookmarkService.swift",
+      "Sources/UmbraBookmarkService/BookmarkServiceProtocol.swift",
+      "Sources/UmbraBookmarkService/UmbraBookmarkService.swift"
+    ],
+    "build_files": [
+      "Sources/UmbraBookmarkService/BUILD.bazel"
+    ],
+    "health_score": 6,
+    "detected_issues": [
+      "No Extensions file for namespacing"
+    ]
+  },
+  {
     "name": "CryptoTypes",
     "path": "Sources/CryptoTypes",
     "files": [
@@ -695,43 +802,22 @@
     ]
   },
   {
-    "name": "ErrorHandling",
-    "path": "Sources/ErrorHandling",
+    "name": "UmbraCoreTypes",
+    "path": "Sources/UmbraCoreTypes",
     "files": [
-      "Sources/ErrorHandling/Common/Common.swift",
-      "Sources/ErrorHandling/Common/ErrorContext.swift",
-      "Sources/ErrorHandling/ErrorHandling.swift",
-      "Sources/ErrorHandling/Extensions/Error+Context.swift",
-      "Sources/ErrorHandling/Models/CommonError.swift",
-      "Sources/ErrorHandling/Models/CoreError.swift",
-      "Sources/ErrorHandling/Models/ErrorContext.swift",
-      "Sources/ErrorHandling/Models/ServiceErrorTypes.swift",
-      "Sources/ErrorHandling/Protocols/ErrorHandlingProtocol.swift",
-      "Sources/ErrorHandling/Protocols/ErrorReporting.swift",
-      "Sources/ErrorHandling/Protocols/ServiceErrorProtocol.swift"
+      "Sources/UmbraCoreTypes/CoreErrors/Sources/CEPackage.swift",
+      "Sources/UmbraCoreTypes/CoreErrors/Sources/ErrorMapping.swift",
+      "Sources/UmbraCoreTypes/CoreErrors/Sources/ResourceLocatorError.swift",
+      "Sources/UmbraCoreTypes/Sources/ResourceLocator.swift",
+      "Sources/UmbraCoreTypes/Sources/SecureBytes.swift",
+      "Sources/UmbraCoreTypes/Sources/TimePoint.swift",
+      "Sources/UmbraCoreTypes/Tests/CoreErrorsMappingTests.swift",
+      "Sources/UmbraCoreTypes/Tests/ResourceLocatorTests.swift",
+      "Sources/UmbraCoreTypes/Tests/SecureBytesTests.swift"
     ],
     "build_files": [
-      "Sources/ErrorHandling/BUILD.bazel",
-      "Sources/ErrorHandling/Common/BUILD.bazel",
-      "Sources/ErrorHandling/Models/BUILD.bazel",
-      "Sources/ErrorHandling/Protocols/BUILD.bazel"
-    ],
-    "health_score": 6,
-    "detected_issues": [
-      "No Extensions file for namespacing"
-    ]
-  },
-  {
-    "name": "UmbraBookmarkService",
-    "path": "Sources/UmbraBookmarkService",
-    "files": [
-      "Sources/UmbraBookmarkService/BookmarkError.swift",
-      "Sources/UmbraBookmarkService/BookmarkService.swift",
-      "Sources/UmbraBookmarkService/BookmarkServiceProtocol.swift",
-      "Sources/UmbraBookmarkService/UmbraBookmarkService.swift"
-    ],
-    "build_files": [
-      "Sources/UmbraBookmarkService/BUILD.bazel"
+      "Sources/UmbraCoreTypes/BUILD.bazel",
+      "Sources/UmbraCoreTypes/CoreErrors/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -772,58 +858,6 @@
     ],
     "build_files": [
       "Sources/SecurityBridge/BUILD.bazel"
-    ],
-    "health_score": 6,
-    "detected_issues": [
-      "No Extensions file for namespacing"
-    ]
-  },
-  {
-    "name": "UmbraCoreTypes",
-    "path": "Sources/UmbraCoreTypes",
-    "files": [
-      "Sources/UmbraCoreTypes/CoreErrors/Sources/CEPackage.swift",
-      "Sources/UmbraCoreTypes/CoreErrors/Sources/ErrorMapping.swift",
-      "Sources/UmbraCoreTypes/CoreErrors/Sources/ResourceLocatorError.swift",
-      "Sources/UmbraCoreTypes/Sources/ResourceLocator.swift",
-      "Sources/UmbraCoreTypes/Sources/SecureBytes.swift",
-      "Sources/UmbraCoreTypes/Sources/TimePoint.swift",
-      "Sources/UmbraCoreTypes/Tests/CoreErrorsMappingTests.swift",
-      "Sources/UmbraCoreTypes/Tests/ResourceLocatorTests.swift",
-      "Sources/UmbraCoreTypes/Tests/SecureBytesTests.swift"
-    ],
-    "build_files": [
-      "Sources/UmbraCoreTypes/BUILD.bazel",
-      "Sources/UmbraCoreTypes/CoreErrors/BUILD.bazel"
-    ],
-    "health_score": 6,
-    "detected_issues": [
-      "No Extensions file for namespacing"
-    ]
-  },
-  {
-    "name": "Features",
-    "path": "Sources/Features",
-    "files": [
-      "Sources/Features/Crypto/Models/SecureStorageData.swift",
-      "Sources/Features/Crypto/Protocols/SecureStorageProvider.swift",
-      "Sources/Features/Features.swift",
-      "Sources/Features/Features_Aliases.swift",
-      "Sources/Features/Logging/Errors/LoggingError.swift",
-      "Sources/Features/Logging/Models/LogEntry.swift",
-      "Sources/Features/Logging/Protocols/LoggingProtocol.swift",
-      "Sources/Features/Logging/Services/DefaultSecurityProvider.swift",
-      "Sources/Features/Logging/Services/LoggingService.swift",
-      "Sources/Features/Logging/Services/SwiftyBeaverLoggingService.swift"
-    ],
-    "build_files": [
-      "Sources/Features/BUILD.bazel",
-      "Sources/Features/Crypto/Models/BUILD.bazel",
-      "Sources/Features/Crypto/Protocols/BUILD.bazel",
-      "Sources/Features/Logging/Errors/BUILD.bazel",
-      "Sources/Features/Logging/Models/BUILD.bazel",
-      "Sources/Features/Logging/Protocols/BUILD.bazel",
-      "Sources/Features/Logging/Services/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -881,7 +915,6 @@
       "Sources/UmbraLogging/LogEntry.swift",
       "Sources/UmbraLogging/LogLevel.swift",
       "Sources/UmbraLogging/LogMetadata.swift",
-      "Sources/UmbraLogging/Logger.swift",
       "Sources/UmbraLogging/LoggingProtocol.swift",
       "Sources/UmbraLogging/Protocols_Aliases.swift",
       "Sources/UmbraLogging/Repositories_Aliases.swift",
@@ -904,21 +937,43 @@
     ]
   },
   {
-    "name": "SecurityImplementation",
-    "path": "Sources/SecurityImplementation",
+    "name": "UmbraLoggingAdapters",
+    "path": "Sources/UmbraLoggingAdapters",
     "files": [
-      "Sources/SecurityImplementation/Sources/CryptoService/CryptoServiceImpl.swift",
-      "Sources/SecurityImplementation/Sources/CryptoService.swift",
-      "Sources/SecurityImplementation/Sources/KeyManagement/KeyManagementImpl.swift",
-      "Sources/SecurityImplementation/Sources/KeyManager.swift",
-      "Sources/SecurityImplementation/Sources/Provider/SecurityProviderImpl.swift",
-      "Sources/SecurityImplementation/Sources/SecurityImplementation.swift",
-      "Sources/SecurityImplementation/Sources/SecurityProvider.swift",
-      "Sources/SecurityImplementation/Sources/Types.swift",
-      "Sources/SecurityImplementation/Tests/SecurityImplementationTests.swift"
+      "Sources/UmbraLoggingAdapters/Sources/Adapters/LoggerImplementation.swift",
+      "Sources/UmbraLoggingAdapters/Sources/Adapters/SwiftyBeaverAdapter.swift",
+      "Sources/UmbraLoggingAdapters/Sources/Protocols/LogFormatterProtocol.swift",
+      "Sources/UmbraLoggingAdapters/Sources/UmbraLoggingAdapters.swift"
     ],
     "build_files": [
-      "Sources/SecurityImplementation/BUILD.bazel"
+      "Sources/UmbraLoggingAdapters/BUILD.bazel"
+    ],
+    "health_score": 6,
+    "detected_issues": [
+      "No Extensions file for namespacing"
+    ]
+  },
+  {
+    "name": "ErrorHandling",
+    "path": "Sources/ErrorHandling",
+    "files": [
+      "Sources/ErrorHandling/Common/Common.swift",
+      "Sources/ErrorHandling/Common/ErrorContext.swift",
+      "Sources/ErrorHandling/ErrorHandling.swift",
+      "Sources/ErrorHandling/Extensions/Error+Context.swift",
+      "Sources/ErrorHandling/Models/CommonError.swift",
+      "Sources/ErrorHandling/Models/CoreError.swift",
+      "Sources/ErrorHandling/Models/ErrorContext.swift",
+      "Sources/ErrorHandling/Models/ServiceErrorTypes.swift",
+      "Sources/ErrorHandling/Protocols/ErrorHandlingProtocol.swift",
+      "Sources/ErrorHandling/Protocols/ErrorReporting.swift",
+      "Sources/ErrorHandling/Protocols/ServiceErrorProtocol.swift"
+    ],
+    "build_files": [
+      "Sources/ErrorHandling/BUILD.bazel",
+      "Sources/ErrorHandling/Common/BUILD.bazel",
+      "Sources/ErrorHandling/Models/BUILD.bazel",
+      "Sources/ErrorHandling/Protocols/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -953,23 +1008,16 @@
     ]
   },
   {
-    "name": "SecurityInterfaces",
-    "path": "Sources/SecurityInterfaces",
+    "name": "SecurityCoreAdapters",
+    "path": "Sources/SecurityCoreAdapters",
     "files": [
-      "Sources/SecurityInterfaces/Models/SecurityModels.swift",
-      "Sources/SecurityInterfaces/SecurityConfiguration.swift",
-      "Sources/SecurityInterfaces/SecurityError.swift",
-      "Sources/SecurityInterfaces/SecurityInterfaces.swift",
-      "Sources/SecurityInterfaces/SecurityProvider.swift",
-      "Sources/SecurityInterfaces/SecurityProviderBase.swift",
-      "Sources/SecurityInterfaces/SecurityProviderFactory.swift",
-      "Sources/SecurityInterfaces/SecurityProviderFoundation.swift",
-      "Sources/SecurityInterfaces/Tests/SecurityProviderTests.swift",
-      "Sources/SecurityInterfaces/XPCProtocolsMigration.swift"
+      "Sources/SecurityCoreAdapters/Sources/Adapters/AnyCryptoService.swift",
+      "Sources/SecurityCoreAdapters/Sources/Adapters/CryptoServiceTypeAdapter.swift",
+      "Sources/SecurityCoreAdapters/Sources/Protocols/FoundationTypeBridging.swift",
+      "Sources/SecurityCoreAdapters/Sources/SecurityCoreAdapters.swift"
     ],
     "build_files": [
-      "Sources/SecurityInterfaces/BUILD.bazel",
-      "Sources/SecurityInterfaces/Tests/BUILD.bazel"
+      "Sources/SecurityCoreAdapters/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -980,9 +1028,6 @@
     "name": "UmbraSecurityCore",
     "path": "Sources/UmbraSecurityCore",
     "files": [
-      "Sources/UmbraSecurityCore/Sources/Adapters/AnyCryptoService.swift",
-      "Sources/UmbraSecurityCore/Sources/Adapters/CryptoServiceTypeAdapter.swift",
-      "Sources/UmbraSecurityCore/Sources/Adapters/FoundationTypeBridge.swift",
       "Sources/UmbraSecurityCore/Sources/Implementations/DefaultCryptoService.swift",
       "Sources/UmbraSecurityCore/Sources/UmbraSecurityCore.swift",
       "Sources/UmbraSecurityCore/Tests/CryptoServiceAdaptersTests.swift",
@@ -997,15 +1042,21 @@
     ]
   },
   {
-    "name": "SecurityInterfacesBase",
-    "path": "Sources/SecurityInterfacesBase",
+    "name": "SecurityImplementation",
+    "path": "Sources/SecurityImplementation",
     "files": [
-      "Sources/SecurityInterfacesBase/SecurityError.swift",
-      "Sources/SecurityInterfacesBase/SecurityInterfacesBase_Aliases.swift",
-      "Sources/SecurityInterfacesBase/SecurityProviderBase.swift"
+      "Sources/SecurityImplementation/Sources/CryptoService/CryptoServiceImpl.swift",
+      "Sources/SecurityImplementation/Sources/CryptoService.swift",
+      "Sources/SecurityImplementation/Sources/KeyManagement/KeyManagementImpl.swift",
+      "Sources/SecurityImplementation/Sources/KeyManager.swift",
+      "Sources/SecurityImplementation/Sources/Provider/SecurityProviderImpl.swift",
+      "Sources/SecurityImplementation/Sources/SecurityImplementation.swift",
+      "Sources/SecurityImplementation/Sources/SecurityProvider.swift",
+      "Sources/SecurityImplementation/Sources/Types.swift",
+      "Sources/SecurityImplementation/Tests/SecurityImplementationTests.swift"
     ],
     "build_files": [
-      "Sources/SecurityInterfacesBase/BUILD.bazel"
+      "Sources/SecurityImplementation/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -1087,6 +1138,25 @@
       "Sources/Core/Services/TypeAliases/BUILD.bazel",
       "Sources/Core/Services/Types/BUILD.bazel",
       "Sources/Core/UmbraCore/BUILD.bazel"
+    ],
+    "health_score": 5,
+    "detected_issues": []
+  },
+  {
+    "name": "CoreTypesInterfaces",
+    "path": "Sources/CoreTypesInterfaces",
+    "files": [
+      "Sources/CoreTypesInterfaces/Sources/ByteArray.swift",
+      "Sources/CoreTypesInterfaces/Sources/CoreProvider.swift",
+      "Sources/CoreTypesInterfaces/Sources/CoreTypesInterfaces.swift",
+      "Sources/CoreTypesInterfaces/Sources/ErrorTypes.swift",
+      "Sources/CoreTypesInterfaces/Sources/Extensions.swift",
+      "Sources/CoreTypesInterfaces/Sources/SecureData.swift",
+      "Sources/CoreTypesInterfaces/Tests/ByteArrayTests.swift",
+      "Sources/CoreTypesInterfaces/Tests/SecureDataTests.swift"
+    ],
+    "build_files": [
+      "Sources/CoreTypesInterfaces/BUILD.bazel"
     ],
     "health_score": 5,
     "detected_issues": []

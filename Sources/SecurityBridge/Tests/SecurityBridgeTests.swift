@@ -14,11 +14,11 @@ class SecurityBridgeTests: XCTestCase {
 
   func testDataAdapter_SecureBytesToData() {
     // Arrange
-    let testBytes: [UInt8] = [1, 2, 3, 4, 5]
-    let secureBytes = SecureBytes(testBytes)
+    let testBytes: [UInt8]=[1, 2, 3, 4, 5]
+    let secureBytes=SecureBytes(testBytes)
 
     // Act
-    let data = DataAdapter.data(from: secureBytes)
+    let data=DataAdapter.data(from: secureBytes)
 
     // Assert
     XCTAssertEqual(data.count, testBytes.count)
@@ -27,11 +27,11 @@ class SecurityBridgeTests: XCTestCase {
 
   func testDataAdapter_DataToSecureBytes() {
     // Arrange
-    let testBytes: [UInt8] = [5, 4, 3, 2, 1]
-    let data = Data(testBytes)
+    let testBytes: [UInt8]=[5, 4, 3, 2, 1]
+    let data=Data(testBytes)
 
     // Act
-    let secureBytes = DataAdapter.secureBytes(from: data)
+    let secureBytes=DataAdapter.secureBytes(from: data)
 
     // Assert
     XCTAssertEqual(secureBytes.count, testBytes.count)
@@ -40,12 +40,12 @@ class SecurityBridgeTests: XCTestCase {
 
   func testDataAdapter_RoundTrip() {
     // Arrange
-    let testBytes: [UInt8] = [0, 10, 20, 30, 40, 50]
-    let original = SecureBytes(testBytes)
+    let testBytes: [UInt8]=[0, 10, 20, 30, 40, 50]
+    let original=SecureBytes(testBytes)
 
     // Act
-    let data = DataAdapter.data(from: original)
-    let roundTrip = DataAdapter.secureBytes(from: data)
+    let data=DataAdapter.data(from: original)
+    let roundTrip=DataAdapter.secureBytes(from: data)
 
     // Assert
     XCTAssertEqual(original, roundTrip)
@@ -55,10 +55,10 @@ class SecurityBridgeTests: XCTestCase {
 
   func testURLAdapter_URLToResourceLocator() throws {
     // Arrange
-    let url = URL(string: "https://example.com/path?query=value#fragment")!
+    let url=URL(string: "https://example.com/path?query=value#fragment")!
 
     // Act
-    let locator = try URLAdapter.resourceLocator(from: url)
+    let locator=try URLAdapter.resourceLocator(from: url)
 
     // Assert
     XCTAssertEqual(locator.scheme, "https")
@@ -69,7 +69,7 @@ class SecurityBridgeTests: XCTestCase {
 
   func testURLAdapter_ResourceLocatorToURL() throws {
     // Arrange
-    let locator = ResourceLocator(
+    let locator=ResourceLocator(
       scheme: "https",
       path: "/path",
       query: "query=value",
@@ -77,7 +77,7 @@ class SecurityBridgeTests: XCTestCase {
     )
 
     // Act
-    let url = try URLAdapter.url(from: locator)
+    let url=try URLAdapter.url(from: locator)
 
     // Assert
     XCTAssertEqual(url.scheme, "https")
@@ -88,11 +88,11 @@ class SecurityBridgeTests: XCTestCase {
 
   func testURLAdapter_FileURLConversion() throws {
     // Arrange
-    let filePath = "/Users/example/Documents/test.txt"
-    let fileLocator = ResourceLocator.fileLocator(path: filePath)
+    let filePath="/Users/example/Documents/test.txt"
+    let fileLocator=ResourceLocator.fileLocator(path: filePath)
 
     // Act
-    let fileURL = try URLAdapter.fileURL(from: fileLocator)
+    let fileURL=try URLAdapter.fileURL(from: fileLocator)
 
     // Assert
     XCTAssertEqual(fileURL.path, filePath)
@@ -103,11 +103,11 @@ class SecurityBridgeTests: XCTestCase {
 
   func testDateAdapter_DateToTimePoint() {
     // Arrange
-    let timestamp: TimeInterval = 1_614_502_800 // February 28, 2021
-    let date = Date(timeIntervalSince1970: timestamp)
+    let timestamp: TimeInterval=1_614_502_800 // February 28, 2021
+    let date=Date(timeIntervalSince1970: timestamp)
 
     // Act
-    let timePoint = DateAdapter.timePoint(from: date)
+    let timePoint=DateAdapter.timePoint(from: date)
 
     // Assert
     XCTAssertEqual(timePoint.timeIntervalSince1970, timestamp)
@@ -115,11 +115,11 @@ class SecurityBridgeTests: XCTestCase {
 
   func testDateAdapter_TimePointToDate() {
     // Arrange
-    let timestamp: TimeInterval = 1_709_337_600 // March 1, 2024
-    let timePoint = TimePoint(timeIntervalSince1970: timestamp)
+    let timestamp: TimeInterval=1_709_337_600 // March 1, 2024
+    let timePoint=TimePoint(timeIntervalSince1970: timestamp)
 
     // Act
-    let date = DateAdapter.date(from: timePoint)
+    let date=DateAdapter.date(from: timePoint)
 
     // Assert
     XCTAssertEqual(date.timeIntervalSince1970, timestamp)
@@ -127,11 +127,11 @@ class SecurityBridgeTests: XCTestCase {
 
   func testDateAdapter_TimePointRoundTrip() {
     // Arrange
-    let now = Date()
+    let now=Date()
 
     // Act
-    let timePoint = DateAdapter.timePoint(from: now)
-    let roundTrip = DateAdapter.date(from: timePoint)
+    let timePoint=DateAdapter.timePoint(from: now)
+    let roundTrip=DateAdapter.date(from: timePoint)
 
     // Assert
     XCTAssertEqual(now.timeIntervalSince1970, roundTrip.timeIntervalSince1970)
@@ -139,13 +139,13 @@ class SecurityBridgeTests: XCTestCase {
 
   func testDateAdapter_Now() {
     // Act
-    let now = DateAdapter.now()
+    let now=DateAdapter.now()
 
     // Assert
     XCTAssertFalse(now.timeIntervalSince1970.isZero)
 
     // TimePoint.now() should be somewhat close to the current time
-    let currentTime = Date().timeIntervalSince1970
+    let currentTime=Date().timeIntervalSince1970
     XCTAssertTrue(abs(now.timeIntervalSince1970 - currentTime) < 10) // Within 10 seconds
   }
 }

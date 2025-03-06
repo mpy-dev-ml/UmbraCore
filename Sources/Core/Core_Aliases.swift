@@ -1,13 +1,13 @@
 import CoreErrors
 
 /// Type alias for backward compatibility
-public typealias SecurityError = CoreErrors.SecurityError
+public typealias SecurityError=CoreErrors.SecurityError
 
 /// Type alias for backward compatibility
-public typealias CryptoError = CoreErrors.CryptoError
+public typealias CryptoError=CoreErrors.CryptoError
 
 /// Type alias for backward compatibility
-public typealias KeyManagerError = CoreErrors.KeyManagerError
+public typealias KeyManagerError=CoreErrors.KeyManagerError
 
 /// Type alias for backward compatibility
-public typealias ServiceError = CoreErrors.ServiceError
+public typealias ServiceError=CoreErrors.ServiceError

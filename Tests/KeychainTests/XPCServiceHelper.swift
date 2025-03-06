@@ -12,34 +12,34 @@ enum XPCError: Error {
 /// Helper class for managing XPC service lifecycle in tests
 @available(macOS 10.15, *)
 final class XPCServiceHelper {
-  private let stateQueue = DispatchQueue(label: "com.umbracore.test.state")
+  private let stateQueue=DispatchQueue(label: "com.umbracore.test.state")
   private static var sharedService: KeychainXPCService?
   private var _connection: NSXPCConnection?
 
   private var service: KeychainXPCService? {
     get { stateQueue.sync { Self.sharedService } }
-    set { stateQueue.sync { Self.sharedService = newValue } }
+    set { stateQueue.sync { Self.sharedService=newValue } }
   }
 
   private init() {}
 
   func stop() {
     _connection?.invalidate()
-    _connection = nil
+    _connection=nil
     service?.stop()
-    service = nil
+    service=nil
   }
 
   static func startService() async throws {
     // Clean up any existing service
-    let helper = XPCServiceHelper()
+    let helper=XPCServiceHelper()
     if helper.service != nil {
       helper.stop()
     }
 
     // Start new service
-    let service = KeychainXPCService()
-    helper.service = service
+    let service=KeychainXPCService()
+    helper.service=service
     service.start()
 
     // Wait for startup with timeout
@@ -48,38 +48,38 @@ final class XPCServiceHelper {
     }
 
     // Verify connection
-    _ = try await getServiceProxy()
+    _=try await getServiceProxy()
   }
 
   static func stopService() {
-    let helper = XPCServiceHelper()
+    let helper=XPCServiceHelper()
     helper.stop()
   }
 
   static func getServiceProxy() async throws -> any KeychainXPCProtocol {
-    let helper = XPCServiceHelper()
-    guard let service = helper.service else {
+    let helper=XPCServiceHelper()
+    guard let service=helper.service else {
       throw XPCError.serviceNotAvailable
     }
 
     // Create connection
-    let connection = NSXPCConnection(listenerEndpoint: service.listener.endpoint)
-    connection.remoteObjectInterface = NSXPCInterface(with: KeychainXPCProtocol.self)
+    let connection=NSXPCConnection(listenerEndpoint: service.listener.endpoint)
+    connection.remoteObjectInterface=NSXPCInterface(with: KeychainXPCProtocol.self)
 
     // Set up error handler
     return try await withCheckedThrowingContinuation { continuation in
-      connection.invalidationHandler = {
+      connection.invalidationHandler={
         continuation.resume(throwing: XPCError.connectionFailed)
       }
 
       connection.resume()
-      helper._connection = connection
+      helper._connection=connection
 
-      let proxy = connection.remoteObjectProxyWithErrorHandler { error in
+      let proxy=connection.remoteObjectProxyWithErrorHandler { error in
         continuation.resume(throwing: error)
       }
 
-      guard let keychainProxy = proxy as? any KeychainXPCProtocol else {
+      guard let keychainProxy=proxy as? any KeychainXPCProtocol else {
         continuation.resume(throwing: XPCError.invalidServiceType)
         return
       }
@@ -89,11 +89,11 @@ final class XPCServiceHelper {
   }
 
   static func cleanupTestItems() async throws {
-    let proxy = try await getServiceProxy()
+    let proxy=try await getServiceProxy()
 
     // Clean up test accounts
     for index in 0..<10 {
-      let account = "testAccount_\(index)"
+      let account="testAccount_\(index)"
       do {
         try await proxy.removeItem(
           account: account,
@@ -101,7 +101,7 @@ final class XPCServiceHelper {
           accessGroup: nil as String?
         )
       } catch let error as KeychainError {
-        if case .itemNotFound = error {
+        if case .itemNotFound=error {
           // Ignore not found errors during cleanup
           continue
         }
@@ -117,7 +117,7 @@ final class XPCServiceHelper {
         accessGroup: nil as String?
       )
     } catch let error as KeychainError {
-      if case .itemNotFound = error {
+      if case .itemNotFound=error {
         // Ignore not found errors during cleanup
         return
       }
@@ -144,7 +144,7 @@ final class XPCServiceHelper {
 
       // Wait for first completion and cancel the other task
       defer { group.cancelAll() }
-      let result = try await group.next()
+      let result=try await group.next()
       return try result ?? { throw TimeoutError(seconds: seconds) }()
     }
   }

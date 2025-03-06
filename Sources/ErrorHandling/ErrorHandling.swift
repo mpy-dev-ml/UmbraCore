@@ -89,7 +89,7 @@
 /// - Concurrent recovery handling
 public enum ErrorHandling {
   /// Current version of the ErrorHandling module
-  public static let version = "1.0.0"
+  public static let version="1.0.0"
 
   /// Initialise ErrorHandling with default configuration
   public static func initialize() {

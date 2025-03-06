@@ -9,8 +9,8 @@ public actor CredentialManager {
   private let config: CryptoConfig
 
   public init(service: String, config: CryptoConfig) {
-    keychain = KeychainAccess(service: service)
-    self.config = config
+    keychain=KeychainAccess(service: service)
+    self.config=config
   }
 
   /// Save a credential securely
@@ -18,7 +18,7 @@ public actor CredentialManager {
   ///   - identifier: Identifier for the credential
   ///   - data: Data to store
   public func save(_ data: Data, forIdentifier identifier: String) async throws {
-    let secureBytes = SecureBytes(data: data)
+    let secureBytes=SecureBytes(data: data)
     try await keychain.storeSecurely(secureBytes, identifier: identifier, metadata: nil)
   }
 
@@ -26,7 +26,7 @@ public actor CredentialManager {
   /// - Parameter identifier: Identifier for the credential
   /// - Returns: Stored data
   public func retrieve(forIdentifier identifier: String) async throws -> Data {
-    let secureBytes = try await keychain.retrieveSecurely(identifier: identifier)
+    let secureBytes=try await keychain.retrieveSecurely(identifier: identifier)
     return secureBytes.asData()
   }
 
@@ -40,10 +40,10 @@ public actor CredentialManager {
 /// Access to the system keychain
 private actor KeychainAccess: SecureStorageServiceProtocol {
   private let service: String
-  private var items: [String: (data: SecureBytes, metadata: [String: String]?)] = [:]
+  private var items: [String: (data: SecureBytes, metadata: [String: String]?)]=[:]
 
   init(service: String) {
-    self.service = service
+    self.service=service
   }
 
   func storeSecurely(
@@ -51,11 +51,11 @@ private actor KeychainAccess: SecureStorageServiceProtocol {
     identifier: String,
     metadata: [String: String]?
   ) async throws {
-    items[identifier] = (data: data, metadata: metadata)
+    items[identifier]=(data: data, metadata: metadata)
   }
 
   func retrieveSecurely(identifier: String) async throws -> SecureBytes {
-    guard let item = items[identifier] else {
+    guard let item=items[identifier] else {
       throw CoreErrors.SecurityError.itemNotFound
     }
     return item.data
@@ -72,7 +72,7 @@ private actor KeychainAccess: SecureStorageServiceProtocol {
   }
 
   func getMetadata(for identifier: String) async throws -> [String: String]? {
-    guard let item = items[identifier] else {
+    guard let item=items[identifier] else {
       throw CoreErrors.SecurityError.itemNotFound
     }
     return item.metadata

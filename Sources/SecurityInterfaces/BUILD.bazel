@@ -7,7 +7,7 @@ umbracore_swift_library(
     name = "SecurityInterfaces",
     srcs = glob(["**/*.swift"], exclude=["Tests/**"]),
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/SecurityBridge",
@@ -23,7 +23,7 @@ umbracore_swift_test_library(
     name = "SecurityInterfacesForTesting",
     srcs = glob(["**/*.swift"], exclude=["Tests/**"]),
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols", 
         "//Sources/SecurityBridge",
@@ -39,7 +39,7 @@ umbracore_swift_test_library(
     srcs = glob(["Tests/**/*.swift"], allow_empty = True),
     deps = [
         ":SecurityInterfacesForTesting",
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/SecurityProtocolsCore",

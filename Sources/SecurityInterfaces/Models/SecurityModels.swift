@@ -1,4 +1,4 @@
-import CoreTypes
+import CoreTypesInterfaces
 import Foundation
 
 /// Represents various security operations that can be performed
@@ -48,10 +48,10 @@ public struct SecurityResult {
   /// Additional metadata about the operation
   public let metadata: [String: String]
 
-  public init(success: Bool, data: Data? = nil, metadata: [String: String] = [:]) {
-    self.success = success
-    self.data = data
-    self.metadata = metadata
+  public init(success: Bool, data: Data?=nil, metadata: [String: String]=[:]) {
+    self.success=success
+    self.data=data
+    self.metadata=metadata
   }
 }
 
@@ -67,8 +67,8 @@ public struct SecurityStatus {
   public let statusMessage: String
 
   public init(isActive: Bool, statusCode: Int, statusMessage: String) {
-    self.isActive = isActive
-    self.statusCode = statusCode
-    self.statusMessage = statusMessage
+    self.isActive=isActive
+    self.statusCode=statusCode
+    self.statusMessage=statusMessage
   }
 }

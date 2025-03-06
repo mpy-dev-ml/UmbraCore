@@ -1,6 +1,6 @@
 # Bazel Dependency Analysis: UmbraLogging
 
-Generated: 2025-03-06 16:05:28
+Generated: 2025-03-06 17:10:29
 
 ## Direct Dependencies
 

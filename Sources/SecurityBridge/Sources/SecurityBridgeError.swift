@@ -18,7 +18,7 @@ public enum SecurityBridgeErrorMapper {
   /// - Parameter error: The security error to map
   /// - Returns: A bridge error
   public static func mapToBridgeError(_ error: Error) -> Error {
-    guard let securityError = error as? SecurityError else {
+    guard let securityError=error as? SecurityError else {
       return SecurityBridge.SecurityBridgeError
         .implementationMissing("Unknown error: \(error.localizedDescription)")
     }
@@ -64,7 +64,7 @@ public enum SecurityBridgeErrorMapper {
   /// - Parameter error: The bridge error to map
   /// - Returns: A SecurityError
   public static func mapToSecurityError(_ error: Error) -> Error {
-    guard let bridgeError = error as? SecurityBridge.SecurityBridgeError else {
+    guard let bridgeError=error as? SecurityBridge.SecurityBridgeError else {
       return SecurityError.internalError("Unknown bridge error: \(error.localizedDescription)")
     }
 

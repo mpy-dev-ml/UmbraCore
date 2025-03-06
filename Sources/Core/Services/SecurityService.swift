@@ -1,6 +1,6 @@
 import CoreErrors
 import CoreServicesTypes
-import CoreTypes
+import CoreTypesInterfaces
 import Foundation
 import SecurityProtocolsCore
 import SecurityTypes
@@ -11,7 +11,7 @@ import XPCProtocolsCore
 
 /// Manages security operations and access control
 public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProviderProtocol {
-  public static let serviceIdentifier = "com.umbracore.security"
+  public static let serviceIdentifier="com.umbracore.security"
 
   private var _state: ServiceState = .uninitialized
   public private(set) nonisolated(unsafe) var state: ServiceState = .uninitialized
@@ -24,9 +24,9 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   /// Initialize security service
   /// - Parameter container: Service container for dependencies
   public init(container: ServiceContainer) {
-    self.container = container
-    accessedPaths = []
-    bookmarks = [:]
+    self.container=container
+    accessedPaths=[]
+    bookmarks=[:]
   }
 
   /// Initialize the service
@@ -39,7 +39,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     _state = .initializing
 
     // Resolve dependencies
-    cryptoService = try await container.resolve(CryptoService.self)
+    cryptoService=try await container.resolve(CryptoService.self)
 
     _state = .ready
     state = .ready
@@ -95,15 +95,15 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     }
 
     // Extract token parameters with defaults
-    let expirationInterval = options["expirationInterval"] as? TimeInterval ?? 3_600
-    let scope = options["scope"] as? String ?? "default"
+    let expirationInterval=options["expirationInterval"] as? TimeInterval ?? 3600
+    let scope=options["scope"] as? String ?? "default"
 
     // Generate token data (simplified implementation)
-    let timestamp = Date().timeIntervalSince1970
-    let expirationTime = timestamp + expirationInterval
+    let timestamp=Date().timeIntervalSince1970
+    let expirationTime=timestamp + expirationInterval
 
     // In a real implementation, we would include signatures, proper encryption, etc.
-    let tokenData: [String: Any] = [
+    let tokenData: [String: Any]=[
       "timestamp": timestamp,
       "expiration": expirationTime,
       "scope": scope,
@@ -111,7 +111,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     ]
 
     // Convert to JSON
-    let jsonData = try JSONSerialization.data(withJSONObject: tokenData)
+    let jsonData=try JSONSerialization.data(withJSONObject: tokenData)
 
     // Convert to SecureBytes
     return SecureBytes(bytes: [UInt8](jsonData))
@@ -131,7 +131,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     }
 
     // Use crypto service to generate random bytes
-    let randomBytes = try await cryptoService.generateRandomBytes(count: count)
+    let randomBytes=try await cryptoService.generateRandomBytes(count: count)
     return SecureBytes(bytes: randomBytes)
   }
 
@@ -150,14 +150,14 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     }
 
     // Check if we have a bookmark for this path
-    if let bookmark = bookmarks[path] {
+    if let bookmark=bookmarks[path] {
       // Use the bookmark to gain access (simplified implementation)
       accessedPaths.insert(path)
       return true
     }
 
     // Otherwise, try to gain access directly (simplified implementation)
-    let fileManager = FileManager.default
+    let fileManager=FileManager.default
     if fileManager.fileExists(atPath: path) {
       accessedPaths.insert(path)
       return true
@@ -192,8 +192,8 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     }
 
     // Create a new bookmark (simplified implementation)
-    let bookmarkData: [UInt8] = [ /* bookmark data would go here */ ]
-    bookmarks[path] = bookmarkData
+    let bookmarkData: [UInt8]=[ /* bookmark data would go here */ ]
+    bookmarks[path]=bookmarkData
     return true
   }
 
