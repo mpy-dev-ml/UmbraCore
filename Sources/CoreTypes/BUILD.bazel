@@ -8,6 +8,9 @@ umbra_swift_library(
     deps = [
         "//Sources/SecurityProtocolsCore",
         "//Sources/SecureBytes",
+        "//Sources/XPCProtocolsCore",
+        "//Sources/CoreErrors",
+        "//Sources/UmbraCoreTypes",
     ],
     additional_copts = [
         "-Xfrontend", "-enable-library-evolution",

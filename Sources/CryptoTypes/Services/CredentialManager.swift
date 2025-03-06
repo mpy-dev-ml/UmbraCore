@@ -17,9 +17,9 @@ public actor CredentialManager {
   ///   - xpcService: XPC service for cryptographic operations
   ///   - config: Cryptographic configuration
   public init(service: String, xpcService: ModernCryptoXPCServiceProtocol, config: CryptoConfig) {
-    keychain=KeychainAccess(service: service)
-    self.xpcService=xpcService
-    self.config=config
+    keychain = KeychainAccess(service: service)
+    self.xpcService = xpcService
+    self.config = config
   }
 
   /// Store a credential securely in the keychain
@@ -27,16 +27,16 @@ public actor CredentialManager {
   ///   - credential: The credential data to store
   ///   - identifier: Unique identifier for the credential
   public func store(credential: Data, withIdentifier identifier: String) async throws {
-    let key=try await getMasterKey()
+    let key = try await getMasterKey()
 
     // Generate random IV using the XPC service
-    let ivResult=try await xpcService.generateRandomData(length: config.ivLength)
-    let iv=ivResult.asData()
+    let ivResult = try await xpcService.generateRandomData(length: config.ivLength)
+    let iv = ivResult.asData()
 
     // Encrypt the credential
-    let credentialBytes=SecureBytes(data: credential)
-    let keyBytes=SecureBytes(data: key)
-    let encryptResult=await encrypt(
+    let credentialBytes = SecureBytes(data: credential)
+    let keyBytes = SecureBytes(data: key)
+    let encryptResult = await encrypt(
       data: credentialBytes,
       using: keyBytes,
       iv: SecureBytes(data: iv)
@@ -44,8 +44,8 @@ public actor CredentialManager {
 
     switch encryptResult {
       case let .success(encrypted):
-        let storageData=SecureStorageData(encryptedData: encrypted.asData(), iv: iv)
-        let encodedData=try JSONEncoder().encode(storageData)
+        let storageData = SecureStorageData(encryptedData: encrypted.asData(), iv: iv)
+        let encodedData = try JSONEncoder().encode(storageData)
         try await keychain.save(encodedData, forKey: identifier, metadata: nil)
       case let .failure(error):
         throw error
@@ -56,15 +56,15 @@ public actor CredentialManager {
   /// - Parameter identifier: Unique identifier for the credential
   /// - Returns: The decrypted credential data
   public func retrieve(withIdentifier identifier: String) async throws -> Data {
-    let key=try await getMasterKey()
-    let (encodedData, _)=try await keychain.loadWithMetadata(forKey: identifier)
-    let storageData=try JSONDecoder().decode(SecureStorageData.self, from: encodedData)
+    let key = try await getMasterKey()
+    let (encodedData, _) = try await keychain.loadWithMetadata(forKey: identifier)
+    let storageData = try JSONDecoder().decode(SecureStorageData.self, from: encodedData)
 
-    let keyBytes=SecureBytes(data: key)
-    let encryptedBytes=SecureBytes(data: storageData.encryptedData)
-    let ivBytes=SecureBytes(data: storageData.iv)
+    let keyBytes = SecureBytes(data: key)
+    let encryptedBytes = SecureBytes(data: storageData.encryptedData)
+    let ivBytes = SecureBytes(data: storageData.iv)
 
-    let decryptResult=await decrypt(data: encryptedBytes, using: keyBytes, iv: ivBytes)
+    let decryptResult = await decrypt(data: encryptedBytes, using: keyBytes, iv: ivBytes)
 
     switch decryptResult {
       case let .success(decrypted):
@@ -101,14 +101,14 @@ public actor CredentialManager {
   /// Get or generate the master encryption key
   /// - Returns: The master encryption key data
   private func getMasterKey() async throws -> Data {
-    if let (key, _)=try? await keychain.loadWithMetadata(forKey: "master_key") {
+    if let (key, _) = try? await keychain.loadWithMetadata(forKey: "master_key") {
       return key
     }
 
     // Generate a secure random key using the XPC service
-    let keyLength=config.keyLength / 8
-    let randomDataResult=try await xpcService.generateRandomData(length: keyLength)
-    let key=randomDataResult.asData()
+    let keyLength = config.keyLength / 8
+    let randomDataResult = try await xpcService.generateRandomData(length: keyLength)
+    let key = randomDataResult.asData()
 
     try await keychain.save(key, forKey: "master_key", metadata: nil)
     return key
@@ -138,18 +138,18 @@ public actor CredentialManager {
 /// Access to the system keychain
 private actor KeychainAccess: SecureStorageProvider {
   private let service: String
-  private var items: [String: (data: Data, metadata: [String: String]?)]=[:]
+  private var items: [String: (data: Data, metadata: [String: String]?)] = [:]
 
   init(service: String) {
-    self.service=service
+    self.service = service
   }
 
   func save(_ data: Data, forKey key: String, metadata: [String: String]?) async throws {
-    items[key]=(data: data, metadata: metadata)
+    items[key] = (data: data, metadata: metadata)
   }
 
   func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
-    guard let item=items[key] else {
+    guard let item = items[key] else {
       throw CoreErrors.SecurityError.itemNotFound
     }
     return (item.data, item.metadata)
@@ -173,7 +173,7 @@ private actor KeychainAccess: SecureStorageProvider {
     if preserveKeys {
       // Only clear data but preserve keys
       for key in items.keys {
-        items[key]=(data: Data(), metadata: nil)
+        items[key] = (data: Data(), metadata: nil)
       }
     } else {
       items.removeAll()

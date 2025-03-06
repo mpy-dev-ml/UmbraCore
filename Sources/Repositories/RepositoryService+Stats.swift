@@ -14,29 +14,29 @@ extension RepositoryService {
   /// - Returns: A dictionary mapping repository identifiers to their statistics.
   /// - Throws: `RepositoryError.operationFailed` if stats cannot be retrieved for any repository.
   public func getAllStats() async throws -> [String: RepositoryStats] {
-    let metadata=LogMetadataBuilder.forRepository(
+    let metadata = LogMetadataBuilder.forRepository(
       count: repositories.count
     )
     await logger.info("Retrieving stats for all repositories", metadata: metadata)
 
-    var stats: [String: RepositoryStats]=[:]
-    var errors: [String: Error]=[:]
+    var stats: [String: RepositoryStats] = [:]
+    var errors: [String: Error] = [:]
 
     for repository in repositories.values {
-      let identifier=await repository.identifier
-      let repoMetadata=LogMetadataBuilder.forRepository(
+      let identifier = await repository.identifier
+      let repoMetadata = LogMetadataBuilder.forRepository(
         identifier: identifier
       )
 
       do {
-        stats[identifier]=try await repository.check(readData: false, checkUnused: false)
+        stats[identifier] = try await repository.check(readData: false, checkUnused: false)
         await logger.debug("Retrieved stats successfully", metadata: repoMetadata)
       } catch {
         await logger.error(
           "Failed to get repository stats: \(error.localizedDescription)",
           metadata: repoMetadata
         )
-        errors[identifier]=error
+        errors[identifier] = error
       }
     }
 
@@ -71,12 +71,12 @@ extension RepositoryService {
   /// identifier,
   ///           `RepositoryError.operationFailed` if stats cannot be retrieved.
   public func getStats(for identifier: String) async throws -> RepositoryStats {
-    let metadata=LogMetadataBuilder.forRepository(
+    let metadata = LogMetadataBuilder.forRepository(
       identifier: identifier
     )
     await logger.info("Retrieving repository stats", metadata: metadata)
 
-    guard let repository=repositories[identifier] else {
+    guard let repository = repositories[identifier] else {
       await logger.error("Repository not found", metadata: metadata)
       throw RepositoryError.notFound(
         identifier: identifier
@@ -84,7 +84,7 @@ extension RepositoryService {
     }
 
     do {
-      let stats=try await repository.check(readData: false, checkUnused: false)
+      let stats = try await repository.check(readData: false, checkUnused: false)
       await logger.debug("Retrieved stats successfully", metadata: metadata)
       return stats
     } catch {

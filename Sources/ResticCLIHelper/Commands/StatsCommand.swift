@@ -5,8 +5,8 @@ import ResticTypes
 public final class StatsCommand: ResticCommand, @unchecked Sendable {
   /// Mode for stats command
   public enum Mode: String, Sendable {
-    case restoreSize="restore-size"
-    case rawData="raw-data"
+    case restoreSize = "restore-size"
+    case rawData = "raw-data"
     case blobs
   }
 
@@ -20,7 +20,7 @@ public final class StatsCommand: ResticCommand, @unchecked Sendable {
   public var commandName: String { "stats" }
 
   public var commandArguments: [String] {
-    var args=[String]()
+    var args = [String]()
 
     if let snapshotID {
       args.append(snapshotID)
@@ -50,50 +50,50 @@ public final class StatsCommand: ResticCommand, @unchecked Sendable {
   }
 
   public init(options: CommonOptions) {
-    self.options=options
+    self.options = options
   }
 
   /// Set the mode for the stats command
   @discardableResult
   public func mode(_ mode: Mode) -> Self {
-    self.mode=mode
+    self.mode = mode
     return self
   }
 
   /// Set the host filter
   @discardableResult
   public func host(_ host: String) -> Self {
-    self.host=host
+    self.host = host
     return self
   }
 
   /// Set the tag filter
   @discardableResult
   public func tag(_ tag: String) -> Self {
-    self.tag=tag
+    self.tag = tag
     return self
   }
 
   /// Set the path filter
   @discardableResult
   public func path(_ path: String) -> Self {
-    self.path=path
+    self.path = path
     return self
   }
 
   /// Set the snapshot ID
   @discardableResult
   public func snapshot(_ id: String) -> Self {
-    snapshotID=id
+    snapshotID = id
     return self
   }
 
   /// Set the cache path
   @discardableResult
   public func setCachePath(_ path: String) -> Self {
-    var env=options.environmentVariables
-    env["RESTIC_CACHE_DIR"]=path
-    options=CommonOptions(
+    var env = options.environmentVariables
+    env["RESTIC_CACHE_DIR"] = path
+    options = CommonOptions(
       repository: options.repository,
       password: options.password,
       cachePath: options.cachePath,
@@ -107,11 +107,11 @@ public final class StatsCommand: ResticCommand, @unchecked Sendable {
   }
 
   public var environment: [String: String] {
-    var env=options.environmentVariables
-    env["RESTIC_REPOSITORY"]=options.repository
-    env["RESTIC_PASSWORD"]=options.password
-    if let cachePath=options.cachePath {
-      env["RESTIC_CACHE_DIR"]=cachePath
+    var env = options.environmentVariables
+    env["RESTIC_REPOSITORY"] = options.repository
+    env["RESTIC_PASSWORD"] = options.password
+    if let cachePath = options.cachePath {
+      env["RESTIC_CACHE_DIR"] = cachePath
     }
     return env
   }

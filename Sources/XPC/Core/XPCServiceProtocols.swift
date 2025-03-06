@@ -1,4 +1,5 @@
 import Foundation
+import UmbraCoreTypes
 import XPCProtocolsCore
 
 /// Base protocol for all XPC services
@@ -11,16 +12,50 @@ public protocol XPCServiceProtocol {
   func getServiceVersion(withReply reply: @escaping (String) -> Void)
 }
 
-@objc(CryptoXPCServiceProtocol)
-public protocol CryptoXPCServiceProtocol {
-  func encrypt(_ data: Data, key: Data) async throws -> Data
-  func decrypt(_ data: Data, key: Data) async throws -> Data
-  func generateKey(bits: Int) async throws -> Data
-  func generateSecureRandomKey(length: Int) async throws -> Data
-  func generateInitializationVector() async throws -> Data
-  func storeCredential(_ credential: Data, identifier: String) async throws
-  func retrieveCredential(identifier: String) async throws -> Data
-  func deleteCredential(identifier: String) async throws
+/// Modern crypto XPC service protocol that conforms to XPCServiceProtocolStandard
+/// Uses Result types with proper error handling
+@objc(ModernCryptoXPCServiceProtocol)
+public protocol ModernCryptoXPCServiceProtocol: XPCServiceProtocolStandard {
+  /// Encrypts data using the specified key
+  /// - Parameters:
+  ///   - data: Data to encrypt
+  ///   - key: Encryption key
+  /// - Returns: Encrypted data or error
+  func encrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError>
+
+  /// Decrypts data using the specified key
+  /// - Parameters:
+  ///   - data: Data to decrypt
+  ///   - key: Decryption key
+  /// - Returns: Decrypted data or error
+  func decrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError>
+
+  /// Generates a cryptographic key of the specified bit length
+  /// - Parameter bits: Key length in bits (typically 128, 256)
+  /// - Returns: Generated key data or error
+  func generateKey(bits: Int) async -> Result<Data, XPCSecurityError>
+
+  /// Generates secure random data of the specified length
+  /// - Parameter length: Length of random data in bytes
+  /// - Returns: Random data or error
+  func generateSecureRandomData(length: Int) async -> Result<Data, XPCSecurityError>
+
+  /// Stores a credential securely
+  /// - Parameters:
+  ///   - credential: Credential data to store
+  ///   - identifier: Unique identifier for the credential
+  /// - Returns: Success or error
+  func storeSecurely(_ credential: Data, identifier: String) async -> Result<Void, XPCSecurityError>
+
+  /// Retrieves a credential stored securely
+  /// - Parameter identifier: Unique identifier for the credential
+  /// - Returns: Retrieved credential data or error
+  func retrieveSecurely(identifier: String) async -> Result<Data, XPCSecurityError>
+
+  /// Deletes a securely stored credential
+  /// - Parameter identifier: Unique identifier for the credential
+  /// - Returns: Success or error
+  func deleteSecurely(identifier: String) async -> Result<Void, XPCSecurityError>
 }
 
 /// Security XPC service protocol that extends XPCServiceProtocolStandard with objc compatibility
@@ -55,7 +90,7 @@ public class SecurityXPCServiceAdapter {
   private let standardService: any XPCServiceProtocolStandard
 
   public init(standardService: any XPCServiceProtocolStandard) {
-    self.standardService=standardService
+    self.standardService = standardService
   }
 
   // Bridge implementations between the protocols can be added here

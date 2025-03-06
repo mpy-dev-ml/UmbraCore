@@ -22,19 +22,19 @@ public struct ErrorContext: Sendable {
   ///   - metadata: Additional metadata about the error
   public init(
     source: String,
-    code: String?=nil,
+    code: String? = nil,
     message: String,
-    metadata: [String: String]?=nil
+    metadata: [String: String]? = nil
   ) {
-    self.source=source
-    self.code=code
-    self.message=message
-    self.metadata=metadata
+    self.source = source
+    self.code = code
+    self.message = message
+    self.metadata = metadata
   }
 
   /// A human-readable description of the error context
   public var description: String {
-    var result="[\(source)]"
+    var result = "[\(source)]"
 
     if let code {
       result += " [\(code)]"

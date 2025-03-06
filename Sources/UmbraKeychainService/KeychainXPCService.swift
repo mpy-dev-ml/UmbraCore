@@ -154,33 +154,33 @@ extension KeychainXPCProtocol {
 final class KeychainXPCService: NSObject {
   private(set) var listener: NSXPCListener
   private let exportedObject: KeychainXPCProtocol
-  private let startupSemaphore=DispatchSemaphore(value: 0)
+  private let startupSemaphore = DispatchSemaphore(value: 0)
 
-  private let stateQueue=DispatchQueue(label: "com.umbracore.xpc.state")
-  private var _isStarted=false
+  private let stateQueue = DispatchQueue(label: "com.umbracore.xpc.state")
+  private var _isStarted = false
 
   private var isStarted: Bool {
     get { stateQueue.sync { _isStarted } }
-    set { stateQueue.sync { _isStarted=newValue } }
+    set { stateQueue.sync { _isStarted = newValue } }
   }
 
   override init() {
-    listener=NSXPCListener.anonymous()
-    exportedObject=KeychainXPCImplementation()
+    listener = NSXPCListener.anonymous()
+    exportedObject = KeychainXPCImplementation()
     super.init()
-    listener.delegate=self
+    listener.delegate = self
   }
 
   func start() {
     guard !isStarted else { return }
-    isStarted=true
+    isStarted = true
     listener.resume()
     startupSemaphore.signal()
   }
 
   func stop() {
     guard isStarted else { return }
-    isStarted=false
+    isStarted = false
     listener.invalidate()
   }
 
@@ -197,8 +197,8 @@ extension KeychainXPCService: NSXPCListenerDelegate {
     // This is called on the main thread by XPC
     guard isStarted else { return false }
 
-    newConnection.exportedInterface=NSXPCInterface(with: KeychainXPCProtocol.self)
-    newConnection.exportedObject=exportedObject
+    newConnection.exportedInterface = NSXPCInterface(with: KeychainXPCProtocol.self)
+    newConnection.exportedObject = exportedObject
     newConnection.resume()
 
     return true
@@ -207,10 +207,10 @@ extension KeychainXPCService: NSXPCListenerDelegate {
 
 private final class AtomicBool {
   private var _value: Bool
-  private let lock=NSLock()
+  private let lock = NSLock()
 
   init(_ value: Bool) {
-    _value=value
+    _value = value
   }
 
   var value: Bool {
@@ -222,6 +222,6 @@ private final class AtomicBool {
   func setValue(_ newValue: Bool) {
     lock.lock()
     defer { lock.unlock() }
-    _value=newValue
+    _value = newValue
   }
 }

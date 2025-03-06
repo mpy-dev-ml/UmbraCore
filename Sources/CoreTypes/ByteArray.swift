@@ -6,7 +6,7 @@ public struct ByteArray: Sendable, Equatable, Hashable {
   /// Initialize with raw bytes
   /// - Parameter bytes: Array of bytes
   public init(bytes: [UInt8]) {
-    self.bytes=bytes
+    self.bytes = bytes
   }
 
   /// Access the raw bytes
@@ -21,7 +21,7 @@ public struct ByteArray: Sendable, Equatable, Hashable {
 
   /// Creates a ByteArray from a slice of another ByteArray
   public init(slice: ArraySlice<UInt8>) {
-    bytes=Array(slice)
+    bytes = Array(slice)
   }
 
   /// Implement Equatable

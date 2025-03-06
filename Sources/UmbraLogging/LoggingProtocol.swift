@@ -28,7 +28,7 @@ public protocol LoggingProtocol: Sendable {
 }
 
 /// Re-export SwiftyBeaver.Level as LogLevel
-public typealias LogLevel=UmbraLogLevel
+public typealias LogLevel = UmbraLogLevel
 
 /// Errors that can occur during logging operations
 public enum LoggingError: Error {
@@ -41,4 +41,4 @@ public enum LoggingError: Error {
 }
 
 /// Re-export Logger as LoggingService
-public typealias LoggingService=Logger
+public typealias LoggingService = Logger

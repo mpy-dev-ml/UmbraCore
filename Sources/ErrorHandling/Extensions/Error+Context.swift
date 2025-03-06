@@ -41,20 +41,20 @@ extension Error {
   public func withContext(
     source: String,
     operation: String,
-    details: String?=nil,
-    file: String=#file,
-    line: Int=#line,
-    function: String=#function
+    details: String? = nil,
+    file: String = #file,
+    line: Int = #line,
+    function: String = #function
   ) -> ErrorContext {
-    var metadata: [String: String]=[:]
-    metadata["operation"]=operation
+    var metadata: [String: String] = [:]
+    metadata["operation"] = operation
     if let details {
-      metadata["details"]=details
+      metadata["details"] = details
     }
-    metadata["file"]=file
-    metadata["line"]=String(line)
-    metadata["function"]=function
-    metadata["error"]=String(describing: self)
+    metadata["file"] = file
+    metadata["line"] = String(line)
+    metadata["function"] = function
+    metadata["error"] = String(describing: self)
 
     return ErrorContext(
       source: source,

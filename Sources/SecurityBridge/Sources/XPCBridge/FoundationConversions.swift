@@ -49,11 +49,11 @@ public enum FoundationConversions {
   /// - Returns: A Foundation JSONSerialization-compatible Data object
   /// - Throws: AdapterError if conversion fails
   public static func jsonData(from secureBytes: UmbraCoreTypes.SecureBytes) throws -> Data {
-    let data=DataAdapter.data(from: secureBytes)
+    let data = DataAdapter.data(from: secureBytes)
 
     // Verify that the data is valid JSON
     do {
-      _=try JSONSerialization.jsonObject(with: data, options: [])
+      _ = try JSONSerialization.jsonObject(with: data, options: [])
       return data
     } catch {
       throw AdapterError
@@ -67,7 +67,7 @@ public enum FoundationConversions {
   /// - Throws: AdapterError if conversion fails
   public static func secureBytes(from jsonObject: Any) throws -> UmbraCoreTypes.SecureBytes {
     do {
-      let data=try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+      let data = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
       return DataAdapter.secureBytes(from: data)
     } catch {
       throw AdapterError

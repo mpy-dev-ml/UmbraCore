@@ -4,11 +4,11 @@ import XCTest
 
 final class LoggingServiceTests: XCTestCase {
   private var logger: Logger!
-  private let tempPath=NSTemporaryDirectory() + "test.log"
+  private let tempPath = NSTemporaryDirectory() + "test.log"
 
   override func setUp() async throws {
     try await super.setUp()
-    logger=Logger.shared
+    logger = Logger.shared
 
     // Create an empty file to ensure it exists
     FileManager.default.createFile(atPath: tempPath, contents: nil)
@@ -20,10 +20,10 @@ final class LoggingServiceTests: XCTestCase {
   }
 
   func testLogging() async throws {
-    var metadata=LogMetadata()
-    metadata["test"]="value"
+    var metadata = LogMetadata()
+    metadata["test"] = "value"
 
-    let entry=LogEntry(
+    let entry = LogEntry(
       level: .info,
       message: "Test message",
       metadata: metadata
@@ -36,7 +36,7 @@ final class LoggingServiceTests: XCTestCase {
   }
 
   func testLogLevels() async throws {
-    let levels: [(LogLevel, String)]=[
+    let levels: [(LogLevel, String)] = [
       (.debug, "DEBUG"),
       (.info, "INFO"),
       (.warning, "WARNING"),
@@ -44,7 +44,7 @@ final class LoggingServiceTests: XCTestCase {
     ]
 
     for (level, _) in levels {
-      let entry=LogEntry(
+      let entry = LogEntry(
         level: level,
         message: "Test \(level) message",
         metadata: nil

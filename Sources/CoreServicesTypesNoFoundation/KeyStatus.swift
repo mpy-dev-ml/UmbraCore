@@ -24,8 +24,8 @@ public enum KeyStatus: Sendable, Equatable, Codable {
   }
 
   public init(from decoder: Decoder) throws {
-    let container=try decoder.container(keyedBy: CodingKeys.self)
-    let type=try container.decode(StatusType.self, forKey: .type)
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let type = try container.decode(StatusType.self, forKey: .type)
 
     switch type {
       case .active:
@@ -35,13 +35,13 @@ public enum KeyStatus: Sendable, Equatable, Codable {
       case .retired:
         self = .retired
       case .pendingDeletion:
-        let timestamp=try container.decode(Int64.self, forKey: .deletionTimestamp)
+        let timestamp = try container.decode(Int64.self, forKey: .deletionTimestamp)
         self = .pendingDeletion(timestamp)
     }
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container=encoder.container(keyedBy: CodingKeys.self)
+    var container = encoder.container(keyedBy: CodingKeys.self)
 
     switch self {
       case .active:

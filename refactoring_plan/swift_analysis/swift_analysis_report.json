@@ -1,171 +1,106 @@
 {
   "total_modules": 1,
-  "total_swift_files": 9,
-  "total_isolation_files": 2,
-  "total_type_aliases": 11,
+  "total_swift_files": 7,
+  "total_isolation_files": 0,
+  "total_type_aliases": 0,
   "module_analysis": {
-    "CoreTypes": {
-      "module_name": "CoreTypes",
+    "UmbraSecurityCore": {
+      "module_name": "UmbraSecurityCore",
       "swift_files": [
         {
-          "file_path": "Sources/CoreTypes/BinaryData.swift",
-          "module_name": "CoreTypes",
+          "file_path": "Sources/UmbraSecurityCore/Sources/Adapters/AnyCryptoService.swift",
+          "module_name": "UmbraSecurityCore",
           "is_isolation_file": false,
           "imports": [
             "SecurityProtocolsCore",
             "UmbraCoreTypes"
           ],
-          "type_aliases": {
-            "BinaryData": "SecureBytes"
-          },
-          "error_mapping_functions": []
-        },
-        {
-          "file_path": "Sources/CoreTypes/ByteArray.swift",
-          "module_name": "CoreTypes",
-          "is_isolation_file": false,
-          "imports": [],
           "type_aliases": {},
           "error_mapping_functions": []
         },
         {
-          "file_path": "Sources/CoreTypes/SecurityErrorBase.swift",
-          "module_name": "CoreTypes",
-          "is_isolation_file": false,
-          "imports": [
-            "Foundation",
-            "CoreErrors",
-            "UmbraCoreTypes",
-            "the",
-            "SecurityProtocolsCoreIsolation",
-            "XPCProtocolsCoreIsolation"
-          ],
-          "type_aliases": {
-            "CoreSecurityError": "CoreErrors.SecurityError",
-            "SPCoreSecurityError": "SPCSecurityError",
-            "XPCoreSecurityError": "XPCSecurityError"
-          },
-          "error_mapping_functions": [
-            "mapSPCToXPCError",
-            "mapXPCToSPCError"
-          ]
-        },
-        {
-          "file_path": "Sources/CoreTypes/SecurityProtocolsCoreIsolation.swift",
-          "module_name": "CoreTypes",
-          "is_isolation_file": true,
-          "imports": [
-            "SecurityProtocolsCore",
-            "Foundation",
-            "CoreErrors",
-            "UmbraCoreTypes",
-            "SecurityProtocolsCore",
-            "SecurityProtocolsCore"
-          ],
-          "type_aliases": {
-            "SPCSecurityError": "SecurityProtocolsCore.SecurityError"
-          },
-          "error_mapping_functions": [
-            "mapSPCToCoreError",
-            "mapCoreToSPCError"
-          ]
-        },
-        {
-          "file_path": "Sources/CoreTypes/SecurityProtocolsCoreTypes.swift",
-          "module_name": "CoreTypes",
+          "file_path": "Sources/UmbraSecurityCore/Sources/Adapters/CryptoServiceTypeAdapter.swift",
+          "module_name": "UmbraSecurityCore",
           "is_isolation_file": false,
           "imports": [
             "SecurityProtocolsCore",
-            "SecurityProtocolsCore"
-          ],
-          "type_aliases": {
-            "SPCSecurityError": "SecurityProtocolsCore.SecurityError"
-          },
-          "error_mapping_functions": []
-        },
-        {
-          "file_path": "Sources/CoreTypes/SecurityProviderBase.swift",
-          "module_name": "CoreTypes",
-          "is_isolation_file": false,
-          "imports": [],
-          "type_aliases": {},
-          "error_mapping_functions": []
-        },
-        {
-          "file_path": "Sources/CoreTypes/XPCProtocolsCoreIsolation.swift",
-          "module_name": "CoreTypes",
-          "is_isolation_file": true,
-          "imports": [
-            "XPCProtocolsCore",
-            "Foundation",
-            "CoreErrors",
-            "UmbraCoreTypes",
-            "XPCProtocolsCore",
-            "XPCProtocolsCore"
-          ],
-          "type_aliases": {
-            "XPCSecurityError": "XPCProtocolsCore.XPCSecurityError"
-          },
-          "error_mapping_functions": [
-            "mapXPCToCoreError",
-            "mapCoreToXPCError"
-          ]
-        },
-        {
-          "file_path": "Sources/CoreTypes/XPCProtocolsCoreTypes.swift",
-          "module_name": "CoreTypes",
-          "is_isolation_file": false,
-          "imports": [
-            "XPCProtocolsCore",
-            "XPCProtocolsCore",
             "UmbraCoreTypes"
           ],
-          "type_aliases": {
-            "XPCSecurityErrorType": "XPCProtocolsCore.XPCSecurityError"
-          },
+          "type_aliases": {},
           "error_mapping_functions": []
         },
         {
-          "file_path": "Sources/CoreTypes/XPCServiceAdapter.swift",
-          "module_name": "CoreTypes",
+          "file_path": "Sources/UmbraSecurityCore/Sources/Adapters/FoundationTypeBridge.swift",
+          "module_name": "UmbraSecurityCore",
           "is_isolation_file": false,
           "imports": [
-            "CoreErrors",
-            "Foundation",
+            "SecurityProtocolsCore",
+            "UmbraCoreTypes"
+          ],
+          "type_aliases": {},
+          "error_mapping_functions": []
+        },
+        {
+          "file_path": "Sources/UmbraSecurityCore/Sources/Implementations/DefaultCryptoService.swift",
+          "module_name": "UmbraSecurityCore",
+          "is_isolation_file": false,
+          "imports": [
+            "SecurityProtocolsCore",
+            "UmbraCoreTypes"
+          ],
+          "type_aliases": {},
+          "error_mapping_functions": []
+        },
+        {
+          "file_path": "Sources/UmbraSecurityCore/Sources/UmbraSecurityCore.swift",
+          "module_name": "UmbraSecurityCore",
+          "is_isolation_file": false,
+          "imports": [
+            "SecurityProtocolsCore",
+            "UmbraCoreTypes"
+          ],
+          "type_aliases": {},
+          "error_mapping_functions": []
+        },
+        {
+          "file_path": "Sources/UmbraSecurityCore/Tests/CryptoServiceAdaptersTests.swift",
+          "module_name": "UmbraSecurityCore",
+          "is_isolation_file": false,
+          "imports": [
             "SecurityProtocolsCore",
             "UmbraCoreTypes",
-            "XPCProtocolsCore",
-            "CoreErrors"
+            "UmbraSecurityCore",
+            "XCTest"
           ],
-          "type_aliases": {
-            "SecureBytes": "UmbraCoreTypes.SecureBytes",
-            "SecureValue": "UmbraCoreTypes.SecureValue",
-            "XPCSecurityError": "CoreErrors.SecurityError"
-          },
+          "type_aliases": {},
+          "error_mapping_functions": []
+        },
+        {
+          "file_path": "Sources/UmbraSecurityCore/Tests/DefaultCryptoServiceTests.swift",
+          "module_name": "UmbraSecurityCore",
+          "is_isolation_file": false,
+          "imports": [
+            "SecurityProtocolsCore",
+            "UmbraCoreTypes",
+            "UmbraSecurityCore",
+            "XCTest"
+          ],
+          "type_aliases": {},
           "error_mapping_functions": []
         }
       ],
-      "isolation_files": [
-        "SecurityProtocolsCoreIsolation.swift",
-        "XPCProtocolsCoreIsolation.swift"
-      ],
-      "total_type_aliases": 11,
-      "total_error_mapping_functions": 6,
+      "isolation_files": [],
+      "total_type_aliases": 0,
+      "total_error_mapping_functions": 0,
       "imports_by_module": {
-        "CoreErrors": 5,
-        "Foundation": 4,
         "SecurityProtocolsCore": 7,
-        "SecurityProtocolsCoreIsolation": 1,
-        "UmbraCoreTypes": 6,
-        "XPCProtocolsCore": 6,
-        "XPCProtocolsCoreIsolation": 1,
-        "the": 1
+        "UmbraCoreTypes": 7,
+        "UmbraSecurityCore": 2,
+        "XCTest": 2
       }
     }
   },
-  "top_isolation_modules": [
-    "CoreTypes (2 isolation files)"
-  ],
+  "top_isolation_modules": null,
   "isolation_patterns": [
     "Files with 'Isolation' in the name are used to manage namespace conflicts",
     "Type aliases are heavily used to redirect types from other modules",

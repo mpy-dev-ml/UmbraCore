@@ -14,7 +14,7 @@ final class SanityTests: XCTestCase {
 
   func testAsyncSanity() async {
     // A basic async test to verify async testing works
-    let result=await withCheckedContinuation { continuation in
+    let result = await withCheckedContinuation { continuation in
       DispatchQueue.main.async {
         continuation.resume(returning: true)
       }
@@ -26,7 +26,7 @@ final class SanityTests: XCTestCase {
 
   func testAsyncWithTimeout() async {
     // Test with short delay
-    let result=await withCheckedContinuation { continuation in
+    let result = await withCheckedContinuation { continuation in
       DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
         continuation.resume(returning: true)
       }
@@ -36,24 +36,24 @@ final class SanityTests: XCTestCase {
 
   func testMultipleAsyncCalls() async {
     // Run multiple async operations and verify they all complete
-    async let result1=mockAsyncOperation(delay: 0.1, value: 1)
-    async let result2=mockAsyncOperation(delay: 0.2, value: 2)
-    async let result3=mockAsyncOperation(delay: 0.3, value: 3)
+    async let result1 = mockAsyncOperation(delay: 0.1, value: 1)
+    async let result2 = mockAsyncOperation(delay: 0.2, value: 2)
+    async let result3 = mockAsyncOperation(delay: 0.3, value: 3)
 
-    let results=await [result1, result2, result3]
+    let results = await [result1, result2, result3]
     XCTAssertEqual(results, [1, 2, 3], "All async operations should complete")
   }
 
   func testAsyncTaskGroup() async {
     // Test with TaskGroup
-    let sum=await withTaskGroup(of: Int.self) { group in
+    let sum = await withTaskGroup(of: Int.self) { group in
       for i in 1...5 {
         group.addTask {
           await self.mockAsyncOperation(delay: 0.05, value: i)
         }
       }
 
-      var result=0
+      var result = 0
       for await value in group {
         result += value
       }
@@ -65,7 +65,7 @@ final class SanityTests: XCTestCase {
 
   func testConcurrentAccess() async {
     // Test concurrent access to shared resources
-    let counter=Counter()
+    let counter = Counter()
 
     await withTaskGroup(of: Void.self) { group in
       for _ in 1...100 {
@@ -76,7 +76,7 @@ final class SanityTests: XCTestCase {
     }
 
     // Get the value first and then use it in the assertion to avoid await in autoclosure
-    let finalValue=await counter.value
+    let finalValue = await counter.value
     XCTAssertEqual(finalValue, 100, "Counter should be incremented to 100")
   }
 
@@ -93,7 +93,7 @@ final class SanityTests: XCTestCase {
 
 // Helper actor for testing concurrent access
 actor Counter {
-  private var count=0
+  private var count = 0
 
   var value: Int {
     count

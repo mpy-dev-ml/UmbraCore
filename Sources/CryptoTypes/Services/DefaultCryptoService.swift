@@ -14,8 +14,8 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
   public init() {}
 
   public func generateSecureRandomKey(length: Int) async throws -> Data {
-    var bytes=[UInt8](repeating: 0, count: length)
-    let status=SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
+    var bytes = [UInt8](repeating: 0, count: length)
+    let status = SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
     guard status == errSecSuccess else {
       throw CryptoError.randomGenerationFailed(status: status)
     }
@@ -23,8 +23,8 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
   }
 
   public func generateSecureRandomBytes(length: Int) async throws -> Data {
-    var bytes=[UInt8](repeating: 0, count: length)
-    let status=SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
+    var bytes = [UInt8](repeating: 0, count: length)
+    let status = SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
     guard status == errSecSuccess else {
       throw CryptoError.randomGenerationFailed(status: status)
     }
@@ -42,18 +42,18 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
   }
 
   public func deriveKey(from password: String, salt: Data, iterations: Int) async throws -> Data {
-    guard let passwordData=password.data(using: .utf8) else {
+    guard let passwordData = password.data(using: .utf8) else {
       throw CryptoError.encryptionFailed(reason: "Invalid password encoding")
     }
 
-    let keyLength=32 // 256 bits
-    var derivedKeyData=Data(count: keyLength)
+    let keyLength = 32 // 256 bits
+    var derivedKeyData = Data(count: keyLength)
 
-    let result=derivedKeyData.withUnsafeMutableBytes { derivedKeyBytes -> Int32 in
+    let result = derivedKeyData.withUnsafeMutableBytes { derivedKeyBytes -> Int32 in
       passwordData.withUnsafeBytes { passwordBytes -> Int32 in
         salt.withUnsafeBytes { saltBytes -> Int32 in
-          let algorithm=CCPBKDFAlgorithm(kCCPBKDF2)
-          let prf=CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256)
+          let algorithm = CCPBKDFAlgorithm(kCCPBKDF2)
+          let prf = CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256)
 
           return CCKeyDerivationPBKDF(
             algorithm,

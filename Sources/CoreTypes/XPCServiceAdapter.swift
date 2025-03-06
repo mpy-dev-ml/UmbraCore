@@ -1,89 +1,194 @@
 // Foundation-free adapter for XPC services
 // Provides a bridge between Foundation-dependent and Foundation-free implementations
 import CoreErrors
+import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
 
-/// Protocol for Foundation-based XPC service interfaces
-/// Use this to define what we expect from Foundation-based XPC implementations
-public protocol FoundationBasedXPCService: Sendable {
-  func ping() async -> Result<Bool, XPCSecurityError>
-  func synchroniseKeys(_ data: Any) async -> Result<Void, XPCSecurityError>
+// Use our isolation files instead of direct imports
+// This prevents namespace conflicts with enum types that share module names
+public typealias SecureBytes = UmbraCoreTypes.SecureBytes
+public typealias SecureValue = UmbraCoreTypes.SecureValue
+public typealias XPCSecurityError = CoreErrors.SecurityError
+
+/// Protocol for Foundation-based XPC service implementations
+/// This is implemented by the concrete service classes
+public protocol FoundationBasedXPCService {
+  func processRequest(_ requestData: Data) async -> Result<Data, Error>
+  func callSecureFunction(_ name: String, parameters: [String: Any]) async -> Result<[String: Any], Error>
+  func validateCredential(_ credential: Data) async -> Result<Bool, Error>
+  func getSystemInfo() async -> Result<[String: String], Error>
 }
 
-/// Adapter that implements XPCServiceProtocolStandard from any FoundationBasedXPCService
+/// XPC Service adapter that wraps XPC communication with type safety
 public final class XPCServiceAdapter: XPCServiceProtocolStandard {
   private let service: any FoundationBasedXPCService
 
   /// Create a new adapter wrapping a Foundation-based service implementation
   public init(wrapping service: any FoundationBasedXPCService) {
-    self.service=service
+    self.service = service
   }
 
-  /// Implement ping method
-  public func ping() async -> Result<Bool, XPCSecurityError> {
-    await service.ping()
-  }
+  /// Convert an NSDictionary to a secure dictionary format
+  /// - Parameter dict: Original NSDictionary from XPC
+  /// - Returns: Dictionary with SecureValue values
+  private func convertToSecureDict(_ dict: NSDictionary) -> [String: SecureValue] {
+    var secureDict = [String: SecureValue]()
 
-  /// Implement synchroniseKeys with SecureBytes
-  public func synchroniseKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
-    // Convert SecureBytes to [UInt8] array for compatibility
-    var byteArray=[UInt8]()
-    syncData.withUnsafeBytes { buffer in
-      byteArray=Array(buffer)
+    for (key, value) in dict {
+      guard let key = key as? String else { continue }
+
+      if let stringValue = value as? String {
+        secureDict[key] = .string(stringValue)
+      } else if let intValue = value as? Int {
+        secureDict[key] = .integer(intValue)
+      } else if let boolValue = value as? Bool {
+        secureDict[key] = .boolean(boolValue)
+      } else if let dataValue = value as? Data {
+        secureDict[key] = .data(SecureBytes(data: dataValue))
+      } else if value is NSNull {
+        secureDict[key] = .null
+      }
+      // Array and dictionary cases would need more conversion
     }
 
-    // Pass the byte array to the service
-    return await service.synchroniseKeys(byteArray)
+    return secureDict
   }
 
-  // Implement required methods with not implemented error
+  /// Map from any error to XPCSecurityError
+  private func mapError(_ error: Error) -> XPCSecurityError {
+    // If we already have a SecurityError, return it
+    if let securityError = error as? XPCSecurityError {
+      return securityError
+    }
 
-  /// Generate random data of the specified length
-  public func generateRandomData(length _: Int) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.cryptoError)
+    // Handle SecurityProtocolsCore's SecurityError types
+    if let securityError = error as? SPCoreSecurityError {
+      switch securityError {
+        case .encryptionFailed:
+          return .encryptionError(reason: "Encryption failed")
+        case .decryptionFailed:
+          return .decryptionError(reason: "Decryption failed")
+        case .keyGenerationFailed:
+          return .keyGenerationError(reason: "Key generation failed")
+        case .hashVerificationFailed:
+          return .hashingError(reason: "Hash verification failed")
+        case .randomGenerationFailed:
+          return .cryptoError(reason: "Crypto operation failed")
+        case .invalidInput:
+          return .invalidData(reason: "Invalid data")
+        case .storageError:
+          return .storageError(reason: "Storage operation failed")
+        case .serviceNotAvailable:
+          return .serviceUnavailable(reason: "Service not available")
+        case .operationNotSupported:
+          return .notImplemented(reason: "Operation not supported")
+        // Handle other specific cases
+        default:
+          return .unknownError(reason: "Unknown error")
+      }
+    }
+
+    // Handle general Error types
+    let nsError = error as NSError
+    switch nsError.domain {
+      case NSURLErrorDomain:
+        return .networkError(reason: "Network error")
+      case "CoreCryptoErrorDomain":
+        return .cryptoError(reason: "Crypto operation failed")
+      case "CoreSecurityErrorDomain":
+        return .securityError(reason: "Security error")
+      default:
+        return .unknownError(reason: "Unknown error")
+    }
   }
 
-  public func encryptData(
-    _: SecureBytes,
-    keyIdentifier _: String?
-  ) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.cryptoError)
+  // MARK: - XPCServiceProtocolStandard Implementation
+
+  public func processRequest(_ requestData: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    let dataResult = await service.processRequest(Data(requestData.bytes))
+
+    switch dataResult {
+      case .success(let responseData):
+        return .success(SecureBytes(bytes: [UInt8](responseData)))
+      case .failure(let error):
+        return .failure(mapError(error))
+    }
   }
 
-  public func decryptData(
-    _: SecureBytes,
-    keyIdentifier _: String?
-  ) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.cryptoError)
+  public func callSecureFunction(_ name: String, parameters: [String: SecureValue]) async -> Result<[String: SecureValue], XPCSecurityError> {
+    // Convert SecureValue dictionary to [String: Any]
+    var jsonParameters: [String: Any] = [:]
+
+    for (key, value) in parameters {
+      switch value {
+        case .string(let stringValue):
+          jsonParameters[key] = stringValue
+        case .number(let numberValue):
+          jsonParameters[key] = numberValue
+        case .boolean(let boolValue):
+          jsonParameters[key] = boolValue
+        case .data(let bytes):
+          jsonParameters[key] = Data(bytes.bytes)
+        case .null:
+          jsonParameters[key] = NSNull()
+        case .array(let array):
+          // Simplified - would need recursive conversion in practice
+          jsonParameters[key] = array
+        case .dictionary(let dict):
+          // Simplified - would need recursive conversion in practice
+          jsonParameters[key] = dict
+      }
+    }
+
+    let result = await service.callSecureFunction(name, parameters: jsonParameters)
+
+    switch result {
+      case .success(let resultDict):
+        // Convert back to SecureValue dictionary
+        var secureDict: [String: SecureValue] = [:]
+
+        for (key, value) in resultDict {
+          if let stringValue = value as? String {
+            secureDict[key] = .string(stringValue)
+          } else if let numberValue = value as? Double {
+            secureDict[key] = .number(numberValue)
+          } else if let boolValue = value as? Bool {
+            secureDict[key] = .boolean(boolValue)
+          } else if let dataValue = value as? Data {
+            secureDict[key] = .data(SecureBytes(bytes: [UInt8](dataValue)))
+          } else if value is NSNull {
+            secureDict[key] = .null
+          }
+          // Array and dictionary cases would need more conversion
+        }
+
+        return .success(secureDict)
+      case .failure(let error):
+        return .failure(mapError(error))
+    }
   }
 
-  public func generateKeyPair(identifier _: String) async -> Result<Void, XPCSecurityError> {
-    .failure(.cryptoError)
+  public func validateCredential(_ credential: SecureBytes) async -> Result<Bool, XPCSecurityError> {
+    let result = await service.validateCredential(Data(credential.bytes))
+
+    switch result {
+      case .success(let isValid):
+        return .success(isValid)
+      case .failure(let error):
+        return .failure(mapError(error))
+    }
   }
 
-  public func hashData(_: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.cryptoError)
-  }
+  public func getSystemInfo() async -> Result<[String: String], XPCSecurityError> {
+    let result = await service.getSystemInfo()
 
-  public func signData(
-    _: SecureBytes,
-    keyIdentifier _: String
-  ) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.cryptoError)
-  }
-
-  public func verifySignature(
-    _: SecureBytes,
-    for _: SecureBytes,
-    keyIdentifier _: String
-  ) async throws -> Bool {
-    throw XPCSecurityError.cryptoError
-  }
-
-  /// Protocol identifier
-  public static var protocolIdentifier: String {
-    "com.umbra.xpc.service.adapter"
+    switch result {
+      case .success(let info):
+        return .success(info)
+      case .failure(let error):
+        return .failure(mapError(error))
+    }
   }
 }

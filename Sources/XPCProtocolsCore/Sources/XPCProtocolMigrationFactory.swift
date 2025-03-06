@@ -1,3 +1,5 @@
+import CoreErrors
+import SecurityProtocolsCore
 import UmbraCoreTypes
 
 /// Factory class that provides convenience methods for creating protocol adapters
@@ -48,5 +50,107 @@ public enum XPCProtocolMigrationFactory {
   /// - Returns: Standardized XPCSecurityError
   public static func convertToStandardError(_ error: Error) -> XPCSecurityError {
     LegacyXPCServiceAdapter.mapError(error)
+  }
+
+  /// Convert from SecurityProtocolsCore.SecurityError to XPCSecurityError
+  ///
+  /// - Parameter error: Security error from the SecurityProtocolsCore module
+  /// - Returns: Equivalent XPCSecurityError
+  public static func convertSecurityCoreError(_ error: SecurityProtocolsCore.SecurityError) -> XPCSecurityError {
+    switch error {
+      case .encryptionFailed:
+        return .encryptionFailed
+      case .decryptionFailed:
+        return .decryptionFailed
+      case .keyGenerationFailed:
+        return .keyGenerationFailed
+      case .invalidKey:
+        return .invalidData
+      case .hashVerificationFailed:
+        return .hashingFailed
+      case .randomGenerationFailed:
+        return .cryptoError
+      case .invalidInput:
+        return .invalidData
+      case .storageOperationFailed:
+        return .serviceFailed
+      case .timeout:
+        return .serviceFailed
+      case .serviceError:
+        return .serviceFailed
+      case .internalError(let reason):
+        return .general(reason)
+      case .notImplemented:
+        return .notImplemented
+    }
+  }
+
+  /// Convert from XPCSecurityError to SecurityProtocolsCore.SecurityError
+  ///
+  /// - Parameter error: XPC error
+  /// - Returns: Equivalent SecurityProtocolsCore.SecurityError
+  public static func convertToSecurityCoreError(_ error: XPCSecurityError) -> SecurityProtocolsCore.SecurityError {
+    switch error {
+      case .encryptionFailed:
+        return .encryptionFailed(reason: "XPC encryption failed")
+      case .decryptionFailed:
+        return .decryptionFailed(reason: "XPC decryption failed")
+      case .keyGenerationFailed:
+        return .keyGenerationFailed(reason: "XPC key generation failed")
+      case .invalidData:
+        return .invalidInput(reason: "Invalid data format")
+      case .hashingFailed:
+        return .hashVerificationFailed
+      case .cryptoError:
+        return .internalError(reason: "Generic crypto error from XPC service")
+      case .serviceFailed:
+        return .serviceError(reason: "XPC service operation failed")
+      case .notImplemented:
+        return .notImplemented
+      case .general(let message):
+        return .internalError(reason: message)
+    }
+  }
+
+  /// Convert any error to XPCSecurityError
+  ///
+  /// - Parameter error: Any error type
+  /// - Returns: Equivalent XPCSecurityError
+  public static func anyErrorToXPCError(_ error: Error) -> XPCSecurityError {
+    // Handle SecurityProtocolsCore.SecurityError
+    if let securityError = error as? SecurityProtocolsCore.SecurityError {
+      return convertSecurityCoreError(securityError)
+    }
+
+    // If already an XPCSecurityError, return as is
+    if let xpcError = error as? XPCSecurityError {
+      return xpcError
+    }
+
+    // Map CoreErrors.CryptoError
+    if let cryptoError = error as? CoreErrors.CryptoError {
+      switch cryptoError {
+        case .encryptionFailed:
+          return .encryptionFailed
+        case .decryptionFailed:
+          return .decryptionFailed
+        case .keyGenerationFailed:
+          return .keyGenerationFailed
+        case .invalidKey, .invalidKeyLength, .invalidIVLength, .invalidSaltLength,
+             .invalidIterationCount, .invalidKeySize, .invalidKeyFormat, .invalidCredentialIdentifier:
+          return .invalidData
+        case .hashingFailed, .resultVerificationFailed, .authenticationFailed:
+          return .hashingFailed
+        case .randomGenerationFailed, .ivGenerationFailed, .tagGenerationFailed:
+          return .cryptoError
+        case .keyDerivationFailed, .keyNotFound, .keyExists, .keychainError:
+          return .serviceFailed
+        case .operationFailed:
+          return .serviceFailed
+      }
+    }
+
+    // Default fallback for unknown errors
+    return .general("Unknown error: \(error.localizedDescription)")
   }
 }

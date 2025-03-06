@@ -95,7 +95,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     }
 
     // Extract token parameters with defaults
-    let expirationInterval = options["expirationInterval"] as? TimeInterval ?? 3600
+    let expirationInterval = options["expirationInterval"] as? TimeInterval ?? 3_600
     let scope = options["scope"] as? String ?? "default"
 
     // Generate token data (simplified implementation)

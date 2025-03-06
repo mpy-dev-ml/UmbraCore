@@ -2,10 +2,6 @@ import SecurityInterfacesProtocols
 import SecurityProtocolsCore
 import XPCProtocolsCore
 
-/// Type aliases to disambiguate between similarly named types from different modules
-typealias SPCSecurityError = SecurityProtocolsCore.SecurityError
-typealias XPCSecurityError = XPCProtocolsCore.SecurityError
-
 /// Error type specific to the security bridge layer
 public enum SecurityBridgeError: Error {
   case invalidInputType
@@ -21,98 +17,100 @@ public enum SecurityBridgeErrorMapper {
   /// Maps any error to a SecurityError
   /// - Parameter error: The error to map
   /// - Returns: A SecurityError representation of the error
-  public static func mapToSecurityError(_ error: Error) -> SPCSecurityError {
+  public static func mapToSecurityError(_ error: Error) -> SecurityError {
     // Handle different error types
-    if let secError = error as? SPCSecurityError {
+    if let secError = error as? SecurityError {
       // Already a SecurityError
       return secError
-    } else if let xpcError = error as? XPCSecurityError {
+    } else if let xpcError = error as? XPCProtocolsCore.SecurityError {
       // Map from SecurityError
       switch xpcError {
         case .notImplemented:
-          return .invalidInput(reason: "Operation not implemented")
+          return SecurityError.invalidInput(reason: "Operation not implemented")
         case .invalidData:
-          return .invalidInput(reason: "Invalid data format")
+          return SecurityError.invalidInput(reason: "Invalid data format")
         case .encryptionFailed:
-          return .encryptionFailed(reason: "XPC encryption operation failed")
+          return SecurityError.encryptionFailed(reason: "XPC encryption operation failed")
         case .decryptionFailed:
-          return .decryptionFailed(reason: "XPC decryption operation failed")
+          return SecurityError.decryptionFailed(reason: "XPC decryption operation failed")
         case .keyGenerationFailed:
-          return .keyGenerationFailed(reason: "XPC key generation failed")
+          return SecurityError.keyGenerationFailed(reason: "XPC key generation failed")
         case .hashingFailed:
-          return .hashVerificationFailed
+          return SecurityError.hashVerificationFailed
         case .serviceFailed:
-          return .invalidInput(reason: "XPC service failure")
+          return SecurityError.invalidInput(reason: "XPC service failure")
         case let .general(message):
-          return .internalError("XPC general error: \(message)")
+          return SecurityError.internalError("XPC general error: \(message)")
+        case .cryptoError:
+          return SecurityError.internalError("Crypto operation failed")
       }
     } else if let bridgeError = error as? SecurityBridgeError {
       // Map from bridge-specific errors
       switch bridgeError {
         case .invalidInputType:
-          return .invalidInput(reason: "Invalid input type")
+          return SecurityError.invalidInput(reason: "Invalid input type")
         case .mappingFailed:
-          return .internalError("Error mapping failed")
+          return SecurityError.internalError("Error mapping failed")
         case .unsupportedErrorType:
-          return .internalError("Unsupported error type")
+          return SecurityError.internalError("Unsupported error type")
         case .invalidConfiguration:
-          return .internalError("Invalid security configuration")
+          return SecurityError.internalError("Invalid security configuration")
       }
     } else {
       // Default case for unknown error types
       let errorString = String(describing: error)
-      return .internalError("Unknown error: \(errorString)")
+      return SecurityError.internalError("Unknown error: \(errorString)")
     }
   }
 
   /// Maps any error to a SecurityError
   /// - Parameter error: The error to map
   /// - Returns: A SecurityError representation of the error
-  public static func mapToXPCError(_ error: Error) -> XPCSecurityError {
+  public static func mapToXPCError(_ error: Error) -> XPCServiceProtocolComplete.SecurityError {
     // Handle different error types
-    if let xpcError = error as? XPCSecurityError {
+    if let xpcError = error as? XPCServiceProtocolComplete.SecurityError {
       // Already a SecurityError
       return xpcError
-    } else if let secError = error as? SPCSecurityError {
+    } else if let secError = error as? SecurityError {
       // Map from SecurityError
       switch secError {
         case .encryptionFailed:
-          return .encryptionFailed
+          return XPCServiceProtocolComplete.SecurityError.encryptionFailed
         case .decryptionFailed:
-          return .decryptionFailed
+          return XPCServiceProtocolComplete.SecurityError.decryptionFailed
         case .keyGenerationFailed:
-          return .keyGenerationFailed
+          return XPCServiceProtocolComplete.SecurityError.keyGenerationFailed
         case .invalidKey:
-          return .invalidData
+          return XPCServiceProtocolComplete.SecurityError.invalidData
         case .hashVerificationFailed:
-          return .hashingFailed
+          return XPCServiceProtocolComplete.SecurityError.hashingFailed
         case .randomGenerationFailed:
-          return .serviceFailed
+          return XPCServiceProtocolComplete.SecurityError.serviceFailed
         case .invalidInput:
-          return .invalidData
+          return XPCServiceProtocolComplete.SecurityError.invalidData
         case .storageOperationFailed:
-          return .serviceFailed
+          return XPCServiceProtocolComplete.SecurityError.serviceFailed
         case .timeout:
-          return .serviceFailed
+          return XPCServiceProtocolComplete.SecurityError.serviceFailed
         case .serviceError:
-          return .serviceFailed
+          return XPCServiceProtocolComplete.SecurityError.serviceFailed
         case let .internalError(message):
-          return .general(message)
+          return XPCServiceProtocolComplete.SecurityError.general(message)
         case .notImplemented:
-          return .notImplemented
+          return XPCServiceProtocolComplete.SecurityError.notImplemented
       }
     } else if let bridgeError = error as? SecurityBridgeError {
       // Map from bridge-specific errors
       switch bridgeError {
         case .invalidInputType:
-          return .invalidData
+          return XPCServiceProtocolComplete.SecurityError.invalidData
         case .mappingFailed, .unsupportedErrorType, .invalidConfiguration:
-          return .serviceFailed
+          return XPCServiceProtocolComplete.SecurityError.serviceFailed
       }
     } else {
       // Default case for unknown error types
       let errorString = String(describing: error)
-      return .general("Unknown error: \(errorString)")
+      return XPCServiceProtocolComplete.SecurityError.general("Unknown error: \(errorString)")
     }
   }
 }

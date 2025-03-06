@@ -42,7 +42,7 @@ extension XPCServiceProtocolBasic {
 
   /// Implementation for synchronising keys with byte array (for legacy compatibility)
   public func synchroniseKeys(_ bytes: [UInt8]) async -> Result<Void, XPCSecurityError> {
-    let secureBytes=SecureBytes(bytes: bytes)
+    let secureBytes = SecureBytes(bytes: bytes)
     return await synchroniseKeys(secureBytes)
   }
 }

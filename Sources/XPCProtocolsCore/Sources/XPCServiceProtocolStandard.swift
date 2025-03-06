@@ -37,12 +37,12 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
   ///   - signature: Signature to verify
   ///   - data: Original data
   ///   - keyIdentifier: Key identifier to use for verification
-  /// - Returns: True if signature is valid
+  /// - Returns: True if signature is valid, or error
   func verifySignature(
     _ signature: SecureBytes,
     for data: SecureBytes,
     keyIdentifier: String
-  ) async throws -> Bool
+  ) async -> Result<Bool, XPCSecurityError>
 }
 
 /// Protocol for security service that manages secure storage operations
@@ -56,7 +56,7 @@ public protocol SecureStorageServiceProtocol: Sendable {
     _ data: SecureBytes,
     identifier: String,
     metadata: [String: String]?
-  ) async throws
+  ) async -> Result<Void, XPCSecurityError>
 
   /// Retrieve securely stored data
   /// - Parameter identifier: Unique identifier for the data
@@ -64,7 +64,7 @@ public protocol SecureStorageServiceProtocol: Sendable {
   func retrieveSecurely(identifier: String) async -> Result<SecureBytes, XPCSecurityError>
   /// Delete securely stored data
   /// - Parameter identifier: Unique identifier for the data
-  func deleteSecurely(identifier: String) async throws
+  func deleteSecurely(identifier: String) async -> Result<Void, XPCSecurityError>
 
   /// List all secure storage identifiers
   /// - Returns: Array of identifiers
@@ -87,11 +87,11 @@ public protocol KeyManagementServiceProtocol: Sendable {
     keyType: KeyType,
     keyIdentifier: String?,
     metadata: [String: String]?
-  ) async throws -> String
+  ) async -> Result<String, XPCSecurityError>
 
   /// Delete a key
   /// - Parameter keyIdentifier: Identifier for the key to delete
-  func deleteKey(keyIdentifier: String) async throws
+  func deleteKey(keyIdentifier: String) async -> Result<Void, XPCSecurityError>
 
   /// List all key identifiers
   /// - Returns: Array of key identifiers

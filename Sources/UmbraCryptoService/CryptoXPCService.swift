@@ -58,7 +58,7 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
   public func ping() async -> Result<Bool, XPCSecurityError> {
     .success(true)
   }
-  
+
   /// Implementation of synchronizeKeys from XPCServiceProtocolBasic
   public func synchronizeKeys(_ data: UmbraCoreTypes.SecureBytes) async -> Result<Void, XPCSecurityError> {
     guard !data.isEmpty else {
@@ -194,7 +194,7 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
       }
 
       return try await withCheckedThrowingContinuation { continuation in
-        dependencies.keychain.store(data: credential, forKey: identifier) { error in
+        dependencies.keychain.store(data: credential, forKey: identifier) { _ in
           if let error {
             continuation.resume(returning: .failure(.keychainError))
           } else {
@@ -219,7 +219,7 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
       }
 
       return try await withCheckedThrowingContinuation { continuation in
-        dependencies.keychain.retrieve(forKey: identifier) { data, error in
+        dependencies.keychain.retrieve(forKey: identifier) { data, _ in
           if let error {
             continuation.resume(returning: .failure(.keychainError))
           } else if let data {
@@ -246,7 +246,7 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
       }
 
       return try await withCheckedThrowingContinuation { continuation in
-        dependencies.keychain.delete(forKey: identifier) { error in
+        dependencies.keychain.delete(forKey: identifier) { _ in
           if let error {
             continuation.resume(returning: .failure(.keychainError))
           } else {

@@ -18,15 +18,15 @@ import XPCProtocolsCore
 public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
   /// The XPC listener instance
   private let listener: NSXPCListener
-  
+
   /// Dependencies required by the cryptographic service
   private let dependencies: CryptoXPCServiceDependencies
-  
+
   /// Service provider type for Swift Concurrency
   public static var serviceType: ModernCryptoXPCServiceProtocol.Type {
     ModernCryptoXPCServiceProtocol.self
   }
-  
+
   /// Initialize a new crypto service listener
   /// - Parameter dependencies: Dependencies required by the service
   public init(dependencies: CryptoXPCServiceDependencies) {
@@ -35,19 +35,19 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
     super.init()
     self.listener.delegate = self
   }
-  
+
   /// Start the XPC listener
   public func start() {
     listener.resume()
   }
-  
+
   /// Stop the XPC listener
   public func stop() {
     listener.suspend()
   }
-  
+
   // MARK: - NSXPCListenerDelegate
-  
+
   /// Configure the connection when a new client connects
   /// - Parameter newConnection: The new connection
   /// - Returns: A Boolean indicating whether the connection should proceed
@@ -55,19 +55,19 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
     // Create the service implementation
     let service = CryptoXPCService(dependencies: dependencies)
     service.connection = newConnection
-    
+
     // Configure the connection
     newConnection.exportedInterface = NSXPCInterface(with: ModernCryptoXPCServiceProtocol.self)
     newConnection.exportedObject = service
-    
+
     // Handle invalidation
     newConnection.invalidationHandler = {
       service.connection = nil
     }
-    
+
     // Resume the connection
     newConnection.resume()
-    
+
     return true
   }
 }

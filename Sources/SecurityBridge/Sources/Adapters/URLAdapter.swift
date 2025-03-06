@@ -12,14 +12,14 @@ public enum URLAdapter {
   /// - Returns: A new ResourceLocator instance representing the same resource
   /// - Throws: AdapterError if the URL cannot be converted
   public static func resourceLocator(from url: URL) throws -> ResourceLocator {
-    guard let scheme=url.scheme else {
+    guard let scheme = url.scheme else {
       throw AdapterError.invalidURLConversion("URL is missing a scheme")
     }
 
     // Extract the components from the URL
-    let path=url.path
-    let query=url.query
-    let fragment=url.fragment
+    let path = url.path
+    let query = url.query
+    let fragment = url.fragment
 
     return try ResourceLocator(
       scheme: scheme,
@@ -35,9 +35,9 @@ public enum URLAdapter {
   /// - Throws: AdapterError if the ResourceLocator cannot be converted
   public static func url(from locator: ResourceLocator) throws -> URL {
     // Use the string representation to create a URL
-    let urlString=locator.toString()
+    let urlString = locator.toString()
 
-    guard let url=URL(string: urlString) else {
+    guard let url = URL(string: urlString) else {
       throw AdapterError.invalidURLConversion("Could not create URL from locator: \(urlString)")
     }
 

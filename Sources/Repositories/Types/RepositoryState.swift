@@ -39,7 +39,7 @@ public enum RepositoryState: Equatable, Sendable, Codable {
   }
 
   public func encode(to encoder: Encoder) throws {
-    var container=encoder.container(keyedBy: CodingKeys.self)
+    var container = encoder.container(keyedBy: CodingKeys.self)
     switch self {
       case .uninitialized:
         try container.encode("uninitialized", forKey: .type)
@@ -54,8 +54,8 @@ public enum RepositoryState: Equatable, Sendable, Codable {
   }
 
   public init(from decoder: Decoder) throws {
-    let container=try decoder.container(keyedBy: CodingKeys.self)
-    let type=try container.decode(String.self, forKey: .type)
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let type = try container.decode(String.self, forKey: .type)
     switch type {
       case "uninitialized":
         self = .uninitialized
@@ -64,7 +64,7 @@ public enum RepositoryState: Equatable, Sendable, Codable {
       case "locked":
         self = .locked
       case "error":
-        let error=try container.decode(RepositoryError.self, forKey: .error)
+        let error = try container.decode(RepositoryError.self, forKey: .error)
         self = .error(error)
       default:
         throw DecodingError.dataCorruptedError(

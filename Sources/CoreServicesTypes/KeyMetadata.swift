@@ -58,19 +58,19 @@ public struct KeyMetadata: Sendable, Codable {
     accessControls: AccessControls = .none,
     algorithm: String,
     keySize: Int,
-    expiryDate: Date?=nil,
-    isProcessIsolated: Bool=false,
-    customMetadata: [String: String]?=nil
+    expiryDate: Date? = nil,
+    isProcessIsolated: Bool = false,
+    customMetadata: [String: String]? = nil
   ) {
-    status=KeyStatus.active
-    self.storageLocation=storageLocation
-    self.accessControls=accessControls
-    self.algorithm=algorithm
-    self.keySize=keySize
-    createdAt=Date()
-    lastModified=Date()
-    self.expiryDate=expiryDate
-    self.isProcessIsolated=isProcessIsolated
-    self.customMetadata=customMetadata
+    status = KeyStatus.active
+    self.storageLocation = storageLocation
+    self.accessControls = accessControls
+    self.algorithm = algorithm
+    self.keySize = keySize
+    createdAt = Date()
+    lastModified = Date()
+    self.expiryDate = expiryDate
+    self.isProcessIsolated = isProcessIsolated
+    self.customMetadata = customMetadata
   }
 }

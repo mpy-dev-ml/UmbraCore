@@ -86,7 +86,7 @@ public final class KeyManager: KeyManagementProtocol {
 
   /// Creates a new instance of KeyManager
   public init() {
-    keyStorage=SafeStorage()
+    keyStorage = SafeStorage()
   }
 
   // MARK: - KeyManagementProtocol
@@ -96,7 +96,7 @@ public final class KeyManager: KeyManagementProtocol {
   /// - Returns: The key or an error if the key does not exist
   public func retrieveKey(withIdentifier identifier: String) async
   -> Result<SecureBytes, SecurityError> {
-    if let key=await keyStorage.get(identifier: identifier) {
+    if let key = await keyStorage.get(identifier: identifier) {
       .success(key)
     } else {
       .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
@@ -141,13 +141,13 @@ public final class KeyManager: KeyManagementProtocol {
     reencryptedData: SecureBytes?
   ), SecurityError> {
     // Check if the key exists first
-    guard let oldKey=await keyStorage.get(identifier: identifier) else {
+    guard let oldKey = await keyStorage.get(identifier: identifier) else {
       return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
     }
 
     // Generate a new key
-    let crypto=CryptoService()
-    let keyResult=await crypto.generateKey()
+    let crypto = CryptoService()
+    let keyResult = await crypto.generateKey()
 
     switch keyResult {
       case let .success(newKey):
@@ -157,7 +157,7 @@ public final class KeyManager: KeyManagementProtocol {
         // If data was provided to re-encrypt
         if let dataToReencrypt {
           // First decrypt the data with the old key
-          let decryptResult=await crypto.decryptSymmetric(
+          let decryptResult = await crypto.decryptSymmetric(
             data: dataToReencrypt,
             key: oldKey,
             config: SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
@@ -165,12 +165,12 @@ public final class KeyManager: KeyManagementProtocol {
 
           switch decryptResult.success {
             case true:
-              guard let decryptedData=decryptResult.data else {
+              guard let decryptedData = decryptResult.data else {
                 return .failure(.decryptionFailed(reason: "Failed to decrypt data with old key"))
               }
 
               // Then encrypt it with the new key
-              let encryptResult=await crypto.encryptSymmetric(
+              let encryptResult = await crypto.encryptSymmetric(
                 data: decryptedData,
                 key: newKey,
                 config: SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
@@ -178,7 +178,7 @@ public final class KeyManager: KeyManagementProtocol {
 
               switch encryptResult.success {
                 case true:
-                  guard let reencryptedData=encryptResult.data else {
+                  guard let reencryptedData = encryptResult.data else {
                     return .failure(
                       .encryptionFailed(reason: "Failed to encrypt data with new key")
                     )
@@ -213,7 +213,7 @@ public final class KeyManager: KeyManagementProtocol {
   public func rotateKey(withIdentifier identifier: String) async
   -> Result<SecureBytes, SecurityError> {
     // Delegate to the full rotation method
-    let result=await rotateKey(withIdentifier: identifier, dataToReencrypt: nil)
+    let result = await rotateKey(withIdentifier: identifier, dataToReencrypt: nil)
 
     // Convert the result type
     switch result {
@@ -227,7 +227,7 @@ public final class KeyManager: KeyManagementProtocol {
   /// List all key identifiers
   /// - Returns: A list of all key identifiers
   public func listKeyIdentifiers() async -> Result<[String], SecurityError> {
-    let identifiers=await keyStorage.allIdentifiers()
+    let identifiers = await keyStorage.allIdentifiers()
     return .success(identifiers)
   }
 
@@ -236,7 +236,7 @@ public final class KeyManager: KeyManagementProtocol {
   /// - Returns: The generated key
   public func generateKey(keySize: Int) async -> Result<SecureBytes, SecurityError> {
     // Basic implementation that delegates to CryptoService
-    let crypto=CryptoService()
+    let crypto = CryptoService()
     return await crypto.generateSecureRandomBytes(count: keySize / 8)
   }
 
@@ -244,14 +244,14 @@ public final class KeyManager: KeyManagementProtocol {
 
   /// Thread-safe storage for keys
   private actor SafeStorage {
-    private var storage: [String: SecureBytes]=[:]
+    private var storage: [String: SecureBytes] = [:]
 
     func get(identifier: String) -> SecureBytes? {
       storage[identifier]
     }
 
     func set(key: SecureBytes, identifier: String) {
-      storage[identifier]=key
+      storage[identifier] = key
     }
 
     func remove(identifier: String) {

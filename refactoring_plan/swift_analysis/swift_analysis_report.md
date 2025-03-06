@@ -1,17 +1,16 @@
 # Swift Code Analysis Report
 
-Generated: 2025-03-06 15:50:10
+Generated: 2025-03-06 16:08:18
 
 ## Summary
 
 - Total Modules Analyzed: 1
-- Total Swift Files: 9
-- Total Isolation Files: 2
-- Total Type Aliases: 11
+- Total Swift Files: 7
+- Total Isolation Files: 0
+- Total Type Aliases: 0
 
 ## Modules with Isolation Patterns
 
-- CoreTypes (2 isolation files)
 
 ## Common Isolation Patterns
 
@@ -20,23 +19,6 @@ Generated: 2025-03-06 15:50:10
 - Error mapping functions follow the pattern 'mapXXXToYYYError'
 
 ## Module Analysis
-
-### CoreTypes
-
-- Isolation Files: 2
-- Type Aliases: 11
-- Error Mapping Functions: 6
-
-Isolation Files:
-- SecurityProtocolsCoreIsolation.swift
-- XPCProtocolsCoreIsolation.swift
-
-Top Imports:
-- UmbraCoreTypes (6 files)
-- Foundation (4 files)
-- CoreErrors (5 files)
-- the (1 files)
-- SecurityProtocolsCoreIsolation (1 files)
 
 
 ## Refactoring Recommendations

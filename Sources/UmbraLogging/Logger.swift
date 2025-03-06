@@ -4,22 +4,22 @@ import SwiftyBeaver
 /// A thread-safe logging service that wraps SwiftyBeaver
 public actor Logger: LoggingProtocol {
   /// The shared logger instance
-  public static let shared=Logger()
+  public static let shared = Logger()
 
   /// The underlying SwiftyBeaver logger
-  private let log=SwiftyBeaver.self
+  private let log = SwiftyBeaver.self
 
   /// Initialize the logger with default configuration
   private init() {
-    let console=ConsoleDestination()
-    console.format="$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
+    let console = ConsoleDestination()
+    console.format = "$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
     log.addDestination(console)
   }
 
   /// Log a message at the specified level
   /// - Parameter entry: The log entry to record
   public func log(_ entry: LogEntry) {
-    let context=entry.metadata?.asDictionary
+    let context = entry.metadata?.asDictionary
     switch entry.level {
       case .verbose:
         log.verbose(entry.message, file: "", function: "", line: 0, context: context)
@@ -38,7 +38,7 @@ public actor Logger: LoggingProtocol {
   /// - Parameters:
   ///   - message: The message to log
   ///   - metadata: Optional metadata
-  public func debug(_ message: String, metadata: LogMetadata?=nil) async {
+  public func debug(_ message: String, metadata: LogMetadata? = nil) async {
     log(LogEntry(level: UmbraLogLevel.debug, message: message, metadata: metadata))
   }
 
@@ -46,7 +46,7 @@ public actor Logger: LoggingProtocol {
   /// - Parameters:
   ///   - message: The message to log
   ///   - metadata: Optional metadata
-  public func info(_ message: String, metadata: LogMetadata?=nil) async {
+  public func info(_ message: String, metadata: LogMetadata? = nil) async {
     log(LogEntry(level: UmbraLogLevel.info, message: message, metadata: metadata))
   }
 
@@ -54,7 +54,7 @@ public actor Logger: LoggingProtocol {
   /// - Parameters:
   ///   - message: The message to log
   ///   - metadata: Optional metadata
-  public func warning(_ message: String, metadata: LogMetadata?=nil) async {
+  public func warning(_ message: String, metadata: LogMetadata? = nil) async {
     log(LogEntry(level: UmbraLogLevel.warning, message: message, metadata: metadata))
   }
 
@@ -62,7 +62,7 @@ public actor Logger: LoggingProtocol {
   /// - Parameters:
   ///   - message: The message to log
   ///   - metadata: Optional metadata
-  public func error(_ message: String, metadata: LogMetadata?=nil) async {
+  public func error(_ message: String, metadata: LogMetadata? = nil) async {
     log(LogEntry(level: UmbraLogLevel.error, message: message, metadata: metadata))
   }
 }

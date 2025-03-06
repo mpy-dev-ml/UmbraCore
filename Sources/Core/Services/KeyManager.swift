@@ -306,8 +306,7 @@ public actor KeyManager {
         let expirationDate: Date? = if
           let expirationTimestamp = json[
             "expirationDate"
-          ] as? TimeInterval
-        {
+          ] as? TimeInterval {
           Date(timeIntervalSince1970: expirationTimestamp)
         } else {
           nil

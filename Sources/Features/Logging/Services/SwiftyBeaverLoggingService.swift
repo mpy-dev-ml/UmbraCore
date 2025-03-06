@@ -7,8 +7,8 @@ import SwiftyBeaver
 
 /// A logging service implementation using SwiftyBeaver
 public actor SwiftyBeaverLoggingService: LoggingProtocol {
-  private let logger=SwiftyBeaver.self
-  private var isInitialized=false
+  private let logger = SwiftyBeaver.self
+  private var isInitialized = false
   private var logFileDestination: FileDestination?
 
   /// Initialize the SwiftyBeaver logging service
@@ -17,7 +17,7 @@ public actor SwiftyBeaverLoggingService: LoggingProtocol {
     guard !isInitialized else { return }
 
     // Create log directory if it doesn't exist
-    let directoryPath=(path as NSString).deletingLastPathComponent
+    let directoryPath = (path as NSString).deletingLastPathComponent
     do {
       try FileManager.default.createDirectory(
         atPath: directoryPath,
@@ -29,13 +29,13 @@ public actor SwiftyBeaverLoggingService: LoggingProtocol {
     }
 
     // Configure file destination
-    let destination=FileDestination()
-    destination.logFileURL=URL(fileURLWithPath: path)
+    let destination = FileDestination()
+    destination.logFileURL = URL(fileURLWithPath: path)
 
     // Add destination to logger
     logger.addDestination(destination)
-    logFileDestination=destination
-    isInitialized=true
+    logFileDestination = destination
+    isInitialized = true
   }
 
   public func log(_ entry: LogEntry) async throws {
@@ -47,7 +47,7 @@ public actor SwiftyBeaverLoggingService: LoggingProtocol {
       throw LoggingError.writeError(reason: "Log message cannot be empty")
     }
 
-    let message=entry.metadata?.isEmpty == false ? "\(entry.message) | \(entry.metadata!)" : entry
+    let message = entry.metadata?.isEmpty == false ? "\(entry.message) | \(entry.metadata!)" : entry
       .message
 
     switch entry.level {
@@ -63,9 +63,9 @@ public actor SwiftyBeaverLoggingService: LoggingProtocol {
   }
 
   public func stop() async {
-    guard let destination=logFileDestination else { return }
+    guard let destination = logFileDestination else { return }
     logger.removeDestination(destination)
-    isInitialized=false
-    logFileDestination=nil
+    isInitialized = false
+    logFileDestination = nil
   }
 }
