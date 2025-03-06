@@ -49,18 +49,6 @@ def _impl(ctx):
         "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks",
     ]
 
-    compiler_flags = [
-        "-arch", "arm64",
-        "-target", "arm64-apple-macos14.0",
-        "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
-    ]
-
-    linker_flags = [
-        "-arch", "arm64",
-        "-target", "arm64-apple-macos14.0",
-        "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
-    ]
-
     # Return the toolchain configuration
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
@@ -74,8 +62,6 @@ def _impl(ctx):
         abi_libc_version = "darwin_arm64",
         tool_paths = tool_paths,
         cxx_builtin_include_directories = cxx_builtin_include_directories,
-        cxx_flags = compiler_flags,
-        link_flags = linker_flags,
     )
 
 macos_arm64_toolchain_config = rule(
