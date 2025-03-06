@@ -1,10 +1,10 @@
 import CoreTypesInterfaces
+import CoreErrors
 import FoundationBridgeTypes
 import SecurityInterfacesProtocols
 import SecurityProtocolsCore
-import XPCProtocolsCore
-import CoreErrors
 import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Bridge protocol that connects security providers to Foundation-free interfaces
 /// This helps break circular dependencies between security modules
@@ -29,146 +29,119 @@ public protocol SecurityProviderBridge: Sendable {
   func decrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge
 
   /// Generate a cryptographically secure random key
-  /// - Returns: Generated key
-  /// - Throws: Error if key generation fails
-  func generateKey() async throws -> DataBridge
-
-  /// Generate a cryptographically secure random key with specific length
-  /// - Parameter length: Length of the key in bytes
-  /// - Returns: Generated key
+  /// - Parameter length: The length of the key in bytes
+  /// - Returns: A random key
   /// - Throws: Error if key generation fails
   func generateKey(length: Int) async throws -> DataBridge
 
-  /// Generate cryptographically secure random data
-  /// - Parameter length: Length of the data in bytes
-  /// - Returns: Generated random data
-  /// - Throws: Error if data generation fails
-  func generateRandomData(length: Int) async throws -> DataBridge
-
-  /// Hash data using the provider's hashing mechanism
-  /// - Parameter data: Data to hash
-  /// - Returns: Hash of the data
+  /// Compute a secure hash of the provided data
+  /// - Parameter data: The data to hash
+  /// - Returns: The hash value
   /// - Throws: Error if hashing fails
   func hash(_ data: DataBridge) async throws -> DataBridge
 }
 
-/// Default implementation for SecurityProviderBridge
-extension SecurityProviderBridge {
-  /// Default protocol identifier
-  public static var protocolIdentifier: String {
-    "com.umbra.security.provider.bridge"
-  }
-}
-
-/// Implementation of SecurityProviderProtocol that wraps a SecurityProviderBridge
-/// Adapts between different interfaces and error types
+/// Adapter that connects a foundation-free security provider to a Foundation-based interface
+/// Implementing the SecurityProviderProtocol while delegating to a foundation-free bridge
 public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols.SecurityProviderProtocol {
   /// The underlying bridge implementation
   private let adapter: any SecurityProviderBridge
-
-  /// Wrap any error into a SecurityProtocolError
-  /// - Parameter error: The error to wrap
-  /// - Throws: SecurityProtocolError containing the error details
-  private func wrapError(_ error: Error) throws -> Never {
-    // Generate an appropriate error description based on the error type
-    let errorDescription = if let bridgeError = error as? SecurityBridgeError {
-      "Bridge error: \(bridgeError)"
-    } else if let secError = error as? CoreErrors.SecurityError {
-      "Security error: \(secError)"
-    } else if let xpcError = error as? XPCProtocolsCore.XPCErrors.SecurityError {
-      "XPC error: \(xpcError)"
-    } else {
-      "Unknown error: \(error)"
-    }
-
-    // Map to an appropriate SecurityError type
-    throw SecurityInterfacesProtocols.SecurityProtocolError.implementationMissing(errorDescription)
-  }
-
-  /// Create a new adapter wrapping a SecurityProviderBridge implementation
-  /// - Parameter adapter: Bridge implementation to wrap
-  public init(wrapping adapter: any SecurityProviderBridge) {
-    self.adapter = adapter
-  }
-
-  /// Protocol identifier - used for protocol negotiation
+  
+  /// Protocol identifier
   public static var protocolIdentifier: String {
     "com.umbra.security.provider.adapter"
   }
 
-  /// Encrypt binary data using the provider's encryption mechanism
+  /// Wrap any error into a SecurityProtocolError
+  private func wrapError(_ error: Error) throws -> Never {
+    let errorDescription = if let bridgeError = error as? SecurityBridgeError {
+      "Bridge error: \(bridgeError)"
+    } else if let secError = error as? SecurityProtocolsCore.SecurityError {
+      "Security error: \(secError)"
+    } else {
+      "Unknown error: \(error)"
+    }
+    throw SecurityProtocolsCore.SecurityProtocolError.implementationMissing(errorDescription)
+  }
+
+  /// Convert binary data to data bridge format
+  private func convertData(_ data: CoreTypesInterfaces.BinaryData) -> DataBridge {
+    // BinaryData is a SecureData, which has a rawBytes property
+    return DataBridge(data.rawBytes)
+  }
+
+  /// Convert data bridge back to binary data
+  private func convertData(_ bridge: DataBridge) throws -> CoreTypesInterfaces.BinaryData {
+    // Create a BinaryData using the bytes property of DataBridge
+    return CoreTypesInterfaces.BinaryData(bytes: bridge.bytes)
+  }
+
+  /// Create a new adapter with the given bridge
+  /// - Parameter bridge: The security provider bridge implementation
+  public init(bridge: any SecurityProviderBridge) {
+    self.adapter = bridge
+  }
+
+  /// Encrypt data using the provider's encryption
   /// - Parameters:
   ///   - data: Data to encrypt
   ///   - key: Encryption key
   /// - Returns: Encrypted data
   /// - Throws: SecurityProtocolError if encryption fails
-  public func encrypt(_ data: BinaryData, key: BinaryData) async throws -> BinaryData {
+  public func encrypt(_ data: CoreTypesInterfaces.BinaryData, 
+                      key: CoreTypesInterfaces.BinaryData) async throws -> CoreTypesInterfaces.BinaryData {
     do {
-      // Convert from BinaryData (SecureBytes) to DataBridge
-      let bridgeData = DataBridge(data)
-      let bridgeKey = DataBridge(key)
-
-      // Call the adapter with converted types
+      let bridgeData = convertData(data)
+      let bridgeKey = convertData(key)
+      
       let result = try await adapter.encrypt(bridgeData, key: bridgeKey)
-
-      // Convert back to BinaryData for return
-      return result.toBinaryData()
+      return try convertData(result)
     } catch {
       try wrapError(error)
     }
   }
 
-  /// Decrypt binary data using the provider's decryption mechanism
+  /// Decrypt data using the provider's decryption
   /// - Parameters:
   ///   - data: Data to decrypt
   ///   - key: Decryption key
   /// - Returns: Decrypted data
   /// - Throws: SecurityProtocolError if decryption fails
-  public func decrypt(_ data: BinaryData, key: BinaryData) async throws -> BinaryData {
+  public func decrypt(_ data: CoreTypesInterfaces.BinaryData, 
+                      key: CoreTypesInterfaces.BinaryData) async throws -> CoreTypesInterfaces.BinaryData {
     do {
-      // Convert from BinaryData to DataBridge
-      let bridgeData = DataBridge(data)
-      let bridgeKey = DataBridge(key)
-
-      // Call the adapter with converted types
+      let bridgeData = convertData(data)
+      let bridgeKey = convertData(key)
+      
       let result = try await adapter.decrypt(bridgeData, key: bridgeKey)
-
-      // Convert back to BinaryData for return
-      return result.toBinaryData()
+      return try convertData(result)
     } catch {
       try wrapError(error)
     }
   }
 
-  /// Generate a cryptographically secure random key
+  /// Generate a random encryption key
   /// - Parameter length: Length of the key in bytes
-  /// - Returns: Generated key
+  /// - Returns: A randomly generated key
   /// - Throws: SecurityProtocolError if key generation fails
-  public func generateKey(length: Int) async throws -> BinaryData {
+  public func generateKey(length: Int) async throws -> CoreTypesInterfaces.BinaryData {
     do {
-      let keyData = try await adapter.generateKey(length: length)
-
-      // Convert to BinaryData for return
-      return keyData.toBinaryData()
+      let result = try await adapter.generateKey(length: length)
+      return try convertData(result)
     } catch {
       try wrapError(error)
     }
   }
 
-  /// Hash data using the provider's hashing mechanism
+  /// Compute a hash of the provided data
   /// - Parameter data: Data to hash
-  /// - Returns: Hash of the data
+  /// - Returns: Hash value
   /// - Throws: SecurityProtocolError if hashing fails
-  public func hash(_ data: BinaryData) async throws -> BinaryData {
+  public func hash(_ data: CoreTypesInterfaces.BinaryData) async throws -> CoreTypesInterfaces.BinaryData {
     do {
-      // Convert from BinaryData to DataBridge
-      let bridgeData = DataBridge(data)
-
-      // Call the adapter with converted type
-      let hashResult = try await adapter.hash(bridgeData)
-
-      // Convert back to BinaryData for return
-      return hashResult.toBinaryData()
+      let bridgeData = convertData(data)
+      let result = try await adapter.hash(bridgeData)
+      return try convertData(result)
     } catch {
       try wrapError(error)
     }

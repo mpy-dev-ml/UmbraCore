@@ -49,8 +49,8 @@ public enum SecurityBridgeErrorMapper {
         case .accessError:
           return SecurityProtocolsCore.SecurityError.storageOperationFailed(reason: "Access error")
       }
-    } else if let xpcError = error as? XPCProtocolsCore.XPCErrors.SecurityError {
-      // Map from XPCProtocolsCore.SecurityError
+    } else if let xpcError = error as? CoreErrors.XPCErrors.SecurityError {
+      // Map from CoreErrors.XPCErrors.SecurityError
       switch xpcError {
         case .xpcConnectionFailed:
           return SecurityProtocolsCore.SecurityError.internalError("XPC connection failed")
@@ -65,7 +65,7 @@ public enum SecurityBridgeErrorMapper {
         case let .general(message):
           return SecurityProtocolsCore.SecurityError.internalError("XPC error: \(message)")
       }
-    } else if let protocolError = error as? SecurityInterfacesProtocols.SecurityProtocolError {
+    } else if let protocolError = error as? XPCProtocolsCore.SecurityProtocolError {
       // Map from SecurityProtocolError
       switch protocolError {
         case let .implementationMissing(reason):
@@ -91,85 +91,85 @@ public enum SecurityBridgeErrorMapper {
 
   /// Maps a security error to an XPC error type for transmission over XPC
   /// - Parameter error: The error to map
-  /// - Returns: An XPCProtocolsCore.XPCErrors.SecurityError representation of the error
-  public static func mapToXPCError(_ error: Error) -> XPCProtocolsCore.XPCErrors.SecurityError {
+  /// - Returns: An CoreErrors.XPCErrors.SecurityError representation of the error
+  public static func mapToXPCError(_ error: Error) -> CoreErrors.XPCErrors.SecurityError {
     // Handle different error types
-    if let xpcError = error as? XPCProtocolsCore.XPCErrors.SecurityError {
+    if let xpcError = error as? CoreErrors.XPCErrors.SecurityError {
       // Already an XPC SecurityError
       return xpcError
     } else if let ceError = error as? CoreErrors.SecurityError {
       // Map from CoreErrors.SecurityError
       switch ceError {
         case .notImplemented:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Operation not implemented")
+          return CoreErrors.XPCErrors.SecurityError.general("Operation not implemented")
         case .invalidData:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Invalid data format")
+          return CoreErrors.XPCErrors.SecurityError.general("Invalid data format")
         case .encryptionFailed:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Encryption operation failed")
+          return CoreErrors.XPCErrors.SecurityError.general("Encryption operation failed")
         case .decryptionFailed:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Decryption operation failed")
+          return CoreErrors.XPCErrors.SecurityError.general("Decryption operation failed")
         case .keyGenerationFailed:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Key generation failed")
+          return CoreErrors.XPCErrors.SecurityError.general("Key generation failed")
         case .hashingFailed:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Hashing failed")
+          return CoreErrors.XPCErrors.SecurityError.general("Hashing failed")
         case .serviceFailed:
-          return XPCProtocolsCore.XPCErrors.SecurityError.communicationError
+          return CoreErrors.XPCErrors.SecurityError.general("Service failure")
         case let .general(message):
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Error: \(message)")
+          return CoreErrors.XPCErrors.SecurityError.general("Error: \(message)")
         case .cryptoError:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Crypto operation failed")
+          return CoreErrors.XPCErrors.SecurityError.general("Crypto operation failed")
         case .bookmarkError:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Bookmark operation failed")
+          return CoreErrors.XPCErrors.SecurityError.general("Bookmark operation failed")
         case .accessError:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Access error")
+          return CoreErrors.XPCErrors.SecurityError.general("Access error")
       }
     } else if let secError = error as? SecurityProtocolsCore.SecurityError {
       // Map from SecurityProtocolsCore.SecurityError
       switch secError {
         case let .encryptionFailed(reason):
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Encryption failed: \(reason)")
+          return CoreErrors.XPCErrors.SecurityError.general("Encryption failed: \(reason)")
         case let .decryptionFailed(reason):
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Decryption failed: \(reason)")
+          return CoreErrors.XPCErrors.SecurityError.general("Decryption failed: \(reason)")
         case let .keyGenerationFailed(reason):
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Key generation failed: \(reason)")
+          return CoreErrors.XPCErrors.SecurityError.general("Key generation failed: \(reason)")
         case .invalidKey:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Invalid key")
+          return CoreErrors.XPCErrors.SecurityError.general("Invalid key")
         case .hashVerificationFailed:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Hash verification failed")
+          return CoreErrors.XPCErrors.SecurityError.general("Hash verification failed")
         case let .randomGenerationFailed(reason):
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Random generation failed: \(reason)")
+          return CoreErrors.XPCErrors.SecurityError.general("Random generation failed: \(reason)")
         case let .invalidInput(reason):
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Invalid input: \(reason)")
+          return CoreErrors.XPCErrors.SecurityError.general("Invalid input: \(reason)")
         case let .storageOperationFailed(reason):
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Storage operation failed: \(reason)")
+          return CoreErrors.XPCErrors.SecurityError.general("Storage operation failed: \(reason)")
         case .timeout:
-          return XPCProtocolsCore.XPCErrors.SecurityError.communicationError
+          return CoreErrors.XPCErrors.SecurityError.general("Operation timed out")
         case let .internalError(message):
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Internal error: \(message)")
+          return CoreErrors.XPCErrors.SecurityError.general("Internal error: \(message)")
         case let .protocolError(reason):
-          return XPCProtocolsCore.XPCErrors.SecurityError.protocolError
+          return CoreErrors.XPCErrors.SecurityError.general("Protocol error")
       }
-    } else if let protocolError = error as? SecurityInterfacesProtocols.SecurityProtocolError {
+    } else if let protocolError = error as? XPCProtocolsCore.SecurityProtocolError {
       // Map from SecurityProtocolError
       switch protocolError {
         case let .implementationMissing(reason):
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Implementation missing: \(reason)")
+          return CoreErrors.XPCErrors.SecurityError.general("Implementation missing: \(reason)")
       }
     } else if let bridgeError = error as? SecurityBridgeError {
       // Map from SecurityBridgeError
       switch bridgeError {
         case .invalidInputType:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Invalid input type")
+          return CoreErrors.XPCErrors.SecurityError.general("Invalid input type")
         case .mappingFailed:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Error mapping failed")
+          return CoreErrors.XPCErrors.SecurityError.general("Error mapping failed")
         case .unsupportedErrorType:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Unsupported error type")
+          return CoreErrors.XPCErrors.SecurityError.general("Unsupported error type")
         case .invalidConfiguration:
-          return XPCProtocolsCore.XPCErrors.SecurityError.general("Invalid configuration")
+          return CoreErrors.XPCErrors.SecurityError.general("Invalid configuration")
       }
     }
     
     // Default case - map to a generic XPC error
-    return XPCProtocolsCore.XPCErrors.SecurityError.general("Unknown error: \(error.localizedDescription)")
+    return CoreErrors.XPCErrors.SecurityError.general("Unknown error: \(error.localizedDescription)")
   }
 }
