@@ -41,46 +41,42 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
       return .failure(.invalidInput(reason: "Empty key provided for encryption"))
     }
 
-    do {
-      // Create a mock header for the encrypted data (16 bytes)
-      // In a real implementation, this would include IV, mode, etc.
-      let randomDataResult=await generateRandomData(length: Self.headerSize)
-      guard case let .success(headerData)=randomDataResult else {
-        if case let .failure(error)=randomDataResult {
-          return .failure(error)
-        }
-        return .failure(.encryptionFailed(reason: "Failed to generate secure header"))
+    // Create a mock header for the encrypted data (16 bytes)
+    // In a real implementation, this would include IV, mode, etc.
+    let randomDataResult=await generateRandomData(length: Self.headerSize)
+    guard case let .success(headerData)=randomDataResult else {
+      if case let .failure(error)=randomDataResult {
+        return .failure(error)
       }
-
-      var header=[UInt8]()
-      headerData.withUnsafeBytes { headerBytes in
-        header=[UInt8](headerBytes)
-      }
-
-      // Simple XOR operation with key cycling
-      var result=[UInt8]()
-      result.append(contentsOf: header) // Add header
-
-      var keyBytes=[UInt8]()
-      key.withUnsafeBytes { keyBytesPtr in
-        keyBytes=[UInt8](keyBytesPtr)
-      }
-
-      var dataBytes=[UInt8]()
-      data.withUnsafeBytes { dataBytesPtr in
-        dataBytes=[UInt8](dataBytesPtr)
-      }
-
-      for (index, byte) in dataBytes.enumerated() {
-        let keyIndex=index % keyBytes.count
-        let keyByte=keyBytes[keyIndex]
-        result.append(byte ^ keyByte)
-      }
-
-      return .success(SecureBytes(bytes: result))
-    } catch {
       return .failure(.encryptionFailed(reason: "Failed to generate secure header"))
     }
+
+    var header=[UInt8]()
+    headerData.withUnsafeBytes { headerBytes in
+      header=[UInt8](headerBytes)
+    }
+
+    // Simple XOR operation with key cycling
+    var result=[UInt8]()
+    result.append(contentsOf: header) // Add header
+
+    var keyBytes=[UInt8]()
+    key.withUnsafeBytes { keyBytesPtr in
+      keyBytes=[UInt8](keyBytesPtr)
+    }
+
+    var dataBytes=[UInt8]()
+    data.withUnsafeBytes { dataBytesPtr in
+      dataBytes=[UInt8](dataBytesPtr)
+    }
+
+    for (index, byte) in dataBytes.enumerated() {
+      let keyIndex=index % keyBytes.count
+      let keyByte=keyBytes[keyIndex]
+      result.append(byte ^ keyByte)
+    }
+
+    return .success(SecureBytes(bytes: result))
   }
 
   public func decrypt(
@@ -204,40 +200,22 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     key _: SecureBytes,
     config _: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    // Placeholder implementation
-    // In a real implementation, would use the specified algorithm from config
-
-    do {
-      // Generate a random IV for each encryption operation
-      let ivSize=16 // Default AES block size
-      let randomIvResult=await generateRandomData(length: ivSize)
-
-      guard case let .success(iv)=randomIvResult else {
-        if case let .failure(error)=randomIvResult {
-          return SecurityResultDTO(
-            success: false,
-            error: error,
-            errorDetails: "Failed to generate IV"
-          )
-        }
-        return SecurityResultDTO(
-          success: false,
-          error: .encryptionFailed(reason: "Unknown error generating IV")
-        )
-      }
-
-      // Concatenate IV and "encrypted" data for this placeholder
-      // In a real implementation, we would use proper encryption
-      let result=SecureBytes(bytes: [UInt8](repeating: 0, count: data.count))
-
-      // Return the result with the IV prepended
-      return SecurityResultDTO(data: iv + result)
-    } catch {
+    // Generate a random IV
+    let randomDataResult=await generateRandomData(length: 16)
+    guard case let .success(ivData)=randomDataResult else {
       return SecurityResultDTO(
         success: false,
-        error: .encryptionFailed(reason: "Encryption failed")
+        error: .encryptionFailed(reason: "Failed to generate IV")
       )
     }
+
+    let iv=ivData
+
+    // Simple mock implementation (would be real AES in production)
+    let result=SecureBytes(bytes: [UInt8](repeating: 0, count: data.count))
+
+    // Return the result with the IV prepended
+    return SecurityResultDTO(data: iv + result)
   }
 
   public func decryptSymmetric(
@@ -245,9 +223,6 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     key _: SecureBytes,
     config _: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    // Placeholder implementation
-    // In a real implementation, would extract the IV and decrypt
-
     // For now, just return placeholder "decrypted" data
     SecurityResultDTO(data: SecureBytes(bytes: [UInt8](
       repeating: 0,
@@ -262,9 +237,6 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     publicKey _: SecureBytes,
     config _: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    // Placeholder implementation
-    // In a real implementation, would use the public key to encrypt the data
-
     // For now, just return placeholder "encrypted" data
     SecurityResultDTO(data: SecureBytes(bytes: [UInt8](repeating: 0, count: data.count)))
   }
@@ -274,9 +246,6 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     privateKey _: SecureBytes,
     config _: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    // Placeholder implementation
-    // In a real implementation, would use the private key to decrypt the data
-
     // For now, just return placeholder "decrypted" data
     SecurityResultDTO(data: SecureBytes(bytes: [UInt8](repeating: 0, count: data.count)))
   }
@@ -287,9 +256,6 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     data _: SecureBytes,
     config _: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    // Placeholder implementation
-    // In a real implementation, would use the algorithm specified in config
-
     // Generate a fixed-size hash (SHA-256 size = 32 bytes)
     SecurityResultDTO(data: SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
   }

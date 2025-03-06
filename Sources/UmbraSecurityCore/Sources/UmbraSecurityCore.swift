@@ -1,3 +1,4 @@
+import SecurityCoreAdapters
 import SecurityProtocolsCore
 import UmbraCoreTypes
 
@@ -23,9 +24,9 @@ public enum UmbraSecurityCore {
   /// Create a type-erased crypto service wrapper
   /// - Parameter service: The service to wrap
   /// - Returns: A type-erased wrapper around the provided service
-  public static func createAnyCryptoService(_ service: some CryptoServiceProtocol)
+  public static func createAnyCryptoService(_ service: some CryptoServiceProtocol & Sendable)
   -> AnyCryptoService {
-    AnyCryptoService(service)
+    SecurityCoreAdapters.createAnyCryptoService(service)
   }
 
   /// Create a crypto service type adapter with custom transformations
@@ -33,11 +34,14 @@ public enum UmbraSecurityCore {
   ///   - service: The service to adapt
   ///   - transformations: Custom transformations to apply
   /// - Returns: An adapter that applies the specified transformations
-  public static func createCryptoServiceAdapter<T: CryptoServiceProtocol>(
+  public static func createCryptoServiceAdapter<T: CryptoServiceProtocol & Sendable>(
     _ service: T,
     transformations: CryptoServiceTypeAdapter<T>.Transformations=CryptoServiceTypeAdapter<T>
       .Transformations()
   ) -> CryptoServiceTypeAdapter<T> {
-    CryptoServiceTypeAdapter(adaptee: service, transformations: transformations)
+    SecurityCoreAdapters.createCryptoServiceAdapter(
+      service: service,
+      transformations: transformations
+    )
   }
 }

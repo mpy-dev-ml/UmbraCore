@@ -4,7 +4,10 @@ import UmbraCoreTypes
 /// Type adapter that converts between different crypto service implementations
 /// This allows us to adapt between different implementations of crypto services
 /// without requiring them to directly implement each other's interfaces
-public struct CryptoServiceTypeAdapter<Adaptee: CryptoServiceProtocol>: CryptoServiceProtocol {
+public struct CryptoServiceTypeAdapter<
+  Adaptee: CryptoServiceProtocol &
+    Sendable
+>: CryptoServiceProtocol {
   // MARK: - Properties
 
   /// The adaptee being wrapped

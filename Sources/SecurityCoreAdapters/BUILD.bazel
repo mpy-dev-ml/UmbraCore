@@ -1,0 +1,25 @@
+load(
+    "@build_bazel_rules_swift//swift:swift.bzl",
+    "swift_library",
+)
+
+# SecurityCoreAdapters - Adapter patterns for SecurityCore components
+swift_library(
+    name = "SecurityCoreAdapters",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "SecurityCoreAdapters",
+    target_compatible_with = ["@platforms//os:macos"],
+    copts = [
+        "-target", "arm64-apple-macos15.4",
+        # Enabling library evolution as this is a foundation-free core module
+        "-Xfrontend", "-enable-library-evolution",
+        "-g",
+        "-swift-version", "5",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecureBytes",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+    ],
+)

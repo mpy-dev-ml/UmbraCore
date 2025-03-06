@@ -1,3 +1,4 @@
+import SecurityCoreAdapters
 import SecurityProtocolsCore
 import UmbraCoreTypes
 @testable import UmbraSecurityCore
@@ -214,7 +215,10 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       return mockSecurityResult
     }
 
-    func hash(data _: SecureBytes, config _: SecurityConfigDTO) async -> SecurityResultDTO {
+    func hash(
+      data _: SecureBytes,
+      config _: SecurityConfigDTO
+    ) async -> SecurityResultDTO {
       stateQueue.sync { hashWithConfigCalled=true }
       return mockSecurityResult
     }
@@ -226,8 +230,8 @@ final class CryptoServiceAdaptersTests: XCTestCase {
     // Create mock
     let mockService=MockCryptoService()
 
-    // Wrap in type-erased wrapper
-    let anyService=AnyCryptoService(mockService)
+    // Wrap in type-erased wrapper using the factory method
+    let anyService=UmbraSecurityCore.createAnyCryptoService(mockService)
 
     // Test that calls are forwarded correctly
     _=await anyService.encrypt(data: SecureBytes(bytes: [0x01]), using: SecureBytes(bytes: [0x02]))
@@ -297,8 +301,8 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       mockDecryptResult: .success(expectedDecryptResult)
     )
 
-    // Create adapter with identity transformations
-    let adapter=CryptoServiceTypeAdapter(adaptee: mockService)
+    // Create adapter with identity transformations using the factory method
+    let adapter=UmbraSecurityCore.createCryptoServiceAdapter(mockService)
 
     // Test that basic functionality works with identity transformations
     let encryptResult=await adapter.encrypt(
@@ -368,8 +372,11 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       }
     )
 
-    // Create adapter with the transformations
-    let adapter=CryptoServiceTypeAdapter(adaptee: mockService, transformations: transformations)
+    // Create adapter with the transformations using the factory method
+    let adapter=UmbraSecurityCore.createCryptoServiceAdapter(
+      mockService,
+      transformations: transformations
+    )
 
     // Test with simple input
     let inputData=SecureBytes(bytes: [0x01, 0x02])

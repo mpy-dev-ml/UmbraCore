@@ -20,7 +20,9 @@ swift_library(
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/SecureBytes",
+        "//Sources/SecurityCoreAdapters",
         "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
     ],
 )
 
@@ -36,6 +38,8 @@ swift_test(
     deps = [
         ":UmbraSecurityCore",
         "//Sources/SecureBytes",
+        "//Sources/SecurityCoreAdapters",
         "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
     ],
 )

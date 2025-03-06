@@ -26,3 +26,24 @@ public enum TypeBridgingError: Error, Sendable {
   /// Unsupported operation
   case unsupportedOperation(reason: String)
 }
+
+/// Extension with helper methods for handling common bridging operations
+extension FoundationTypeBridging {
+  /// Attempt to convert a value or return an error
+  /// - Parameter foundation: The Foundation type to convert
+  /// - Returns: The Foundation-free equivalent or an error
+  public static func tryFromFoundation(_ foundation: FoundationType)
+  -> Result<Self, TypeBridgingError> {
+    // Simply call the non-throwing method since we know it won't throw
+    // In a real implementation, this would likely use a throwing method
+    .success(fromFoundation(foundation))
+  }
+
+  /// Attempt to convert self to Foundation type or return an error
+  /// - Returns: The Foundation type or an error
+  public func tryToFoundation() -> Result<FoundationType, TypeBridgingError> {
+    // Simply call the non-throwing method since we know it won't throw
+    // In a real implementation, this would likely use a throwing method
+    .success(toFoundation())
+  }
+}
