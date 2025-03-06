@@ -19,7 +19,7 @@ umbra_swift_test(
     tags = ["unit"],
     deps = [
         "//Sources/Core",
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/ResticCLIHelper",
         "//Sources/SecurityInterfaces",
         "//Sources/SecurityUtils",

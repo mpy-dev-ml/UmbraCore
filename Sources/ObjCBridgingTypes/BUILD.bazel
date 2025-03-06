@@ -6,7 +6,7 @@ umbra_swift_library(
     name = "ObjCBridgingTypes",
     srcs = glob(["**/*.swift"]),
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
     ],
 )
 
@@ -25,6 +25,6 @@ swift_library(
     module_name = "ObjCBridgingTypesTest",
     visibility = ["//visibility:public"],
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
     ],
 )

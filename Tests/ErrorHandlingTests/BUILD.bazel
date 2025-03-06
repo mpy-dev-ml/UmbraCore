@@ -9,7 +9,7 @@ umbra_swift_test(
     ],
     module_name = "ErrorHandlingTests",
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/ErrorHandling",
         "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
         "//Sources/ErrorHandling/Models:ErrorHandlingModels",

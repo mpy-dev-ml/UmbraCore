@@ -16,7 +16,7 @@ swift_library(
     visibility = ["//visibility:public"],
     deps = [
         # Foundation-free dependencies only
-        "//Sources/CoreTypes", 
+        "//Sources/CoreTypesInterfaces", 
         "//Sources/FoundationBridgeTypes",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/SecurityProtocolsCore",

@@ -6,7 +6,7 @@ umbra_swift_test(
     srcs = glob(["**/*.swift"]),
     module_name = "ResourcesTests",
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/ErrorHandling",
         "//Sources/Resources",
         "//Sources/Resources/Protocols:ResourcesProtocols",

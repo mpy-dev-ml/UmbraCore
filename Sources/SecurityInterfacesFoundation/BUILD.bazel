@@ -6,7 +6,7 @@ umbra_swift_library(
     name = "SecurityInterfacesFoundation",
     srcs = glob(["**/*.swift"]),
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/ErrorHandling",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/ObjCBridgingTypesFoundation",
@@ -24,7 +24,7 @@ swift_library(
         "-enable-testing",
     ],
     deps = [
-        "//Sources/CoreTypes",
+        "//Sources/CoreTypesInterfaces",
         "//Sources/ErrorHandling",
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/ObjCBridgingTypesFoundation",
