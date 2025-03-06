@@ -1,0 +1,20 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+# Enable library evolution to allow for future changes to the library
+swift_library(
+    name = "CoreErrors",
+    srcs = glob(["*.swift"]),
+    copts = [
+        "-enable-library-evolution",
+        "-swift-version", "5",
+    ],
+    # Namespacing is important to avoid naming conflicts with other libraries
+    module_name = "CoreErrors",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "CoreErrorsSources",
+    srcs = glob(["*.swift"]),
+    visibility = ["//visibility:public"],
+)
