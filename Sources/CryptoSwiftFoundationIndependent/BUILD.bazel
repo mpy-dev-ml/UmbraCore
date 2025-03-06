@@ -8,5 +8,6 @@ umbra_swift_library(
     deps = [
         "@swiftpkg_cryptoswift//:CryptoSwift",
         "//Sources/SecureBytes",
+        "//Sources/UmbraCoreTypes",
     ],
 )

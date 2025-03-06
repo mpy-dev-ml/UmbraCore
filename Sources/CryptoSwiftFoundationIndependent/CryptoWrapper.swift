@@ -42,7 +42,7 @@ public enum CryptoWrapper {
       key: key.bytes(),
       iv: iv.bytes()
     )
-    return SecureBytes(encryptedBytes)
+    return SecureBytes(bytes: encryptedBytes)
   }
 
   /// Decrypt data using AES-GCM
@@ -73,7 +73,7 @@ public enum CryptoWrapper {
       key: key.bytes(),
       iv: iv.bytes()
     )
-    return SecureBytes(decryptedBytes)
+    return SecureBytes(bytes: decryptedBytes)
   }
 
   // MARK: - Random Generation
@@ -92,7 +92,7 @@ public enum CryptoWrapper {
   ///                   which is the recommended size for AES-GCM.
   /// - Returns: SecureBytes containing random IV
   public static func generateRandomIVSecure(size: Int = 12) -> SecureBytes {
-    SecureBytes(generateRandomIV(size: size))
+    SecureBytes(bytes: generateRandomIV(size: size))
   }
 
   /// Generate a random key
@@ -107,7 +107,7 @@ public enum CryptoWrapper {
   /// - Parameter size: Size of the key in bytes (16, 24, or 32 for AES-128, AES-192, or AES-256)
   /// - Returns: SecureBytes containing random key
   public static func generateRandomKeySecure(size: Int = 32) -> SecureBytes {
-    SecureBytes(generateRandomKey(size: size))
+    SecureBytes(bytes: generateRandomKey(size: size))
   }
 
   /// Generate secure random bytes directly into a buffer
@@ -146,7 +146,7 @@ public enum CryptoWrapper {
   /// - Returns: SecureBytes containing SHA-256 hash
   public static func sha256(_ data: SecureBytes) -> SecureBytes {
     let hashBytes = sha256(data.bytes())
-    return SecureBytes(hashBytes)
+    return SecureBytes(bytes: hashBytes)
   }
 
   /// Calculate HMAC using SHA-256
@@ -165,6 +165,6 @@ public enum CryptoWrapper {
   /// - Returns: SecureBytes containing HMAC result
   public static func hmacSHA256(data: SecureBytes, key: SecureBytes) -> SecureBytes {
     let hmacBytes = hmacSHA256(data: data.bytes(), key: key.bytes())
-    return SecureBytes(hmacBytes)
+    return SecureBytes(bytes: hmacBytes)
   }
 }
