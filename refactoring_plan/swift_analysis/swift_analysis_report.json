@@ -1,0 +1,174 @@
+{
+  "total_modules": 1,
+  "total_swift_files": 9,
+  "total_isolation_files": 2,
+  "total_type_aliases": 11,
+  "module_analysis": {
+    "CoreTypes": {
+      "module_name": "CoreTypes",
+      "swift_files": [
+        {
+          "file_path": "Sources/CoreTypes/BinaryData.swift",
+          "module_name": "CoreTypes",
+          "is_isolation_file": false,
+          "imports": [
+            "SecurityProtocolsCore",
+            "UmbraCoreTypes"
+          ],
+          "type_aliases": {
+            "BinaryData": "SecureBytes"
+          },
+          "error_mapping_functions": []
+        },
+        {
+          "file_path": "Sources/CoreTypes/ByteArray.swift",
+          "module_name": "CoreTypes",
+          "is_isolation_file": false,
+          "imports": [],
+          "type_aliases": {},
+          "error_mapping_functions": []
+        },
+        {
+          "file_path": "Sources/CoreTypes/SecurityErrorBase.swift",
+          "module_name": "CoreTypes",
+          "is_isolation_file": false,
+          "imports": [
+            "Foundation",
+            "CoreErrors",
+            "UmbraCoreTypes",
+            "the",
+            "SecurityProtocolsCoreIsolation",
+            "XPCProtocolsCoreIsolation"
+          ],
+          "type_aliases": {
+            "CoreSecurityError": "CoreErrors.SecurityError",
+            "SPCoreSecurityError": "SPCSecurityError",
+            "XPCoreSecurityError": "XPCSecurityError"
+          },
+          "error_mapping_functions": [
+            "mapSPCToXPCError",
+            "mapXPCToSPCError"
+          ]
+        },
+        {
+          "file_path": "Sources/CoreTypes/SecurityProtocolsCoreIsolation.swift",
+          "module_name": "CoreTypes",
+          "is_isolation_file": true,
+          "imports": [
+            "SecurityProtocolsCore",
+            "Foundation",
+            "CoreErrors",
+            "UmbraCoreTypes",
+            "SecurityProtocolsCore",
+            "SecurityProtocolsCore"
+          ],
+          "type_aliases": {
+            "SPCSecurityError": "SecurityProtocolsCore.SecurityError"
+          },
+          "error_mapping_functions": [
+            "mapSPCToCoreError",
+            "mapCoreToSPCError"
+          ]
+        },
+        {
+          "file_path": "Sources/CoreTypes/SecurityProtocolsCoreTypes.swift",
+          "module_name": "CoreTypes",
+          "is_isolation_file": false,
+          "imports": [
+            "SecurityProtocolsCore",
+            "SecurityProtocolsCore"
+          ],
+          "type_aliases": {
+            "SPCSecurityError": "SecurityProtocolsCore.SecurityError"
+          },
+          "error_mapping_functions": []
+        },
+        {
+          "file_path": "Sources/CoreTypes/SecurityProviderBase.swift",
+          "module_name": "CoreTypes",
+          "is_isolation_file": false,
+          "imports": [],
+          "type_aliases": {},
+          "error_mapping_functions": []
+        },
+        {
+          "file_path": "Sources/CoreTypes/XPCProtocolsCoreIsolation.swift",
+          "module_name": "CoreTypes",
+          "is_isolation_file": true,
+          "imports": [
+            "XPCProtocolsCore",
+            "Foundation",
+            "CoreErrors",
+            "UmbraCoreTypes",
+            "XPCProtocolsCore",
+            "XPCProtocolsCore"
+          ],
+          "type_aliases": {
+            "XPCSecurityError": "XPCProtocolsCore.XPCSecurityError"
+          },
+          "error_mapping_functions": [
+            "mapXPCToCoreError",
+            "mapCoreToXPCError"
+          ]
+        },
+        {
+          "file_path": "Sources/CoreTypes/XPCProtocolsCoreTypes.swift",
+          "module_name": "CoreTypes",
+          "is_isolation_file": false,
+          "imports": [
+            "XPCProtocolsCore",
+            "XPCProtocolsCore",
+            "UmbraCoreTypes"
+          ],
+          "type_aliases": {
+            "XPCSecurityErrorType": "XPCProtocolsCore.XPCSecurityError"
+          },
+          "error_mapping_functions": []
+        },
+        {
+          "file_path": "Sources/CoreTypes/XPCServiceAdapter.swift",
+          "module_name": "CoreTypes",
+          "is_isolation_file": false,
+          "imports": [
+            "CoreErrors",
+            "Foundation",
+            "SecurityProtocolsCore",
+            "UmbraCoreTypes",
+            "XPCProtocolsCore",
+            "CoreErrors"
+          ],
+          "type_aliases": {
+            "SecureBytes": "UmbraCoreTypes.SecureBytes",
+            "SecureValue": "UmbraCoreTypes.SecureValue",
+            "XPCSecurityError": "CoreErrors.SecurityError"
+          },
+          "error_mapping_functions": []
+        }
+      ],
+      "isolation_files": [
+        "SecurityProtocolsCoreIsolation.swift",
+        "XPCProtocolsCoreIsolation.swift"
+      ],
+      "total_type_aliases": 11,
+      "total_error_mapping_functions": 6,
+      "imports_by_module": {
+        "CoreErrors": 5,
+        "Foundation": 4,
+        "SecurityProtocolsCore": 7,
+        "SecurityProtocolsCoreIsolation": 1,
+        "UmbraCoreTypes": 6,
+        "XPCProtocolsCore": 6,
+        "XPCProtocolsCoreIsolation": 1,
+        "the": 1
+      }
+    }
+  },
+  "top_isolation_modules": [
+    "CoreTypes (2 isolation files)"
+  ],
+  "isolation_patterns": [
+    "Files with 'Isolation' in the name are used to manage namespace conflicts",
+    "Type aliases are heavily used to redirect types from other modules",
+    "Error mapping functions follow the pattern 'mapXXXToYYYError'"
+  ]
+}
