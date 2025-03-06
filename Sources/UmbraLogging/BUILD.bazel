@@ -7,9 +7,8 @@ umbra_swift_library(
         "LogEntry.swift",
         "LogLevel.swift",
         "LogMetadata.swift",
-        "Logger.swift",
         "LoggingProtocol.swift",
         "UmbraLogging.swift",
     ],
-    deps = ["@swiftpkg_swiftybeaver//:SwiftyBeaver"],
+    deps = [],  # Core module has no dependencies
 )

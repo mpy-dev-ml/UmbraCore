@@ -1,5 +1,4 @@
 import Foundation
-import SwiftyBeaver
 
 /// Represents the severity level of a log message.
 ///
@@ -36,27 +35,7 @@ public enum UmbraLogLevel: Int, Sendable, Comparable {
   /// System-level faults requiring immediate attention.
   case fault
 
-  /// Converts this level to the equivalent SwiftyBeaver logging level.
-  ///
-  /// Note that SwiftyBeaver doesn't support levels above error, so critical
-  /// and fault are mapped to error.
-  var asSBLevel: SwiftyBeaver.Level {
-    switch self {
-      case .verbose: .verbose
-      case .debug: .debug
-      case .info: .info
-      case .warning: .warning
-      case .error: .error
-      case .critical, .fault: .error // SwiftyBeaver doesn't have critical/fault levels
-    }
-  }
-
-  /// Compares two log levels based on their severity.
-  ///
-  /// - Parameters:
-  ///   - lhs: The first log level to compare.
-  ///   - rhs: The second log level to compare.
-  /// - Returns: `true` if the first level is less severe than the second.
+  /// Compare log levels to determine severity relationships
   public static func < (lhs: UmbraLogLevel, rhs: UmbraLogLevel) -> Bool {
     lhs.rawValue < rhs.rawValue
   }

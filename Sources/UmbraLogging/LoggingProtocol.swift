@@ -27,18 +27,12 @@ public protocol LoggingProtocol: Sendable {
   func error(_ message: String, metadata: LogMetadata?) async
 }
 
-/// Re-export SwiftyBeaver.Level as LogLevel
-public typealias LogLevel = UmbraLogLevel
-
 /// Errors that can occur during logging operations
 public enum LoggingError: Error {
-  /// Failed to initialize logging system
-  case initializationFailed(String)
+  /// Failed to initialise logging system
+  case initialisationFailed(String)
   /// Failed to write log entry
   case writeFailed(String)
   /// Invalid log configuration
   case invalidConfiguration(String)
 }
-
-/// Re-export Logger as LoggingService
-public typealias LoggingService = Logger

@@ -1,14 +1,16 @@
 @testable import SecurityTypes
 @testable import UmbraLogging
+@testable import UmbraLoggingAdapters
 import XCTest
 
 final class LoggingServiceTests: XCTestCase {
-  private var logger: Logger!
+  private var logger: LoggingProtocol!
   private let tempPath = NSTemporaryDirectory() + "test.log"
 
   override func setUp() async throws {
     try await super.setUp()
-    logger = Logger.shared
+    // Use the factory method from UmbraLogging to create a logger
+    logger = UmbraLogging.createLogger()
 
     // Create an empty file to ensure it exists
     FileManager.default.createFile(atPath: tempPath, contents: nil)
@@ -23,34 +25,32 @@ final class LoggingServiceTests: XCTestCase {
     var metadata = LogMetadata()
     metadata["test"] = "value"
 
-    let entry = LogEntry(
-      level: .info,
-      message: "Test message",
-      metadata: metadata
-    )
-
-    await logger.log(entry)
+    // Use the updated UmbraLogLevel type
+    await logger.info("Test message", metadata: metadata)
 
     // Verify logging functionality
     XCTAssertNoThrow(try String(contentsOfFile: tempPath, encoding: .utf8))
   }
 
   func testLogLevels() async throws {
-    let levels: [(LogLevel, String)] = [
-      (.debug, "DEBUG"),
-      (.info, "INFO"),
-      (.warning, "WARNING"),
-      (.error, "ERROR")
-    ]
+    // Test different log levels using the new API
+    await logger.debug("Test debug message", metadata: nil)
+    await logger.info("Test info message", metadata: nil)
+    await logger.warning("Test warning message", metadata: nil)
+    await logger.error("Test error message", metadata: nil)
 
-    for (level, _) in levels {
-      let entry = LogEntry(
-        level: level,
-        message: "Test \(level) message",
-        metadata: nil
-      )
+    // No assertions needed - we're just verifying the calls don't throw
+  }
 
-      await logger.log(entry)
-    }
+  func testMetadataHandling() async throws {
+    // Test that metadata is properly handled
+    var metadata = LogMetadata()
+    metadata["key1"] = "value1"
+    metadata["key2"] = 42
+    metadata["key3"] = true
+
+    await logger.info("Test with complex metadata", metadata: metadata)
+
+    // Success if it doesn't throw
   }
 }
