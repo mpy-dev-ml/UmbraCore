@@ -2,7 +2,7 @@ import CoreErrors
 import CoreServicesSecurityTypeAliases
 import CoreServicesTypeAliases
 import CoreServicesTypes
-import CoreTypes
+import CoreTypesInterfaces
 import Foundation
 import ObjCBridgingTypes
 import UmbraCoreTypes

@@ -1,4 +1,4 @@
-import CoreTypes
+import CoreTypesInterfaces
 import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes

@@ -1,6 +1,6 @@
 import CoreErrors
 import CoreServicesTypes
-import CoreTypes
+import CoreTypesInterfaces
 import Foundation
 import SecurityProtocolsCore
 import SecurityTypes

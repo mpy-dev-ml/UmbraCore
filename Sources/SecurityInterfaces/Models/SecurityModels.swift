@@ -1,4 +1,4 @@
-import CoreTypes
+import CoreTypesInterfaces
 import Foundation
 
 /// Represents various security operations that can be performed

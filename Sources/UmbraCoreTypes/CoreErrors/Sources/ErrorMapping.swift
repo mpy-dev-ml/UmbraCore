@@ -107,6 +107,8 @@ public func mapFromCoreErrors(_ error: Error) -> Error {
         return ResourceLocatorError.generalError("Operation not implemented")
       case .general(let message):
         return ResourceLocatorError.generalError(message)
+      @unknown default:
+        return ResourceLocatorError.generalError("Unknown security error")
     }
   }
 
