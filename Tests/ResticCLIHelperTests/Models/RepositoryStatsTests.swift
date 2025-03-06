@@ -3,7 +3,7 @@ import XCTest
 
 final class RepositoryStatsTests: XCTestCase {
   func testRepositoryStatsDecoding() throws {
-    let json = """
+    let json="""
       {
           "total_size": 1073741824,
           "total_file_count": 1000,
@@ -16,12 +16,12 @@ final class RepositoryStatsTests: XCTestCase {
       }
       """
 
-    let data = json.data(using: .utf8)!
-    let stats = try JSONDecoder().decode(RepositoryStats.self, from: data)
+    let data=json.data(using: .utf8)!
+    let stats=try JSONDecoder().decode(RepositoryStats.self, from: data)
 
     XCTAssertEqual(stats.totalSize, 1_073_741_824)
-    XCTAssertEqual(stats.totalFileCount, 1_000)
-    XCTAssertEqual(stats.totalBlobCount, 2_000)
+    XCTAssertEqual(stats.totalFileCount, 1000)
+    XCTAssertEqual(stats.totalBlobCount, 2000)
     XCTAssertEqual(stats.snapshotsCount, 5)
     XCTAssertEqual(stats.totalUncompressedSize, 2_147_483_648)
     XCTAssertEqual(stats.compressionRatio, 0.5)

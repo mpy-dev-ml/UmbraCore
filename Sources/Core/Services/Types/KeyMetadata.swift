@@ -50,15 +50,15 @@ public struct KeyMetadata: Sendable, Codable {
     accessControls: AccessControls = .none,
     algorithm: String,
     keySize: Int,
-    expiryDate: Date? = nil
+    expiryDate: Date?=nil
   ) {
-    status = KeyStatus.active
-    self.storageLocation = storageLocation
-    self.accessControls = accessControls
-    self.algorithm = algorithm
-    self.keySize = keySize
-    createdAt = Date()
-    lastModified = Date()
-    self.expiryDate = expiryDate
+    status=KeyStatus.active
+    self.storageLocation=storageLocation
+    self.accessControls=accessControls
+    self.algorithm=algorithm
+    self.keySize=keySize
+    createdAt=Date()
+    lastModified=Date()
+    self.expiryDate=expiryDate
   }
 }

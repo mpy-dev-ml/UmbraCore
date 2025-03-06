@@ -43,7 +43,7 @@ public struct PathURLProvider: URLProvider {
     in domain: FileManager.SearchPathDomainMask,
     pathComponents: [String]
   ) throws -> URL {
-    var url = try url(for: directory, in: domain)
+    var url=try url(for: directory, in: domain)
     for component in pathComponents {
       url.appendPathComponent(component)
     }

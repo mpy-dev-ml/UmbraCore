@@ -56,32 +56,35 @@ public enum XPCProtocolMigrationFactory {
   ///
   /// - Parameter error: Security error from the SecurityProtocolsCore module
   /// - Returns: Equivalent XPCSecurityError
-  public static func convertSecurityCoreError(_ error: SecurityProtocolsCore.SecurityError) -> XPCSecurityError {
+  public static func convertSecurityCoreError(
+    _ error: SecurityProtocolsCore
+      .SecurityError
+  ) -> XPCSecurityError {
     switch error {
       case .encryptionFailed:
-        return .encryptionFailed
+        .encryptionFailed
       case .decryptionFailed:
-        return .decryptionFailed
+        .decryptionFailed
       case .keyGenerationFailed:
-        return .keyGenerationFailed
+        .keyGenerationFailed
       case .invalidKey:
-        return .invalidData
+        .invalidData
       case .hashVerificationFailed:
-        return .hashingFailed
+        .hashingFailed
       case .randomGenerationFailed:
-        return .cryptoError
+        .cryptoError
       case .invalidInput:
-        return .invalidData
+        .invalidData
       case .storageOperationFailed:
-        return .serviceFailed
+        .serviceFailed
       case .timeout:
-        return .serviceFailed
+        .serviceFailed
       case .serviceError:
-        return .serviceFailed
-      case .internalError(let reason):
-        return .general(reason)
+        .serviceFailed
+      case let .internalError(reason):
+        .general(reason)
       case .notImplemented:
-        return .notImplemented
+        .notImplemented
     }
   }
 
@@ -89,26 +92,27 @@ public enum XPCProtocolMigrationFactory {
   ///
   /// - Parameter error: XPC error
   /// - Returns: Equivalent SecurityProtocolsCore.SecurityError
-  public static func convertToSecurityCoreError(_ error: XPCSecurityError) -> SecurityProtocolsCore.SecurityError {
+  public static func convertToSecurityCoreError(_ error: XPCSecurityError) -> SecurityProtocolsCore
+  .SecurityError {
     switch error {
       case .encryptionFailed:
-        return .encryptionFailed(reason: "XPC encryption failed")
+        .encryptionFailed(reason: "XPC encryption failed")
       case .decryptionFailed:
-        return .decryptionFailed(reason: "XPC decryption failed")
+        .decryptionFailed(reason: "XPC decryption failed")
       case .keyGenerationFailed:
-        return .keyGenerationFailed(reason: "XPC key generation failed")
+        .keyGenerationFailed(reason: "XPC key generation failed")
       case .invalidData:
-        return .invalidInput(reason: "Invalid data format")
+        .invalidInput(reason: "Invalid data format")
       case .hashingFailed:
-        return .hashVerificationFailed
+        .hashVerificationFailed
       case .cryptoError:
-        return .internalError(reason: "Generic crypto error from XPC service")
+        .internalError(reason: "Generic crypto error from XPC service")
       case .serviceFailed:
-        return .serviceError(reason: "XPC service operation failed")
+        .serviceError(reason: "XPC service operation failed")
       case .notImplemented:
-        return .notImplemented
-      case .general(let message):
-        return .internalError(reason: message)
+        .notImplemented
+      case let .general(message):
+        .internalError(reason: message)
     }
   }
 
@@ -118,17 +122,17 @@ public enum XPCProtocolMigrationFactory {
   /// - Returns: Equivalent XPCSecurityError
   public static func anyErrorToXPCError(_ error: Error) -> XPCSecurityError {
     // Handle SecurityProtocolsCore.SecurityError
-    if let securityError = error as? SecurityProtocolsCore.SecurityError {
+    if let securityError=error as? SecurityProtocolsCore.SecurityError {
       return convertSecurityCoreError(securityError)
     }
 
     // If already an XPCSecurityError, return as is
-    if let xpcError = error as? XPCSecurityError {
+    if let xpcError=error as? XPCSecurityError {
       return xpcError
     }
 
     // Map CoreErrors.CryptoError
-    if let cryptoError = error as? CoreErrors.CryptoError {
+    if let cryptoError=error as? CoreErrors.CryptoError {
       switch cryptoError {
         case .encryptionFailed:
           return .encryptionFailed
@@ -137,7 +141,8 @@ public enum XPCProtocolMigrationFactory {
         case .keyGenerationFailed:
           return .keyGenerationFailed
         case .invalidKey, .invalidKeyLength, .invalidIVLength, .invalidSaltLength,
-             .invalidIterationCount, .invalidKeySize, .invalidKeyFormat, .invalidCredentialIdentifier:
+             .invalidIterationCount, .invalidKeySize, .invalidKeyFormat,
+             .invalidCredentialIdentifier:
           return .invalidData
         case .hashingFailed, .resultVerificationFailed, .authenticationFailed:
           return .hashingFailed

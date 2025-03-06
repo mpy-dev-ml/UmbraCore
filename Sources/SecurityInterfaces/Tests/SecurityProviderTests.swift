@@ -1,8 +1,10 @@
 import Foundation
 @testable import SecurityInterfaces
-import XPCProtocolsCoreimport SecurityInterfacesBase
-import UmbraCoreTypesimport XPCProtocolsCoreimport XPCProtocolsCoreimport SecurityProtocolsCore
-import UmbraCoreTypesimport XCTest
+import SecurityInterfacesBase
+import SecurityProtocolsCore
+import UmbraCoreTypes
+import XCTest
+import XPCProtocolsCore
 
 /// Test suite for the SecurityProvider implementation
 class SecurityProviderTests: XCTestCase {
@@ -130,8 +132,8 @@ class SecurityProviderTests: XCTestCase {
     // Get a test provider
     let provider=try! SecurityProviderFactory.createProvider(ofType: "test")
 
-    // Try an invalid operation that should return .failure(.custom(message: "an error
-"))    do {
+    // Try an invalid operation that should return an error
+    do {
       _=try await provider.resetSecurityData()
       XCTFail("Should have thrown an error")
     } catch {

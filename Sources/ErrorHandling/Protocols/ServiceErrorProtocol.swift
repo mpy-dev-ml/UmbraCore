@@ -34,13 +34,13 @@ extension ServiceErrorProtocol {
 
   /// Default implementation creating an error context
   public var context: ErrorContext {
-    var metadata: [String: String] = [:]
+    var metadata: [String: String]=[:]
     if let details {
-      metadata["details"] = details
+      metadata["details"]=details
     }
-    metadata["operation"] = operation
-    if let error = underlyingError {
-      metadata["underlyingError"] = String(describing: error)
+    metadata["operation"]=operation
+    if let error=underlyingError {
+      metadata["underlyingError"]=String(describing: error)
     }
 
     return ErrorContext(

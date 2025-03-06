@@ -90,7 +90,7 @@ public class SecurityXPCServiceAdapter {
   private let standardService: any XPCServiceProtocolStandard
 
   public init(standardService: any XPCServiceProtocolStandard) {
-    self.standardService = standardService
+    self.standardService=standardService
   }
 
   // Bridge implementations between the protocols can be added here

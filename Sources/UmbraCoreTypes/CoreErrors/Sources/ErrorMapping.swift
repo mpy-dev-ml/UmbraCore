@@ -8,7 +8,7 @@ import CoreErrors
 @Sendable
 public func mapToCoreErrors(_ error: Error) -> Error {
   // SecureBytes errors mapping
-  if let secureError = error as? SecureBytesError {
+  if let secureError=error as? SecureBytesError {
     switch secureError {
       case .invalidHexString:
         return CoreErrors.ResourceError.operationFailed
@@ -22,7 +22,7 @@ public func mapToCoreErrors(_ error: Error) -> Error {
   }
 
   // ResourceLocator errors mapping
-  if let resourceError = error as? ResourceLocatorError {
+  if let resourceError=error as? ResourceLocatorError {
     switch resourceError {
       case .invalidPath:
         return CoreErrors.ResourceError.invalidState
@@ -40,7 +40,7 @@ public func mapToCoreErrors(_ error: Error) -> Error {
   }
 
   // TimePoint errors mapping
-  if let timeError = error as? TimePointError {
+  if let timeError=error as? TimePointError {
     switch timeError {
       case .invalidFormat:
         return CoreErrors.ResourceError.invalidState
@@ -61,7 +61,7 @@ public func mapToCoreErrors(_ error: Error) -> Error {
 @Sendable
 public func mapFromCoreErrors(_ error: Error) -> Error {
   // Map from ResourceError
-  if let resourceError = error as? CoreErrors.ResourceError {
+  if let resourceError=error as? CoreErrors.ResourceError {
     switch resourceError {
       case .invalidState:
         return ResourceLocatorError.invalidPath
@@ -79,7 +79,7 @@ public func mapFromCoreErrors(_ error: Error) -> Error {
   }
 
   // Map from SecurityError
-  if let securityError = error as? CoreErrors.SecurityError {
+  if let securityError=error as? CoreErrors.SecurityError {
     switch securityError {
       case .accessError:
         return ResourceLocatorError.accessDenied
@@ -105,7 +105,7 @@ public func mapFromCoreErrors(_ error: Error) -> Error {
         return ResourceLocatorError.generalError("Service operation failed")
       case .notImplemented:
         return ResourceLocatorError.generalError("Operation not implemented")
-      case .general(let message):
+      case let .general(message):
         return ResourceLocatorError.generalError(message)
       @unknown default:
         return ResourceLocatorError.generalError("Unknown security error")
@@ -125,8 +125,8 @@ public struct ErrorContainer: Error {
   public let userInfo: [String: Any]
 
   public init(domain: String, code: Int, userInfo: [String: Any]) {
-    self.domain = domain
-    self.code = code
-    self.userInfo = userInfo
+    self.domain=domain
+    self.code=code
+    self.userInfo=userInfo
   }
 }

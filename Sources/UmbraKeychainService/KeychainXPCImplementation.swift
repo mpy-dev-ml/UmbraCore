@@ -3,8 +3,8 @@ import Foundation
 @objc(KeychainXPCImplementation)
 @available(macOS 14.0, *)
 final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
-  private let keychain = KeychainService()
-  private let queue = DispatchQueue(label: "com.umbracore.keychain.xpc", qos: .userInitiated)
+  private let keychain=KeychainService()
+  private let queue=DispatchQueue(label: "com.umbracore.keychain.xpc", qos: .userInitiated)
 
   override init() {
     super.init()
@@ -18,8 +18,8 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
     reply: @escaping @Sendable (Error?) -> Void
   ) {
     // Capture values in local variables to avoid capturing self
-    let keychain = keychain
-    let queue = queue
+    let keychain=keychain
+    let queue=queue
 
     Task { @Sendable in
       do {
@@ -43,8 +43,8 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
     data: Data,
     reply: @escaping @Sendable (Error?) -> Void
   ) {
-    let keychain = keychain
-    let queue = queue
+    let keychain=keychain
+    let queue=queue
 
     Task { @Sendable in
       do {
@@ -67,8 +67,8 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
     accessGroup: String?,
     reply: @escaping @Sendable (Error?) -> Void
   ) {
-    let keychain = keychain
-    let queue = queue
+    let keychain=keychain
+    let queue=queue
 
     Task { @Sendable in
       do {
@@ -90,12 +90,12 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
     accessGroup: String?,
     reply: @escaping @Sendable (Bool, Error?) -> Void
   ) {
-    let keychain = keychain
-    let queue = queue
+    let keychain=keychain
+    let queue=queue
 
     Task { @Sendable in
       do {
-        let exists = try await keychain.containsItem(
+        let exists=try await keychain.containsItem(
           account: account,
           service: service,
           accessGroup: accessGroup
@@ -117,12 +117,12 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
     accessGroup: String?,
     reply: @escaping @Sendable (Data?, Error?) -> Void
   ) {
-    let keychain = keychain
-    let queue = queue
+    let keychain=keychain
+    let queue=queue
 
     Task { @Sendable in
       do {
-        let data = try await keychain.retrieveItem(
+        let data=try await keychain.retrieveItem(
           account: account,
           service: service,
           accessGroup: accessGroup

@@ -21,7 +21,7 @@ import UmbraLogging
 /// ```
 public actor RepositoryService {
   /// Shared instance of the repository service
-  public static let shared = RepositoryService()
+  public static let shared=RepositoryService()
 
   /// Currently registered repositories
   var repositories: [String: any Repository]
@@ -36,8 +36,8 @@ public actor RepositoryService {
   public init(
     logger: Logger = .shared
   ) {
-    repositories = [:]
-    self.logger = logger
+    repositories=[:]
+    self.logger=logger
   }
 
   // MARK: - Repository Management
@@ -48,11 +48,11 @@ public actor RepositoryService {
   /// - Throws: `RepositoryError.notAccessible` if the repository cannot be accessed,
   ///           `RepositoryError.alreadyRegistered` if a repository with the same identifier exists.
   public func register(_ repository: some Repository) async throws {
-    let identifier = await repository.identifier
-    let location = await repository.location
-    let state = await repository.state
+    let identifier=await repository.identifier
+    let location=await repository.location
+    let state=await repository.state
 
-    let metadata = LogMetadata([
+    let metadata=LogMetadata([
       "repository_id": identifier,
       "location": location.path,
       "state": String(describing: state)
@@ -80,7 +80,7 @@ public actor RepositoryService {
     }
 
     // Initialize repository if needed
-    if case .uninitialized = state {
+    if case .uninitialized=state {
       await logger.info("Initializing uninitialized repository", metadata: metadata)
       try await repository.initialize()
     }
@@ -101,7 +101,7 @@ public actor RepositoryService {
       throw error
     }
 
-    repositories[identifier] = repository
+    repositories[identifier]=repository
     await logger.info("Repository registered successfully", metadata: metadata)
   }
 
@@ -110,7 +110,7 @@ public actor RepositoryService {
   /// - Parameter identifier: The identifier of the repository to deregister.
   /// - Throws: `RepositoryError.notFound` if no repository exists with the given identifier.
   public func deregister(identifier: String) async throws {
-    let metadata = LogMetadata([
+    let metadata=LogMetadata([
       "repository_id": identifier
     ])
     await logger.info("Deregistering repository", metadata: metadata)
@@ -157,7 +157,7 @@ public actor RepositoryService {
   /// - Parameter url: The URL of the repository.
   /// - Returns: The repository if found, nil otherwise.
   public func getRepository(at url: URL) async -> (any Repository)? {
-    let path = url.path
+    let path=url.path
     await logger.debug(
       "Getting repository by URL",
       metadata: LogMetadata([
@@ -182,7 +182,7 @@ public actor RepositoryService {
   /// - Returns: A new repository instance
   /// - Throws: `RepositoryError` if creation fails
   func createRepository(at url: URL) async throws -> any Repository {
-    let repository = FileSystemRepository(
+    let repository=FileSystemRepository(
       identifier: url.path,
       location: url,
       state: .uninitialized

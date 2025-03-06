@@ -9,7 +9,7 @@ final class ResourceLocatorTests: XCTestCase {
 
   func testInitWithValidParams() throws {
     // When initializing with valid parameters
-    let locator = try ResourceLocator(scheme: "file", path: "/path/to/resource")
+    let locator=try ResourceLocator(scheme: "file", path: "/path/to/resource")
 
     // Then it should create a valid ResourceLocator
     XCTAssertEqual(locator.scheme, "file")
@@ -29,7 +29,7 @@ final class ResourceLocatorTests: XCTestCase {
 
   func testFileLocator() throws {
     // When creating a file locator with a valid path
-    let locator = try ResourceLocator.fileLocator(path: "/path/to/file")
+    let locator=try ResourceLocator.fileLocator(path: "/path/to/file")
 
     // Then it should create a ResourceLocator with "file" scheme
     XCTAssertEqual(locator.scheme, "file")
@@ -39,7 +39,7 @@ final class ResourceLocatorTests: XCTestCase {
 
   func testHttpLocator() throws {
     // When creating an HTTP locator with valid host and path
-    let locator = try ResourceLocator.httpLocator(host: "example.com", path: "/api/resource")
+    let locator=try ResourceLocator.httpLocator(host: "example.com", path: "/api/resource")
 
     // Then it should create a ResourceLocator with "http" scheme
     XCTAssertEqual(locator.scheme, "http")
@@ -49,7 +49,7 @@ final class ResourceLocatorTests: XCTestCase {
 
   func testHttpsLocator() throws {
     // When creating an HTTPS locator with valid host and path
-    let locator = try ResourceLocator.httpsLocator(host: "secure.example.com", path: "/api/resource")
+    let locator=try ResourceLocator.httpsLocator(host: "secure.example.com", path: "/api/resource")
 
     // Then it should create a ResourceLocator with "https" scheme
     XCTAssertEqual(locator.scheme, "https")
@@ -61,7 +61,7 @@ final class ResourceLocatorTests: XCTestCase {
 
   func testToString() throws {
     // Given a ResourceLocator with all components
-    let locator = try ResourceLocator(
+    let locator=try ResourceLocator(
       scheme: "https",
       path: "example.com/path",
       query: "param=value",
@@ -69,7 +69,7 @@ final class ResourceLocatorTests: XCTestCase {
     )
 
     // When converting to string
-    let string = locator.toString()
+    let string=locator.toString()
 
     // Then it should include all components
     XCTAssertEqual(string, "https://example.com/path?param=value#section")
@@ -79,10 +79,10 @@ final class ResourceLocatorTests: XCTestCase {
 
   func testValidateSuccess() throws {
     // Given a valid ResourceLocator
-    let locator = try ResourceLocator(scheme: "file", path: "/path/to/resource")
+    let locator=try ResourceLocator(scheme: "file", path: "/path/to/resource")
 
     // When validating
-    let result = try locator.validate()
+    let result=try locator.validate()
 
     // Then it should return true
     XCTAssertTrue(result)
@@ -91,7 +91,7 @@ final class ResourceLocatorTests: XCTestCase {
   func testValidateResourceNotFound() {
     // Given a ResourceLocator with a non-existent path
     do {
-      let locator = try ResourceLocator(scheme: "file", path: "/path/to/nonexistent")
+      let locator=try ResourceLocator(scheme: "file", path: "/path/to/nonexistent")
 
       // When validating
       // Then it should throw resourceNotFound
@@ -106,7 +106,7 @@ final class ResourceLocatorTests: XCTestCase {
   func testValidateAccessDenied() {
     // Given a ResourceLocator with a restricted path
     do {
-      let locator = try ResourceLocator(scheme: "file", path: "/path/to/restricted")
+      let locator=try ResourceLocator(scheme: "file", path: "/path/to/restricted")
 
       // When validating
       // Then it should throw accessDenied
@@ -122,7 +122,7 @@ final class ResourceLocatorTests: XCTestCase {
 
   func testMapToCoreErrors() {
     // Given a ResourceLocatorError
-    let errors: [ResourceLocatorError] = [
+    let errors: [ResourceLocatorError]=[
       .invalidPath,
       .resourceNotFound,
       .accessDenied,
@@ -132,14 +132,15 @@ final class ResourceLocatorTests: XCTestCase {
 
     // When mapping to CoreErrors
     for error in errors {
-      let mappedError = mapToCoreErrors(error)
+      let mappedError=mapToCoreErrors(error)
 
       // Then it should produce the correct CoreErrors type
       switch error {
         case .invalidPath:
           if
-            let resourceError = mappedError as? CEResourceError,
-            case .invalidState = resourceError {
+            let resourceError=mappedError as? CEResourceError,
+            case .invalidState=resourceError
+          {
             // Success
           } else {
             XCTFail("Expected invalidPath to map to CEResourceError.invalidState")
@@ -147,8 +148,9 @@ final class ResourceLocatorTests: XCTestCase {
 
         case .resourceNotFound:
           if
-            let resourceError = mappedError as? CEResourceError,
-            case .resourceNotFound = resourceError {
+            let resourceError=mappedError as? CEResourceError,
+            case .resourceNotFound=resourceError
+          {
             // Success
           } else {
             XCTFail("Expected resourceNotFound to map to CEResourceError.resourceNotFound")
@@ -156,8 +158,9 @@ final class ResourceLocatorTests: XCTestCase {
 
         case .accessDenied:
           if
-            let securityError = mappedError as? CESecurityError,
-            case .accessError = securityError {
+            let securityError=mappedError as? CESecurityError,
+            case .accessError=securityError
+          {
             // Success
           } else {
             XCTFail("Expected accessDenied to map to CESecurityError.accessError")
@@ -165,8 +168,9 @@ final class ResourceLocatorTests: XCTestCase {
 
         case .unsupportedScheme:
           if
-            let resourceError = mappedError as? CEResourceError,
-            case .operationFailed = resourceError {
+            let resourceError=mappedError as? CEResourceError,
+            case .operationFailed=resourceError
+          {
             // Success
           } else {
             XCTFail("Expected unsupportedScheme to map to CEResourceError.operationFailed")
@@ -174,8 +178,9 @@ final class ResourceLocatorTests: XCTestCase {
 
         case .generalError:
           if
-            let resourceError = mappedError as? CEResourceError,
-            case .operationFailed = resourceError {
+            let resourceError=mappedError as? CEResourceError,
+            case .operationFailed=resourceError
+          {
             // Success
           } else {
             XCTFail("Expected generalError to map to CEResourceError.operationFailed")
@@ -186,7 +191,7 @@ final class ResourceLocatorTests: XCTestCase {
 
   func testMapFromCoreErrors() {
     // Given a set of CoreErrors.ResourceError values
-    let errors: [CoreErrors.ResourceError] = [
+    let errors: [CoreErrors.ResourceError]=[
       .invalidState,
       .resourceNotFound,
       .operationFailed,
@@ -196,7 +201,7 @@ final class ResourceLocatorTests: XCTestCase {
 
     // When mapping from CoreErrors
     for coreError in errors {
-      let mappedError = mapFromCoreErrors(coreError)
+      let mappedError=mapFromCoreErrors(coreError)
 
       // Then it should produce the correct ResourceLocatorError or other type
       switch coreError {
@@ -220,8 +225,9 @@ final class ResourceLocatorTests: XCTestCase {
 
         case .poolExhausted:
           if
-            let resourceError = mappedError as? ResourceLocatorError,
-            case let .generalError(message) = resourceError {
+            let resourceError=mappedError as? ResourceLocatorError,
+            case let .generalError(message)=resourceError
+          {
             XCTAssertEqual(message, "Resource pool exhausted")
           } else {
             XCTFail("Expected poolExhausted to map to ResourceLocatorError.generalError")

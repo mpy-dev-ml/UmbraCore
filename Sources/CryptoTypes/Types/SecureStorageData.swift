@@ -12,7 +12,7 @@ public struct SecureStorageData: Codable {
   ///   - encryptedData: The encrypted data
   ///   - iv: The initialization vector used for encryption
   public init(encryptedData: Data, iv: Data) {
-    self.encryptedData = encryptedData
-    self.iv = iv
+    self.encryptedData=encryptedData
+    self.iv=iv
   }
 }

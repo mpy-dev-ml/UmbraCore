@@ -21,9 +21,9 @@ public enum DataAdapter {
   /// - Returns: A new Data instance containing the same bytes
   public static func data(from secureBytes: SecureBytes) -> Data {
     // Create Data from SecureBytes' bytes by converting to array first
-    var byteArray = [UInt8]()
+    var byteArray=[UInt8]()
     secureBytes.withUnsafeBytes { buffer in
-      byteArray = Array(buffer)
+      byteArray=Array(buffer)
     }
     return Data(byteArray)
   }
@@ -32,7 +32,7 @@ public enum DataAdapter {
   /// - Parameter object: JSON encodable object
   /// - Returns: SecureBytes containing the JSON data, or nil if conversion fails
   public static func secureBytes(from object: some Encodable) -> SecureBytes? {
-    guard let data = try? JSONEncoder().encode(object) else {
+    guard let data=try? JSONEncoder().encode(object) else {
       return nil
     }
     return secureBytes(from: data)

@@ -1,27 +1,30 @@
 import Foundation
 import SecurityInterfaces
-import XPCProtocolsCoreimport UmbraSecurity
 import UmbraCoreTypes
+import UmbraSecurity
+import XPCProtocolsCore
+
 /// Protocol for URL-based operations
 public protocol URLProvider: Sendable {
   /// Create a bookmark for a path
   /// - Parameter path: Path to create bookmark for
   /// - Returns: Bookmark data
   /// - Throws: SecurityError if bookmark creation fails
-  func createBookmark(forPath path: String) async -> Result<Data
-, XPCSecurityError>
+  func createBookmark(forPath path: String) async -> Result<Data, XPCSecurityError>
+
   /// Resolve a bookmark to a path
   /// - Parameter bookmarkData: Bookmark data to resolve
   /// - Returns: Tuple containing resolved path and whether bookmark is stale
   /// - Throws: SecurityError if bookmark resolution fails
-  func resolveBookmark(_ bookmarkData: [UInt8]) async -> Result<(path: String, isStale: Bool)
-, XPCSecurityError>
+  func resolveBookmark(_ bookmarkData: [UInt8]) async
+    -> Result<(path: String, isStale: Bool), XPCSecurityError>
+
   /// Start accessing a path
   /// - Parameter path: Path to access
   /// - Returns: True if access was granted
   /// - Throws: SecurityError if access fails
-  func startAccessing(path: String) async -> Result<Bool
-, XPCSecurityError>
+  func startAccessing(path: String) async -> Result<Bool, XPCSecurityError>
+
   /// Stop accessing a path
   /// - Parameter path: Path to stop accessing
   func stopAccessing(path: String) async
@@ -41,12 +44,12 @@ public protocol URLProvider: Sendable {
 
 /// Default implementation of URLProvider using Foundation
 extension URLProvider {
-  public func createBookmark(forPath path: String) async -> Result<Data , XPCSecurityError>{
+  public func createBookmark(forPath path: String) async -> Result<Data, XPCSecurityError> {
     guard let url=URL(string: path) else {
-      return .failure(.operationFailed)")
+      return .failure(.custom(message: "Invalid URL path: \(path)"))
     }
 
-    return try await url.us_createSecurityScopedBookmark()
+    return await url.us_createSecurityScopedBookmark()
   }
 
   public func resolveBookmark(_ bookmarkData: [UInt8]) async throws
@@ -70,15 +73,15 @@ extension URLProvider {
     false
   }
 
-  public func startAccessing(path: String) async -> Result<Bool , XPCSecurityError>{
+  public func startAccessing(path: String) async -> Result<Bool, XPCSecurityError> {
     guard let url=URL(string: path) else {
-      return .failure(.operationFailed)")
+      return .failure(.custom(message: "Invalid URL path: \(path)"))
     }
 
     if url.us_startAccessingSecurityScopedResource() {
       return true
     } else {
-      return .failure(.accessError)")
+      return .failure(.accessError)
     }
   }
 

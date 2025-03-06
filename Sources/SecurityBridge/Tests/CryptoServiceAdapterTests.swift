@@ -24,7 +24,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
   private let mockXPCService: MockFoundationXPCSecurityService
 
   init(mockXPCService: MockFoundationXPCSecurityService) {
-    self.mockXPCService = mockXPCService
+    self.mockXPCService=mockXPCService
   }
 
   func encrypt(data: Data, using key: Data) async -> Result<Data, Error> {
@@ -91,7 +91,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
           optionsJson: "{}"
         ) { data, code, errorMessage in
           if let code, code.intValue != 0 {
-            let error = NSError(
+            let error=NSError(
               domain: "com.umbracore.security",
               code: code.intValue,
               userInfo: [NSLocalizedDescriptionKey: errorMessage ?? "Hash operation failed"]
@@ -100,7 +100,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
           } else if let data {
             continuation.resume(returning: .success(data))
           } else {
-            let error = NSError(
+            let error=NSError(
               domain: "com.umbracore.security",
               code: 500,
               userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
@@ -152,7 +152,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
   ) async -> FoundationSecurityResult {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       mockXPCService.encryptSymmetricXPC(
@@ -192,7 +192,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
   ) async -> FoundationSecurityResult {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       mockXPCService.decryptSymmetricXPC(
@@ -230,7 +230,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
   ) async -> FoundationSecurityResult {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       mockXPCService.encryptAsymmetricXPC(
@@ -266,7 +266,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
   ) async -> FoundationSecurityResult {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       mockXPCService.decryptAsymmetricXPC(
@@ -300,7 +300,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
   ) async -> FoundationSecurityResult {
     await withCheckedContinuation { continuation in
       // Convert options dictionary to JSON string for XPC compatibility
-      let optionsJson = (try? JSONSerialization.data(withJSONObject: options, options: []))
+      let optionsJson=(try? JSONSerialization.data(withJSONObject: options, options: []))
         .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
 
       mockXPCService.hashDataXPC(
@@ -338,60 +338,60 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   override func setUp() async throws {
     try await super.setUp()
-    mockXPCService = MockFoundationXPCSecurityService()
-    mockCryptoService = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
-    adapter = CryptoServiceAdapter(implementation: mockCryptoService)
+    mockXPCService=MockFoundationXPCSecurityService()
+    mockCryptoService=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    adapter=CryptoServiceAdapter(implementation: mockCryptoService)
   }
 
   override func tearDown() async throws {
-    adapter = nil
-    mockCryptoService = nil
-    mockXPCService = nil
+    adapter=nil
+    mockCryptoService=nil
+    mockXPCService=nil
     try await super.tearDown()
   }
 
   func resetMockService() async {
     // Create a new instance to reset all state
-    mockXPCService = MockFoundationXPCSecurityService()
-    mockCryptoService = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
-    adapter = CryptoServiceAdapter(implementation: mockCryptoService)
+    mockXPCService=MockFoundationXPCSecurityService()
+    mockCryptoService=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    adapter=CryptoServiceAdapter(implementation: mockCryptoService)
   }
 
   // MARK: - Basic Encryption Tests
 
   func testEncrypt() async throws {
     // Arrange
-    let inputData = SecureBytes([1, 2, 3, 4, 5])
-    let key = SecureBytes([10, 20, 30, 40, 50])
-    mockXPCService.encryptedDataToReturn = Data([100, 110, 120, 130, 140])
+    let inputData=SecureBytes([1, 2, 3, 4, 5])
+    let key=SecureBytes([10, 20, 30, 40, 50])
+    mockXPCService.encryptedDataToReturn=Data([100, 110, 120, 130, 140])
 
     // Act
-    let result = await adapter.encrypt(data: inputData, using: key)
+    let result=await adapter.encrypt(data: inputData, using: key)
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(encryptedData) = result {
+    if case let .success(encryptedData)=result {
       XCTAssertEqual(encryptedData.bytes(), [100, 110, 120, 130, 140])
     } else {
       XCTFail("Expected successful encryption")
     }
 
-    let methodCalls = mockXPCService.methodCalls
+    let methodCalls=mockXPCService.methodCalls
     XCTAssertTrue(methodCalls.contains("encrypt"))
   }
 
   func testEncryptFailure() async throws {
     // Arrange
-    let inputData = SecureBytes([1, 2, 3, 4, 5])
-    let key = SecureBytes([10, 20, 30, 40, 50])
-    mockXPCService.shouldFail = true
+    let inputData=SecureBytes([1, 2, 3, 4, 5])
+    let key=SecureBytes([10, 20, 30, 40, 50])
+    mockXPCService.shouldFail=true
 
     // Act
-    let result = await adapter.encrypt(data: inputData, using: key)
+    let result=await adapter.encrypt(data: inputData, using: key)
 
     // Assert
     XCTAssertTrue(result.isFailure)
-    if case let .failure(error) = result {
+    if case let .failure(error)=result {
       // We don't need to test the error type since CryptoServiceAdapter.mapError
       // guarantees that all errors are converted to SecurityError
       // Just verify we got an error with a descriptive message
@@ -400,7 +400,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
       XCTFail("Expected encryption failure")
     }
 
-    let methodCalls = mockXPCService.methodCalls
+    let methodCalls=mockXPCService.methodCalls
     XCTAssertTrue(methodCalls.contains("encrypt"))
   }
 
@@ -408,37 +408,37 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testDecrypt() async throws {
     // Arrange
-    let encryptedData = SecureBytes([100, 110, 120, 130, 140])
-    let key = SecureBytes([10, 20, 30, 40, 50])
-    mockXPCService.decryptedDataToReturn = Data([1, 2, 3, 4, 5])
+    let encryptedData=SecureBytes([100, 110, 120, 130, 140])
+    let key=SecureBytes([10, 20, 30, 40, 50])
+    mockXPCService.decryptedDataToReturn=Data([1, 2, 3, 4, 5])
 
     // Act
-    let result = await adapter.decrypt(data: encryptedData, using: key)
+    let result=await adapter.decrypt(data: encryptedData, using: key)
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(decryptedData) = result {
+    if case let .success(decryptedData)=result {
       XCTAssertEqual(decryptedData.bytes(), [1, 2, 3, 4, 5])
     } else {
       XCTFail("Expected successful decryption")
     }
 
-    let methodCalls = mockXPCService.methodCalls
+    let methodCalls=mockXPCService.methodCalls
     XCTAssertTrue(methodCalls.contains("decrypt"))
   }
 
   func testDecryptFailure() async throws {
     // Arrange
-    let encryptedData = SecureBytes([100, 110, 120, 130, 140])
-    let key = SecureBytes([10, 20, 30, 40, 50])
-    mockXPCService.shouldFail = true
+    let encryptedData=SecureBytes([100, 110, 120, 130, 140])
+    let key=SecureBytes([10, 20, 30, 40, 50])
+    mockXPCService.shouldFail=true
 
     // Act
-    let result = await adapter.decrypt(data: encryptedData, using: key)
+    let result=await adapter.decrypt(data: encryptedData, using: key)
 
     // Assert
     XCTAssertTrue(result.isFailure)
-    if case let .failure(error) = result {
+    if case let .failure(error)=result {
       // We don't need to test the error type since CryptoServiceAdapter.mapError
       // guarantees that all errors are converted to SecurityError
       // Just verify we got an error with a descriptive message
@@ -447,7 +447,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
       XCTFail("Expected decryption failure")
     }
 
-    let methodCalls = mockXPCService.methodCalls
+    let methodCalls=mockXPCService.methodCalls
     XCTAssertTrue(methodCalls.contains("decrypt"))
   }
 
@@ -455,33 +455,33 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testGenerateKey() async throws {
     // Arrange
-    mockXPCService.keyDataToReturn = Data([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+    mockXPCService.keyDataToReturn=Data([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
 
     // Act
-    let result = await adapter.generateKey()
+    let result=await adapter.generateKey()
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(key) = result {
+    if case let .success(key)=result {
       XCTAssertEqual(key.bytes(), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
     } else {
       XCTFail("Expected successful key generation")
     }
 
-    let methodCalls = mockXPCService.methodCalls
+    let methodCalls=mockXPCService.methodCalls
     XCTAssertTrue(methodCalls.contains("generateKey"))
   }
 
   func testGenerateKeyFailure() async throws {
     // Arrange
-    mockXPCService.shouldFail = true
+    mockXPCService.shouldFail=true
 
     // Act
-    let result = await adapter.generateKey()
+    let result=await adapter.generateKey()
 
     // Assert
     XCTAssertTrue(result.isFailure)
-    if case let .failure(error) = result {
+    if case let .failure(error)=result {
       // We don't need to test the error type since CryptoServiceAdapter.mapError
       // guarantees that all errors are converted to SecurityError
       // Just verify we got an error with a descriptive message
@@ -490,7 +490,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
       XCTFail("Expected key generation failure")
     }
 
-    let methodCalls = mockXPCService.methodCalls
+    let methodCalls=mockXPCService.methodCalls
     XCTAssertTrue(methodCalls.contains("generateKey"))
   }
 
@@ -498,12 +498,12 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testHashingWithSimpleDataFails() async {
     // Arrange
-    mockXPCService.shouldFail = true
-    let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
-    let inputData = "test data".data(using: .utf8)!
+    mockXPCService.shouldFail=true
+    let adapter=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    let inputData="test data".data(using: .utf8)!
 
     // Act
-    let result = await adapter.hash(
+    let result=await adapter.hash(
       data: inputData,
       algorithm: "SHA-256",
       options: [:]
@@ -517,13 +517,13 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testHashingWithSimpleDataSucceeds() async {
     // Arrange
-    mockXPCService.shouldFail = false
-    mockXPCService.hashDataToReturn = "mocked hash".data(using: .utf8)!
-    let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
-    let inputData = "test data".data(using: .utf8)!
+    mockXPCService.shouldFail=false
+    mockXPCService.hashDataToReturn="mocked hash".data(using: .utf8)!
+    let adapter=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    let inputData="test data".data(using: .utf8)!
 
     // Act
-    let result = await adapter.hash(
+    let result=await adapter.hash(
       data: inputData,
       algorithm: "SHA-256",
       options: [:]
@@ -536,14 +536,14 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testVerificationReturnsFalseWhenServiceShouldFail() async {
     // Arrange
-    mockXPCService.shouldFail = true
-    mockXPCService.verificationResult = true // This should be overridden by shouldFail
-    let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
-    let data = "test data".data(using: .utf8)!
-    let hash = "hash".data(using: .utf8)!
+    mockXPCService.shouldFail=true
+    mockXPCService.verificationResult=true // This should be overridden by shouldFail
+    let adapter=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    let data="test data".data(using: .utf8)!
+    let hash="hash".data(using: .utf8)!
 
     // Act
-    let result = await adapter.verify(data: data, against: hash)
+    let result=await adapter.verify(data: data, against: hash)
 
     // Assert
     XCTAssertFalse(result)
@@ -551,14 +551,14 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testVerificationReturnsResultFromService() async {
     // Arrange
-    mockXPCService.shouldFail = false
-    mockXPCService.verificationResult = true
-    let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
-    let data = "test data".data(using: .utf8)!
-    let hash = "hash".data(using: .utf8)!
+    mockXPCService.shouldFail=false
+    mockXPCService.verificationResult=true
+    let adapter=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    let data="test data".data(using: .utf8)!
+    let hash="hash".data(using: .utf8)!
 
     // Act
-    let result = await adapter.verify(data: data, against: hash)
+    let result=await adapter.verify(data: data, against: hash)
 
     // Assert
     XCTAssertTrue(result)
@@ -568,13 +568,13 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testSymmetricEncryption() async {
     // Arrange
-    let plaintext = "test data".data(using: .utf8)!
-    let key = Data(repeating: 0, count: 32)
-    mockXPCService.encryptedDataToReturn = "encrypted".data(using: .utf8)!
-    let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    let plaintext="test data".data(using: .utf8)!
+    let key=Data(repeating: 0, count: 32)
+    mockXPCService.encryptedDataToReturn="encrypted".data(using: .utf8)!
+    let adapter=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
 
     // Act
-    let result = await adapter.encryptSymmetric(
+    let result=await adapter.encryptSymmetric(
       data: plaintext,
       key: key,
       algorithm: "AES-GCM",
@@ -591,13 +591,13 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testSymmetricDecryption() async {
     // Arrange
-    let ciphertext = "encrypted".data(using: .utf8)!
-    let key = Data(repeating: 0, count: 32)
-    mockXPCService.decryptedDataToReturn = "test data".data(using: .utf8)!
-    let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    let ciphertext="encrypted".data(using: .utf8)!
+    let key=Data(repeating: 0, count: 32)
+    mockXPCService.decryptedDataToReturn="test data".data(using: .utf8)!
+    let adapter=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
 
     // Act
-    let result = await adapter.decryptSymmetric(
+    let result=await adapter.decryptSymmetric(
       data: ciphertext,
       key: key,
       algorithm: "AES-GCM",
@@ -614,17 +614,17 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testAsymmetricEncryption() async {
     // Arrange
-    let plaintext = "test data".data(using: .utf8)!
-    let publicKey = Data(repeating: 1, count: 128)
-    mockXPCService.encryptedDataToReturn = "encrypted".data(using: .utf8)!
-    let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    let plaintext="test data".data(using: .utf8)!
+    let publicKey=Data(repeating: 1, count: 128)
+    mockXPCService.encryptedDataToReturn="encrypted".data(using: .utf8)!
+    let adapter=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
 
     // Act
-    let result = await adapter.encryptAsymmetric(
+    let result=await adapter.encryptAsymmetric(
       data: plaintext,
       publicKey: publicKey,
       algorithm: "RSA",
-      keySizeInBits: 2_048,
+      keySizeInBits: 2048,
       options: [:]
     )
 
@@ -635,17 +635,17 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testAsymmetricDecryption() async {
     // Arrange
-    let ciphertext = "encrypted".data(using: .utf8)!
-    let privateKey = Data(repeating: 2, count: 256)
-    mockXPCService.decryptedDataToReturn = "test data".data(using: .utf8)!
-    let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+    let ciphertext="encrypted".data(using: .utf8)!
+    let privateKey=Data(repeating: 2, count: 256)
+    mockXPCService.decryptedDataToReturn="test data".data(using: .utf8)!
+    let adapter=MockCryptoServiceAdapter(mockXPCService: mockXPCService)
 
     // Act
-    let result = await adapter.decryptAsymmetric(
+    let result=await adapter.decryptAsymmetric(
       data: ciphertext,
       privateKey: privateKey,
       algorithm: "RSA",
-      keySizeInBits: 2_048,
+      keySizeInBits: 2048,
       options: [:]
     )
 
@@ -658,61 +658,61 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testGenerateRandomData() async throws {
     // Arrange
-    let expectedLength = 32
-    let expectedData = Data(repeating: 42, count: expectedLength)
-    mockXPCService.randomDataToReturn = expectedData
+    let expectedLength=32
+    let expectedData=Data(repeating: 42, count: expectedLength)
+    mockXPCService.randomDataToReturn=expectedData
 
     // Act
-    let result = await adapter.generateRandomData(length: expectedLength)
+    let result=await adapter.generateRandomData(length: expectedLength)
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(randomData) = result {
+    if case let .success(randomData)=result {
       XCTAssertEqual(randomData.count, expectedLength)
       XCTAssertEqual(randomData.bytes(), [UInt8](repeating: 42, count: expectedLength))
     } else {
       XCTFail("Expected successful random data generation")
     }
 
-    let methodCalls = mockXPCService.methodCalls
+    let methodCalls=mockXPCService.methodCalls
     XCTAssertTrue(methodCalls.contains("generateRandomData(\(expectedLength))"))
   }
 
   func testGenerateRandomDataFailure() async throws {
     // Arrange
-    let requestedLength = 64
-    mockXPCService.shouldFail = true
+    let requestedLength=64
+    mockXPCService.shouldFail=true
 
     // Act
-    let result = await adapter.generateRandomData(length: requestedLength)
+    let result=await adapter.generateRandomData(length: requestedLength)
 
     // Assert
     XCTAssertTrue(result.isFailure)
-    if case let .failure(error) = result {
+    if case let .failure(error)=result {
       XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
     } else {
       XCTFail("Expected random data generation failure")
     }
 
-    let methodCalls = mockXPCService.methodCalls
+    let methodCalls=mockXPCService.methodCalls
     XCTAssertTrue(methodCalls.contains("generateRandomData(\(requestedLength))"))
   }
 
   func testGenerateRandomDataDefaultGeneration() async throws {
     // Arrange
-    let requestedLength = 16
-    mockXPCService.randomDataToReturn = nil // Force default generation
+    let requestedLength=16
+    mockXPCService.randomDataToReturn=nil // Force default generation
 
     // Act
-    let result = await adapter.generateRandomData(length: requestedLength)
+    let result=await adapter.generateRandomData(length: requestedLength)
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(randomData) = result {
+    if case let .success(randomData)=result {
       XCTAssertEqual(randomData.count, requestedLength)
 
       // Default generation should produce sequential bytes
-      let expectedBytes = (0..<requestedLength).map { UInt8($0 % 256) }
+      let expectedBytes=(0..<requestedLength).map { UInt8($0 % 256) }
       XCTAssertEqual(randomData.bytes(), expectedBytes)
     } else {
       XCTFail("Expected successful random data generation")

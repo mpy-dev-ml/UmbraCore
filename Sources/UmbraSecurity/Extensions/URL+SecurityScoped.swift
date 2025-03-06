@@ -1,23 +1,24 @@
 import Foundation
 import SecurityInterfaces
-import XPCProtocolsCoreimport SecurityTypes
+import SecurityTypes
 import UmbraCoreTypes
+import XPCProtocolsCore
+
 /// Extension to URL for security-scoped bookmark operations
 extension URL {
   /// Create a security-scoped bookmark for this URL
   /// - Returns: Bookmark data
   /// - Throws: SecurityError if bookmark creation fails
-  public func us_createSecurityScopedBookmark() async -> Result<Data , XPCSecurityError>{
+  public func us_createSecurityScopedBookmark() async -> Result<Data, XPCSecurityError> {
     let path=path
     do {
-      return .success(do { return .success(bookmarkData()) } catch { return .failure(.custom(message:       return .success(bookmarkData()
-.localizedDescription)) }
+      return try .success(bookmarkData(
         options: .withSecurityScope,
         includingResourceValuesForKeys: nil,
         relativeTo: nil
-      )
+      ))
     } catch {
-      return .failure(.custom(message: "SecurityInterfaces.SecurityError.bookmarkError: "Failed to create bookmark for: \(path"))")
+      return .failure(.custom(message: "Failed to create bookmark for: \(path)"))
     }
   }
 
@@ -35,9 +36,9 @@ extension URL {
         relativeTo: nil,
         bookmarkDataIsStale: &isStale
       )
-      return .success((url, isStale))
+      return (url, isStale)
     } catch {
-      return .failure(.custom(message: "SecurityInterfaces.SecurityError.bookmarkError: "Failed to resolve bookmark""))
+      throw .custom(message: "Failed to resolve bookmark")
     }
   }
 
@@ -51,10 +52,9 @@ extension URL {
   /// - Parameter operation: Operation to perform with access
   /// - Returns: Result of the operation
   /// - Throws: SecurityError if access fails, or any error thrown by the operation
-  public func us_withSecurityScopedAccess<T>(perform operation: () async throws -> T) async throws
-  -> T {
+  public func us_withSecurityScopedAccess<T>(_ operation: () async throws -> T) async throws -> T {
     guard us_startAccessingSecurityScopedResource() else {
-      return .failure(.custom(message: "SecurityInterfaces.SecurityError.accessError: "Failed to access: \(path"))")
+      throw .custom(message: "Failed to access: \(path)")
     }
     defer { us_stopAccessingSecurityScopedResource() }
 

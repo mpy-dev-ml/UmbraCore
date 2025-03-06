@@ -40,14 +40,14 @@ class MockXPCConnection: NSXPCConnection {
   private var _interface: NSXPCInterface?
 
   init(mockService: MockFoundationXPCSecurityService) {
-    self.mockService = mockService
+    self.mockService=mockService
     super.init()
   }
 
   // Override the remoteObjectInterface property
   override var remoteObjectInterface: NSXPCInterface? {
     get { _interface }
-    set { _interface = newValue }
+    set { _interface=newValue }
   }
 
   // Override the remoteObjectProxy property
@@ -92,20 +92,20 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   override func setUp() {
     super.setUp()
-    mockService = MockFoundationXPCSecurityService()
+    mockService=MockFoundationXPCSecurityService()
 
     // Use try/catch to handle potential initialization errors
     do {
-      let connection = MockXPCConnection(mockService: mockService)
-      adapter = XPCServiceAdapter(connection: connection)
+      let connection=MockXPCConnection(mockService: mockService)
+      adapter=XPCServiceAdapter(connection: connection)
     } catch {
       XCTFail("Failed to initialize XPCServiceAdapter: \(error)")
     }
   }
 
   override func tearDown() {
-    adapter = nil
-    mockService = nil
+    adapter=nil
+    mockService=nil
     super.tearDown()
   }
 
@@ -118,7 +118,7 @@ final class XPCServiceAdapterTests: XCTestCase {
     }
 
     // Act
-    let cryptoService = adapter.createCryptoService()
+    let cryptoService=adapter.createCryptoService()
 
     // Assert
     XCTAssertNotNil(cryptoService)
@@ -136,7 +136,7 @@ final class XPCServiceAdapterTests: XCTestCase {
     }
 
     // Act
-    let keyManagement = adapter.createKeyManagement()
+    let keyManagement=adapter.createKeyManagement()
 
     // Assert
     XCTAssertNotNil(keyManagement)
@@ -151,12 +151,12 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testCreateCryptoServiceWithConnectionError() async {
     // Arrange: We're injecting a connection that will cause errors
-    let errorConnection = ErrorConnection()
-    let errorAdapter = XPCServiceAdapter(connection: errorConnection)
+    let errorConnection=ErrorConnection()
+    let errorAdapter=XPCServiceAdapter(connection: errorConnection)
 
     // Act: Create crypto service
     // This should not throw but will likely return an adapter that will fail when used
-    let cryptoService = errorAdapter.createCryptoService()
+    let cryptoService=errorAdapter.createCryptoService()
 
     // Assert: The service should be created but will fail when used
     XCTAssertNotNil(cryptoService)
@@ -165,12 +165,12 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testCreateKeyManagementWithConnectionError() async {
     // Arrange: We're injecting a connection that will cause errors
-    let errorConnection = ErrorConnection()
-    let errorAdapter = XPCServiceAdapter(connection: errorConnection)
+    let errorConnection=ErrorConnection()
+    let errorAdapter=XPCServiceAdapter(connection: errorConnection)
 
     // Act: Create key management service
     // This should not throw but will likely return an adapter that will fail when used
-    let keyManagement = errorAdapter.createKeyManagement()
+    let keyManagement=errorAdapter.createKeyManagement()
 
     // Assert: The service should be created but will fail when used
     XCTAssertNotNil(keyManagement)
@@ -181,15 +181,15 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testKeyManagementListKeys() async {
     // Arrange
-    let keyManagement = adapter.createKeyManagement()
-    mockService.keyListResponse = ["key1", "key2", "key3"]
+    let keyManagement=adapter.createKeyManagement()
+    mockService.keyListResponse=["key1", "key2", "key3"]
 
     // Act
-    let result = await keyManagement.listKeyIdentifiers()
+    let result=await keyManagement.listKeyIdentifiers()
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(keys) = result {
+    if case let .success(keys)=result {
       XCTAssertEqual(keys.count, 3)
       XCTAssertEqual(keys, ["key1", "key2", "key3"])
     } else {
@@ -199,15 +199,15 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testKeyManagementListKeysEmpty() async {
     // Arrange
-    let keyManagement = adapter.createKeyManagement()
-    mockService.keyListResponse = []
+    let keyManagement=adapter.createKeyManagement()
+    mockService.keyListResponse=[]
 
     // Act
-    let result = await keyManagement.listKeyIdentifiers()
+    let result=await keyManagement.listKeyIdentifiers()
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(keys) = result {
+    if case let .success(keys)=result {
       XCTAssertEqual(keys.count, 0)
     } else {
       XCTFail("Expected success result with empty keys")
@@ -216,11 +216,11 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testKeyManagementListKeysFailure() async {
     // Arrange
-    let keyManagement = adapter.createKeyManagement()
-    mockService.shouldFail = true
+    let keyManagement=adapter.createKeyManagement()
+    mockService.shouldFail=true
 
     // Act
-    let result = await keyManagement.listKeyIdentifiers()
+    let result=await keyManagement.listKeyIdentifiers()
 
     // Assert
     switch result {
@@ -233,17 +233,17 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testKeyManagementRetrieveKey() async {
     // Arrange
-    let keyManagement = adapter.createKeyManagement()
-    let keyIdentifier = "test-key-1"
-    let expectedKeyData = Data([UInt8](keyIdentifier.utf8) + [0, 1, 2, 3, 4])
-    mockService.keyDataToReturn = expectedKeyData
+    let keyManagement=adapter.createKeyManagement()
+    let keyIdentifier="test-key-1"
+    let expectedKeyData=Data([UInt8](keyIdentifier.utf8) + [0, 1, 2, 3, 4])
+    mockService.keyDataToReturn=expectedKeyData
 
     // Act
-    let result = await keyManagement.retrieveKey(withIdentifier: keyIdentifier)
+    let result=await keyManagement.retrieveKey(withIdentifier: keyIdentifier)
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(key) = result {
+    if case let .success(key)=result {
       XCTAssertEqual(key.bytes(), [UInt8](keyIdentifier.utf8) + [0, 1, 2, 3, 4])
     } else {
       XCTFail("Expected successful key retrieval")
@@ -252,16 +252,16 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testKeyManagementRetrieveKeyFailure() async {
     // Arrange
-    let keyManagement = adapter.createKeyManagement()
-    let keyIdentifier = "non-existent-key"
-    mockService.shouldFail = true
+    let keyManagement=adapter.createKeyManagement()
+    let keyIdentifier="non-existent-key"
+    mockService.shouldFail=true
 
     // Act
-    let result = await keyManagement.retrieveKey(withIdentifier: keyIdentifier)
+    let result=await keyManagement.retrieveKey(withIdentifier: keyIdentifier)
 
     // Assert
     XCTAssertTrue(result.isFailure)
-    if case let .failure(error) = result {
+    if case let .failure(error)=result {
       XCTAssertEqual(
         error.localizedDescription.contains("not found") || error.localizedDescription
           .contains("Key not found"),
@@ -274,16 +274,16 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testKeyManagementStoreKey() async {
     // Arrange
-    let keyManagement = adapter.createKeyManagement()
-    let keyIdentifier = "new-test-key"
-    let keyToStore = SecureBytes([1, 2, 3, 4, 5])
+    let keyManagement=adapter.createKeyManagement()
+    let keyIdentifier="new-test-key"
+    let keyToStore=SecureBytes([1, 2, 3, 4, 5])
 
     // Act
-    let result = await keyManagement.storeKey(keyToStore, withIdentifier: keyIdentifier)
+    let result=await keyManagement.storeKey(keyToStore, withIdentifier: keyIdentifier)
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case .success = result {
+    if case .success=result {
       // Test passed
     } else {
       XCTFail("Expected store key success")
@@ -292,16 +292,16 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testKeyManagementStoreKeyFailure() async {
     // Arrange
-    let keyManagement = adapter.createKeyManagement()
-    let keyIdentifier = "fail-key"
-    let keyToStore = SecureBytes([1, 2, 3, 4, 5])
-    mockService.shouldFail = true
+    let keyManagement=adapter.createKeyManagement()
+    let keyIdentifier="fail-key"
+    let keyToStore=SecureBytes([1, 2, 3, 4, 5])
+    mockService.shouldFail=true
 
     // Act
-    let result = await keyManagement.storeKey(keyToStore, withIdentifier: keyIdentifier)
+    let result=await keyManagement.storeKey(keyToStore, withIdentifier: keyIdentifier)
 
     // Assert
-    if case let .failure(error) = result {
+    if case let .failure(error)=result {
       XCTAssertTrue(
         error.localizedDescription.contains("Failed") || error.localizedDescription
           .contains("failed")
@@ -313,15 +313,15 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testKeyManagementDeleteKey() async {
     // Arrange
-    let keyManagement = adapter.createKeyManagement()
-    let keyIdentifier = "delete-test-key"
+    let keyManagement=adapter.createKeyManagement()
+    let keyIdentifier="delete-test-key"
 
     // Act
-    let result = await keyManagement.deleteKey(withIdentifier: keyIdentifier)
+    let result=await keyManagement.deleteKey(withIdentifier: keyIdentifier)
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case .success = result {
+    if case .success=result {
       // Test passed
     } else {
       XCTFail("Expected delete key success")
@@ -330,15 +330,15 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testKeyManagementDeleteKeyFailure() async {
     // Arrange
-    let keyManagement = adapter.createKeyManagement()
-    let keyIdentifier = "protected-key"
-    mockService.shouldFail = true
+    let keyManagement=adapter.createKeyManagement()
+    let keyIdentifier="protected-key"
+    mockService.shouldFail=true
 
     // Act
-    let result = await keyManagement.deleteKey(withIdentifier: keyIdentifier)
+    let result=await keyManagement.deleteKey(withIdentifier: keyIdentifier)
 
     // Assert
-    if case let .failure(error) = result {
+    if case let .failure(error)=result {
       XCTAssertTrue(
         error.localizedDescription.contains("Cannot") || error.localizedDescription
           .contains("cannot")
@@ -352,12 +352,12 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testCryptoServiceSymmetricEncryption() async {
     // Arrange
-    let cryptoService = adapter.createCryptoService()
-    let inputData = SecureBytes([1, 2, 3, 4, 5])
-    let key = SecureBytes([10, 20, 30, 40, 50])
+    let cryptoService=adapter.createCryptoService()
+    let inputData=SecureBytes([1, 2, 3, 4, 5])
+    let key=SecureBytes([10, 20, 30, 40, 50])
 
     // Act
-    let result = await cryptoService.encryptSymmetric(
+    let result=await cryptoService.encryptSymmetric(
       data: inputData,
       key: key,
       config: SecurityConfigDTO(
@@ -376,12 +376,12 @@ final class XPCServiceAdapterTests: XCTestCase {
 
   func testCryptoServiceSymmetricDecryption() async {
     // Arrange
-    let cryptoService = adapter.createCryptoService()
-    let ciphertext = SecureBytes([10, 20, 1, 2, 3, 4, 5])
-    let key = SecureBytes([10, 20, 30, 40, 50])
+    let cryptoService=adapter.createCryptoService()
+    let ciphertext=SecureBytes([10, 20, 1, 2, 3, 4, 5])
+    let key=SecureBytes([10, 20, 30, 40, 50])
 
     // Act
-    let result = await cryptoService.decryptSymmetric(
+    let result=await cryptoService.decryptSymmetric(
       data: ciphertext,
       key: key,
       config: SecurityConfigDTO(

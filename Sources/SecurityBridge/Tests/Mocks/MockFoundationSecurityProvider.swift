@@ -9,8 +9,8 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
   // MARK: - Test Control Properties
 
   /// Track method calls for verification
-  private let methodCallsLock = NSLock()
-  private var _methodCalls: [String] = []
+  private let methodCallsLock=NSLock()
+  private var _methodCalls: [String]=[]
   var methodCalls: [String] {
     methodCallsLock.lock()
     defer { methodCallsLock.unlock() }
@@ -18,8 +18,8 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
   }
 
   /// When true, functions will fail with a test error
-  private let shouldFailLock = NSLock()
-  private var _shouldFail = false
+  private let shouldFailLock=NSLock()
+  private var _shouldFail=false
   var shouldFail: Bool {
     get {
       shouldFailLock.lock()
@@ -28,13 +28,13 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
     set {
       shouldFailLock.lock()
-      _shouldFail = newValue
+      _shouldFail=newValue
       shouldFailLock.unlock()
     }
   }
 
   /// Test error to return when shouldFail is true
-  var errorToReturn: Error = NSError(domain: "MockCryptoServiceError", code: 200, userInfo: [
+  var errorToReturn: Error=NSError(domain: "MockCryptoServiceError", code: 200, userInfo: [
     NSLocalizedDescriptionKey: "Mock crypto operation failed"
   ])
 
@@ -47,8 +47,8 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
   // MARK: - Initialization
 
   init() {
-    shouldFail = false
-    dataToReturn = Data(repeating: 0xCD, count: 32) // Default test data
+    shouldFail=false
+    dataToReturn=Data(repeating: 0xCD, count: 32) // Default test data
   }
 
   // MARK: - Tracking
@@ -107,14 +107,14 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
 
     // Return specific data if configured
-    if let randomData = randomDataToReturn {
+    if let randomData=randomDataToReturn {
       return .success(randomData)
     }
 
     // Default implementation: create a Data object filled with repeating pattern
-    var randomData = Data(count: length)
+    var randomData=Data(count: length)
     for i in 0..<randomData.count {
-      randomData[i] = UInt8(i % 256)
+      randomData[i]=UInt8(i % 256)
     }
     return .success(randomData)
   }
@@ -242,7 +242,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
 
     // Different hash lengths based on algorithm
-    let hashLength = switch algorithm.lowercased() {
+    let hashLength=switch algorithm.lowercased() {
       case "sha256":
         32
       case "sha512":
@@ -274,8 +274,8 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
   // MARK: - Test Control Properties
 
   /// Track method calls for verification
-  private let methodCallsLock = NSLock()
-  private var _methodCalls: [String] = []
+  private let methodCallsLock=NSLock()
+  private var _methodCalls: [String]=[]
   var methodCalls: [String] {
     methodCallsLock.lock()
     defer { methodCallsLock.unlock() }
@@ -283,8 +283,8 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
   }
 
   /// When true, functions will fail with a test error
-  private let shouldFailLock = NSLock()
-  private var _shouldFail = false
+  private let shouldFailLock=NSLock()
+  private var _shouldFail=false
   var shouldFail: Bool {
     get {
       shouldFailLock.lock()
@@ -293,17 +293,17 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
     }
     set {
       shouldFailLock.lock()
-      _shouldFail = newValue
+      _shouldFail=newValue
       shouldFailLock.unlock()
 
       // Also set shouldFail on child services
-      mockKeyManager.shouldFail = newValue
-      mockCryptoService.shouldFail = newValue
+      mockKeyManager.shouldFail=newValue
+      mockCryptoService.shouldFail=newValue
     }
   }
 
   /// Test error to return when shouldFail is true
-  var errorToReturn: Error = NSError(domain: "MockSecurityError", code: 100, userInfo: [
+  var errorToReturn: Error=NSError(domain: "MockSecurityError", code: 100, userInfo: [
     NSLocalizedDescriptionKey: "Mock security operation failed"
   ])
 
@@ -311,16 +311,16 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
   var dataToReturn: Data? {
     didSet {
       // Also update data on child services
-      mockCryptoService.dataToReturn = dataToReturn
-      mockKeyManager.keyDataToReturn = dataToReturn
+      mockCryptoService.dataToReturn=dataToReturn
+      mockKeyManager.keyDataToReturn=dataToReturn
     }
   }
 
   // MARK: - Initialization
 
   init() {
-    mockKeyManager = MockFoundationKeyManagement()
-    mockCryptoService = MockFoundationCryptoService()
+    mockKeyManager=MockFoundationKeyManagement()
+    mockCryptoService=MockFoundationCryptoService()
   }
 
   // MARK: - Tracking
@@ -361,8 +361,8 @@ final class MockFoundationKeyManagement: FoundationKeyManagementImpl, @unchecked
   // MARK: - Test Control Properties
 
   /// Track method calls for verification
-  private let methodCallsLock = NSLock()
-  private var _methodCalls: [String] = []
+  private let methodCallsLock=NSLock()
+  private var _methodCalls: [String]=[]
   var methodCalls: [String] {
     methodCallsLock.lock()
     defer { methodCallsLock.unlock() }
@@ -370,8 +370,8 @@ final class MockFoundationKeyManagement: FoundationKeyManagementImpl, @unchecked
   }
 
   /// When true, functions will fail with a test error
-  private let shouldFailLock = NSLock()
-  private var _shouldFail = false
+  private let shouldFailLock=NSLock()
+  private var _shouldFail=false
   var shouldFail: Bool {
     get {
       shouldFailLock.lock()
@@ -380,13 +380,13 @@ final class MockFoundationKeyManagement: FoundationKeyManagementImpl, @unchecked
     }
     set {
       shouldFailLock.lock()
-      _shouldFail = newValue
+      _shouldFail=newValue
       shouldFailLock.unlock()
     }
   }
 
   /// Test error to return when shouldFail is true
-  var errorToReturn: Error = NSError(domain: "MockKeyManagementError", code: 100, userInfo: [
+  var errorToReturn: Error=NSError(domain: "MockKeyManagementError", code: 100, userInfo: [
     NSLocalizedDescriptionKey: "Mock key management operation failed"
   ])
 
@@ -396,8 +396,8 @@ final class MockFoundationKeyManagement: FoundationKeyManagementImpl, @unchecked
   // MARK: - Initialization
 
   init() {
-    shouldFail = false
-    keyDataToReturn = Data(repeating: 0xAB, count: 32) // Default test key
+    shouldFail=false
+    keyDataToReturn=Data(repeating: 0xAB, count: 32) // Default test key
   }
 
   // MARK: - Tracking

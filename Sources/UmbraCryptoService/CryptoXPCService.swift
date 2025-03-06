@@ -13,8 +13,8 @@ import XPCProtocolsCore
 /// Extension to generate random data using SecRandomCopyBytes
 extension Data {
   static func random(count: Int) -> Data {
-    var bytes = [UInt8](repeating: 0, count: count)
-    _ = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
+    var bytes=[UInt8](repeating: 0, count: count)
+    _=SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
     return Data(bytes)
   }
 }
@@ -37,7 +37,7 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
   private let dependencies: CryptoXPCServiceDependencies
 
   /// Queue for cryptographic operations
-  private let cryptoQueue = DispatchQueue(label: "com.umbracore.crypto", qos: .userInitiated)
+  private let cryptoQueue=DispatchQueue(label: "com.umbracore.crypto", qos: .userInitiated)
 
   /// XPC connection for the service
   var connection: NSXPCConnection?
@@ -50,7 +50,7 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
   /// Initialize the crypto service with dependencies
   /// - Parameter dependencies: Dependencies required by the service
   public init(dependencies: CryptoXPCServiceDependencies) {
-    self.dependencies = dependencies
+    self.dependencies=dependencies
     super.init()
   }
 
@@ -60,7 +60,10 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
   }
 
   /// Implementation of synchronizeKeys from XPCServiceProtocolBasic
-  public func synchronizeKeys(_ data: UmbraCoreTypes.SecureBytes) async -> Result<Void, XPCSecurityError> {
+  public func synchronizeKeys(
+    _ data: UmbraCoreTypes
+      .SecureBytes
+  ) async -> Result<Void, XPCSecurityError> {
     guard !data.isEmpty else {
       return .failure(.invalidInput)
     }
@@ -80,16 +83,16 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
         cryptoQueue.async {
           do {
             // Generate random IV
-            let iv = Data.random(count: 12)
+            let iv=Data.random(count: 12)
 
             // Create AES-GCM
-            let aes = try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
+            let aes=try AES(key: key.bytes, blockMode: GCM(iv: iv.bytes))
 
             // Encrypt
-            let encrypted = try aes.encrypt(data.bytes)
+            let encrypted=try aes.encrypt(data.bytes)
 
             // Combine IV and ciphertext
-            var result = Data()
+            var result=Data()
             result.append(iv)
             result.append(Data(encrypted))
 
@@ -117,14 +120,14 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
         cryptoQueue.async {
           do {
             // Extract IV and ciphertext
-            let iv = data.prefix(12)
-            let ciphertext = data.dropFirst(12)
+            let iv=data.prefix(12)
+            let ciphertext=data.dropFirst(12)
 
             // Create AES-GCM
-            let aes = try AES(key: key.bytes, blockMode: GCM(iv: [UInt8](iv)))
+            let aes=try AES(key: key.bytes, blockMode: GCM(iv: [UInt8](iv)))
 
             // Decrypt
-            let decrypted = try aes.decrypt([UInt8](ciphertext))
+            let decrypted=try aes.decrypt([UInt8](ciphertext))
 
             continuation.resume(returning: .success(Data(decrypted)))
           } catch {
@@ -150,10 +153,10 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
       }
 
       // Convert bits to bytes
-      let keyLength = bits / 8
+      let keyLength=bits / 8
 
       // Generate random key
-      let key = Data.random(count: keyLength)
+      let key=Data.random(count: keyLength)
       return .success(key)
     } catch {
       return .failure(.serviceFailed)
@@ -173,7 +176,7 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
       }
 
       // Generate random data
-      let randomData = Data.random(count: length)
+      let randomData=Data.random(count: length)
       return .success(randomData)
     } catch {
       return .failure(.serviceFailed)
@@ -185,7 +188,10 @@ public final class CryptoXPCService: NSObject, ModernCryptoXPCServiceProtocol {
   ///   - credential: Credential to store
   ///   - identifier: Unique identifier for the credential
   /// - Returns: Success or error
-  public func storeSecurely(_ credential: Data, identifier: String) async -> Result<Void, XPCSecurityError> {
+  public func storeSecurely(
+    _ credential: Data,
+    identifier: String
+  ) async -> Result<Void, XPCSecurityError> {
     do {
       try Task.checkCancellation()
 
