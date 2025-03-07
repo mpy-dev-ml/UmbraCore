@@ -1,8 +1,10 @@
-/// Error Handling Protocol
-/// Defines the public interface for error handling operations.
-public protocol ErrorHandlingProtocol {
-  // Protocol will be implemented
-}
+// UmbraError.swift
+// Core protocol definitions for the UmbraCore error handling system
+//
+// Copyright © 2025 UmbraCorp. All rights reserved.
+
+import Foundation
+import OSLog
 
 /// A protocol that all UmbraCore errors must conform to.
 /// This provides a consistent interface for error handling across the codebase.
@@ -49,7 +51,7 @@ public extension UmbraError {
     
     /// Default implementation returns an empty context
     var context: ErrorContext {
-        return ErrorContext(source: domain, message: errorDescription)
+        return ErrorContext()
     }
     
     /// Default implementation returns nil
@@ -73,5 +75,27 @@ public protocol DomainError: UmbraError {
 public extension DomainError {
     var domain: String {
         return Self.domain
+    }
+}
+
+/// Logger for the UmbraErrors system
+fileprivate let errorLogger = Logger(subsystem: "com.umbracorp.UmbraCore", category: "Errors")
+
+/// Extension to provide logging capabilities to UmbraError
+public extension UmbraError {
+    /// Logs this error with the appropriate log level
+    func log(level: OSLogType = .error, privacy: OSLogPrivacy = .public) {
+        switch level {
+        case .debug:
+            errorLogger.debug("\(self, privacy: privacy)")
+        case .info:
+            errorLogger.info("\(self, privacy: privacy)")
+        case .error:
+            errorLogger.error("\(self, privacy: privacy)")
+        case .fault:
+            errorLogger.fault("\(self, privacy: privacy)")
+        default:
+            errorLogger.log("\(self, privacy: privacy)")
+        }
     }
 }
