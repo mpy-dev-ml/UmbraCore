@@ -41,6 +41,40 @@ let error = GenericUmbraError(
 )
 ```
 
+### Concurrency Safety
+
+The error handling system is designed to be concurrency-safe, with proper actor isolation for UI-related components:
+
+```swift
+@MainActor
+public protocol ErrorNotificationProtocol {
+    func presentError<E: UmbraError>(_ error: E, recoveryOptions: [RecoveryOption]) async -> UUID?
+}
+```
+
+Key concurrency features:
+- `@MainActor` isolation for UI components
+- Asynchronous error presentation and recovery
+- Thread-safe error notifiers and handlers
+- `Sendable` conformance for error types and recovery options
+
+### Recovery Options
+
+Error recovery options now use UUID-based identification for improved type safety and uniqueness:
+
+```swift
+let retryOption = ErrorRecoveryOption(
+    id: UUID(), // Auto-generated if nil
+    title: "Retry Connection",
+    description: "Attempt to reconnect to the server",
+    successLikelihood: .possible,
+    isDisruptive: false,
+    recoveryAction: { @Sendable in
+        try await networkService.reconnect()
+    }
+)
+```
+
 ## Usage Examples
 
 ### Basic Error Handling
@@ -67,29 +101,37 @@ let securityError = SecurityError.authenticationFailed("Invalid credentials")
 SecurityErrorHandler.shared.handleSecurityError(securityError)
 ```
 
-### Error Recovery
+### Error Recovery with Async/Await
 
 ```swift
 import ErrorHandling
 import ErrorHandlingRecovery
 
 // Create recovery options for an error
-let recoveryOptions = RecoveryOptions.retryCancel(
-    title: "Connection Failed",
-    message: "Could not connect to the server. Would you like to retry?",
-    retryHandler: {
-        // Retry logic
-        print("Retrying connection...")
-    },
-    cancelHandler: {
-        // Cancel logic
-        print("Connection attempt cancelled")
-    }
-)
+let recoveryOptions = [
+    ErrorRecoveryOption(
+        title: "Retry Connection",
+        description: "Try connecting again",
+        successLikelihood: .possible,
+        recoveryAction: { @Sendable in
+            try await networkService.reconnect()
+        }
+    ),
+    ErrorRecoveryOption(
+        title: "Work Offline",
+        description: "Continue without connection",
+        successLikelihood: .likely,
+        recoveryAction: { @Sendable in
+            await appState.enableOfflineMode()
+        }
+    )
+]
 
 // Handle the error with recovery options
 let error = NetworkError.connectionFailed("Server unavailable")
-ErrorHandler.shared.handle(error, recoveryOptions: recoveryOptions)
+Task {
+    await ErrorHandler.shared.handle(error, recoveryOptions: recoveryOptions)
+}
 ```
 
 ### Custom Error Notification
@@ -107,8 +149,13 @@ let notification = ErrorNotification(
     recoveryOptions: recoveryOptions
 )
 
-// Present the notification
-notificationHandler.present(notification: notification)
+// Present the notification asynchronously
+Task {
+    let selectedOptionId = await notificationHandler.present(notification: notification)
+    if let id = selectedOptionId {
+        // Handle the selected recovery option
+    }
+}
 ```
 
 ### Structured Logging
@@ -199,50 +246,60 @@ SecurityErrorHandler.shared.handleSecurityError(anySecurityError)
    )
    ```
 
-2. **Use Domain Handlers**: Use domain-specific handlers for specialised error handling
+2. **Use Factory Methods**: Leverage the `ErrorFactory` for consistent error creation
    ```swift
-   SecurityErrorHandler.shared.handleSecurityError(securityError)
-   ```
-
-3. **Provide Recovery Options**: Where appropriate, give users a way to recover from errors
-   ```swift
-   let options = RecoveryOptions.factory.retryCancel(
-       retryHandler: { /* retry logic */ },
-       cancelHandler: { /* cancel logic */ }
+   let error = ErrorFactory.makeError(
+       SecurityError.authenticationFailed,
+       context: ErrorContext(source: "Authentication Service")
    )
    ```
 
-4. **Custom Error Types**: Implement `UmbraError` protocol for all custom error types
+3. **Consistent Recovery Options**: Define reusable recovery options for common error scenarios
    ```swift
-   extension YourCustomError: UmbraError {
-       var errorDomain: String { "YourDomain" }
-       var errorCode: String { "your_error_code" }
-       var errorDescription: String { "Your error description" }
-       var errorContext: ErrorContext? { /* your context */ }
+   // Maintain consistent recovery option IDs for analytics and testing
+   struct RecoveryOptionIDs {
+       static let retryAuthentication = UUID()
+       static let workOffline = UUID()
    }
    ```
 
-## Testing the Error Handling System
+4. **Actor Isolation**: Ensure UI-related error handlers use proper actor isolation
+   ```swift
+   @MainActor
+   func showErrorAlert(for error: UmbraError) async {
+       // UI code is safely executed on the main thread
+   }
+   ```
 
-The system includes comprehensive unit tests:
+5. **Explicit Module References**: When dealing with ambiguous types, use explicit module references
+   ```swift
+   // Avoid ambiguity with explicitly qualified types
+   func handleError(_ error: ErrorHandlingInterfaces.UmbraError) {
+       // ...
+   }
+   ```
 
-```swift
-// Run tests with:
-bazel test //Tests/ErrorHandlingTests
-```
+## Recent Improvements
 
-See `ErrorHandlingSystemTests.swift` for examples of testing error handling, recovery, and notification components.
+### 2025-03-07 Updates
+- Converted recovery option identifiers from String to UUID for improved type safety
+- Added @MainActor isolation to error notification services for thread safety 
+- Resolved type ambiguity issues with ErrorContext and other shared types
+- Fixed circular dependencies between error handling components
+- Enhanced error factory methods with proper parameter ordering
+- Improved documentation throughout the system
 
-## Migration Status
+## Contributing
 
-- [x] Core error handling protocols
-- [x] ErrorContext and ErrorSource models
-- [x] Security domain errors
-- [x] Error logging infrastructure
-- [x] Recovery options framework
-- [x] Error notification system
-- [x] Error mapping between different types
-- [x] Unit testing framework
-- [ ] Network domain errors
-- [ ] Storage domain errors
-- [ ] UI integration for error presentation
+When extending the error handling system, please follow these guidelines:
+
+1. Maintain actor isolation for UI components
+2. Ensure all error types conform to `UmbraError` and `Sendable`
+3. Use UUIDs for identification rather than strings
+4. Follow British spelling in user-facing text
+5. Add appropriate documentation for new error types and handlers
+6. Include tests that verify error recovery paths
+
+## License
+
+Copyright 2025 UmbraCorp. All rights reserved.

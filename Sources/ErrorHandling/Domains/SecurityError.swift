@@ -4,11 +4,11 @@
 // Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
+import ErrorHandlingInterfaces
 import ErrorHandlingCommon
 
 /// Domain-specific error type for security operations
-public enum SecurityError: Error, DomainError {
+public enum SecurityError: Error, UmbraError, CustomStringConvertible {
     // Authentication errors
     case authenticationFailed(String)
     case unauthorizedAccess(String)
@@ -49,7 +49,12 @@ public enum SecurityError: Error, DomainError {
     
     // MARK: - UmbraError Protocol
     
-    /// Error code based on the specific case
+    /// Domain identifier for this error
+    public var domain: String {
+        return SecurityError.domain
+    }
+    
+    /// Error code
     public var code: String {
         switch self {
         case .authenticationFailed: return "auth_failed"
@@ -74,6 +79,11 @@ public enum SecurityError: Error, DomainError {
         case .securityConfigurationError: return "security_configuration_error"
         case .unknown: return "unknown_security_error"
         }
+    }
+    
+    /// Human-readable description
+    public var description: String {
+        return "[\(domain).\(code)] \(errorDescription)"
     }
     
     /// Human-readable error description
@@ -103,25 +113,184 @@ public enum SecurityError: Error, DomainError {
         }
     }
     
-    /// Create a new instance with the given context
+    /// Source information for the error (optional)
+    public var source: ErrorHandlingCommon.ErrorSource? {
+        switch self {
+        case .authenticationFailed, .unauthorizedAccess, .invalidCredentials, .sessionExpired, .tokenExpired,
+             .encryptionFailed, .decryptionFailed, .signatureInvalid, .hashingFailed, .keyGenerationFailed,
+             .permissionDenied, .insufficientPrivileges, .accessRevoked, .certificateExpired, .certificateInvalid,
+             .certificateVerificationFailed, .certificateTrustFailed, .secureChannelFailed, .securityPolicyViolation,
+             .securityConfigurationError, .unknown:
+            return nil
+        }
+    }
+    
+    /// Underlying error that caused this error (optional)
+    public var underlyingError: Error? {
+        switch self {
+        case .authenticationFailed, .unauthorizedAccess, .invalidCredentials, .sessionExpired, .tokenExpired,
+             .encryptionFailed, .decryptionFailed, .signatureInvalid, .hashingFailed, .keyGenerationFailed,
+             .permissionDenied, .insufficientPrivileges, .accessRevoked, .certificateExpired, .certificateInvalid,
+             .certificateVerificationFailed, .certificateTrustFailed, .secureChannelFailed, .securityPolicyViolation,
+             .securityConfigurationError, .unknown:
+            return nil
+        }
+    }
+    
+    /// Context information about the error
+    public var context: ErrorHandlingCommon.ErrorContext {
+        switch self {
+        case .authenticationFailed, .unauthorizedAccess, .invalidCredentials, .sessionExpired, .tokenExpired,
+             .encryptionFailed, .decryptionFailed, .signatureInvalid, .hashingFailed, .keyGenerationFailed,
+             .permissionDenied, .insufficientPrivileges, .accessRevoked, .certificateExpired, .certificateInvalid,
+             .certificateVerificationFailed, .certificateTrustFailed, .secureChannelFailed, .securityPolicyViolation,
+             .securityConfigurationError, .unknown:
+            return ErrorHandlingCommon.ErrorContext(source: "SecurityError", operation: "security_operation")
+        }
+    }
+    
+    /// Create a new instance with updated context
     public func with(context: ErrorHandlingCommon.ErrorContext) -> SecurityError {
-        // Since we can't modify the enum case directly, we return self
-        // In practice, this would be used with a wrapper GenericUmbraError
-        return self
+        switch self {
+        case .authenticationFailed(let msg):
+            return .authenticationFailed(msg)
+        case .unauthorizedAccess(let msg):
+            return .unauthorizedAccess(msg)
+        case .invalidCredentials(let msg):
+            return .invalidCredentials(msg)
+        case .sessionExpired(let msg):
+            return .sessionExpired(msg)
+        case .tokenExpired(let msg):
+            return .tokenExpired(msg)
+        case .encryptionFailed(let msg):
+            return .encryptionFailed(msg)
+        case .decryptionFailed(let msg):
+            return .decryptionFailed(msg)
+        case .signatureInvalid(let msg):
+            return .signatureInvalid(msg)
+        case .hashingFailed(let msg):
+            return .hashingFailed(msg)
+        case .keyGenerationFailed(let msg):
+            return .keyGenerationFailed(msg)
+        case .permissionDenied(let msg):
+            return .permissionDenied(msg)
+        case .insufficientPrivileges(let msg):
+            return .insufficientPrivileges(msg)
+        case .accessRevoked(let msg):
+            return .accessRevoked(msg)
+        case .certificateExpired(let msg):
+            return .certificateExpired(msg)
+        case .certificateInvalid(let msg):
+            return .certificateInvalid(msg)
+        case .certificateVerificationFailed(let msg):
+            return .certificateVerificationFailed(msg)
+        case .certificateTrustFailed(let msg):
+            return .certificateTrustFailed(msg)
+        case .secureChannelFailed(let msg):
+            return .secureChannelFailed(msg)
+        case .securityPolicyViolation(let msg):
+            return .securityPolicyViolation(msg)
+        case .securityConfigurationError(let msg):
+            return .securityConfigurationError(msg)
+        case .unknown(let msg):
+            return .unknown(msg)
+        }
     }
     
-    /// Create a new instance with the given underlying error
+    /// Create a new instance with an underlying error
     public func with(underlyingError: Error) -> SecurityError {
-        // Since we can't modify the enum case directly, we return self
-        // In practice, this would be used with a wrapper GenericUmbraError
-        return self
+        switch self {
+        case .authenticationFailed(let msg):
+            return .authenticationFailed(msg)
+        case .unauthorizedAccess(let msg):
+            return .unauthorizedAccess(msg)
+        case .invalidCredentials(let msg):
+            return .invalidCredentials(msg)
+        case .sessionExpired(let msg):
+            return .sessionExpired(msg)
+        case .tokenExpired(let msg):
+            return .tokenExpired(msg)
+        case .encryptionFailed(let msg):
+            return .encryptionFailed(msg)
+        case .decryptionFailed(let msg):
+            return .decryptionFailed(msg)
+        case .signatureInvalid(let msg):
+            return .signatureInvalid(msg)
+        case .hashingFailed(let msg):
+            return .hashingFailed(msg)
+        case .keyGenerationFailed(let msg):
+            return .keyGenerationFailed(msg)
+        case .permissionDenied(let msg):
+            return .permissionDenied(msg)
+        case .insufficientPrivileges(let msg):
+            return .insufficientPrivileges(msg)
+        case .accessRevoked(let msg):
+            return .accessRevoked(msg)
+        case .certificateExpired(let msg):
+            return .certificateExpired(msg)
+        case .certificateInvalid(let msg):
+            return .certificateInvalid(msg)
+        case .certificateVerificationFailed(let msg):
+            return .certificateVerificationFailed(msg)
+        case .certificateTrustFailed(let msg):
+            return .certificateTrustFailed(msg)
+        case .secureChannelFailed(let msg):
+            return .secureChannelFailed(msg)
+        case .securityPolicyViolation(let msg):
+            return .securityPolicyViolation(msg)
+        case .securityConfigurationError(let msg):
+            return .securityConfigurationError(msg)
+        case .unknown(let msg):
+            return .unknown(msg)
+        }
     }
     
-    /// Create a new instance with the given source
+    /// Create a new instance with source information
     public func with(source: ErrorHandlingCommon.ErrorSource) -> SecurityError {
-        // Since we can't modify the enum case directly, we return self
-        // In practice, this would be used with a wrapper GenericUmbraError
-        return self
+        switch self {
+        case .authenticationFailed(let msg):
+            return .authenticationFailed(msg)
+        case .unauthorizedAccess(let msg):
+            return .unauthorizedAccess(msg)
+        case .invalidCredentials(let msg):
+            return .invalidCredentials(msg)
+        case .sessionExpired(let msg):
+            return .sessionExpired(msg)
+        case .tokenExpired(let msg):
+            return .tokenExpired(msg)
+        case .encryptionFailed(let msg):
+            return .encryptionFailed(msg)
+        case .decryptionFailed(let msg):
+            return .decryptionFailed(msg)
+        case .signatureInvalid(let msg):
+            return .signatureInvalid(msg)
+        case .hashingFailed(let msg):
+            return .hashingFailed(msg)
+        case .keyGenerationFailed(let msg):
+            return .keyGenerationFailed(msg)
+        case .permissionDenied(let msg):
+            return .permissionDenied(msg)
+        case .insufficientPrivileges(let msg):
+            return .insufficientPrivileges(msg)
+        case .accessRevoked(let msg):
+            return .accessRevoked(msg)
+        case .certificateExpired(let msg):
+            return .certificateExpired(msg)
+        case .certificateInvalid(let msg):
+            return .certificateInvalid(msg)
+        case .certificateVerificationFailed(let msg):
+            return .certificateVerificationFailed(msg)
+        case .certificateTrustFailed(let msg):
+            return .certificateTrustFailed(msg)
+        case .secureChannelFailed(let msg):
+            return .secureChannelFailed(msg)
+        case .securityPolicyViolation(let msg):
+            return .securityPolicyViolation(msg)
+        case .securityConfigurationError(let msg):
+            return .securityConfigurationError(msg)
+        case .unknown(let msg):
+            return .unknown(msg)
+        }
     }
 }
 
@@ -132,6 +301,8 @@ public extension SecurityError {
         if let securityError = error as? SecurityError {
             return securityError
         }
-        return .unknown("Wrapped error: \(error.localizedDescription)")
+        // Explicitly cast to NSError to avoid ambiguity with localizedDescription
+        let nsError = error as NSError
+        return SecurityError.unknown("Wrapped error: " + nsError.localizedDescription)
     }
 }

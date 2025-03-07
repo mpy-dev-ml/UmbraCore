@@ -1,11 +1,10 @@
 // ErrorNotification.swift
 // Notification management for errors with recovery options
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
-import ErrorHandlingRecovery
+import ErrorHandlingInterfaces
 
 /// Represents a notification about an error with optional recovery actions
 public struct ErrorNotification: Sendable, Identifiable {
@@ -25,25 +24,25 @@ public struct ErrorNotification: Sendable, Identifiable {
     public let severity: NotificationSeverity
     
     /// Optional recovery options for the error
-    public let recoveryOptions: RecoveryOptions?
+    public let recoveryOptions: [RecoveryOption]?
     
     /// Optional timestamp for when the notification was created
     public let timestamp: Date
     
-    /// Creates a new ErrorNotification instance
+    /// Initializes a new notification
     /// - Parameters:
     ///   - error: The error that triggered this notification
-    ///   - title: Human-readable title for the notification
-    ///   - message: Detailed message explaining the error
-    ///   - severity: Notification severity level
-    ///   - recoveryOptions: Optional recovery options for the error
-    ///   - timestamp: Optional timestamp for when the notification was created (defaults to now)
+    ///   - title: The title for the notification
+    ///   - message: The detailed message explaining the error
+    ///   - severity: The severity level (default: .error)
+    ///   - recoveryOptions: Optional recovery options
+    ///   - timestamp: Creation timestamp (default: current date)
     public init(
         error: Error,
         title: String,
         message: String,
-        severity: NotificationSeverity,
-        recoveryOptions: RecoveryOptions? = nil,
+        severity: NotificationSeverity = .error,
+        recoveryOptions: [RecoveryOption]? = nil,
         timestamp: Date = Date()
     ) {
         self.id = UUID()
@@ -57,90 +56,98 @@ public struct ErrorNotification: Sendable, Identifiable {
 }
 
 /// Severity levels for error notifications
-public enum NotificationSeverity: String, Sendable, Comparable, CaseIterable {
-    /// Informational notification, not an actual error
-    case info
+public enum NotificationSeverity: Int, Comparable, Sendable {
+    case info = 0
+    case warning = 1
+    case error = 2
+    case critical = 3
     
-    /// Minor issue that doesn't affect functionality
-    case low
-    
-    /// Issue that affects some functionality but the system can continue
-    case medium
-    
-    /// Serious issue that affects core functionality
-    case high
-    
-    /// Critical issue that requires immediate attention
-    case critical
-    
-    /// Compare severity levels
     public static func < (lhs: NotificationSeverity, rhs: NotificationSeverity) -> Bool {
-        let order: [NotificationSeverity] = [.info, .low, .medium, .high, .critical]
-        guard let lhsIndex = order.firstIndex(of: lhs),
-              let rhsIndex = order.firstIndex(of: rhs) else {
-            return false
-        }
-        return lhsIndex < rhsIndex
+        return lhs.rawValue < rhs.rawValue
     }
 }
 
-/// Protocol for error notification handlers
-public protocol ErrorNotificationHandler {
-    /// Present a notification to the user
+/// A notification manager for presenting errors to users
+public protocol ErrorNotificationManager: ErrorNotificationProtocol {
+    /// Presents a notification to the user
     /// - Parameter notification: The notification to present
-    func present(notification: ErrorNotification)
+    func presentNotification(_ notification: ErrorNotification) async
     
-    /// Dismiss a specific notification
+    /// Dismiss a notification
     /// - Parameter id: The ID of the notification to dismiss
-    func dismiss(notificationWithId id: UUID)
+    func dismissNotification(id: UUID) async
     
-    /// Dismiss all current notifications
-    func dismissAll()
+    /// Get all active notifications
+    /// - Returns: Array of active notifications
+    func activeNotifications() async -> [ErrorNotification]
 }
 
-/// Factory methods for creating error notifications
-public extension ErrorNotification {
-    /// Create a notification from an UmbraError
+/// Default implementation of ErrorNotificationProtocol
+@MainActor
+public final class DefaultErrorNotificationManager: ErrorNotificationManager {
+    /// The shared instance
+    public static let shared = DefaultErrorNotificationManager()
+    
+    /// Currently active notifications
+    private var notifications: [UUID: ErrorNotification] = [:]
+    
+    /// Private initializer to enforce singleton
+    private init() {}
+    
+    /// Presents an error to the user (non-async version to satisfy protocol requirement)
     /// - Parameters:
-    ///   - error: The UmbraError to create a notification for
-    ///   - severity: The severity level of the notification
-    ///   - recoveryOptions: Optional recovery options
-    /// - Returns: A new ErrorNotification instance
-    static func from(
-        umbraError: UmbraError,
-        severity: NotificationSeverity,
-        recoveryOptions: RecoveryOptions? = nil
-    ) -> ErrorNotification {
-        return ErrorNotification(
-            error: umbraError,
-            title: "[\(umbraError.domain)] \(umbraError.code)",
-            message: umbraError.errorDescription,
-            severity: severity,
-            recoveryOptions: recoveryOptions
-        )
+    ///   - error: The error to present
+    ///   - recoveryOptions: Recovery options to present
+    nonisolated public func presentError<E: UmbraError>(_ error: E, recoveryOptions: [RecoveryOption]) {
+        // Create a detached task to handle the async call
+        Task { @MainActor in
+            await presentError(error, recoveryOptions: recoveryOptions)
+        }
     }
     
-    /// Create a generic error notification
+    /// Presents an error to the user (async version)
     /// - Parameters:
-    ///   - error: Any error type
-    ///   - title: Human-readable title for the notification
-    ///   - message: Optional custom message (if nil, uses error.localizedDescription)
-    ///   - severity: The severity level of the notification
-    ///   - recoveryOptions: Optional recovery options
-    /// - Returns: A new ErrorNotification instance
-    static func generic(
-        error: Error,
-        title: String,
-        message: String? = nil,
-        severity: NotificationSeverity,
-        recoveryOptions: RecoveryOptions? = nil
-    ) -> ErrorNotification {
-        return ErrorNotification(
+    ///   - error: The error to present
+    ///   - recoveryOptions: Recovery options to present
+    public func presentError<E: UmbraError>(_ error: E, recoveryOptions: [RecoveryOption]) async {
+        let notification = ErrorNotification(
             error: error,
-            title: title,
-            message: message ?? error.localizedDescription,
-            severity: severity,
+            title: "Error: \(error.domain)",
+            message: error.localizedDescription,
+            severity: .error,
             recoveryOptions: recoveryOptions
         )
+        await presentNotification(notification)
+    }
+    
+    /// Presents a notification to the user
+    /// - Parameter notification: The notification to present
+    public func presentNotification(_ notification: ErrorNotification) async {
+        // Store the notification
+        notifications[notification.id] = notification
+        
+        // In a real implementation, this would show UI
+        #if DEBUG
+        print("🔔 NOTIFICATION [\(notification.severity)]: \(notification.title)")
+        print("  Message: \(notification.message)")
+        if let options = notification.recoveryOptions, !options.isEmpty {
+            print("  Recovery Options:")
+            for (index, option) in options.enumerated() {
+                print("    \(index+1). \(option.title)")
+            }
+        }
+        #endif
+    }
+    
+    /// Dismiss a notification
+    /// - Parameter id: The ID of the notification to dismiss
+    public func dismissNotification(id: UUID) async {
+        notifications.removeValue(forKey: id)
+    }
+    
+    /// Get all active notifications
+    /// - Returns: Array of active notifications
+    public func activeNotifications() async -> [ErrorNotification] {
+        return Array(notifications.values)
     }
 }

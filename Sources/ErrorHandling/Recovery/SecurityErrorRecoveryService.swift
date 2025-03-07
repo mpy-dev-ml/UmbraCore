@@ -1,182 +1,247 @@
-// SecurityErrorRecoveryService.swift
-// Error recovery service for security-related errors
-//
-// Copyright 2025 UmbraCorp. All rights reserved.
-
-import Foundation
-import ErrorHandlingProtocols
-import ErrorHandlingModels
 import ErrorHandlingCommon
-import ErrorHandlingDomains
+import ErrorHandlingInterfaces
+import Foundation
 
 /// Provides recovery options for security errors
 @MainActor
-public final class SecurityErrorRecoveryService: ErrorRecoveryService, Sendable {
-    /// Shared instance
-    public static let shared = SecurityErrorRecoveryService()
-    
-    /// Private initialiser to enforce singleton pattern
-    private init() {
-        // Register with the recovery registry
-        ErrorRecoveryRegistry.shared.register(service: self)
+public final class SecurityErrorRecoveryService: ErrorRecoveryService {
+  /// Shared instance
+  public static let shared=SecurityErrorRecoveryService()
+
+  /// Private initialiser to enforce singleton pattern
+  private init() {
+    // Register with the recovery registry
+    ErrorRecoveryRegistry.shared.register(service: self)
+  }
+
+  /// Gets recovery options for a given error
+  /// - Parameter error: The error to recover from
+  /// - Returns: Array of recovery options, if available
+  public nonisolated func recoveryOptions(
+    for error: ErrorHandlingInterfaces
+      .UmbraError
+  ) -> [ErrorRecoveryOption] {
+    // Only handle security domain errors
+    guard error.domain == "Security" else {
+      return []
     }
-    
-    /// Gets recovery options for a given error
-    /// - Parameter error: The error to recover from
-    /// - Returns: Array of recovery options, if available
-    public func recoveryOptions(for error: ErrorHandlingProtocols.UmbraError) -> [ErrorRecoveryOption] {
-        // Only handle security domain errors
-        guard error.domain == "Security" else {
-            return []
+
+    var options: [ErrorRecoveryOption]=[]
+
+    // Handle specific security error types based on error code
+    switch error.code {
+      case "authentication_failed":
+        options.append(nonisolated_createRetryAuthenticationOption())
+        options.append(nonisolated_createResetCredentialsOption())
+
+      case "authorization_failed":
+        options.append(nonisolated_createRequestPermissionsOption())
+
+      case "crypto_operation_failed":
+        options.append(nonisolated_createRetryWithAlternateAlgorithmOption())
+
+      case "tampered_data":
+        options.append(nonisolated_createRestoreFromBackupOption())
+
+      case "connection_failed":
+        options.append(nonisolated_createRetryConnectionOption())
+
+      default:
+        // Add a generic option for unhandled security errors
+        options.append(nonisolated_createReportSecurityIssueOption())
+    }
+
+    return options
+  }
+
+  /// Attempts to recover from an error using all available options
+  /// - Parameter error: The error to recover from
+  /// - Returns: Whether recovery was successful
+  public nonisolated func attemptRecovery(
+    for error: ErrorHandlingInterfaces
+      .UmbraError
+  ) async -> Bool {
+    let options=recoveryOptions(for: error)
+
+    for option in options {
+      if await option.execute() {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  // MARK: - Recovery Option Factories
+
+  /// Create UUIDs for recovery options for consistent reference
+  private enum RecoveryOptionIDs {
+    static let retryAuthentication=UUID()
+    static let resetCredentials=UUID()
+    static let requestPermissions=UUID()
+    static let alternateAlgorithm=UUID()
+    static let restoreBackup=UUID()
+    static let retryConnection=UUID()
+    static let reportIssue=UUID()
+  }
+
+  private nonisolated func nonisolated_createRetryAuthenticationOption() -> ErrorRecoveryOption {
+    ErrorRecoveryOption(
+      id: RecoveryOptionIDs.retryAuthentication,
+      title: "Retry Authentication",
+      description: "Try authenticating again",
+      successLikelihood: .possible,
+      isDisruptive: false,
+      recoveryAction: { @Sendable in
+        // Simulate authentication retry
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        // For now, we'll simulate a 50% success rate
+        if Bool.random() {
+          return
+        } else {
+          throw NSError(
+            domain: "Security",
+            code: 401,
+            userInfo: [NSLocalizedDescriptionKey: "Authentication failed again"]
+          )
         }
-        
-        var options: [ErrorRecoveryOption] = []
-        
-        // Handle specific security error types based on error code
-        switch error.code {
-        case "authentication_failed":
-            options.append(createRetryAuthenticationOption())
-            options.append(createResetCredentialsOption())
-            
-        case "authorization_failed":
-            options.append(createRequestPermissionsOption())
-            
-        case "crypto_operation_failed":
-            options.append(createRetryWithAlternateAlgorithmOption())
-            
-        case "tampered_data":
-            options.append(createRestoreFromBackupOption())
-            
-        case "connection_failed":
-            options.append(createRetryConnectionOption())
-            
-        default:
-            // Add a generic option for unhandled security errors
-            options.append(createReportSecurityIssueOption())
+      }
+    )
+  }
+
+  private nonisolated func nonisolated_createResetCredentialsOption() -> ErrorRecoveryOption {
+    ErrorRecoveryOption(
+      id: RecoveryOptionIDs.resetCredentials,
+      title: "Reset Credentials",
+      description: "Reset your login credentials",
+      successLikelihood: .likely,
+      isDisruptive: true,
+      recoveryAction: { @Sendable in
+        // Simulate credential reset
+        try await Task.sleep(nanoseconds: 2_000_000_000)
+        // For demonstration purposes, we'll assume this is usually successful
+        if Bool.random() && Bool.random() { // 75% chance
+          return
+        } else {
+          throw NSError(
+            domain: "Security",
+            code: 500,
+            userInfo: [NSLocalizedDescriptionKey: "Failed to reset credentials"]
+          )
         }
-        
-        return options
-    }
-    
-    /// Attempts to recover from an error using all available options
-    /// - Parameter error: The error to recover from
-    /// - Returns: Whether recovery was successful
-    public func attemptRecovery(for error: ErrorHandlingProtocols.UmbraError) async -> Bool {
-        let options = recoveryOptions(for: error)
-        
-        for option in options {
-            if await option.execute() {
-                return true
-            }
+      }
+    )
+  }
+
+  private nonisolated func nonisolated_createRequestPermissionsOption() -> ErrorRecoveryOption {
+    ErrorRecoveryOption(
+      id: RecoveryOptionIDs.requestPermissions,
+      title: "Request Permissions",
+      description: "Request necessary security permissions",
+      successLikelihood: .possible,
+      isDisruptive: false,
+      recoveryAction: { @Sendable in
+        // Simulate permission request
+        try await Task.sleep(nanoseconds: 1_500_000_000)
+        // Permissions are often rejected, so simulate a lower success rate
+        if Bool.random() && Bool.random() && Bool.random() { // ~12.5% chance
+          return
+        } else {
+          throw NSError(
+            domain: "Security",
+            code: 403,
+            userInfo: [NSLocalizedDescriptionKey: "Permission request denied"]
+          )
         }
-        
-        return false
-    }
-    
-    // MARK: - Recovery Option Factories
-    
-    private func createRetryAuthenticationOption() -> ErrorRecoveryOption {
-        return ErrorRecoveryOption(
-            id: "security.retry_authentication",
-            title: "Retry Authentication",
-            description: "Try authenticating again",
-            successLikelihood: .possible,
-            isDisruptive: false,
-            recoveryAction: { @Sendable in
-                // Simulate authentication retry
-                try await Task.sleep(nanoseconds: 1_000_000_000)
-                // For now, we'll simulate a 50% success rate
-                if Bool.random() {
-                    return
-                } else {
-                    throw NSError(domain: "Security", code: 401, 
-                                  userInfo: [NSLocalizedDescriptionKey: "Authentication failed again"])
-                }
-            }
-        )
-    }
-    
-    private func createResetCredentialsOption() -> ErrorRecoveryOption {
-        return ErrorRecoveryOption(
-            id: "security.reset_credentials",
-            title: "Reset Credentials",
-            description: "Reset your login credentials",
-            successLikelihood: .likely,
-            isDisruptive: true,
-            recoveryAction: { @Sendable in
-                // Simulate credential reset
-                try await Task.sleep(nanoseconds: 2_000_000_000)
-            }
-        )
-    }
-    
-    private func createRequestPermissionsOption() -> ErrorRecoveryOption {
-        return ErrorRecoveryOption(
-            id: "security.request_permissions",
-            title: "Request Permissions",
-            description: "Request additional permissions needed to complete the operation",
-            successLikelihood: .possible,
-            isDisruptive: true,
-            recoveryAction: { @Sendable in
-                // Simulate permission request
-                try await Task.sleep(nanoseconds: 1_500_000_000)
-            }
-        )
-    }
-    
-    private func createRetryWithAlternateAlgorithmOption() -> ErrorRecoveryOption {
-        return ErrorRecoveryOption(
-            id: "security.alternate_algorithm",
-            title: "Try Alternative Method",
-            description: "Attempt operation with an alternative cryptographic method",
-            successLikelihood: .likely,
-            isDisruptive: false,
-            recoveryAction: { @Sendable in
-                // Simulate trying alternate algorithm
-                try await Task.sleep(nanoseconds: 1_000_000_000)
-            }
-        )
-    }
-    
-    private func createRestoreFromBackupOption() -> ErrorRecoveryOption {
-        return ErrorRecoveryOption(
-            id: "security.restore_backup",
-            title: "Restore from Backup",
-            description: "Restore data from a secure backup",
-            successLikelihood: .likely,
-            isDisruptive: true,
-            recoveryAction: { @Sendable in
-                // Simulate restore from backup
-                try await Task.sleep(nanoseconds: 3_000_000_000)
-            }
-        )
-    }
-    
-    private func createRetryConnectionOption() -> ErrorRecoveryOption {
-        return ErrorRecoveryOption(
-            id: "security.retry_connection",
-            title: "Retry Connection",
-            description: "Attempt to reconnect to the security service",
-            successLikelihood: .possible,
-            isDisruptive: false,
-            recoveryAction: { @Sendable in
-                // Simulate connection retry
-                try await Task.sleep(nanoseconds: 1_000_000_000)
-            }
-        )
-    }
-    
-    private func createReportSecurityIssueOption() -> ErrorRecoveryOption {
-        return ErrorRecoveryOption(
-            id: "security.report_issue",
-            title: "Report Security Issue",
-            description: "Report this security issue to our team",
-            successLikelihood: .unlikely,
-            isDisruptive: false,
-            recoveryAction: { @Sendable in
-                // Simulate report submission
-                try await Task.sleep(nanoseconds: 500_000_000)
-            }
-        )
-    }
+      }
+    )
+  }
+
+  private nonisolated func nonisolated_createRetryWithAlternateAlgorithmOption()
+  -> ErrorRecoveryOption {
+    ErrorRecoveryOption(
+      id: RecoveryOptionIDs.alternateAlgorithm,
+      title: "Try Alternate Algorithm",
+      description: "Attempt operation with a different security algorithm",
+      successLikelihood: .likely,
+      isDisruptive: false,
+      recoveryAction: { @Sendable in
+        // Simulate algorithm switch
+        try await Task.sleep(nanoseconds: 500_000_000)
+        // Alternative algorithms often work
+        if Bool.random() || Bool.random() { // 75% chance
+          return
+        } else {
+          throw NSError(
+            domain: "Security",
+            code: 500,
+            userInfo: [NSLocalizedDescriptionKey: "Alternative algorithm also failed"]
+          )
+        }
+      }
+    )
+  }
+
+  private nonisolated func nonisolated_createRestoreFromBackupOption() -> ErrorRecoveryOption {
+    ErrorRecoveryOption(
+      id: RecoveryOptionIDs.restoreBackup,
+      title: "Restore from Backup",
+      description: "Restore data from a secure backup",
+      successLikelihood: .veryLikely,
+      isDisruptive: true,
+      recoveryAction: { @Sendable in
+        // Simulate backup restoration
+        try await Task.sleep(nanoseconds: 3_000_000_000)
+        // Restoring from backup is usually successful
+        if Bool.random() || Bool.random() || Bool.random() { // ~87.5% chance
+          return
+        } else {
+          throw NSError(
+            domain: "Security",
+            code: 500,
+            userInfo: [NSLocalizedDescriptionKey: "Backup restoration failed"]
+          )
+        }
+      }
+    )
+  }
+
+  private nonisolated func nonisolated_createRetryConnectionOption() -> ErrorRecoveryOption {
+    ErrorRecoveryOption(
+      id: RecoveryOptionIDs.retryConnection,
+      title: "Retry Connection",
+      description: "Attempt to re-establish secure connection",
+      successLikelihood: .possible,
+      isDisruptive: false,
+      recoveryAction: { @Sendable in
+        // Simulate connection retry
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        // Network issues are unpredictable
+        if Bool.random() { // 50% chance
+          return
+        } else {
+          throw NSError(
+            domain: "Security",
+            code: 503,
+            userInfo: [NSLocalizedDescriptionKey: "Connection failed again"]
+          )
+        }
+      }
+    )
+  }
+
+  private nonisolated func nonisolated_createReportSecurityIssueOption() -> ErrorRecoveryOption {
+    ErrorRecoveryOption(
+      id: RecoveryOptionIDs.reportIssue,
+      title: "Report Security Issue",
+      description: "Report this security issue to UmbraCorp",
+      successLikelihood: .unlikely,
+      isDisruptive: false,
+      recoveryAction: { @Sendable in
+        // Simulate sending a report
+        try await Task.sleep(nanoseconds: 500_000_000)
+        // Always succeeds but doesn't actually fix the issue
+      }
+    )
+  }
 }

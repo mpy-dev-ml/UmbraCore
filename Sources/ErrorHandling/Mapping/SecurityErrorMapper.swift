@@ -4,7 +4,8 @@
 // Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
+import ErrorHandlingInterfaces
+import ErrorHandlingCommon
 import ErrorHandlingDomains
 
 /// A type alias for our new, consolidated SecurityError type
@@ -21,14 +22,8 @@ public struct SecurityErrorMapper {
     /// - Parameter error: The source SecurityError
     /// - Returns: The mapped UmbraSecurityError
     public func mapFromSecurityProtocolsCore(_ error: Error) -> UmbraSecurityError {
-        // Cast to the local type alias to avoid namespace issues
-        guard let securityError = error as? Error else {
-            return .unknown("Unknown security error")
-        }
-        
         // Extract the type information using reflection to avoid direct type names
         // which would cause compilation issues
-        let errorType = String(describing: type(of: error))
         let errorDescription = String(describing: error)
         
         // Map common cases by examining the error description
@@ -53,7 +48,7 @@ public struct SecurityErrorMapper {
         } else if errorDescription.contains("certificate") {
             return .certificateInvalid("Certificate invalid (mapped)")
         } else {
-            return .unknown("Mapped from \(errorType): \(errorDescription)")
+            return .unknown("Mapped from SecurityProtocolsCore: \(errorDescription)")
         }
     }
     
@@ -61,12 +56,6 @@ public struct SecurityErrorMapper {
     /// - Parameter error: The source SecurityError
     /// - Returns: The mapped UmbraSecurityError
     public func mapFromSecurityTypes(_ error: Error) -> UmbraSecurityError {
-        // Similar approach to avoid namespace issues
-        guard let securityError = error as? Error else {
-            return .unknown("Unknown security error")
-        }
-        
-        let errorType = String(describing: type(of: error))
         let errorDescription = String(describing: error)
         
         // Map based on error description
@@ -131,8 +120,8 @@ public struct SecurityErrorMapper {
 }
 
 /// Error registry extension for registering the security error mapper
-public extension ErrorHandler {
-    /// Register the security error mapper with the error handler
+public extension ErrorRegistry {
+    /// Register the security error mapper with the error registry
     func registerSecurityErrorMapper() {
         // This is a placeholder for now - we'll implement the actual registration
         // once we've established how external error types should be registered

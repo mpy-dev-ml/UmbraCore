@@ -1,38 +1,43 @@
 // ErrorHandler.swift
 // Core error handling functionality for UmbraCore
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
-import ErrorHandlingLogging
-import ErrorHandlingRecovery
-import ErrorHandlingNotification
+import ErrorHandlingInterfaces
 import ErrorHandlingModels
+import ErrorHandlingCommon
+import ErrorHandlingDomains
 
 /// Main error handler for the UmbraCore framework
-public final class ErrorHandler {
+@MainActor
+public final class ErrorHandler: Sendable {
     /// Shared instance of the error handler
-    public static let shared = ErrorHandler()
+    @MainActor public static let shared = ErrorHandler()
     
     /// The logger used for error logging
-    private let logger: ErrorLogger
+    private var logger: ErrorLoggingProtocol?
     
     /// The notification handler for presenting errors to the user
-    private var notificationHandler: ErrorNotificationHandler?
+    private var notificationHandler: ErrorNotificationProtocol?
     
     /// Registered recovery options providers
     private var recoveryProviders: [RecoveryOptionsProvider]
     
     /// Private initialiser to enforce singleton pattern
     private init() {
-        self.logger = ErrorLogger.shared
         self.recoveryProviders = []
+    }
+    
+    /// Set the logger to use for error logging
+    /// - Parameter logger: The logger to use
+    public func setLogger(_ logger: ErrorLoggingProtocol) {
+        self.logger = logger
     }
     
     /// Set the notification handler to use for presenting errors
     /// - Parameter handler: The notification handler to use
-    public func setNotificationHandler(_ handler: ErrorNotificationHandler) {
+    public func setNotificationHandler(_ handler: ErrorNotificationProtocol) {
         self.notificationHandler = handler
     }
     
@@ -49,84 +54,43 @@ public final class ErrorHandler {
     ///   - file: Source file (auto-filled by the compiler)
     ///   - function: Function name (auto-filled by the compiler)
     ///   - line: Line number (auto-filled by the compiler)
-    public func handle(
-        _ error: Error,
-        severity: NotificationSeverity = .medium,
+    public func handle<E: UmbraError>(
+        _ error: E,
+        severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
         file: String = #file,
         function: String = #function,
         line: Int = #line
     ) {
-        // Wrap the error in a GenericUmbraError if it's not already an UmbraError
-        let umbraError: UmbraError
-        if let error = error as? UmbraError {
-            umbraError = error
-        } else {
-            umbraError = GenericUmbraError.wrapped(error)
-        }
+        // Create a source object for the error
+        let source = ErrorSource(file: file, function: function, line: line)
         
-        // Add source information
-        let errorWithSource = umbraError.with(
-            source: ErrorSource(file: file, line: line, function: function)
-        )
+        // Enrich the error with source information
+        let enrichedError = error.with(source: source)
         
         // Log the error
-        switch severity {
-        case .critical, .high:
-            logger.logError(errorWithSource)
-        case .medium:
-            logger.logWarning(errorWithSource)
-        case .low, .info:
-            logger.logInfo(errorWithSource)
-        }
+        logger?.log(error: enrichedError, severity: severity)
         
-        // Find recovery options for this error
-        let recoveryOptions = findRecoveryOptions(for: error)
-        
-        // Present a notification to the user if appropriate
-        if severity >= .medium {
-            let notification = ErrorNotification.from(
-                umbraError: errorWithSource,
-                severity: severity,
-                recoveryOptions: recoveryOptions
-            )
-            
-            notificationHandler?.present(notification: notification)
-        }
-    }
-    
-    /// Handle an error asynchronously
-    /// - Parameters:
-    ///   - error: The error to handle
-    ///   - severity: The severity of the error
-    ///   - file: Source file (auto-filled by the compiler)
-    ///   - function: Function name (auto-filled by the compiler)
-    ///   - line: Line number (auto-filled by the compiler)
-    public func handleAsync(
-        _ error: Error,
-        severity: NotificationSeverity = .medium,
-        file: String = #file,
-        function: String = #function,
-        line: Int = #line
-    ) {
-        Task {
-            handle(error, severity: severity, file: file, function: function, line: line)
-        }
-    }
-    
-    /// Find recovery options for an error
-    /// - Parameter error: The error to find recovery options for
-    /// - Returns: Recovery options if available, otherwise nil
-    private func findRecoveryOptions(for error: Error) -> RecoveryOptions? {
-        for provider in recoveryProviders {
-            if let options = provider.recoveryOptions(for: error) {
-                return options
+        // Present error to the user if appropriate and notification handler is set
+        if severity.shouldNotify, let notificationHandler = notificationHandler {
+            // Collect recovery options from all providers
+            let recoveryOptions = recoveryProviders.flatMap { 
+                $0.recoveryOptions(for: enrichedError) 
             }
+            
+            // Present the error
+            notificationHandler.presentError(enrichedError, recoveryOptions: recoveryOptions)
         }
-        return nil
+    }
+    
+    /// Get recovery options for an error from all registered providers
+    /// - Parameter error: The error to get recovery options for
+    /// - Returns: Array of recovery options
+    public func recoveryOptions<E: UmbraError>(for error: E) -> [RecoveryOption] {
+        return recoveryProviders.flatMap { $0.recoveryOptions(for: error) }
     }
 }
 
-/// Extension to provide convenience methods for specific error types
+/// Extension for convenience methods targeting specific error types
 public extension ErrorHandler {
     /// Handle a security error
     /// - Parameters:
@@ -135,9 +99,9 @@ public extension ErrorHandler {
     ///   - file: Source file (auto-filled by the compiler)
     ///   - function: Function name (auto-filled by the compiler)
     ///   - line: Line number (auto-filled by the compiler)
-    func handleSecurityError(
-        _ error: Error,
-        severity: NotificationSeverity = .high,
+    func handleSecurity(
+        _ error: ErrorHandlingDomains.SecurityError,
+        severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
         file: String = #file,
         function: String = #function,
         line: Int = #line
@@ -145,33 +109,16 @@ public extension ErrorHandler {
         handle(error, severity: severity, file: file, function: function, line: line)
     }
     
-    /// Handle a network error
+    /// Handle a repository error
     /// - Parameters:
-    ///   - error: The network error to handle
+    ///   - error: The repository error to handle
     ///   - severity: The severity of the error
     ///   - file: Source file (auto-filled by the compiler)
     ///   - function: Function name (auto-filled by the compiler)
     ///   - line: Line number (auto-filled by the compiler)
-    func handleNetworkError(
-        _ error: Error,
-        severity: NotificationSeverity = .medium,
-        file: String = #file,
-        function: String = #function,
-        line: Int = #line
-    ) {
-        handle(error, severity: severity, file: file, function: function, line: line)
-    }
-    
-    /// Handle a validation error
-    /// - Parameters:
-    ///   - error: The validation error to handle
-    ///   - severity: The severity of the error
-    ///   - file: Source file (auto-filled by the compiler)
-    ///   - function: Function name (auto-filled by the compiler)
-    ///   - line: Line number (auto-filled by the compiler)
-    func handleValidationError(
-        _ error: Error,
-        severity: NotificationSeverity = .low,
+    func handleRepository(
+        _ error: ErrorHandlingDomains.RepositoryError,
+        severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
         file: String = #file,
         function: String = #function,
         line: Int = #line

@@ -4,11 +4,11 @@
 // Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
+import ErrorHandlingInterfaces
 import ErrorHandlingCommon
 
 /// A generic implementation of UmbraError that can be used for any error domain
-public struct GenericUmbraError: ErrorHandlingProtocols.UmbraError {
+public struct GenericUmbraError: ErrorHandlingInterfaces.UmbraError, CustomStringConvertible {
     /// The error domain
     public let domain: String
     
@@ -17,6 +17,11 @@ public struct GenericUmbraError: ErrorHandlingProtocols.UmbraError {
     
     /// Human-readable description of the error
     public let errorDescription: String
+    
+    /// A user-readable description of the error required for CustomStringConvertible
+    public var description: String {
+        return "[\(domain).\(code)] \(errorDescription)"
+    }
     
     /// The underlying error, if any
     public let underlyingError: Error?

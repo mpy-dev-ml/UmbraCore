@@ -4,8 +4,7 @@
 // Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
-import ErrorHandlingModels
+import ErrorHandlingInterfaces
 import ErrorHandlingCommon
 
 /// Domain for repository-related errors

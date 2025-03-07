@@ -1,10 +1,10 @@
 // RecoveryAction.swift
 // Defines actions that can be taken to recover from errors
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
+import ErrorHandlingInterfaces
 
 /// Represents an action that can be taken to recover from an error
 public struct RecoveryAction: Sendable, Equatable {
@@ -21,8 +21,8 @@ public struct RecoveryAction: Sendable, Equatable {
     public let isDefault: Bool
     
     /// The action handler closure that will be called when the action is selected
-    /// Note: This property is not Sendable-compliant and should be used with caution
-    private let actionHandler: () -> Void
+    /// Note: Marked with @Sendable to ensure proper concurrency safety
+    private let actionHandler: @Sendable () -> Void
     
     /// Creates a new RecoveryAction instance
     /// - Parameters:
@@ -36,7 +36,7 @@ public struct RecoveryAction: Sendable, Equatable {
         title: String,
         description: String? = nil,
         isDefault: Bool = false,
-        handler: @escaping () -> Void
+        handler: @Sendable @escaping () -> Void
     ) {
         self.id = id
         self.title = title
@@ -72,7 +72,7 @@ public extension RecoveryAction {
     static func retry(
         title: String = "Retry",
         description: String? = nil,
-        handler: @escaping () -> Void
+        handler: @Sendable @escaping () -> Void
     ) -> RecoveryAction {
         return RecoveryAction(
             id: "retry",
@@ -92,7 +92,7 @@ public extension RecoveryAction {
     static func cancel(
         title: String = "Cancel",
         description: String? = nil,
-        handler: @escaping () -> Void
+        handler: @Sendable @escaping () -> Void
     ) -> RecoveryAction {
         return RecoveryAction(
             id: "cancel",
@@ -111,7 +111,7 @@ public extension RecoveryAction {
     static func ignore(
         title: String = "Ignore",
         description: String? = nil,
-        handler: @escaping () -> Void
+        handler: @Sendable @escaping () -> Void
     ) -> RecoveryAction {
         return RecoveryAction(
             id: "ignore",

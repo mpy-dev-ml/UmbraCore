@@ -1,23 +1,32 @@
 // ErrorNotifier.swift
 // Notification system for errors in the enhanced error handling system
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
+import ErrorHandlingInterfaces
+import ErrorHandlingRecovery
+import UmbraLogging
 
 /// Protocol for services that can notify users about errors
-public protocol ErrorNotificationService {
-    /// Notifies the user about an error
+@MainActor
+public protocol ErrorNotificationService: Sendable {
+    /// Present a notification to the user about an error
     /// - Parameters:
-    ///   - error: The error to notify about
-    ///   - level: The notification level
-    ///   - recoveryOptions: Optional recovery options to present
-    /// - Returns: The chosen recovery option ID, if any
-    func notifyUser(
-        about error: UmbraError,
+    ///   - error: The error to notify the user about
+    ///   - level: The severity level of the notification
+    ///   - recoveryOptions: Available recovery options to present
+    /// - Returns: The ID of the chosen recovery option, if applicable
+    func notifyUser<E: UmbraError>(
+        about error: E,
         level: ErrorNotificationLevel,
-        recoveryOptions: [ErrorRecoveryOption]?
-    ) async -> String?
+        recoveryOptions: [ErrorRecoveryOption]
+    ) async -> UUID?
+    
+    /// Whether this service can handle a particular error
+    /// - Parameter error: The error to check
+    /// - Returns: Whether this service can handle the error
+    func canHandle<E: UmbraError>(_ error: E) -> Bool
     
     /// The types of errors that this service can handle
     var supportedErrorDomains: [String] { get }
@@ -27,7 +36,7 @@ public protocol ErrorNotificationService {
 }
 
 /// Represents the level of notification for an error
-public enum ErrorNotificationLevel: Int, Comparable {
+public enum ErrorNotificationLevel: Int, Comparable, Sendable {
     case debug = 0    // Developer-focused, typically not shown to end users
     case info = 1     // Informational, non-critical
     case warning = 2  // Warning that might need attention
@@ -58,7 +67,8 @@ public enum ErrorNotificationLevel: Int, Comparable {
 }
 
 /// Central coordinating service for error notifications
-public final class ErrorNotifier {
+@MainActor
+public final class ErrorNotifier: Sendable {
     /// The shared instance
     public static let shared = ErrorNotifier()
     
@@ -87,10 +97,10 @@ public final class ErrorNotifier {
     ///   - recoveryOptions: Optional recovery options to present
     /// - Returns: The chosen recovery option ID, if any
     public func notifyUser(
-        about error: UmbraError,
+        about error: ErrorHandlingInterfaces.UmbraError,
         level: ErrorNotificationLevel,
-        recoveryOptions: [ErrorRecoveryOption]? = nil
-    ) async -> String? {
+        recoveryOptions: [ErrorHandlingRecovery.ErrorRecoveryOption]? = nil
+    ) async -> UUID? {
         // Skip if level is below minimum
         guard level >= minimumNotificationLevel else {
             return nil
@@ -103,7 +113,7 @@ public final class ErrorNotifier {
         }
         
         // Get recovery options if not provided
-        let options = recoveryOptions ?? ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
+        let options = recoveryOptions ?? ErrorHandlingRecovery.ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
         
         // Try each service until one handles the notification
         for service in applicableServices {
@@ -126,11 +136,11 @@ public final class ErrorNotifier {
     ///   - level: The notification level
     /// - Returns: Whether recovery was successful
     public func notifyAndRecover(
-        from error: UmbraError,
+        from error: ErrorHandlingInterfaces.UmbraError,
         level: ErrorNotificationLevel
     ) async -> Bool {
         // Get recovery options
-        let options = ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
+        let options = ErrorHandlingRecovery.ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
         
         // Skip if no options available
         guard !options.isEmpty else {
@@ -148,7 +158,8 @@ public final class ErrorNotifier {
             // Find the chosen option
             if let chosenOption = options.first(where: { $0.id == chosenOptionID }) {
                 // Attempt recovery with the chosen option
-                return await chosenOption.attemptRecovery()
+                await chosenOption.perform()
+                return true
             }
         }
         
@@ -157,7 +168,7 @@ public final class ErrorNotifier {
 }
 
 /// Extension to UmbraError for notification capabilities
-public extension UmbraError {
+public extension ErrorHandlingInterfaces.UmbraError {
     /// Notifies the user about this error
     /// - Parameters:
     ///   - level: The notification level
@@ -166,18 +177,18 @@ public extension UmbraError {
     func notify(
         level: ErrorNotificationLevel = .error,
         logError: Bool = true
-    ) async -> String? {
+    ) async -> UUID? {
         // Log the error if requested
         if logError {
             switch level {
             case .debug:
-                self.logAsDebug()
+                print("DEBUG: [\(self.domain)] \(self.errorDescription)")
             case .info:
-                self.logAsInfo()
+                print("INFO: [\(self.domain)] \(self.errorDescription)")
             case .warning:
-                self.logAsWarning()
+                print("WARNING: [\(self.domain)] \(self.errorDescription)")
             case .error, .critical:
-                self.logAsError()
+                print("ERROR: [\(self.domain)] \(self.errorDescription)")
             }
         }
         
@@ -198,13 +209,13 @@ public extension UmbraError {
         if logError {
             switch level {
             case .debug:
-                self.logAsDebug()
+                print("DEBUG: [\(self.domain)] \(self.errorDescription)")
             case .info:
-                self.logAsInfo()
+                print("INFO: [\(self.domain)] \(self.errorDescription)")
             case .warning:
-                self.logAsWarning()
+                print("WARNING: [\(self.domain)] \(self.errorDescription)")
             case .error, .critical:
-                self.logAsError()
+                print("ERROR: [\(self.domain)] \(self.errorDescription)")
             }
         }
         

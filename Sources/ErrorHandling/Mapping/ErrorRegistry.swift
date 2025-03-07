@@ -1,12 +1,12 @@
 // ErrorRegistry.swift
 // Centralised registry for error mappers
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
 
 /// A centralised registry for error mappers
-public final class ErrorRegistry {
+@MainActor public final class ErrorRegistry: Sendable {
     /// Shared instance of the error registry
     public static let shared = ErrorRegistry()
     

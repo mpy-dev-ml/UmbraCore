@@ -4,8 +4,7 @@
 // Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
-import ErrorHandlingModels
+import ErrorHandlingInterfaces
 import ErrorHandlingCommon
 
 /// Enum representing the specific repository error types
@@ -104,7 +103,7 @@ public enum RepositoryErrorType: Error {
 }
 
 /// Struct wrapper for repository errors that conforms to UmbraError
-public struct RepositoryError: Error, UmbraError, Sendable {
+public struct RepositoryError: Error, UmbraError, Sendable, CustomStringConvertible {
     /// The specific repository error type
     public let errorType: RepositoryErrorType
     
@@ -119,6 +118,11 @@ public struct RepositoryError: Error, UmbraError, Sendable {
     /// Human-readable description of the error
     public var errorDescription: String {
         errorType.message
+    }
+    
+    /// A user-readable description of the error
+    public var description: String {
+        return "[\(domain).\(code)] \(errorDescription)"
     }
     
     /// Source information about where the error occurred

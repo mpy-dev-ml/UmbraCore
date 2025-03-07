@@ -1,10 +1,10 @@
 // RecoveryOptions.swift
 // Management of error recovery options
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
+import ErrorHandlingInterfaces
 
 /// Container for recovery actions that can be presented to the user
 public struct RecoveryOptions: Sendable, Equatable {
@@ -73,8 +73,8 @@ public extension RecoveryOptions {
     static func retryCancel(
         title: String? = nil,
         message: String? = nil,
-        retryHandler: @escaping () -> Void,
-        cancelHandler: @escaping () -> Void
+        retryHandler: @escaping @Sendable () -> Void,
+        cancelHandler: @escaping @Sendable () -> Void
     ) -> RecoveryOptions {
         return RecoveryOptions(
             actions: [
@@ -97,9 +97,9 @@ public extension RecoveryOptions {
     static func retryIgnoreCancel(
         title: String? = nil,
         message: String? = nil,
-        retryHandler: @escaping () -> Void,
-        ignoreHandler: @escaping () -> Void,
-        cancelHandler: @escaping () -> Void
+        retryHandler: @escaping @Sendable () -> Void,
+        ignoreHandler: @escaping @Sendable () -> Void,
+        cancelHandler: @escaping @Sendable () -> Void
     ) -> RecoveryOptions {
         return RecoveryOptions(
             actions: [

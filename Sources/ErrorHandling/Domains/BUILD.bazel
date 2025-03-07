@@ -5,7 +5,6 @@ umbra_swift_library(
     srcs = glob(["*.swift"]),
     deps = [
         "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
-        "//Sources/ErrorHandling/Models:ErrorHandlingModels",
-        "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
+        "//Sources/ErrorHandling/Interfaces:ErrorHandlingInterfaces",
     ],
 )

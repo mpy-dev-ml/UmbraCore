@@ -4,9 +4,8 @@
 // Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
-import ErrorHandlingProtocols
+import ErrorHandlingInterfaces
 import ErrorHandlingCommon
-import ErrorHandlingModels
 
 /// Enum representing specific security error types
 public enum SecurityErrorType: Error {
@@ -75,7 +74,7 @@ public protocol DomainError: Error {
 }
 
 /// Struct wrapper for security errors that conforms to UmbraError
-public struct UmbraSecurityError: Error, UmbraError, Sendable {
+public struct UmbraSecurityError: Error, UmbraError, Sendable, CustomStringConvertible {
     /// The specific security error type
     public let errorType: SecurityErrorType
     
@@ -90,6 +89,11 @@ public struct UmbraSecurityError: Error, UmbraError, Sendable {
     /// Human-readable description of the error
     public var errorDescription: String {
         errorType.message
+    }
+    
+    /// A user-readable description of the error
+    public var description: String {
+        return "[\(domain).\(code)] \(errorDescription)"
     }
     
     /// Source information about where the error occurred

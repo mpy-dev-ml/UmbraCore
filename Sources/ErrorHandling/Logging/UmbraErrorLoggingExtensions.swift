@@ -1,93 +1,147 @@
 // UmbraErrorLoggingExtensions.swift
-// Logging extensions for UmbraError
+// Extensions for UmbraError to add logging capabilities
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
+import ErrorHandlingInterfaces
+import UmbraLogging
 
-/// Extension to add logging capabilities to UmbraError
-public extension UmbraError {
-    /// Logs this error at error level
+// MARK: - Logging Extensions
+
+/// Adds logging capabilities to UmbraError
+@MainActor extension ErrorHandlingInterfaces.UmbraError {
+    /// Logs this error at the error level
     /// - Parameters:
-    ///   - additionalMessage: Optional additional message for context
-    ///   - file: Source file (auto-filled by the compiler)
-    ///   - function: Function name (auto-filled by the compiler)
-    ///   - line: Line number (auto-filled by the compiler)
-    func logAsError(
+    ///   - additionalMessage: Optional additional context message
+    ///   - file: Source file (autofilled by compiler)
+    ///   - function: Function name (autofilled by compiler)
+    ///   - line: Line number (autofilled by compiler)
+    public func logAsError(
         additionalMessage: String? = nil,
         file: String = #file,
         function: String = #function,
         line: Int = #line
-    ) {
-        ErrorLogger.shared.logError(
+    ) async {
+        // Create metadata
+        var metadata = createBasicMetadata()
+        
+        // Add source information if available
+        if let source = self.source {
+            metadata["sourceFile"] = source.file
+            metadata["sourceLine"] = String(source.line)
+            metadata["sourceFunction"] = source.function
+        }
+        
+        await ErrorLogger.shared.logError(
             self,
-            additionalMessage: additionalMessage,
             file: file,
             function: function,
-            line: line
+            line: line,
+            additionalMetadata: metadata
         )
     }
     
-    /// Logs this error at warning level
+    /// Logs this error at the warning level
     /// - Parameters:
-    ///   - additionalMessage: Optional additional message for context
-    ///   - file: Source file (auto-filled by the compiler)
-    ///   - function: Function name (auto-filled by the compiler)
-    ///   - line: Line number (auto-filled by the compiler)
-    func logAsWarning(
+    ///   - additionalMessage: Optional additional context message
+    ///   - file: Source file (autofilled by compiler)
+    ///   - function: Function name (autofilled by compiler)
+    ///   - line: Line number (autofilled by compiler)
+    public func logAsWarning(
         additionalMessage: String? = nil,
         file: String = #file,
         function: String = #function,
         line: Int = #line
-    ) {
-        ErrorLogger.shared.logWarning(
-            self,
-            additionalMessage: additionalMessage,
+    ) async {
+        // Create description for the error with additional context
+        let warningMessage = formatErrorDescription(additionalMessage: additionalMessage)
+        
+        // Create metadata
+        let metadata = createBasicMetadata()
+        
+        await ErrorLogger.shared.logWarning(
+            warningMessage,
             file: file,
             function: function,
-            line: line
+            line: line,
+            metadata: metadata
         )
     }
     
-    /// Logs this error at info level
+    /// Logs this error at the info level
     /// - Parameters:
-    ///   - additionalMessage: Optional additional message for context
-    ///   - file: Source file (auto-filled by the compiler)
-    ///   - function: Function name (auto-filled by the compiler)
-    ///   - line: Line number (auto-filled by the compiler)
-    func logAsInfo(
+    ///   - additionalMessage: Optional additional context message
+    ///   - file: Source file (autofilled by compiler)
+    ///   - function: Function name (autofilled by compiler)
+    ///   - line: Line number (autofilled by compiler)
+    public func logAsInfo(
         additionalMessage: String? = nil,
         file: String = #file,
         function: String = #function,
         line: Int = #line
-    ) {
-        ErrorLogger.shared.logInfo(
-            self,
-            additionalMessage: additionalMessage,
+    ) async {
+        // Create description for the error with additional context
+        let infoMessage = formatErrorDescription(additionalMessage: additionalMessage)
+        
+        // Create metadata
+        let metadata = createBasicMetadata()
+        
+        await ErrorLogger.shared.logInfo(
+            infoMessage,
             file: file,
             function: function,
-            line: line
+            line: line,
+            metadata: metadata
         )
     }
     
-    /// Logs this error at debug level
+    /// Logs this error at the debug level
     /// - Parameters:
-    ///   - additionalMessage: Optional additional message for context
-    ///   - file: Source file (auto-filled by the compiler)
-    ///   - function: Function name (auto-filled by the compiler)
-    ///   - line: Line number (auto-filled by the compiler)
-    func logAsDebug(
+    ///   - additionalMessage: Optional additional context message
+    ///   - file: Source file (autofilled by compiler)
+    ///   - function: Function name (autofilled by compiler)
+    ///   - line: Line number (autofilled by compiler)
+    public func logAsDebug(
         additionalMessage: String? = nil,
         file: String = #file,
         function: String = #function,
         line: Int = #line
-    ) {
-        ErrorLogger.shared.logDebug(
-            self,
-            additionalMessage: additionalMessage,
+    ) async {
+        // Create description for the error with additional context
+        let debugMessage = formatErrorDescription(additionalMessage: additionalMessage)
+        
+        // Create metadata
+        let metadata = createBasicMetadata()
+        
+        await ErrorLogger.shared.logDebug(
+            debugMessage,
             file: file,
             function: function,
-            line: line
+            line: line,
+            metadata: metadata
         )
+    }
+    
+    // MARK: - Private Helpers
+    
+    /// Creates the basic metadata for this error
+    /// - Returns: LogMetadata with error information
+    private func createBasicMetadata() -> LogMetadata {
+        var metadata = LogMetadata()
+        metadata["domain"] = self.domain
+        metadata["code"] = self.code
+        return metadata
+    }
+    
+    /// Creates a formatted description with optional additional message
+    /// - Parameter additionalMessage: Optional additional context
+    /// - Returns: Formatted string
+    private func formatErrorDescription(additionalMessage: String?) -> String {
+        if let additionalMessage = additionalMessage {
+            return "[\(domain):\(code)] \(additionalMessage): \(errorDescription)"
+        } else {
+            return "[\(domain):\(code)] \(errorDescription)"
+        }
     }
 }
