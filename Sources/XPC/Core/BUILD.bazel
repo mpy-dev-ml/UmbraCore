@@ -10,5 +10,7 @@ umbra_swift_library(
         "//Sources/ErrorHandling/Models:ErrorHandlingModels",
         "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
         "//Sources/UmbraLogging",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/XPCProtocolsCore",
     ],
 )

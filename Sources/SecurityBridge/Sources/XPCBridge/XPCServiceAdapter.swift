@@ -2,6 +2,7 @@ import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
+import CoreErrors
 
 /// XPCServiceAdapter provides a bridge for XPC service communication that requires Foundation
 /// types.
@@ -124,7 +125,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
   func encrypt(
     data: SecureBytes,
     using key: SecureBytes
-  ) async -> Result<SecureBytes, XPCSecurityError> {
+  ) async -> Result<SecureBytes, SecurityError> {
     await withCheckedContinuation { continuation in
       self.serviceProxy.encrypt(
         data: DataAdapter.data(from: data),
@@ -136,7 +137,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
         }
 
         guard let encryptedData else {
-          continuation.resume(returning: .failure(.internalError("XPC service returned nil data")))
+          continuation.resume(returning: .failure(.general("XPC service returned nil data")))
           return
         }
 
@@ -148,7 +149,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
   func decrypt(
     data: SecureBytes,
     using key: SecureBytes
-  ) async -> Result<SecureBytes, XPCSecurityError> {
+  ) async -> Result<SecureBytes, SecurityError> {
     await withCheckedContinuation { continuation in
       self.serviceProxy.decrypt(
         data: DataAdapter.data(from: data),
@@ -160,7 +161,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
         }
 
         guard let decryptedData else {
-          continuation.resume(returning: .failure(.internalError("XPC service returned nil data")))
+          continuation.resume(returning: .failure(.general("XPC service returned nil data")))
           return
         }
 
@@ -169,7 +170,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
     }
   }
 
-  func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
+  func generateKey() async -> Result<SecureBytes, SecurityError> {
     await withCheckedContinuation { continuation in
       self.serviceProxy.generateKey { keyData, error in
         if let error {
@@ -178,7 +179,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
         }
 
         guard let keyData else {
-          continuation.resume(returning: .failure(.internalError("XPC service returned nil key")))
+          continuation.resume(returning: .failure(.general("XPC service returned nil key")))
           return
         }
 
@@ -190,7 +191,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
   func hash(
     data: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> Result<SecureBytes, XPCSecurityError> {
+  ) async -> Result<SecureBytes, SecurityError> {
     // For now, we'll use the hash method from the new implementation
     let result=await hashData(
       data: data,
@@ -200,7 +201,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
     if result.success, let hashData=result.data {
       return .success(hashData)
     } else {
-      return .failure(.internalError(result.errorMessage ?? "Unknown hashing error"))
+      return .failure(.general(result.errorMessage ?? "Unknown hashing error"))
     }
   }
 
@@ -219,7 +220,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
     }
   }
 
-  func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+  func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
     await withCheckedContinuation { continuation in
       self.serviceProxy.generateRandomData(length: length) { randomData, error in
         if let error {
@@ -229,7 +230,7 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
 
         guard let randomData else {
           continuation.resume(
-            returning: .failure(.internalError("XPC service returned nil random data"))
+            returning: .failure(.general("XPC service returned nil random data"))
           )
           return
         }
@@ -397,10 +398,20 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
     }
   }
 
-  // Helper to map XPC errors to XPCSecurityError
-  private func mapXPCError(_ error: Error) -> XPCSecurityError {
-    // Implement error mapping based on the XPC error types
-    .internalError("XPC error: \(error.localizedDescription)")
+  // Helper to map XPC errors to SecurityError
+  private func mapXPCError(_ error: Error) -> SecurityError {
+    // If the error is already a SecurityError, return it
+    if let securityError = error as? SecurityError {
+      return securityError
+    }
+    
+    // If it's an XPCSecurityError, convert it to SecurityError
+    if let xpcError = error as? XPCErrors.SecurityError {
+      return XPCErrors.SecurityError.fromXPC(xpcError)
+    }
+    
+    // Fall back to a general error with the description
+    return .general("XPC error: \(error.localizedDescription)")
   }
 }
 
@@ -412,7 +423,7 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
     self.serviceProxy=serviceProxy
   }
 
-  func retrieveKey(identifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+  func retrieveKey(identifier: String) async -> Result<SecureBytes, SecurityError> {
     await withCheckedContinuation { continuation in
       self.serviceProxy.retrieveKey(identifier: identifier) { keyData, error in
         if let error {
@@ -421,9 +432,7 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
         }
 
         guard let keyData else {
-          continuation.resume(
-            returning: .failure(.keyManagementError("Key not found: \(identifier)"))
-          )
+          continuation.resume(returning: .failure(.general("XPC service returned nil key")))
           return
         }
 
@@ -432,7 +441,7 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
     }
   }
 
-  func storeKey(key: SecureBytes, identifier: String) async -> Result<Void, XPCSecurityError> {
+  func storeKey(key: SecureBytes, identifier: String) async -> Result<Void, SecurityError> {
     await withCheckedContinuation { continuation in
       self.serviceProxy.storeKey(
         key: DataAdapter.data(from: key),
@@ -447,7 +456,7 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
     }
   }
 
-  func deleteKey(identifier: String) async -> Result<Void, XPCSecurityError> {
+  func deleteKey(identifier: String) async -> Result<Void, SecurityError> {
     await withCheckedContinuation { continuation in
       self.serviceProxy.deleteKey(identifier: identifier) { error in
         if let error {
@@ -459,7 +468,7 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
     }
   }
 
-  func listKeyIdentifiers() async -> Result<[String], XPCSecurityError> {
+  func listKeyIdentifiers() async -> Result<[String], SecurityError> {
     await withCheckedContinuation { continuation in
       self.serviceProxy.listKeyIdentifiers { identifiers, error in
         if let error {
@@ -468,7 +477,7 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
         }
 
         guard let identifiers else {
-          continuation.resume(returning: .failure(.internalError("XPC service returned nil list")))
+          continuation.resume(returning: .failure(.general("XPC service returned nil identifiers")))
           return
         }
 
@@ -477,9 +486,34 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
     }
   }
 
-  // Helper to map XPC errors to XPCSecurityError
-  private func mapXPCError(_ error: Error) -> XPCSecurityError {
-    // Implement error mapping based on the XPC error types
-    .internalError("XPC error: \(error.localizedDescription)")
+  // Helper to map XPC errors to SecurityError
+  private func mapXPCError(_ error: Error) -> SecurityError {
+    // If the error is already a SecurityError, return it
+    if let securityError = error as? SecurityError {
+      return securityError
+    }
+    
+    // If it's an XPCSecurityError, convert it to SecurityError
+    if let xpcError = error as? XPCErrors.SecurityError {
+      return XPCErrors.SecurityError.fromXPC(xpcError)
+    }
+    
+    // Fall back to a general error with the description
+    return .general("XPC error: \(error.localizedDescription)")
+  }
+}
+
+// Helper adapter to convert between SecureBytes and Data
+private enum DataAdapter {
+  static func data(from secureBytes: SecureBytes) -> Data {
+    // Use available properties from SecureBytes 
+    secureBytes.withUnsafeBytes { Data($0) }
+  }
+
+  static func secureBytes(from data: Data) -> SecureBytes {
+    data.withUnsafeBytes { bytes -> SecureBytes in
+      let bufferPointer = bytes.bindMemory(to: UInt8.self)
+      return SecureBytes(Array(bufferPointer))
+    }
   }
 }

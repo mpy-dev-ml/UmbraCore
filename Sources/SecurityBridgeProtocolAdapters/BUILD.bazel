@@ -21,6 +21,7 @@ swift_library(
         "//Sources/SecurityInterfacesProtocols",
         "//Sources/SecurityProtocolsCore",
         "//Sources/XPCProtocolsCore",
+        "//Sources/SecurityTypeConverters",
         
         # Do NOT add these dependencies to avoid cycles:
         # "//Sources/SecurityBridge",

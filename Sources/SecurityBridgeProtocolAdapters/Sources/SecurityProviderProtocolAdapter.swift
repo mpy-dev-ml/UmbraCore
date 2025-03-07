@@ -5,6 +5,7 @@ import SecurityInterfacesProtocols
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
+import SecurityTypeConverters
 
 /// Bridge protocol that connects security providers to Foundation-free interfaces
 /// This helps break circular dependencies between security modules
@@ -29,14 +30,14 @@ public protocol SecurityProviderBridge: Sendable {
   func decrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge
 
   /// Generate a cryptographically secure random key
-  /// - Parameter length: The length of the key in bytes
-  /// - Returns: A random key
+  /// - Parameter sizeInBytes: Size of the key to generate
+  /// - Returns: Generated key
   /// - Throws: Error if key generation fails
-  func generateKey(length: Int) async throws -> DataBridge
+  func generateKey(sizeInBytes: Int) async throws -> DataBridge
 
-  /// Compute a secure hash of the provided data
-  /// - Parameter data: The data to hash
-  /// - Returns: The hash value
+  /// Hash data using the provider's hashing mechanism
+  /// - Parameter data: Data to hash
+  /// - Returns: Hash of the data
   /// - Throws: Error if hashing fails
   func hash(_ data: DataBridge) async throws -> DataBridge
 }
@@ -64,18 +65,6 @@ public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols.
     throw SecurityProtocolsCore.SecurityProtocolError.implementationMissing(errorDescription)
   }
 
-  /// Convert binary data to data bridge format
-  private func convertData(_ data: CoreTypesInterfaces.BinaryData) -> DataBridge {
-    // BinaryData is a SecureData, which has a rawBytes property
-    return DataBridge(data.rawBytes)
-  }
-
-  /// Convert data bridge back to binary data
-  private func convertData(_ bridge: DataBridge) throws -> CoreTypesInterfaces.BinaryData {
-    // Create a BinaryData using the bytes property of DataBridge
-    return CoreTypesInterfaces.BinaryData(bytes: bridge.bytes)
-  }
-
   /// Create a new adapter with the given bridge
   /// - Parameter bridge: The security provider bridge implementation
   public init(bridge: any SecurityProviderBridge) {
@@ -91,11 +80,12 @@ public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols.
   public func encrypt(_ data: CoreTypesInterfaces.BinaryData, 
                       key: CoreTypesInterfaces.BinaryData) async throws -> CoreTypesInterfaces.BinaryData {
     do {
-      let bridgeData = convertData(data)
-      let bridgeKey = convertData(key)
+      // Use the standardised converter from SecurityTypeConverters
+      let bridgeData = data.toDataBridge()
+      let bridgeKey = key.toDataBridge()
       
       let result = try await adapter.encrypt(bridgeData, key: bridgeKey)
-      return try convertData(result)
+      return CoreTypesInterfaces.BinaryData.from(bridge: result)
     } catch {
       try wrapError(error)
     }
@@ -110,38 +100,41 @@ public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols.
   public func decrypt(_ data: CoreTypesInterfaces.BinaryData, 
                       key: CoreTypesInterfaces.BinaryData) async throws -> CoreTypesInterfaces.BinaryData {
     do {
-      let bridgeData = convertData(data)
-      let bridgeKey = convertData(key)
+      // Use the standardised converter from SecurityTypeConverters
+      let bridgeData = data.toDataBridge()
+      let bridgeKey = key.toDataBridge()
       
       let result = try await adapter.decrypt(bridgeData, key: bridgeKey)
-      return try convertData(result)
+      return CoreTypesInterfaces.BinaryData.from(bridge: result)
     } catch {
       try wrapError(error)
     }
   }
 
-  /// Generate a random encryption key
-  /// - Parameter length: Length of the key in bytes
-  /// - Returns: A randomly generated key
+  /// Generate a cryptographically secure random key
+  /// - Parameter sizeInBytes: Size of the key to generate in bytes
+  /// - Returns: Generated key
   /// - Throws: SecurityProtocolError if key generation fails
-  public func generateKey(length: Int) async throws -> CoreTypesInterfaces.BinaryData {
+  public func generateKey(sizeInBytes: Int) async throws -> CoreTypesInterfaces.BinaryData {
     do {
-      let result = try await adapter.generateKey(length: length)
-      return try convertData(result)
+      let result = try await adapter.generateKey(sizeInBytes: sizeInBytes)
+      return CoreTypesInterfaces.BinaryData.from(bridge: result)
     } catch {
       try wrapError(error)
     }
   }
 
-  /// Compute a hash of the provided data
+  /// Hash data using the provider's hashing mechanism
   /// - Parameter data: Data to hash
-  /// - Returns: Hash value
+  /// - Returns: Hash of the data
   /// - Throws: SecurityProtocolError if hashing fails
   public func hash(_ data: CoreTypesInterfaces.BinaryData) async throws -> CoreTypesInterfaces.BinaryData {
     do {
-      let bridgeData = convertData(data)
+      // Use the standardised converter from SecurityTypeConverters
+      let bridgeData = data.toDataBridge()
+      
       let result = try await adapter.hash(bridgeData)
-      return try convertData(result)
+      return CoreTypesInterfaces.BinaryData.from(bridge: result)
     } catch {
       try wrapError(error)
     }

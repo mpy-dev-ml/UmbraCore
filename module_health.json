@@ -1,29 +1,5 @@
 [
   {
-    "name": "CoreTypes",
-    "path": "Sources/CoreTypes",
-    "files": [
-      "Sources/CoreTypes/BinaryData.swift",
-      "Sources/CoreTypes/ByteArray.swift",
-      "Sources/CoreTypes/SecurityErrorBase.swift",
-      "Sources/CoreTypes/SecurityProtocolsCoreIsolation.swift",
-      "Sources/CoreTypes/SecurityProtocolsCoreTypes.swift",
-      "Sources/CoreTypes/SecurityProviderBase.swift",
-      "Sources/CoreTypes/XPCProtocolsCoreIsolation.swift",
-      "Sources/CoreTypes/XPCProtocolsCoreTypes.swift",
-      "Sources/CoreTypes/XPCServiceAdapter.swift"
-    ],
-    "build_files": [
-      "Sources/CoreTypes/BUILD.bazel"
-    ],
-    "health_score": 10,
-    "detected_issues": [
-      "Uses isolation pattern",
-      "Module using isolation pattern requires refactoring",
-      "No Extensions file for namespacing"
-    ]
-  },
-  {
     "name": "Config",
     "path": "Sources/Config",
     "files": [
@@ -63,23 +39,6 @@
     ]
   },
   {
-    "name": "Autocomplete",
-    "path": "Sources/Autocomplete",
-    "files": [
-      "Sources/Autocomplete/AutocompleteProtocol.swift",
-      "Sources/Autocomplete/Protocols/AutocompleteProtocol.swift"
-    ],
-    "build_files": [
-      "Sources/Autocomplete/BUILD.bazel",
-      "Sources/Autocomplete/Protocols/BUILD.bazel"
-    ],
-    "health_score": 7,
-    "detected_issues": [
-      "Very few Swift files (\u003c3)",
-      "No Extensions file for namespacing"
-    ]
-  },
-  {
     "name": "CryptoServiceProtocol",
     "path": "Sources/CryptoServiceProtocol",
     "files": [
@@ -98,7 +57,8 @@
     "name": "CryptoSwiftFoundationIndependent",
     "path": "Sources/CryptoSwiftFoundationIndependent",
     "files": [
-      "Sources/CryptoSwiftFoundationIndependent/CryptoWrapper.swift"
+      "Sources/CryptoSwiftFoundationIndependent/CryptoWrapper.swift",
+      "Sources/CryptoSwiftFoundationIndependent/SecureBytesExtension.swift"
     ],
     "build_files": [
       "Sources/CryptoSwiftFoundationIndependent/BUILD.bazel"
@@ -234,14 +194,15 @@
     ]
   },
   {
-    "name": "API",
-    "path": "Sources/API",
+    "name": "Autocomplete",
+    "path": "Sources/Autocomplete",
     "files": [
-      "Sources/API/API.swift",
-      "Sources/API/UmbraAPI.swift"
+      "Sources/Autocomplete/AutocompleteProtocol.swift",
+      "Sources/Autocomplete/Protocols/AutocompleteProtocol.swift"
     ],
     "build_files": [
-      "Sources/API/BUILD.bazel"
+      "Sources/Autocomplete/BUILD.bazel",
+      "Sources/Autocomplete/Protocols/BUILD.bazel"
     ],
     "health_score": 7,
     "detected_issues": [
@@ -373,21 +334,18 @@
     ]
   },
   {
-    "name": "CoreErrors",
-    "path": "Sources/CoreErrors",
+    "name": "API",
+    "path": "Sources/API",
     "files": [
-      "Sources/CoreErrors/CryptoError.swift",
-      "Sources/CoreErrors/KeyManagerError.swift",
-      "Sources/CoreErrors/LoggingError.swift",
-      "Sources/CoreErrors/RepositoryError.swift",
-      "Sources/CoreErrors/ResourceError.swift",
-      "Sources/CoreErrors/SecurityError.swift",
-      "Sources/CoreErrors/ServiceError.swift"
+      "Sources/API/API.swift",
+      "Sources/API/UmbraAPI.swift"
     ],
-    "build_files": null,
+    "build_files": [
+      "Sources/API/BUILD.bazel"
+    ],
     "health_score": 7,
     "detected_issues": [
-      "No BUILD.bazel file found",
+      "Very few Swift files (\u003c3)",
       "No Extensions file for namespacing"
     ]
   },
@@ -497,16 +455,16 @@
     ]
   },
   {
-    "name": "CoreServicesTypesNoFoundation",
-    "path": "Sources/CoreServicesTypesNoFoundation",
+    "name": "CoreServicesTypes",
+    "path": "Sources/CoreServicesTypes",
     "files": [
-      "Sources/CoreServicesTypesNoFoundation/KeyMetadata.swift",
-      "Sources/CoreServicesTypesNoFoundation/KeyStatus.swift",
-      "Sources/CoreServicesTypesNoFoundation/ServiceState.swift",
-      "Sources/CoreServicesTypesNoFoundation/StorageLocation.swift"
+      "Sources/CoreServicesTypes/KeyMetadata.swift",
+      "Sources/CoreServicesTypes/KeyStatus.swift",
+      "Sources/CoreServicesTypes/ServiceState.swift",
+      "Sources/CoreServicesTypes/StorageLocation.swift"
     ],
     "build_files": [
-      "Sources/CoreServicesTypesNoFoundation/BUILD.bazel"
+      "Sources/CoreServicesTypes/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -740,16 +698,16 @@
     ]
   },
   {
-    "name": "CoreServicesTypes",
-    "path": "Sources/CoreServicesTypes",
+    "name": "CoreServicesTypesNoFoundation",
+    "path": "Sources/CoreServicesTypesNoFoundation",
     "files": [
-      "Sources/CoreServicesTypes/KeyMetadata.swift",
-      "Sources/CoreServicesTypes/KeyStatus.swift",
-      "Sources/CoreServicesTypes/ServiceState.swift",
-      "Sources/CoreServicesTypes/StorageLocation.swift"
+      "Sources/CoreServicesTypesNoFoundation/KeyMetadata.swift",
+      "Sources/CoreServicesTypesNoFoundation/KeyStatus.swift",
+      "Sources/CoreServicesTypesNoFoundation/ServiceState.swift",
+      "Sources/CoreServicesTypesNoFoundation/StorageLocation.swift"
     ],
     "build_files": [
-      "Sources/CoreServicesTypes/BUILD.bazel"
+      "Sources/CoreServicesTypesNoFoundation/BUILD.bazel"
     ],
     "health_score": 6,
     "detected_issues": [
@@ -1105,6 +1063,26 @@
     "detected_issues": [
       "No Extensions file for namespacing"
     ]
+  },
+  {
+    "name": "CoreErrors",
+    "path": "Sources/CoreErrors",
+    "files": [
+      "Sources/CoreErrors/CoreErrors_Extensions.swift",
+      "Sources/CoreErrors/CryptoError.swift",
+      "Sources/CoreErrors/KeyManagerError.swift",
+      "Sources/CoreErrors/LoggingError.swift",
+      "Sources/CoreErrors/RepositoryError.swift",
+      "Sources/CoreErrors/ResourceError.swift",
+      "Sources/CoreErrors/SecurityError.swift",
+      "Sources/CoreErrors/ServiceError.swift",
+      "Sources/CoreErrors/XPCErrors_Extensions.swift"
+    ],
+    "build_files": [
+      "Sources/CoreErrors/BUILD.bazel"
+    ],
+    "health_score": 5,
+    "detected_issues": []
   },
   {
     "name": "Core",

@@ -7,17 +7,12 @@ import XPCProtocolsCore
 
 // MARK: - SecurityConfigDTO Extensions
 
-public extension SecurityProtocolsCore.SecurityConfigDTO {
+public extension SecurityConfigDTO {
     /// Converts to BinaryData format for cross-module transport
     /// - Returns: BinaryData representation of this config
     func toBinaryData() -> CoreTypesInterfaces.BinaryData {
-        // Create a serialized representation
-        let serialized = try? self.secureSerialize()
-        if let bytes = serialized?.bytes {
-            return CoreTypesInterfaces.BinaryData(bytes: bytes)
-        }
-        
-        // Fallback for serialization failure
+        // Simply encode the algorithm name as a fallback - actual serialization implementation
+        // would need to be added separately based on actual required format
         let algorithmBytes = Array(algorithm.utf8)
         return CoreTypesInterfaces.BinaryData(bytes: algorithmBytes)
     }
@@ -25,7 +20,7 @@ public extension SecurityProtocolsCore.SecurityConfigDTO {
     /// Create a copy with modified input data
     /// - Parameter data: BinaryData to use as input
     /// - Returns: New config with updated input data
-    func withBinaryInputData(_ data: CoreTypesInterfaces.BinaryData) -> SecurityProtocolsCore.SecurityConfigDTO {
+    func withBinaryInputData(_ data: CoreTypesInterfaces.BinaryData) -> SecurityConfigDTO {
         let secureBytes = SecureBytes(bytes: data.rawBytes)
         return self.withInputData(secureBytes)
     }
@@ -33,7 +28,7 @@ public extension SecurityProtocolsCore.SecurityConfigDTO {
     /// Create a copy with modified key
     /// - Parameter key: BinaryData key
     /// - Returns: New config with updated key
-    func withBinaryKey(_ key: CoreTypesInterfaces.BinaryData) -> SecurityProtocolsCore.SecurityConfigDTO {
+    func withBinaryKey(_ key: CoreTypesInterfaces.BinaryData) -> SecurityConfigDTO {
         let secureBytes = SecureBytes(bytes: key.rawBytes)
         return self.withKey(secureBytes)
     }
@@ -41,84 +36,49 @@ public extension SecurityProtocolsCore.SecurityConfigDTO {
 
 // MARK: - SecurityResultDTO Extensions
 
-public extension SecurityProtocolsCore.SecurityResultDTO {
+public extension SecurityResultDTO {
     /// Convert result data to BinaryData
     /// - Returns: BinaryData representation or nil if no data
     func resultToBinaryData() -> CoreTypesInterfaces.BinaryData? {
         guard let data = self.data else { return nil }
-        return CoreTypesInterfaces.BinaryData(bytes: data.bytes)
-    }
-    
-    /// Create from BinaryData
-    /// - Parameter data: The BinaryData to wrap
-    /// - Returns: A success result DTO containing the data
-    static func from(binaryData: CoreTypesInterfaces.BinaryData) -> SecurityProtocolsCore.SecurityResultDTO {
-        let secureBytes = SecureBytes(bytes: binaryData.rawBytes)
-        return SecurityProtocolsCore.SecurityResultDTO(data: secureBytes)
-    }
-    
-    /// Create a result from a SecurityError
-    /// - Parameter error: The security error to wrap
-    /// - Returns: A failure result DTO containing the error
-    static func from(error: SecurityProtocolsCore.SecurityError) -> SecurityProtocolsCore.SecurityResultDTO {
-        return SecurityProtocolsCore.SecurityResultDTO(
-            success: false,
-            errorMessage: errorMessageFrom(error),
-            error: error
-        )
-    }
-    
-    /// Create a result from a CoreErrors SecurityError
-    /// - Parameter error: The core error to wrap
-    /// - Returns: A failure result DTO containing the error
-    static func from(coreError: CoreErrors.SecurityError) -> SecurityProtocolsCore.SecurityResultDTO {
-        return SecurityProtocolsCore.SecurityResultDTO(
-            success: false,
-            errorMessage: String(describing: coreError),
-            error: nil  // Core error can't be directly stored in SecurityResultDTO
-        )
-    }
-    
-    /// Create a result from an XPC SecurityError
-    /// - Parameter error: The XPC error to wrap
-    /// - Returns: A failure result DTO containing the error
-    static func from(xpcError: CoreErrors.XPCErrors.SecurityError) -> SecurityProtocolsCore.SecurityResultDTO {
-        return SecurityProtocolsCore.SecurityResultDTO(
-            success: false,
-            errorMessage: String(describing: xpcError),
-            error: nil  // XPC error can't be directly stored in SecurityResultDTO
-        )
-    }
-    
-    /// Extract descriptive error message from SecurityError
-    private static func errorMessageFrom(_ error: SecurityProtocolsCore.SecurityError) -> String {
-        switch error {
-        case let .encryptionFailed(reason):
-            return "Encryption failed: \(reason)"
-        case let .decryptionFailed(reason):
-            return "Decryption failed: \(reason)"
-        case let .keyGenerationFailed(reason):
-            return "Key generation failed: \(reason)"
-        case .invalidKey:
-            return "Invalid key"
-        case .hashVerificationFailed:
-            return "Hash verification failed"
-        case let .randomGenerationFailed(reason):
-            return "Random generation failed: \(reason)"
-        case let .invalidInput(reason):
-            return "Invalid input: \(reason)"
-        case let .storageOperationFailed(reason):
-            return "Storage operation failed: \(reason)"
-        case .timeout:
-            return "Operation timed out"
-        case let .serviceError(code, reason):
-            return "Service error \(code): \(reason)"
-        case let .internalError(message):
-            return "Internal error: \(message)"
-        case .notImplemented:
-            return "Operation not implemented"
-        @unknown default:
-            return "Unknown security error"
+        
+        // Access each byte in the secure bytes and create a new array
+        var bytes = [UInt8]()
+        for i in 0..<data.count {
+            bytes.append(data[i])
         }
+        return CoreTypesInterfaces.BinaryData(bytes: bytes)
+    }
+    
+    /// Create error-mapped CoreResult
+    /// - Returns: Result type with error mapping
+    func toCoreResult() -> Result<CoreTypesInterfaces.BinaryData?, CoreErrors.SecurityError> {
+        // Handle error case
+        if let error = self.error {
+            let mappedError = SecurityErrorMapper.toCoreError(error)
+            return .failure(mappedError)
+        }
+        
+        // Handle success with optional data
+        return .success(self.resultToBinaryData())
+    }
+    
+    /// Create a generic error-mapped Result with value conversion
+    /// - Parameter transform: Transformation function for the result value
+    /// - Returns: Result with mapped error and transformed value
+    func toCoreResult<T>(_ transform: (SecurityResultDTO) -> T?) -> Result<T, CoreErrors.SecurityError> {
+        // Handle error case
+        if let error = self.error {
+            let mappedError = SecurityErrorMapper.toCoreError(error)
+            return .failure(mappedError)
+        }
+        
+        // Transform the result data
+        if let transformed = transform(self) {
+            return .success(transformed)
+        }
+        
+        // Default error case if transformation fails
+        return .failure(CoreErrors.SecurityError.invalidData)
     }
 }

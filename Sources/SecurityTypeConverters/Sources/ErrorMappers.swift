@@ -4,9 +4,9 @@ import XPCProtocolsCore
 
 /// Provides standardised error mapping between different security error types
 public enum SecurityErrorMapper {
-    /// Map any error to SecurityProtocolsCore.SecurityError
+    /// Map any error to SecurityError from SecurityProtocolsCore
     /// - Parameter error: The error to map
-    /// - Returns: A SecurityError representation of the error
+    /// - Returns: A SecurityError representation of the error from SecurityProtocolsCore
     public static func toSecurityError(_ error: Error) -> SecurityProtocolsCore.SecurityError {
         // Handle existing SecurityError
         if let secError = error as? SecurityProtocolsCore.SecurityError {
@@ -63,7 +63,7 @@ public enum SecurityErrorMapper {
             }
         }
         
-        // Map from SecurityProtocolError
+        // Map from protocol errors - defined at the module level in XPCProtocolsCore
         if let protocolError = error as? XPCProtocolsCore.SecurityProtocolError {
             switch protocolError {
             case let .implementationMissing(reason):
@@ -79,7 +79,7 @@ public enum SecurityErrorMapper {
     
     /// Map any error to CoreErrors.SecurityError
     /// - Parameter error: The error to map
-    /// - Returns: A CoreError.SecurityError representation of the error
+    /// - Returns: A CoreErrors.SecurityError representation of the error
     public static func toCoreError(_ error: Error) -> CoreErrors.SecurityError {
         // Handle existing CoreErrors.SecurityError
         if let coreError = error as? CoreErrors.SecurityError {
@@ -123,9 +123,14 @@ public enum SecurityErrorMapper {
             return CoreErrors.SecurityError.serviceFailed
         }
         
-        // Map from protocol errors
+        // Map from protocol errors - defined at the module level in XPCProtocolsCore
         if let protocolError = error as? XPCProtocolsCore.SecurityProtocolError {
-            return CoreErrors.SecurityError.notImplemented
+            switch protocolError {
+            case let .implementationMissing(reason):
+                return CoreErrors.SecurityError.notImplemented
+            @unknown default:
+                return CoreErrors.SecurityError.general("Unknown protocol error")
+            }
         }
         
         // Default case
@@ -157,7 +162,7 @@ public enum SecurityErrorMapper {
             case .hashingFailed:
                 return CoreErrors.XPCErrors.SecurityError.general("Hashing failed")
             case .serviceFailed:
-                return CoreErrors.XPCErrors.SecurityError.communicationError
+                return CoreErrors.XPCErrors.SecurityError.general("Service communication failed")
             case let .general(message):
                 return CoreErrors.XPCErrors.SecurityError.general(message)
             case .cryptoError:
@@ -192,18 +197,18 @@ public enum SecurityErrorMapper {
                 return CoreErrors.XPCErrors.SecurityError.general("Storage operation failed: \(reason)")
             case .timeout:
                 return CoreErrors.XPCErrors.SecurityError.general("Operation timed out")
-            case let .serviceError(code, reason):
-                return CoreErrors.XPCErrors.SecurityError.general("Service error \(code): \(reason)")
             case let .internalError(message):
                 return CoreErrors.XPCErrors.SecurityError.general("Internal error: \(message)")
+            case let .serviceError(code, reason):
+                return CoreErrors.XPCErrors.SecurityError.general("Service error \(code): \(reason)")
             case .notImplemented:
-                return CoreErrors.XPCErrors.SecurityError.general("Operation not implemented")
+                return CoreErrors.XPCErrors.SecurityError.general("Not implemented")
             @unknown default:
                 return CoreErrors.XPCErrors.SecurityError.general("Unknown security error")
             }
         }
         
-        // Map from protocol errors
+        // Map from protocol errors - defined at the module level in XPCProtocolsCore
         if let protocolError = error as? XPCProtocolsCore.SecurityProtocolError {
             switch protocolError {
             case let .implementationMissing(reason):
@@ -213,7 +218,7 @@ public enum SecurityErrorMapper {
             }
         }
         
-        // Default general error
+        // Default case for other error types
         return CoreErrors.XPCErrors.SecurityError.general("Unknown error: \(error.localizedDescription)")
     }
 }

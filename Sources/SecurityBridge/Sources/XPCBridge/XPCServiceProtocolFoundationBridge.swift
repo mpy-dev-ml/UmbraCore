@@ -3,6 +3,7 @@ import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
+import CoreErrors
 
 /// Protocol defining Foundation-dependent XPC service interface.
 /// This protocol is designed to work with the Objective-C runtime and NSXPCConnection.
@@ -214,14 +215,6 @@ extension SecurityBridge {
       }
     }
 
-    // Helper method to map errors to XPCSecurityError
-    private func mapXPCError(_ error: Error) -> XPCSecurityError {
-      if let xpcError=error as? XPCSecurityError {
-        return xpcError
-      }
-      return .internalError("XPC error: \(error.localizedDescription)")
-    }
-
     public func resetSecurityData() async -> Result<Void, XPCSecurityError> {
       await withCheckedContinuation { continuation in
         foundation.resetSecurityDataFoundation { error in
@@ -245,8 +238,9 @@ extension SecurityBridge {
             continuation
               .resume(
                 returning: .failure(
-                  SecurityProtocolError
-                    .implementationMissing("Version not available")
+                  mapSecurityProtocolError(
+                    SecurityProtocolError.implementationMissing("Version not available")
+                  )
                 )
               )
           }
@@ -265,8 +259,9 @@ extension SecurityBridge {
             continuation
               .resume(
                 returning: .failure(
-                  SecurityProtocolError
-                    .implementationMissing("Host identifier not available")
+                  mapSecurityProtocolError(
+                    SecurityProtocolError.implementationMissing("Host identifier not available")
+                  )
                 )
               )
           }
@@ -274,24 +269,52 @@ extension SecurityBridge {
       }
     }
 
-    public func generateRandomData(length: Int) async -> Result<BinaryData, XPCSecurityError> {
+    public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
       await withCheckedContinuation { continuation in
         foundation.generateRandomDataFoundation(length) { data, error in
           if let error {
             continuation.resume(returning: .failure(self.mapXPCError(error)))
           } else if let data {
-            let bytes=[UInt8](data)
-            continuation.resume(returning: .success(BinaryData(bytes: bytes)))
+            continuation.resume(returning: .success(DataAdapter.secureBytes(from: data)))
           } else {
             continuation
               .resume(
                 returning: .failure(
-                  SecurityProtocolError
-                    .implementationMissing("Random data generation failed")
+                  mapSecurityProtocolError(
+                    SecurityProtocolError.implementationMissing("Random data generation failed")
+                  )
                 )
               )
           }
         }
+      }
+    }
+
+    // Helper to map Foundation errors to XPCSecurityError domain
+    private func mapXPCError(_ error: Error) -> XPCSecurityError {
+      // If it's already a XPCSecurityError, just return it
+      if let xpcError = error as? XPCSecurityError {
+        return xpcError
+      }
+      
+      // If it's a regular SecurityError, convert to XPC domain
+      if let securityError = error as? SecurityError {
+        return securityError.toXPC() as! XPCSecurityError
+      }
+      
+      // If it's a namespaced CoreErrors.SecurityError, convert to XPC domain
+      if let ceError = error as? CoreErrors.SecurityError {
+        return XPCErrors.SecurityError(ceError) as! XPCSecurityError
+      }
+      
+      return .general("XPC error: \(error.localizedDescription)")
+    }
+    
+    // Map SecurityProtocolError to XPCSecurityError
+    private func mapSecurityProtocolError(_ error: SecurityProtocolError) -> XPCSecurityError {
+      switch error {
+      case .implementationMissing(let message):
+        return .general("Implementation missing: \(message)")
       }
     }
   }
@@ -300,10 +323,14 @@ extension SecurityBridge {
 // Helper adapter to convert between SecureBytes and Data
 private enum DataAdapter {
   static func data(from secureBytes: SecureBytes) -> Data {
-    Data(secureBytes.bytes)
+    // Use available properties from SecureBytes 
+    secureBytes.withUnsafeBytes { Data($0) }
   }
 
   static func secureBytes(from data: Data) -> SecureBytes {
-    SecureBytes(bytes: [UInt8](data))
+    data.withUnsafeBytes { bytes -> SecureBytes in
+      let bufferPointer = bytes.bindMemory(to: UInt8.self)
+      return SecureBytes(Array(bufferPointer))
+    }
   }
 }
