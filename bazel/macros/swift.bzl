@@ -12,6 +12,7 @@ def umbra_swift_library(
         testonly = False,
         additional_copts = [],
         swift_mode = "default",
+        enable_library_evolution = True,
         **kwargs):
     """Standard Swift library configuration for UmbraCore.
 
@@ -22,9 +23,10 @@ def umbra_swift_library(
         testonly: Whether this is a test-only library
         additional_copts: Additional compiler options
         swift_mode: Swift compilation mode ("default", "release", or "debug")
+        enable_library_evolution: Whether to enable library evolution for this module
         **kwargs: Additional arguments to pass to swift_library
     """
-    copts = get_swift_copts(swift_mode) + additional_copts
+    copts = get_swift_copts(swift_mode, enable_library_evolution) + additional_copts
 
     swift_library(
         name = name,

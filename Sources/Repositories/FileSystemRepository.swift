@@ -18,14 +18,14 @@ public actor FileSystemRepository: Repository {
   public nonisolated let location: URL
 
   /// Logger instance for repository operations
-  private let logger: Logger
+  private let logger: LoggingProtocol
 
   /// Current repository statistics
   private var stats: RepositoryStatistics
 
   /// Thread-safe copy of stats for nonisolated access
   /// This is updated whenever the internal stats are updated
-  private nonisolated let statsAccessor=StatsAccessor()
+  private nonisolated let statsAccessor: StatsAccessor
 
   /// Initializes a new filesystem repository.
   ///
@@ -38,7 +38,7 @@ public actor FileSystemRepository: Repository {
     identifier: String,
     location: URL,
     state: RepositoryState,
-    logger: Logger = .shared
+    logger: LoggingProtocol
   ) {
     self.identifier=identifier
     self.location=location
@@ -51,7 +51,33 @@ public actor FileSystemRepository: Repository {
       totalFileCount: 0
     )
     stats=initialStats
+    statsAccessor=StatsAccessor()
     statsAccessor.updateStats(initialStats)
+  }
+
+  /// Initialises a new file system repository.
+  ///
+  /// - Parameters:
+  ///   - identifier: A unique identifier for the repository.
+  ///   - location: The location URL of the repository.
+  ///   - state: The initial state of the repository. Defaults to `.uninitialized`.
+  public init(
+    identifier: String,
+    location: URL,
+    state: RepositoryState = .uninitialized
+  ) {
+    self.identifier = identifier
+    self.location = location
+    self.state = state
+    self.stats = RepositoryStatistics(
+      totalSize: 0,
+      snapshotCount: 0,
+      lastCheck: Date(),
+      totalFileCount: 0
+    )
+    self.statsAccessor = StatsAccessor()
+    // Using createLogger() from UmbraLogging which abstracts the implementation
+    self.logger = UmbraLogging.createLogger()
   }
 
   // MARK: - RepositoryStats
@@ -108,16 +134,18 @@ public actor FileSystemRepository: Repository {
     try container.encode(statsAccessor.getStats(), forKey: .stats)
   }
 
-  // Fix the Decoder parameter syntax and remove nonisolated modifier
+  // Fix the Decoder parameter syntax for Swift 6 compatibility
+  @available(*, deprecated, message: "Swift 6 will require Decodable conformance to use isolatedInitializer for actors")
   public init(from decoder: Decoder) throws {
     let container=try decoder.container(keyedBy: CodingKeys.self)
     identifier=try container.decode(String.self, forKey: .identifier)
-    state=try container.decode(RepositoryState.self, forKey: .state)
     location=try container.decode(URL.self, forKey: .location)
+    state=try container.decode(RepositoryState.self, forKey: .state)
     let decodedStats=try container.decode(RepositoryStatistics.self, forKey: .stats)
     stats=decodedStats
-    statsAccessor.updateStats(decodedStats)
-    logger = .shared
+    statsAccessor = StatsAccessor()
+    // Using createLogger() from UmbraLogging which abstracts the implementation
+    logger = UmbraLogging.createLogger()
   }
 
   // MARK: - RepositoryCore
@@ -265,7 +293,7 @@ public actor FileSystemRepository: Repository {
   /// Changed from private to public to match protocol requirement
   public func getStats() async throws -> RepositoryStatistics {
     guard case .ready=state else {
-      throw RepositoryError.invalidConfiguration(
+      throw RepositoriesTypes.RepositoryError.invalidConfiguration(
         reason: "Repository is not in ready state"
       )
     }

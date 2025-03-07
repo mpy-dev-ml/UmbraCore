@@ -1,6 +1,11 @@
 # Swift compiler options for the project
 # These are centralized here for consistency across all targets
 
+# Library evolution options
+LIBRARY_EVOLUTION_OPTIONS = [
+    "-enable-library-evolution",
+]
+
 # Swift 6 preparation options
 SWIFT_6_PREP_OPTIONS = [
     # Commenting out Swift 6 preparation flags that are causing issues
@@ -35,8 +40,11 @@ DEBUG_OPTIONS = [
     "-Onone",
 ]
 
-# All swift compile options for standard builds
-DEFAULT_SWIFT_COPTS = PLATFORM_OPTIONS + CONCURRENCY_SAFETY_OPTIONS + SWIFT_6_PREP_OPTIONS
+# Base swift compile options without library evolution
+BASE_SWIFT_COPTS = PLATFORM_OPTIONS + CONCURRENCY_SAFETY_OPTIONS + SWIFT_6_PREP_OPTIONS
+
+# All swift compile options for standard builds with library evolution
+DEFAULT_SWIFT_COPTS = BASE_SWIFT_COPTS + LIBRARY_EVOLUTION_OPTIONS
 
 # Release build options
 RELEASE_SWIFT_COPTS = DEFAULT_SWIFT_COPTS + OPTIMIZATION_OPTIONS
@@ -44,18 +52,24 @@ RELEASE_SWIFT_COPTS = DEFAULT_SWIFT_COPTS + OPTIMIZATION_OPTIONS
 # Debug build options
 DEBUG_SWIFT_COPTS = DEFAULT_SWIFT_COPTS + DEBUG_OPTIONS
 
-def get_swift_copts(mode = "default"):
+def get_swift_copts(mode = "default", enable_library_evolution = True):
     """Returns the appropriate Swift compiler options based on the build mode.
     
     Args:
         mode: Build mode ("default", "release", or "debug")
+        enable_library_evolution: Whether to enable library evolution support
         
     Returns:
-        List of compiler options
+        List of Swift compiler options
     """
     if mode == "release":
-        return RELEASE_SWIFT_COPTS
+        copts = BASE_SWIFT_COPTS + OPTIMIZATION_OPTIONS
     elif mode == "debug":
-        return DEBUG_SWIFT_COPTS
+        copts = BASE_SWIFT_COPTS + DEBUG_OPTIONS
     else:
-        return DEFAULT_SWIFT_COPTS
+        copts = BASE_SWIFT_COPTS
+        
+    if enable_library_evolution:
+        copts = copts + LIBRARY_EVOLUTION_OPTIONS
+        
+    return copts

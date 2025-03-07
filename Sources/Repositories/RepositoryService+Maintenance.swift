@@ -14,22 +14,22 @@ extension RepositoryService {
   /// - Parameters:
   ///   - identifier: The identifier of the repository to maintain
   ///   - rebuildIndex: Whether to rebuild the repository index
-  /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found,
-  ///           `RepositoryError.maintenanceFailed` if the operation fails
+  /// - Throws: `RepositoriesTypes.RepositoryError.repositoryNotFound` if the repository is not found,
+  ///           `RepositoriesTypes.RepositoryError.maintenanceFailed` if the operation fails
   public func maintain(
     _ identifier: String,
-    rebuildIndex: Bool=false
+    rebuildIndex: Bool = false
   ) async throws {
-    let metadata=LogMetadata([
+    let metadata = LogMetadata([
       "repository_id": identifier,
       "rebuild_index": String(rebuildIndex)
     ])
 
     await logger.info("Starting repository maintenance", metadata: metadata)
 
-    guard let repository=repositories[identifier] else {
+    guard let repository = repositories[identifier] else {
       await logger.error("Repository not found", metadata: metadata)
-      throw RepositoryError.repositoryNotFound(
+      throw RepositoriesTypes.RepositoryError.repositoryNotFound(
         "No repository found with identifier '\(identifier)'"
       )
     }
@@ -51,7 +51,7 @@ extension RepositoryService {
         "Repository maintenance failed: \(error.localizedDescription)",
         metadata: metadata
       )
-      throw RepositoryError.maintenanceFailed(
+      throw RepositoriesTypes.RepositoryError.maintenanceFailed(
         reason: error.localizedDescription
       )
     }
@@ -61,22 +61,22 @@ extension RepositoryService {
   ///
   /// - Parameter url: The URL of the repository to repair
   /// - Returns: Whether the repository was successfully repaired
-  /// - Throws: `RepositoryError.repositoryNotFound` if the repository is not found
+  /// - Throws: `RepositoriesTypes.RepositoryError.notFound` if the repository is not found
   public func repairRepository(at url: URL) async throws -> Bool {
-    let metadata=LogMetadataBuilder.forRepository(
+    let metadata = LogMetadataBuilder.forRepository(
       path: url.path
     )
     await logger.info("Starting repository repair", metadata: metadata)
 
-    guard let repository=await getRepository(at: url) else {
+    guard let repository = await getRepository(at: url) else {
       await logger.error("Repository not found", metadata: metadata)
-      throw RepositoryError.notFound(
+      throw RepositoriesTypes.RepositoryError.notFound(
         identifier: url.path
       )
     }
 
     do {
-      let result=try await repository.repair()
+      let result = try await repository.repair()
       if result {
         await logger.info(
           "Repository repair completed successfully",
@@ -94,7 +94,7 @@ extension RepositoryService {
         "Repository repair failed: \(error.localizedDescription)",
         metadata: metadata
       )
-      throw RepositoryError.maintenanceFailed(
+      throw RepositoriesTypes.RepositoryError.maintenanceFailed(
         reason: error.localizedDescription
       )
     }

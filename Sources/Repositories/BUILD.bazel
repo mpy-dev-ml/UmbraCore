@@ -13,5 +13,6 @@ umbra_swift_library(
         "//Sources/Repositories/Types:RepositoriesTypes",
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
+        "//Sources/UmbraLogging",
     ],
 )

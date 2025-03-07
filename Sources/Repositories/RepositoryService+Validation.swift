@@ -13,22 +13,22 @@ extension RepositoryService {
   ///
   /// - Parameter url: The URL of the repository to validate
   /// - Returns: Whether the repository is valid
-  /// - Throws: `RepositoryError.notFound` if the repository is not found
+  /// - Throws: `RepositoriesTypes.RepositoryError.notFound` if the repository is not found
   public func validateRepository(at url: URL) async throws -> Bool {
-    let metadata=LogMetadataBuilder.forRepository(
+    let metadata = LogMetadataBuilder.forRepository(
       path: url.path
     )
     await logger.info("Starting repository validation", metadata: metadata)
 
-    guard let repository=await getRepository(at: url) else {
+    guard let repository = await getRepository(at: url) else {
       await logger.error("Repository not found", metadata: metadata)
-      throw RepositoryError.notFound(
+      throw RepositoriesTypes.RepositoryError.notFound(
         identifier: url.path
       )
     }
 
     do {
-      let result=try await repository.validate()
+      let result = try await repository.validate()
       if result {
         await logger.info(
           "Repository validation completed successfully",
@@ -54,9 +54,9 @@ extension RepositoryService {
   ///
   /// - Parameter url: Repository URL
   /// - Returns: Repository instance
-  /// - Throws: `RepositoryError.invalidConfiguration` if a repository already exists at the URL
+  /// - Throws: `RepositoriesTypes.RepositoryError.invalidConfiguration` if a repository already exists at the URL
   public func initialiseRepository(at url: URL) async throws -> any Repository {
-    let metadata=LogMetadataBuilder.forRepository(
+    let metadata = LogMetadataBuilder.forRepository(
       path: url.path
     )
     await logger.info("Initialising new repository", metadata: metadata)
@@ -66,15 +66,15 @@ extension RepositoryService {
         "Repository already exists at location",
         metadata: metadata
       )
-      throw RepositoryError.invalidConfiguration(
+      throw RepositoriesTypes.RepositoryError.invalidConfiguration(
         reason: "Repository already exists at \(url.path)"
       )
     }
 
     do {
       // Create a concrete repository instance based on the URL
-      let repository=try await createRepository(at: url)
-      repositories[url.path]=repository
+      let repository = try await createRepository(at: url)
+      repositories[url.path] = repository
       await logger.info(
         "Repository initialised successfully",
         metadata: metadata
@@ -93,22 +93,22 @@ extension RepositoryService {
   ///
   /// - Parameter url: The URL of the repository to check
   /// - Returns: The repository statistics
-  /// - Throws: `RepositoryError.notFound` if the repository is not found
+  /// - Throws: `RepositoriesTypes.RepositoryError.notFound` if the repository is not found
   public func checkRepository(at url: URL) async throws -> RepositoryStats {
-    let metadata=LogMetadataBuilder.forRepository(
+    let metadata = LogMetadataBuilder.forRepository(
       path: url.path
     )
     await logger.info("Starting repository check", metadata: metadata)
 
-    guard let repository=await getRepository(at: url) else {
+    guard let repository = await getRepository(at: url) else {
       await logger.error("Repository not found", metadata: metadata)
-      throw RepositoryError.notFound(
+      throw RepositoriesTypes.RepositoryError.notFound(
         identifier: url.path
       )
     }
 
     do {
-      let stats=try await repository.check(
+      let stats = try await repository.check(
         readData: true,
         checkUnused: true
       )

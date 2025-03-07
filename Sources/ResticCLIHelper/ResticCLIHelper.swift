@@ -61,7 +61,7 @@ public final class ResticCLIHelper {
 
   /// The logger instance used by this helper.
   @MainActor
-  private let logger: Logger
+  private let logger: LoggingProtocol
 
   /// The delegate for progress reporting.
   private var progressDelegate: ResticProgressReporting?
@@ -80,7 +80,7 @@ public final class ResticCLIHelper {
   /// - Throws: `ResticError.invalidConfiguration` if the executable cannot be found or accessed.
   public init(
     executablePath: String,
-    logger: Logger = .shared,
+    logger: LoggingProtocol = UmbraLogging.createLogger(),
     progressDelegate: ResticProgressReporting?=nil
   ) throws {
     self.executablePath=executablePath

@@ -12,7 +12,7 @@ extension RepositoryService {
   /// Retrieves aggregated statistics for all repositories.
   ///
   /// - Returns: A dictionary mapping repository identifiers to their statistics.
-  /// - Throws: `RepositoryError.operationFailed` if stats cannot be retrieved for any repository.
+  /// - Throws: `RepositoriesTypes.RepositoryError.operationFailed` if stats cannot be retrieved for any repository.
   public func getAllStats() async throws -> [String: RepositoryStats] {
     let metadata=LogMetadataBuilder.forRepository(
       count: repositories.count
@@ -48,7 +48,7 @@ extension RepositoryService {
           successCount: stats.count
         )
       )
-      throw RepositoryError.operationFailed(
+      throw RepositoriesTypes.RepositoryError.operationFailed(
         reason: "Failed to get stats for some repositories: \(errors)"
       )
     }
@@ -67,9 +67,9 @@ extension RepositoryService {
   ///
   /// - Parameter identifier: The identifier of the repository.
   /// - Returns: Statistics for the specified repository.
-  /// - Throws: `RepositoryError.repositoryNotFound` if no repository exists with the given
+  /// - Throws: `RepositoriesTypes.RepositoryError.repositoryNotFound` if no repository exists with the given
   /// identifier,
-  ///           `RepositoryError.operationFailed` if stats cannot be retrieved.
+  ///           `RepositoriesTypes.RepositoryError.operationFailed` if stats cannot be retrieved.
   public func getStats(for identifier: String) async throws -> RepositoryStats {
     let metadata=LogMetadataBuilder.forRepository(
       identifier: identifier
@@ -78,7 +78,7 @@ extension RepositoryService {
 
     guard let repository=repositories[identifier] else {
       await logger.error("Repository not found", metadata: metadata)
-      throw RepositoryError.notFound(
+      throw RepositoriesTypes.RepositoryError.notFound(
         identifier: identifier
       )
     }
@@ -92,7 +92,7 @@ extension RepositoryService {
         "Failed to get repository stats: \(error.localizedDescription)",
         metadata: metadata
       )
-      throw RepositoryError.operationFailed(
+      throw RepositoriesTypes.RepositoryError.operationFailed(
         reason: "Failed to get stats: \(error.localizedDescription)"
       )
     }
