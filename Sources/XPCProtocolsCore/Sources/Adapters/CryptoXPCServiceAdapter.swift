@@ -7,7 +7,7 @@ import XPCProtocolsCore
 /// CryptoXPCServiceAdapter
 ///
 /// This adapter bridges between CryptoXPCServiceProtocol and XPCProtocolsCore protocols.
-/// It allows existing CryptoXPCService implementations to be used with the new standardized
+/// It allows existing CryptoXPCService implementations to be used with the new standardised
 /// XPC protocol hierarchy without requiring modifications to the service itself.
 ///
 /// Usage:
@@ -43,76 +43,15 @@ public final class CryptoXPCServiceAdapter: @unchecked Sendable {
     SecureBytes(data: data)
   }
 
-  /// Map from CryptoError to XPCSecurityError
-  /// - Parameter error: Error to map
-  /// - Returns: XPCSecurityError
+  /// Maps any error to the XPCSecurityError domain
+  ///
+  /// This helper method provides a standardised way of handling errors throughout the XPC service.
+  /// It delegates to the centralised mapper for consistent error handling across the codebase.
+  ///
+  /// - Parameter error: The error to map
+  /// - Returns: A properly mapped XPCSecurityError
   private func mapError(_ error: Error) -> XPCSecurityError {
-    // First handle specific CryptoError types
-    if let cryptoError=error as? CoreErrors.CryptoError {
-      switch cryptoError {
-        case .encryptionFailed:
-          return .encryptionFailed
-        case .decryptionFailed:
-          return .decryptionFailed
-        case .keyGenerationFailed:
-          return .keyGenerationFailed
-        case .invalidKey, .invalidKeySize, .invalidKeyFormat, .invalidKeyLength:
-          return .invalidData
-        case .invalidIVLength, .invalidSaltLength, .invalidIterationCount,
-             .invalidCredentialIdentifier:
-          return .invalidData
-        case .ivGenerationFailed, .tagGenerationFailed, .keyDerivationFailed:
-          return .cryptoError
-        case .authenticationFailed:
-          return .accessError
-        case .randomGenerationFailed:
-          return .cryptoError
-        case .keyNotFound:
-          return .serviceFailed
-        case .keyExists:
-          return .serviceFailed
-        case .keychainError:
-          return .serviceFailed
-      }
-    }
-    // Check if it's already an XPC error
-    else if let xpcError=error as? XPCSecurityError {
-      return xpcError
-    }
-    // Check if it's a SecurityProtocolsCore error
-    else if let securityError=error as? SecurityProtocolsCore.SecurityError {
-      switch securityError {
-        case .encryptionFailed:
-          return .encryptionFailed
-        case .decryptionFailed:
-          return .decryptionFailed
-        case .keyGenerationFailed:
-          return .keyGenerationFailed
-        case .invalidKey:
-          return .invalidData
-        case .hashVerificationFailed:
-          return .hashingFailed
-        case .randomGenerationFailed:
-          return .cryptoError
-        case .invalidInput:
-          return .invalidData
-        case .storageOperationFailed:
-          return .serviceFailed
-        case .timeout:
-          return .serviceFailed
-        case .serviceError:
-          return .serviceFailed
-        case .internalError:
-          return .cryptoError
-        case .notImplemented:
-          return .notImplemented
-      }
-    }
-    // Fall back to a generic crypto error
-    else {
-      let errorDescription=String(describing: error)
-      return .general("Crypto operation failed: \(errorDescription)")
-    }
+    CoreErrors.SecurityErrorMapper.mapToXPCError(error)
   }
 }
 

@@ -1,9 +1,9 @@
+import CoreErrors
 import CoreTypesInterfaces
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
-import CoreErrors
 
 /// Protocol defining Foundation-dependent XPC service interface.
 /// This protocol is designed to work with the Objective-C runtime and NSXPCConnection.
@@ -290,32 +290,28 @@ extension SecurityBridge {
       }
     }
 
-    // Helper to map Foundation errors to XPCSecurityError domain
+    // MARK: - Error Handling
+
+    /// Maps any error to the XPCSecurityError domain
+    ///
+    /// This helper method provides a standardised way of handling errors throughout the XPC bridge.
+    /// It delegates to the centralised mapper for consistent error handling across the codebase.
+    ///
+    /// - Parameter error: The error to map
+    /// - Returns: A properly mapped XPCSecurityError
     private func mapXPCError(_ error: Error) -> XPCSecurityError {
-      // If it's already a XPCSecurityError, just return it
-      if let xpcError = error as? XPCSecurityError {
-        return xpcError
-      }
-      
-      // If it's a regular SecurityError, convert to XPC domain
-      if let securityError = error as? SecurityError {
-        return securityError.toXPC() as! XPCSecurityError
-      }
-      
-      // If it's a namespaced CoreErrors.SecurityError, convert to XPC domain
-      if let ceError = error as? CoreErrors.SecurityError {
-        return XPCErrors.SecurityError(ceError) as! XPCSecurityError
-      }
-      
-      return .general("XPC error: \(error.localizedDescription)")
+      CoreErrors.SecurityErrorMapper.mapToXPCError(error)
     }
-    
-    // Map SecurityProtocolError to XPCSecurityError
+
+    /// Maps a SecurityProtocolError to XPCSecurityError domain
+    ///
+    /// This helper method ensures consistent handling of protocol-specific errors.
+    /// It delegates to the centralised mapper for consistent error handling.
+    ///
+    /// - Parameter error: The protocol error to map
+    /// - Returns: A properly mapped XPCSecurityError
     private func mapSecurityProtocolError(_ error: SecurityProtocolError) -> XPCSecurityError {
-      switch error {
-      case .implementationMissing(let message):
-        return .general("Implementation missing: \(message)")
-      }
+      CoreErrors.SecurityErrorMapper.mapToXPCError(error)
     }
   }
 }
@@ -323,13 +319,13 @@ extension SecurityBridge {
 // Helper adapter to convert between SecureBytes and Data
 private enum DataAdapter {
   static func data(from secureBytes: SecureBytes) -> Data {
-    // Use available properties from SecureBytes 
+    // Use available properties from SecureBytes
     secureBytes.withUnsafeBytes { Data($0) }
   }
 
   static func secureBytes(from data: Data) -> SecureBytes {
     data.withUnsafeBytes { bytes -> SecureBytes in
-      let bufferPointer = bytes.bindMemory(to: UInt8.self)
+      let bufferPointer=bytes.bindMemory(to: UInt8.self)
       return SecureBytes(Array(bufferPointer))
     }
   }

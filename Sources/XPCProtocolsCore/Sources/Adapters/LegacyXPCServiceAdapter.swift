@@ -30,135 +30,27 @@ public final class LegacyXPCServiceAdapter: @unchecked Sendable {
     self.service=service
   }
 
-  /// Map from legacy error types to XPCSecurityError
-  /// - Parameter error: Legacy error
-  /// - Returns: Standard XPCSecurityError
+  /// Maps from legacy error types to the standardised XPCSecurityError domain
+  ///
+  /// This method provides a centralised way of handling legacy errors throughout the XPC service.
+  /// It delegates to the centralised mapper for consistent error handling across the codebase.
+  ///
+  /// - Parameter error: Any legacy error type
+  /// - Returns: A properly mapped XPCSecurityError
   public static func mapError(_ error: Error) -> XPCSecurityError {
-    // Handle SecurityProtocolsCore.SecurityError
-    if let securityError=error as? SecurityProtocolsCore.SecurityError {
-      switch securityError {
-        case let .encryptionFailed(reason):
-          return .encryptionFailed
-        case let .decryptionFailed(reason):
-          return .decryptionFailed
-        case let .keyGenerationFailed(reason):
-          return .keyGenerationFailed
-        case .invalidKey:
-          return .invalidData
-        case .hashVerificationFailed:
-          return .hashingFailed
-        case let .randomGenerationFailed(reason):
-          return .cryptoError
-        case let .invalidInput(reason):
-          return .invalidData
-        case let .storageOperationFailed(reason):
-          return .serviceFailed
-        case .timeout:
-          return .serviceFailed
-        case let .serviceError(code, reason):
-          return .serviceFailed
-        case let .internalError(message):
-          return .general(message)
-        case .notImplemented:
-          return .notImplemented
-      }
-    }
-
-    // Handle legacy SecurityError types
-    if let legacyError=error as? SecurityError {
-      switch legacyError {
-        case .notImplemented:
-          return .notImplemented
-        case .invalidData:
-          return .invalidData
-        case .encryptionFailed:
-          return .encryptionFailed
-        case .decryptionFailed:
-          return .decryptionFailed
-        case .keyGenerationFailed:
-          return .keyGenerationFailed
-        case .hashingFailed:
-          return .hashingFailed
-        case .serviceFailed:
-          return .serviceFailed
-        case let .general(message):
-          return .general(message)
-        case .cryptoError:
-          return .cryptoError
-        default:
-          return .cryptoError
-      }
-    }
-
-    // Handle CoreErrors.CryptoError
-    if let cryptoError=error as? CoreErrors.CryptoError {
-      switch cryptoError {
-        case .encryptionFailed:
-          return .encryptionFailed
-        case .decryptionFailed:
-          return .decryptionFailed
-        case .keyGenerationFailed:
-          return .keyGenerationFailed
-        case .invalidKey:
-          return .invalidData
-        case .invalidData:
-          return .invalidData
-        case .unsupportedAlgorithm:
-          return .notImplemented
-        case .hashingFailed:
-          return .hashingFailed
-        case .operationFailed:
-          return .serviceFailed
-        case .resultVerificationFailed:
-          return .cryptoError
-      }
-    }
-
-    // Handle NSError
-    let nsError=error as NSError
-    switch nsError.domain {
-      case "com.umbra.security":
-        return .cryptoError
-      case "com.umbra.keychain":
-        return .accessError
-      case "com.umbra.bookmark":
-        return .bookmarkError
-      default:
-        return .general("Error in domain: \(nsError.domain), code: \(nsError.code)")
-    }
+    CoreErrors.SecurityErrorMapper.mapToXPCError(error)
   }
 
-  /// Map from XPCSecurityError to legacy SecurityError
-  /// - Parameter error: Standard XPCSecurityError
-  /// - Returns: Legacy SecurityError
+  /// Maps from XPCSecurityError to the legacy SecurityError domain
+  ///
+  /// This method provides bidirectional conversion capability for backward compatibility.
+  /// It delegates to the centralised mapper for consistent error handling.
+  ///
+  /// - Parameter error: A standardised XPCSecurityError
+  /// - Returns: A legacy SecurityError from the SecurityProtocolsCore module
   @available(*, deprecated, message: "Use XPCSecurityError instead")
   public static func mapToLegacyError(_ error: XPCSecurityError) -> SecurityError {
-    switch error {
-      case .cryptoError:
-        return .cryptoError
-      case .notImplemented:
-        return .notImplemented
-      case .invalidData:
-        return .invalidData
-      case .encryptionFailed:
-        return .encryptionFailed
-      case .decryptionFailed:
-        return .decryptionFailed
-      case .keyGenerationFailed:
-        return .keyGenerationFailed
-      case .hashingFailed:
-        return .hashingFailed
-      case .serviceFailed:
-        return .serviceFailed
-      case let .general(message):
-        return .general(message)
-      case .accessError:
-        return .serviceFailed
-      case .bookmarkError, .bookmarkCreationFailed, .bookmarkResolutionFailed:
-        return .invalidData
-      @unknown default:
-        return .serviceFailed
-    }
+    CoreErrors.SecurityErrorMapper.mapToSPCError(error)
   }
 
   /// Convert SecureBytes to legacy SecureBytes

@@ -107,17 +107,15 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
 
   // MARK: - Helper Methods
 
-  /// Map Foundation-specific errors to SecurityError
+  /// Maps an error to a SecurityError using the centralised error mapper.
+  ///
+  /// This method provides a standardised way of handling errors throughout the application.
+  /// It uses the centralised error mapper to convert any error into a SecurityError.
+  ///
+  /// - Parameter error: The error to be mapped.
+  /// - Returns: A SecurityError representing the original error.
   private func mapError(_ error: Error) -> SecurityError {
-    // If the error is already a SecurityError, return it
-    if let securityError=error as? SecurityError {
-      return securityError
-    }
-
-    // Map Foundation-specific errors to SecurityError types
-    // This would be expanded based on the specific error types used
-    return SecurityError
-      .internalError("Foundation key management error: \(error.localizedDescription)")
+    CoreErrors.SecurityErrorMapper.mapToSPCError(error)
   }
 }
 

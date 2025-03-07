@@ -10,8 +10,8 @@
 
 import UmbraCoreTypes
 
-/// Main entry point for accessing the SecurityProtocolsCore module
-public enum SecurityProtocolsCore {
+/// Module information and version details
+public enum ModuleInfo {
   /// Current module version
   public static let version="1.0.0"
 }

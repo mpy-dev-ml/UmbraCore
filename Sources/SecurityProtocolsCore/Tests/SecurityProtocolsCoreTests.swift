@@ -5,7 +5,7 @@ import XCTest
 class SecurityProtocolsCoreTests: XCTestCase {
 
   func testVersion() {
-    XCTAssertFalse(SecurityProtocolsCore.version.isEmpty)
+    XCTAssertFalse(ModuleInfo.version.isEmpty)
   }
 
   // MARK: - SecurityError Tests

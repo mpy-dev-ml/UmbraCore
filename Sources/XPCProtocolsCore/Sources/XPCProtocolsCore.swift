@@ -9,8 +9,8 @@
 /// - XPCServiceProtocolStandard: Mid-level protocol with key management
 /// - XPCServiceProtocolComplete: Full-featured protocol with encryption/decryption
 
-/// Provides access to module-level functionality and version information
-public enum XPCProtocolsCore {
+/// Provides access to module-level information and version details
+public enum ModuleInfo {
   /// Current module version
   public static let version="1.0.0"
 

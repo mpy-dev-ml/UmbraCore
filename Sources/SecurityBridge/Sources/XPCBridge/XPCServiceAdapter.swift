@@ -1,8 +1,8 @@
+import CoreErrors
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
-import CoreErrors
 
 /// XPCServiceAdapter provides a bridge for XPC service communication that requires Foundation
 /// types.
@@ -398,20 +398,15 @@ private final class XPCCryptoServiceAdapter: CryptoServiceProtocol, @unchecked S
     }
   }
 
-  // Helper to map XPC errors to SecurityError
+  /// Maps an XPC error to a SecurityError using the centralised error mapper.
+  ///
+  /// This method provides a consistent way of handling XPC errors throughout the application.
+  /// It uses the centralised error mapper to convert the XPC error into a SecurityError.
+  ///
+  /// - Parameter error: The XPC error to be mapped.
+  /// - Returns: A SecurityError representing the XPC error.
   private func mapXPCError(_ error: Error) -> SecurityError {
-    // If the error is already a SecurityError, return it
-    if let securityError = error as? SecurityError {
-      return securityError
-    }
-    
-    // If it's an XPCSecurityError, convert it to SecurityError
-    if let xpcError = error as? XPCErrors.SecurityError {
-      return XPCErrors.SecurityError.fromXPC(xpcError)
-    }
-    
-    // Fall back to a general error with the description
-    return .general("XPC error: \(error.localizedDescription)")
+    CoreErrors.SecurityErrorMapper.mapToSPCError(error)
   }
 }
 
@@ -486,33 +481,28 @@ private final class XPCKeyManagementAdapter: KeyManagementProtocol, @unchecked S
     }
   }
 
-  // Helper to map XPC errors to SecurityError
+  /// Maps an XPC error to a SecurityError using the centralised error mapper.
+  ///
+  /// This method provides a consistent way of handling XPC errors throughout the application.
+  /// It uses the centralised error mapper to convert the XPC error into a SecurityError.
+  ///
+  /// - Parameter error: The XPC error to be mapped.
+  /// - Returns: A SecurityError representing the XPC error.
   private func mapXPCError(_ error: Error) -> SecurityError {
-    // If the error is already a SecurityError, return it
-    if let securityError = error as? SecurityError {
-      return securityError
-    }
-    
-    // If it's an XPCSecurityError, convert it to SecurityError
-    if let xpcError = error as? XPCErrors.SecurityError {
-      return XPCErrors.SecurityError.fromXPC(xpcError)
-    }
-    
-    // Fall back to a general error with the description
-    return .general("XPC error: \(error.localizedDescription)")
+    CoreErrors.SecurityErrorMapper.mapToSPCError(error)
   }
 }
 
 // Helper adapter to convert between SecureBytes and Data
 private enum DataAdapter {
   static func data(from secureBytes: SecureBytes) -> Data {
-    // Use available properties from SecureBytes 
+    // Use available properties from SecureBytes
     secureBytes.withUnsafeBytes { Data($0) }
   }
 
   static func secureBytes(from data: Data) -> SecureBytes {
     data.withUnsafeBytes { bytes -> SecureBytes in
-      let bufferPointer = bytes.bindMemory(to: UInt8.self)
+      let bufferPointer=bytes.bindMemory(to: UInt8.self)
       return SecureBytes(Array(bufferPointer))
     }
   }
