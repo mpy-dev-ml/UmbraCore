@@ -3,9 +3,9 @@ import Foundation
 import FoundationBridgeTypes
 import SecurityBridge
 import SecurityBridgeProtocolAdapters
+import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
-import XPCProtocolsCore
 
 final class SecurityBridgeMigrationTests: XCTestCase {
   // MARK: - XPCServiceBridge Tests
@@ -103,19 +103,19 @@ final class SecurityBridgeMigrationTests: XCTestCase {
 
 // MARK: - Test Mocks
 
-private class MockXPCServiceProtocolBasic: XPCProtocolsCore.XPCServiceProtocolBasic,
+private class MockXPCServiceProtocolBasic: ServiceProtocolBasic,
 @unchecked Sendable {
   static var protocolIdentifier: String="mock.protocol"
 
-  func ping() async -> Result<Bool, XPCSecurityError> {
+  func ping() async -> Result<Bool, SecurityError> {
     .success(true)
   }
 
-  func synchronizeKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
+  func synchronizeKeys(_: SecureBytes) async -> Result<Void, SecurityError> {
     .success(())
   }
 
-  func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+  func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
     var bytes=[UInt8]()
     for i in 0..<length {
       bytes.append(UInt8(i % 256))
@@ -135,9 +135,9 @@ private class MockFoundationXPCService: NSObject, Sendable {
 }
 
 private class CoreTypesToFoundationBridgeAdapter: NSObject {
-  private let service: XPCServiceProtocolBasic
+  private let service: ServiceProtocolBasic
 
-  init(wrapping service: XPCServiceProtocolBasic) {
+  init(wrapping service: ServiceProtocolBasic) {
     self.service=service
     super.init()
   }
@@ -159,7 +159,7 @@ private class CoreTypesToFoundationBridgeAdapter: NSObject {
   }
 }
 
-private class FoundationToCoreTypesAdapter: XPCServiceProtocolBasic {
+private class FoundationToCoreTypesAdapter: ServiceProtocolBasic {
   private let service: MockFoundationXPCService
 
   init(wrapping service: MockFoundationXPCService) {
@@ -168,7 +168,7 @@ private class FoundationToCoreTypesAdapter: XPCServiceProtocolBasic {
 
   static var protocolIdentifier: String="com.umbra.xpc.service.adapter.foundation.bridge"
 
-  func ping() async -> Result<Bool, XPCSecurityError> {
+  func ping() async -> Result<Bool, SecurityError> {
     await withCheckedContinuation { continuation in
       service.pingFoundation { success, _ in
         if let error {
@@ -180,11 +180,11 @@ private class FoundationToCoreTypesAdapter: XPCServiceProtocolBasic {
     }
   }
 
-  func synchronizeKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
+  func synchronizeKeys(_: SecureBytes) async -> Result<Void, SecurityError> {
     .success(())
   }
 
-  func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+  func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
     var bytes=[UInt8]()
     for i in 0..<length {
       bytes.append(UInt8(i % 256))
@@ -199,7 +199,7 @@ private class MockSecurityProviderBridge: @unchecked Sendable {
   func encrypt(
     _ data: DataBridge,
     key _: DataBridge
-  ) async -> Result<DataBridge, XPCSecurityError> {
+  ) async -> Result<DataBridge, SecurityError> {
     // Simple "encryption" for test
     let bytes=data.bytes.map { $0 ^ 0xFF } // Just XOR with 0xFF
     return .success(DataBridge(bytes))
@@ -208,13 +208,13 @@ private class MockSecurityProviderBridge: @unchecked Sendable {
   func decrypt(
     _ data: DataBridge,
     key _: DataBridge
-  ) async -> Result<DataBridge, XPCSecurityError> {
+  ) async -> Result<DataBridge, SecurityError> {
     // Simple "decryption" for test
     let bytes=data.bytes.map { $0 ^ 0xFF } // Just XOR with 0xFF
     return .success(DataBridge(bytes))
   }
 
-  func generateRandomData(length: Int) async -> Result<DataBridge, XPCSecurityError> {
+  func generateRandomData(length: Int) async -> Result<DataBridge, SecurityError> {
     var bytes=[UInt8]()
     for i in 0..<length {
       bytes.append(UInt8(i % 256))
