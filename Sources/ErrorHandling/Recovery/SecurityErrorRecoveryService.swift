@@ -1,22 +1,30 @@
 // SecurityErrorRecoveryService.swift
 // Error recovery service for security-related errors
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
+import ErrorHandlingProtocols
+import ErrorHandlingModels
+import ErrorHandlingCommon
+import ErrorHandlingDomains
 
 /// Provides recovery options for security errors
-public final class SecurityErrorRecoveryService: ErrorRecoveryService {
+@MainActor
+public final class SecurityErrorRecoveryService: ErrorRecoveryService, Sendable {
     /// Shared instance
     public static let shared = SecurityErrorRecoveryService()
     
     /// Private initialiser to enforce singleton pattern
-    private init() {}
+    private init() {
+        // Register with the recovery registry
+        ErrorRecoveryRegistry.shared.register(service: self)
+    }
     
     /// Gets recovery options for a given error
     /// - Parameter error: The error to recover from
     /// - Returns: Array of recovery options, if available
-    public func recoveryOptions(for error: UmbraError) -> [ErrorRecoveryOption] {
+    public func recoveryOptions(for error: ErrorHandlingProtocols.UmbraError) -> [ErrorRecoveryOption] {
         // Only handle security domain errors
         guard error.domain == "Security" else {
             return []
@@ -24,32 +32,27 @@ public final class SecurityErrorRecoveryService: ErrorRecoveryService {
         
         var options: [ErrorRecoveryOption] = []
         
-        // Handle specific security error types
-        if let securityError = error as? SecurityError {
-            switch securityError {
-            case .authenticationFailed:
-                options.append(createRetryAuthenticationOption())
-                options.append(createResetCredentialsOption())
-                
-            case .authorizationFailed:
-                options.append(createRequestPermissionsOption())
-                
-            case .cryptoOperationFailed:
-                options.append(createRetryWithAlternateAlgorithmOption())
-                
-            case .tamperedData:
-                options.append(createRestoreFromBackupOption())
-                
-            case .connectionFailed:
-                options.append(createRetryConnectionOption())
-                
-            case .generalError:
-                options.append(createReportSecurityIssueOption())
-                
-            default:
-                // Add a generic option for unhandled security errors
-                options.append(createReportSecurityIssueOption())
-            }
+        // Handle specific security error types based on error code
+        switch error.code {
+        case "authentication_failed":
+            options.append(createRetryAuthenticationOption())
+            options.append(createResetCredentialsOption())
+            
+        case "authorization_failed":
+            options.append(createRequestPermissionsOption())
+            
+        case "crypto_operation_failed":
+            options.append(createRetryWithAlternateAlgorithmOption())
+            
+        case "tampered_data":
+            options.append(createRestoreFromBackupOption())
+            
+        case "connection_failed":
+            options.append(createRetryConnectionOption())
+            
+        default:
+            // Add a generic option for unhandled security errors
+            options.append(createReportSecurityIssueOption())
         }
         
         return options
@@ -58,11 +61,11 @@ public final class SecurityErrorRecoveryService: ErrorRecoveryService {
     /// Attempts to recover from an error using all available options
     /// - Parameter error: The error to recover from
     /// - Returns: Whether recovery was successful
-    public func attemptRecovery(for error: UmbraError) async -> Bool {
+    public func attemptRecovery(for error: ErrorHandlingProtocols.UmbraError) async -> Bool {
         let options = recoveryOptions(for: error)
         
         for option in options {
-            if await option.attemptRecovery() {
+            if await option.execute() {
                 return true
             }
         }
@@ -72,124 +75,83 @@ public final class SecurityErrorRecoveryService: ErrorRecoveryService {
     
     // MARK: - Recovery Option Factories
     
-    /// Creates an option to retry authentication
     private func createRetryAuthenticationOption() -> ErrorRecoveryOption {
         return ErrorRecoveryOption(
             id: "security.retry_authentication",
             title: "Retry Authentication",
-            description: "Try authenticating again with your credentials",
+            description: "Try authenticating again",
             successLikelihood: .possible,
             isDisruptive: false,
-            recoveryAction: {
-                // In a real implementation, this would:
-                // 1. Clear any cached auth tokens
-                // 2. Request credentials from the user
-                // 3. Attempt to authenticate again
-                
-                // Simulated recovery logic
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                
-                // For demonstration, we'll just use a random success value
+            recoveryAction: { @Sendable in
+                // Simulate authentication retry
+                try await Task.sleep(nanoseconds: 1_000_000_000)
+                // For now, we'll simulate a 50% success rate
                 if Bool.random() {
                     return
                 } else {
-                    struct RecoveryFailedError: Error {}
-                    throw RecoveryFailedError()
+                    throw NSError(domain: "Security", code: 401, 
+                                  userInfo: [NSLocalizedDescriptionKey: "Authentication failed again"])
                 }
             }
         )
     }
     
-    /// Creates an option to reset credentials
     private func createResetCredentialsOption() -> ErrorRecoveryOption {
         return ErrorRecoveryOption(
             id: "security.reset_credentials",
             title: "Reset Credentials",
-            description: "Initiate the password reset flow to create new credentials",
+            description: "Reset your login credentials",
             successLikelihood: .likely,
             isDisruptive: true,
-            recoveryAction: {
-                // In a real implementation, this would:
-                // 1. Launch the password reset flow
-                // 2. Guide the user through creating new credentials
-                
-                // Simulated recovery logic
-                try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
-                return
+            recoveryAction: { @Sendable in
+                // Simulate credential reset
+                try await Task.sleep(nanoseconds: 2_000_000_000)
             }
         )
     }
     
-    /// Creates an option to request additional permissions
     private func createRequestPermissionsOption() -> ErrorRecoveryOption {
         return ErrorRecoveryOption(
             id: "security.request_permissions",
             title: "Request Permissions",
             description: "Request additional permissions needed to complete the operation",
-            successLikelihood: .likely,
-            isDisruptive: false,
-            recoveryAction: {
-                // In a real implementation, this would:
-                // 1. Determine what permissions are needed
-                // 2. Show a permission request UI
-                // 3. Apply the new permissions
-                
-                // Simulated recovery logic
-                try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
-                return
+            successLikelihood: .possible,
+            isDisruptive: true,
+            recoveryAction: { @Sendable in
+                // Simulate permission request
+                try await Task.sleep(nanoseconds: 1_500_000_000)
             }
         )
     }
     
-    /// Creates an option to retry with an alternate cryptographic algorithm
     private func createRetryWithAlternateAlgorithmOption() -> ErrorRecoveryOption {
         return ErrorRecoveryOption(
-            id: "security.retry_alternate_algorithm",
-            title: "Use Alternative Encryption",
-            description: "Try the operation again with a different encryption algorithm",
-            successLikelihood: .possible,
+            id: "security.alternate_algorithm",
+            title: "Try Alternative Method",
+            description: "Attempt operation with an alternative cryptographic method",
+            successLikelihood: .likely,
             isDisruptive: false,
-            recoveryAction: {
-                // In a real implementation, this would:
-                // 1. Select an alternative algorithm
-                // 2. Retry the operation with the new algorithm
-                
-                // Simulated recovery logic
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                
-                // For demonstration, we'll just use a random success value
-                if Bool.random() {
-                    return
-                } else {
-                    struct RecoveryFailedError: Error {}
-                    throw RecoveryFailedError()
-                }
+            recoveryAction: { @Sendable in
+                // Simulate trying alternate algorithm
+                try await Task.sleep(nanoseconds: 1_000_000_000)
             }
         )
     }
     
-    /// Creates an option to restore data from backup
     private func createRestoreFromBackupOption() -> ErrorRecoveryOption {
         return ErrorRecoveryOption(
-            id: "security.restore_from_backup",
+            id: "security.restore_backup",
             title: "Restore from Backup",
-            description: "Restore the affected data from the most recent backup",
+            description: "Restore data from a secure backup",
             successLikelihood: .likely,
             isDisruptive: true,
-            recoveryAction: {
-                // In a real implementation, this would:
-                // 1. Locate the most recent backup
-                // 2. Validate the backup integrity
-                // 3. Restore from the backup
-                
-                // Simulated recovery logic
-                try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
-                return
+            recoveryAction: { @Sendable in
+                // Simulate restore from backup
+                try await Task.sleep(nanoseconds: 3_000_000_000)
             }
         )
     }
     
-    /// Creates an option to retry a failed connection
     private func createRetryConnectionOption() -> ErrorRecoveryOption {
         return ErrorRecoveryOption(
             id: "security.retry_connection",
@@ -197,41 +159,23 @@ public final class SecurityErrorRecoveryService: ErrorRecoveryService {
             description: "Attempt to reconnect to the security service",
             successLikelihood: .possible,
             isDisruptive: false,
-            recoveryAction: {
-                // In a real implementation, this would:
-                // 1. Reset connection state
-                // 2. Try to establish a new connection
-                
-                // Simulated recovery logic
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                
-                // For demonstration, we'll just use a random success value
-                if Bool.random() {
-                    return
-                } else {
-                    struct RecoveryFailedError: Error {}
-                    throw RecoveryFailedError()
-                }
+            recoveryAction: { @Sendable in
+                // Simulate connection retry
+                try await Task.sleep(nanoseconds: 1_000_000_000)
             }
         )
     }
     
-    /// Creates an option to report a security issue
     private func createReportSecurityIssueOption() -> ErrorRecoveryOption {
         return ErrorRecoveryOption(
             id: "security.report_issue",
             title: "Report Security Issue",
-            description: "Send a report about this security issue to the development team",
-            successLikelihood: .veryLikely,
+            description: "Report this security issue to our team",
+            successLikelihood: .unlikely,
             isDisruptive: false,
-            recoveryAction: {
-                // In a real implementation, this would:
-                // 1. Gather diagnostic information
-                // 2. Send a report to the development team
-                
-                // Simulated recovery logic
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                return
+            recoveryAction: { @Sendable in
+                // Simulate report submission
+                try await Task.sleep(nanoseconds: 500_000_000)
             }
         )
     }

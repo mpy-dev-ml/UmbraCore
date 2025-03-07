@@ -1,4 +1,4 @@
-import ErrorHandlingModels
+import ErrorHandlingCommon
 import Foundation
 
 /// Protocol for service-specific errors that provide detailed context
@@ -34,19 +34,12 @@ extension ServiceErrorProtocol {
 
   /// Default implementation creating an error context
   public var context: ErrorContext {
-    var metadata: [String: String]=[:]
-    if let details {
-      metadata["details"]=details
-    }
-    metadata["operation"]=operation
-    if let error=underlyingError {
-      metadata["underlyingError"]=String(describing: error)
-    }
-
+    // Create the error context with the required parameters
     return ErrorContext(
       source: serviceName,
-      message: localizedDescription,
-      metadata: metadata
+      operation: operation,
+      details: details,
+      underlyingError: underlyingError
     )
   }
 }

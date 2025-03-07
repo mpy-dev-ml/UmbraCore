@@ -11,8 +11,14 @@ umbra_swift_library(
         allow_empty = True,
     ),
     deps = [
-        "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
+        "//Sources/ErrorHandling/Core:ErrorHandlingCore",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+        "//Sources/ErrorHandling/Logging:ErrorHandlingLogging",
+        "//Sources/ErrorHandling/Mapping:ErrorHandlingMapping",
         "//Sources/ErrorHandling/Models:ErrorHandlingModels",
+        "//Sources/ErrorHandling/Notification:ErrorHandlingNotification",
         "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
+        "//Sources/ErrorHandling/Recovery:ErrorHandlingRecovery",
+        "//Sources/ErrorHandling/Utilities:ErrorHandlingUtilities",
     ],
 )

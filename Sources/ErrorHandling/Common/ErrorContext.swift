@@ -20,7 +20,7 @@ import Foundation
 ///     )
 /// }
 /// ```
-public struct ErrorContext {
+public struct ErrorContext: Sendable {
   /// The source of the error (e.g., module name, class name)
   public let source: String
 

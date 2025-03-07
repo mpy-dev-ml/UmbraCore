@@ -105,6 +105,12 @@ private func mapFromCoreSecurityError(_ error: CoreErrors.SecurityError) -> Erro
       return ResourceLocatorError.generalError("Invalid key")
     case .hashVerificationFailed:
       return ResourceLocatorError.generalError("Hash verification failed")
+    case .cryptoOperationFailed:
+      return ResourceLocatorError.generalError("Operation timed out")
+    case .generalError:
+      return ResourceLocatorError.generalError("Invalid key")
+    case .tamperedData:
+      return ResourceLocatorError.generalError("Hash verification failed")
     @unknown default:
       return ResourceLocatorError.generalError("Unknown security error")
   }

@@ -5,7 +5,7 @@ umbra_swift_library(
     name = "ErrorHandlingProtocols",
     srcs = glob(["*.swift"]),
     deps = [
-        "//Sources/ErrorHandling/Models:ErrorHandlingModels",
+        "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
         "//Sources/UmbraLogging",
     ],
 )

@@ -1,37 +1,119 @@
+// ErrorContext.swift
+// Additional context information for errors
+//
+// Copyright 2025 UmbraCorp. All rights reserved.
+
 import Foundation
+import ErrorHandlingCommon
 
-/// Context information for an error
+/// Additional context information about an error
 public struct ErrorContext: Sendable, Equatable {
-  /// Source of the error (e.g. service name)
+  /// The source of the error (e.g., component name, module)
   public let source: String
-
-  /// Error code if available
+  
+  /// Specific error code for the error
   public let code: String?
-
-  /// Error message
+  
+  /// Additional message about the error
   public let message: String
-
+  
   /// Additional metadata about the error
-  public var metadata: [String: Any]
+  /// Uses a Sendable-compatible dictionary type (only string keys and values)
+  public let metadata: [String: String]
+  
+  /// Storage for optional number values
+  public let numberValues: [String: Double]
+  
+  /// Storage for optional boolean values
+  public let boolValues: [String: Bool]
   
   /// Creates a new ErrorContext instance
   /// - Parameters:
-  ///   - source: Source of the error (e.g. service name)
-  ///   - code: Error code if available
-  ///   - message: Error message
-  ///   - metadata: Additional metadata about the error
+  ///   - source: The source of the error (e.g., component name, module)
+  ///   - code: Optional specific error code
+  ///   - message: Additional message about the error
+  ///   - metadata: Optional additional string metadata
+  ///   - numberValues: Optional numeric metadata
+  ///   - boolValues: Optional boolean metadata
   public init(
-    source: String,
-    code: String? = nil,
-    message: String,
-    metadata: [String: Any] = [:]
+    source: String, 
+    code: String? = nil, 
+    message: String, 
+    metadata: [String: String] = [:],
+    numberValues: [String: Double] = [:],
+    boolValues: [String: Bool] = [:]
   ) {
     self.source = source
     self.code = code
     self.message = message
     self.metadata = metadata
+    self.numberValues = numberValues
+    self.boolValues = boolValues
   }
-
+  
+  /// Creates a new ErrorContext by copying this context and adding additional metadata
+  /// - Parameter metadata: Additional string metadata to add to the context
+  /// - Returns: A new ErrorContext instance with combined metadata
+  public func with(metadata additionalMetadata: [String: String]) -> ErrorContext {
+    var combinedMetadata = self.metadata
+    
+    // Add the new metadata
+    for (key, value) in additionalMetadata {
+      combinedMetadata[key] = value
+    }
+    
+    return ErrorContext(
+      source: source,
+      code: code,
+      message: message,
+      metadata: combinedMetadata,
+      numberValues: numberValues,
+      boolValues: boolValues
+    )
+  }
+  
+  /// Creates a new ErrorContext by copying this context and adding additional numeric values
+  /// - Parameter values: Additional numeric values to add to the context
+  /// - Returns: A new ErrorContext instance with combined values
+  public func with(numberValues additionalValues: [String: Double]) -> ErrorContext {
+    var combinedValues = self.numberValues
+    
+    // Add the new values
+    for (key, value) in additionalValues {
+      combinedValues[key] = value
+    }
+    
+    return ErrorContext(
+      source: source,
+      code: code,
+      message: message,
+      metadata: metadata,
+      numberValues: combinedValues,
+      boolValues: boolValues
+    )
+  }
+  
+  /// Creates a new ErrorContext by copying this context and adding additional boolean values
+  /// - Parameter values: Additional boolean values to add to the context
+  /// - Returns: A new ErrorContext instance with combined values
+  public func with(boolValues additionalValues: [String: Bool]) -> ErrorContext {
+    var combinedValues = self.boolValues
+    
+    // Add the new values
+    for (key, value) in additionalValues {
+      combinedValues[key] = value
+    }
+    
+    return ErrorContext(
+      source: source,
+      code: code,
+      message: message,
+      metadata: metadata,
+      numberValues: numberValues,
+      boolValues: combinedValues
+    )
+  }
+  
   /// A human-readable description of the error context
   public var description: String {
     var result = "[\(source)]"
@@ -45,7 +127,21 @@ public struct ErrorContext: Sendable, Equatable {
     if !metadata.isEmpty {
       result += "\nMetadata:"
       for (key, value) in metadata.keys.sorted().map({ ($0, metadata[$0]!) }) {
-        result += "\n  \(key): \(String(describing: value))"
+        result += "\n  \(key): \(value)"
+      }
+    }
+
+    if !numberValues.isEmpty {
+      result += "\nNumber Values:"
+      for (key, value) in numberValues.keys.sorted().map({ ($0, numberValues[$0]!) }) {
+        result += "\n  \(key): \(value)"
+      }
+    }
+
+    if !boolValues.isEmpty {
+      result += "\nBoolean Values:"
+      for (key, value) in boolValues.keys.sorted().map({ ($0, boolValues[$0]!) }) {
+        result += "\n  \(key): \(value)"
       }
     }
 
@@ -56,7 +152,7 @@ public struct ErrorContext: Sendable, Equatable {
   /// - Parameter key: The key to look up
   /// - Returns: The value if found, or nil if the key doesn't exist
   public func value(for key: String) -> Any? {
-    return metadata[key]
+    return metadata[key] ?? numberValues[key] ?? boolValues[key]
   }
   
   /// Gets a strongly typed value from the context
@@ -65,7 +161,14 @@ public struct ErrorContext: Sendable, Equatable {
   ///   - type: The expected type of the value
   /// - Returns: The value cast to the specified type, or nil if not found or wrong type
   public func typedValue<T>(for key: String, as type: T.Type = T.self) -> T? {
-    return metadata[key] as? T
+    if let value = metadata[key] as? T {
+      return value
+    } else if let value = numberValues[key] as? T {
+      return value
+    } else if let value = boolValues[key] as? T {
+      return value
+    }
+    return nil
   }
   
   /// Creates a new context with the specified key-value pair added
@@ -74,14 +177,14 @@ public struct ErrorContext: Sendable, Equatable {
   ///   - value: The value to associate with the key
   /// - Returns: A new ErrorContext instance with the added key-value pair
   public func adding(key: String, value: Any) -> ErrorContext {
-    var newMetadata = metadata
-    newMetadata[key] = value
-    return ErrorContext(
-      source: source,
-      code: code,
-      message: message,
-      metadata: newMetadata
-    )
+    if let value = value as? String {
+      return with(metadata: [key: value])
+    } else if let value = value as? Double {
+      return with(numberValues: [key: value])
+    } else if let value = value as? Bool {
+      return with(boolValues: [key: value])
+    }
+    return self
   }
   
   /// Creates a new context with multiple key-value pairs added
@@ -89,14 +192,26 @@ public struct ErrorContext: Sendable, Equatable {
   /// - Returns: A new ErrorContext instance with the added key-value pairs
   public func adding(metadata additionalMetadata: [String: Any]) -> ErrorContext {
     var newMetadata = metadata
+    var newNumberValues = numberValues
+    var newBoolValues = boolValues
+    
     for (key, value) in additionalMetadata {
-      newMetadata[key] = value
+      if let value = value as? String {
+        newMetadata[key] = value
+      } else if let value = value as? Double {
+        newNumberValues[key] = value
+      } else if let value = value as? Bool {
+        newBoolValues[key] = value
+      }
     }
+    
     return ErrorContext(
       source: source,
       code: code,
       message: message,
-      metadata: newMetadata
+      metadata: newMetadata,
+      numberValues: newNumberValues,
+      boolValues: newBoolValues
     )
   }
   
@@ -113,65 +228,95 @@ public struct ErrorContext: Sendable, Equatable {
       source: mergedSource,
       code: mergedCode,
       message: mergedMessage,
-      metadata: adding(metadata: other.metadata).metadata
+      metadata: adding(metadata: other.metadata).metadata,
+      numberValues: adding(metadata: other.numberValues).numberValues,
+      boolValues: adding(metadata: other.boolValues).boolValues
     )
   }
   
-  /// Checks if two ErrorContext instances are equal
+  /// Equality check
   public static func == (lhs: ErrorContext, rhs: ErrorContext) -> Bool {
-    guard lhs.source == rhs.source &&
-          lhs.code == rhs.code &&
-          lhs.message == rhs.message &&
-          lhs.metadata.keys.sorted() == rhs.metadata.keys.sorted() else {
-      return false
-    }
-    
-    // Compare string representations of metadata values
-    for key in lhs.metadata.keys {
-      if String(describing: lhs.metadata[key]!) != String(describing: rhs.metadata[key]!) {
-        return false
-      }
-    }
-    
-    return true
+    return lhs.source == rhs.source &&
+           lhs.code == rhs.code &&
+           lhs.message == rhs.message &&
+           lhs.metadata == rhs.metadata &&
+           lhs.numberValues == rhs.numberValues &&
+           lhs.boolValues == rhs.boolValues
   }
 }
 
 /// Extension to add conveniences for common context values
 public extension ErrorContext {
   /// Creates a context with a message
-  /// - Parameter message: The message to include
-  /// - Returns: A new ErrorContext with the message
-  static func withMessage(_ message: String) -> ErrorContext {
-    return ErrorContext(source: "UmbraCore", message: message)
+  /// - Parameters:
+  ///   - source: The source of the error
+  ///   - message: The error message
+  /// - Returns: A new error context
+  static func withMessage(source: String, message: String) -> ErrorContext {
+    return ErrorContext(source: source, message: message)
   }
   
-  /// Creates a context with detailed error information
+  /// Creates a context for a validation error
   /// - Parameters:
-  ///   - message: A descriptive message
-  ///   - source: Source of the error
-  ///   - code: Optional error code
-  ///   - file: Source file
-  ///   - line: Line number
-  ///   - function: Function name
-  /// - Returns: A new ErrorContext with error details
-  static func withDetails(
-    message: String,
-    source: String = "UmbraCore",
-    code: String? = nil,
-    file: String = #file,
-    line: Int = #line,
-    function: String = #function
+  ///   - source: The source of the error
+  ///   - field: The field that failed validation
+  ///   - reason: The reason for the validation failure
+  /// - Returns: A new error context
+  static func validationError(source: String, field: String, reason: String) -> ErrorContext {
+    return ErrorContext(
+      source: source,
+      code: "validation_error",
+      message: "\(field) validation failed: \(reason)",
+      metadata: ["field": field, "reason": reason]
+    )
+  }
+  
+  /// Creates a context for a network error
+  /// - Parameters:
+  ///   - source: The source of the error
+  ///   - endpoint: The endpoint that was being accessed
+  ///   - statusCode: The HTTP status code
+  ///   - message: The error message
+  /// - Returns: A new error context
+  static func networkError(
+    source: String,
+    endpoint: String,
+    statusCode: Int,
+    message: String
   ) -> ErrorContext {
     return ErrorContext(
       source: source,
-      code: code,
+      code: "network_error",
       message: message,
-      metadata: [
-        "file": file,
-        "line": line,
-        "function": function
-      ]
+      metadata: ["endpoint": endpoint],
+      numberValues: ["statusCode": Double(statusCode)]
     )
+  }
+  
+  /// Creates a context for a database error
+  /// - Parameters:
+  ///   - source: The source of the error
+  ///   - operation: The database operation being performed
+  ///   - message: The error message
+  /// - Returns: A new error context
+  static func databaseError(
+    source: String,
+    operation: String,
+    message: String
+  ) -> ErrorContext {
+    return ErrorContext(
+      source: source,
+      code: "database_error",
+      message: message,
+      metadata: ["operation": operation]
+    )
+  }
+}
+
+/// Default error context for empty initialisation
+public extension ErrorContext {
+  /// An empty error context
+  static var empty: ErrorContext {
+    return ErrorContext(source: "", message: "")
   }
 }

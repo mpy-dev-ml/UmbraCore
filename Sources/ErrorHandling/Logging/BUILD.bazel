@@ -1,0 +1,16 @@
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+umbra_swift_library(
+    name = "ErrorHandlingLogging",
+    srcs = glob(["*.swift"]),
+    deps = [
+        "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
+        "//Sources/ErrorHandling/Models:ErrorHandlingModels",
+        "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
+        "//Sources/UmbraLogging:UmbraLogging",
+        "//Sources/UmbraLoggingAdapters:UmbraLoggingAdapters",
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    ],
+    # Disable library evolution for this module since SwiftyBeaver doesn't support it
+    enable_library_evolution = False,
+)

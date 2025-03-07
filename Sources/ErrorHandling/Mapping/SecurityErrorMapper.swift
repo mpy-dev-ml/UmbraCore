@@ -1,85 +1,140 @@
 // SecurityErrorMapper.swift
-// Mapping between SecurityError and CoreError
+// Mapping between different SecurityError implementations
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
+import ErrorHandlingProtocols
+import ErrorHandlingDomains
 
-/// Maps between SecurityError and CoreError
-public struct SecurityErrorMapper: BidirectionalErrorMapper {
+/// A type alias for our new, consolidated SecurityError type
+public typealias UmbraSecurityError = ErrorHandlingDomains.SecurityError
+
+/// Maps between different SecurityError implementations
+public struct SecurityErrorMapper {
     /// Initialises a new mapper
     public init() {}
     
-    /// Maps from SecurityError to CoreError
-    /// - Parameter error: The SecurityError to map
-    /// - Returns: The equivalent CoreError
-    public func mapAtoB(_ error: SecurityError) -> CoreError {
-        switch error {
-        case .authenticationFailed(let message):
-            return .authenticationFailed
-            
-        case .authorizationFailed(let message):
-            return .insufficientPermissions
-            
-        case .cryptoOperationFailed(let message),
-             .invalidCertificate(let message),
-             .connectionFailed(let message),
-             .storageFailed(let message),
-             .tamperedData(let message),
-             .policyViolation(let message):
-            return .systemError(message)
-            
-        case .generalError(let message):
-            return .systemError(message)
+    /// Maps from SecurityProtocolsCore.SecurityError to our consolidated UmbraSecurityError
+    /// Note: We avoid using fully qualified names to prevent type resolution issues
+    /// described in the module structure
+    /// - Parameter error: The source SecurityError
+    /// - Returns: The mapped UmbraSecurityError
+    public func mapFromSecurityProtocolsCore(_ error: Error) -> UmbraSecurityError {
+        // Cast to the local type alias to avoid namespace issues
+        guard let securityError = error as? Error else {
+            return .unknown("Unknown security error")
+        }
+        
+        // Extract the type information using reflection to avoid direct type names
+        // which would cause compilation issues
+        let errorType = String(describing: type(of: error))
+        let errorDescription = String(describing: error)
+        
+        // Map common cases by examining the error description
+        if errorDescription.contains("authentication") {
+            return .authenticationFailed("Authentication failed (mapped)")
+        } else if errorDescription.contains("authorization") {
+            return .unauthorizedAccess("Authorization failed (mapped)")
+        } else if errorDescription.contains("credential") {
+            return .invalidCredentials("Invalid credentials (mapped)")
+        } else if errorDescription.contains("session") {
+            return .sessionExpired("Session expired (mapped)")
+        } else if errorDescription.contains("token") {
+            return .tokenExpired("Token expired (mapped)")
+        } else if errorDescription.contains("encryption") {
+            return .encryptionFailed("Encryption failed (mapped)")
+        } else if errorDescription.contains("decryption") {
+            return .decryptionFailed("Decryption failed (mapped)")
+        } else if errorDescription.contains("signature") {
+            return .signatureInvalid("Signature invalid (mapped)")
+        } else if errorDescription.contains("permission") {
+            return .permissionDenied("Permission denied (mapped)")
+        } else if errorDescription.contains("certificate") {
+            return .certificateInvalid("Certificate invalid (mapped)")
+        } else {
+            return .unknown("Mapped from \(errorType): \(errorDescription)")
         }
     }
     
-    /// Maps from CoreError to SecurityError
-    /// - Parameter error: The CoreError to map
-    /// - Returns: The equivalent SecurityError
-    public func mapBtoA(_ error: CoreError) -> SecurityError {
-        switch error {
-        case .authenticationFailed:
-            return .authenticationFailed("Authentication failed")
-            
-        case .insufficientPermissions:
-            return .authorizationFailed("Insufficient permissions to perform the operation")
-            
-        case .invalidConfiguration(let details):
-            return .generalError("Invalid configuration: \(details)")
-            
-        case .systemError(let details):
-            // Best effort to determine a more specific security error based on the message
-            let message = details.lowercased()
-            
-            if message.contains("crypto") || message.contains("encrypt") || message.contains("decrypt") {
-                return .cryptoOperationFailed(details)
-            } else if message.contains("certificate") || message.contains("cert") {
-                return .invalidCertificate(details)
-            } else if message.contains("connect") || message.contains("connection") {
-                return .connectionFailed(details)
-            } else if message.contains("storage") || message.contains("store") {
-                return .storageFailed(details)
-            } else if message.contains("tamper") || message.contains("integrity") {
-                return .tamperedData(details)
-            } else if message.contains("policy") || message.contains("violation") {
-                return .policyViolation(details)
-            } else {
-                return .generalError(details)
+    /// Maps from SecurityTypes.SecurityError to our consolidated UmbraSecurityError
+    /// - Parameter error: The source SecurityError
+    /// - Returns: The mapped UmbraSecurityError
+    public func mapFromSecurityTypes(_ error: Error) -> UmbraSecurityError {
+        // Similar approach to avoid namespace issues
+        guard let securityError = error as? Error else {
+            return .unknown("Unknown security error")
+        }
+        
+        let errorType = String(describing: type(of: error))
+        let errorDescription = String(describing: error)
+        
+        // Map based on error description
+        if errorDescription.contains("authentication") {
+            return .authenticationFailed("Authentication failed (mapped from SecurityTypes)")
+        } else if errorDescription.contains("authorization") {
+            return .unauthorizedAccess("Authorization failed (mapped from SecurityTypes)")
+        } else if errorDescription.contains("crypto") {
+            return .encryptionFailed("Cryptographic operation failed (mapped from SecurityTypes)")
+        } else {
+            return .unknown("Mapped from SecurityTypes: \(errorDescription)")
+        }
+    }
+    
+    /// Maps from XPCProtocolsCore.SecurityProtocolError to our consolidated UmbraSecurityError
+    /// - Parameter error: The source SecurityProtocolError
+    /// - Returns: The mapped UmbraSecurityError
+    public func mapFromXPCProtocolsCore(_ error: Error) -> UmbraSecurityError {
+        // Similar approach for XPC errors
+        let errorDescription = String(describing: error)
+        
+        if errorDescription.contains("permission") {
+            return .permissionDenied("Permission denied (mapped from XPC)")
+        } else if errorDescription.contains("authentication") {
+            return .authenticationFailed("Authentication failed (mapped from XPC)")
+        } else {
+            return .unknown("Mapped from XPC: \(errorDescription)")
+        }
+    }
+    
+    /// Maps any Error to our consolidated UmbraSecurityError if it represents a security issue
+    /// - Parameter error: Any error type
+    /// - Returns: The mapped UmbraSecurityError if applicable, nil otherwise
+    public func mapFromAny(_ error: Error) -> UmbraSecurityError? {
+        // First, check if it's already our type
+        if let umbraError = error as? UmbraSecurityError {
+            return umbraError
+        }
+        
+        // Check the module name to determine how to map
+        let errorType = String(describing: type(of: error))
+        
+        if errorType.contains("SecurityProtocolsCore") {
+            return mapFromSecurityProtocolsCore(error)
+        } else if errorType.contains("SecurityTypes") {
+            return mapFromSecurityTypes(error)
+        } else if errorType.contains("XPCProtocolsCore") {
+            return mapFromXPCProtocolsCore(error)
+        } else {
+            // Only map if it seems like a security error
+            let errorDescription = String(describing: error).lowercased()
+            if errorDescription.contains("security") || 
+               errorDescription.contains("authentication") ||
+               errorDescription.contains("authorization") ||
+               errorDescription.contains("permission") ||
+               errorDescription.contains("crypto") {
+                return .unknown("Mapped from unknown type: \(errorDescription)")
             }
+            return nil
         }
-    }
-    
-    /// Maps a SecurityError to a CoreError (implementation of ErrorMapper)
-    /// - Parameter error: The SecurityError to map
-    /// - Returns: The equivalent CoreError
-    public func mapError(_ error: SecurityError) -> CoreError {
-        return mapAtoB(error)
     }
 }
 
-/// Registers the security error mapper with the error registry
-public func registerSecurityErrorMapper() {
-    let mapper = SecurityErrorMapper()
-    ErrorRegistry.shared.register(mapper: mapper)
+/// Error registry extension for registering the security error mapper
+public extension ErrorHandler {
+    /// Register the security error mapper with the error handler
+    func registerSecurityErrorMapper() {
+        // This is a placeholder for now - we'll implement the actual registration
+        // once we've established how external error types should be registered
+    }
 }

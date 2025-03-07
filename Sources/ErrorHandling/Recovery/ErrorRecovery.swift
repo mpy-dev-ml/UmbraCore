@@ -1,12 +1,17 @@
 // ErrorRecovery.swift
 // Error recovery mechanisms for the enhanced error handling system
 //
-// Copyright © 2025 UmbraCorp. All rights reserved.
+// Copyright 2025 UmbraCorp. All rights reserved.
 
 import Foundation
+import ErrorHandlingProtocols
+import ErrorHandlingModels
+import ErrorHandlingCommon
+import ErrorHandlingLogging
+import ErrorHandlingDomains
 
 /// Represents a potential recovery option for an error
-public struct ErrorRecoveryOption {
+public struct ErrorRecoveryOption: Sendable {
     /// A unique identifier for this recovery option
     public let id: String
     
@@ -23,7 +28,7 @@ public struct ErrorRecoveryOption {
     public let isDisruptive: Bool
     
     /// The action to perform for recovery
-    public let recoveryAction: () async throws -> Void
+    public let recoveryAction: @Sendable () async throws -> Void
     
     /// Creates a new recovery option
     /// - Parameters:
@@ -39,7 +44,7 @@ public struct ErrorRecoveryOption {
         description: String? = nil,
         successLikelihood: RecoveryLikelihood = .likely,
         isDisruptive: Bool = false,
-        recoveryAction: @escaping () async throws -> Void
+        recoveryAction: @escaping @Sendable () async throws -> Void
     ) {
         self.id = id
         self.title = title
@@ -49,19 +54,19 @@ public struct ErrorRecoveryOption {
         self.recoveryAction = recoveryAction
     }
     
-    /// Executes the recovery action
-    /// - Returns: Whether the recovery was successful
-    public func attemptRecovery() async -> Bool {
+    /// Execute the recovery action
+    /// - Returns: Whether recovery was successful
+    public func execute() async -> Bool {
         do {
             try await recoveryAction()
             return true
         } catch {
             ErrorLogger.shared.logError(
-                ErrorFactory.wrapError(
-                    error,
+                GenericUmbraError(
                     domain: "ErrorRecovery",
-                    code: "recovery_failed",
-                    description: "Recovery attempt failed: \(title)"
+                    code: "RecoveryFailed",
+                    errorDescription: "Recovery action failed: \(error.localizedDescription)",
+                    underlyingError: error
                 )
             )
             return false
@@ -69,121 +74,102 @@ public struct ErrorRecoveryOption {
     }
 }
 
-/// Indicates how likely a recovery option is to succeed
-public enum RecoveryLikelihood: Int, Comparable {
-    case unlikely = 0
-    case possible = 1
-    case likely = 2
-    case veryLikely = 3
+/// How likely a recovery option is to succeed
+public enum RecoveryLikelihood: String, CaseIterable, Sendable {
+    case veryLikely = "Very Likely"
+    case likely = "Likely"
+    case possible = "Possible"
+    case unlikely = "Unlikely"
+    case veryUnlikely = "Very Unlikely"
     
-    public static func < (lhs: RecoveryLikelihood, rhs: RecoveryLikelihood) -> Bool {
-        return lhs.rawValue < rhs.rawValue
+    /// Gets a numerical value representing the likelihood (0-1)
+    public var probability: Double {
+        switch self {
+        case .veryLikely: return 0.9
+        case .likely: return 0.7
+        case .possible: return 0.5
+        case .unlikely: return 0.3
+        case .veryUnlikely: return 0.1
+        }
     }
 }
 
 /// Protocol for errors that provide recovery options
-public protocol RecoverableError: UmbraError {
+public protocol RecoverableError: ErrorHandlingProtocols.UmbraError {
     /// Gets available recovery options for this error
     /// - Returns: Array of recovery options
     func recoveryOptions() -> [ErrorRecoveryOption]
     
-    /// Whether this error can be recovered from
-    var isRecoverable: Bool { get }
+    /// Attempts to recover from this error using all available options
+    /// - Returns: Whether recovery was successful
+    func attemptRecovery() async -> Bool
 }
 
-/// Default implementation for RecoverableError
+/// Default implementation of RecoverableError
 public extension RecoverableError {
-    /// Default implementation returns whether there are any recovery options
-    var isRecoverable: Bool {
-        return !recoveryOptions().isEmpty
+    /// Default implementation attempts each recovery option in order
+    func attemptRecovery() async -> Bool {
+        let options = recoveryOptions()
+        for option in options {
+            if await option.execute() {
+                return true
+            }
+        }
+        return false
     }
 }
 
-/// Protocol for services that can help recover from errors
-public protocol ErrorRecoveryService {
-    /// Gets recovery options for a given error
+/// Protocol for error recovery services
+public protocol ErrorRecoveryService: AnyObject, Sendable {
+    /// Gets recovery options for a specific error
     /// - Parameter error: The error to recover from
     /// - Returns: Array of recovery options, if available
-    func recoveryOptions(for error: UmbraError) -> [ErrorRecoveryOption]
+    func recoveryOptions(for error: ErrorHandlingProtocols.UmbraError) -> [ErrorRecoveryOption]
     
     /// Attempts to recover from an error using all available options
     /// - Parameter error: The error to recover from
     /// - Returns: Whether recovery was successful
-    func attemptRecovery(for error: UmbraError) async -> Bool
+    func attemptRecovery(for error: ErrorHandlingProtocols.UmbraError) async -> Bool
 }
 
 /// A registry of error recovery services
+@MainActor
 public final class ErrorRecoveryRegistry {
     /// The shared instance
     public static let shared = ErrorRecoveryRegistry()
     
     /// Registered recovery services
-    private var recoveryServices: [ErrorRecoveryService] = []
+    private var services: [any ErrorRecoveryService] = []
     
     /// Private initialiser to enforce singleton pattern
     private init() {}
     
-    /// Registers a recovery service
+    /// Register a new recovery service
     /// - Parameter service: The service to register
-    public func register(_ service: ErrorRecoveryService) {
-        recoveryServices.append(service)
+    public func register(service: any ErrorRecoveryService) {
+        services.append(service)
     }
     
-    /// Gets all available recovery options for an error
-    /// - Parameter error: The error to find recovery options for
-    /// - Returns: Array of recovery options from all registered services
-    public func recoveryOptions(for error: UmbraError) -> [ErrorRecoveryOption] {
+    /// Get recovery options for an error from all registered services
+    /// - Parameter error: The error to get recovery options for
+    /// - Returns: Array of recovery options from all services
+    public func recoveryOptions(for error: ErrorHandlingProtocols.UmbraError) -> [ErrorRecoveryOption] {
         var options: [ErrorRecoveryOption] = []
-        
-        // If the error itself provides recovery options, use those first
-        if let recoverableError = error as? RecoverableError {
-            options.append(contentsOf: recoverableError.recoveryOptions())
-        }
-        
-        // Then add options from all registered recovery services
-        for service in recoveryServices {
+        for service in services {
             options.append(contentsOf: service.recoveryOptions(for: error))
         }
-        
-        // Remove duplicates by ID
-        var uniqueOptions: [ErrorRecoveryOption] = []
-        var seenIDs = Set<String>()
-        
-        for option in options {
-            if !seenIDs.contains(option.id) {
-                uniqueOptions.append(option)
-                seenIDs.insert(option.id)
-            }
-        }
-        
-        // Sort options by likelihood of success (most likely first)
-        return uniqueOptions.sorted { $0.successLikelihood > $1.successLikelihood }
+        return options
     }
     
-    /// Attempts to recover from an error using all registered services
-    /// - Parameters:
-    ///   - error: The error to recover from
-    ///   - filterOptions: Optional filter to select specific recovery options
-    /// - Returns: Whether any recovery was successful
-    public func attemptRecovery(
-        for error: UmbraError,
-        filterOptions: ((ErrorRecoveryOption) -> Bool)? = nil
-    ) async -> Bool {
-        // Get recovery options
-        var options = recoveryOptions(for: error)
-        
-        // Apply filter if provided
-        if let filterOptions = filterOptions {
-            options = options.filter(filterOptions)
-        }
-        
-        // Try options in order (most likely to succeed first)
-        for option in options {
-            if await option.attemptRecovery() {
+    /// Attempt to recover from an error using all registered services
+    /// - Parameter error: The error to recover from
+    /// - Returns: Whether recovery was successful
+    public func attemptRecovery(for error: ErrorHandlingProtocols.UmbraError) async -> Bool {
+        for service in services {
+            if await service.attemptRecovery(for: error) {
                 return true
             }
         }
-        
         return false
     }
 }
