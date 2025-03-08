@@ -1,4 +1,5 @@
 import UmbraCoreTypes
+import ErrorHandling
 
 /// FoundationIndependent representation of a security operation result.
 /// This data transfer object encapsulates the outcome of security-related operations
@@ -20,7 +21,7 @@ public struct SecurityResultDTO: Sendable, Equatable {
   public let errorMessage: String?
 
   /// Security error type
-  public let error: SecurityError?
+  public let error: UmbraErrors.Security.Protocol?
 
   // MARK: - Initializers
 
@@ -60,7 +61,7 @@ public struct SecurityResultDTO: Sendable, Equatable {
   ///   - success: Whether the operation succeeded
   ///   - error: Optional error type
   ///   - errorDetails: Optional detailed error message
-  public init(success: Bool, error: SecurityError? = nil, errorDetails: String? = nil) {
+  public init(success: Bool, error: UmbraErrors.Security.Protocol? = nil, errorDetails: String? = nil) {
     self.success = success
     data = nil
     self.error = error
@@ -140,12 +141,12 @@ public struct SecurityResultDTO: Sendable, Equatable {
     SecurityResultDTO(errorCode: code, errorMessage: message)
   }
 
-  /// Create a failure result with a SecurityError
+  /// Create a failure result with a UmbraErrors.Security.Protocol error
   /// - Parameters:
   ///   - error: The security error that occurred
   ///   - details: Optional additional details
   /// - Returns: A failure result DTO
-  public static func failure(error: SecurityError, details: String? = nil) -> SecurityResultDTO {
+  public static func failure(error: UmbraErrors.Security.Protocol, details: String? = nil) -> SecurityResultDTO {
     SecurityResultDTO(success: false, error: error, errorDetails: details)
   }
 }

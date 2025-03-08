@@ -1,3 +1,5 @@
+import ErrorHandling
+
 /// Base protocol for security providers
 /// This protocol is designed to be Foundation-free and serve as a base for more specific security
 /// provider protocols
@@ -7,7 +9,7 @@ public protocol SecurityProviderBase: Sendable {
 
   /// Test if the security provider is available
   /// - Returns: True if the provider is available, false otherwise
-  /// - Throws: SecurityError if the check fails
+  /// - Throws: UmbraErrors.Security.Protocol if the check fails
   func isAvailable() async throws -> Bool
 
   /// Get the provider's version information

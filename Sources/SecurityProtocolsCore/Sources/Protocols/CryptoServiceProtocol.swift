@@ -1,4 +1,5 @@
 import UmbraCoreTypes
+import ErrorHandling
 
 /// Protocol defining cryptographic operations in a FoundationIndependent manner.
 /// This protocol uses only primitive types and FoundationIndependent custom types.
@@ -9,7 +10,7 @@ public protocol CryptoServiceProtocol: Sendable {
   ///   - key: The encryption key as `SecureBytes`.
   /// - Returns: The encrypted data as `SecureBytes` or an error.
   func encrypt(data: SecureBytes, using key: SecureBytes) async
-    -> Result<SecureBytes, SecurityError>
+    -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   /// Decrypts binary data using the provided key.
   /// - Parameters:
@@ -17,23 +18,23 @@ public protocol CryptoServiceProtocol: Sendable {
   ///   - key: The decryption key as `SecureBytes`.
   /// - Returns: The decrypted data as `SecureBytes` or an error.
   func decrypt(data: SecureBytes, using key: SecureBytes) async
-    -> Result<SecureBytes, SecurityError>
+    -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
-  /// Generates a secure cryptographic key suitable for encryption/decryption operations.
+  /// Generates a cryptographic key suitable for encryption/decryption operations.
   /// - Returns: A new cryptographic key as `SecureBytes` or an error.
-  func generateKey() async -> Result<SecureBytes, SecurityError>
+  func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   /// Hashes the provided data using a cryptographically strong algorithm.
   /// - Parameter data: The data to hash as `SecureBytes`.
   /// - Returns: The resulting hash as `SecureBytes` or an error.
-  func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError>
+  func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   /// Verifies the integrity of data against a known hash.
   /// - Parameters:
   ///   - data: The data to verify as `SecureBytes`.
   ///   - hash: The expected hash value as `SecureBytes`.
   /// - Returns: Boolean indicating whether the hash matches.
-  func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool
+  func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocol>
 
   // MARK: - Symmetric Encryption
 
@@ -47,7 +48,7 @@ public protocol CryptoServiceProtocol: Sendable {
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   /// Decrypt data using a symmetric key
   /// - Parameters:
@@ -59,7 +60,7 @@ public protocol CryptoServiceProtocol: Sendable {
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   // MARK: - Asymmetric Encryption
 
@@ -73,7 +74,7 @@ public protocol CryptoServiceProtocol: Sendable {
     data: SecureBytes,
     publicKey: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   /// Decrypt data using an asymmetric private key
   /// - Parameters:
@@ -85,7 +86,7 @@ public protocol CryptoServiceProtocol: Sendable {
     data: SecureBytes,
     privateKey: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   // MARK: - Hashing
 
@@ -97,12 +98,12 @@ public protocol CryptoServiceProtocol: Sendable {
   func hash(
     data: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   // MARK: - Random Data Generation
 
   /// Generate cryptographically secure random data
   /// - Parameter length: The length of random data to generate in bytes
   /// - Returns: Result containing random data or error
-  func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError>
+  func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 }
