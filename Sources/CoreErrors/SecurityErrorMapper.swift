@@ -1,234 +1,280 @@
 /// SecurityErrorMapper
 ///
-/// Provides functionality for mapping between different SecurityError types across modules.
+/// Provides functionality for mapping between different Security error types across modules.
 /// This utility helps resolve ambiguity and provides consistent error handling throughout the
 /// UmbraCore security stack.
 ///
 /// Usage:
 /// ```swift
-/// // Convert any error to CoreErrors.SecurityError
+/// // Convert any error to UmbraErrors.Security.Core
 /// let coreError = SecurityErrorMapper.mapToCoreError(error)
 ///
-/// // Convert CoreErrors.SecurityError to an appropriate domain-specific error
+/// // Convert UmbraErrors.Security.Core to an appropriate domain-specific error
 /// let domainError = SecurityErrorMapper.mapFromCoreError(coreError)
 /// ```
 
 import Foundation
+import ErrorHandling
+import ErrorHandlingDomains
 
-/// Utility for mapping between different SecurityError types in the UmbraCore security stack.
+/// Utility for mapping between different Security error types in the UmbraCore security stack.
 /// This implementation uses type erasure to avoid circular dependencies between modules.
 public enum SecurityErrorMapper {
 
-  /// Maps any domain-specific error to the centralised CoreErrors.SecurityError.
+  /// Maps any domain-specific error to the centralised UmbraErrors.Security.Core.
   ///
   /// This method uses runtime type identification to handle different error types
   /// without requiring direct imports of all security-related modules.
   ///
   /// - Parameter error: Any error to map
-  /// - Returns: The equivalent CoreErrors.SecurityError
-  public static func mapToCoreError(_ error: Error) -> SecurityError {
-    // Already a CoreErrors.SecurityError - return directly
-    if let coreError=error as? SecurityError {
+  /// - Returns: The equivalent UmbraErrors.Security.Core
+  public static func mapToCoreError(_ error: Error) -> UmbraErrors.Security.Core {
+    // Already a UmbraErrors.Security.Core - return directly
+    if let coreError = error as? UmbraErrors.Security.Core {
       return coreError
     }
 
-    // Use type name inspection to map from other module's SecurityError types
-    // This avoids direct imports while maintaining functionality
-    let errorType=String(describing: type(of: error))
-    let errorDescription=String(describing: error)
-
-    // Handle SecurityProtocolsCore.SecurityError by inspecting properties
-    if errorType.hasSuffix("SecurityError") || errorType.contains("SecurityProtocolsCore") {
-      // Extract case information from the error description
-      if errorDescription.contains("encryptionFailed") {
-        return .encryptionFailed
-      } else if errorDescription.contains("decryptionFailed") {
-        return .decryptionFailed
-      } else if errorDescription.contains("keyGenerationFailed") {
-        return .keyGenerationFailed
-      } else if errorDescription.contains("invalidData") {
-        return .invalidData
-      } else if errorDescription.contains("hashingFailed") {
-        return .hashingFailed
-      } else if errorDescription.contains("serviceFailed") {
-        return .serviceFailed
-      } else if errorDescription.contains("notImplemented") {
-        return .notImplemented
-      } else if errorDescription.contains("bookmarkError") {
-        return .bookmarkError
-      } else if errorDescription.contains("accessError") {
-        return .accessError
-      } else if errorDescription.contains("cryptoError") {
-        return .cryptoError
-      } else if errorDescription.contains("bookmarkCreationFailed") {
-        return .bookmarkCreationFailed
-      } else if errorDescription.contains("bookmarkResolutionFailed") {
-        return .bookmarkResolutionFailed
+    // Handle UmbraErrors.Security.Protocols
+    if let protocolError = error as? UmbraErrors.Security.Protocols {
+      switch protocolError {
+      case .invalidFormat(let reason):
+        return .invalidInput(reason: "Invalid format: \(reason)")
+      case .unsupportedOperation(let name):
+        return .notImplemented(feature: name)
+      case .incompatibleVersion(let version):
+        return .internalError("Incompatible version: \(version)")
+      case .missingProtocolImplementation(let protocolName):
+        return .internalError("Missing protocol implementation: \(protocolName)")
+      case .invalidState(let state, let expectedState):
+        return .internalError("Invalid state: current '\(state)', expected '\(expectedState)'")
+      case .internalError(let reason):
+        return .internalError(reason)
+      @unknown default:
+        return .internalError("Unknown protocol error")
       }
     }
 
-    // Handle XPCProtocolsCore.SecurityProtocolError
-    if errorType.contains("SecurityProtocolError") {
-      if errorDescription.contains("implementationMissing") {
-        let name=extractErrorParam(from: errorDescription, param: "name")
-        return .general("Implementation missing: \(name)")
+    // Handle UmbraErrors.Security.XPC
+    if let xpcError = error as? UmbraErrors.Security.XPC {
+      switch xpcError {
+      case .connectionFailed(let reason):
+        return .serviceError(code: -1000, reason: "Connection failed: \(reason)")
+      case .serviceUnavailable:
+        return .serviceError(code: -1001, reason: "Service unavailable")
+      case .invalidResponse(let reason):
+        return .serviceError(code: -1002, reason: "Invalid response: \(reason)")
+      case .unexpectedSelector(let name):
+        return .serviceError(code: -1003, reason: "Unexpected selector: \(name)")
+      case .versionMismatch(let expected, let found):
+        return .serviceError(code: -1004, reason: "Version mismatch (expected: \(expected), found: \(found))")
+      case .invalidServiceIdentifier:
+        return .serviceError(code: -1005, reason: "Invalid service identifier")
+      case .internalError(let message):
+        return .internalError(message)
+      @unknown default:
+        return .internalError("Unknown XPC error")
       }
     }
 
-    // Handle XPC errors
-    if errorType.contains("XPCErrors.SecurityError") {
-      return .general("XPC error: \(errorDescription)")
+    // Handle other errors by extracting information from description
+    let description = "\(error)"
+    
+    // Map standard errors by keyword matching in the error description
+    if description.contains("encryption") || description.contains("encrypt") {
+      return .encryptionFailed(reason: description)
+    } else if description.contains("decryption") || description.contains("decrypt") {
+      return .decryptionFailed(reason: description)
+    } else if description.contains("key generation") {
+      return .keyGenerationFailed(reason: description)
+    } else if description.contains("invalid key") {
+      return .invalidKey(reason: description)
+    } else if description.contains("hash") || description.contains("verification") {
+      return .hashVerificationFailed(reason: description)
+    } else if description.contains("random") {
+      return .randomGenerationFailed(reason: description)
+    } else if description.contains("invalid input") || description.contains("invalid data") {
+      return .invalidInput(reason: description)
+    } else if description.contains("storage") {
+      return .storageOperationFailed(reason: description)
+    } else if description.contains("timeout") || description.contains("timed out") {
+      return .timeout(operation: description)
     }
-
-    // Default case for other error types
-    return .general("Unknown error: \(error.localizedDescription)")
+    
+    // Default case for unrecognized errors
+    return .internalError("Unmapped error: \(error)")
   }
-
-  /// Maps from CoreErrors.SecurityError to an appropriate domain-specific error.
-  ///
-  /// This method provides a way to convert back from the centralised error type
-  /// to a module-specific error type. It returns a type-erased Error which can
-  /// be cast to the appropriate type by the caller.
-  ///
-  /// - Parameter error: A CoreErrors.SecurityError
-  /// - Returns: An appropriate domain-specific error
-  public static func mapFromCoreError(_ error: SecurityError) -> Error {
-    // Return the CoreErrors.SecurityError directly
-    // Client code will need to handle conversion to specific types
-    error
-  }
-
-  /// Specialised mapper for XPC errors.
-  ///
-  /// Maps any Error to a CoreErrors.XPCErrors.SecurityError.
-  /// Note that XPCErrors.SecurityError is a type alias for CoreErrors.SecurityError.
+  
+  /// Maps a core security error to an appropriate domain-specific error for XPC.
   ///
   /// - Parameter error: Any error to map
-  /// - Returns: The equivalent CoreErrors.XPCErrors.SecurityError
-  public static func mapToXPCError(_ error: Error) -> XPCErrors.SecurityError {
-    // Handle existing XPC error
-    if let xpcError=error as? XPCErrors.SecurityError {
+  /// - Returns: The equivalent UmbraErrors.Security.XPC
+  public static func mapToXPCError(_ error: Error) -> UmbraErrors.Security.XPC {
+    // Already a UmbraErrors.Security.XPC - return directly
+    if let xpcError = error as? UmbraErrors.Security.XPC {
       return xpcError
     }
-
-    // Map from CoreErrors.SecurityError
-    if let coreError=error as? SecurityError {
-      // Since XPCErrors.SecurityError is a type alias for CoreErrors.SecurityError,
-      // we can simply return the core error
-      return coreError
-    }
-
-    // For any other error type, convert to CoreErrors.SecurityError first,
-    // then return as XPCErrors.SecurityError
-    return mapToCoreError(error)
-  }
-
-  /// Helper function to convert a CoreErrors.XPCErrors.SecurityError to a
-  /// SecurityProtocolsCore.SecurityError
-  ///
-  /// This helper method provides a consistent way to map from XPC errors to protocol errors.
-  /// It uses a type-erased approach to avoid direct module dependencies.
-  ///
-  /// - Parameter error: The XPC error to convert
-  /// - Returns: A protocol error that the client code can cast to the appropriate type
-  public static func mapToSPCError(_ error: Error) -> Error {
-    // Return the original error - client code will handle the conversion
-    // based on the module context where it's called
-    error
-  }
-
-  /// Maps a CoreErrors.SecurityError to an NSError
-  ///
-  /// Provides a way to convert SecurityError to Objective-C compatible NSError
-  /// for interfacing with Objective-C code.
-  ///
-  /// - Parameter error: The SecurityError to convert
-  /// - Returns: An equivalent NSError
-  public static func mapToNSError(_ error: SecurityError) -> NSError {
-    let domain="com.umbra.security.error"
-    var code=0
-    var description=""
-
-    switch error {
-      case .encryptionFailed:
-        code=1001
-        description="Encryption failed"
-      case .decryptionFailed:
-        code=1002
-        description="Decryption failed"
-      case .keyGenerationFailed:
-        code=1003
-        description="Key generation failed"
-      case .invalidData:
-        code=1004
-        description="Invalid data"
-      case .hashingFailed:
-        code=1005
-        description="Hashing failed"
-      case .serviceFailed:
-        code=1006
-        description="Service failed"
-      case .notImplemented:
-        code=1007
-        description="Not implemented"
-      case .bookmarkError:
-        code=1008
-        description="Bookmark error"
-      case .accessError:
-        code=1009
-        description="Access error"
-      case .cryptoError:
-        code=1010
-        description="Crypto error"
-      case .bookmarkCreationFailed:
-        code=1011
-        description="Bookmark creation failed"
-      case .bookmarkResolutionFailed:
-        code=1012
-        description="Bookmark resolution failed"
-      case let .general(message):
-        code=1099
-        description=message
-    }
-
-    return NSError(domain: domain, code: code, userInfo: [NSLocalizedDescriptionKey: description])
-  }
-
-  // MARK: - Helper Methods
-
-  /// Extracts a parameter value from an error description string
-  ///
-  /// This helper method parses error descriptions to extract parameter values
-  /// when mapping between different error types without direct type access.
-  ///
-  /// - Parameters:
-  ///   - description: The error description string to parse
-  ///   - param: The parameter name to extract
-  /// - Returns: The extracted parameter value or a default string if not found
-  private static func extractErrorParam(from description: String, param: String) -> String {
-    // Simple parser to extract parameter values from error descriptions
-    // Format example: "encryptionFailed(reason: "bad key")"
-    guard let paramRange=description.range(of: "\(param): ") else {
-      return "Unknown \(param)"
-    }
-
-    let valueStart=paramRange.upperBound
-    let valueSubstring=description[valueStart...]
-
-    // Handle quoted string values
-    if valueSubstring.starts(with: "\"") {
-      guard let endQuoteRange=valueSubstring.dropFirst().firstIndex(of: "\"") else {
-        return String(valueSubstring)
+    
+    // Handle UmbraErrors.Security.Core
+    if let coreError = error as? UmbraErrors.Security.Core {
+      switch coreError {
+      case .encryptionFailed(let reason):
+        return .internalError("Encryption failed: \(reason)")
+      case .decryptionFailed(let reason):
+        return .internalError("Decryption failed: \(reason)")
+      case .keyGenerationFailed(let reason):
+        return .internalError("Key generation failed: \(reason)")
+      case .invalidKey(let reason):
+        return .internalError("Invalid key: \(reason)")
+      case .hashVerificationFailed(let reason):
+        return .internalError("Hash verification failed: \(reason)")
+      case .randomGenerationFailed(let reason):
+        return .internalError("Random generation failed: \(reason)")
+      case .invalidInput(let reason):
+        return .invalidResponse(reason: reason)
+      case .storageOperationFailed(let reason):
+        return .internalError("Storage operation failed: \(reason)")
+      case .timeout(let operation):
+        return .internalError("Operation timed out: \(operation)")
+      case .serviceError(let code, let reason):
+        if reason.contains("unavailable") {
+          return .serviceUnavailable
+        } else {
+          return .internalError("Service error (\(code)): \(reason)")
+        }
+      case .internalError(let message):
+        return .internalError(message)
+      case .notImplemented(let feature):
+        return .unexpectedSelector(name: feature)
+      @unknown default:
+        return .internalError("Unknown core error")
       }
-      let endIndex=valueSubstring.index(endQuoteRange, offsetBy: 1)
-      return String(valueSubstring[..<endIndex]).replacingOccurrences(of: "\"", with: "")
     }
-
-    // Handle non-quoted values (extract until next delimiter)
-    guard let endParamRange=valueSubstring.firstIndex(where: { $0 == "," || $0 == ")" }) else {
-      return String(valueSubstring)
+    
+    // Handle UmbraErrors.Security.Protocols
+    if let protocolError = error as? UmbraErrors.Security.Protocols {
+      switch protocolError {
+      case .invalidFormat(let reason):
+        return .invalidResponse(reason: "Invalid format: \(reason)")
+      case .unsupportedOperation(let name):
+        return .unexpectedSelector(name: name)
+      case .incompatibleVersion(let version):
+        return .versionMismatch(expected: "Unknown", found: version)
+      case .missingProtocolImplementation(let protocolName):
+        return .internalError("Missing protocol implementation: \(protocolName)")
+      case .invalidState(let state, let expectedState):
+        return .internalError("Invalid state: current '\(state)', expected '\(expectedState)'")
+      case .internalError(let reason):
+        return .internalError(reason)
+      @unknown default:
+        return .internalError("Unknown protocol error")
+      }
     }
-
-    return String(valueSubstring[..<endParamRange])
+    
+    // Handle other errors by extracting information from description
+    let description = "\(error)"
+    
+    if description.contains("connection") {
+      return .connectionFailed(reason: description)
+    } else if description.contains("unavailable") || description.contains("not available") {
+      return .serviceUnavailable
+    } else if description.contains("response") {
+      return .invalidResponse(reason: description)
+    } else if description.contains("selector") {
+      return .unexpectedSelector(name: extractErrorParam(from: description, param: "selector"))
+    } else if description.contains("version") {
+      return .versionMismatch(expected: extractErrorParam(from: description, param: "expected"), 
+                             found: extractErrorParam(from: description, param: "found"))
+    } else if description.contains("identifier") {
+      return .invalidServiceIdentifier
+    }
+    
+    // Default case for unrecognized errors
+    return .internalError("Unmapped error: \(error)")
+  }
+  
+  /// Maps a core security error to an appropriate domain-specific error for Protocol handling.
+  ///
+  /// - Parameter error: Any error to map
+  /// - Returns: The equivalent UmbraErrors.Security.Protocols
+  public static func mapToProtocolError(_ error: Error) -> UmbraErrors.Security.Protocols {
+    // Already a UmbraErrors.Security.Protocols - return directly
+    if let protocolError = error as? UmbraErrors.Security.Protocols {
+      return protocolError
+    }
+    
+    // Handle UmbraErrors.Security.Core
+    if let coreError = error as? UmbraErrors.Security.Core {
+      switch coreError {
+      case .encryptionFailed(let reason):
+        return .invalidFormat(reason: "Encryption failed: \(reason)")
+      case .decryptionFailed(let reason):
+        return .invalidFormat(reason: "Decryption failed: \(reason)")
+      case .keyGenerationFailed(let reason):
+        return .internalError("Key generation failed: \(reason)")
+      case .invalidKey(let reason):
+        return .invalidFormat(reason: "Invalid key: \(reason)")
+      case .hashVerificationFailed(let reason):
+        return .internalError("Hash verification failed: \(reason)")
+      case .randomGenerationFailed(let reason):
+        return .internalError("Random generation failed: \(reason)")
+      case .invalidInput(let reason):
+        return .invalidFormat(reason: reason)
+      case .storageOperationFailed(let reason):
+        return .internalError("Storage operation failed: \(reason)")
+      case .timeout(let operation):
+        return .internalError("Operation timed out: \(operation)")
+      case .serviceError(let code, let reason):
+        return .internalError("Service error (\(code)): \(reason)")
+      case .internalError(let message):
+        return .internalError(message)
+      case .notImplemented(let feature):
+        return .unsupportedOperation(name: feature)
+      @unknown default:
+        return .internalError("Unknown core error")
+      }
+    }
+    
+    // Handle UmbraErrors.Security.XPC
+    if let xpcError = error as? UmbraErrors.Security.XPC {
+      switch xpcError {
+      case .connectionFailed(let reason):
+        return .internalError("Connection failed: \(reason)")
+      case .serviceUnavailable:
+        return .internalError("Service unavailable")
+      case .invalidResponse(let reason):
+        return .invalidFormat(reason: reason)
+      case .unexpectedSelector(let name):
+        return .unsupportedOperation(name: name)
+      case .versionMismatch(let expected, let found):
+        return .incompatibleVersion(version: "Expected \(expected), found \(found)")
+      case .invalidServiceIdentifier:
+        return .internalError("Invalid service identifier")
+      case .internalError(let message):
+        return .internalError(message)
+      @unknown default:
+        return .internalError("Unknown XPC error")
+      }
+    }
+    
+    // Default case for unrecognized errors
+    return .internalError("Unmapped error: \(error)")
+  }
+  
+  /// Helper function to extract a parameter from an error description
+  /// - Parameters:
+  ///   - description: The error description
+  ///   - param: Parameter name to extract
+  /// - Returns: The value of the parameter, or empty string if not found
+  private static func extractErrorParam(from description: String, param: String) -> String {
+    guard let range = description.range(of: "\(param): ") else {
+      return ""
+    }
+    
+    let startIndex = range.upperBound
+    guard let endIndex = description[startIndex...].firstIndex(where: { $0 == "," || $0 == ")" || $0 == "]" || $0 == "}" }) else {
+      return String(description[startIndex...])
+    }
+    
+    return String(description[startIndex..<endIndex])
   }
 }

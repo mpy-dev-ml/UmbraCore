@@ -11,6 +11,9 @@ swift_library(
     # Namespacing is important to avoid naming conflicts with other libraries
     module_name = "CoreErrors",
     visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/ErrorHandling",
+    ],
 )
 
 filegroup(

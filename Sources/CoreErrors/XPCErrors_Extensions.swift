@@ -3,32 +3,62 @@
 /// This file provides XPC-specific error type extensions to support
 /// the XPC Protocol Consolidation efforts.
 
+import ErrorHandling
+import ErrorHandlingDomains
+
 /// Namespace for XPC-specific error types
+/// @available(*, deprecated, message: "Use UmbraErrors.Security.XPC directly")
 public enum XPCErrors {
   /// XPC Security Error type alias
   /// This provides a clear namespace for XPC security errors
-  public typealias SecurityError=CoreErrors.SecurityError
+  /// @available(*, deprecated, message: "Use UmbraErrors.Security.XPC directly")
+  public typealias SecurityError = UmbraErrors.Security.XPC
 
   /// XPC Service Error type alias
-  public typealias ServiceError=CoreErrors.ServiceError
+  /// @available(*, deprecated, message: "Use UmbraErrors.Service directly")
+  public typealias ServiceError = CoreErrors.ServiceError
 
   /// XPC Crypto Error type alias
-  public typealias CryptoError=CoreErrors.CryptoError
+  /// @available(*, deprecated, message: "Use UmbraErrors.Crypto directly")
+  public typealias CryptoError = CoreErrors.CryptoError
 }
 
-/// Extension for SecurityError with XPC-specific functionality
-extension SecurityError {
-  /// Convert from XPC error representation
-  /// - Parameter error: The XPC representation of the error
-  /// - Returns: Corresponding SecurityError
-  public static func fromXPC(_ error: XPCErrors.SecurityError) -> SecurityError {
-    error as SecurityError
-  }
-
+/// Extension for UmbraErrors.Security.Core with XPC-specific functionality
+extension UmbraErrors.Security.Core {
   /// Convert to XPC error representation
   /// - Returns: XPC representation of this error
-  public func toXPC() -> XPCErrors.SecurityError {
-    self as XPCErrors.SecurityError
+  public func toXPC() -> UmbraErrors.Security.XPC {
+    SecurityErrorMapper.mapToXPCError(self)
+  }
+}
+
+/// Extension for UmbraErrors.Security.XPC with conversion functionality
+extension UmbraErrors.Security.XPC {
+  /// Convert to Core error representation
+  /// - Returns: Core representation of this error
+  public func toCore() -> UmbraErrors.Security.Core {
+    SecurityErrorMapper.mapToCoreError(self)
+  }
+  
+  /// Convert to Protocol error representation
+  /// - Returns: Protocol representation of this error
+  public func toProtocol() -> UmbraErrors.Security.Protocols {
+    SecurityErrorMapper.mapToProtocolError(self)
+  }
+}
+
+/// Extension for UmbraErrors.Security.Protocols with conversion functionality
+extension UmbraErrors.Security.Protocols {
+  /// Convert to XPC error representation
+  /// - Returns: XPC representation of this error
+  public func toXPC() -> UmbraErrors.Security.XPC {
+    SecurityErrorMapper.mapToXPCError(self)
+  }
+  
+  /// Convert to Core error representation
+  /// - Returns: Core representation of this error
+  public func toCore() -> UmbraErrors.Security.Core {
+    SecurityErrorMapper.mapToCoreError(self)
   }
 }
 
