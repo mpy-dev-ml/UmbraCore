@@ -145,7 +145,12 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
   /// - Parameter error: The XPC error to be mapped.
   /// - Returns: A SecurityError representing the XPC error.
   private func mapXPCError(_ error: Error) -> SecurityProtocolsCore.SecurityError {
-    CoreErrors.SecurityErrorMapper.mapToSPCError(error) as! SecurityProtocolsCore.SecurityError
+    if let securityError = CoreErrors.SecurityErrorMapper.mapToSPCError(error) as? SecurityProtocolsCore.SecurityError {
+      return securityError
+    } else {
+      // Fallback to internal error if the cast fails
+      return SecurityProtocolsCore.SecurityError.internalError("Failed to map error: \(error.localizedDescription)")
+    }
   }
 }
 
@@ -315,7 +320,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
         // The serviceProxy.generateRandomData should return the correct type
         let result=await serviceProxy.generateRandomData(length: length)
 
-        if let nsObject=result as? NSObject {
+        if let nsObject=result {
           if let nsError=nsObject as? NSError {
             continuation.resume(returning: .failure(mapSecurityError(nsError)))
           } else if let data=nsObject as? NSData {
@@ -376,7 +381,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
         let result=await serviceProxy.retrieveSecurely(identifier: identifier)
 
         // Handle the result appropriately
-        if let nsObject=result as? NSObject {
+        if let nsObject=result {
           if let nsError=nsObject as? NSError {
             continuation.resume(returning: .failure(mapSecurityError(nsError)))
           } else if let data=nsObject as? NSData {
@@ -434,7 +439,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
 
         let result=await serviceProxy.rotateKey(withIdentifier: identifier, dataToReencrypt: nsData)
 
-        if let nsObject=result as? NSObject {
+        if let nsObject=result {
           if let nsError=nsObject as? NSError {
             continuation.resume(returning: .failure(mapSecurityError(nsError)))
           } else if let newData=nsObject as? NSData {
@@ -582,7 +587,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
       Task {
         let selector=NSSelectorFromString("storeData:withKey:")
         let data=convertSecureBytesToNSData(self.secureBytes(from: data as Data))
-        (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: key)
+        _ = (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: key)
 
         continuation.resume(returning: NSNumber(value: true))
       }
@@ -616,7 +621,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
     await withCheckedContinuation { continuation in
       Task {
         let selector=NSSelectorFromString("deleteDataWithKey:")
-        (connection.remoteObjectProxy as AnyObject).perform(selector, with: key)
+        _ = (connection.remoteObjectProxy as AnyObject).perform(selector, with: key)
 
         continuation.resume(returning: NSNumber(value: true))
       }
@@ -671,7 +676,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
     await withCheckedContinuation { continuation in
       Task {
         let selector=NSSelectorFromString("deleteDataWithKey:")
-        (connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)
+        _ = (connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)
 
         continuation.resume(returning: .success(()))
       }
@@ -761,7 +766,7 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
     await withCheckedContinuation { continuation in
       Task {
         let selector=NSSelectorFromString("deleteKeyWithIdentifier:")
-        (connection.remoteObjectProxy as AnyObject).perform(selector, with: keyIdentifier)
+        _ = (connection.remoteObjectProxy as AnyObject).perform(selector, with: keyIdentifier)
 
         continuation.resume(returning: .success(()))
       }

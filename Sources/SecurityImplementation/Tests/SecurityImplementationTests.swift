@@ -25,7 +25,7 @@ class SecurityImplementationTests: XCTestCase {
 
     // Verify success
     switch result {
-      case let .success(data: key):
+      case .success:
         XCTAssertTrue(true)
       case let .failure(error: error):
         XCTFail("Key generation failed: \(error)")
@@ -355,8 +355,9 @@ class SecurityImplementationTests: XCTestCase {
 
     // Verify success
     switch result {
-      case let .success(data: keyPair):
+      case .success:
         // Extract the public and private keys
+        let keyPair=result.value
         let publicKey=keyPair.publicKey
         let privateKey=keyPair.privateKey
 
@@ -405,11 +406,11 @@ class SecurityImplementationTests: XCTestCase {
     // Check result
     print("Encryption result: \(encryptResult)")
     switch encryptResult {
-      case let .success(data: encryptedData):
-        print("Encrypted data length: \(encryptedData.count)")
+      case .success:
+        print("Encrypted data length: \(encryptResult.value.count)")
 
         // Print the first few bytes of encrypted data for debugging
-        let encBytes=encryptedData.bytes()
+        let encBytes=encryptResult.value.bytes()
         if encBytes.count >= 8 {
           print("First 8 bytes of encrypted data: \(Array(encBytes.prefix(8)))")
         }
@@ -417,7 +418,7 @@ class SecurityImplementationTests: XCTestCase {
         // Decrypt test
         print("Decrypting data")
         let decryptResult=await cryptoService.decryptAsymmetric(
-          data: encryptedData,
+          data: encryptResult.value,
           privateKey: privateKey,
           config: config
         )
@@ -464,18 +465,18 @@ class SecurityImplementationTests: XCTestCase {
 
     // Verify encryption success
     switch encryptResult {
-      case let .success(data: encryptedData):
-        print("Encrypted data size: \(encryptedData.count)")
+      case .success:
+        print("Encrypted data size: \(encryptResult.value.count)")
 
         // Debug info
-        let encryptedBytes=encryptedData.bytes()
+        let encryptedBytes=encryptResult.value.bytes()
         if encryptedBytes.count >= 8 {
           print("First 8 bytes of encrypted data: \(Array(encryptedBytes.prefix(8)))")
         }
 
         // Decrypt the data
         let decryptResult=await cryptoService.decryptAsymmetric(
-          data: encryptedData,
+          data: encryptResult.value,
           privateKey: privateKey,
           config: config
         )
@@ -516,16 +517,16 @@ class SecurityImplementationTests: XCTestCase {
 
     // Verify encryption success
     switch encryptResult {
-      case let .success(data: encryptedData):
+      case .success:
         // Basic structural validation
-        XCTAssertGreaterThan(encryptedData.count, 50, "Encrypted data should be substantial")
+        XCTAssertGreaterThan(encryptResult.value.count, 50, "Encrypted data should be substantial")
 
         // The header should consist of at least our format identifier
-        let bytes=encryptedData.bytes()
+        let bytes=encryptResult.value.bytes()
         XCTAssertGreaterThan(bytes.count, 8, "Should have enough bytes for format analysis")
 
         // Debug info
-        print("Encrypted data length: \(encryptedData.count)")
+        print("Encrypted data length: \(encryptResult.value.count)")
         print("First 16 bytes: \(Array(bytes.prefix(16)))")
 
       // In a real-world scenario, we would verify that it follows our expected hybrid format
@@ -546,10 +547,10 @@ class SecurityImplementationTests: XCTestCase {
 
     // Verify signing success
     switch signResult {
-      case let .success(data: signature):
+      case .success:
         // Verify the signature
         let verifyResult=await cryptoService.verify(
-          signature: signature,
+          signature: signResult.value,
           for: testData,
           using: signingKey
         )
@@ -562,7 +563,7 @@ class SecurityImplementationTests: XCTestCase {
             // Test verification with modified data
             let modifiedData=SecureBytes(bytes: [0x01, 0x02, 0x03, 0x04, 0x06]) // Last byte changed
             let verifyModifiedResult=await cryptoService.verify(
-              signature: signature,
+              signature: signResult.value,
               for: modifiedData,
               using: signingKey
             )
@@ -685,7 +686,7 @@ class SecurityImplementationTests: XCTestCase {
 
       print("Asymmetric encryption time for \(size) KB: \(encryptionTime) seconds")
       switch encryptResult {
-        case let .success(data: encryptedData):
+        case .success:
           // Record encryption throughput
           let encryptThroughput=Double(sizeInBytes) / encryptionTime / 1024.0 / 1024.0
           print("Asymmetric encryption throughput: \(encryptThroughput) MB/s")
@@ -693,7 +694,7 @@ class SecurityImplementationTests: XCTestCase {
           // Measure decryption time
           let decryptStartTime=Date()
           let decryptResult=await cryptoService.decryptAsymmetric(
-            data: encryptedData,
+            data: encryptResult.value,
             privateKey: privateKey,
             config: config
           )

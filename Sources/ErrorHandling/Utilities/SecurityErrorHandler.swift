@@ -132,11 +132,11 @@ public final class SecurityErrorHandler: @unchecked Sendable {
         RecoveryOptions.retryCancel(
           title: "Authentication Required",
           message: "Your authentication has failed. Please re-authenticate to continue.",
-          retryHandler: { [weak self] in
+          retryHandler: {
             print("Retrying after security error")
             // Implement retry logic here
           },
-          cancelHandler: { [weak self] in
+          cancelHandler: {
             print("Cancelled after security error")
             // Implement cancel logic here
           }
@@ -146,11 +146,11 @@ public final class SecurityErrorHandler: @unchecked Sendable {
         RecoveryOptions.retryCancel(
           title: "Session Expired",
           message: "Your session has expired. Please renew your session to continue.",
-          retryHandler: { [weak self] in
+          retryHandler: {
             print("Retrying after security error")
             // Implement retry logic here
           },
-          cancelHandler: { [weak self] in
+          cancelHandler: {
             print("Cancelled after security error")
             // Implement cancel logic here
           }
@@ -160,11 +160,11 @@ public final class SecurityErrorHandler: @unchecked Sendable {
         RecoveryOptions.retryCancel(
           title: "Access Denied",
           message: "You do not have permission to perform this action.",
-          retryHandler: { [weak self] in
+          retryHandler: {
             print("Retrying after security error")
             // Implement retry logic here
           },
-          cancelHandler: { [weak self] in
+          cancelHandler: {
             print("Cancelled after security error")
             // Implement cancel logic here
           }
@@ -174,11 +174,11 @@ public final class SecurityErrorHandler: @unchecked Sendable {
         RecoveryOptions.retryCancel(
           title: "Access Denied",
           message: "You do not have permission to perform this action.",
-          retryHandler: { [weak self] in
+          retryHandler: {
             print("Retrying after security error")
             // Implement retry logic here
           },
-          cancelHandler: { [weak self] in
+          cancelHandler: {
             print("Cancelled after security error")
             // Implement cancel logic here
           }
@@ -189,11 +189,11 @@ public final class SecurityErrorHandler: @unchecked Sendable {
         RecoveryOptions.retryCancel(
           title: "Security Error",
           message: securityError.localizedDescription,
-          retryHandler: { [weak self] in
+          retryHandler: {
             print("Retrying after security error")
             // Implement retry logic here
           },
-          cancelHandler: { [weak self] in
+          cancelHandler: {
             print("Cancelled after security error")
             // Implement cancel logic here
           }
