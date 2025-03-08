@@ -1,6 +1,7 @@
+import ErrorHandling
+import ErrorHandlingDomains
 import Foundation
 import UmbraCoreTypes
-import ErrorHandling
 
 /// Protocol defining the base XPC service interface without Foundation dependencies
 @objc
@@ -10,12 +11,14 @@ public protocol XPCServiceProtocolBasic: NSObjectProtocol, Sendable {
 
   /// Basic ping method to test if service is responsive
   /// - Returns: YES if the service is responsive
-  @objc func ping() async -> Bool
+  @objc
+  func ping() async -> Bool
 
-  /// Basic synchronisation of keys between XPC service and client 
+  /// Basic synchronisation of keys between XPC service and client
   /// - Parameter bytes: Raw byte array for key synchronisation
-  /// - Returns: Result with success or failure
-  @objc func synchroniseKeys(_ bytes: [UInt8]) async -> Result<Void, UmbraErrors.Security.XPC>
+  /// - Parameter completionHandler: Called with nil if successful, or NSError if failed
+  @objc
+  func synchroniseKeys(_ bytes: [UInt8], completionHandler: @escaping (NSError?) -> Void)
 }
 
 /// Default protocol implementation
@@ -24,7 +27,7 @@ extension XPCServiceProtocolBasic {
   public static var protocolIdentifier: String {
     "com.umbra.xpc.service.protocol.basic"
   }
-  
+
   /// Default implementation of ping - always succeeds
   public func ping() async -> Bool {
     true

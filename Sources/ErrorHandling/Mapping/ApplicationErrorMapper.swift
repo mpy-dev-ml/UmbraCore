@@ -6,22 +6,22 @@ import Foundation
 /// Maps application errors from different sources to a consolidated ApplicationError
 public class ApplicationErrorMapper: ErrorMapper {
   /// The source error type
-  public typealias SourceType = UmbraErrors.Application.Core
-  
+  public typealias SourceType=UmbraErrors.Application.Core
+
   /// The target error type
-  public typealias TargetType = ApplicationError
-  
+  public typealias TargetType=ApplicationError
+
   /// The domain this mapper handles
-  public let domain = "Application"
+  public let domain="Application"
 
   /// Create a new application error mapper
   public init() {}
-  
+
   /// Maps from the source error type to the target error type
   /// - Parameter error: The source error
   /// - Returns: The mapped target error
   public func mapError(_ error: SourceType) -> TargetType {
-    return mapFromTyped(error)
+    mapFromTyped(error)
   }
 
   /// Map from a generic error to an ApplicationError if possible
@@ -29,44 +29,43 @@ public class ApplicationErrorMapper: ErrorMapper {
   /// - Returns: An ApplicationError or nil if the error is not mappable
   public func mapFromAny(_ error: Error) -> ApplicationError? {
     // Get the error type name as a string
-    let errorType = String(describing: type(of: error))
+    let errorType=String(describing: type(of: error))
 
     // Core application errors
     if errorType.contains("UmbraErrors.Application.Core") {
-      if let typedError = error as? UmbraErrors.Application.Core {
+      if let typedError=error as? UmbraErrors.Application.Core {
         return mapFromTyped(typedError)
       }
       return .unknown("Unable to cast to UmbraErrors.Application.Core")
     }
     // UI errors
     else if errorType.contains("UmbraErrors.Application.UI") {
-      if let typedError = error as? UmbraErrors.Application.UI {
+      if let typedError=error as? UmbraErrors.Application.UI {
         return mapFromUI(typedError)
       }
       return .unknown("Unable to cast to UmbraErrors.Application.UI")
     }
     // Lifecycle errors
     else if errorType.contains("UmbraErrors.Application.Lifecycle") {
-      if let typedError = error as? UmbraErrors.Application.Lifecycle {
+      if let typedError=error as? UmbraErrors.Application.Lifecycle {
         return mapFromLifecycle(typedError)
       }
       return .unknown("Unable to cast to UmbraErrors.Application.Lifecycle")
     }
     // Settings errors
     else if errorType.contains("UmbraErrors.Application.Settings") {
-      if let typedError = error as? UmbraErrors.Application.Settings {
+      if let typedError=error as? UmbraErrors.Application.Settings {
         return mapFromSettings(typedError)
       }
       return .unknown("Unable to cast to UmbraErrors.Application.Settings")
-    }
-    else {
+    } else {
       // Only map if it seems like an application error
-      let errorDescription = String(describing: error).lowercased()
+      let errorDescription=String(describing: error).lowercased()
       if errorDescription.contains("init") || errorDescription.contains("application") {
         return .unknown("Unmapped application error: \(errorDescription)")
       }
     }
-    
+
     return nil
   }
 
@@ -75,28 +74,28 @@ public class ApplicationErrorMapper: ErrorMapper {
   /// - Returns: The mapped ApplicationError
   public func mapFromTyped(_ error: UmbraErrors.Application.Core) -> ApplicationError {
     switch error {
-    case .configurationError(let reason):
-      return .configurationError("Configuration error: \(reason)")
-    case .initializationError(let component, let reason):
-      return .initializationError("Initialization error in \(component): \(reason)")
-    case .resourceNotFound(let resourceType, let identifier):
-      return .resourceNotFound("\(resourceType) not found with ID: \(identifier)")
-    case .resourceAlreadyExists(let resourceType, let identifier):
-      return .resourceAlreadyExists("\(resourceType) already exists with ID: \(identifier)")
-    case .operationTimeout(let operation, let durationMs):
-      return .operationTimeout("Operation timed out after \(durationMs)ms: \(operation)")
-    case .operationCancelled(let operation):
-      return .operationCancelled("Operation cancelled: \(operation)")
-    case .invalidState(let currentState, let expectedState):
-      return .invalidState("Invalid state: current=\(currentState), expected=\(expectedState)")
-    case .dependencyError(let dependency, let reason):
-      return .dependencyError("Dependency error for \(dependency): \(reason)")
-    case .externalServiceError(let service, let reason):
-      return .externalServiceError("External service error in \(service): \(reason)")
-    case .internalError(let reason):
-      return .unknown("Internal error: \(reason)")
-    @unknown default:
-      return .unknown("Unknown application core error: \(error)")
+      case let .configurationError(reason):
+        return .configurationError("Configuration error: \(reason)")
+      case let .initializationError(component, reason):
+        return .initializationError("Initialization error in \(component): \(reason)")
+      case let .resourceNotFound(resourceType, identifier):
+        return .resourceNotFound("\(resourceType) not found with ID: \(identifier)")
+      case let .resourceAlreadyExists(resourceType, identifier):
+        return .resourceAlreadyExists("\(resourceType) already exists with ID: \(identifier)")
+      case let .operationTimeout(operation, durationMs):
+        return .operationTimeout("Operation timed out after \(durationMs)ms: \(operation)")
+      case let .operationCancelled(operation):
+        return .operationCancelled("Operation cancelled: \(operation)")
+      case let .invalidState(currentState, expectedState):
+        return .invalidState("Invalid state: current=\(currentState), expected=\(expectedState)")
+      case let .dependencyError(dependency, reason):
+        return .dependencyError("Dependency error for \(dependency): \(reason)")
+      case let .externalServiceError(service, reason):
+        return .externalServiceError("External service error in \(service): \(reason)")
+      case let .internalError(reason):
+        return .unknown("Internal error: \(reason)")
+      @unknown default:
+        return .unknown("Unknown application core error: \(error)")
     }
   }
 
@@ -105,26 +104,26 @@ public class ApplicationErrorMapper: ErrorMapper {
   /// - Returns: The mapped ApplicationError
   private func mapFromUI(_ error: UmbraErrors.Application.UI) -> ApplicationError {
     switch error {
-    case .viewNotFound(let identifier):
-      return .viewError("View not found: \(identifier)")
-    case .invalidViewState(let view, let state):
-      return .viewError("Invalid view state for \(view): \(state)")
-    case .renderingError(let view, let reason):
-      return .renderingError("Rendering error for \(view): \(reason)")
-    case .animationError(let animation, let reason):
-      return .renderingError("Animation error for \(animation): \(reason)")
-    case .constraintError(let constraint, let reason):
-      return .viewError("Constraint error for \(constraint): \(reason)")
-    case .resourceLoadingError(let resource, let reason):
-      return .resourceLoadingError("Resource loading error for \(resource): \(reason)")
-    case .inputValidationError(let field, let reason):
-      return .inputValidationError("Validation error for \(field): \(reason)")
-    case .componentInitializationError(let component, let reason):
-      return .initializationError("Component initialization error for \(component): \(reason)")
-    case .internalError(let reason):
-      return .unknown("Internal UI error: \(reason)")
-    @unknown default:
-      return .unknown("Unknown UI error: \(error)")
+      case let .viewNotFound(identifier):
+        return .viewError("View not found: \(identifier)")
+      case let .invalidViewState(view, state):
+        return .viewError("Invalid view state for \(view): \(state)")
+      case let .renderingError(view, reason):
+        return .renderingError("Rendering error for \(view): \(reason)")
+      case let .animationError(animation, reason):
+        return .renderingError("Animation error for \(animation): \(reason)")
+      case let .constraintError(constraint, reason):
+        return .viewError("Constraint error for \(constraint): \(reason)")
+      case let .resourceLoadingError(resource, reason):
+        return .resourceLoadingError("Resource loading error for \(resource): \(reason)")
+      case let .inputValidationError(field, reason):
+        return .inputValidationError("Validation error for \(field): \(reason)")
+      case let .componentInitializationError(component, reason):
+        return .initializationError("Component initialization error for \(component): \(reason)")
+      case let .internalError(reason):
+        return .unknown("Internal UI error: \(reason)")
+      @unknown default:
+        return .unknown("Unknown UI error: \(error)")
     }
   }
 
@@ -133,26 +132,26 @@ public class ApplicationErrorMapper: ErrorMapper {
   /// - Returns: The mapped ApplicationError
   private func mapFromLifecycle(_ error: UmbraErrors.Application.Lifecycle) -> ApplicationError {
     switch error {
-    case .launchError(let reason):
-      return .lifecycleError("Launch error: \(reason)")
-    case .backgroundTransitionError(let reason):
-      return .lifecycleError("Background transition error: \(reason)")
-    case .foregroundTransitionError(let reason):
-      return .lifecycleError("Foreground transition error: \(reason)")
-    case .terminationError(let reason):
-      return .lifecycleError("Termination error: \(reason)")
-    case .stateRestorationError(let reason):
-      return .stateError("State restoration error: \(reason)")
-    case .statePreservationError(let reason):
-      return .stateError("State preservation error: \(reason)")
-    case .memoryWarningError(let reason):
-      return .lifecycleError("Memory warning error: \(reason)")
-    case .notificationHandlingError(let notification, let reason):
-      return .lifecycleError("Notification handling error for \(notification): \(reason)")
-    case .internalError(let reason):
-      return .unknown("Internal lifecycle error: \(reason)")
-    @unknown default:
-      return .unknown("Unknown lifecycle error: \(error)")
+      case let .launchError(reason):
+        return .lifecycleError("Launch error: \(reason)")
+      case let .backgroundTransitionError(reason):
+        return .lifecycleError("Background transition error: \(reason)")
+      case let .foregroundTransitionError(reason):
+        return .lifecycleError("Foreground transition error: \(reason)")
+      case let .terminationError(reason):
+        return .lifecycleError("Termination error: \(reason)")
+      case let .stateRestorationError(reason):
+        return .stateError("State restoration error: \(reason)")
+      case let .statePreservationError(reason):
+        return .stateError("State preservation error: \(reason)")
+      case let .memoryWarningError(reason):
+        return .lifecycleError("Memory warning error: \(reason)")
+      case let .notificationHandlingError(notification, reason):
+        return .lifecycleError("Notification handling error for \(notification): \(reason)")
+      case let .internalError(reason):
+        return .unknown("Internal lifecycle error: \(reason)")
+      @unknown default:
+        return .unknown("Unknown lifecycle error: \(error)")
     }
   }
 
@@ -161,26 +160,28 @@ public class ApplicationErrorMapper: ErrorMapper {
   /// - Returns: The mapped ApplicationError
   private func mapFromSettings(_ error: UmbraErrors.Application.Settings) -> ApplicationError {
     switch error {
-    case .settingsNotFound(let key):
-      return .settingsError("Settings not found for key: \(key)")
-    case .invalidValue(let key, let value, let reason):
-      return .settingsError("Invalid value '\(value)' for key '\(key)': \(reason)")
-    case .accessError(let key, let reason):
-      return .settingsError("Settings access error for key '\(key)': \(reason)")
-    case .persistenceError(let reason):
-      return .settingsError("Settings persistence error: \(reason)")
-    case .migrationError(let fromVersion, let toVersion, let reason):
-      return .settingsError("Settings migration error from \(fromVersion) to \(toVersion): \(reason)")
-    case .synchronizationError(let reason):
-      return .settingsError("Settings synchronization error: \(reason)")
-    case .defaultSettingsError(let reason):
-      return .settingsError("Default settings error: \(reason)")
-    case .schemaValidationError(let reason):
-      return .settingsError("Settings schema validation error: \(reason)")
-    case .internalError(let reason):
-      return .unknown("Internal settings error: \(reason)")
-    @unknown default:
-      return .unknown("Unknown settings error: \(error)")
+      case let .settingsNotFound(key):
+        return .settingsError("Settings not found for key: \(key)")
+      case let .invalidValue(key, value, reason):
+        return .settingsError("Invalid value '\(value)' for key '\(key)': \(reason)")
+      case let .accessError(key, reason):
+        return .settingsError("Settings access error for key '\(key)': \(reason)")
+      case let .persistenceError(reason):
+        return .settingsError("Settings persistence error: \(reason)")
+      case let .migrationError(fromVersion, toVersion, reason):
+        return .settingsError(
+          "Settings migration error from \(fromVersion) to \(toVersion): \(reason)"
+        )
+      case let .synchronizationError(reason):
+        return .settingsError("Settings synchronization error: \(reason)")
+      case let .defaultSettingsError(reason):
+        return .settingsError("Default settings error: \(reason)")
+      case let .schemaValidationError(reason):
+        return .settingsError("Settings schema validation error: \(reason)")
+      case let .internalError(reason):
+        return .unknown("Internal settings error: \(reason)")
+      @unknown default:
+        return .unknown("Unknown settings error: \(error)")
     }
   }
 }

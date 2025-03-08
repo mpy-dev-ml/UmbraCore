@@ -145,11 +145,15 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
   /// - Parameter error: The XPC error to be mapped.
   /// - Returns: A SecurityError representing the XPC error.
   private func mapXPCError(_ error: Error) -> SecurityProtocolsCore.SecurityError {
-    if let securityError = CoreErrors.SecurityErrorMapper.mapToSPCError(error) as? SecurityProtocolsCore.SecurityError {
-      return securityError
+    if
+      let securityError=CoreErrors.SecurityErrorMapper
+        .mapToSPCError(error) as? SecurityProtocolsCore.SecurityError
+    {
+      securityError
     } else {
       // Fallback to internal error if the cast fails
-      return SecurityProtocolsCore.SecurityError.internalError("Failed to map error: \(error.localizedDescription)")
+      SecurityProtocolsCore.SecurityError
+        .internalError("Failed to map error: \(error.localizedDescription)")
     }
   }
 }
@@ -587,7 +591,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
       Task {
         let selector=NSSelectorFromString("storeData:withKey:")
         let data=convertSecureBytesToNSData(self.secureBytes(from: data as Data))
-        _ = (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: key)
+        _=(connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: key)
 
         continuation.resume(returning: NSNumber(value: true))
       }
@@ -621,7 +625,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
     await withCheckedContinuation { continuation in
       Task {
         let selector=NSSelectorFromString("deleteDataWithKey:")
-        _ = (connection.remoteObjectProxy as AnyObject).perform(selector, with: key)
+        _=(connection.remoteObjectProxy as AnyObject).perform(selector, with: key)
 
         continuation.resume(returning: NSNumber(value: true))
       }
@@ -676,7 +680,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
     await withCheckedContinuation { continuation in
       Task {
         let selector=NSSelectorFromString("deleteDataWithKey:")
-        _ = (connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)
+        _=(connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)
 
         continuation.resume(returning: .success(()))
       }
@@ -766,7 +770,7 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
     await withCheckedContinuation { continuation in
       Task {
         let selector=NSSelectorFromString("deleteKeyWithIdentifier:")
-        _ = (connection.remoteObjectProxy as AnyObject).perform(selector, with: keyIdentifier)
+        _=(connection.remoteObjectProxy as AnyObject).perform(selector, with: keyIdentifier)
 
         continuation.resume(returning: .success(()))
       }

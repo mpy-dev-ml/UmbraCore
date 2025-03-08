@@ -1,0 +1,12 @@
+INFO: Invocation ID: b4929273-4657-41c4-855c-706bb8f96d80
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Analyzing: 171 targets (0 packages loaded, 0 targets configured)
+Analyzing: 171 targets (0 packages loaded, 0 targets configured)
+
+INFO: Analyzed 171 targets (3 packages loaded, 2496 targets configured).
+INFO: Found 171 targets...
+INFO: Elapsed time: 1.139s, Critical Path: 0.00s
+INFO: 1 process: 1 internal.
+INFO: Build completed successfully, 1 total action

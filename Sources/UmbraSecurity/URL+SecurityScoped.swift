@@ -1,3 +1,4 @@
+import CoreErrors
 import CoreTypesInterfaces
 import Foundation
 import SecurityInterfaces

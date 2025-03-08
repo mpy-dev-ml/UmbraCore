@@ -86,40 +86,40 @@ public struct SecurityErrorMapper {
   /// - Returns: The mapped UmbraSecurityError
   public func mapFromTyped(_ error: UmbraErrors.Security.Core) -> UmbraSecurityError {
     switch error {
-    case .invalidKey(let reason):
-      return .invalidCredentials("Invalid key: \(reason)")
-    case .invalidInput(let reason):
-      if reason.contains("authentication") {
-        return .authenticationFailed("Authentication failed: \(reason)")
-      } else if reason.contains("permission") {
-        return .permissionDenied("Permission denied: \(reason)")
-      } else if reason.contains("session") {
-        return .sessionExpired("Session expired: \(reason)")
-      } else {
-        return .securityConfigurationError("Invalid input: \(reason)")
-      }
-    case .internalError(let details):
-      return .unknown("Internal error: \(details)")
-    case .encryptionFailed(let reason):
-      return .encryptionFailed("Encryption failed: \(reason)")
-    case .decryptionFailed(let reason):
-      return .decryptionFailed("Decryption failed: \(reason)")
-    case .keyGenerationFailed(let reason):
-      return .keyGenerationFailed("Key generation failed: \(reason)")
-    case .hashVerificationFailed(let reason):
-      return .hashingFailed("Hash verification failed: \(reason)")
-    case .randomGenerationFailed(let reason):
-      return .securityConfigurationError("Random generation failed: \(reason)")
-    case .storageOperationFailed(let reason):
-      return .securityConfigurationError("Storage operation failed: \(reason)")
-    case .timeout(let operation):
-      return .secureChannelFailed("Operation timed out: \(operation)")
-    case .serviceError(let code, let reason):
-      return .unknown("Service error \(code): \(reason)")
-    case .notImplemented(let feature):
-      return .securityConfigurationError("Feature not implemented: \(feature)")
-    @unknown default:
-      return .unknown("Unknown security error: \(error)")
+      case let .invalidKey(reason):
+        return .invalidCredentials("Invalid key: \(reason)")
+      case let .invalidInput(reason):
+        if reason.contains("authentication") {
+          return .authenticationFailed("Authentication failed: \(reason)")
+        } else if reason.contains("permission") {
+          return .permissionDenied("Permission denied: \(reason)")
+        } else if reason.contains("session") {
+          return .sessionExpired("Session expired: \(reason)")
+        } else {
+          return .securityConfigurationError("Invalid input: \(reason)")
+        }
+      case let .internalError(details):
+        return .unknown("Internal error: \(details)")
+      case let .encryptionFailed(reason):
+        return .encryptionFailed("Encryption failed: \(reason)")
+      case let .decryptionFailed(reason):
+        return .decryptionFailed("Decryption failed: \(reason)")
+      case let .keyGenerationFailed(reason):
+        return .keyGenerationFailed("Key generation failed: \(reason)")
+      case let .hashVerificationFailed(reason):
+        return .hashingFailed("Hash verification failed: \(reason)")
+      case let .randomGenerationFailed(reason):
+        return .securityConfigurationError("Random generation failed: \(reason)")
+      case let .storageOperationFailed(reason):
+        return .securityConfigurationError("Storage operation failed: \(reason)")
+      case let .timeout(operation):
+        return .secureChannelFailed("Operation timed out: \(operation)")
+      case let .serviceError(code, reason):
+        return .unknown("Service error \(code): \(reason)")
+      case let .notImplemented(feature):
+        return .securityConfigurationError("Feature not implemented: \(feature)")
+      @unknown default:
+        return .unknown("Unknown security error: \(error)")
     }
   }
 
@@ -142,7 +142,7 @@ public struct SecurityErrorMapper {
     } else if errorType.contains("XPCProtocolsCore") {
       return mapFromXPCProtocolsCore(error)
     } else if errorType.contains("UmbraErrors.Security.Core") {
-      if let typedError = error as? UmbraErrors.Security.Core {
+      if let typedError=error as? UmbraErrors.Security.Core {
         return mapFromTyped(typedError)
       }
       return .unknown("Unable to cast to UmbraErrors.Security.Core")

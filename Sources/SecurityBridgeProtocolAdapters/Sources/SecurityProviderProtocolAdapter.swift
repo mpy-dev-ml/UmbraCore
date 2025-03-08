@@ -7,6 +7,9 @@ import SecurityTypeConverters
 import UmbraCoreTypes
 import XPCProtocolsCore
 
+// Type alias to disambiguate SecurityError types
+typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+
 /// Bridge protocol that connects security providers to Foundation-free interfaces
 /// This helps break circular dependencies between security modules
 public protocol SecurityProviderBridge: Sendable {

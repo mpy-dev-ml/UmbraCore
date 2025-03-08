@@ -1,7 +1,10 @@
 import CoreErrors
+import ErrorHandling
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import ErrorHandling
+
+// Type alias to disambiguate SecurityError types
+typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
 
 /// Factory class that provides convenience methods for creating protocol adapters
 /// during the migration from legacy protocols to the new XPCProtocolsCore protocols.
@@ -42,10 +45,10 @@ public enum XPCProtocolMigrationFactory {
   /// - Returns: Standardised XPCSecurityError
   public static func convertToStandardError(_ error: Error) -> XPCSecurityError {
     // If the error is already an XPCSecurityError, return it directly
-    if let xpcError = error as? XPCSecurityError {
+    if let xpcError=error as? XPCSecurityError {
       return xpcError
     }
-    
+
     // Otherwise create a general error with the original error's description
     return .internalError(reason: error.localizedDescription)
   }
@@ -56,10 +59,10 @@ public enum XPCProtocolMigrationFactory {
   /// - Returns: XPCSecurityError representation
   public static func anyErrorToXPCError(_ error: Error) -> XPCSecurityError {
     // If the error is already an XPCSecurityError, return it directly
-    if let xpcError = error as? XPCSecurityError {
+    if let xpcError=error as? XPCSecurityError {
       return xpcError
     }
-    
+
     // Otherwise create a general error with the original error's description
     return .internalError(reason: error.localizedDescription)
   }

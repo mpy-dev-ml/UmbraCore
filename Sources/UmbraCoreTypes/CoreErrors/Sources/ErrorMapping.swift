@@ -1,4 +1,5 @@
 import CoreErrors
+import ErrorHandlingDomains
 
 // MARK: - Error Mapping Functions
 
@@ -75,32 +76,30 @@ private func mapFromCoreResourceError(_ error: CoreErrors.ResourceError) -> Erro
 /// - Returns: Equivalent UmbraCoreTypes error
 private func mapFromCoreSecurityError(_ error: CoreErrors.SecurityError) -> Error {
   switch error {
-    case .accessError:
-      return ResourceLocatorError.accessDenied
-    case .bookmarkError:
-      return ResourceLocatorError.generalError("Bookmark error")
-    case .cryptoError:
-      return ResourceLocatorError.generalError("Cryptographic operation failed")
-    case .bookmarkCreationFailed:
-      return ResourceLocatorError.generalError("Bookmark creation failed")
-    case .bookmarkResolutionFailed:
-      return ResourceLocatorError.generalError("Bookmark resolution failed")
-    case .encryptionFailed:
-      return ResourceLocatorError.generalError("Encryption failed")
-    case .decryptionFailed:
-      return ResourceLocatorError.generalError("Decryption failed")
-    case .keyGenerationFailed:
-      return ResourceLocatorError.generalError("Key generation failed")
-    case .invalidData:
-      return ResourceLocatorError.generalError("Invalid data format")
-    case .hashingFailed:
-      return ResourceLocatorError.generalError("Hashing operation failed")
-    case .serviceFailed:
-      return ResourceLocatorError.generalError("Service operation failed")
-    case .notImplemented:
-      return ResourceLocatorError.generalError("Not implemented")
-    case let .general(message):
-      return ResourceLocatorError.generalError(message)
+    case let .encryptionFailed(reason):
+      return ResourceLocatorError.generalError("Encryption failed: \(reason)")
+    case let .decryptionFailed(reason):
+      return ResourceLocatorError.generalError("Decryption failed: \(reason)")
+    case let .keyGenerationFailed(reason):
+      return ResourceLocatorError.generalError("Key generation failed: \(reason)")
+    case let .invalidKey(reason):
+      return ResourceLocatorError.generalError("Invalid key: \(reason)")
+    case let .hashVerificationFailed(reason):
+      return ResourceLocatorError.generalError("Hash verification failed: \(reason)")
+    case let .randomGenerationFailed(reason):
+      return ResourceLocatorError.generalError("Random generation failed: \(reason)")
+    case let .invalidInput(reason):
+      return ResourceLocatorError.generalError("Invalid input: \(reason)")
+    case let .storageOperationFailed(reason):
+      return ResourceLocatorError.generalError("Storage operation failed: \(reason)")
+    case let .timeout(operation):
+      return ResourceLocatorError.generalError("Security operation timed out: \(operation)")
+    case let .serviceError(code, reason):
+      return ResourceLocatorError.generalError("Security service error (\(code)): \(reason)")
+    case let .internalError(message):
+      return ResourceLocatorError.generalError("Internal security error: \(message)")
+    case let .notImplemented(feature):
+      return ResourceLocatorError.generalError("Not implemented: \(feature)")
     @unknown default:
       return ResourceLocatorError.generalError("Security operation failed with unknown error")
   }
@@ -115,8 +114,8 @@ public struct ErrorContainer: Error {
   public let userInfo: [String: Any]
 
   public init(domain: String, code: Int, userInfo: [String: Any]) {
-    self.domain = domain
-    self.code = code
-    self.userInfo = userInfo
+    self.domain=domain
+    self.code=code
+    self.userInfo=userInfo
   }
 }

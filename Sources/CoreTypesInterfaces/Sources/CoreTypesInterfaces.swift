@@ -1,4 +1,5 @@
 import CoreErrors
+import ErrorHandlingDomains
 
 /// Type alias to support legacy code that uses BinaryData
 public typealias BinaryData=SecureData

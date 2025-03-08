@@ -1097,7 +1097,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   public nonisolated func generateSecureRandomBytes(count: Int) async
   -> Result<SecureBytes, SecurityError> {
     // Check for valid count
-    if count <= 0 {
+    if isEmpty {
       return .failure(.invalidInput(reason: "Byte count must be positive"))
     }
 

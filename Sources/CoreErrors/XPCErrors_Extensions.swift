@@ -12,15 +12,15 @@ public enum XPCErrors {
   /// XPC Security Error type alias
   /// This provides a clear namespace for XPC security errors
   /// @available(*, deprecated, message: "Use UmbraErrors.Security.XPC directly")
-  public typealias SecurityError = UmbraErrors.Security.XPC
+  public typealias SecurityError=UmbraErrors.Security.XPC
 
   /// XPC Service Error type alias
   /// @available(*, deprecated, message: "Use UmbraErrors.Service directly")
-  public typealias ServiceError = CoreErrors.ServiceError
+  public typealias ServiceError=CoreErrors.ServiceError
 
   /// XPC Crypto Error type alias
   /// @available(*, deprecated, message: "Use UmbraErrors.Crypto directly")
-  public typealias CryptoError = CoreErrors.CryptoError
+  public typealias CryptoError=CoreErrors.CryptoError
 }
 
 /// Extension for UmbraErrors.Security.Core with XPC-specific functionality
@@ -39,7 +39,7 @@ extension UmbraErrors.Security.XPC {
   public func toCore() -> UmbraErrors.Security.Core {
     SecurityErrorMapper.mapToCoreError(self)
   }
-  
+
   /// Convert to Protocol error representation
   /// - Returns: Protocol representation of this error
   public func toProtocol() -> UmbraErrors.Security.Protocols {
@@ -54,7 +54,7 @@ extension UmbraErrors.Security.Protocols {
   public func toXPC() -> UmbraErrors.Security.XPC {
     SecurityErrorMapper.mapToXPCError(self)
   }
-  
+
   /// Convert to Core error representation
   /// - Returns: Core representation of this error
   public func toCore() -> UmbraErrors.Security.Core {

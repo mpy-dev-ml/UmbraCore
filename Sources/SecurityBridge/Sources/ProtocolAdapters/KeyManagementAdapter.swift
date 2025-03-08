@@ -3,6 +3,9 @@ import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 
+// Type alias to disambiguate SecurityError types
+typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+
 /// KeyManagementAdapter provides a bridge between Foundation-based key management implementations
 /// and the Foundation-free KeyManagementProtocol.
 ///

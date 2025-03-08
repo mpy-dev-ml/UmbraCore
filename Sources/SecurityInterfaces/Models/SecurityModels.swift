@@ -16,23 +16,23 @@ public enum SecurityOperation {
   public var rawValue: String {
     switch self {
       case .encrypt:
-        return "encrypt"
+        "encrypt"
       case .decrypt:
-        return "decrypt"
+        "decrypt"
       case .sign:
-        return "sign"
+        "sign"
       case .verify:
-        return "verify"
+        "verify"
       case .hash:
-        return "hash"
+        "hash"
       case .keyGeneration:
-        return "keyGeneration"
+        "keyGeneration"
       case .keyRotation:
-        return "keyRotation"
+        "keyRotation"
       case .keyDeletion:
-        return "keyDeletion"
+        "keyDeletion"
       case let .custom(value):
-        return value
+        value
     }
   }
 }
@@ -48,10 +48,10 @@ public struct SecurityResult {
   /// Additional metadata about the operation
   public let metadata: [String: String]
 
-  public init(success: Bool, data: Data? = nil, metadata: [String: String] = [:]) {
-    self.success = success
-    self.data = data
-    self.metadata = metadata
+  public init(success: Bool, data: Data?=nil, metadata: [String: String]=[:]) {
+    self.success=success
+    self.data=data
+    self.metadata=metadata
   }
 }
 
@@ -67,8 +67,8 @@ public struct SecurityStatus {
   public let statusMessage: String
 
   public init(isActive: Bool, statusCode: Int, statusMessage: String) {
-    self.isActive = isActive
-    self.statusCode = statusCode
-    self.statusMessage = statusMessage
+    self.isActive=isActive
+    self.statusCode=statusCode
+    self.statusMessage=statusMessage
   }
 }

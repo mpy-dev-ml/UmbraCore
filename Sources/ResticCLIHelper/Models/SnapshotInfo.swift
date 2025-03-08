@@ -2,7 +2,7 @@ import Foundation
 import ResticTypes
 
 /// Represents a snapshot in the repository
-public struct SnapshotInfo: Codable {
+public struct SnapshotInfo: Codable, Sendable {
   /// Timestamp of when the backup was started
   public let time: Date
 
@@ -62,6 +62,8 @@ public struct SnapshotInfo: Codable {
     case shortId="short_id"
   }
 
+  @preconcurrency
+  @available(*, deprecated, message: "Will need to be refactored for Swift 6")
   public init(from decoder: Decoder) throws {
     let container=try decoder.container(keyedBy: CodingKeys.self)
 
@@ -104,7 +106,7 @@ public struct SnapshotInfo: Codable {
 }
 
 /// Statistics for a snapshot
-public struct SnapshotSummary: Codable {
+public struct SnapshotSummary: Codable, Sendable {
   /// Time at which the backup was started
   public let backupStart: Date
 
@@ -164,6 +166,8 @@ public struct SnapshotSummary: Codable {
     case totalBytesProcessed="total_bytes_processed"
   }
 
+  @preconcurrency
+  @available(*, deprecated, message: "Will need to be refactored for Swift 6")
   public init(from decoder: Decoder) throws {
     let container=try decoder.container(keyedBy: CodingKeys.self)
 

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Data structure for storing encrypted data with its IV
-public struct SecureStorageData: Codable {
+public struct SecureStorageData: Codable, Sendable {
   /// The encrypted data
   public let encryptedData: Data
   /// The initialization vector used for encryption

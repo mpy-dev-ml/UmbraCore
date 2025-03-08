@@ -3,6 +3,9 @@ import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 
+// Type alias to disambiguate SecurityError types
+typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+
 /// CryptoServiceAdapter provides a bridge between Foundation-based cryptographic implementations
 /// and the Foundation-free CryptoServiceProtocol.
 ///

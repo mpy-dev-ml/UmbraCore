@@ -1,4 +1,5 @@
 // CryptoKit removed - cryptography will be handled in ResticBar
+import CoreErrors
 import CryptoTypesProtocols
 import CryptoTypesTypes
 import Foundation

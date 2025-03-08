@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents file metadata in a backup
-public struct FileMetadata: Codable {
+public struct FileMetadata: Codable, Sendable {
   /// File name
   public let name: String
 

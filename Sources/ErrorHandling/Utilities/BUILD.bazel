@@ -6,6 +6,7 @@ umbra_swift_library(
     # Disable library evolution to match dependencies that don't support it (SwiftyBeaver)
     library_evolution = False,
     deps = [
+        "//Sources/ErrorHandling:ErrorHandling",  # Add the main module to import the protocol conformances
         "//Sources/ErrorHandling/Core:ErrorHandlingCore",
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
         "//Sources/ErrorHandling/Logging:ErrorHandlingLogging",

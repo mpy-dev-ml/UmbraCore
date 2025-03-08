@@ -23,8 +23,11 @@ public enum ModuleInfo {
 
 // Export all necessary types and modules
 @_exported import CoreErrors
-@_exported import UmbraCoreTypes
 @_exported import ErrorHandling
+@_exported import UmbraCoreTypes
+
+// Import the domains module for UmbraErrors
+@_exported import ErrorHandlingDomains
 
 // Export core types that are needed across the XPC boundary
 @_exported import struct UmbraCoreTypes.SecureBytes

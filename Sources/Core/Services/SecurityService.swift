@@ -9,6 +9,9 @@ import UmbraCoreTypes
 import UmbraLogging
 import XPCProtocolsCore
 
+// Type alias to disambiguate SecurityError types
+typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+
 /// Manages security operations and access control
 public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProviderProtocol {
   public static let serviceIdentifier="com.umbracore.security"

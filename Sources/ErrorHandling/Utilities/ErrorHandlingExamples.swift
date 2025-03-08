@@ -30,12 +30,12 @@ public final class ErrorHandlingExamples {
   @MainActor
   public func errorMappingExample() {
     // Get an instance of Security.Core error
-    let securityError=authenticationFailedError("Invalid credentials")
+    _=authenticationFailedError("Invalid credentials")
 
     // Map to different error type using the mapper
-    if let xpcError=UmbraErrorMapper.Security.mapCoreToXPC(securityError) {
-      print("Mapped to XPC error: \(xpcError)")
-    }
+    // Since we don't have mapCoreToXPC, we'll create the XPC error directly
+    let xpcError=UmbraErrors.Security.XPC.connectionFailed(reason: "Mapped from core error")
+    print("Created XPC error: \(xpcError)")
 
     // Create a network error
     let networkError=UmbraErrors.Network.Core.connectionFailed(reason: "Connection timeout")
@@ -68,7 +68,8 @@ public final class ErrorHandlingExamples {
       // With the new error system, we'd wrap errors differently
       // This is a simplified example
       let networkError=error as? UmbraErrors.Network.Core ??
-        UmbraErrors.Network.Core.unknownError(reason: error.localizedDescription)
+        UmbraErrors.Network.Core
+        .connectionFailed(reason: "Unknown error: \(error.localizedDescription)")
 
       print("Network error: \(networkError)")
     }
@@ -77,7 +78,7 @@ public final class ErrorHandlingExamples {
   /// Example of using logging with errors
   public func loggingExample() {
     // Create errors with different severity levels
-    let debugError=UmbraErrors.Security.Core.internalError(reason: "This is a debug-level issue")
+    let debugError=UmbraErrors.Security.Core.internalError("This is a debug-level issue")
 
     let infoError=UmbraErrors.Network.Core
       .connectionFailed(reason: "Connection temporarily unavailable")
@@ -85,7 +86,7 @@ public final class ErrorHandlingExamples {
     let warningError=UmbraErrors.Security.Core.invalidInput(reason: "Permissions will expire soon")
 
     // Create a map for details
-    let details: [String: String]=[
+    let _: [String: String]=[
       "expectedHash": "a1b2c3d4e5f6",
       "actualHash": "a1b2c3d4e5f7",
       "userID": "user123",
@@ -112,7 +113,7 @@ public final class ErrorHandlingExamples {
 
   private func performOperation() throws {
     // Simulated operation failure
-    throw UmbraErrors.Security.Core.internalError(reason: "Failed to encrypt data")
+    throw UmbraErrors.Security.Core.internalError("Failed to encrypt data")
   }
 
   private func performNetworkOperation() throws {

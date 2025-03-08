@@ -1,5 +1,5 @@
-import UmbraCoreTypes
 import ErrorHandling
+import UmbraCoreTypes
 
 /// Protocol defining secure key management operations in a FoundationIndependent manner.
 /// All operations use only primitive types and FoundationIndependent custom types.
@@ -7,7 +7,8 @@ public protocol KeyManagementProtocol: Sendable {
   /// Retrieves a security key by its identifier.
   /// - Parameter identifier: A string identifying the key.
   /// - Returns: The security key as `SecureBytes` or an error.
-  func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
+  func retrieveKey(withIdentifier identifier: String) async
+    -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   /// Stores a security key with the given identifier.
   /// - Parameters:
@@ -20,7 +21,8 @@ public protocol KeyManagementProtocol: Sendable {
   /// Deletes a security key with the given identifier.
   /// - Parameter identifier: A string identifying the key to delete.
   /// - Returns: Success or an error.
-  func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocol>
+  func deleteKey(withIdentifier identifier: String) async
+    -> Result<Void, UmbraErrors.Security.Protocol>
 
   /// Rotates a security key, creating a new key and optionally re-encrypting data.
   /// - Parameters:

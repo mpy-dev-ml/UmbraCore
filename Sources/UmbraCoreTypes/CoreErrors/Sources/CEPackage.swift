@@ -1,4 +1,5 @@
 import CoreErrors
+import ErrorHandlingDomains
 
 // MARK: - Type Aliases for CoreErrors Types
 

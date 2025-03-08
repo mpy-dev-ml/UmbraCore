@@ -159,11 +159,11 @@ final class ResourceLocatorTests: XCTestCase {
         case .accessDenied:
           if
             let securityError=mappedError as? CESecurityError,
-            case .accessError=securityError
+            case .invalidInput=securityError
           {
             // Success
           } else {
-            XCTFail("Expected accessDenied to map to CESecurityError.accessError")
+            XCTFail("Expected accessDenied to map to CESecurityError.invalidInput")
           }
 
         case .unsupportedScheme:

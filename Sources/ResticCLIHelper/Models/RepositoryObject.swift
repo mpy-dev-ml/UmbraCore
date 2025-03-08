@@ -1,7 +1,7 @@
 import Foundation
 
 /// Types of objects stored in a repository
-public enum RepositoryObjectType: String, Codable {
+public enum RepositoryObjectType: String, Codable, Sendable {
   case blob
   case pack
   case index
@@ -11,7 +11,7 @@ public enum RepositoryObjectType: String, Codable {
 }
 
 /// Represents an object in the repository
-public struct RepositoryObject: Codable {
+public struct RepositoryObject: Codable, Sendable {
   /// Type of the object
   public let type: RepositoryObjectType
 

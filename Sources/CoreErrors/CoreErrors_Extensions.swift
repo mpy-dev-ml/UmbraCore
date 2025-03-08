@@ -2,6 +2,8 @@
 ///
 /// This file provides namespace support for the CoreErrors module to avoid type ambiguity.
 
+import ErrorHandlingDomains
+
 /// CoreErrors namespace container
 /// Use this when you need to explicitly reference error types from this module
 public enum CE {
@@ -9,45 +11,28 @@ public enum CE {
 }
 
 /// Extension for SecurityError type with namespace support
-extension SecurityError {
+extension ErrorHandlingDomains.SecurityError {
   /// Type alias for accessing this type through the namespace
-  public typealias CE=SecurityError
+  public typealias CE=ErrorHandlingDomains.SecurityError
 }
 
-/// Extension for CryptoError type with namespace support
-extension CryptoError {
-  /// Type alias for accessing this type through the namespace
-  public typealias CE=CryptoError
-}
-
-/// Extension for KeyManagerError type with namespace support
-extension KeyManagerError {
-  /// Type alias for accessing this type through the namespace
-  public typealias CE=KeyManagerError
-}
-
-/// Extension for LoggingError type with namespace support
-extension LoggingError {
-  /// Type alias for accessing this type through the namespace
-  public typealias CE=LoggingError
-}
+// Note: The following extensions were removed as the types don't exist in ErrorHandlingDomains
+// - CryptoError
+// - KeyManagerError
+// - LoggingError
+// - ResourceError
+// - ServiceError
 
 /// Extension for RepositoryError type with namespace support
-extension RepositoryError {
+extension ErrorHandlingDomains.RepositoryErrorType {
   /// Type alias for accessing this type through the namespace
-  public typealias CE=RepositoryError
+  public typealias CE=ErrorHandlingDomains.RepositoryErrorType
 }
 
-/// Extension for ResourceError type with namespace support
-extension ResourceError {
+/// Extension for ApplicationError type with namespace support
+extension ErrorHandlingDomains.ApplicationError {
   /// Type alias for accessing this type through the namespace
-  public typealias CE=ResourceError
-}
-
-/// Extension for ServiceError type with namespace support
-extension ServiceError {
-  /// Type alias for accessing this type through the namespace
-  public typealias CE=ServiceError
+  public typealias CE=ErrorHandlingDomains.ApplicationError
 }
 
 /// Module initialisation function

@@ -1,5 +1,5 @@
-import UmbraCoreTypes
 import ErrorHandling
+import UmbraCoreTypes
 
 /// FoundationIndependent representation of a security operation result.
 /// This data transfer object encapsulates the outcome of security-related operations
@@ -28,32 +28,32 @@ public struct SecurityResultDTO: Sendable, Equatable {
   /// Initialize a successful result with data
   /// - Parameter data: The operation result data
   public init(data: SecureBytes) {
-    success = true
-    self.data = data
-    errorCode = nil
-    errorMessage = nil
-    error = nil
+    success=true
+    self.data=data
+    errorCode=nil
+    errorMessage=nil
+    error=nil
   }
 
   /// Initialize a successful result without data
   public init() {
-    success = true
-    data = nil
-    errorCode = nil
-    errorMessage = nil
-    error = nil
+    success=true
+    data=nil
+    errorCode=nil
+    errorMessage=nil
+    error=nil
   }
 
   /// Initialize with success flag and optional data
   /// - Parameters:
   ///   - success: Whether the operation succeeded
   ///   - data: Optional result data
-  public init(success: Bool, data: SecureBytes? = nil) {
-    self.success = success
-    self.data = data
-    errorCode = nil
-    errorMessage = nil
-    error = nil
+  public init(success: Bool, data: SecureBytes?=nil) {
+    self.success=success
+    self.data=data
+    errorCode=nil
+    errorMessage=nil
+    error=nil
   }
 
   /// Initialize with success flag and error
@@ -61,47 +61,47 @@ public struct SecurityResultDTO: Sendable, Equatable {
   ///   - success: Whether the operation succeeded
   ///   - error: Optional error type
   ///   - errorDetails: Optional detailed error message
-  public init(success: Bool, error: UmbraErrors.Security.Protocol? = nil, errorDetails: String? = nil) {
-    self.success = success
-    data = nil
-    self.error = error
+  public init(success: Bool, error: UmbraErrors.Security.Protocol?=nil, errorDetails: String?=nil) {
+    self.success=success
+    data=nil
+    self.error=error
 
     // Derive error code based on error type
     if let error {
       switch error {
         case .encryptionFailed:
-          errorCode = 1001
+          errorCode=1001
         case .decryptionFailed:
-          errorCode = 1002
+          errorCode=1002
         case .keyGenerationFailed:
-          errorCode = 1003
+          errorCode=1003
         case .invalidKey:
-          errorCode = 1004
+          errorCode=1004
         case .hashVerificationFailed:
-          errorCode = 1005
+          errorCode=1005
         case .randomGenerationFailed:
-          errorCode = 1006
+          errorCode=1006
         case .invalidInput:
-          errorCode = 1007
+          errorCode=1007
         case .storageOperationFailed:
-          errorCode = 1008
+          errorCode=1008
         case .timeout:
-          errorCode = 1009
+          errorCode=1009
         case let .serviceError(code, _):
-          errorCode = code
+          errorCode=code
         case .internalError:
-          errorCode = 1010
+          errorCode=1010
         case .notImplemented:
-          errorCode = 1011
+          errorCode=1011
         @unknown default:
-          errorCode = 1099
+          errorCode=1099
       }
 
       // Use error description if no specific details provided
-      errorMessage = errorDetails ?? error.description
+      errorMessage=errorDetails ?? error.description
     } else {
-      errorCode = nil
-      errorMessage = errorDetails
+      errorCode=nil
+      errorMessage=errorDetails
     }
   }
 
@@ -110,10 +110,10 @@ public struct SecurityResultDTO: Sendable, Equatable {
   ///   - errorCode: Numeric error code
   ///   - errorMessage: Human-readable error message
   public init(errorCode: Int, errorMessage: String) {
-    success = false
-    data = nil
-    self.errorCode = errorCode
-    self.errorMessage = errorMessage
+    success=false
+    data=nil
+    self.errorCode=errorCode
+    self.errorMessage=errorMessage
     error = .serviceError(code: errorCode, reason: errorMessage)
   }
 
@@ -146,7 +146,10 @@ public struct SecurityResultDTO: Sendable, Equatable {
   ///   - error: The security error that occurred
   ///   - details: Optional additional details
   /// - Returns: A failure result DTO
-  public static func failure(error: UmbraErrors.Security.Protocol, details: String? = nil) -> SecurityResultDTO {
+  public static func failure(
+    error: UmbraErrors.Security.Protocol,
+    details: String?=nil
+  ) -> SecurityResultDTO {
     SecurityResultDTO(success: false, error: error, errorDetails: details)
   }
 }

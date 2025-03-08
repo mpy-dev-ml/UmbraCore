@@ -333,6 +333,8 @@ extension SecureBytes {
   }
 
   /// Creates a new SecureBytes by decoding from the given decoder.
+  @preconcurrency
+  @available(*, deprecated, message: "Will need to be refactored for Swift 6")
   public init(from decoder: Decoder) throws {
     let container=try decoder.singleValueContainer()
     storage=try container.decode([UInt8].self)

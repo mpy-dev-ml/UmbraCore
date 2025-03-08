@@ -40,18 +40,18 @@ public actor FileSystemRepository: Repository {
     state: RepositoryState,
     logger: LoggingProtocol
   ) {
-    self.identifier = identifier
-    self.location = location
-    self.state = state
-    self.logger = logger
-    let initialStats = RepositoryStatistics(
+    self.identifier=identifier
+    self.location=location
+    self.state=state
+    self.logger=logger
+    let initialStats=RepositoryStatistics(
       totalSize: 0,
       snapshotCount: 0,
       lastCheck: Date(),
       totalFileCount: 0
     )
-    stats = initialStats
-    statsAccessor = StatsAccessor()
+    stats=initialStats
+    statsAccessor=StatsAccessor()
     statsAccessor.updateStats(initialStats)
   }
 
@@ -66,18 +66,18 @@ public actor FileSystemRepository: Repository {
     location: URL,
     state: RepositoryState = .uninitialized
   ) {
-    self.identifier = identifier
-    self.location = location
-    self.state = state
-    stats = RepositoryStatistics(
+    self.identifier=identifier
+    self.location=location
+    self.state=state
+    stats=RepositoryStatistics(
       totalSize: 0,
       snapshotCount: 0,
       lastCheck: Date(),
       totalFileCount: 0
     )
-    statsAccessor = StatsAccessor()
+    statsAccessor=StatsAccessor()
     // Using createLogger() from UmbraLogging which abstracts the implementation
-    logger = UmbraLogging.createLogger()
+    logger=UmbraLogging.createLogger()
   }
 
   // MARK: - RepositoryStats
@@ -125,7 +125,7 @@ public actor FileSystemRepository: Repository {
   }
 
   public nonisolated func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
+    var container=encoder.container(keyedBy: CodingKeys.self)
     try container.encode(identifier, forKey: .identifier)
     try container.encode(state, forKey: .state)
     try container.encode(location, forKey: .location)
@@ -134,23 +134,31 @@ public actor FileSystemRepository: Repository {
     try container.encode(statsAccessor.getStats(), forKey: .stats)
   }
 
-  // Fix the Decoder parameter syntax for Swift 6 compatibility
-  @available(
-    *,
-    deprecated,
-    message: "Swift 6 will require Decodable conformance to use isolatedInitializer for actors"
-  )
+  /// Create a new instance by decoding from the specified decoder
+  ///
+  /// This initialiser needs to be isolated (not nonisolated) in Swift 6
+  /// because Decoder doesn't conform to Sendable. We use @preconcurrency to
+  /// suppress the current warning, but this will need further changes for
+  /// full Swift 6 compatibility.
   @preconcurrency
+  @available(*, deprecated, message: "Will need to be refactored for Swift 6")
   public init(from decoder: Decoder) throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-    identifier = try container.decode(String.self, forKey: .identifier)
-    location = try container.decode(URL.self, forKey: .location)
-    state = try container.decode(RepositoryState.self, forKey: .state)
-    let decodedStats = try container.decode(RepositoryStatistics.self, forKey: .stats)
-    stats = decodedStats
-    statsAccessor = StatsAccessor()
+    let container=try decoder.container(keyedBy: CodingKeys.self)
+    // Decode all values before initialising properties for better error handling
+    let decodedIdentifier=try container.decode(String.self, forKey: .identifier)
+    let decodedLocation=try container.decode(URL.self, forKey: .location)
+    let decodedState=try container.decode(RepositoryState.self, forKey: .state)
+    let decodedStats=try container.decode(RepositoryStatistics.self, forKey: .stats)
+
+    // Initialise properties
+    identifier=decodedIdentifier
+    location=decodedLocation
+    state=decodedState
+    stats=decodedStats
+    statsAccessor=StatsAccessor()
+
     // Using createLogger() from UmbraLogging which abstracts the implementation
-    logger = UmbraLogging.createLogger()
+    logger=UmbraLogging.createLogger()
   }
 
   // MARK: - RepositoryCore
@@ -188,7 +196,7 @@ public actor FileSystemRepository: Repository {
   ///   - checkUnused: If true, checks for unused data
   /// - Returns: Repository statistics
   public func check(readData: Bool, checkUnused: Bool) async throws -> RepositoryStatistics {
-    let metadata = LogMetadataBuilder.forRepository(
+    let metadata=LogMetadataBuilder.forRepository(
       identifier: identifier,
       path: location.path
     )
@@ -233,7 +241,7 @@ public actor FileSystemRepository: Repository {
   private func verifyContents() async throws {
     // Implementation for deep content verification
     // This would check all files, directories, and metadata
-    let metadata = LogMetadataBuilder.forRepository(
+    let metadata=LogMetadataBuilder.forRepository(
       identifier: identifier,
       path: location.path
     )
@@ -247,7 +255,7 @@ public actor FileSystemRepository: Repository {
   private func validateIntegrity() async throws {
     // Implementation for data integrity validation
     // This would verify checksums, signatures, etc.
-    let metadata = LogMetadataBuilder.forRepository(
+    let metadata=LogMetadataBuilder.forRepository(
       identifier: identifier,
       path: location.path
     )
@@ -260,17 +268,17 @@ public actor FileSystemRepository: Repository {
 
   /// Calculates the total size of the repository.
   private func calculateTotalSize() async throws -> UInt64 {
-    var totalSize: UInt64 = 0
-    let enumerator = FileManager.default.enumerator(
+    var totalSize: UInt64=0
+    let enumerator=FileManager.default.enumerator(
       at: location,
       includingPropertiesForKeys: [.totalFileAllocatedSizeKey],
       options: [.skipsHiddenFiles]
     )
 
-    while let fileURL = enumerator?.nextObject() as? URL {
+    while let fileURL=enumerator?.nextObject() as? URL {
       guard
-        let resourceValues = try? fileURL.resourceValues(forKeys: [.totalFileAllocatedSizeKey]),
-        let fileSize = resourceValues.totalFileAllocatedSize
+        let resourceValues=try? fileURL.resourceValues(forKeys: [.totalFileAllocatedSizeKey]),
+        let fileSize=resourceValues.totalFileAllocatedSize
       else {
         continue
       }
@@ -282,9 +290,9 @@ public actor FileSystemRepository: Repository {
 
   /// Counts the number of snapshots in the repository.
   private func countSnapshots() async throws -> UInt {
-    let snapshotsDir = location.appendingPathComponent("snapshots")
+    let snapshotsDir=location.appendingPathComponent("snapshots")
     guard
-      let contents = try? FileManager.default.contentsOfDirectory(
+      let contents=try? FileManager.default.contentsOfDirectory(
         at: snapshotsDir,
         includingPropertiesForKeys: nil
       )
@@ -297,20 +305,20 @@ public actor FileSystemRepository: Repository {
   /// Retrieves current statistics about the repository.
   /// Changed from private to public to match protocol requirement
   public func getStats() async throws -> RepositoryStatistics {
-    guard case .ready = state else {
+    guard case .ready=state else {
       throw RepositoriesTypes.RepositoryError.invalidConfiguration(
         reason: "Repository is not in ready state"
       )
     }
 
     // Get repository size
-    let totalSize = try await calculateTotalSize()
+    let totalSize=try await calculateTotalSize()
 
     // Get snapshot count
-    let snapshotCount = try await countSnapshots()
+    let snapshotCount=try await countSnapshots()
 
     // Update stats
-    let updatedStats = try await RepositoryStatistics(
+    let updatedStats=try await RepositoryStatistics(
       totalSize: totalSize,
       snapshotCount: snapshotCount, // Fix the type mismatch
       lastCheck: Date(),
@@ -318,7 +326,7 @@ public actor FileSystemRepository: Repository {
     )
 
     // Store updated stats
-    stats = updatedStats
+    stats=updatedStats
 
     // Update the nonisolated accessor
     statsAccessor.updateStats(updatedStats)
@@ -337,11 +345,11 @@ public actor FileSystemRepository: Repository {
 /// Thread-safe accessor for repository statistics
 /// This allows nonisolated access to stats while maintaining thread safety
 private final class StatsAccessor: @unchecked Sendable {
-  private let lock = NSLock()
+  private let lock=NSLock()
   private var _stats: RepositoryStatistics
 
   init() {
-    _stats = RepositoryStatistics(
+    _stats=RepositoryStatistics(
       totalSize: 0,
       snapshotCount: 0,
       lastCheck: Date(),
@@ -370,6 +378,6 @@ private final class StatsAccessor: @unchecked Sendable {
   func updateStats(_ newStats: RepositoryStatistics) {
     lock.lock()
     defer { lock.unlock() }
-    _stats = newStats
+    _stats=newStats
   }
 }

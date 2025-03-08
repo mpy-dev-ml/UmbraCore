@@ -31,29 +31,29 @@ public enum SecurityInterfacesError: Error, Sendable {
   public var errorDescription: String? {
     switch self {
       case let .bookmarkCreationFailed(path):
-        return "Failed to create security bookmark for path: \(path)"
+        "Failed to create security bookmark for path: \(path)"
       case .bookmarkResolutionFailed:
-        return "Failed to resolve security bookmark"
+        "Failed to resolve security bookmark"
       case let .bookmarkStale(path):
-        return "Security bookmark is stale for path: \(path)"
+        "Security bookmark is stale for path: \(path)"
       case let .bookmarkNotFound(path):
-        return "Security bookmark not found for path: \(path)"
+        "Security bookmark not found for path: \(path)"
       case let .resourceAccessFailed(path):
-        return "Failed to access security-scoped resource: \(path)"
+        "Failed to access security-scoped resource: \(path)"
       case .randomGenerationFailed:
-        return "Failed to generate random data"
+        "Failed to generate random data"
       case .hashingFailed:
-        return "Failed to perform hashing operation"
+        "Failed to perform hashing operation"
       case .itemNotFound:
-        return "Security item not found"
+        "Security item not found"
       case let .operationFailed(message):
-        return "Security operation failed: \(message)"
+        "Security operation failed: \(message)"
       case let .bookmarkError(message):
-        return "Security bookmark error: \(message)"
+        "Security bookmark error: \(message)"
       case let .accessError(message):
-        return "Security access error: \(message)"
+        "Security access error: \(message)"
       case let .wrapped(error):
-        return "Wrapped security error: \(error.localizedDescription)"
+        "Wrapped security error: \(error.localizedDescription)"
     }
   }
 
@@ -64,11 +64,11 @@ public enum SecurityInterfacesError: Error, Sendable {
   public func toBaseError() -> SecurityInterfacesBase.SecurityError? {
     switch self {
       case let .wrapped(baseError):
-        return baseError
-      case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale, 
+        baseError
+      case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
            .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
            .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError:
-        return nil
+        nil
     }
   }
 }

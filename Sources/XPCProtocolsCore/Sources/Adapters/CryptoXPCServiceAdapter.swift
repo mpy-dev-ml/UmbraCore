@@ -1,9 +1,13 @@
+import CoreErrors
 import CryptoTypes
+import ErrorHandling
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
-import ErrorHandling
+
+// Type alias to disambiguate SecurityError types
+typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
 
 /// CryptoXPCServiceAdapter
 ///
@@ -52,18 +56,18 @@ public final class CryptoXPCServiceAdapter: @unchecked Sendable {
   /// - Parameter error: The error to map
   /// - Returns: A properly mapped XPCSecurityError
   private func mapError(_ error: Error) -> XPCSecurityError {
-    if let xpcError = error as? XPCSecurityError {
+    if let xpcError=error as? XPCSecurityError {
       return xpcError
     }
-    
+
     // Map known error types
     switch error {
-    case let secError as SecurityProtocolsCore.UmbraErrors.Security.Protocol:
-      // Map from SecurityProtocolsCore to XPCProtocolsCore error domain
-      return XPCSecurityError.internalError(reason: secError.description)
-    default:
-      // For any other error, create a general error with the description
-      return XPCSecurityError.internalError(reason: error.localizedDescription)
+      case let secError as SecurityProtocolsCore.UmbraErrors.Security.Protocol:
+        // Map from SecurityProtocolsCore to XPCProtocolsCore error domain
+        return XPCSecurityError.internalError(reason: secError.description)
+      default:
+        // For any other error, create a general error with the description
+        return XPCSecurityError.internalError(reason: error.localizedDescription)
     }
   }
 }

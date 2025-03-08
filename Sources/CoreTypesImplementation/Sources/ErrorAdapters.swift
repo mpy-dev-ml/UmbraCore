@@ -1,12 +1,13 @@
 import CoreErrors
 import CoreTypesInterfaces
+import ErrorHandlingDomains
 import UmbraCoreTypes
 
 // Since SecurityProtocolsCore and XPCProtocolsCore are namespaces rather than direct modules,
 // we need to use the correct type paths to avoid ambiguity issues
 
-/// Type alias for CoreErrors.SecurityError - our target error type
-public typealias CESecurityError=CoreErrors.SecurityError
+/// Type alias for UmbraErrors.Security.Core - our target error type
+public typealias CESecurityError=UmbraErrors.Security.Core
 
 /// Create a local SecureBytesError enum that mirrors the one in UmbraCoreTypes.CoreErrors
 public enum SecureBytesError: Error, Equatable {
@@ -15,16 +16,33 @@ public enum SecureBytesError: Error, Equatable {
   case allocationFailed
 }
 
-/// Maps errors from external domains to the CoreErrors.SecurityError domain
+/// Define an ExternalError type for representing errors from external systems
+public struct ExternalError: Error, Equatable {
+  /// The reason for the error
+  public let reason: String
+
+  /// Initialize with a reason
+  public init(reason: String) {
+    self.reason=reason
+  }
+}
+
+/// Maps errors from external domains to the UmbraErrors.Security.Core domain
 ///
 /// This adapter function provides a standardised way to convert any error type
-/// into the centralised CoreErrors.SecurityError type. It delegates to the
+/// into the centralised UmbraErrors.Security.Core type. It delegates to the
 /// centralised error mapper to ensure consistent error handling across the codebase.
 ///
 /// - Parameter error: Any error from an external domain
-/// - Returns: The equivalent CoreErrors.SecurityError
-public func mapExternalToCoreError(_ error: Error) -> CoreErrors.SecurityError {
-  CoreErrors.SecurityErrorMapper.mapToCoreError(error)
+/// - Returns: The equivalent UmbraErrors.Security.Core
+public func mapExternalToCoreError(_ error: Error) -> UmbraErrors.Security.Core {
+  // If already the correct type, return as is
+  if let securityError=error as? UmbraErrors.Security.Core {
+    return securityError
+  }
+
+  // Otherwise map to an appropriate security error
+  return UmbraErrors.Security.Core.internalError("Mapped from \(String(describing: error))")
 }
 
 /// Maps from CoreErrors.SecurityError to an appropriate external error type
@@ -65,4 +83,21 @@ public func mapToSecurityResult<T>(_ result: Result<T, Error>)
     case let .failure(error):
       .failure(CoreErrors.SecurityErrorMapper.mapToCoreError(error))
   }
+}
+
+/// Maps an external error to a CoreErrors.SecurityError
+/// - Parameter error: The external error to map
+/// - Returns: A CoreErrors.SecurityError
+public func externalErrorToCoreError(_ error: Error) -> CoreErrors.SecurityError {
+  if let securityError=error as? CoreErrors.SecurityError {
+    return securityError
+  }
+
+  // Map based on error type
+  if let externalError=error as? ExternalError {
+    return CoreErrors.SecurityError.internalError(externalError.reason)
+  }
+
+  // Default fallback
+  return CoreErrors.SecurityError.internalError(error.localizedDescription)
 }

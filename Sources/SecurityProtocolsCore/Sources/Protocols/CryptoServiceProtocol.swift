@@ -1,5 +1,5 @@
-import UmbraCoreTypes
 import ErrorHandling
+import UmbraCoreTypes
 
 /// Protocol defining cryptographic operations in a FoundationIndependent manner.
 /// This protocol uses only primitive types and FoundationIndependent custom types.
@@ -34,7 +34,8 @@ public protocol CryptoServiceProtocol: Sendable {
   ///   - data: The data to verify as `SecureBytes`.
   ///   - hash: The expected hash value as `SecureBytes`.
   /// - Returns: Boolean indicating whether the hash matches.
-  func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocol>
+  func verify(data: SecureBytes, against hash: SecureBytes) async
+    -> Result<Bool, UmbraErrors.Security.Protocol>
 
   // MARK: - Symmetric Encryption
 

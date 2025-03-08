@@ -136,6 +136,8 @@ public enum RepositoryError: LocalizedError, Equatable, Sendable, Codable {
     }
   }
 
+  @preconcurrency
+  @available(*, deprecated, message: "Will need to be refactored for Swift 6")
   public init(from decoder: Decoder) throws {
     let container=try decoder.container(keyedBy: CodingKeys.self)
     let type=try container.decode(String.self, forKey: .type)

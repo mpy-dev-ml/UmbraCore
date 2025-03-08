@@ -1,3 +1,4 @@
+import CoreErrors
 import SecurityInterfacesProtocols
 import UmbraCoreTypes
 import XPCProtocolsCore

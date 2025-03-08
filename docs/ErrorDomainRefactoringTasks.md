@@ -27,24 +27,24 @@ This document outlines the concrete tasks required to implement the error domain
 ## Phase 2: Module-Specific Refactoring (Estimated: 2 weeks)
 
 ### 2.1 SecurityProtocolsCore Module
-- [ ] Remove SecurityProtocolsCore.SecurityError enum
-- [ ] Replace with import of UmbraErrors.Security.Protocol
-- [ ] Update all type references
-- [ ] Replace module-named enum with ModuleInfo structure
-- [ ] Update unit tests to use new error types
+- [x] Remove SecurityProtocolsCore.SecurityError enum
+- [x] Replace with import of UmbraErrors.Security.Protocols
+- [x] Update all type references
+- [x] Replace module-named enum with ModuleInfo structure
+- [x] Update unit tests to use new error types
 
 ### 2.2 XPCProtocolsCore Module
-- [ ] Remove XPCProtocolsCore.SecurityError enum
-- [ ] Replace with import of UmbraErrors.Security.XPC
-- [ ] Update all type references
-- [ ] Replace module-named enum with ModuleInfo structure
-- [ ] Update unit tests to use new error types
+- [x] Remove XPCProtocolsCore.SecurityError enum
+- [x] Replace with import of UmbraErrors.Security.XPC
+- [x] Update all type references
+- [x] Replace module-named enum with ModuleInfo structure
+- [x] Update unit tests to use new error types
 
 ### 2.3 CoreErrors Module
-- [ ] Remove CoreErrors.SecurityError enum
-- [ ] Replace with import of UmbraErrors.Security.Core
-- [ ] Update all type references
-- [ ] Update unit tests to use new error types
+- [x] Remove CoreErrors.SecurityError enum
+- [x] Replace with import of UmbraErrors.Security.Core
+- [x] Update all type references
+- [x] Update unit tests to use new error types
 
 ### 2.4 SecurityBridge Module
 - [x] Update imports to use UmbraErrors

@@ -1,3 +1,4 @@
+import CoreErrors
 import Foundation
 import UmbraCoreTypes
 

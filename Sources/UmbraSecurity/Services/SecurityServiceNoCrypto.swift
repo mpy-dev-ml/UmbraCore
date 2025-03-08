@@ -1,3 +1,4 @@
+import CoreErrors
 import CoreServices
 import CoreServicesTypesNoFoundation
 import Foundation

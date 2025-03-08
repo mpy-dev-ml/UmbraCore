@@ -25,6 +25,8 @@ public enum KeyStatus: Sendable, Equatable, Codable {
     case pendingDeletion
   }
 
+  @preconcurrency
+  @available(*, deprecated, message: "Will need to be refactored for Swift 6")
   public init(from decoder: Decoder) throws {
     let container=try decoder.container(keyedBy: CodingKeys.self)
     let type=try container.decode(StatusType.self, forKey: .type)

@@ -1,5 +1,6 @@
-import UmbraCoreTypes
+import CoreErrors
 import ErrorHandling
+import UmbraCoreTypes
 
 /// Most complete protocol for XPC services including all cryptographic functions
 /// This protocol is typically implemented by crypto service providers
@@ -71,22 +72,22 @@ extension XPCServiceProtocolComplete {
 
   /// Default implementation that returns a not implemented error
   public func synchronizeKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
-    .failure(.notImplemented(reason: "Key synchronisation not implemented"))
+    .failure(.internalError("Key synchronisation not implemented"))
   }
 
   /// Default implementation that returns a not implemented error
   public func encrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented(reason: "Encryption not implemented"))
+    .failure(.internalError("Encryption not implemented"))
   }
 
   /// Default implementation that returns a not implemented error
   public func decrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented(reason: "Decryption not implemented"))
+    .failure(.internalError("Decryption not implemented"))
   }
 
   /// Default implementation that returns a not implemented error
   public func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented(reason: "Key generation not implemented"))
+    .failure(.internalError("Key generation not implemented"))
   }
 
   /// Default implementation that returns a not implemented error
@@ -94,17 +95,17 @@ extension XPCServiceProtocolComplete {
     type _: KeyType,
     bits _: Int
   ) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented(reason: "Key generation with parameters not implemented"))
+    .failure(.internalError("Key generation with parameters not implemented"))
   }
 
   /// Default implementation that returns a not implemented error
   public func hash(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented(reason: "Hashing not implemented"))
+    .failure(.internalError("Hashing not implemented"))
   }
 
   /// Default implementation that returns a not implemented error
   public func exportKey(keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
-    .failure(.notImplemented(reason: "Key export not implemented"))
+    .failure(.internalError("Key export not implemented"))
   }
 
   /// Default implementation that returns a not implemented error
@@ -112,7 +113,7 @@ extension XPCServiceProtocolComplete {
     _: SecureBytes,
     identifier _: String?
   ) async -> Result<String, XPCSecurityError> {
-    .failure(.notImplemented(reason: "Key import not implemented"))
+    .failure(.internalError("Key import not implemented"))
   }
 
   /// Bridge method to implement XPCServiceProtocolBasic.ping() using pingComplete()

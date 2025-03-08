@@ -99,19 +99,19 @@ extension BookmarkService: NSXPCListenerDelegate {
     newConnection.exportedInterface=exportedInterface
 
     // Create a weak reference to avoid potential retain cycles
-    weak var weakSelf = self
-    let connectionToResume = newConnection
-    
-    // Use a proper actor-isolated approach
+    weak var weakSelf=self
+    let connectionToResume=newConnection
+
+    // Use a detached task to handle MainActor-isolated work
+    // TODO: Swift 6 compatibility - refactor actor isolation
     Task { @MainActor in
       // Since we're now in a MainActor-isolated context, we can safely access
       // the weak reference without crossing actor boundaries
-      if let strongSelf = weakSelf {
-        connectionToResume.exportedObject = strongSelf
+      if let strongSelf=weakSelf {
+        connectionToResume.exportedObject=strongSelf
         connectionToResume.resume()
       }
     }
-
     return true
   }
 }

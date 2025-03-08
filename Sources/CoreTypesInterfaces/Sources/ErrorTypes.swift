@@ -1,4 +1,5 @@
 import CoreErrors
+import ErrorHandlingDomains
 
 /// Protocol for error types that can be converted to SecurityError
 ///
