@@ -5,7 +5,7 @@ import Foundation
 /// This is a placeholder implementation that will be replaced by ResticBar
 public actor CryptoService {
   /// Shared instance of the crypto service
-  public static let shared=CryptoService()
+  public static let shared = CryptoService()
 
   private init() {}
 

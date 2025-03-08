@@ -31,24 +31,24 @@ public struct ErrorRecoveryOption: RecoveryOption, Sendable {
   ///   - isDisruptive: Whether this recovery interrupts workflow
   ///   - recoveryAction: The action to perform for this recovery
   public init(
-    id: UUID?=nil,
+    id: UUID? = nil,
     title: String,
-    description: String?=nil,
+    description: String? = nil,
     successLikelihood: RecoveryLikelihood = .likely,
-    isDisruptive: Bool=false,
+    isDisruptive: Bool = false,
     recoveryAction: @escaping @Sendable () async throws -> Void
   ) {
-    self.id=id ?? UUID()
-    self.title=title
-    self.description=description
-    self.successLikelihood=successLikelihood
-    self.isDisruptive=isDisruptive
-    self.recoveryAction=recoveryAction
+    self.id = id ?? UUID()
+    self.title = title
+    self.description = description
+    self.successLikelihood = successLikelihood
+    self.isDisruptive = isDisruptive
+    self.recoveryAction = recoveryAction
   }
 
   /// Perform the recovery action as required by RecoveryOption protocol
   public func perform() async {
-    _=await execute()
+    _ = await execute()
   }
 
   /// Execute the recovery action
@@ -67,11 +67,11 @@ public struct ErrorRecoveryOption: RecoveryOption, Sendable {
 
 /// How likely a recovery option is to succeed
 public enum RecoveryLikelihood: String, CaseIterable, Sendable {
-  case veryLikely="Very Likely"
-  case likely="Likely"
-  case possible="Possible"
-  case unlikely="Unlikely"
-  case veryUnlikely="Very Unlikely"
+  case veryLikely = "Very Likely"
+  case likely = "Likely"
+  case possible = "Possible"
+  case unlikely = "Unlikely"
+  case veryUnlikely = "Very Unlikely"
 
   /// Gets a numerical value representing the likelihood (0-1)
   public var probability: Double {
@@ -100,7 +100,7 @@ public protocol RecoverableError: ErrorHandlingInterfaces.UmbraError {
 extension RecoverableError {
   /// Default implementation attempts each recovery option in order
   public func attemptRecovery() async -> Bool {
-    let options=recoveryOptions()
+    let options = recoveryOptions()
     for option in options {
       if await option.execute() {
         return true
@@ -127,10 +127,10 @@ public protocol ErrorRecoveryService: AnyObject, Sendable {
 @MainActor
 public final class ErrorRecoveryRegistry {
   /// The shared instance
-  public static let shared=ErrorRecoveryRegistry()
+  public static let shared = ErrorRecoveryRegistry()
 
   /// Registered recovery services
-  private var services: [any ErrorRecoveryService]=[]
+  private var services: [any ErrorRecoveryService] = []
 
   /// Private initialiser to enforce singleton pattern
   private init() {}
@@ -148,7 +148,7 @@ public final class ErrorRecoveryRegistry {
     for error: ErrorHandlingInterfaces
       .UmbraError
   ) -> [ErrorRecoveryOption] {
-    var options: [ErrorRecoveryOption]=[]
+    var options: [ErrorRecoveryOption] = []
     for service in services {
       options.append(contentsOf: service.recoveryOptions(for: error))
     }

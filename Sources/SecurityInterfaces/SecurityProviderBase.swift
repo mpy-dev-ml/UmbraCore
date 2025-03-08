@@ -53,7 +53,7 @@ private struct SecurityProviderBaseAdapter: SecurityProviderProtocol {
   private let provider: any SecurityProviderBase
 
   init(provider: any SecurityProviderBase) {
-    self.provider=provider
+    self.provider = provider
   }
 
   func resetSecurityData() async -> Result<Void, SecurityError> {

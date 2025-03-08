@@ -148,7 +148,7 @@ public struct SecurityProviderFoundationAdapter {
   private let legacy: any SecurityProviderFoundation
 
   public init(legacy: any SecurityProviderFoundation) {
-    self.legacy=legacy
+    self.legacy = legacy
   }
 
   // Add implementation methods as needed for backward compatibility

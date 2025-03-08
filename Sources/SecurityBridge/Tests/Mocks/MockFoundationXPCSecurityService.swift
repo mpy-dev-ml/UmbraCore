@@ -6,9 +6,9 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
 @unchecked Sendable {
   // MARK: - Test Control Properties
 
-  var shouldFail=false
+  var shouldFail = false
   var errorToThrow: Error?
-  var methodCalls: [String]=[]
+  var methodCalls: [String] = []
 
   // Data for key management methods
   var keyListResponse: [String]?
@@ -18,7 +18,7 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
   var encryptedDataToReturn: Data?
   var decryptedDataToReturn: Data?
   var signatureToReturn: Data?
-  var verificationResult=true
+  var verificationResult = true
   var hashDataToReturn: Data?
   var randomDataToReturn: Data?
 
@@ -39,11 +39,11 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
       return
     }
 
-    if let dataToReturn=encryptedDataToReturn {
+    if let dataToReturn = encryptedDataToReturn {
       completion(dataToReturn, nil)
     } else {
       // Simple mock encryption (append "ENCRYPTED")
-      var result=data
+      var result = data
       result.append(Data("ENCRYPTED".utf8))
       completion(result, nil)
     }
@@ -64,13 +64,13 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
       return
     }
 
-    if let dataToReturn=decryptedDataToReturn {
+    if let dataToReturn = decryptedDataToReturn {
       completion(dataToReturn, nil)
     } else {
       // Simple mock decryption (remove "ENCRYPTED" suffix)
-      let suffixLength="ENCRYPTED".utf8.count
+      let suffixLength = "ENCRYPTED".utf8.count
       if data.count >= suffixLength {
-        let result=data.subdata(in: 0..<(data.count - suffixLength))
+        let result = data.subdata(in: 0..<(data.count - suffixLength))
         completion(result, nil)
       } else {
         completion(data, nil)
@@ -94,15 +94,15 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
     }
 
     // If there's specific test data to return, prioritize it
-    if let keyData=keyDataToReturn {
+    if let keyData = keyDataToReturn {
       completion(keyData, nil)
       return
     }
 
     // Generate a mock key
-    var keyData=Data(count: 32) // 256-bit key
+    var keyData = Data(count: 32) // 256-bit key
     for i in 0..<keyData.count {
-      keyData[i]=UInt8(i % 256)
+      keyData[i] = UInt8(i % 256)
     }
 
     completion(keyData, nil)
@@ -124,15 +124,15 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
     }
 
     // If there's specific test data to return, prioritize it
-    if let randomData=randomDataToReturn {
+    if let randomData = randomDataToReturn {
       completion(randomData, nil)
       return
     }
 
     // Generate mock random data
-    var randomData=Data(count: length)
+    var randomData = Data(count: length)
     for i in 0..<randomData.count {
-      randomData[i]=UInt8(i % 256)
+      randomData[i] = UInt8(i % 256)
     }
 
     completion(randomData, nil)
@@ -226,17 +226,17 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
     }
 
     // Return the expected data from the test if available
-    if let encryptedData=encryptedDataToReturn {
+    if let encryptedData = encryptedDataToReturn {
       completion(encryptedData, nil, nil)
       return
     }
 
     // Create mock encrypted data (prepend IV and key byte)
-    var result=Data()
+    var result = Data()
     if let iv {
       result.append(iv)
     }
-    if let firstByte=key.first {
+    if let firstByte = key.first {
       result.append(Data([firstByte]))
     }
     result.append(data)
@@ -262,13 +262,13 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
     }
 
     // Return the expected data from the test if available
-    if let decryptedData=decryptedDataToReturn {
+    if let decryptedData = decryptedDataToReturn {
       completion(decryptedData, nil, nil)
       return
     }
 
     // Mock decryption - just return a subset of the input data
-    var startIndex=0
+    var startIndex = 0
     if let iv {
       startIndex += iv.count
     }
@@ -277,7 +277,7 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
     if data.count <= startIndex {
       completion(Data(), nil, nil)
     } else {
-      let result=data.subdata(in: startIndex..<data.count)
+      let result = data.subdata(in: startIndex..<data.count)
       completion(result, nil, nil)
     }
   }
@@ -298,14 +298,14 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
     }
 
     // Return the expected data from the test if available
-    if let encryptedData=encryptedDataToReturn {
+    if let encryptedData = encryptedDataToReturn {
       completion(encryptedData, nil, nil)
       return
     }
 
     // Simple mock encryption
-    var result=Data()
-    if let firstByte=publicKey.first {
+    var result = Data()
+    if let firstByte = publicKey.first {
       result.append(Data([firstByte]))
     }
     result.append(data)
@@ -329,7 +329,7 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
     }
 
     // Return the expected data from the test if available
-    if let decryptedData=decryptedDataToReturn {
+    if let decryptedData = decryptedDataToReturn {
       completion(decryptedData, nil, nil)
       return
     }
@@ -338,7 +338,7 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
     if data.isEmpty {
       completion(Data(), nil, nil)
     } else {
-      let result=data.subdata(in: 1..<data.count)
+      let result = data.subdata(in: 1..<data.count)
       completion(result, nil, nil)
     }
   }
@@ -356,14 +356,14 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
       return
     }
 
-    if let hashData=hashDataToReturn {
+    if let hashData = hashDataToReturn {
       completion(hashData, nil, nil)
       return
     }
 
     // Create a mock hash based on algorithm
-    let algorithmBytes=Data(algorithm.utf8)
-    var result=Data()
+    let algorithmBytes = Data(algorithm.utf8)
+    var result = Data()
     result.append(algorithmBytes.prefix(4))
     result.append(data.prefix(4))
 
@@ -391,14 +391,14 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
     }
 
     // Return the expected data from the test if available
-    if let signature=signatureToReturn {
+    if let signature = signatureToReturn {
       completion(signature, nil, nil)
       return
     }
 
     // Simple mock signature
-    var result=Data()
-    if let firstByte=key.first {
+    var result = Data()
+    if let firstByte = key.first {
       result.append(Data([firstByte]))
     }
     result.append(data)

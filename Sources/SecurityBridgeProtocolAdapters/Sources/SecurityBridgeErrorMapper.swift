@@ -21,7 +21,7 @@ public enum SecurityBridgeErrorMapper {
   /// - Returns: A SecurityProtocolsCore.SecurityError representation of the error
   public static func mapToSecurityError(_ error: Error) -> SecurityProtocolsCore.SecurityError {
     // Use our canonical error mapper from CoreErrors
-    CoreErrors.SecurityErrorMapper.mapToSPCError(error)
+    return CoreErrors.SecurityErrorMapper.mapToSPCError(error) as! SecurityProtocolsCore.SecurityError
   }
 
   /// Maps a security error to an XPC error type for transmission over XPC

@@ -28,14 +28,14 @@ public enum SecurityErrorMapper {
   /// - Returns: The equivalent CoreErrors.SecurityError
   public static func mapToCoreError(_ error: Error) -> SecurityError {
     // Already a CoreErrors.SecurityError - return directly
-    if let coreError=error as? SecurityError {
+    if let coreError = error as? SecurityError {
       return coreError
     }
 
     // Use type name inspection to map from other module's SecurityError types
     // This avoids direct imports while maintaining functionality
-    let errorType=String(describing: type(of: error))
-    let errorDescription=String(describing: error)
+    let errorType = String(describing: type(of: error))
+    let errorDescription = String(describing: error)
 
     // Handle SecurityProtocolsCore.SecurityError by inspecting properties
     if errorType.hasSuffix("SecurityError") || errorType.contains("SecurityProtocolsCore") {
@@ -70,7 +70,7 @@ public enum SecurityErrorMapper {
     // Handle XPCProtocolsCore.SecurityProtocolError
     if errorType.contains("SecurityProtocolError") {
       if errorDescription.contains("implementationMissing") {
-        let name=extractErrorParam(from: errorDescription, param: "name")
+        let name = extractErrorParam(from: errorDescription, param: "name")
         return .general("Implementation missing: \(name)")
       }
     }
@@ -107,12 +107,12 @@ public enum SecurityErrorMapper {
   /// - Returns: The equivalent CoreErrors.XPCErrors.SecurityError
   public static func mapToXPCError(_ error: Error) -> XPCErrors.SecurityError {
     // Handle existing XPC error
-    if let xpcError=error as? XPCErrors.SecurityError {
+    if let xpcError = error as? XPCErrors.SecurityError {
       return xpcError
     }
 
     // Map from CoreErrors.SecurityError
-    if let coreError=error as? SecurityError {
+    if let coreError = error as? SecurityError {
       // Since XPCErrors.SecurityError is a type alias for CoreErrors.SecurityError,
       // we can simply return the core error
       return coreError
@@ -145,50 +145,50 @@ public enum SecurityErrorMapper {
   /// - Parameter error: The SecurityError to convert
   /// - Returns: An equivalent NSError
   public static func mapToNSError(_ error: SecurityError) -> NSError {
-    let domain="com.umbra.security.error"
-    var code=0
-    var description=""
+    let domain = "com.umbra.security.error"
+    var code = 0
+    var description = ""
 
     switch error {
       case .encryptionFailed:
-        code=1001
-        description="Encryption failed"
+        code = 1_001
+        description = "Encryption failed"
       case .decryptionFailed:
-        code=1002
-        description="Decryption failed"
+        code = 1_002
+        description = "Decryption failed"
       case .keyGenerationFailed:
-        code=1003
-        description="Key generation failed"
+        code = 1_003
+        description = "Key generation failed"
       case .invalidData:
-        code=1004
-        description="Invalid data"
+        code = 1_004
+        description = "Invalid data"
       case .hashingFailed:
-        code=1005
-        description="Hashing failed"
+        code = 1_005
+        description = "Hashing failed"
       case .serviceFailed:
-        code=1006
-        description="Service failed"
+        code = 1_006
+        description = "Service failed"
       case .notImplemented:
-        code=1007
-        description="Not implemented"
+        code = 1_007
+        description = "Not implemented"
       case .bookmarkError:
-        code=1008
-        description="Bookmark error"
+        code = 1_008
+        description = "Bookmark error"
       case .accessError:
-        code=1009
-        description="Access error"
+        code = 1_009
+        description = "Access error"
       case .cryptoError:
-        code=1010
-        description="Crypto error"
+        code = 1_010
+        description = "Crypto error"
       case .bookmarkCreationFailed:
-        code=1011
-        description="Bookmark creation failed"
+        code = 1_011
+        description = "Bookmark creation failed"
       case .bookmarkResolutionFailed:
-        code=1012
-        description="Bookmark resolution failed"
+        code = 1_012
+        description = "Bookmark resolution failed"
       case let .general(message):
-        code=1099
-        description=message
+        code = 1_099
+        description = message
     }
 
     return NSError(domain: domain, code: code, userInfo: [NSLocalizedDescriptionKey: description])
@@ -208,24 +208,24 @@ public enum SecurityErrorMapper {
   private static func extractErrorParam(from description: String, param: String) -> String {
     // Simple parser to extract parameter values from error descriptions
     // Format example: "encryptionFailed(reason: "bad key")"
-    guard let paramRange=description.range(of: "\(param): ") else {
+    guard let paramRange = description.range(of: "\(param): ") else {
       return "Unknown \(param)"
     }
 
-    let valueStart=paramRange.upperBound
-    let valueSubstring=description[valueStart...]
+    let valueStart = paramRange.upperBound
+    let valueSubstring = description[valueStart...]
 
     // Handle quoted string values
     if valueSubstring.starts(with: "\"") {
-      guard let endQuoteRange=valueSubstring.dropFirst().firstIndex(of: "\"") else {
+      guard let endQuoteRange = valueSubstring.dropFirst().firstIndex(of: "\"") else {
         return String(valueSubstring)
       }
-      let endIndex=valueSubstring.index(endQuoteRange, offsetBy: 1)
+      let endIndex = valueSubstring.index(endQuoteRange, offsetBy: 1)
       return String(valueSubstring[..<endIndex]).replacingOccurrences(of: "\"", with: "")
     }
 
     // Handle non-quoted values (extract until next delimiter)
-    guard let endParamRange=valueSubstring.firstIndex(where: { $0 == "," || $0 == ")" }) else {
+    guard let endParamRange = valueSubstring.firstIndex(where: { $0 == "," || $0 == ")" }) else {
       return String(valueSubstring)
     }
 

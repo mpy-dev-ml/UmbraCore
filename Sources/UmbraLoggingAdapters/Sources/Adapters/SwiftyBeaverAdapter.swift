@@ -25,8 +25,8 @@ public enum SwiftyBeaverAdapter {
   /// Create a SwiftyBeaver console destination with default formatting
   /// - Returns: A configured console destination
   public static func createConsoleDestination() -> ConsoleDestination {
-    let console=ConsoleDestination()
-    console.format="$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
+    let console = ConsoleDestination()
+    console.format = "$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
     return console
   }
 
@@ -34,8 +34,8 @@ public enum SwiftyBeaverAdapter {
   /// - Parameter path: Path to the log file
   /// - Returns: A configured file destination
   public static func createFileDestination(path: String) -> FileDestination {
-    let file=FileDestination()
-    file.logFileURL=URL(fileURLWithPath: path)
+    let file = FileDestination()
+    file.logFileURL = URL(fileURLWithPath: path)
     return file
   }
 }

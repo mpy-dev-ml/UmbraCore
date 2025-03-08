@@ -24,10 +24,10 @@ public enum SecurityBridgeErrorMapper {
   /// - Returns: A SecurityBridgeError representation
   public static func mapToBridgeError(_ error: Error) -> Error {
     // First, ensure we have a consistent SecurityProtocolsCore.SecurityError
-    let securityError=CoreErrors.SecurityErrorMapper.mapToSPCError(error)
+    let securityError = CoreErrors.SecurityErrorMapper.mapToSPCError(error)
 
     // Convert to a bridge-specific error with appropriate message
-    let message=String(describing: securityError)
+    let message = String(describing: securityError)
     return SecurityBridge.SecurityBridgeError.implementationMissing(message)
   }
 
@@ -40,8 +40,8 @@ public enum SecurityBridgeErrorMapper {
   /// - Returns: A SecurityError
   public static func mapToSecurityError(_ error: Error) -> Error {
     // If it's already a SecurityBridgeError, create a basic error message
-    if let bridgeError=error as? SecurityBridge.SecurityBridgeError {
-      let message: String=switch bridgeError {
+    if let bridgeError = error as? SecurityBridge.SecurityBridgeError {
+      let message: String = switch bridgeError {
         case .bookmarkResolutionFailed:
           "Bookmark resolution failed"
         case let .implementationMissing(details):

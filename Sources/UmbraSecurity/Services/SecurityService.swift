@@ -18,16 +18,16 @@ protocol BookmarkServiceType {
 @MainActor
 public final class SecurityService {
   /// Shared instance of the SecurityService
-  public static let shared=SecurityService()
+  public static let shared = SecurityService()
 
   private let bookmarkService: BookmarkServiceType
   private let securityProvider: DefaultSecurityProviderImpl
-  private var activeSecurityScopedResources: Set<String>=[]
+  private var activeSecurityScopedResources: Set<String> = []
 
   /// Initialize the security service
   public init() {
-    bookmarkService=DefaultBookmarkService()
-    securityProvider=DefaultSecurityProviderImpl()
+    bookmarkService = DefaultBookmarkService()
+    securityProvider = DefaultSecurityProviderImpl()
     print("SecurityService initialized with DefaultBookmarkService")
   }
 
@@ -41,7 +41,7 @@ public final class SecurityService {
   /// - Parameter path: The path to create a bookmark for
   /// - Returns: Bookmark data as bytes
   public func createBookmark(for path: String) async throws -> [UInt8] {
-    let url=URL(fileURLWithPath: path)
+    let url = URL(fileURLWithPath: path)
     return try bookmarkService.createBookmark(for: url)
   }
 
@@ -49,7 +49,7 @@ public final class SecurityService {
   /// - Parameter bookmark: The bookmark data to resolve
   /// - Returns: The resolved file URL path
   public func resolveBookmark(_ bookmark: [UInt8]) async throws -> String {
-    let url=try bookmarkService.resolveBookmark(bookmark)
+    let url = try bookmarkService.resolveBookmark(bookmark)
     return url.path
   }
 
@@ -63,24 +63,24 @@ public final class SecurityService {
     to path: String,
     perform operation: @Sendable @escaping () async throws -> T
   ) async throws -> T {
-    let url=URL(fileURLWithPath: path)
+    let url = URL(fileURLWithPath: path)
     return try bookmarkService.withSecurityScopedAccess(to: url) {
       activeSecurityScopedResources.insert(path)
       defer {
         activeSecurityScopedResources.remove(path)
       }
-      let operationResult=UmbySecurity.OperationResult<T>()
+      let operationResult = UmbySecurity.OperationResult<T>()
 
       Task {
         do {
-          let result=try await operation()
+          let result = try await operation()
           operationResult.complete(with: .success(result))
         } catch {
           operationResult.complete(with: .failure(error))
         }
       }
 
-      guard let result=operationResult.waitForResult() else {
+      guard let result = operationResult.waitForResult() else {
         throw NSError(
           domain: "com.umbrasecurity.error",
           code: -1,
@@ -136,15 +136,15 @@ public final class SecurityService {
 public enum UmbySecurity {
   final class OperationResult<T> {
     private var result: Result<T, Error>?
-    private let semaphore=DispatchSemaphore(value: 0)
+    private let semaphore = DispatchSemaphore(value: 0)
 
     func complete(with result: Result<T, Error>) {
-      self.result=result
+      self.result = result
       semaphore.signal()
     }
 
-    func waitForResult(timeout: TimeInterval=30.0) -> Result<T, Error>? {
-      let timeoutResult=semaphore.wait(timeout: .now() + timeout)
+    func waitForResult(timeout: TimeInterval = 30.0) -> Result<T, Error>? {
+      let timeoutResult = semaphore.wait(timeout: .now() + timeout)
       guard timeoutResult == .success else {
         return nil
       }
@@ -156,7 +156,7 @@ public enum UmbySecurity {
 /// Default implementation of the bookmark service
 private final class DefaultBookmarkService: BookmarkServiceType {
   func createBookmark(for url: URL) throws -> [UInt8] {
-    let bookmark=try url.bookmarkData(
+    let bookmark = try url.bookmarkData(
       options: .withSecurityScope,
       includingResourceValuesForKeys: nil,
       relativeTo: nil
@@ -165,9 +165,9 @@ private final class DefaultBookmarkService: BookmarkServiceType {
   }
 
   func resolveBookmark(_ bookmark: [UInt8]) throws -> URL {
-    let bookmarkData=Data(bookmark)
-    var isStale=false
-    let url=try URL(
+    let bookmarkData = Data(bookmark)
+    var isStale = false
+    let url = try URL(
       resolvingBookmarkData: bookmarkData,
       options: .withSecurityScope,
       relativeTo: nil,
@@ -180,7 +180,7 @@ private final class DefaultBookmarkService: BookmarkServiceType {
   }
 
   func withSecurityScopedAccess<T>(to url: URL, perform operation: () throws -> T) throws -> T {
-    let didStartAccessing=url.startAccessingSecurityScopedResource()
+    let didStartAccessing = url.startAccessingSecurityScopedResource()
     defer {
       if didStartAccessing {
         url.stopAccessingSecurityScopedResource()
@@ -206,10 +206,10 @@ private final class DefaultSecurityProviderImpl: SecurityBridge.SecurityProvider
         )
       }
 
-      var result=Data(count: data.count)
+      var result = Data(count: data.count)
       for i in 0..<data.count {
-        let keyByte=key[i % key.count]
-        result[i]=data[i] ^ keyByte
+        let keyByte = key[i % key.count]
+        result[i] = data[i] ^ keyByte
       }
       return result
     } catch {
@@ -226,8 +226,8 @@ private final class DefaultSecurityProviderImpl: SecurityBridge.SecurityProvider
   }
 
   func generateKey(length: Int) async throws -> Data {
-    var keyData=Data(count: length)
-    let result=keyData.withUnsafeMutableBytes {
+    var keyData = Data(count: length)
+    let result = keyData.withUnsafeMutableBytes {
       SecRandomCopyBytes(kSecRandomDefault, length, $0.baseAddress!)
     }
 
@@ -247,15 +247,15 @@ private final class DefaultSecurityProviderImpl: SecurityBridge.SecurityProvider
   }
 
   func hash(_ data: Data) async throws -> Data {
-    var hash=Data(count: 32)
+    var hash = Data(count: 32)
 
-    var accumulator: UInt8=0
+    var accumulator: UInt8 = 0
     for byte in data {
-      accumulator=accumulator &+ byte
+      accumulator = accumulator &+ byte
     }
 
     for i in 0..<32 {
-      hash[i]=accumulator &+ UInt8(i)
+      hash[i] = accumulator &+ UInt8(i)
     }
 
     return hash
@@ -279,7 +279,7 @@ private final class DefaultSecurityProviderImpl: SecurityBridge.SecurityProvider
 
   func createBookmark(for url: URL) async throws -> Data {
     do {
-      let bookmarkData=try url.bookmarkData(
+      let bookmarkData = try url.bookmarkData(
         options: .withSecurityScope,
         includingResourceValuesForKeys: nil,
         relativeTo: nil
@@ -298,8 +298,8 @@ private final class DefaultSecurityProviderImpl: SecurityBridge.SecurityProvider
 
   func resolveBookmark(_ bookmarkData: Data) async throws -> (urlString: String, isStale: Bool) {
     do {
-      var isStale=false
-      let url=try URL(
+      var isStale = false
+      let url = try URL(
         resolvingBookmarkData: bookmarkData,
         options: .withSecurityScope,
         relativeTo: nil,
@@ -319,15 +319,15 @@ private final class DefaultSecurityProviderImpl: SecurityBridge.SecurityProvider
 
   func validateBookmark(_ bookmarkData: Data) async throws -> Bool {
     do {
-      var isStale=false
-      let url=try URL(
+      var isStale = false
+      let url = try URL(
         resolvingBookmarkData: bookmarkData,
         options: .withSecurityScope,
         relativeTo: nil,
         bookmarkDataIsStale: &isStale
       )
 
-      let canAccess=url.startAccessingSecurityScopedResource()
+      let canAccess = url.startAccessingSecurityScopedResource()
 
       if canAccess {
         url.stopAccessingSecurityScopedResource()

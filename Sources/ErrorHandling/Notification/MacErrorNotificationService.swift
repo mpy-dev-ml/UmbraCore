@@ -20,11 +20,11 @@ public final class MacErrorNotificationService: ErrorNotificationService {
   ///   - supportedDomains: Domains this service can handle (or nil for all)
   ///   - supportedLevels: Levels this service can handle
   public init(
-    supportedDomains: [String]?=nil,
-    supportedLevels: [ErrorNotificationLevel]=[.warning, .error, .critical]
+    supportedDomains: [String]? = nil,
+    supportedLevels: [ErrorNotificationLevel] = [.warning, .error, .critical]
   ) {
-    supportedErrorDomains=supportedDomains ?? []
-    self.supportedLevels=supportedLevels
+    supportedErrorDomains = supportedDomains ?? []
+    self.supportedLevels = supportedLevels
   }
 
   /// Creates a notification service that handles all domains
@@ -51,7 +51,7 @@ public final class MacErrorNotificationService: ErrorNotificationService {
 
     #if os(macOS)
       // Create and configure the alert
-      let alert=NSAlert()
+      let alert = NSAlert()
       configureAlert(alert, for: error, level: level)
 
       // Add recovery options as buttons if available
@@ -63,11 +63,11 @@ public final class MacErrorNotificationService: ErrorNotificationService {
       }
 
       // Run the alert modally and get the user's choice
-      let response=alert.runModal()
+      let response = alert.runModal()
 
       // The button indexes are 1000, 1001, 1002, etc.
       // Subtract 1000 and check if it's valid for our options
-      let buttonIndex=Int(response.rawValue) - 1000
+      let buttonIndex = Int(response.rawValue) - 1_000
       if buttonIndex >= 0 && buttonIndex < recoveryOptions.count {
         return recoveryOptions[buttonIndex].id
       }
@@ -104,10 +104,10 @@ public final class MacErrorNotificationService: ErrorNotificationService {
       level: ErrorNotificationLevel
     ) {
       // Set the alert's title based on error domain
-      alert.messageText="Error in \(error.domain)"
+      alert.messageText = "Error in \(error.domain)"
 
       // Set the alert's message to the error description
-      alert.informativeText=error.errorDescription
+      alert.informativeText = error.errorDescription
 
       // Configure alert style based on level
       switch level {
@@ -120,8 +120,8 @@ public final class MacErrorNotificationService: ErrorNotificationService {
       }
 
       // Set appropriate icon for the error domain if available
-      if let icon=iconForErrorDomain(error.domain) {
-        alert.icon=icon
+      if let icon = iconForErrorDomain(error.domain) {
+        alert.icon = icon
       }
     }
 
@@ -159,29 +159,29 @@ public final class MacErrorNotificationService: ErrorNotificationService {
       options: [ErrorHandlingRecovery.ErrorRecoveryOption]
     ) {
       // Add a button for each recovery option (limited to what macOS supports)
-      let maxOptions=3
+      let maxOptions = 3
       for (index, option) in options.prefix(maxOptions).enumerated() {
-        let button=alert.addButton(withTitle: option.title)
+        let button = alert.addButton(withTitle: option.title)
 
         // Set button tooltip if description is available
-        if let description=option.description {
-          button.toolTip=description
+        if let description = option.description {
+          button.toolTip = description
         }
 
         // Make the first button the default and primary action
         if index == 0 {
-          button.keyEquivalent="\r" // Return key
+          button.keyEquivalent = "\r" // Return key
 
           // If the option is disruptive, use a different key equivalent
           if option.isDisruptive {
-            button.keyEquivalent=""
+            button.keyEquivalent = ""
           }
         }
       }
 
       // Add a "Cancel" button as the last option
-      let cancelButton=alert.addButton(withTitle: "Cancel")
-      cancelButton.keyEquivalent="\u{1b}" // Escape key
+      let cancelButton = alert.addButton(withTitle: "Cancel")
+      cancelButton.keyEquivalent = "\u{1b}" // Escape key
     }
   #endif
 }

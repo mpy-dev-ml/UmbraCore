@@ -35,7 +35,7 @@ extension ServiceErrorProtocol {
   /// Default implementation creating an error context
   public var context: ErrorContext {
     // Create the error context with the required parameters
-    return ErrorContext(
+    ErrorContext(
       source: serviceName,
       operation: operation,
       details: details,

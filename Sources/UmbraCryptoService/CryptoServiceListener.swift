@@ -30,10 +30,10 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
   /// Initialize a new crypto service listener
   /// - Parameter dependencies: Dependencies required by the service
   public init(dependencies: CryptoXPCServiceDependencies) {
-    self.dependencies=dependencies
-    listener=NSXPCListener(machServiceName: CryptoXPCService.protocolIdentifier)
+    self.dependencies = dependencies
+    listener = NSXPCListener(machServiceName: CryptoXPCService.protocolIdentifier)
     super.init()
-    listener.delegate=self
+    listener.delegate = self
   }
 
   /// Start the XPC listener
@@ -56,16 +56,16 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
     shouldAcceptNewConnection newConnection: NSXPCConnection
   ) -> Bool {
     // Create the service implementation
-    let service=CryptoXPCService(dependencies: dependencies)
-    service.connection=newConnection
+    let service = CryptoXPCService(dependencies: dependencies)
+    service.connection = newConnection
 
     // Configure the connection
-    newConnection.exportedInterface=NSXPCInterface(with: ModernCryptoXPCServiceProtocol.self)
-    newConnection.exportedObject=service
+    newConnection.exportedInterface = NSXPCInterface(with: ModernCryptoXPCServiceProtocol.self)
+    newConnection.exportedObject = service
 
     // Handle invalidation
-    newConnection.invalidationHandler={
-      service.connection=nil
+    newConnection.invalidationHandler = {
+      service.connection = nil
     }
 
     // Resume the connection
@@ -81,13 +81,13 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
 @MainActor
 public func startService() {
   // Create and start the listener
-  let dependencies=DefaultCryptoXPCServiceDependencies(
+  let dependencies = DefaultCryptoXPCServiceDependencies(
     securityUtils: SecurityUtils.shared,
     keychain: UmbraKeychainService(
       identifier: "com.umbracore.crypto.xpc"
     )
   )
-  let listener=CryptoServiceListener(dependencies: dependencies)
+  let listener = CryptoServiceListener(dependencies: dependencies)
   listener.start()
 
   // Run the main loop

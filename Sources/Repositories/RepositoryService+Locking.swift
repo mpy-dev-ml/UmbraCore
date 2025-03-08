@@ -10,7 +10,8 @@ extension RepositoryService {
   /// Unlocks all repositories.
   ///
   /// - Parameter force: If true, attempts to unlock even if errors occur
-  /// - Throws: `RepositoriesTypes.RepositoryError.operationFailed` if any repository fails to unlock
+  /// - Throws: `RepositoriesTypes.RepositoryError.operationFailed` if any repository fails to
+  /// unlock
   public func unlockAll(force: Bool = false) async throws {
     let metadata = LogMetadata([
       "repository_count": String(repositories.count),

@@ -6,9 +6,9 @@ import UmbraCoreTypes
 import XPCProtocolsCore
 
 /// Type aliases for convenience
-typealias SecureBytes=UmbraCoreTypes.SecureBytes
-typealias BinaryData=SecurityInterfacesBase.BinaryData
-typealias XPCSecurityError=SecurityProtocolsCore.SecurityError
+typealias SecureBytes = UmbraCoreTypes.SecureBytes
+typealias BinaryData = SecurityInterfacesBase.BinaryData
+typealias XPCSecurityError = SecurityProtocolsCore.SecurityError
 
 /// Import the SecurityProtocolError directly
 @_exported import enum XPCProtocolsCore.SecurityProtocolError
@@ -27,7 +27,7 @@ private struct XPCBasicAdapter: XPCServiceProtocolBasic {
   private let service: any SecurityInterfaces.XPCServiceProtocol
 
   init(wrapping service: any SecurityInterfaces.XPCServiceProtocol) {
-    self.service=service
+    self.service = service
   }
 
   // Static protocol identifier
@@ -42,8 +42,8 @@ private struct XPCBasicAdapter: XPCServiceProtocolBasic {
 
   func synchroniseKeys(_ syncData: SecureBytes) async throws {
     // Convert SecureBytes to BinaryData
-    let bytes=syncData.withUnsafeBytes { Array($0) }
-    let binaryData=SecurityInterfacesBase.BinaryData(bytes)
+    let bytes = syncData.withUnsafeBytes { Array($0) }
+    let binaryData = SecurityInterfacesBase.BinaryData(bytes)
     try await service.synchroniseKeys(binaryData)
   }
 }
@@ -53,7 +53,7 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
   private let service: any SecurityInterfaces.XPCServiceProtocol
 
   init(wrapping service: any SecurityInterfaces.XPCServiceProtocol) {
-    self.service=service
+    self.service = service
   }
 
   // Static protocol identifier
@@ -68,8 +68,8 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
 
   func synchroniseKeys(_ syncData: SecureBytes) async throws {
     // Convert SecureBytes to BinaryData
-    let bytes=syncData.withUnsafeBytes { Array($0) }
-    let binaryData=SecurityInterfacesBase.BinaryData(bytes)
+    let bytes = syncData.withUnsafeBytes { Array($0) }
+    let binaryData = SecurityInterfacesBase.BinaryData(bytes)
     try await service.synchroniseKeys(binaryData)
   }
 
@@ -81,11 +81,11 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
 
   func encryptData(_ data: SecureBytes, keyIdentifier _: String?) async throws -> SecureBytes {
     // Convert SecureBytes to BinaryData for encryption
-    let bytes=data.withUnsafeBytes { Array($0) }
-    let binaryData=SecurityInterfacesBase.BinaryData(bytes)
+    let bytes = data.withUnsafeBytes { Array($0) }
+    let binaryData = SecurityInterfacesBase.BinaryData(bytes)
 
     // Encrypt the data
-    let encryptedData=try await service.encrypt(data: binaryData)
+    let encryptedData = try await service.encrypt(data: binaryData)
 
     // Convert back to SecureBytes
     return SecureBytes(bytes: encryptedData.bytes)
@@ -93,11 +93,11 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
 
   func decryptData(_ data: SecureBytes, keyIdentifier _: String?) async throws -> SecureBytes {
     // Convert SecureBytes to BinaryData for decryption
-    let bytes=data.withUnsafeBytes { Array($0) }
-    let binaryData=SecurityInterfacesBase.BinaryData(bytes)
+    let bytes = data.withUnsafeBytes { Array($0) }
+    let binaryData = SecurityInterfacesBase.BinaryData(bytes)
 
     // Decrypt the data
-    let decryptedData=try await service.decrypt(data: binaryData)
+    let decryptedData = try await service.decrypt(data: binaryData)
 
     // Convert back to SecureBytes
     return SecureBytes(bytes: decryptedData.bytes)

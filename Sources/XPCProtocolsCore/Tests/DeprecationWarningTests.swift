@@ -14,10 +14,10 @@ class DeprecationWarningTests: XCTestCase {
   #if !DISABLE_DEPRECATION_TESTS
     func testDeprecatedProtocolStillFunctional() async throws {
       // Create a service using the legacy protocol
-      let legacyService=LegacyService()
+      let legacyService = LegacyService()
 
       // Try the basic operations
-      let result=try await legacyService.encrypt(data: SecurityInterfacesProtocols.BinaryData([
+      let result = try await legacyService.encrypt(data: SecurityInterfacesProtocols.BinaryData([
         1,
         2,
         3,
@@ -26,17 +26,17 @@ class DeprecationWarningTests: XCTestCase {
       XCTAssertEqual(result.bytes.count, 4, "Encryption should work with legacy service")
 
       // Create an adapter to use the legacy service with new protocols
-      let adapter=CryptoXPCServiceAdapter(service: legacyService)
+      let adapter = CryptoXPCServiceAdapter(service: legacyService)
 
       // Test the adapter with the new protocol methods
-      let secureBytes=UmbraCoreTypes.SecureBytes(bytes: [5, 6, 7, 8])
-      let encryptResult=await adapter.encrypt(data: secureBytes)
+      let secureBytes = UmbraCoreTypes.SecureBytes(bytes: [5, 6, 7, 8])
+      let encryptResult = await adapter.encrypt(data: secureBytes)
 
       XCTAssertTrue(encryptResult.isSuccess, "Adapter should successfully encrypt data")
 
       // Verify the migrated service works
-      let migratedService=MigratedService()
-      let migratedResult=try await migratedService.encryptData(secureBytes, keyIdentifier: nil)
+      let migratedService = MigratedService()
+      let migratedResult = try await migratedService.encryptData(secureBytes, keyIdentifier: nil)
       XCTAssertEqual(migratedResult.count, 4, "Migrated service should work correctly")
     }
   #endif
@@ -44,16 +44,16 @@ class DeprecationWarningTests: XCTestCase {
   /// Test that demonstrates the recommended approach with new protocols
   func testModernProtocolUsage() async throws {
     // Create a service using the new protocols
-    let modernService=ModernService()
+    let modernService = ModernService()
 
     // Use the standardized protocols
-    let secureBytes=UmbraCoreTypes.SecureBytes(bytes: [1, 2, 3, 4])
-    let encryptedData=try await modernService.encryptData(secureBytes, keyIdentifier: "test-key")
+    let secureBytes = UmbraCoreTypes.SecureBytes(bytes: [1, 2, 3, 4])
+    let encryptedData = try await modernService.encryptData(secureBytes, keyIdentifier: "test-key")
 
     XCTAssertEqual(encryptedData.count, 4, "Encryption should work with modern service")
 
     // Try the result-based API
-    let encryptResult=await modernService.encrypt(data: secureBytes)
+    let encryptResult = await modernService.encrypt(data: secureBytes)
     XCTAssertTrue(encryptResult.isSuccess, "Result-based API should succeed")
   }
 }

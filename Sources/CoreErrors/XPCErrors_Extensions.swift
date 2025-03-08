@@ -7,13 +7,13 @@
 public enum XPCErrors {
   /// XPC Security Error type alias
   /// This provides a clear namespace for XPC security errors
-  public typealias SecurityError=CoreErrors.SecurityError
+  public typealias SecurityError = CoreErrors.SecurityError
 
   /// XPC Service Error type alias
-  public typealias ServiceError=CoreErrors.ServiceError
+  public typealias ServiceError = CoreErrors.ServiceError
 
   /// XPC Crypto Error type alias
-  public typealias CryptoError=CoreErrors.CryptoError
+  public typealias CryptoError = CoreErrors.CryptoError
 }
 
 /// Extension for SecurityError with XPC-specific functionality

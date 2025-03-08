@@ -26,7 +26,7 @@ public final class CryptoXPCServiceAdapter: @unchecked Sendable {
   /// Initializes the adapter with a CryptoXPCService
   /// - Parameter service: The crypto service to adapt
   public init(service: any CryptoXPCServiceProtocol) {
-    self.service=service
+    self.service = service
   }
 
   /// Convert SecureBytes to Data for the crypto service
@@ -77,12 +77,12 @@ extension CryptoXPCServiceAdapter: XPCServiceProtocolComplete {
 
   public func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
     do {
-      let inputData=convertToData(data)
+      let inputData = convertToData(data)
 
       // Generate a random key if needed
-      let key=try await service.generateKey(bits: 256)
+      let key = try await service.generateKey(bits: 256)
 
-      let encryptedData=try await service.encrypt(inputData, key: key)
+      let encryptedData = try await service.encrypt(inputData, key: key)
       return .success(convertToSecureBytes(encryptedData))
     } catch {
       return .failure(mapError(error))
@@ -91,13 +91,13 @@ extension CryptoXPCServiceAdapter: XPCServiceProtocolComplete {
 
   public func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
     do {
-      let inputData=convertToData(data)
+      let inputData = convertToData(data)
 
       // This is a simplification - in a real implementation,
       // you would need to retrieve the correct key
-      let key=try await service.generateKey(bits: 256)
+      let key = try await service.generateKey(bits: 256)
 
-      let decryptedData=try await service.decrypt(inputData, key: key)
+      let decryptedData = try await service.decrypt(inputData, key: key)
       return .success(convertToSecureBytes(decryptedData))
     } catch {
       return .failure(mapError(error))
@@ -106,7 +106,7 @@ extension CryptoXPCServiceAdapter: XPCServiceProtocolComplete {
 
   public func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
     do {
-      let key=try await service.generateKey(bits: 256)
+      let key = try await service.generateKey(bits: 256)
       return .success(convertToSecureBytes(key))
     } catch {
       return .failure(mapError(error))
@@ -117,8 +117,8 @@ extension CryptoXPCServiceAdapter: XPCServiceProtocolComplete {
     // CryptoXPCService doesn't have a hash method
     // In a real implementation, you would add this functionality
     // For now, return a mock hash
-    let dataBytes=convertToData(data)
-    let mockHash=Data(count: 32) // SHA-256 size
+    let dataBytes = convertToData(data)
+    let mockHash = Data(count: 32) // SHA-256 size
     return .success(convertToSecureBytes(mockHash))
   }
 }
@@ -134,7 +134,7 @@ extension CryptoXPCServiceAdapter: XPCServiceProtocolStandard {
 
   public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
     do {
-      let randomData=try await service.generateKey(bits: length * 8)
+      let randomData = try await service.generateKey(bits: length * 8)
       return .success(convertToSecureBytes(randomData))
     } catch {
       return .failure(mapError(error))

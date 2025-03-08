@@ -15,13 +15,13 @@ actor KeyManagerTests: XCTestCase {
   // MARK: - Test Lifecycle
 
   override func setUp() async throws {
-    dependencies=try await MockKeyManagerDependencies()
-    keyManager=KeyManager(dependencies: dependencies)
+    dependencies = try await MockKeyManagerDependencies()
+    keyManager = KeyManager(dependencies: dependencies)
   }
 
   override func tearDown() async throws {
-    keyManager=nil
-    dependencies=nil
+    keyManager = nil
+    dependencies = nil
   }
 
   // MARK: - Implementation Selection Tests
@@ -30,8 +30,8 @@ actor KeyManagerTests: XCTestCase {
   /// types
   func testImplementationSelection() async throws {
     // Test ResticBar implementation selection
-    let resticBarContext=SecurityContext(applicationType: .resticBar)
-    let resticBarImpl=await keyManager.selectImplementation(for: resticBarContext)
+    let resticBarContext = SecurityContext(applicationType: .resticBar)
+    let resticBarImpl = await keyManager.selectImplementation(for: resticBarContext)
     XCTAssertEqual(
       resticBarImpl,
       .cryptoKit,
@@ -39,8 +39,8 @@ actor KeyManagerTests: XCTestCase {
     )
 
     // Test Rbum implementation selection
-    let rbumContext=SecurityContext(applicationType: .rbum)
-    let rbumImpl=await keyManager.selectImplementation(for: rbumContext)
+    let rbumContext = SecurityContext(applicationType: .rbum)
+    let rbumImpl = await keyManager.selectImplementation(for: rbumContext)
     XCTAssertEqual(
       rbumImpl,
       .cryptoSwift,
@@ -48,8 +48,8 @@ actor KeyManagerTests: XCTestCase {
     )
 
     // Test Rbx implementation selection
-    let rbxContext=SecurityContext(applicationType: .rbx)
-    let rbxImpl=await keyManager.selectImplementation(for: rbxContext)
+    let rbxContext = SecurityContext(applicationType: .rbx)
+    let rbxImpl = await keyManager.selectImplementation(for: rbxContext)
     XCTAssertEqual(
       rbxImpl,
       .cryptoSwift,
@@ -61,8 +61,8 @@ actor KeyManagerTests: XCTestCase {
 
   /// Tests successful key generation for a given security context
   func testKeyGenerationSucceeds() async throws {
-    let context=SecurityContext(applicationType: .resticBar)
-    let keyId=try await keyManager.generateKey(for: context)
+    let context = SecurityContext(applicationType: .resticBar)
+    let keyId = try await keyManager.generateKey(for: context)
     XCTAssertNotNil(
       keyId,
       "Key generation should succeed and return a valid identifier"
@@ -72,11 +72,11 @@ actor KeyManagerTests: XCTestCase {
   /// Tests that a newly generated key passes validation
   func testKeyValidationSucceeds() async throws {
     // Generate a key first
-    let context=SecurityContext(applicationType: .resticBar)
-    let keyId=try await keyManager.generateKey(for: context)
+    let context = SecurityContext(applicationType: .resticBar)
+    let keyId = try await keyManager.generateKey(for: context)
 
     // Validate the key
-    let result=try await keyManager.validateKey(id: keyId)
+    let result = try await keyManager.validateKey(id: keyId)
     XCTAssertTrue(
       result.isValid,
       "Newly generated key should pass validation"
@@ -85,10 +85,10 @@ actor KeyManagerTests: XCTestCase {
 
   /// Tests that attempting to validate a non-existent key throws the expected error
   func testKeyValidationFailsForNonExistentKey() async throws {
-    let unknownId=KeyIdentifier(id: "unknown")
+    let unknownId = KeyIdentifier(id: "unknown")
 
     do {
-      _=try await keyManager.validateKey(id: unknownId)
+      _ = try await keyManager.validateKey(id: unknownId)
       XCTFail("Should throw keyNotFound error for non-existent key")
     } catch KeyManagerError.keyNotFound {
       // Expected error
@@ -107,15 +107,15 @@ private actor MockKeyManagerDependencies: KeyManagerDependencies {
 
   init() async throws {
     // Initialize with mock dependencies
-    resticCLIHelper=try ResticCLIHelper(executablePath: "/usr/local/bin/restic")
+    resticCLIHelper = try ResticCLIHelper(executablePath: "/usr/local/bin/restic")
 
     // Initialize keychain service with mock implementation
-    keychain=try UmbraKeychainService(
+    keychain = try UmbraKeychainService(
       identifier: "com.umbracore.tests.keymanager",
       accessGroup: nil as String?
     )
 
     // Initialize security utils
-    securityUtils=SecurityUtils.shared
+    securityUtils = SecurityUtils.shared
   }
 }

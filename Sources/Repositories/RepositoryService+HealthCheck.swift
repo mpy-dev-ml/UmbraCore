@@ -42,7 +42,8 @@ extension RepositoryService {
   /// - Parameters:
   ///   - identifier: The identifier of the repository to check
   ///   - options: Health check options controlling the verification level
-  /// - Throws: `RepositoriesTypes.RepositoryError.repositoryNotFound` if the repository is not found,
+  /// - Throws: `RepositoriesTypes.RepositoryError.repositoryNotFound` if the repository is not
+  /// found,
   ///           `RepositoriesTypes.RepositoryError.healthCheckFailed` if the check fails
   public func checkHealth(
     of identifier: String,
@@ -88,7 +89,8 @@ extension RepositoryService {
   /// - Parameters:
   ///   - options: Health check options controlling the verification level
   ///   - force: If true, continue checking other repositories even if some fail
-  /// - Throws: `RepositoriesTypes.RepositoryError.healthCheckFailed` if any repository check fails and force is false
+  /// - Throws: `RepositoriesTypes.RepositoryError.healthCheckFailed` if any repository check fails
+  /// and force is false
   public func checkHealthAll(
     options: HealthCheckOptions = .basic,
     force: Bool = false

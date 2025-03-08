@@ -8,7 +8,7 @@ import XPCProtocolsCore
 /// methods
 @objc
 public protocol XPCServiceProtocolDefinition: ObjCBridgingTypesFoundation
-.XPCServiceProtocolDefinitionBaseFoundation {
+.XPCServiceProtocolBaseFoundation {
   /// Synchronize keys across processes with raw bytes using NSData
   /// - Parameter data: The key data to synchronize
   @objc
@@ -38,9 +38,9 @@ public protocol XPCServiceProtocolDefinition: ObjCBridgingTypesFoundation
   )
 }
 
-/// Implementation of XPCServiceProtocolDefinitionBaseFoundation interface
+/// Implementation of XPCServiceProtocolBaseFoundation interface
 public class XPCServiceProtocolDefinitionImpl: NSObject,
-ObjCBridgingTypesFoundation.XPCServiceProtocolDefinitionBaseFoundation {
+ObjCBridgingTypesFoundation.XPCServiceProtocolBaseFoundation {
   /// Protocol identifier for XPC service registration
   public static var protocolIdentifier: String {
     "com.umbra.xpc.service.protocol"

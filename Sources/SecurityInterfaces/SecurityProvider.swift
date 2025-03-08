@@ -1,11 +1,11 @@
 import CoreTypesInterfaces
 import Foundation
 import FoundationBridgeTypes
+import ProtocolsCore
 import SecurityBridge
 import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import ProtocolsCore
 
 /// Protocol defining security-related operations for managing secure resource access
 public protocol SecurityProvider: SecurityProviderBase {
@@ -53,12 +53,12 @@ public final class SecurityProviderAdapter: SecurityProvider {
     // Call the service to get the latest configuration
     let result=await service.pingStandard()
 
-    {{ ... }}
+      {{ ... }}
   }
 
   {{ ... }}
 
-  private func mapToSPCOperation(_ operation: SecurityOperation) -> SecurityProtocolsCore.SecurityOperation {
+  private func mapToSPCOperation(_: SecurityOperation) -> SecurityProtocolsCore.SecurityOperation {
     {{ ... }}
   }
 
@@ -96,23 +96,23 @@ private final class MockService: ServiceProtocolStandard {
     .success(())
   }
 
-  public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, SecurityError> {
+  public func synchronizeKeys(_: SecureBytes) async -> Result<Void, SecurityError> {
     {{ ... }}
   }
 
-  public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
+  public func generateRandomData(length _: Int) async -> Result<SecureBytes, SecurityError> {
     {{ ... }}
   }
 
   public func encryptData(
-    _ data: SecureBytes,
+    _: SecureBytes,
     keyIdentifier _: String?
   ) async -> Result<SecureBytes, SecurityError> {
     {{ ... }}
   }
 
   public func decryptData(
-    _ data: SecureBytes,
+    _: SecureBytes,
     keyIdentifier _: String?
   ) async -> Result<SecureBytes, SecurityError> {
     {{ ... }}
@@ -128,7 +128,7 @@ private final class MockService: ServiceProtocolStandard {
   ) async -> Result<SecureBytes, SecurityError> {
     {{ ... }}
   }
-  
+
   public func verifySignature(
     _: SecureBytes,
     for _: SecureBytes,

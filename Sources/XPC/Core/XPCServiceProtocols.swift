@@ -13,49 +13,197 @@ public protocol XPCServiceProtocol {
 }
 
 /// Modern crypto XPC service protocol that conforms to XPCServiceProtocolStandard
-/// Uses Result types with proper error handling
+/// Uses Objective-C compatible method signatures with completion handlers
 @objc(ModernCryptoXPCServiceProtocol)
-public protocol ModernCryptoXPCServiceProtocol: XPCServiceProtocolStandard {
+public protocol ModernCryptoXPCServiceProtocol: XPCServiceProtocol {
   /// Encrypts data using the specified key
   /// - Parameters:
   ///   - data: Data to encrypt
   ///   - key: Encryption key
-  /// - Returns: Encrypted data or error
-  func encrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError>
+  ///   - completion: Completion handler with encrypted data or error
+  func encrypt(_ data: Data, key: Data, completion: @escaping (Data?, Error?) -> Void)
 
   /// Decrypts data using the specified key
   /// - Parameters:
   ///   - data: Data to decrypt
   ///   - key: Decryption key
-  /// - Returns: Decrypted data or error
-  func decrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError>
+  ///   - completion: Completion handler with decrypted data or error
+  func decrypt(_ data: Data, key: Data, completion: @escaping (Data?, Error?) -> Void)
 
   /// Generates a cryptographic key of the specified bit length
-  /// - Parameter bits: Key length in bits (typically 128, 256)
-  /// - Returns: Generated key data or error
-  func generateKey(bits: Int) async -> Result<Data, XPCSecurityError>
+  /// - Parameters:
+  ///   - bits: Key length in bits (typically 128, 256)
+  ///   - completion: Completion handler with generated key data or error
+  func generateKey(bits: Int, completion: @escaping (Data?, Error?) -> Void)
 
   /// Generates secure random data of the specified length
-  /// - Parameter length: Length of random data in bytes
-  /// - Returns: Random data or error
-  func generateSecureRandomData(length: Int) async -> Result<Data, XPCSecurityError>
+  /// - Parameters:
+  ///   - length: Length of random data in bytes
+  ///   - completion: Completion handler with random data or error
+  func generateSecureRandomData(length: Int, completion: @escaping (Data?, Error?) -> Void)
 
   /// Stores a credential securely
   /// - Parameters:
   ///   - credential: Credential data to store
   ///   - identifier: Unique identifier for the credential
-  /// - Returns: Success or error
-  func storeSecurely(_ credential: Data, identifier: String) async -> Result<Void, XPCSecurityError>
+  ///   - completion: Completion handler with success or error
+  func storeSecurely(_ credential: Data, identifier: String, completion: @escaping (Error?) -> Void)
 
   /// Retrieves a credential stored securely
-  /// - Parameter identifier: Unique identifier for the credential
-  /// - Returns: Retrieved credential data or error
-  func retrieveSecurely(identifier: String) async -> Result<Data, XPCSecurityError>
+  /// - Parameters:
+  ///   - identifier: Unique identifier for the credential
+  ///   - completion: Completion handler with retrieved credential data or error
+  func retrieveSecurely(identifier: String, completion: @escaping (Data?, Error?) -> Void)
 
   /// Deletes a securely stored credential
-  /// - Parameter identifier: Unique identifier for the credential
-  /// - Returns: Success or error
-  func deleteSecurely(identifier: String) async -> Result<Void, XPCSecurityError>
+  /// - Parameters:
+  ///   - identifier: Unique identifier for the credential
+  ///   - completion: Completion handler with success or error
+  func deleteSecurely(identifier: String, completion: @escaping (Error?) -> Void)
+
+  /// Validate the connection to the XPC service
+  func validateConnection(completion: @escaping (Bool, Error?) -> Void)
+
+  /// Get the version of the XPC service
+  func getServiceVersion(completion: @escaping (String, Error?) -> Void)
+}
+
+/// Extension to provide async/await wrappers for the Objective-C compatible methods
+public extension ModernCryptoXPCServiceProtocol {
+  /// Async wrapper for encrypt
+  func encrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError> {
+    await withCheckedContinuation { continuation in
+      encrypt(data, key: key) { data, error in
+        if let data = data {
+          continuation.resume(returning: .success(data))
+        } else if let error = error as? XPCSecurityError {
+          continuation.resume(returning: .failure(error))
+        } else {
+          continuation.resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+        }
+      }
+    }
+  }
+
+  /// Async wrapper for decrypt
+  func decrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError> {
+    await withCheckedContinuation { continuation in
+      decrypt(data, key: key) { data, error in
+        if let data = data {
+          continuation.resume(returning: .success(data))
+        } else if let error = error as? XPCSecurityError {
+          continuation.resume(returning: .failure(error))
+        } else {
+          continuation.resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+        }
+      }
+    }
+  }
+
+  /// Async wrapper for generateKey
+  func generateKey(bits: Int) async -> Result<Data, XPCSecurityError> {
+    await withCheckedContinuation { continuation in
+      generateKey(bits: bits) { data, error in
+        if let data = data {
+          continuation.resume(returning: .success(data))
+        } else if let error = error as? XPCSecurityError {
+          continuation.resume(returning: .failure(error))
+        } else {
+          continuation.resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+        }
+      }
+    }
+  }
+
+  /// Async wrapper for generateSecureRandomData
+  func generateSecureRandomData(length: Int) async -> Result<Data, XPCSecurityError> {
+    await withCheckedContinuation { continuation in
+      generateSecureRandomData(length: length) { data, error in
+        if let data = data {
+          continuation.resume(returning: .success(data))
+        } else if let error = error as? XPCSecurityError {
+          continuation.resume(returning: .failure(error))
+        } else {
+          continuation.resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+        }
+      }
+    }
+  }
+
+  /// Async wrapper for storeSecurely
+  func storeSecurely(_ credential: Data, identifier: String) async -> Result<Void, XPCSecurityError> {
+    await withCheckedContinuation { continuation in
+      storeSecurely(credential, identifier: identifier) { error in
+        if let error = error as? XPCSecurityError {
+          continuation.resume(returning: .failure(error))
+        } else if let error = error {
+          continuation.resume(returning: .failure(.general(error.localizedDescription)))
+        } else {
+          continuation.resume(returning: .success(()))
+        }
+      }
+    }
+  }
+
+  /// Async wrapper for retrieveSecurely
+  func retrieveSecurely(identifier: String) async -> Result<Data, XPCSecurityError> {
+    await withCheckedContinuation { continuation in
+      retrieveSecurely(identifier: identifier) { data, error in
+        if let data = data {
+          continuation.resume(returning: .success(data))
+        } else if let error = error as? XPCSecurityError {
+          continuation.resume(returning: .failure(error))
+        } else {
+          continuation.resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+        }
+      }
+    }
+  }
+
+  /// Async wrapper for deleteSecurely
+  func deleteSecurely(identifier: String) async -> Result<Void, XPCSecurityError> {
+    await withCheckedContinuation { continuation in
+      deleteSecurely(identifier: identifier) { error in
+        if let error = error as? XPCSecurityError {
+          continuation.resume(returning: .failure(error))
+        } else if let error = error {
+          continuation.resume(returning: .failure(.general(error.localizedDescription)))
+        } else {
+          continuation.resume(returning: .success(()))
+        }
+      }
+    }
+  }
+
+  /// Async wrapper for validateConnection
+  func validateConnection() async -> Result<Bool, XPCSecurityError> {
+    await withCheckedContinuation { continuation in
+      validateConnection { isValid, error in
+        if let error = error as? XPCSecurityError {
+          continuation.resume(returning: .failure(error))
+        } else if let error = error {
+          continuation.resume(returning: .failure(.general(error.localizedDescription)))
+        } else {
+          continuation.resume(returning: .success(isValid))
+        }
+      }
+    }
+  }
+
+  /// Async wrapper for getServiceVersion
+  func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    await withCheckedContinuation { continuation in
+      getServiceVersion { version, error in
+        if let error = error as? XPCSecurityError {
+          continuation.resume(returning: .failure(error))
+        } else if let error = error {
+          continuation.resume(returning: .failure(.general(error.localizedDescription)))
+        } else {
+          continuation.resume(returning: .success(version))
+        }
+      }
+    }
+  }
 }
 
 /// Security XPC service protocol that extends XPCServiceProtocolStandard with objc compatibility
@@ -78,6 +226,12 @@ public protocol SecurityXPCServiceProtocol: XPCServiceProtocolStandard {
     _ bookmarkData: [UInt8],
     withReply reply: @escaping (Bool, Error?) -> Void
   )
+  
+  /// Validates the connection to the XPC service
+  func validateConnection(completion: @escaping (Bool, Error?) -> Void)
+  
+  /// Gets the version of the XPC service
+  func getServiceVersion(completion: @escaping (String?, Error?) -> Void)
 
   func validateAccess(forResource resource: String) async throws -> Bool
   func requestPermission(forResource resource: String) async throws -> Bool
@@ -90,7 +244,7 @@ public class SecurityXPCServiceAdapter {
   private let standardService: any XPCServiceProtocolStandard
 
   public init(standardService: any XPCServiceProtocolStandard) {
-    self.standardService=standardService
+    self.standardService = standardService
   }
 
   // Bridge implementations between the protocols can be added here
@@ -159,10 +313,16 @@ extension SecurityXPCServiceProtocol {
     }
   }
 
-  public func getServiceVersionAsync() async -> String {
-    await withCheckedContinuation { continuation in
-      getServiceVersion { version in
-        continuation.resume(returning: version)
+  public func getServiceVersionAsync() async throws -> String? {
+    try await withCheckedThrowingContinuation { continuation in
+      getServiceVersion { version, error in
+        if let error {
+          continuation.resume(throwing: error)
+        } else if let version {
+          continuation.resume(returning: version)
+        } else {
+          continuation.resume(returning: nil)
+        }
       }
     }
   }

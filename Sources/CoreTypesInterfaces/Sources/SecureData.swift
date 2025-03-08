@@ -7,13 +7,13 @@ public struct SecureData: Sendable, Equatable {
   /// Initialize with raw bytes
   /// - Parameter bytes: Array of bytes
   public init(bytes: [UInt8]) {
-    storage=ByteArray(bytes: bytes)
+    storage = ByteArray(bytes: bytes)
   }
 
   /// Initialize with a ByteArray
   /// - Parameter byteArray: ByteArray to wrap
   public init(byteArray: ByteArray) {
-    storage=byteArray
+    storage = byteArray
   }
 
   /// Access the raw bytes
@@ -43,7 +43,7 @@ public struct SecureData: Sendable, Equatable {
 
   /// Check if the SecureData is empty
   public var isEmpty: Bool {
-    isEmpty
+    storage.isEmpty
   }
 
   /// Subscript access to individual bytes

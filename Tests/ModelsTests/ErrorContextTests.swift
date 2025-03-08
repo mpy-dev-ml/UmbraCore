@@ -3,7 +3,7 @@ import XCTest
 
 final class ErrorContextTests: XCTestCase {
   func testErrorContextCreation() {
-    let context=ErrorContext(
+    let context = ErrorContext(
       source: "TestService",
       code: "TEST_ERROR",
       message: "Test error message",
@@ -13,12 +13,12 @@ final class ErrorContextTests: XCTestCase {
     XCTAssertEqual(context.source, "TestService")
     XCTAssertEqual(context.code, "TEST_ERROR")
     XCTAssertEqual(context.message, "Test error message")
-    XCTAssertEqual(context.metadata?["operation"], "testOperation")
-    XCTAssertEqual(context.metadata?["details"], "Test details")
+    XCTAssertEqual(context.metadata["operation"], "testOperation")
+    XCTAssertEqual(context.metadata["details"], "Test details")
   }
 
   func testErrorContextDescription() {
-    let context=ErrorContext(
+    let context = ErrorContext(
       source: "TestService",
       code: "TEST_ERROR",
       message: "Test error message",
@@ -31,7 +31,7 @@ final class ErrorContextTests: XCTestCase {
       ]
     )
 
-    let description=context.description
+    let description = context.description
 
     XCTAssertTrue(description.contains("TestService"))
     XCTAssertTrue(description.contains("TEST_ERROR"))
@@ -41,12 +41,12 @@ final class ErrorContextTests: XCTestCase {
   }
 
   func testErrorContextWithoutDetails() {
-    let context=ErrorContext(
+    let context = ErrorContext(
       source: "TestService",
       message: "Test error message"
     )
 
-    let description=context.description
+    let description = context.description
 
     XCTAssertTrue(description.contains("TestService"))
     XCTAssertTrue(description.contains("Test error message"))

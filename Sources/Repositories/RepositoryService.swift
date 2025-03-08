@@ -45,8 +45,10 @@ public actor RepositoryService {
   /// Registers a repository with the service.
   ///
   /// - Parameter repository: The repository to register. Must conform to the `Repository` protocol.
-  /// - Throws: `RepositoriesTypes.RepositoryError.notAccessible` if the repository cannot be accessed,
-  ///           `RepositoriesTypes.RepositoryError.alreadyRegistered` if a repository with the same identifier exists.
+  /// - Throws: `RepositoriesTypes.RepositoryError.notAccessible` if the repository cannot be
+  /// accessed,
+  ///           `RepositoriesTypes.RepositoryError.alreadyRegistered` if a repository with the same
+  /// identifier exists.
   public func register(_ repository: some Repository) async throws {
     let identifier = await repository.identifier
     let location = await repository.location
@@ -108,7 +110,8 @@ public actor RepositoryService {
   /// Deregisters a repository from the service.
   ///
   /// - Parameter identifier: The identifier of the repository to deregister.
-  /// - Throws: `RepositoriesTypes.RepositoryError.notFound` if no repository exists with the given identifier.
+  /// - Throws: `RepositoriesTypes.RepositoryError.notFound` if no repository exists with the given
+  /// identifier.
   public func deregister(identifier: String) async throws {
     let metadata = LogMetadata([
       "repository_id": identifier

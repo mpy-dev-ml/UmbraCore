@@ -54,7 +54,8 @@ extension RepositoryService {
   ///
   /// - Parameter url: Repository URL
   /// - Returns: Repository instance
-  /// - Throws: `RepositoriesTypes.RepositoryError.invalidConfiguration` if a repository already exists at the URL
+  /// - Throws: `RepositoriesTypes.RepositoryError.invalidConfiguration` if a repository already
+  /// exists at the URL
   public func initialiseRepository(at url: URL) async throws -> any Repository {
     let metadata = LogMetadataBuilder.forRepository(
       path: url.path

@@ -1,48 +1,58 @@
+import Foundation
 import UmbraCoreTypes
 
 /// Extended XPC service protocol that builds upon the base protocol
 /// by adding additional security operations
+@objc
 public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
   /// Generate random data of the specified length
   /// - Parameter length: Length of random data in bytes
   /// - Returns: Random data
-  func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError>
+  @objc
+  func generateRandomData(length: Int) async -> NSObject?
+
   /// Encrypt data using the service's encryption mechanism
   /// - Parameters:
   ///   - data: Data to encrypt
   ///   - keyIdentifier: Optional key identifier to use
   /// - Returns: Encrypted data
-  func encryptData(_ data: SecureBytes, keyIdentifier: String?) async
-    -> Result<SecureBytes, XPCSecurityError>
+  @objc
+  func encryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject?
+
   /// Decrypt data using the service's decryption mechanism
   /// - Parameters:
   ///   - data: Data to decrypt
   ///   - keyIdentifier: Optional key identifier to use
   /// - Returns: Decrypted data
-  func decryptData(_ data: SecureBytes, keyIdentifier: String?) async
-    -> Result<SecureBytes, XPCSecurityError>
+  @objc
+  func decryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject?
+
   /// Hash data using the service's hashing mechanism
   /// - Parameter data: Data to hash
   /// - Returns: Hash result
-  func hashData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError>
+  @objc
+  func hashData(_ data: NSData) async -> NSObject?
+
   /// Sign data using the service's signing mechanism
   /// - Parameters:
   ///   - data: Data to sign
   ///   - keyIdentifier: Key identifier to use for signing
   /// - Returns: Signature data
-  func signData(_ data: SecureBytes, keyIdentifier: String) async
-    -> Result<SecureBytes, XPCSecurityError>
+  @objc
+  func signData(_ data: NSData, keyIdentifier: String) async -> NSObject?
+
   /// Verify signature for data
   /// - Parameters:
   ///   - signature: Signature to verify
   ///   - data: Original data
   ///   - keyIdentifier: Key identifier to use for verification
   /// - Returns: True if signature is valid, or error
+  @objc
   func verifySignature(
-    _ signature: SecureBytes,
-    for data: SecureBytes,
+    _ signature: NSData,
+    for data: NSData,
     keyIdentifier: String
-  ) async -> Result<Bool, XPCSecurityError>
+  ) async -> NSObject?
 }
 
 /// Protocol for security service that manages secure storage operations

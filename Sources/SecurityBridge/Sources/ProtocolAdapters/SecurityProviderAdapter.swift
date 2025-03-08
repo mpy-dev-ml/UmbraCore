@@ -35,9 +35,9 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
   /// Create a new SecurityProviderAdapter
   /// - Parameter implementation: The Foundation-dependent security provider implementation
   public init(implementation: any FoundationSecurityProvider) {
-    self.implementation=implementation
-    cryptoServiceAdapter=CryptoServiceAdapter(implementation: implementation.cryptoService)
-    keyManagementAdapter=KeyManagementAdapter(implementation: implementation.keyManager)
+    self.implementation = implementation
+    cryptoServiceAdapter = CryptoServiceAdapter(implementation: implementation.cryptoService)
+    keyManagementAdapter = KeyManagementAdapter(implementation: implementation.keyManager)
   }
 
   // MARK: - SecurityProviderProtocol Implementation
@@ -47,10 +47,10 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Convert foundation-free config to foundation-dependent options
-    let options=configToOptions(config)
+    let options = configToOptions(config)
 
     // Call the implementation
-    let result=await implementation.performOperation(
+    let result = await implementation.performOperation(
       operation: operation.rawValue,
       options: options
     )
@@ -77,26 +77,26 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
 
   /// Convert security config to Foundation options dictionary
   private func configToOptions(_ config: SecurityConfigDTO) -> [String: Any] {
-    var options: [String: Any]=[
+    var options: [String: Any] = [
       "algorithm": config.algorithm,
       "keySizeInBits": config.keySizeInBits
     ]
 
     // Add optional parameters if they exist
-    if let iv=config.initializationVector {
-      options["initializationVector"]=DataAdapter.data(from: iv as SecureBytes)
+    if let iv = config.initializationVector {
+      options["initializationVector"] = DataAdapter.data(from: iv as SecureBytes)
     }
 
-    if let aad=config.additionalAuthenticatedData {
-      options["additionalAuthenticatedData"]=DataAdapter.data(from: aad as SecureBytes)
+    if let aad = config.additionalAuthenticatedData {
+      options["additionalAuthenticatedData"] = DataAdapter.data(from: aad as SecureBytes)
     }
 
-    if let iterations=config.iterations {
-      options["iterations"]=iterations
+    if let iterations = config.iterations {
+      options["iterations"] = iterations
     }
 
     if !config.options.isEmpty {
-      options["algorithmOptions"]=config.options
+      options["algorithmOptions"] = config.options
     }
 
     return options
@@ -113,7 +113,7 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
         }
       case let .failure(error):
         // Convert the error to NSError directly since the cast always succeeds
-        let nsError=error as NSError
+        let nsError = error as NSError
         return SecurityResultDTO(
           errorCode: nsError.code,
           errorMessage: nsError.localizedDescription
@@ -125,9 +125,9 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
   private func convertStringDictionary(_ dict: [String: Any]?) -> [String: String] {
     guard let dict else { return [:] }
 
-    var result: [String: String]=[:]
+    var result: [String: String] = [:]
     for (key, value) in dict {
-      result[key]=String(describing: value)
+      result[key] = String(describing: value)
     }
 
     return result
@@ -156,4 +156,4 @@ public protocol FoundationSecurityProvider: Sendable {
 }
 
 /// Typealias for Foundation-based security operation result
-public typealias FoundationSecurityProviderResult=Result<Data?, Error>
+public typealias FoundationSecurityProviderResult = Result<Data?, Error>

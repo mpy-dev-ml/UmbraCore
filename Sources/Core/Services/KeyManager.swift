@@ -34,12 +34,12 @@ public struct SecurityContext: Sendable {
 
   public init(
     applicationType: ApplicationType,
-    isSandboxed: Bool=false,
-    requiresXPC: Bool=false
+    isSandboxed: Bool = false,
+    requiresXPC: Bool = false
   ) {
-    self.applicationType=applicationType
-    self.isSandboxed=isSandboxed
-    self.requiresXPC=requiresXPC
+    self.applicationType = applicationType
+    self.isSandboxed = isSandboxed
+    self.requiresXPC = requiresXPC
   }
 }
 
@@ -51,7 +51,7 @@ public struct KeyIdentifier: Hashable, Sendable {
   /// Create a new key identifier
   /// - Parameter id: The unique identifier for this key
   public init(id: String) {
-    self.id=id
+    self.id = id
   }
 
   public func hash(into hasher: inout Hasher) {
@@ -81,17 +81,17 @@ public struct KeyMetadata: Sendable {
   public init(
     identifier: KeyIdentifier,
     creationDate: Date,
-    expirationDate: Date?=nil,
+    expirationDate: Date? = nil,
     purpose: String,
     algorithm: String,
     strength: Int
   ) {
-    self.identifier=identifier
-    self.creationDate=creationDate
-    self.expirationDate=expirationDate
-    self.purpose=purpose
-    self.algorithm=algorithm
-    self.strength=strength
+    self.identifier = identifier
+    self.creationDate = creationDate
+    self.expirationDate = expirationDate
+    self.purpose = purpose
+    self.algorithm = algorithm
+    self.strength = strength
   }
 }
 
@@ -102,9 +102,9 @@ public struct KeyValidationResult: Sendable {
   /// Detailed validation messages (if any)
   public let messages: [String]
 
-  public init(isValid: Bool, messages: [String]=[]) {
-    self.isValid=isValid
-    self.messages=messages
+  public init(isValid: Bool, messages: [String] = []) {
+    self.isValid = isValid
+    self.messages = messages
   }
 }
 
@@ -135,15 +135,15 @@ public actor KeyManager {
   ///   - cryptoImpl: Implementation to use for cryptographic operations (default: .cryptoSwift)
   public init(
     keyStorage: URL,
-    keyFormat: String="umbra-key-v1",
+    keyFormat: String = "umbra-key-v1",
     securityContext: SecurityContext,
     cryptoImpl: CryptoImplementation = .cryptoSwift
   ) {
-    self.keyStorage=keyStorage
-    self.keyFormat=keyFormat
-    self.securityContext=securityContext
-    self.cryptoImpl=cryptoImpl
-    keyMetadata=[:]
+    self.keyStorage = keyStorage
+    self.keyFormat = keyFormat
+    self.securityContext = securityContext
+    self.cryptoImpl = cryptoImpl
+    keyMetadata = [:]
   }
 
   /// Initialize the key manager
@@ -161,7 +161,7 @@ public actor KeyManager {
       )
 
       // Load existing keys from storage
-      keyMetadata=try await loadKeyMetadata()
+      keyMetadata = try await loadKeyMetadata()
 
       _state = .ready
       state = .ready
@@ -177,19 +177,19 @@ public actor KeyManager {
   /// - Throws: KeyManagerError if key generation fails
   public func generateKey(
     purpose: String,
-    algorithm: String="AES-GCM",
-    strength: Int=256
+    algorithm: String = "AES-GCM",
+    strength: Int = 256
   ) async throws -> KeyIdentifier {
     guard state == .ready else {
       throw KeyManagerError.notInitialized
     }
 
     // Generate unique identifier
-    let keyId="key-\(UUID().uuidString.prefix(8))"
-    let keyIdentifier=KeyIdentifier(id: keyId)
+    let keyId = "key-\(UUID().uuidString.prefix(8))"
+    let keyIdentifier = KeyIdentifier(id: keyId)
 
     // Create key metadata
-    let metadata=KeyMetadata(
+    let metadata = KeyMetadata(
       identifier: keyIdentifier,
       creationDate: Date(),
       purpose: purpose,
@@ -198,7 +198,7 @@ public actor KeyManager {
     )
 
     // Store key metadata
-    keyMetadata[keyId]=metadata
+    keyMetadata[keyId] = metadata
 
     // Synchronize with other processes if needed
     if securityContext.requiresXPC {
@@ -228,22 +228,22 @@ public actor KeyManager {
   /// - Throws: KeyManagerError if synchronisation fails
   public func synchroniseKeys() async throws {
     // Use XPC to broadcast key updates to other processes
-    let serviceContainer=ServiceContainer.shared
+    let serviceContainer = ServiceContainer.shared
 
     // Need to await when accessing actor property
-    guard let xpcService=await serviceContainer.xpcService else {
+    guard let xpcService = await serviceContainer.xpcService else {
       throw KeyManagerError.synchronisationError("XPC service not available")
     }
 
     // Create JSON object with sync data
-    let syncData=try await createKeySyncData()
+    let syncData = try await createKeySyncData()
 
     // Send synchronisation request through XPC using the modern Result-based approach
-    let result=try await xpcService.synchroniseKeys(syncData)
+    let result = try await xpcService.synchroniseKeys(syncData)
     switch result {
       case .success:
         // Update last sync timestamp
-        lastSyncTime=Date()
+        lastSyncTime = Date()
       case let .failure(error):
         throw KeyManagerError
           .synchronisationError("XPC synchronization failed: \(error.localizedDescription)")
@@ -271,12 +271,12 @@ public actor KeyManager {
   /// - Returns: Dictionary of key ID to metadata
   /// - Throws: KeyManagerError if loading fails
   private func loadKeyMetadata() async throws -> [String: KeyMetadata] {
-    var metadata: [String: KeyMetadata]=[]
+    var metadata: [String: KeyMetadata] = []
 
-    let fileManager=FileManager.default
+    let fileManager = FileManager.default
     let files: [URL]
     do {
-      files=try fileManager.contentsOfDirectory(
+      files = try fileManager.contentsOfDirectory(
         at: keyStorage,
         includingPropertiesForKeys: nil,
         options: .skipsHiddenFiles
@@ -288,32 +288,31 @@ public actor KeyManager {
 
     for file in files.filter({ $0.pathExtension == "meta" }) {
       do {
-        let data=try Data(contentsOf: file)
+        let data = try Data(contentsOf: file)
         guard
-          let json=try JSONSerialization.jsonObject(with: data) as? [String: Any],
-          let id=json["id"] as? String,
-          let purpose=json["purpose"] as? String,
-          let algorithm=json["algorithm"] as? String,
-          let strength=json["strength"] as? Int,
-          let creationDateTimestamp=json["creationDate"] as? TimeInterval
+          let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let id = json["id"] as? String,
+          let purpose = json["purpose"] as? String,
+          let algorithm = json["algorithm"] as? String,
+          let strength = json["strength"] as? Int,
+          let creationDateTimestamp = json["creationDate"] as? TimeInterval
         else {
           throw KeyManagerError
             .metadataError("Invalid metadata format in \(file.lastPathComponent)")
         }
 
-        let keyId=KeyIdentifier(id: id)
-        let creationDate=Date(timeIntervalSince1970: creationDateTimestamp)
-        let expirationDate: Date?=if
-          let expirationTimestamp=json[
+        let keyId = KeyIdentifier(id: id)
+        let creationDate = Date(timeIntervalSince1970: creationDateTimestamp)
+        let expirationDate: Date? = if
+          let expirationTimestamp = json[
             "expirationDate"
-          ] as? TimeInterval
-        {
+          ] as? TimeInterval {
           Date(timeIntervalSince1970: expirationTimestamp)
         } else {
           nil
         }
 
-        metadata[id]=KeyMetadata(
+        metadata[id] = KeyMetadata(
           identifier: keyId,
           creationDate: creationDate,
           expirationDate: expirationDate,
@@ -334,11 +333,11 @@ public actor KeyManager {
   /// - Returns: Data to synchronise
   /// - Throws: KeyManagerError if data creation fails
   private func createKeySyncData() async throws -> SecureBytes {
-    var syncData: [String: Any]=[:]
-    var keys: [[String: Any]]=[]
+    var syncData: [String: Any] = [:]
+    var keys: [[String: Any]] = []
 
     for (_, metadata) in keyMetadata {
-      let keyData: [String: Any]=[
+      let keyData: [String: Any] = [
         "id": metadata.identifier.id,
         "purpose": metadata.purpose,
         "algorithm": metadata.algorithm,
@@ -349,12 +348,12 @@ public actor KeyManager {
       keys.append(keyData)
     }
 
-    syncData["keys"]=keys
-    syncData["timestamp"]=Date().timeIntervalSince1970
+    syncData["keys"] = keys
+    syncData["timestamp"] = Date().timeIntervalSince1970
 
     let jsonData: Data
     do {
-      jsonData=try JSONSerialization.data(withJSONObject: syncData)
+      jsonData = try JSONSerialization.data(withJSONObject: syncData)
     } catch {
       throw KeyManagerError
         .synchronisationError("Failed to create sync data: \(error.localizedDescription)")
@@ -383,7 +382,7 @@ public actor KeyManager {
   /// - Returns: Key metadata
   /// - Throws: KeyManagerError if key not found
   public func getKeyMetadata(id: KeyIdentifier) throws -> KeyMetadata {
-    guard let metadata=keyMetadata[id.id] else {
+    guard let metadata = keyMetadata[id.id] else {
       throw KeyManagerError.keyNotFound(id.id)
     }
     return metadata

@@ -14,7 +14,8 @@ extension RepositoryService {
   /// - Parameters:
   ///   - identifier: The identifier of the repository to maintain
   ///   - rebuildIndex: Whether to rebuild the repository index
-  /// - Throws: `RepositoriesTypes.RepositoryError.repositoryNotFound` if the repository is not found,
+  /// - Throws: `RepositoriesTypes.RepositoryError.repositoryNotFound` if the repository is not
+  /// found,
   ///           `RepositoriesTypes.RepositoryError.maintenanceFailed` if the operation fails
   public func maintain(
     _ identifier: String,

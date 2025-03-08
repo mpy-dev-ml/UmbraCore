@@ -59,16 +59,16 @@ public struct KeyMetadata: Sendable, Codable {
     exportable: Bool,
     isSystemKey: Bool
   ) {
-    self.status=status
-    self.storageLocation=storageLocation
-    self.accessControls=accessControls
-    self.createdAtTimestamp=createdAtTimestamp
-    self.lastModifiedTimestamp=lastModifiedTimestamp
-    self.identifier=identifier
-    self.version=version
-    self.algorithm=algorithm
-    self.keyLengthBits=keyLengthBits
-    self.exportable=exportable
-    self.isSystemKey=isSystemKey
+    self.status = status
+    self.storageLocation = storageLocation
+    self.accessControls = accessControls
+    self.createdAtTimestamp = createdAtTimestamp
+    self.lastModifiedTimestamp = lastModifiedTimestamp
+    self.identifier = identifier
+    self.version = version
+    self.algorithm = algorithm
+    self.keyLengthBits = keyLengthBits
+    self.exportable = exportable
+    self.isSystemKey = isSystemKey
   }
 }

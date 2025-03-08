@@ -3,8 +3,8 @@ import Foundation
 
 @objc
 final class MockKeychainService: NSObject, KeychainXPCProtocol {
-  private var storage: [String: Data]=[:]
-  private let queue=DispatchQueue(label: "com.umbracore.mock-keychain", attributes: .concurrent)
+  private var storage: [String: Data] = [:]
+  private let queue = DispatchQueue(label: "com.umbracore.mock-keychain", attributes: .concurrent)
 
   private func key(account: String, service: String, accessGroup: String?) -> String {
     [service, account, accessGroup].compactMap { $0 }.joined(separator: "_")
@@ -19,12 +19,12 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
   ) {
     queue.async(flags: .barrier) { [weak self] in
       guard let self else { return }
-      let key=key(account: account, service: service, accessGroup: accessGroup)
+      let key = key(account: account, service: service, accessGroup: accessGroup)
       if storage[key] != nil {
         reply(KeychainError.duplicateItem)
         return
       }
-      storage[key]=data
+      storage[key] = data
       reply(nil)
     }
   }
@@ -38,12 +38,12 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
   ) {
     queue.async(flags: .barrier) { [weak self] in
       guard let self else { return }
-      let key=key(account: account, service: service, accessGroup: accessGroup)
+      let key = key(account: account, service: service, accessGroup: accessGroup)
       guard storage[key] != nil else {
         reply(KeychainError.itemNotFound)
         return
       }
-      storage[key]=data
+      storage[key] = data
       reply(nil)
     }
   }
@@ -56,8 +56,8 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
   ) {
     queue.async { [weak self] in
       guard let self else { return }
-      let key=key(account: account, service: service, accessGroup: accessGroup)
-      guard let data=storage[key] else {
+      let key = key(account: account, service: service, accessGroup: accessGroup)
+      guard let data = storage[key] else {
         reply(nil, KeychainError.itemNotFound)
         return
       }
@@ -73,7 +73,7 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
   ) {
     queue.async { [weak self] in
       guard let self else { return }
-      let key=key(account: account, service: service, accessGroup: accessGroup)
+      let key = key(account: account, service: service, accessGroup: accessGroup)
       reply(storage[key] != nil, nil)
     }
   }
@@ -86,7 +86,7 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
   ) {
     queue.async(flags: .barrier) { [weak self] in
       guard let self else { return }
-      let key=key(account: account, service: service, accessGroup: accessGroup)
+      let key = key(account: account, service: service, accessGroup: accessGroup)
       guard storage[key] != nil else {
         reply(KeychainError.itemNotFound)
         return

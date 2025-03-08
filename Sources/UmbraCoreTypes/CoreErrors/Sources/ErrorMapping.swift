@@ -28,11 +28,11 @@ public func mapFromCoreErrors(_ error: Error) -> Error {
   // For specific error types, we need to handle the translation explicitly
   // as the default mapper doesn't handle these specialised cases
 
-  if let resourceError=error as? CoreErrors.ResourceError {
+  if let resourceError = error as? CoreErrors.ResourceError {
     return mapFromCoreResourceError(resourceError)
   }
 
-  if let securityError=error as? CoreErrors.SecurityError {
+  if let securityError = error as? CoreErrors.SecurityError {
     return mapFromCoreSecurityError(securityError)
   }
 
@@ -80,7 +80,7 @@ private func mapFromCoreSecurityError(_ error: CoreErrors.SecurityError) -> Erro
     case .bookmarkError:
       return ResourceLocatorError.generalError("Bookmark error")
     case .cryptoError:
-      return ResourceLocatorError.generalError("Crypto error")
+      return ResourceLocatorError.generalError("Cryptographic operation failed")
     case .bookmarkCreationFailed:
       return ResourceLocatorError.generalError("Bookmark creation failed")
     case .bookmarkResolutionFailed:
@@ -99,20 +99,10 @@ private func mapFromCoreSecurityError(_ error: CoreErrors.SecurityError) -> Erro
       return ResourceLocatorError.generalError("Service operation failed")
     case .notImplemented:
       return ResourceLocatorError.generalError("Not implemented")
-    case .timeout:
-      return ResourceLocatorError.generalError("Operation timed out")
-    case .invalidKey:
-      return ResourceLocatorError.generalError("Invalid key")
-    case .hashVerificationFailed:
-      return ResourceLocatorError.generalError("Hash verification failed")
-    case .cryptoOperationFailed:
-      return ResourceLocatorError.generalError("Operation timed out")
-    case .generalError:
-      return ResourceLocatorError.generalError("Invalid key")
-    case .tamperedData:
-      return ResourceLocatorError.generalError("Hash verification failed")
+    case let .general(message):
+      return ResourceLocatorError.generalError(message)
     @unknown default:
-      return ResourceLocatorError.generalError("Unknown security error")
+      return ResourceLocatorError.generalError("Security operation failed with unknown error")
   }
 }
 
@@ -125,8 +115,8 @@ public struct ErrorContainer: Error {
   public let userInfo: [String: Any]
 
   public init(domain: String, code: Int, userInfo: [String: Any]) {
-    self.domain=domain
-    self.code=code
-    self.userInfo=userInfo
+    self.domain = domain
+    self.code = code
+    self.userInfo = userInfo
   }
 }
