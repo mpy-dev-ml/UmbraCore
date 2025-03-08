@@ -75,11 +75,12 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
   public func synchroniseKeys(_ syncData: NSData) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        let data = Data(referencing: syncData)
-        let bytes = [UInt8](data)
-        let secureBytes = SecureBytes(bytes: bytes)
+        // Convert NSData to SecureBytes
+        let secureBytes = convertNSDataToSecureBytes(syncData)
         
-        let result = await serviceProxy.synchroniseKeys(secureBytes)
+        // Convert SecureBytes to NSData since serviceProxy expects NSData
+        let nsData = convertSecureBytesToNSData(secureBytes)
+        let result = await serviceProxy.synchroniseKeys(nsData)
         switch result {
         case .success:
           continuation.resume(returning: NSNull())
@@ -106,13 +107,13 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
   private func mapError(_ error: CoreErrors.SecurityError) -> SecurityProtocolsCore.SecurityError {
     switch error {
     case .encryptionFailed:
-      return SecurityProtocolsCore.SecurityError.encryptionFailed
+      return SecurityProtocolsCore.SecurityError.encryptionFailed(reason: "Encryption operation failed")
     case .decryptionFailed:
-      return SecurityProtocolsCore.SecurityError.decryptionFailed
+      return SecurityProtocolsCore.SecurityError.decryptionFailed(reason: "Decryption operation failed")
     case .keyGenerationFailed:
-      return SecurityProtocolsCore.SecurityError.keyGenerationFailed
+      return SecurityProtocolsCore.SecurityError.keyGenerationFailed(reason: "Key generation failed")
     case .invalidData:
-      return SecurityProtocolsCore.SecurityError.invalidData
+      return SecurityProtocolsCore.SecurityError.invalidInput(reason: "Invalid data format")
     case .notImplemented:
       return SecurityProtocolsCore.SecurityError.notImplemented
     case .general(let message):
@@ -122,11 +123,13 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
     case .accessError:
       return SecurityProtocolsCore.SecurityError.internalError("Access error")
     case .cryptoError:
-      return SecurityProtocolsCore.SecurityError.internalError("Crypto error")
+      return SecurityProtocolsCore.SecurityError.serviceError(code: 500, reason: "Cryptographic operation failed")
     case .bookmarkCreationFailed:
       return SecurityProtocolsCore.SecurityError.internalError("Bookmark creation failed")
     case .bookmarkResolutionFailed:
       return SecurityProtocolsCore.SecurityError.internalError("Bookmark resolution failed")
+    @unknown default:
+      return SecurityProtocolsCore.SecurityError.internalError("Unknown security error")
     }
   }
   
@@ -386,14 +389,14 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
   public func listKeyIdentifiers() async -> Result<[String], SecurityProtocolsCore.SecurityError> {
     return await withCheckedContinuation { continuation in
       Task {
-        let result = await serviceProxy.listKeyIdentifiers()
-        
-        switch result {
-        case .success(let identifiers):
-          continuation.resume(returning: .success(identifiers))
-        case .failure(let error):
-          continuation.resume(returning: .failure(self.mapSecurityError(error)))
+        let selector = NSSelectorFromString("listKeyIdentifiers")
+        guard let result = (connection.remoteObjectProxy as AnyObject).perform(selector)?.takeRetainedValue() as? NSArray else {
+          continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
+          return
         }
+        
+        let identifiers = result.compactMap { $0 as? String }
+        continuation.resume(returning: .success(identifiers))
       }
     }
   }
@@ -406,17 +409,9 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
   public func generateRandomData(length: Int) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("generateRandomDataWithLength:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: NSNumber(value: length))?.takeRetainedValue() as? NSData else {
-            continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to generate random data"]))
-            return
-          }
-          
-          continuation.resume(returning: result)
-        } catch {
-          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
-        }
+        let selector = NSSelectorFromString("generateRandomDataWithLength:")
+        let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: NSNumber(value: length))?.takeRetainedValue()
+        continuation.resume(returning: result)
       }
     }
   }
@@ -425,17 +420,9 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
   public func encryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("encryptData:keyIdentifier:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: keyIdentifier as NSString?)?.takeRetainedValue() as? NSData else {
-            continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: "Encryption failed"]))
-            return
-          }
-          
-          continuation.resume(returning: result)
-        } catch {
-          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
-        }
+        let selector = NSSelectorFromString("encryptData:keyIdentifier:")
+        let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: keyIdentifier as NSString?)?.takeRetainedValue()
+        continuation.resume(returning: result)
       }
     }
   }
@@ -444,17 +431,9 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
   public func decryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("decryptData:keyIdentifier:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: keyIdentifier as NSString?)?.takeRetainedValue() as? NSData else {
-            continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: "Decryption failed"]))
-            return
-          }
-          
-          continuation.resume(returning: result)
-        } catch {
-          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
-        }
+        let selector = NSSelectorFromString("decryptData:keyIdentifier:")
+        let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: keyIdentifier as NSString?)?.takeRetainedValue()
+        continuation.resume(returning: result)
       }
     }
   }
@@ -463,17 +442,9 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
   public func hashData(_ data: NSData) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("hashData:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: data)?.takeRetainedValue() as? NSData else {
-            continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: "Hashing failed"]))
-            return
-          }
-          
-          continuation.resume(returning: result)
-        } catch {
-          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
-        }
+        let selector = NSSelectorFromString("hashData:")
+        let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: data)?.takeRetainedValue()
+        continuation.resume(returning: result)
       }
     }
   }
@@ -482,17 +453,9 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
   public func signData(_ data: NSData, keyIdentifier: String) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("signData:keyIdentifier:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: keyIdentifier)?.takeRetainedValue() as? NSData else {
-            continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: "Signing failed"]))
-            return
-          }
-          
-          continuation.resume(returning: result)
-        } catch {
-          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
-        }
+        let selector = NSSelectorFromString("signData:keyIdentifier:")
+        let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: keyIdentifier)?.takeRetainedValue()
+        continuation.resume(returning: result)
       }
     }
   }
@@ -501,17 +464,9 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
   public func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("verifySignature:forData:keyIdentifier:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: signature, with: data, with: keyIdentifier)?.takeRetainedValue() as? NSNumber else {
-            continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: "Verification failed"]))
-            return
-          }
-          
-          continuation.resume(returning: result)
-        } catch {
-          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
-        }
+        let selector = NSSelectorFromString("verifySignature:forData:keyIdentifier:")
+        let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: signature, with: data, with: keyIdentifier)?.takeRetainedValue()
+        continuation.resume(returning: result)
       }
     }
   }
@@ -524,15 +479,11 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
   public func storeData(_ data: NSData, withKey key: String) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("storeData:withKey:")
-          let data = convertSecureBytesToNSData(self.secureBytes(from: data as Data))
-          try (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: key)
-          
-          continuation.resume(returning: NSNumber(value: true))
-        } catch {
-          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
-        }
+        let selector = NSSelectorFromString("storeData:withKey:")
+        let data = convertSecureBytesToNSData(self.secureBytes(from: data as Data))
+        (connection.remoteObjectProxy as AnyObject).perform(selector, with: data, with: key)
+        
+        continuation.resume(returning: NSNumber(value: true))
       }
     }
   }
@@ -541,17 +492,13 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
   public func retrieveData(withKey key: String) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("retrieveDataWithKey:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: key)?.takeRetainedValue() as? NSData else {
-            continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid data format"]))
-            return
-          }
-          
-          continuation.resume(returning: result)
-        } catch {
-          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
+        let selector = NSSelectorFromString("retrieveDataWithKey:")
+        guard let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: key)?.takeRetainedValue() as? NSData else {
+          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid data format"]))
+          return
         }
+        
+        continuation.resume(returning: result)
       }
     }
   }
@@ -560,14 +507,10 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
   public func deleteData(withKey key: String) async -> NSObject? {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("deleteDataWithKey:")
-          try (connection.remoteObjectProxy as AnyObject).perform(selector, with: key)
-          
-          continuation.resume(returning: NSNumber(value: true))
-        } catch {
-          continuation.resume(returning: NSError(domain: "com.umbra.security.xpc", code: -1, userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]))
-        }
+        let selector = NSSelectorFromString("deleteDataWithKey:")
+        (connection.remoteObjectProxy as AnyObject).perform(selector, with: key)
+        
+        continuation.resume(returning: NSNumber(value: true))
       }
     }
   }
@@ -579,14 +522,10 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
       Task {
         let nsData = convertSecureBytesToNSData(data)
         
-        do {
-          let selector = NSSelectorFromString("storeData:withKey:metadata:")
-          try (connection.remoteObjectProxy as AnyObject).perform(selector, with: nsData, with: identifier, with: metadata as NSObject?)
-          
-          continuation.resume(returning: .success(()))
-        } catch {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.general(error.localizedDescription)))
-        }
+        let selector = NSSelectorFromString("storeData:withKey:metadata:")
+        (connection.remoteObjectProxy as AnyObject).perform(selector, with: nsData, with: identifier, with: metadata as NSObject?)
+        
+        continuation.resume(returning: .success(()))
       }
     }
   }
@@ -594,18 +533,14 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
   public func retrieveSecurely(identifier: String) async -> Result<SecureBytes, XPCSecurityError> {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("retrieveDataWithKey:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)?.takeRetainedValue() as? NSData else {
-            continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
-            return
-          }
-          
-          let secureBytes = convertNSDataToSecureBytes(result)
-          continuation.resume(returning: .success(secureBytes))
-        } catch {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.general(error.localizedDescription)))
+        let selector = NSSelectorFromString("retrieveDataWithKey:")
+        guard let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)?.takeRetainedValue() as? NSData else {
+          continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
+          return
         }
+        
+        let secureBytes = convertNSDataToSecureBytes(result)
+        continuation.resume(returning: .success(secureBytes))
       }
     }
   }
@@ -613,14 +548,10 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
   public func deleteSecurely(identifier: String) async -> Result<Void, XPCSecurityError> {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("deleteDataWithKey:")
-          try (connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)
-          
-          continuation.resume(returning: .success(()))
-        } catch {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.general(error.localizedDescription)))
-        }
+        let selector = NSSelectorFromString("deleteDataWithKey:")
+        (connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)
+        
+        continuation.resume(returning: .success(()))
       }
     }
   }
@@ -630,18 +561,14 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
   public func listIdentifiers() async -> Result<[String], XPCSecurityError> {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("listIdentifiers")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector)?.takeRetainedValue() as? NSArray else {
-            continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
-            return
-          }
-          
-          let identifiers = result.compactMap { $0 as? String }
-          continuation.resume(returning: .success(identifiers))
-        } catch {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.general(error.localizedDescription)))
+        let selector = NSSelectorFromString("listIdentifiers")
+        guard let result = (connection.remoteObjectProxy as AnyObject).perform(selector)?.takeRetainedValue() as? NSArray else {
+          continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
+          return
         }
+        
+        let identifiers = result.compactMap { $0 as? String }
+        continuation.resume(returning: .success(identifiers))
       }
     }
   }
@@ -649,27 +576,23 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
   public func getMetadata(for identifier: String) async -> Result<[String: String]?, XPCSecurityError> {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("getMetadataForIdentifier:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)?.takeRetainedValue() else {
-            // No metadata is a valid result
-            continuation.resume(returning: .success(nil))
-            return
-          }
-          
-          if let metadataDict = result as? NSDictionary {
-            var metadata: [String: String] = [:]
-            for (key, value) in metadataDict {
-              if let keyString = key as? String, let valueString = value as? String {
-                metadata[keyString] = valueString
-              }
+        let selector = NSSelectorFromString("getMetadataForIdentifier:")
+        guard let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: identifier)?.takeRetainedValue() else {
+          // No metadata is a valid result
+          continuation.resume(returning: .success(nil))
+          return
+        }
+        
+        if let metadataDict = result as? NSDictionary {
+          var metadata: [String: String] = [:]
+          for (key, value) in metadataDict {
+            if let keyString = key as? String, let valueString = value as? String {
+              metadata[keyString] = valueString
             }
-            continuation.resume(returning: .success(metadata))
-          } else {
-            continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
           }
-        } catch {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.general(error.localizedDescription)))
+          continuation.resume(returning: .success(metadata))
+        } else {
+          continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
         }
       }
     }
@@ -682,21 +605,18 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
   public func generateKey(keyType: KeyType, keyIdentifier: String?, metadata: [String: String]?) async -> Result<String, XPCSecurityError> {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("generateKeyWithType:identifier:metadata:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(
-            selector,
-            with: keyType.rawValue,
-            with: keyIdentifier as NSString?,
-            with: metadata as NSDictionary?
-          )?.takeRetainedValue() as? NSString else {
-            continuation.resume(returning: .failure(CoreErrors.SecurityError.keyGenerationFailed))
-            return
-          }
-          
+        let selector = NSSelectorFromString("generateKeyWithType:identifier:metadata:")
+        let result = (connection.remoteObjectProxy as AnyObject).perform(
+          selector,
+          with: keyType.rawValue,
+          with: keyIdentifier as NSString?,
+          with: metadata as NSDictionary?
+        )?.takeRetainedValue() as? NSString
+        
+        if let result = result {
           continuation.resume(returning: .success(result as String))
-        } catch {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.general(error.localizedDescription)))
+        } else {
+          continuation.resume(returning: .failure(CoreErrors.SecurityError.keyGenerationFailed))
         }
       }
     }
@@ -705,14 +625,10 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
   public func deleteKey(keyIdentifier: String) async -> Result<Void, XPCSecurityError> {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("deleteKeyWithIdentifier:")
-          try (connection.remoteObjectProxy as AnyObject).perform(selector, with: keyIdentifier)
-          
-          continuation.resume(returning: .success(()))
-        } catch {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.general(error.localizedDescription)))
-        }
+        let selector = NSSelectorFromString("deleteKeyWithIdentifier:")
+        (connection.remoteObjectProxy as AnyObject).perform(selector, with: keyIdentifier)
+        
+        continuation.resume(returning: .success(()))
       }
     }
   }
@@ -720,18 +636,14 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
   public func listKeyIdentifiers() async -> Result<[String], XPCSecurityError> {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("listKeyIdentifiers")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector)?.takeRetainedValue() as? NSArray else {
-            continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
-            return
-          }
-          
-          let identifiers = result.compactMap { $0 as? String }
-          continuation.resume(returning: .success(identifiers))
-        } catch {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.general(error.localizedDescription)))
+        let selector = NSSelectorFromString("listKeyIdentifiers")
+        guard let result = (connection.remoteObjectProxy as AnyObject).perform(selector)?.takeRetainedValue() as? NSArray else {
+          continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
+          return
         }
+        
+        let identifiers = result.compactMap { $0 as? String }
+        continuation.resume(returning: .success(identifiers))
       }
     }
   }
@@ -739,27 +651,23 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
   public func getKeyMetadata(for keyIdentifier: String) async -> Result<[String: String]?, XPCSecurityError> {
     return await withCheckedContinuation { continuation in
       Task {
-        do {
-          let selector = NSSelectorFromString("getKeyMetadataForIdentifier:")
-          guard let result = try (connection.remoteObjectProxy as AnyObject).perform(selector, with: keyIdentifier)?.takeRetainedValue() else {
-            // No metadata is a valid result
-            continuation.resume(returning: .success(nil))
-            return
-          }
-          
-          if let metadataDict = result as? NSDictionary {
-            var metadata: [String: String] = [:]
-            for (key, value) in metadataDict {
-              if let keyString = key as? String, let valueString = value as? String {
-                metadata[keyString] = valueString
-              }
+        let selector = NSSelectorFromString("getKeyMetadataForIdentifier:")
+        guard let result = (connection.remoteObjectProxy as AnyObject).perform(selector, with: keyIdentifier)?.takeRetainedValue() else {
+          // No metadata is a valid result
+          continuation.resume(returning: .success(nil))
+          return
+        }
+        
+        if let metadataDict = result as? NSDictionary {
+          var metadata: [String: String] = [:]
+          for (key, value) in metadataDict {
+            if let keyString = key as? String, let valueString = value as? String {
+              metadata[keyString] = valueString
             }
-            continuation.resume(returning: .success(metadata))
-          } else {
-            continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
           }
-        } catch {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.general(error.localizedDescription)))
+          continuation.resume(returning: .success(metadata))
+        } else {
+          continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
         }
       }
     }
@@ -769,30 +677,33 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
 // MARK: - ComprehensiveSecurityServiceProtocol Conformance
 
 extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
-  // Implement other required ComprehensiveSecurityServiceProtocol methods
-}
-
-extension XPCServiceAdapter {
-  // Helper method to convert Data to SecureBytes
-  private func secureBytes(from data: Data) -> SecureBytes {
-    let bytes = [UInt8](data)
-    return SecureBytes(bytes: bytes)
-  }
-  
-  // Helper method to convert NSData to SecureBytes
-  private func convertNSDataToSecureBytes(_ data: NSData) -> SecureBytes {
-    let bytes = [UInt8](Data(referencing: data))
-    return SecureBytes(bytes: bytes)
-  }
-  
-  // Helper method to convert SecureBytes to NSData
-  private func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
-    var byteArray: [UInt8] = []
-    for i in 0..<secureBytes.count {
-      byteArray.append(secureBytes[i])
+  public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    return await withCheckedContinuation { continuation in
+      Task {
+        let selector = NSSelectorFromString("getServiceVersion")
+        guard let result = (connection.remoteObjectProxy as AnyObject).perform(selector)?.takeRetainedValue() as? String else {
+          continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
+          return
+        }
+        
+        continuation.resume(returning: .success(result))
+      }
     }
-    let data = Data(byteArray)
-    return data as NSData
+  }
+  
+  public func getServiceStatus() async -> Result<ServiceStatus, XPCSecurityError> {
+    return await withCheckedContinuation { continuation in
+      Task {
+        let selector = NSSelectorFromString("getServiceStatus")
+        guard let statusString = (connection.remoteObjectProxy as AnyObject).perform(selector)?.takeRetainedValue() as? String,
+              let status = ServiceStatus(rawValue: statusString) else {
+          continuation.resume(returning: .failure(CoreErrors.SecurityError.invalidData))
+          return
+        }
+        
+        continuation.resume(returning: .success(status))
+      }
+    }
   }
 }
 
@@ -837,5 +748,30 @@ private extension XPCServiceAdapter {
   
   func createSecurityResultDTO(error: SecurityProtocolsCore.SecurityError) -> SecurityProtocolsCore.SecurityResultDTO {
     return SecurityProtocolsCore.SecurityResultDTO(errorCode: 500, errorMessage: String(describing: error))
+  }
+}
+
+extension XPCServiceAdapter {
+  // Helper method to convert Data to SecureBytes
+  private func secureBytes(from data: Data) -> SecureBytes {
+    let bytes = [UInt8](data)
+    return SecureBytes(bytes: bytes)
+  }
+  
+  // Helper method to convert NSData to SecureBytes
+  private func convertNSDataToSecureBytes(_ data: NSData) -> SecureBytes {
+    let bytes = [UInt8](Data(referencing: data))
+    return SecureBytes(bytes: bytes)
+  }
+  
+  // Helper method to convert SecureBytes to NSData
+  private func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
+    // Access bytes directly from SecureBytes
+    var byteArray = [UInt8](repeating: 0, count: secureBytes.count)
+    for i in 0..<secureBytes.count {
+      byteArray[i] = secureBytes[i]
+    }
+    let data = Data(byteArray)
+    return data as NSData
   }
 }

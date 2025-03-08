@@ -1,6 +1,7 @@
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import CoreErrors
 
 /// KeyManagementAdapter provides a bridge between Foundation-based key management implementations
 /// and the Foundation-free KeyManagementProtocol.
