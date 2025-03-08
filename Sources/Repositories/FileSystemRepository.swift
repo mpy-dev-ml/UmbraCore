@@ -140,6 +140,7 @@ public actor FileSystemRepository: Repository {
     deprecated,
     message: "Swift 6 will require Decodable conformance to use isolatedInitializer for actors"
   )
+  @preconcurrency
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     identifier = try container.decode(String.self, forKey: .identifier)

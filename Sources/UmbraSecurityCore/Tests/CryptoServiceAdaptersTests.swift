@@ -12,11 +12,11 @@ final class CryptoServiceAdaptersTests: XCTestCase {
   func assertAsync<T: Equatable>(
     _ expression1: @autoclosure () async -> T,
     _ expression2: @autoclosure () -> T,
-    _ message: @autoclosure () -> String = "",
-    file: StaticString = #filePath,
-    line: UInt = #line
+    _ message: @autoclosure () -> String="",
+    file: StaticString=#filePath,
+    line: UInt=#line
   ) async {
-    let value = await expression1()
+    let value=await expression1()
     XCTAssertEqual(value, expression2(), message(), file: file, line: line)
   }
 
@@ -25,20 +25,20 @@ final class CryptoServiceAdaptersTests: XCTestCase {
   /// A mock crypto service for testing adapters
   private final class MockCryptoService: @unchecked Sendable, CryptoServiceProtocol {
     // Using simple atomics for test state since XCTest doesn't work well with async properties
-    private var encryptCalled = false
-    private var decryptCalled = false
-    private var hashCalled = false
-    private var generateKeyCalled = false
-    private var verifyCalled = false
-    private var generateRandomDataCalled = false
-    private var encryptSymmetricCalled = false
-    private var decryptSymmetricCalled = false
-    private var encryptAsymmetricCalled = false
-    private var decryptAsymmetricCalled = false
-    private var hashWithConfigCalled = false
+    private var encryptCalled=false
+    private var decryptCalled=false
+    private var hashCalled=false
+    private var generateKeyCalled=false
+    private var verifyCalled=false
+    private var generateRandomDataCalled=false
+    private var encryptSymmetricCalled=false
+    private var decryptSymmetricCalled=false
+    private var encryptAsymmetricCalled=false
+    private var decryptAsymmetricCalled=false
+    private var hashWithConfigCalled=false
 
     // Thread-safe access to state with a serial queue
-    private let stateQueue = DispatchQueue(
+    private let stateQueue=DispatchQueue(
       label: "com.umbracore.mockcryptoservice",
       qos: .userInitiated
     )
@@ -73,26 +73,26 @@ final class CryptoServiceAdaptersTests: XCTestCase {
         0x0B,
         0x0C
       ])),
-      mockVerifyResult: Bool = true,
+      mockVerifyResult: Bool=true,
       mockGenerateRandomDataResult: Result<SecureBytes, SecurityError> =
         .success(SecureBytes(bytes: [
           0x10,
           0x11,
           0x12
         ])),
-      mockSecurityResult: SecurityResultDTO = SecurityResultDTO(data: SecureBytes(bytes: [
+      mockSecurityResult: SecurityResultDTO=SecurityResultDTO(data: SecureBytes(bytes: [
         0x13,
         0x14,
         0x15
       ]))
     ) {
-      self.mockEncryptResult = mockEncryptResult
-      self.mockDecryptResult = mockDecryptResult
-      self.mockHashResult = mockHashResult
-      self.mockGenerateKeyResult = mockGenerateKeyResult
-      self.mockVerifyResult = mockVerifyResult
-      self.mockGenerateRandomDataResult = mockGenerateRandomDataResult
-      self.mockSecurityResult = mockSecurityResult
+      self.mockEncryptResult=mockEncryptResult
+      self.mockDecryptResult=mockDecryptResult
+      self.mockHashResult=mockHashResult
+      self.mockGenerateKeyResult=mockGenerateKeyResult
+      self.mockVerifyResult=mockVerifyResult
+      self.mockGenerateRandomDataResult=mockGenerateRandomDataResult
+      self.mockSecurityResult=mockSecurityResult
     }
 
     // MARK: - State getters (sync for XCTest compatibility)
@@ -147,7 +147,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       data _: SecureBytes,
       using _: SecureBytes
     ) async -> Result<SecureBytes, SecurityError> {
-      stateQueue.sync { encryptCalled = true }
+      stateQueue.sync { encryptCalled=true }
       return mockEncryptResult
     }
 
@@ -155,27 +155,27 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       data _: SecureBytes,
       using _: SecureBytes
     ) async -> Result<SecureBytes, SecurityError> {
-      stateQueue.sync { decryptCalled = true }
+      stateQueue.sync { decryptCalled=true }
       return mockDecryptResult
     }
 
     func hash(data _: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-      stateQueue.sync { hashCalled = true }
+      stateQueue.sync { hashCalled=true }
       return mockHashResult
     }
 
     func generateKey() async -> Result<SecureBytes, SecurityError> {
-      stateQueue.sync { generateKeyCalled = true }
+      stateQueue.sync { generateKeyCalled=true }
       return mockGenerateKeyResult
     }
 
     func verify(data _: SecureBytes, against _: SecureBytes) async -> Bool {
-      stateQueue.sync { verifyCalled = true }
+      stateQueue.sync { verifyCalled=true }
       return mockVerifyResult
     }
 
     func generateRandomData(length _: Int) async -> Result<SecureBytes, SecurityError> {
-      stateQueue.sync { generateRandomDataCalled = true }
+      stateQueue.sync { generateRandomDataCalled=true }
       return mockGenerateRandomDataResult
     }
 
@@ -184,7 +184,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       key _: SecureBytes,
       config _: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-      stateQueue.sync { encryptSymmetricCalled = true }
+      stateQueue.sync { encryptSymmetricCalled=true }
       return mockSecurityResult
     }
 
@@ -193,7 +193,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       key _: SecureBytes,
       config _: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-      stateQueue.sync { decryptSymmetricCalled = true }
+      stateQueue.sync { decryptSymmetricCalled=true }
       return mockSecurityResult
     }
 
@@ -202,7 +202,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       publicKey _: SecureBytes,
       config _: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-      stateQueue.sync { encryptAsymmetricCalled = true }
+      stateQueue.sync { encryptAsymmetricCalled=true }
       return mockSecurityResult
     }
 
@@ -211,7 +211,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       privateKey _: SecureBytes,
       config _: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-      stateQueue.sync { decryptAsymmetricCalled = true }
+      stateQueue.sync { decryptAsymmetricCalled=true }
       return mockSecurityResult
     }
 
@@ -219,7 +219,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       data _: SecureBytes,
       config _: SecurityConfigDTO
     ) async -> SecurityResultDTO {
-      stateQueue.sync { hashWithConfigCalled = true }
+      stateQueue.sync { hashWithConfigCalled=true }
       return mockSecurityResult
     }
   }
@@ -228,55 +228,55 @@ final class CryptoServiceAdaptersTests: XCTestCase {
 
   func testAnyCryptoServiceWrapping() async {
     // Create mock
-    let mockService = MockCryptoService()
+    let mockService=MockCryptoService()
 
     // Wrap in type-erased wrapper using the factory method
-    let anyService = UmbraSecurityCore.createAnyCryptoService(mockService)
+    let anyService=UmbraSecurityCore.createAnyCryptoService(mockService)
 
     // Test that calls are forwarded correctly
-    _ = await anyService.encrypt(data: SecureBytes(bytes: [0x01]), using: SecureBytes(bytes: [0x02]))
+    _=await anyService.encrypt(data: SecureBytes(bytes: [0x01]), using: SecureBytes(bytes: [0x02]))
     await assertAsync(
       mockService.getEncryptCalled(),
       true,
       "Encrypt should be called on the underlying service"
     )
 
-    _ = await anyService.decrypt(data: SecureBytes(bytes: [0x03]), using: SecureBytes(bytes: [0x04]))
+    _=await anyService.decrypt(data: SecureBytes(bytes: [0x03]), using: SecureBytes(bytes: [0x04]))
     await assertAsync(
       mockService.getDecryptCalled(),
       true,
       "Decrypt should be called on the underlying service"
     )
 
-    _ = await anyService.hash(data: SecureBytes(bytes: [0x05]))
+    _=await anyService.hash(data: SecureBytes(bytes: [0x05]))
     await assertAsync(
       mockService.getHashCalled(),
       true,
       "Hash should be called on the underlying service"
     )
 
-    _ = await anyService.generateKey()
+    _=await anyService.generateKey()
     await assertAsync(
       mockService.getGenerateKeyCalled(),
       true,
       "GenerateKey should be called on the underlying service"
     )
 
-    _ = await anyService.verify(data: SecureBytes(bytes: [0x06]), against: SecureBytes(bytes: [0x07]))
+    _=await anyService.verify(data: SecureBytes(bytes: [0x06]), against: SecureBytes(bytes: [0x07]))
     await assertAsync(
       mockService.getVerifyCalled(),
       true,
       "Verify should be called on the underlying service"
     )
 
-    _ = await anyService.generateRandomData(length: 10)
+    _=await anyService.generateRandomData(length: 10)
     await assertAsync(
       mockService.getGenerateRandomDataCalled(),
       true,
       "GenerateRandomData should be called on the underlying service"
     )
 
-    _ = await anyService.encryptSymmetric(
+    _=await anyService.encryptSymmetric(
       data: SecureBytes(bytes: [0x08]),
       key: SecureBytes(bytes: [0x09]),
       config: SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
@@ -292,20 +292,20 @@ final class CryptoServiceAdaptersTests: XCTestCase {
 
   func testCryptoServiceTypeAdapter() async {
     // Define mock results
-    let expectedEncryptResult = SecureBytes(bytes: [0x01, 0x02, 0x03])
-    let expectedDecryptResult = SecureBytes(bytes: [0x04, 0x05, 0x06])
+    let expectedEncryptResult=SecureBytes(bytes: [0x01, 0x02, 0x03])
+    let expectedDecryptResult=SecureBytes(bytes: [0x04, 0x05, 0x06])
 
     // Create mock with the expected results
-    let mockService = MockCryptoService(
+    let mockService=MockCryptoService(
       mockEncryptResult: .success(expectedEncryptResult),
       mockDecryptResult: .success(expectedDecryptResult)
     )
 
     // Create adapter with identity transformations using the factory method
-    let adapter = UmbraSecurityCore.createCryptoServiceAdapter(mockService)
+    let adapter=UmbraSecurityCore.createCryptoServiceAdapter(mockService)
 
     // Test that basic functionality works with identity transformations
-    let encryptResult = await adapter.encrypt(
+    let encryptResult=await adapter.encrypt(
       data: SecureBytes(bytes: [0x01]),
       using: SecureBytes(bytes: [0x02])
     )
@@ -315,7 +315,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       "Encrypt should be called on the underlying service"
     )
 
-    if case let .success(encryptData) = encryptResult {
+    if case let .success(encryptData)=encryptResult {
       XCTAssertEqual(
         encryptData,
         expectedEncryptResult,
@@ -325,7 +325,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       XCTFail("Encryption should succeed")
     }
 
-    let decryptResult = await adapter.decrypt(
+    let decryptResult=await adapter.decrypt(
       data: SecureBytes(bytes: [0x03]),
       using: SecureBytes(bytes: [0x04])
     )
@@ -335,7 +335,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       "Decrypt should be called on the underlying service"
     )
 
-    if case let .success(decryptData) = decryptResult {
+    if case let .success(decryptData)=decryptResult {
       XCTAssertEqual(
         decryptData,
         expectedDecryptResult,
@@ -348,12 +348,12 @@ final class CryptoServiceAdaptersTests: XCTestCase {
 
   func testCryptoServiceTypeAdapterWithTransformations() async {
     // Create mock
-    let mockService = MockCryptoService()
+    let mockService=MockCryptoService()
 
     // Define transformations that triple the size of input data and double output data
-    let transformations = CryptoServiceTypeAdapter<MockCryptoService>.Transformations(
+    let transformations=CryptoServiceTypeAdapter<MockCryptoService>.Transformations(
       transformInputData: { @Sendable originalData in
-        var newData = [UInt8]()
+        var newData=[UInt8]()
         originalData.withUnsafeBytes { buffer in
           for byte in buffer {
             newData.append(contentsOf: [byte, byte, byte])
@@ -362,7 +362,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
         return SecureBytes(bytes: newData)
       },
       transformOutputData: { @Sendable originalData in
-        var newData = [UInt8]()
+        var newData=[UInt8]()
         originalData.withUnsafeBytes { buffer in
           for byte in buffer {
             newData.append(contentsOf: [byte, byte])
@@ -373,22 +373,22 @@ final class CryptoServiceAdaptersTests: XCTestCase {
     )
 
     // Create adapter with the transformations using the factory method
-    let adapter = UmbraSecurityCore.createCryptoServiceAdapter(
+    let adapter=UmbraSecurityCore.createCryptoServiceAdapter(
       mockService,
       transformations: transformations
     )
 
     // Test with simple input
-    let inputData = SecureBytes(bytes: [0x01, 0x02])
-    let encryptResult = await adapter.encrypt(data: inputData, using: SecureBytes(bytes: [0x03]))
+    let inputData=SecureBytes(bytes: [0x01, 0x02])
+    let encryptResult=await adapter.encrypt(data: inputData, using: SecureBytes(bytes: [0x03]))
 
     // The mock returns SecureBytes([0x01, 0x02, 0x03]), and our transformation doubles that
-    if case let .success(outputData) = encryptResult {
+    if case let .success(outputData)=encryptResult {
       XCTAssertEqual(outputData.count, 6, "Output should be 6 bytes (3 bytes doubled)")
 
-      var outputBytes = [UInt8]()
+      var outputBytes=[UInt8]()
       outputData.withUnsafeBytes { buffer in
-        outputBytes = Array(buffer)
+        outputBytes=Array(buffer)
       }
       XCTAssertEqual(
         outputBytes,

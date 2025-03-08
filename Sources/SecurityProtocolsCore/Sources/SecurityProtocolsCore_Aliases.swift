@@ -3,7 +3,7 @@ import Foundation
 
 /// Type alias for backward compatibility
 /// Renamed to avoid conflict with native SecurityProtocolsCore.SecurityError
-public typealias CoreSecurityError = CoreErrors.SecurityError
+public typealias CoreSecurityError=CoreErrors.SecurityError
 
 /// Create a mapping function to convert between CoreErrors.SecurityError and local SecurityError
 /// types. Uses the centralised CoreErrors.SecurityErrorMapper.

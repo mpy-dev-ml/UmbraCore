@@ -1,6 +1,7 @@
 import ErrorHandlingCore
 import ErrorHandlingDomains
-import ErrorHandlingLogging
+// Removed ErrorHandlingLogging import to fix library evolution issues
+import ErrorHandlingInterfaces
 import ErrorHandlingMapping
 import ErrorHandlingModels
 import ErrorHandlingNotification
@@ -11,16 +12,31 @@ import Foundation
 /// A sample class that demonstrates the error handling system
 public class ErrorHandlingExample {
   /// Sample notification handler for demonstration purposes
-  private class SampleNotificationHandler: ErrorNotificationHandler {
+  private class SampleNotificationHandler: ErrorHandlingInterfaces.ErrorNotificationProtocol {
     /// Shows notifications in the console for demonstration
-    public func present(notification: ErrorNotification) {
+    public func presentError<E: ErrorHandlingInterfaces.UmbraError>(_ error: E, recoveryOptions: [ErrorHandlingInterfaces.RecoveryOption]) {
+      print("🔔 NOTIFICATION: Error from domain \(error.domain)")
+      print("   Message: \(error.errorDescription)")
+
+      if !recoveryOptions.isEmpty {
+        print("   Recovery options:")
+        for action in recoveryOptions {
+          print("     - \(action.title)")
+        }
+      }
+
+      print("")
+    }
+
+    /// Legacy method for backward compatibility
+    public func present(notification: ErrorHandlingNotification.ErrorNotification) {
       print("🔔 NOTIFICATION: \(notification.title)")
       print("   Severity: \(notification.severity.rawValue)")
       print("   Message: \(notification.message)")
 
       if let recoveryOptions = notification.recoveryOptions {
         print("   Recovery options:")
-        for action in recoveryOptions.actions {
+        for action in recoveryOptions {
           print("     - \(action.title)")
         }
       }
@@ -40,45 +56,39 @@ public class ErrorHandlingExample {
   }
 
   /// Sample recovery provider for demonstration purposes
-  private class SampleRecoveryProvider: RecoveryOptionsProvider {
-    /// Provides recovery options for security errors
-    public func recoveryOptions(for error: Error) -> RecoveryOptions? {
-      // Only provide recovery options for security errors
-      guard let _ = error as? SecurityError else {
-        return nil
-      }
-
+  private class SampleRecoveryProvider: ErrorHandlingInterfaces.RecoveryOptionsProvider {
+    /// Provides recovery options for errors
+    public func recoveryOptions<E: ErrorHandlingInterfaces.UmbraError>(for error: E) -> [ErrorHandlingInterfaces.RecoveryOption] {
       // Create recovery options based on the error
-      return RecoveryOptions(
-        actions: [
-          RecoveryAction(
-            id: "retry",
-            title: "Retry",
-            description: "Try the operation again",
-            isDefault: true,
-            handler: { print("Retrying operation...") }
-          ),
-          RecoveryAction(
-            id: "ignore",
-            title: "Ignore",
-            description: "Continue without resolving the error",
-            handler: { print("Ignoring error and continuing...") }
-          ),
-          RecoveryAction(
-            id: "cancel",
-            title: "Cancel",
-            description: "Cancel the operation",
-            handler: { print("Cancelling operation...") }
-          )
-        ],
-        title: "Security Error",
-        message: "A security error occurred. Please choose how to proceed."
-      )
+      return [
+        ErrorHandlingRecovery.ErrorRecoveryOption(
+          id: UUID(),
+          title: "Retry",
+          description: "Retry the operation",
+          successLikelihood: .likely,
+          isDisruptive: false
+        ) {
+          print("Retrying operation after error")
+          // Implement retry logic here
+        },
+        ErrorHandlingRecovery.ErrorRecoveryOption(
+          id: UUID(),
+          title: "Cancel",
+          description: "Cancel the operation",
+          successLikelihood: .veryLikely,
+          isDisruptive: false
+        ) {
+          print("Operation cancelled")
+          // Implement cancel logic here
+        }
+      ]
     }
   }
 
-  /// Run the example to demonstrate the error handling system
-  public static func runExample() {
+  // MARK: - Example Methods
+
+  /// Run a comprehensive example that demonstrates error handling
+  @MainActor public func run() {
     // Set up the error handler
     let errorHandler = ErrorHandler.shared
     errorHandler.setNotificationHandler(SampleNotificationHandler())
@@ -86,90 +96,142 @@ public class ErrorHandlingExample {
 
     print("=== ERROR HANDLING SYSTEM EXAMPLE ===\n")
 
-    // Example 1: Handle a security error
+    // Example 1: Handle a security error directly
     print("Example 1: Handle a security error")
-    let securityError = SecurityError.authenticationFailed("Invalid username or password")
-    errorHandler.handle(securityError, severity: .high)
+    let securityError = UmbraErrors.Security.Core.invalidInput(reason: "Invalid username or password")
+    // Use a locally mapped security error that conforms to UmbraError
+    let mappedSecurityError = SecurityErrorMapper().mapFromTyped(securityError)
+    errorHandler.handle(mappedSecurityError, severity: .critical)
 
     // Example 2: Simulated external security error
     print("\nExample 2: Handle an external security error")
-    // This simulates an error from a different module with namespace conflicts
     let externalError = NSError(
-      domain: "SecurityProtocolsCore.SecurityError",
+      domain: "ExternalSecurityAPI",
       code: 401,
-      userInfo: [NSLocalizedDescriptionKey: "Authentication failed: Token expired"]
+      userInfo: [
+        NSLocalizedDescriptionKey: "Authentication failed: Account is locked"
+      ]
     )
 
-    // Use our mapper to handle it
+    // Map the error and handle it
     let securityErrorMapper = SecurityErrorMapper()
     if let mappedError = securityErrorMapper.mapFromAny(externalError) {
-      errorHandler.handle(mappedError, severity: .high)
+      errorHandler.handle(mappedError, severity: .critical)
     } else {
-      errorHandler.handle(
-        GenericUmbraError(
-          domain: "Security",
-          code: "mapping_failed",
-          description: "Failed to map external error"
-        ),
-        severity: .medium
+      // Handle unmapped errors with an application error
+      let appErrorMapper = ApplicationErrorMapper()
+      let applicationError = appErrorMapper.mapFromTyped(
+        UmbraErrors.Application.Core.internalError(
+          reason: "Failed to map external security error"
+        )
       )
+      errorHandler.handle(applicationError, severity: .warning)
     }
 
-    // Example 3: Error with recovery options
-    print("\nExample 3: Error with recovery options")
-    let recoveryOptions = RecoveryOptions.retryCancel(
-      title: "Connection Error",
-      message: "Could not establish a secure connection. Would you like to retry?",
-      retryHandler: { print("Retrying connection...") },
-      cancelHandler: { print("Connection attempt cancelled") }
-    )
+    // Example 3: Different severity levels
+    print("\nExample 3: Test different severity levels")
+    let infoError = UmbraErrors.Security.Core.invalidInput(reason: "Token will expire soon")
+    let mappedInfoError = SecurityErrorMapper().mapFromTyped(infoError)
+    errorHandler.handle(mappedInfoError, severity: .info)
 
-    let connectionError = SecurityError.secureChannelFailed("TLS handshake failed")
-    let notification = ErrorNotification.from(
-      umbraError: connectionError,
-      severity: .high,
-      recoveryOptions: recoveryOptions
-    )
+    let warningError = UmbraErrors.Security.Core.invalidInput(reason: "Suspicious login attempt detected")
+    let mappedWarningError = SecurityErrorMapper().mapFromTyped(warningError)
+    errorHandler.handle(mappedWarningError, severity: .warning)
 
+    let criticalError = UmbraErrors.Security.Core.invalidKey(reason: "Master key compromised")
+    let mappedCriticalError = SecurityErrorMapper().mapFromTyped(criticalError)
+    errorHandler.handle(mappedCriticalError, severity: .critical)
+
+    print("\nExample 4: Recovery options")
+    let recoverableError = UmbraErrors.Security.Core.invalidInput(reason: "Session expired")
+    let mappedRecoverableError = SecurityErrorMapper().mapFromTyped(recoverableError)
+    errorHandler.handle(mappedRecoverableError, severity: .warning)
+    
+    // Example 5: Application errors
+    print("\nExample 5: Application errors")
+    let configError = UmbraErrors.Application.Core.configurationError(reason: "Invalid app configuration")
+    let appMapper = ApplicationErrorMapper()
+    let mappedConfigError = appMapper.mapFromTyped(configError)
+    errorHandler.handle(mappedConfigError, severity: .warning)
+    
+    let initError = UmbraErrors.Application.Core.initializationError(
+      component: "Database", 
+      reason: "Failed to connect to database"
+    )
+    let mappedInitError = appMapper.mapFromTyped(initError)
+    errorHandler.handle(mappedInitError, severity: .critical)
+  }
+
+  /// Demonstrates basic error handling
+  @MainActor public static func demonstrateBasicErrorHandling() {
+    print("=== BASIC ERROR HANDLING EXAMPLE ===\n")
+
+    // Create a sample error
+    let sampleError = UmbraErrors.Security.Core.invalidKey(reason: "Key has expired")
+
+    // Create notification handler
     let notificationHandler = SampleNotificationHandler()
+
+    // Create recovery provider
+    let recoveryProvider = SampleRecoveryProvider()
+
+    // Get recovery options directly without using an existential type
+    let options = recoveryProvider.recoveryOptions(for: sampleError)
+    
+    // Create a notification with error details
+    let notification = ErrorHandlingNotification.ErrorNotification(
+      error: sampleError,
+      title: "Security Error",
+      message: sampleError.localizedDescription,
+      severity: .critical,
+      recoveryOptions: options
+    )
+    
+    // Present error with recovery options
     notificationHandler.present(notification: notification)
 
-    print("\n=== END OF EXAMPLE ===")
+    // Simulate selecting the retry option
+    if let retryAction = options.first {
+      print("User selected: \(retryAction.title)")
+      Task {
+        await retryAction.perform()
+      }
+    }
+
+    print("\nBasic error handling demonstration complete.\n")
   }
 }
 
-/// Extension to demonstrate how to add additional functionality
+// MARK: - Extensions for Demo
+
 extension ErrorHandlingExample {
   /// Helper method to demonstrate handling of different security error types
-  public static func handleMixedSecurityErrors() {
+  @MainActor public static func handleMixedSecurityErrors() {
     print("=== MIXED SECURITY ERROR HANDLING ===\n")
 
-    // Set up the security error handler
-    let securityHandler = SecurityErrorHandler.shared
+    // Create error handler with demo handlers
+    let errorHandler = ErrorHandler.shared
+    errorHandler.setNotificationHandler(SampleNotificationHandler())
+    errorHandler.registerRecoveryProvider(SampleRecoveryProvider())
 
-    // Example 1: Direct SecurityError from our module
-    print("Example 1: Handle our SecurityError type")
-    let ourError = SecurityError.permissionDenied("Insufficient privileges")
-    securityHandler.handleSecurityError(ourError)
+    // Example of handling different security error types
+    let invalidKeyError = UmbraErrors.Security.Core.invalidKey(reason: "API key expired")
+    let mappedInvalidKeyError = SecurityErrorMapper().mapFromTyped(invalidKeyError)
+    errorHandler.handle(mappedInvalidKeyError, severity: .critical)
 
-    // Example 2: External error type
-    print("\nExample 2: Handle external security error")
-    let externalError = NSError(
-      domain: "SecurityTypes.SecurityError",
-      code: 403,
-      userInfo: [NSLocalizedDescriptionKey: "Authorization failed: Access denied to resource"]
+    let authError = UmbraErrors.Security.Core.invalidInput(reason: "Invalid credentials")
+    let mappedAuthError = SecurityErrorMapper().mapFromTyped(authError)
+    errorHandler.handle(mappedAuthError, severity: .warning)
+    
+    // Application errors
+    let appMapper = ApplicationErrorMapper()
+    let resourceError = UmbraErrors.Application.Core.resourceNotFound(
+      resourceType: "ConfigFile", 
+      identifier: "app-config.json"
     )
-    securityHandler.handleSecurityError(externalError)
+    let mappedResourceError = appMapper.mapFromTyped(resourceError)
+    errorHandler.handle(mappedResourceError, severity: .warning)
 
-    // Example 3: Unknown error that appears security-related
-    print("\nExample 3: Handle ambiguous security error")
-    let unknownError = NSError(
-      domain: "App.Error",
-      code: 1_001,
-      userInfo: [NSLocalizedDescriptionKey: "Authentication process failed with status code 401"]
-    )
-    securityHandler.handleSecurityError(unknownError)
-
-    print("\n=== END OF MIXED ERROR HANDLING ===")
+    print("\nMixed error handling complete.\n")
   }
 }

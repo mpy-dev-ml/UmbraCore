@@ -120,7 +120,7 @@ import UmbraLogging
 /// ensuring secure credential storage and retrieval.
 public final class UmbraKeychainService: @unchecked Sendable {
   /// Current version of the UmbraKeychainService module
-  public static let version = "1.0.0"
+  public static let version="1.0.0"
 
   /// Service identifier used for keychain items
   private let identifier: String
@@ -138,12 +138,12 @@ public final class UmbraKeychainService: @unchecked Sendable {
   ///   - logger: Logger instance for keychain operations
   public init(
     identifier: String,
-    accessGroup: String? = nil,
-    logger: Logger = Logger.shared
+    accessGroup: String?=nil,
+    logger: Logger=Logger.shared
   ) {
-    self.identifier = identifier
-    self.accessGroup = accessGroup
-    self.logger = logger
+    self.identifier=identifier
+    self.accessGroup=accessGroup
+    self.logger=logger
   }
 
   /// Store a password in the keychain
@@ -152,14 +152,14 @@ public final class UmbraKeychainService: @unchecked Sendable {
   ///   - account: Account identifier
   /// - Throws: KeychainError if storage fails
   public func store(password: String, for account: String) throws {
-    let query: [String: Any] = [
+    let query: [String: Any]=[
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrService as String: identifier,
       kSecAttrAccount as String: account,
       kSecValueData as String: password.data(using: .utf8)!
     ]
 
-    let status = SecItemAdd(query as CFDictionary, nil)
+    let status=SecItemAdd(query as CFDictionary, nil)
     guard status == errSecSuccess else {
       throw KeychainError.storeFailed(
         "Failed to store password: \(status)"
@@ -172,7 +172,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
   /// - Returns: Retrieved password
   /// - Throws: KeychainError if retrieval fails
   public func retrievePassword(for account: String) throws -> String {
-    let query: [String: Any] = [
+    let query: [String: Any]=[
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrService as String: identifier,
       kSecAttrAccount as String: account,
@@ -180,12 +180,12 @@ public final class UmbraKeychainService: @unchecked Sendable {
     ]
 
     var item: CFTypeRef?
-    let status = SecItemCopyMatching(query as CFDictionary, &item)
+    let status=SecItemCopyMatching(query as CFDictionary, &item)
 
     guard
       status == errSecSuccess,
-      let data = item as? Data,
-      let password = String(data: data, encoding: .utf8)
+      let data=item as? Data,
+      let password=String(data: data, encoding: .utf8)
     else {
       throw KeychainError.retrieveFailed(
         "Failed to retrieve password: \(status)"
@@ -199,13 +199,13 @@ public final class UmbraKeychainService: @unchecked Sendable {
   /// - Parameter account: Account identifier
   /// - Throws: KeychainError if deletion fails
   public func deletePassword(for account: String) throws {
-    let query: [String: Any] = [
+    let query: [String: Any]=[
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrService as String: identifier,
       kSecAttrAccount as String: account
     ]
 
-    let status = SecItemDelete(query as CFDictionary)
+    let status=SecItemDelete(query as CFDictionary)
     guard status == errSecSuccess else {
       throw KeychainError.deleteFailed(
         "Failed to delete password: \(status)"

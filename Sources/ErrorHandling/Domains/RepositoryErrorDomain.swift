@@ -5,27 +5,27 @@ import Foundation
 /// Domain for repository-related errors
 public struct RepositoryErrorDomain: ErrorDomain {
   /// The domain identifier
-  public static let identifier = "Repository"
+  public static let identifier="Repository"
 
   /// The domain name
-  public static let name = "Repository Errors"
+  public static let name="Repository Errors"
 
   /// The domain description
-  public static let description = "Errors related to repository operations and data management"
+  public static let description="Errors related to repository operations and data management"
 
   /// Common error categories in this domain
   public enum Category: String, ErrorCategory {
     /// Errors related to repository access
-    case access = "Access"
+    case access="Access"
 
     /// Errors related to repository data
-    case data = "Data"
+    case data="Data"
 
     /// Errors related to repository state
-    case state = "State"
+    case state="State"
 
     /// Errors related to repository operations
-    case operation = "Operation"
+    case operation="Operation"
 
     /// The category description
     public var description: String {

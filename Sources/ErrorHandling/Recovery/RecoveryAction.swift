@@ -29,15 +29,15 @@ public struct RecoveryAction: Sendable, Equatable {
   public init(
     id: String,
     title: String,
-    description: String? = nil,
-    isDefault: Bool = false,
+    description: String?=nil,
+    isDefault: Bool=false,
     handler: @Sendable @escaping () -> Void
   ) {
-    self.id = id
-    self.title = title
-    self.description = description
-    self.isDefault = isDefault
-    actionHandler = handler
+    self.id=id
+    self.title=title
+    self.description=description
+    self.isDefault=isDefault
+    actionHandler=handler
   }
 
   /// Execute the recovery action
@@ -65,8 +65,8 @@ extension RecoveryAction {
   ///   - handler: The action to perform when retrying
   /// - Returns: A new RecoveryAction for retrying
   public static func retry(
-    title: String = "Retry",
-    description: String? = nil,
+    title: String="Retry",
+    description: String?=nil,
     handler: @Sendable @escaping () -> Void
   ) -> RecoveryAction {
     RecoveryAction(
@@ -85,8 +85,8 @@ extension RecoveryAction {
   ///   - handler: The action to perform when cancelling
   /// - Returns: A new RecoveryAction for cancelling
   public static func cancel(
-    title: String = "Cancel",
-    description: String? = nil,
+    title: String="Cancel",
+    description: String?=nil,
     handler: @Sendable @escaping () -> Void
   ) -> RecoveryAction {
     RecoveryAction(
@@ -104,8 +104,8 @@ extension RecoveryAction {
   ///   - handler: The action to perform when ignoring
   /// - Returns: A new RecoveryAction for ignoring
   public static func ignore(
-    title: String = "Ignore",
-    description: String? = nil,
+    title: String="Ignore",
+    description: String?=nil,
     handler: @Sendable @escaping () -> Void
   ) -> RecoveryAction {
     RecoveryAction(

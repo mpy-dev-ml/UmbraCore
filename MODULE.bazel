@@ -11,7 +11,7 @@ bazel_dep(name = "rules_swift", version = "2.2.0", repo_name = "build_bazel_rule
 bazel_dep(name = "rules_apple", version = "3.6.0", repo_name = "build_bazel_rules_apple")
 bazel_dep(name = "rules_swift_package_manager", version = "0.45.0")
 bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
-bazel_dep(name = "rules_pkg", version = "0.10.1") # Adding rules_pkg for packaging
+bazel_dep(name = "rules_pkg", version = "1.0.1")  # Updated from 0.10.1 to match resolved dependency
 
 bazel_dep(name = "gazelle", version = "0.41.0", dev_dependency = True, repo_name = "bazel_gazelle")
 bazel_dep(name = "rules_go", version = "0.50.1", dev_dependency = True, repo_name = "io_bazel_rules_go")
@@ -29,22 +29,5 @@ use_repo(
     "swiftpkg_swiftybeaver",
 )
 
-# Configure Swift 6 target options
-swift_compiler_flag = use_extension("@build_bazel_rules_swift//swift:extensions.bzl", "swift_compiler_flag")
-swift_compiler_flag.configure(
-    swift_build_settings = {
-        # Swift 6 preparation flags
-        "upcoming_feature.Isolated": True,
-        "upcoming_feature.ExistentialAny": True,
-        "upcoming_feature.StrictConcurrency": True,
-        "upcoming_feature.InternalImportsByDefault": True,
-        "warn_swift_5_to_swift_6_path": True,
-        # Concurrency safety flags
-        "strict_concurrency": "complete",
-        "enable_actor_data_race_checks": True,
-        "warn_concurrency": True,
-    },
-    target_level = True,
-    toolchain_level = True,
-)
-use_repo(swift_compiler_flag, "swift_compiler_flags")
+# Swift 6 preparation settings will be configured in .bazelrc
+# Additional Swift compiler flags can be set in build settings

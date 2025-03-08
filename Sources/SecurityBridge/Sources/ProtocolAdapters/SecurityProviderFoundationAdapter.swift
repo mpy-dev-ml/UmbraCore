@@ -15,7 +15,7 @@ extension SecurityBridge {
     /// Initialize with a Foundation-dependent implementation
     /// - Parameter implementation: The Foundation-based implementation
     public init(implementation: FoundationSecurityProvider) {
-      self.implementation = implementation
+      self.implementation=implementation
     }
 
     // MARK: - SecurityProviderFoundationProtocol Implementation
@@ -26,10 +26,10 @@ extension SecurityBridge {
     ///   - key: Encryption key
     /// - Returns: Encrypted data
     public func encrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
-      let foundationData = data.toFoundationData()
-      let foundationKey = key.toFoundationData()
+      let foundationData=data.toFoundationData()
+      let foundationKey=key.toFoundationData()
 
-      let result = await implementation.cryptoService.encrypt(
+      let result=await implementation.cryptoService.encrypt(
         data: foundationData,
         using: foundationKey
       )
@@ -48,10 +48,10 @@ extension SecurityBridge {
     ///   - key: Decryption key
     /// - Returns: Decrypted data
     public func decrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
-      let foundationData = data.toFoundationData()
-      let foundationKey = key.toFoundationData()
+      let foundationData=data.toFoundationData()
+      let foundationKey=key.toFoundationData()
 
-      let result = await implementation.cryptoService.decrypt(
+      let result=await implementation.cryptoService.decrypt(
         data: foundationData,
         using: foundationKey
       )
@@ -67,7 +67,7 @@ extension SecurityBridge {
     /// Generate a new encryption key
     /// - Returns: The generated key
     public func generateKey() async throws -> DataBridge {
-      let result = await implementation.cryptoService.generateKey()
+      let result=await implementation.cryptoService.generateKey()
 
       switch result {
         case let .success(keyData):
@@ -81,7 +81,7 @@ extension SecurityBridge {
     /// - Parameter length: Length of random data to generate
     /// - Returns: Random data
     public func generateRandomData(length: Int) async throws -> DataBridge {
-      let result = await implementation.cryptoService.generateRandomData(length: length)
+      let result=await implementation.cryptoService.generateRandomData(length: length)
 
       switch result {
         case let .success(randomData):

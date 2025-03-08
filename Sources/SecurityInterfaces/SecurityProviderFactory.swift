@@ -40,7 +40,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
   public func createDefaultSecurityProvider() -> any SecurityProtocolsCore
   .SecurityProviderProtocol {
     // Create a default configuration
-    let defaultConfig = SecurityConfiguration(
+    let defaultConfig=SecurityConfiguration(
       securityLevel: .standard,
       encryptionAlgorithm: "AES-256",
       hashAlgorithm: "SHA-256",
@@ -158,7 +158,7 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
 
   func generateRandomData(length: Int) async
   -> Result<UmbraCoreTypes.SecureBytes, SecurityProtocolsCore.SecurityError> {
-    let bytes = [UInt8](repeating: 0, count: length)
+    let bytes=[UInt8](repeating: 0, count: length)
     return .success(UmbraCoreTypes.SecureBytes(bytes))
   }
 }

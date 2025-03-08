@@ -16,23 +16,23 @@ public enum SecurityOperation {
   public var rawValue: String {
     switch self {
       case .encrypt:
-        "encrypt"
+        return "encrypt"
       case .decrypt:
-        "decrypt"
+        return "decrypt"
       case .sign:
-        "sign"
+        return "sign"
       case .verify:
-        "verify"
+        return "verify"
       case .hash:
-        "hash"
+        return "hash"
       case .keyGeneration:
-        "keyGeneration"
+        return "keyGeneration"
       case .keyRotation:
-        "keyRotation"
+        return "keyRotation"
       case .keyDeletion:
-        "keyDeletion"
+        return "keyDeletion"
       case let .custom(value):
-        value
+        return value
     }
   }
 }

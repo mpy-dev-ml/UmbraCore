@@ -5,15 +5,15 @@ import UmbraLogging
 /// A thread-safe logging service implementation that wraps SwiftyBeaver
 public actor LoggerImplementation: LoggingProtocol {
   /// The shared logger instance
-  public static let shared = LoggerImplementation()
+  public static let shared=LoggerImplementation()
 
   /// The underlying SwiftyBeaver logger
-  private let log = SwiftyBeaver.self
+  private let log=SwiftyBeaver.self
 
   /// Initialise the logger with default configuration
   public init() {
-    let console = ConsoleDestination()
-    console.format = "$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
+    let console=ConsoleDestination()
+    console.format="$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
     log.addDestination(console)
   }
 
@@ -21,7 +21,7 @@ public actor LoggerImplementation: LoggingProtocol {
   /// - Parameter destinations: Array of log destinations (typically SwiftyBeaver destinations)
   private init(destinations: [Any]) {
     for destination in destinations {
-      if let destination = destination as? BaseDestination {
+      if let destination=destination as? BaseDestination {
         log.addDestination(destination)
       }
     }
@@ -32,7 +32,7 @@ public actor LoggerImplementation: LoggingProtocol {
   /// - Returns: A new LoggerImplementation instance
   public static func withDestinations(_ destinations: [some Sendable]) -> LoggerImplementation {
     // Create a new logger instance
-    let logger = LoggerImplementation()
+    let logger=LoggerImplementation()
 
     // For each destination, create a new destination within the actor instead of passing
     // the existing destination directly, which would cause data races in Swift 6
@@ -40,8 +40,8 @@ public actor LoggerImplementation: LoggingProtocol {
       for _ in destinations {
         // Create a new console destination with standard formatting
         // This approach avoids sending non-Sendable objects to the actor
-        let console = ConsoleDestination()
-        console.format = "$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
+        let console=ConsoleDestination()
+        console.format="$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
 
         // Add the destination within the actor's isolation domain
         await logger.addDestination(console)
@@ -60,7 +60,7 @@ public actor LoggerImplementation: LoggingProtocol {
   /// Log a message at the specified level
   /// - Parameter entry: The log entry to record
   private func log(_ entry: LogEntry) {
-    let context = entry.metadata?.asDictionary
+    let context=entry.metadata?.asDictionary
     switch entry.level {
       case .verbose:
         log.verbose(entry.message, file: "", function: "", line: 0, context: context)

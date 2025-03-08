@@ -10,21 +10,21 @@ final class CryptoServiceTests: XCTestCase {
 
   override func setUp() {
     super.setUp()
-    cryptoService = CryptoServiceImpl()
+    cryptoService=CryptoServiceImpl()
   }
 
   override func tearDown() {
-    cryptoService = nil
+    cryptoService=nil
     super.tearDown()
   }
 
   // MARK: - Test Key Generation
 
   func testGenerateKey() async {
-    let result = await cryptoService.generateKey()
+    let result=await cryptoService.generateKey()
 
     // Verify success case
-    if case let .success(key) = result {
+    if case let .success(key)=result {
       XCTAssertEqual(key.count, 32) // AES-256 key should be 32 bytes
     } else {
       XCTFail("Key generation should succeed")
@@ -35,21 +35,21 @@ final class CryptoServiceTests: XCTestCase {
 
   func testEncryptAndDecryptSymmetric() async {
     // Generate test data
-    let plaintext = SecureBytes(bytes: Array("Test secure message".utf8))
+    let plaintext=SecureBytes(bytes: Array("Test secure message".utf8))
 
     // Generate a key
-    let keyResult = await cryptoService.generateKey()
-    guard case let .success(key) = keyResult else {
+    let keyResult=await cryptoService.generateKey()
+    guard case let .success(key)=keyResult else {
       XCTFail("Failed to generate key")
       return
     }
 
     // Encrypt the plaintext
-    let config = SecurityConfigDTO(
+    let config=SecurityConfigDTO(
       algorithm: "AES-GCM",
       keySizeInBits: 256
     )
-    let encryptResult = await cryptoService.encryptSymmetric(
+    let encryptResult=await cryptoService.encryptSymmetric(
       data: plaintext,
       key: key,
       config: config
@@ -57,7 +57,7 @@ final class CryptoServiceTests: XCTestCase {
 
     // Verify encryption was successful
     XCTAssertTrue(encryptResult.success, "Encryption should succeed")
-    guard let encryptedData = encryptResult.data else {
+    guard let encryptedData=encryptResult.data else {
       XCTFail("Encrypted data should not be nil")
       return
     }
@@ -67,7 +67,7 @@ final class CryptoServiceTests: XCTestCase {
     XCTAssertNotEqual(encryptedData, plaintext)
 
     // Now decrypt the encrypted data
-    let decryptResult = await cryptoService.decryptSymmetric(
+    let decryptResult=await cryptoService.decryptSymmetric(
       data: encryptedData,
       key: key,
       config: config
@@ -75,7 +75,7 @@ final class CryptoServiceTests: XCTestCase {
 
     // Verify decryption was successful
     XCTAssertTrue(decryptResult.success, "Decryption should succeed")
-    guard let decryptedData = decryptResult.data else {
+    guard let decryptedData=decryptResult.data else {
       XCTFail("Decrypted data should not be nil")
       return
     }
@@ -88,18 +88,18 @@ final class CryptoServiceTests: XCTestCase {
 
   func testHash() async {
     // Create test data
-    let data = SecureBytes(bytes: Array("Data to hash".utf8))
+    let data=SecureBytes(bytes: Array("Data to hash".utf8))
 
     // Hash the data with SHA-256 config
-    let config = SecurityConfigDTO(
+    let config=SecurityConfigDTO(
       algorithm: "SHA-256",
       keySizeInBits: 256
     )
-    let result = await cryptoService.hash(data: data, config: config)
+    let result=await cryptoService.hash(data: data, config: config)
 
     // Verify hashing was successful
     XCTAssertTrue(result.success, "Hashing should succeed")
-    guard let hash = result.data else {
+    guard let hash=result.data else {
       XCTFail("Hash data should not be nil")
       return
     }
@@ -108,11 +108,11 @@ final class CryptoServiceTests: XCTestCase {
     XCTAssertEqual(hash.count, 32)
 
     // Hash the same data again
-    let repeatResult = await cryptoService.hash(data: data, config: config)
+    let repeatResult=await cryptoService.hash(data: data, config: config)
 
     // Verify repeat hashing was successful
     XCTAssertTrue(repeatResult.success, "Repeat hashing should succeed")
-    guard let repeatHash = repeatResult.data else {
+    guard let repeatHash=repeatResult.data else {
       XCTFail("Repeat hash data should not be nil")
       return
     }
@@ -121,12 +121,12 @@ final class CryptoServiceTests: XCTestCase {
     XCTAssertEqual(hash, repeatHash)
 
     // Hash different data
-    let differentData = SecureBytes(bytes: Array("Different data".utf8))
-    let differentResult = await cryptoService.hash(data: differentData, config: config)
+    let differentData=SecureBytes(bytes: Array("Different data".utf8))
+    let differentResult=await cryptoService.hash(data: differentData, config: config)
 
     // Verify different data hashing was successful
     XCTAssertTrue(differentResult.success, "Different data hashing should succeed")
-    guard let differentHash = differentResult.data else {
+    guard let differentHash=differentResult.data else {
       XCTFail("Different hash data should not be nil")
       return
     }
@@ -139,19 +139,19 @@ final class CryptoServiceTests: XCTestCase {
 
   func testInvalidKey() async {
     // Generate test data
-    let plaintext = SecureBytes(bytes: Array("Test secure message".utf8))
+    let plaintext=SecureBytes(bytes: Array("Test secure message".utf8))
 
     // Create an invalid key (wrong size)
-    let invalidKey = SecureBytes(bytes: Array("tooShort".utf8)) // Only 8 bytes
+    let invalidKey=SecureBytes(bytes: Array("tooShort".utf8)) // Only 8 bytes
 
     // Create config
-    let config = SecurityConfigDTO(
+    let config=SecurityConfigDTO(
       algorithm: "AES-GCM",
       keySizeInBits: 256
     )
 
     // Attempt to encrypt with invalid key
-    let encryptResult = await cryptoService.encryptSymmetric(
+    let encryptResult=await cryptoService.encryptSymmetric(
       data: plaintext,
       key: invalidKey,
       config: config

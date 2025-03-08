@@ -77,7 +77,7 @@ public class ExampleXPCService: XPCServiceProtocolStandardStandardStandardComple
     }
 
     // For demonstration, we'll just append a byte
-    var result = data
+    var result=data
     result.append(contentsOf: [0xFF])
 
     return .success(result)
@@ -93,7 +93,7 @@ public class ExampleXPCService: XPCServiceProtocolStandardStandardStandardComple
     }
 
     // For demonstration, we'll just remove the last byte
-    var bytes = data.bytes
+    var bytes=data.bytes
     bytes.removeLast()
 
     return .success(SecureBytes(bytes))
@@ -104,7 +104,7 @@ public class ExampleXPCService: XPCServiceProtocolStandardStandardStandardComple
     // In a real implementation, you would generate a proper cryptographic key
     // This is just a placeholder that creates a fixed "key"
 
-    let demoKey: [UInt8] = [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]
+    let demoKey: [UInt8]=[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]
     return .success(SecureBytes(demoKey))
   }
 
@@ -118,7 +118,7 @@ public class ExampleXPCService: XPCServiceProtocolStandardStandardStandardComple
     }
 
     // For demonstration, we'll just create a simple "hash"
-    var hashValue: UInt8 = 0
+    var hashValue: UInt8=0
     for byte in data.bytes {
       hashValue ^= byte
     }

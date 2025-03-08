@@ -9,8 +9,8 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
   // These properties can be set in tests to control the behavior of the mock
 
   /// Track method calls for verification
-  private let methodCallsLock = NSLock()
-  private var _methodCalls: [String] = []
+  private let methodCallsLock=NSLock()
+  private var _methodCalls: [String]=[]
   var methodCalls: [String] {
     methodCallsLock.lock()
     defer { methodCallsLock.unlock() }
@@ -18,8 +18,8 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
   }
 
   /// When true, functions will fail with a test error
-  private let shouldFailLock = NSLock()
-  private var _shouldFail = false
+  private let shouldFailLock=NSLock()
+  private var _shouldFail=false
   var shouldFail: Bool {
     get {
       shouldFailLock.lock()
@@ -29,13 +29,13 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     set {
       shouldFailLock.lock()
       defer { shouldFailLock.unlock() }
-      _shouldFail = newValue
+      _shouldFail=newValue
     }
   }
 
   /// Specific error to return when shouldFail is true
-  private let errorToReturnLock = NSLock()
-  private var _errorToReturn: Error = NSError(
+  private let errorToReturnLock=NSLock()
+  private var _errorToReturn: Error=NSError(
     domain: "com.umbra.test",
     code: 999,
     userInfo: [NSLocalizedDescriptionKey: "Test failure"]
@@ -49,12 +49,12 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     set {
       errorToReturnLock.lock()
       defer { errorToReturnLock.unlock() }
-      _errorToReturn = newValue
+      _errorToReturn=newValue
     }
   }
 
   /// Data to return for specific operations
-  private let encryptedDataLock = NSLock()
+  private let encryptedDataLock=NSLock()
   private var _encryptedData: Data?
   var encryptedData: Data? {
     get {
@@ -65,11 +65,11 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     set {
       encryptedDataLock.lock()
       defer { encryptedDataLock.unlock() }
-      _encryptedData = newValue
+      _encryptedData=newValue
     }
   }
 
-  private let decryptedDataLock = NSLock()
+  private let decryptedDataLock=NSLock()
   private var _decryptedData: Data?
   var decryptedData: Data? {
     get {
@@ -80,11 +80,11 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     set {
       decryptedDataLock.lock()
       defer { decryptedDataLock.unlock() }
-      _decryptedData = newValue
+      _decryptedData=newValue
     }
   }
 
-  private let hashedDataLock = NSLock()
+  private let hashedDataLock=NSLock()
   private var _hashedData: Data?
   var hashedData: Data? {
     get {
@@ -95,11 +95,11 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     set {
       hashedDataLock.lock()
       defer { hashedDataLock.unlock() }
-      _hashedData = newValue
+      _hashedData=newValue
     }
   }
 
-  private let keyDataToReturnLock = NSLock()
+  private let keyDataToReturnLock=NSLock()
   private var _keyDataToReturn: Data?
   var keyDataToReturn: Data? {
     get {
@@ -110,15 +110,15 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     set {
       keyDataToReturnLock.lock()
       defer { keyDataToReturnLock.unlock() }
-      _keyDataToReturn = newValue
+      _keyDataToReturn=newValue
     }
   }
 
   /// Helper function to generate random key data
   private func generateRandomKey() -> Data {
-    var bytes = [UInt8](repeating: 0, count: 32)
+    var bytes=[UInt8](repeating: 0, count: 32)
     for i in 0..<bytes.count {
-      bytes[i] = UInt8.random(in: 0...255)
+      bytes[i]=UInt8.random(in: 0...255)
     }
     return Data(bytes)
   }
@@ -143,10 +143,10 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
       return .success(encryptedData)
     } else {
       // Create a simple mock encryption by XORing with the first byte of the key
-      if let firstByte = key.first {
-        var result = Data(count: data.count)
+      if let firstByte=key.first {
+        var result=Data(count: data.count)
         for i in 0..<data.count {
-          result[i] = data[i] ^ firstByte
+          result[i]=data[i] ^ firstByte
         }
         return .success(result)
       } else {
@@ -162,7 +162,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
 
     // Return provided decrypted data or original data
-    let result = decryptedData ?? data // For testing, just return data as-is by default
+    let result=decryptedData ?? data // For testing, just return data as-is by default
     return .success(result)
   }
 
@@ -173,7 +173,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
 
     // Return provided key data or generate random key
-    let resultData = keyDataToReturn ?? generateRandomKey()
+    let resultData=keyDataToReturn ?? generateRandomKey()
     return .success(resultData)
   }
 
@@ -186,7 +186,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
 
     // Return provided hashed data or generate mock hash
-    let result = hashedData ?? Data([0, 1, 2, 3]) // Simple mock hash
+    let result=hashedData ?? Data([0, 1, 2, 3]) // Simple mock hash
     return .success(result)
   }
 
@@ -226,11 +226,11 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
 
     // Create mock encrypted data
-    var result: Data = if let encryptedData {
+    var result: Data=if let encryptedData {
       encryptedData
     } else {
       // Simple mock encryption by XORing with the first byte of the key
-      if let firstByte = key.first {
+      if let firstByte=key.first {
         Data(data.map { $0 ^ firstByte })
       } else {
         data // No encryption if no key
@@ -255,11 +255,11 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
 
     // Return provided decrypted data or mock decryption
-    var result: Data = if let decryptedData {
+    var result: Data=if let decryptedData {
       decryptedData
     } else {
       // The "decryption" is the same as the encryption for this mock
-      if let firstByte = key.first {
+      if let firstByte=key.first {
         Data(data.map { $0 ^ firstByte })
       } else {
         data // No decryption if no key
@@ -284,11 +284,11 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
 
     // Create mock encrypted data
-    var result: Data = if let encryptedData {
+    var result: Data=if let encryptedData {
       encryptedData
     } else {
       // Simple mock encryption by XORing with the first byte of the publicKey
-      if let firstByte = publicKey.first {
+      if let firstByte=publicKey.first {
         Data(data.map { $0 ^ firstByte })
       } else {
         data // No encryption if no key
@@ -311,11 +311,11 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     }
 
     // Return provided decrypted data or mock decryption
-    var result: Data = if let decryptedData {
+    var result: Data=if let decryptedData {
       decryptedData
     } else {
       // The "decryption" is the same as the encryption for this mock
-      if let firstByte = privateKey.first {
+      if let firstByte=privateKey.first {
         Data(data.map { $0 ^ firstByte })
       } else {
         data // No decryption if no key
@@ -340,16 +340,16 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     // Return provided hashed data or mock hash
     var hashData: Data
     if let hashedData {
-      hashData = hashedData
+      hashData=hashedData
     } else {
       // Create a different hash based on the data
-      hashData = Data(count: 32) // Default 32 bytes (256 bits)
+      hashData=Data(count: 32) // Default 32 bytes (256 bits)
 
       // Create a different pattern based on the algorithm
-      let seed = "MockHash".utf8.reduce(0) { $0 &+ UInt8($1) }
+      let seed="MockHash".utf8.reduce(0) { $0 &+ UInt8($1) }
 
       for i in 0..<hashData.count {
-        hashData[i] = data.reduce(seed + UInt8(i)) { $0 &+ $1 }
+        hashData[i]=data.reduce(seed + UInt8(i)) { $0 &+ $1 }
       }
     }
 
@@ -360,17 +360,17 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
 
   private func generateMockEncryptedData(from data: Data) -> Data {
     // Add a 16-byte IV and a 16-byte auth tag for simulating AES-GCM
-    var bytes = [UInt8](repeating: 0, count: data.count + 32)
+    var bytes=[UInt8](repeating: 0, count: data.count + 32)
 
     // Copy the actual data, slightly modified
     for i in 0..<data.count {
-      let index = i + 16 // After IV
-      bytes[index] = data[i] ^ 0x42 // Simple XOR with a constant
+      let index=i + 16 // After IV
+      bytes[index]=data[i] ^ 0x42 // Simple XOR with a constant
     }
 
     // Simulated auth tag at the end (just some garbage bytes)
     for i in 0..<16 {
-      bytes[data.count + 16 + i] = UInt8(i * 10)
+      bytes[data.count + 16 + i]=UInt8(i * 10)
     }
 
     return Data(bytes)

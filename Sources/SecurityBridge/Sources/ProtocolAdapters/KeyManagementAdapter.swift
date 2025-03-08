@@ -1,7 +1,7 @@
+import CoreErrors
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import CoreErrors
 
 /// KeyManagementAdapter provides a bridge between Foundation-based key management implementations
 /// and the Foundation-free KeyManagementProtocol.
@@ -19,14 +19,14 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
   /// Create a new KeyManagementAdapter
   /// - Parameter implementation: The Foundation-dependent key management implementation
   public init(implementation: any FoundationKeyManagementImpl) {
-    self.implementation = implementation
+    self.implementation=implementation
   }
 
   // MARK: - KeyManagementProtocol Implementation
 
   public func retrieveKey(withIdentifier identifier: String) async
   -> Result<SecureBytes, SecurityError> {
-    let result = await implementation.retrieveKey(withIdentifier: identifier)
+    let result=await implementation.retrieveKey(withIdentifier: identifier)
 
     switch result {
       case let .success(keyData):
@@ -40,8 +40,8 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     _ key: SecureBytes,
     withIdentifier identifier: String
   ) async -> Result<Void, SecurityError> {
-    let keyData = DataAdapter.data(from: key)
-    let result = await implementation.storeKey(keyData, withIdentifier: identifier)
+    let keyData=DataAdapter.data(from: key)
+    let result=await implementation.storeKey(keyData, withIdentifier: identifier)
 
     switch result {
       case .success:
@@ -52,7 +52,7 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
   }
 
   public func deleteKey(withIdentifier identifier: String) async -> Result<Void, SecurityError> {
-    let result = await implementation.deleteKey(withIdentifier: identifier)
+    let result=await implementation.deleteKey(withIdentifier: identifier)
 
     switch result {
       case .success:
@@ -70,10 +70,10 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     reencryptedData: SecureBytes?
   ), SecurityError> {
     // Convert SecureBytes to Data for the Foundation implementation
-    let dataToReencryptData = dataToReencrypt.map { DataAdapter.data(from: $0) }
+    let dataToReencryptData=dataToReencrypt.map { DataAdapter.data(from: $0) }
 
     // Call the implementation
-    let result = await implementation.rotateKey(
+    let result=await implementation.rotateKey(
       withIdentifier: identifier,
       newKey: dataToReencryptData ?? Data()
     )
@@ -82,10 +82,10 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     switch result {
       case .success:
         // Need to retrieve the key after rotation
-        let keyResult = await implementation.retrieveKey(withIdentifier: identifier)
+        let keyResult=await implementation.retrieveKey(withIdentifier: identifier)
         switch keyResult {
           case let .success(keyData):
-            let newKey = DataAdapter.secureBytes(from: keyData)
+            let newKey=DataAdapter.secureBytes(from: keyData)
             return .success((newKey: newKey, reencryptedData: nil))
           case let .failure(error):
             return .failure(mapError(error))
@@ -96,7 +96,7 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
   }
 
   public func listKeyIdentifiers() async -> Result<[String], SecurityError> {
-    let result = await implementation.listKeyIdentifiers()
+    let result=await implementation.listKeyIdentifiers()
 
     switch result {
       case let .success(identifiers):

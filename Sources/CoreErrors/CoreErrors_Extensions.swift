@@ -11,43 +11,43 @@ public enum CE {
 /// Extension for SecurityError type with namespace support
 extension SecurityError {
   /// Type alias for accessing this type through the namespace
-  public typealias CE = SecurityError
+  public typealias CE=SecurityError
 }
 
 /// Extension for CryptoError type with namespace support
 extension CryptoError {
   /// Type alias for accessing this type through the namespace
-  public typealias CE = CryptoError
+  public typealias CE=CryptoError
 }
 
 /// Extension for KeyManagerError type with namespace support
 extension KeyManagerError {
   /// Type alias for accessing this type through the namespace
-  public typealias CE = KeyManagerError
+  public typealias CE=KeyManagerError
 }
 
 /// Extension for LoggingError type with namespace support
 extension LoggingError {
   /// Type alias for accessing this type through the namespace
-  public typealias CE = LoggingError
+  public typealias CE=LoggingError
 }
 
 /// Extension for RepositoryError type with namespace support
 extension RepositoryError {
   /// Type alias for accessing this type through the namespace
-  public typealias CE = RepositoryError
+  public typealias CE=RepositoryError
 }
 
 /// Extension for ResourceError type with namespace support
 extension ResourceError {
   /// Type alias for accessing this type through the namespace
-  public typealias CE = ResourceError
+  public typealias CE=ResourceError
 }
 
 /// Extension for ServiceError type with namespace support
 extension ServiceError {
   /// Type alias for accessing this type through the namespace
-  public typealias CE = ServiceError
+  public typealias CE=ServiceError
 }
 
 /// Module initialisation function

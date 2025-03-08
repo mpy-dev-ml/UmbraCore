@@ -117,7 +117,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   /// to the encrypted data in the result.
   public func encrypt(data: SecureBytes, config: SecurityConfigDTO) async -> SecurityResultDTO {
     do {
-      guard let key = config.key else {
+      guard let key=config.key else {
         return SecurityResultDTO(
           success: false,
           error: .invalidInput(reason: "No encryption key provided")
@@ -125,13 +125,13 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
       }
 
       // Default to AES-GCM with a random IV if not specified
-      let iv = config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
+      let iv=config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
 
       // Encrypt the data
-      let encrypted = try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
+      let encrypted=try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
 
       // Return IV + encrypted data unless IV is provided in config
-      let resultData: SecureBytes = if config.initializationVector != nil {
+      let resultData: SecureBytes=if config.initializationVector != nil {
         encrypted
       } else {
         SecureBytes.combine(iv, encrypted)
@@ -161,7 +161,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   /// input data contain the IV, which is then extracted and used for decryption.
   public func decrypt(data: SecureBytes, config: SecurityConfigDTO) async -> SecurityResultDTO {
     do {
-      guard let key = config.key else {
+      guard let key=config.key else {
         return SecurityResultDTO(
           success: false,
           error: .invalidInput(reason: "No decryption key provided")
@@ -171,10 +171,10 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
       let iv: SecureBytes
       let dataToDecrypt: SecureBytes
 
-      if let providedIv = config.initializationVector {
+      if let providedIv=config.initializationVector {
         // If IV is provided in config, use it
-        iv = providedIv
-        dataToDecrypt = data
+        iv=providedIv
+        dataToDecrypt=data
       } else {
         // Extract IV from data (first 12 bytes)
         guard data.count > 12 else {
@@ -184,13 +184,13 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
           )
         }
 
-        let splitResult = try data.split(at: 12)
-        iv = splitResult.0
-        dataToDecrypt = splitResult.1
+        let splitResult=try data.split(at: 12)
+        iv=splitResult.0
+        dataToDecrypt=splitResult.1
       }
 
       // Decrypt the data
-      let decrypted = try CryptoWrapper.decryptAES_GCM(data: dataToDecrypt, key: key, iv: iv)
+      let decrypted=try CryptoWrapper.decryptAES_GCM(data: dataToDecrypt, key: key, iv: iv)
 
       return SecurityResultDTO(success: true, data: decrypted)
     } catch {
@@ -217,7 +217,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     config _: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Use SHA-256 through CryptoWrapper
-    let hashedData = CryptoWrapper.sha256(data)
+    let hashedData=CryptoWrapper.sha256(data)
     return SecurityResultDTO(success: true, data: hashedData)
   }
 
@@ -237,13 +237,13 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   ) async -> Result<SecureBytes, SecurityError> {
     do {
       // Generate a random IV
-      let iv = CryptoWrapper.generateRandomIVSecure()
+      let iv=CryptoWrapper.generateRandomIVSecure()
 
       // Encrypt the data using AES-GCM
-      let encrypted = try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
+      let encrypted=try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
 
       // Combine IV with encrypted data
-      let combinedData = SecureBytes.combine(iv, encrypted)
+      let combinedData=SecureBytes.combine(iv, encrypted)
 
       return .success(combinedData)
     } catch {
@@ -275,15 +275,15 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
         return .failure(.invalidInput(reason: "Encrypted data too short"))
       }
 
-      let dataBytes = data.bytes()
-      let ivBytes = Array(dataBytes.prefix(12))
-      let encryptedBytes = Array(dataBytes.suffix(from: 12))
+      let dataBytes=data.bytes()
+      let ivBytes=Array(dataBytes.prefix(12))
+      let encryptedBytes=Array(dataBytes.suffix(from: 12))
 
-      let iv = SecureBytes(bytes: ivBytes)
-      let encryptedData = SecureBytes(bytes: encryptedBytes)
+      let iv=SecureBytes(bytes: ivBytes)
+      let encryptedData=SecureBytes(bytes: encryptedBytes)
 
       // Decrypt the data using AES-GCM
-      let decrypted = try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
+      let decrypted=try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
 
       return .success(decrypted)
     } catch {
@@ -301,7 +301,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   /// object, which provides memory protection for sensitive cryptographic material.
   public nonisolated func generateKey() async -> Result<SecureBytes, SecurityError> {
     // Generate a 256-bit key (32 bytes) using CryptoWrapper
-    let key = CryptoWrapper.generateRandomKeySecure(size: 32)
+    let key=CryptoWrapper.generateRandomKeySecure(size: 32)
     return .success(key)
   }
 
@@ -314,7 +314,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   /// (it's computationally infeasible to find two different inputs that produce the same hash).
   public nonisolated func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
     // Use SHA-256 through CryptoWrapper
-    let hashedData = CryptoWrapper.sha256(data)
+    let hashedData=CryptoWrapper.sha256(data)
     return .success(hashedData)
   }
 
@@ -330,9 +330,9 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     data: SecureBytes,
     againstHash hash: SecureBytes
   ) async -> Result<Bool, SecurityError> {
-    let computedHash = CryptoWrapper.sha256(data)
+    let computedHash=CryptoWrapper.sha256(data)
     // Compare the computed hash with the expected hash
-    let result = computedHash == hash
+    let result=computedHash == hash
     return .success(result)
   }
 
@@ -344,7 +344,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   ///
   /// Simplified version that returns a boolean directly instead of a Result type.
   public nonisolated func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
-    let computedHash = CryptoWrapper.sha256(data)
+    let computedHash=CryptoWrapper.sha256(data)
     return computedHash == hash
   }
 
@@ -362,7 +362,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     using key: SecureBytes
   ) async -> Result<SecureBytes, SecurityError> {
     // Use HMAC-SHA256 through CryptoWrapper
-    let macData = CryptoWrapper.hmacSHA256(data: data, key: key)
+    let macData=CryptoWrapper.hmacSHA256(data: data, key: key)
     return .success(macData)
   }
 
@@ -381,8 +381,8 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     for data: SecureBytes,
     using key: SecureBytes
   ) async -> Result<Bool, SecurityError> {
-    let computedMAC = CryptoWrapper.hmacSHA256(data: data, key: key)
-    let result = computedMAC == mac
+    let computedMAC=CryptoWrapper.hmacSHA256(data: data, key: key)
+    let result=computedMAC == mac
     return .success(result)
   }
 
@@ -410,13 +410,13 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   ) async -> SecurityResultDTO {
     do {
       // Use AES-GCM for symmetric encryption
-      let iv = config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
+      let iv=config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
 
       // Encrypt the data
-      let encrypted = try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
+      let encrypted=try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
 
       // Return IV + encrypted data unless IV is provided in config
-      let resultData: SecureBytes = if config.initializationVector != nil {
+      let resultData: SecureBytes=if config.initializationVector != nil {
         encrypted
       } else {
         SecureBytes.combine(iv, encrypted)
@@ -456,10 +456,10 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
       let iv: SecureBytes
       let dataToDecrypt: SecureBytes
 
-      if let providedIv = config.initializationVector {
+      if let providedIv=config.initializationVector {
         // If IV is provided in config, use it
-        iv = providedIv
-        dataToDecrypt = data
+        iv=providedIv
+        dataToDecrypt=data
       } else {
         // Extract IV from data (first 12 bytes)
         guard data.count > 12 else {
@@ -469,13 +469,13 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
           )
         }
 
-        let splitResult = try data.split(at: 12)
-        iv = splitResult.0
-        dataToDecrypt = splitResult.1
+        let splitResult=try data.split(at: 12)
+        iv=splitResult.0
+        dataToDecrypt=splitResult.1
       }
 
       // Decrypt the data
-      let decrypted = try CryptoWrapper.decryptAES_GCM(data: dataToDecrypt, key: key, iv: iv)
+      let decrypted=try CryptoWrapper.decryptAES_GCM(data: dataToDecrypt, key: key, iv: iv)
 
       return SecurityResultDTO(success: true, data: decrypted)
     } catch {
@@ -527,11 +527,11 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     // WARNING: This is not secure for production use!
 
     // Generate a seed for the "key pair"
-    let seed = CryptoWrapper.generateRandomKeySecure(size: 32)
+    let seed=CryptoWrapper.generateRandomKeySecure(size: 32)
 
     // Generate "public" and "private" keys from the seed
-    let privateKey = CryptoWrapper.sha256(seed)
-    var publicKeyBytes = privateKey.bytes()
+    let privateKey=CryptoWrapper.sha256(seed)
+    var publicKeyBytes=privateKey.bytes()
 
     // Ensure we have bytes to modify
     guard !publicKeyBytes.isEmpty else {
@@ -540,7 +540,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
 
     // Modify bytes to create a different but related key
     for i in 0..<publicKeyBytes.count where i % 2 == 0 {
-      publicKeyBytes[i] = publicKeyBytes[i] ^ 0x5A
+      publicKeyBytes[i]=publicKeyBytes[i] ^ 0x5A
     }
 
     // Return the key pair
@@ -593,13 +593,13 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     // It merely appends the "encrypted" data with a marker for testing purposes
 
     // Use our simple XOR transformation for testing
-    let inputBytes = data.bytes()
-    let keyBytes = publicKey.bytes()
-    let resultBytes = simpleXorTransform(inputBytes, withKey: keyBytes)
+    let inputBytes=data.bytes()
+    let keyBytes=publicKey.bytes()
+    let resultBytes=simpleXorTransform(inputBytes, withKey: keyBytes)
 
     // Add a marker at the beginning for verification
-    let marker: [UInt8] = [0xDE, 0xAD, 0xBE, 0xEF]
-    let finalResult = marker + resultBytes
+    let marker: [UInt8]=[0xDE, 0xAD, 0xBE, 0xEF]
+    let finalResult=marker + resultBytes
 
     return .success(SecureBytes(bytes: finalResult))
   }
@@ -631,13 +631,13 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     // It merely appends the "encrypted" data with a marker for testing purposes
 
     // Use our simple XOR transformation for testing
-    let inputBytes = data.bytes()
-    let keyBytes = publicKey.bytes()
-    let resultBytes = simpleXorTransform(inputBytes, withKey: keyBytes)
+    let inputBytes=data.bytes()
+    let keyBytes=publicKey.bytes()
+    let resultBytes=simpleXorTransform(inputBytes, withKey: keyBytes)
 
     // Add a marker at the beginning for verification
-    let marker: [UInt8] = [0xDE, 0xAD, 0xBE, 0xEF]
-    let finalResult = marker + resultBytes
+    let marker: [UInt8]=[0xDE, 0xAD, 0xBE, 0xEF]
+    let finalResult=marker + resultBytes
 
     return SecurityResultDTO(success: true, data: SecureBytes(bytes: finalResult))
   }
@@ -686,7 +686,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
       return .failure(.invalidInput(reason: "Input data or private key is empty"))
     }
 
-    let dataBytes = data.bytes()
+    let dataBytes=data.bytes()
 
     // Verify minimum length and marker
     guard dataBytes.count >= 4 else {
@@ -694,18 +694,18 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     }
 
     // Check for the marker we added during encryption
-    let marker = Array(dataBytes.prefix(4))
-    let expectedMarker: [UInt8] = [0xDE, 0xAD, 0xBE, 0xEF]
+    let marker=Array(dataBytes.prefix(4))
+    let expectedMarker: [UInt8]=[0xDE, 0xAD, 0xBE, 0xEF]
     guard marker == expectedMarker else {
       return .failure(.invalidInput(reason: "Invalid data format for asymmetric decryption"))
     }
 
     // Get the actual encrypted bytes (after the marker)
-    let encryptedBytes = Array(dataBytes.suffix(from: 4))
-    let keyBytes = privateKey.bytes()
+    let encryptedBytes=Array(dataBytes.suffix(from: 4))
+    let keyBytes=privateKey.bytes()
 
     // Use our simple XOR transformation to "decrypt"
-    let resultBytes = simpleXorTransform(encryptedBytes, withKey: keyBytes)
+    let resultBytes=simpleXorTransform(encryptedBytes, withKey: keyBytes)
 
     return .success(SecureBytes(bytes: resultBytes))
   }
@@ -732,7 +732,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
       )
     }
 
-    let dataBytes = data.bytes()
+    let dataBytes=data.bytes()
 
     // Verify minimum length and marker
     guard dataBytes.count >= 4 else {
@@ -743,8 +743,8 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     }
 
     // Check for the marker we added during encryption
-    let marker = Array(dataBytes.prefix(4))
-    let expectedMarker: [UInt8] = [0xDE, 0xAD, 0xBE, 0xEF]
+    let marker=Array(dataBytes.prefix(4))
+    let expectedMarker: [UInt8]=[0xDE, 0xAD, 0xBE, 0xEF]
     guard marker == expectedMarker else {
       return SecurityResultDTO(
         success: false,
@@ -753,11 +753,11 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     }
 
     // Get the actual encrypted bytes (after the marker)
-    let encryptedBytes = Array(dataBytes.suffix(from: 4))
-    let keyBytes = privateKey.bytes()
+    let encryptedBytes=Array(dataBytes.suffix(from: 4))
+    let keyBytes=privateKey.bytes()
 
     // Use our simple XOR transformation to "decrypt"
-    let resultBytes = simpleXorTransform(encryptedBytes, withKey: keyBytes)
+    let resultBytes=simpleXorTransform(encryptedBytes, withKey: keyBytes)
 
     return SecurityResultDTO(success: true, data: SecureBytes(bytes: resultBytes))
   }
@@ -780,11 +780,11 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     // WARNING: This is not secure for production use!
 
     // Generate a seed for the "key pair"
-    let seed = CryptoWrapper.generateRandomKeySecure(size: 32)
+    let seed=CryptoWrapper.generateRandomKeySecure(size: 32)
 
     // Generate "public" and "private" keys from the seed
-    let privateKey = CryptoWrapper.sha256(seed)
-    var publicKeyBytes = privateKey.bytes()
+    let privateKey=CryptoWrapper.sha256(seed)
+    var publicKeyBytes=privateKey.bytes()
 
     // Ensure we have bytes to modify
     guard !publicKeyBytes.isEmpty else {
@@ -796,15 +796,15 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
 
     // Modify bytes to create a different but related key
     for i in 0..<publicKeyBytes.count where i % 2 == 0 {
-      publicKeyBytes[i] = publicKeyBytes[i] ^ 0x5A
+      publicKeyBytes[i]=publicKeyBytes[i] ^ 0x5A
     }
 
     // Format result as [Public Key Length (4 bytes)][Public Key][Private Key]
-    let pubLength = publicKeyBytes.count
-    let pubLengthBytes = withUnsafeBytes(of: UInt32(pubLength).bigEndian) { Array($0) }
+    let pubLength=publicKeyBytes.count
+    let pubLengthBytes=withUnsafeBytes(of: UInt32(pubLength).bigEndian) { Array($0) }
 
     // Combine the components safely
-    let combinedData = SecureBytes.combine(
+    let combinedData=SecureBytes.combine(
       SecureBytes(bytes: pubLengthBytes),
       SecureBytes.combine(SecureBytes(bytes: publicKeyBytes), privateKey)
     )
@@ -845,11 +845,11 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
       return SecureBytes(bytes: []) // Return empty bytes on invalid input
     }
 
-    let hmac = CryptoWrapper.hmacSHA256(data: key, key: publicKey)
+    let hmac=CryptoWrapper.hmacSHA256(data: key, key: publicKey)
 
     // Get the byte arrays safely
-    let resultBytes = key.bytes()
-    let hmacBytes = hmac.bytes()
+    let resultBytes=key.bytes()
+    let hmacBytes=hmac.bytes()
 
     // Ensure the HMAC has content
     guard !hmacBytes.isEmpty else {
@@ -857,9 +857,9 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     }
 
     // XOR the key with the HMAC result
-    var result = resultBytes
+    var result=resultBytes
     for i in 0..<result.count {
-      result[i] = result[i] ^ hmacBytes[i % hmacBytes.count]
+      result[i]=result[i] ^ hmacBytes[i % hmacBytes.count]
     }
 
     return SecureBytes(bytes: result)
@@ -899,11 +899,11 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
       return SecureBytes(bytes: []) // Return empty bytes on invalid input
     }
 
-    let hmac = CryptoWrapper.hmacSHA256(data: encryptedKey, key: privateKey)
+    let hmac=CryptoWrapper.hmacSHA256(data: encryptedKey, key: privateKey)
 
     // Get the byte arrays safely
-    let resultBytes = encryptedKey.bytes()
-    let hmacBytes = hmac.bytes()
+    let resultBytes=encryptedKey.bytes()
+    let hmacBytes=hmac.bytes()
 
     // Ensure the HMAC has content
     guard !hmacBytes.isEmpty else {
@@ -911,9 +911,9 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     }
 
     // Perform the inverse XOR operation
-    var result = resultBytes
+    var result=resultBytes
     for i in 0..<result.count {
-      result[i] = result[i] ^ hmacBytes[i % hmacBytes.count]
+      result[i]=result[i] ^ hmacBytes[i % hmacBytes.count]
     }
 
     return SecureBytes(bytes: result)
@@ -958,7 +958,7 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   ) async -> Result<SecureBytes, SecurityError> {
     // Use HMAC-SHA256 as a basic signing mechanism
     // In a real implementation, this would use an asymmetric signature algorithm
-    let signature = CryptoWrapper.hmacSHA256(data: data, key: key)
+    let signature=CryptoWrapper.hmacSHA256(data: data, key: key)
     return .success(signature)
   }
 
@@ -1006,8 +1006,8 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     for data: SecureBytes,
     using key: SecureBytes
   ) async -> Result<Bool, SecurityError> {
-    let computedSignature = CryptoWrapper.hmacSHA256(data: data, key: key)
-    let result = computedSignature == signature
+    let computedSignature=CryptoWrapper.hmacSHA256(data: data, key: key)
+    let result=computedSignature == signature
     return .success(result)
   }
 
@@ -1029,10 +1029,10 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
     }
 
     do {
-      var randomBytes = [UInt8](repeating: 0, count: length)
+      var randomBytes=[UInt8](repeating: 0, count: length)
 
       // Generate random bytes using CryptoKit's secure random number generator
-      let status = try CryptoWrapper.generateSecureRandomBytes(&randomBytes, length: length)
+      let status=try CryptoWrapper.generateSecureRandomBytes(&randomBytes, length: length)
 
       if status {
         return .success(SecureBytes(bytes: randomBytes))
@@ -1077,9 +1077,9 @@ public final class CryptoService: CryptoServiceProtocol, Sendable {
   private func simpleXorTransform(_ data: [UInt8], withKey key: [UInt8]) -> [UInt8] {
     guard !data.isEmpty, !key.isEmpty else { return [] }
 
-    var result = [UInt8]()
+    var result=[UInt8]()
     for i in 0..<data.count {
-      let keyIndex = i % key.count
+      let keyIndex=i % key.count
       result.append(data[i] ^ key[keyIndex])
     }
     return result

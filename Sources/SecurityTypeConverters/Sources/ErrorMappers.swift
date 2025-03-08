@@ -10,7 +10,7 @@ public enum SecurityErrorMapper {
   public static func toSecurityError(_ error: Error) -> SecurityProtocolsCore.SecurityError {
     // Delegate to the canonical implementation in CoreErrors and cast the result
     // The force cast is safe because mapToSPCError is designed to be used in this context
-    return CoreErrors.SecurityErrorMapper.mapToSPCError(error) as! SecurityProtocolsCore.SecurityError
+    CoreErrors.SecurityErrorMapper.mapToSPCError(error) as! SecurityProtocolsCore.SecurityError
   }
 
   /// Map any error to CoreErrors.SecurityError

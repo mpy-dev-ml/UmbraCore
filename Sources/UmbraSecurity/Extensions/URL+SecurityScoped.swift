@@ -10,7 +10,7 @@ extension URL {
   /// - Returns: Bookmark data
   /// - Throws: SecurityError if bookmark creation fails
   public func us_createSecurityScopedBookmark() async -> Result<Data, XPCSecurityError> {
-    let path = path
+    let path=path
     do {
       return try .success(bookmarkData(
         options: .withSecurityScope,
@@ -29,8 +29,8 @@ extension URL {
   public static func us_resolveSecurityScopedBookmark(_ bookmarkData: Data) async throws
   -> (URL, Bool) {
     do {
-      var isStale = false
-      let url = try URL(
+      var isStale=false
+      let url=try URL(
         resolvingBookmarkData: bookmarkData,
         options: .withSecurityScope,
         relativeTo: nil,

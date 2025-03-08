@@ -4,12 +4,12 @@ import XCTest
 
 final class StatsCommandTests: XCTestCase {
   func testStatsCommandBuild() throws {
-    let options = CommonOptions(
+    let options=CommonOptions(
       repository: "/path/to/repo",
       password: "test"
     )
 
-    let command = StatsCommand(options: options)
+    let command=StatsCommand(options: options)
       .mode(.restoreSize)
       .host("test-host")
       .tag("test-tag")
@@ -30,19 +30,19 @@ final class StatsCommandTests: XCTestCase {
   }
 
   func testStatsCommandExecution() async throws {
-    let helper = ResticCLIHelper()
-    let repo = try await TestRepository.create()
+    let helper=ResticCLIHelper()
+    let repo=try await TestRepository.create()
 
-    let options = CommonOptions(
+    let options=CommonOptions(
       repository: repo.path,
       password: repo.password,
       jsonOutput: true
     )
 
-    let command = StatsCommand(options: options)
+    let command=StatsCommand(options: options)
       .mode(.restoreSize)
 
-    let output = try await helper.execute(command)
+    let output=try await helper.execute(command)
     XCTAssertFalse(output.isEmpty)
   }
 }

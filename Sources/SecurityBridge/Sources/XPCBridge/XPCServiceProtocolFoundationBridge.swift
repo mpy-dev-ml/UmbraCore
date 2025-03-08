@@ -67,24 +67,24 @@ extension SecurityBridge {
 extension SecurityBridge {
   public final class CoreTypesToFoundationBridgeAdapter: NSObject,
   XPCServiceProtocolFoundationBridge, @unchecked Sendable {
-    public static var protocolIdentifier: String = "com.umbra.xpc.service.adapter.foundation.outgoing"
+    public static var protocolIdentifier: String="com.umbra.xpc.service.adapter.foundation.outgoing"
 
     private let coreService: any ComprehensiveSecurityServiceProtocol
 
     public init(wrapping coreService: any ComprehensiveSecurityServiceProtocol) {
-      self.coreService = coreService
+      self.coreService=coreService
       super.init()
     }
 
     public func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
       Task {
-        let pingResult = await coreService.getServiceVersion()
-        
+        let pingResult=await coreService.getServiceVersion()
+
         switch pingResult {
-        case .success:
-          reply(true, nil)
-        case .failure(let error):
-          reply(false, error as NSError)
+          case .success:
+            reply(true, nil)
+          case let .failure(error):
+            reply(false, error as NSError)
         }
       }
     }
@@ -95,13 +95,13 @@ extension SecurityBridge {
     ) {
       Task {
         // Convert Data to NSData for processing
-        let nsData = syncData as NSData
-        
+        let nsData=syncData as NSData
+
         // Use the @objc compatible version that takes NSData
-        let result = await coreService.synchroniseKeys(nsData)
-        
+        let result=await coreService.synchroniseKeys(nsData)
+
         // Process the result
-        if let error = result as? NSError {
+        if let error=result as? NSError {
           reply(error)
         } else {
           reply(nil)
@@ -113,14 +113,14 @@ extension SecurityBridge {
       _: Int,
       withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'generateRandomData' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
     }
 
     public func resetSecurityDataFoundation(withReply reply: @escaping @Sendable (Error?) -> Void) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'resetSecurityData' not available in XPCServiceProtocolBasic"
       ])
       reply(error)
@@ -129,7 +129,7 @@ extension SecurityBridge {
     public func getVersionFoundation(
       withReply reply: @escaping @Sendable (String?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'getVersion' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
@@ -138,7 +138,7 @@ extension SecurityBridge {
     public func getHostIdentifierFoundation(
       withReply reply: @escaping @Sendable (String?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'getHostIdentifier' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
@@ -148,7 +148,7 @@ extension SecurityBridge {
       data _: Data,
       withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'encrypt' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
@@ -158,7 +158,7 @@ extension SecurityBridge {
       data _: Data,
       withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-      let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+      let error=NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
         NSLocalizedDescriptionKey: "Method 'decrypt' not available in XPCServiceProtocolBasic"
       ])
       reply(nil, error)
@@ -167,12 +167,12 @@ extension SecurityBridge {
 
   public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProtocolBasic,
   @unchecked Sendable {
-    public static var protocolIdentifier: String = "com.umbra.xpc.service.adapter.foundation.bridge"
+    public static var protocolIdentifier: String="com.umbra.xpc.service.adapter.foundation.bridge"
 
     private let foundation: any XPCServiceProtocolFoundationBridge
 
     public init(wrapping foundation: any XPCServiceProtocolFoundationBridge) {
-      self.foundation = foundation
+      self.foundation=foundation
       super.init()
     }
 
@@ -188,13 +188,13 @@ extension SecurityBridge {
         }
       }
     }
-    
+
     // Swift-friendly ping that returns Result
     public func pingWithResult() async -> Result<Bool, XPCSecurityError> {
-      let result = await ping()
-      if let nsError = result as? NSError {
+      let result=await ping()
+      if let nsError=result as? NSError {
         return .failure(mapXPCError(nsError))
-      } else if let nsNumber = result as? NSNumber {
+      } else if let nsNumber=result as? NSNumber {
         return .success(nsNumber.boolValue)
       } else {
         return .failure(CoreErrors.SecurityError.general("Unknown result type"))
@@ -204,8 +204,8 @@ extension SecurityBridge {
     @objc
     public func synchroniseKeys(_ syncData: NSData) async -> NSObject? {
       // Convert NSData to Data
-      let data = Data(referencing: syncData)
-      
+      let data=Data(referencing: syncData)
+
       return await withCheckedContinuation { continuation in
         foundation.synchroniseKeysFoundation(data) { error in
           if let error {
@@ -216,16 +216,16 @@ extension SecurityBridge {
         }
       }
     }
-    
+
     // Swift-friendly SecureBytes version
     public func synchroniseKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
       // Convert SecureBytes to Data
-      let data = XPCDataAdapter.data(from: syncData)
+      let data=XPCDataAdapter.data(from: syncData)
       // Convert Data to NSData for the @objc method
-      let nsData = data as NSData
-      
-      let result = await synchroniseKeys(nsData)
-      if let nsError = result as? NSError {
+      let nsData=data as NSData
+
+      let result=await synchroniseKeys(nsData)
+      if let nsError=result as? NSError {
         return .failure(mapXPCError(nsError))
       } else {
         return .success(())
@@ -254,7 +254,7 @@ extension SecurityBridge {
           } else if let versionString {
             continuation.resume(returning: versionString as NSString)
           } else {
-            let error = NSError(
+            let error=NSError(
               domain: "XPCErrorDomain",
               code: -1,
               userInfo: [NSLocalizedDescriptionKey: "Version not available"]
@@ -267,10 +267,10 @@ extension SecurityBridge {
 
     // Swift-friendly version with Result type
     public func getVersion() async -> Result<String, XPCSecurityError> {
-      let result = await getServiceVersion()
-      if let nsError = result as? NSError {
+      let result=await getServiceVersion()
+      if let nsError=result as? NSError {
         return .failure(mapXPCError(nsError))
-      } else if let nsString = result as? NSString {
+      } else if let nsString=result as? NSString {
         return .success(nsString as String)
       } else {
         return .failure(CoreErrors.SecurityError.general("Invalid version format"))
@@ -286,7 +286,7 @@ extension SecurityBridge {
           } else if let hostIdentifier {
             continuation.resume(returning: hostIdentifier as NSString)
           } else {
-            let error = NSError(
+            let error=NSError(
               domain: "XPCErrorDomain",
               code: -1,
               userInfo: [NSLocalizedDescriptionKey: "Host identifier not available"]
@@ -306,13 +306,13 @@ extension SecurityBridge {
             continuation.resume(returning: .success(XPCDataAdapter.secureBytes(from: data)))
           } else {
             continuation
-                .resume(
-                  returning: .failure(
-                    self.mapSecurityProtocolError(
-                      SecurityProtocolError.implementationMissing("Random data generation failed")
-                    )
+              .resume(
+                returning: .failure(
+                  self.mapSecurityProtocolError(
+                    SecurityProtocolError.implementationMissing("Random data generation failed")
                   )
                 )
+              )
           }
         }
       }
@@ -328,31 +328,32 @@ extension SecurityBridge {
     /// - Parameter error: The error to map
     /// - Returns: A properly mapped XPCSecurityError
     private func mapXPCError(_ error: Error) -> XPCSecurityError {
-      if let securityError = error as? XPCSecurityError {
+      if let securityError=error as? XPCSecurityError {
         return securityError
-      } else if let securityError = error as? SecurityProtocolsCore.SecurityError {
-        // Convert from SecurityProtocolsCore.SecurityError to XPCSecurityError (CoreErrors.SecurityError)
+      } else if let securityError=error as? SecurityProtocolsCore.SecurityError {
+        // Convert from SecurityProtocolsCore.SecurityError to XPCSecurityError
+        // (CoreErrors.SecurityError)
         switch securityError {
-        case .encryptionFailed:
-          return CoreErrors.SecurityError.encryptionFailed
-        case .decryptionFailed:
-          return CoreErrors.SecurityError.decryptionFailed
-        case .keyGenerationFailed:
-          return CoreErrors.SecurityError.keyGenerationFailed
-        case .invalidKey, .invalidInput:
-          return CoreErrors.SecurityError.invalidData
-        case .hashVerificationFailed, .randomGenerationFailed:
-          return CoreErrors.SecurityError.hashingFailed
-        case .storageOperationFailed:
-          return CoreErrors.SecurityError.serviceFailed
-        case .timeout, .serviceError:
-          return CoreErrors.SecurityError.serviceFailed
-        case .internalError:
-          return CoreErrors.SecurityError.general(error.localizedDescription)
-        case .notImplemented:
-          return CoreErrors.SecurityError.notImplemented
-        @unknown default:
-          return CoreErrors.SecurityError.general(error.localizedDescription)
+          case .encryptionFailed:
+            return CoreErrors.SecurityError.encryptionFailed
+          case .decryptionFailed:
+            return CoreErrors.SecurityError.decryptionFailed
+          case .keyGenerationFailed:
+            return CoreErrors.SecurityError.keyGenerationFailed
+          case .invalidKey, .invalidInput:
+            return CoreErrors.SecurityError.invalidData
+          case .hashVerificationFailed, .randomGenerationFailed:
+            return CoreErrors.SecurityError.hashingFailed
+          case .storageOperationFailed:
+            return CoreErrors.SecurityError.serviceFailed
+          case .timeout, .serviceError:
+            return CoreErrors.SecurityError.serviceFailed
+          case .internalError:
+            return CoreErrors.SecurityError.general(error.localizedDescription)
+          case .notImplemented:
+            return CoreErrors.SecurityError.notImplemented
+          @unknown default:
+            return CoreErrors.SecurityError.general(error.localizedDescription)
         }
       } else {
         // Map generic error to appropriate error
@@ -382,7 +383,7 @@ private enum XPCDataAdapter {
 
   static func secureBytes(from data: Data) -> SecureBytes {
     data.withUnsafeBytes { bytes -> SecureBytes in
-      let bufferPointer = bytes.bindMemory(to: UInt8.self)
+      let bufferPointer=bytes.bindMemory(to: UInt8.self)
       return SecureBytes(bytes: Array(bufferPointer))
     }
   }

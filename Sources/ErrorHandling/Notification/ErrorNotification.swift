@@ -37,25 +37,25 @@ public struct ErrorNotification: Sendable, Identifiable {
     title: String,
     message: String,
     severity: NotificationSeverity = .error,
-    recoveryOptions: [RecoveryOption]? = nil,
-    timestamp: Date = Date()
+    recoveryOptions: [RecoveryOption]?=nil,
+    timestamp: Date=Date()
   ) {
-    id = UUID()
-    self.error = error
-    self.title = title
-    self.message = message
-    self.severity = severity
-    self.recoveryOptions = recoveryOptions
-    self.timestamp = timestamp
+    id=UUID()
+    self.error=error
+    self.title=title
+    self.message=message
+    self.severity=severity
+    self.recoveryOptions=recoveryOptions
+    self.timestamp=timestamp
   }
 }
 
 /// Severity levels for error notifications
 public enum NotificationSeverity: Int, Comparable, Sendable {
-  case info = 0
-  case warning = 1
-  case error = 2
-  case critical = 3
+  case info=0
+  case warning=1
+  case error=2
+  case critical=3
 
   public static func < (lhs: NotificationSeverity, rhs: NotificationSeverity) -> Bool {
     lhs.rawValue < rhs.rawValue
@@ -81,10 +81,10 @@ public protocol ErrorNotificationManager: ErrorNotificationProtocol {
 @MainActor
 public final class DefaultErrorNotificationManager: ErrorNotificationManager {
   /// The shared instance
-  public static let shared = DefaultErrorNotificationManager()
+  public static let shared=DefaultErrorNotificationManager()
 
   /// Currently active notifications
-  private var notifications: [UUID: ErrorNotification] = [:]
+  private var notifications: [UUID: ErrorNotification]=[:]
 
   /// Private initializer to enforce singleton
   private init() {}
@@ -108,7 +108,7 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
   ///   - error: The error to present
   ///   - recoveryOptions: Recovery options to present
   public func presentError(_ error: some UmbraError, recoveryOptions: [RecoveryOption]) async {
-    let notification = ErrorNotification(
+    let notification=ErrorNotification(
       error: error,
       title: "Error: \(error.domain)",
       message: error.localizedDescription,
@@ -122,13 +122,13 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
   /// - Parameter notification: The notification to present
   public func presentNotification(_ notification: ErrorNotification) async {
     // Store the notification
-    notifications[notification.id] = notification
+    notifications[notification.id]=notification
 
     // In a real implementation, this would show UI
     #if DEBUG
       print("🔔 NOTIFICATION [\(notification.severity)]: \(notification.title)")
       print("  Message: \(notification.message)")
-      if let options = notification.recoveryOptions, !options.isEmpty {
+      if let options=notification.recoveryOptions, !options.isEmpty {
         print("  Recovery Options:")
         for (index, option) in options.enumerated() {
           print("    \(index + 1). \(option.title)")

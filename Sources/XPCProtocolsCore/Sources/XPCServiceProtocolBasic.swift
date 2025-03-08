@@ -47,10 +47,10 @@ extension XPCServiceProtocolBasic {
   /// Implementation for synchronising keys with byte array (for legacy compatibility)
   public func synchroniseKeys(_ bytes: [UInt8]) async -> Result<Void, SecurityProtocolError> {
     // Convert bytes to NSData
-    let nsData = NSData(bytes: bytes, length: bytes.count)
+    let nsData=NSData(bytes: bytes, length: bytes.count)
 
     // Call the @objc protocol method
-    let result = await synchroniseKeys(nsData)
+    let result=await synchroniseKeys(nsData)
 
     // Handle the result based on the returned NSObject
     if result != nil {

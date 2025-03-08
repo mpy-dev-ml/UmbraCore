@@ -17,6 +17,7 @@ umbra_swift_library(
         "//Sources/ErrorHandling/Interfaces:ErrorHandlingInterfaces",
         "//Sources/ErrorHandling/Logging:ErrorHandlingLogging",
         "//Sources/ErrorHandling/Mapping:ErrorHandlingMapping",
+        "//Sources/ErrorHandling/ModuleInfo:ErrorHandlingModuleInfo",
         "//Sources/ErrorHandling/Models:ErrorHandlingModels",
         "//Sources/ErrorHandling/Notification:ErrorHandlingNotification",
         "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",

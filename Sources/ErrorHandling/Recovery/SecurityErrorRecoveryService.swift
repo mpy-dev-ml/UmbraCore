@@ -6,7 +6,7 @@ import Foundation
 @MainActor
 public final class SecurityErrorRecoveryService: ErrorRecoveryService {
   /// Shared instance
-  public static let shared = SecurityErrorRecoveryService()
+  public static let shared=SecurityErrorRecoveryService()
 
   /// Private initialiser to enforce singleton pattern
   private init() {
@@ -26,7 +26,7 @@ public final class SecurityErrorRecoveryService: ErrorRecoveryService {
       return []
     }
 
-    var options: [ErrorRecoveryOption] = []
+    var options: [ErrorRecoveryOption]=[]
 
     // Handle specific security error types based on error code
     switch error.code {
@@ -61,7 +61,7 @@ public final class SecurityErrorRecoveryService: ErrorRecoveryService {
     for error: ErrorHandlingInterfaces
       .UmbraError
   ) async -> Bool {
-    let options = recoveryOptions(for: error)
+    let options=recoveryOptions(for: error)
 
     for option in options {
       if await option.execute() {
@@ -76,13 +76,13 @@ public final class SecurityErrorRecoveryService: ErrorRecoveryService {
 
   /// Create UUIDs for recovery options for consistent reference
   private enum RecoveryOptionIDs {
-    static let retryAuthentication = UUID()
-    static let resetCredentials = UUID()
-    static let requestPermissions = UUID()
-    static let alternateAlgorithm = UUID()
-    static let restoreBackup = UUID()
-    static let retryConnection = UUID()
-    static let reportIssue = UUID()
+    static let retryAuthentication=UUID()
+    static let resetCredentials=UUID()
+    static let requestPermissions=UUID()
+    static let alternateAlgorithm=UUID()
+    static let restoreBackup=UUID()
+    static let retryConnection=UUID()
+    static let reportIssue=UUID()
   }
 
   private nonisolated func nonisolated_createRetryAuthenticationOption() -> ErrorRecoveryOption {

@@ -12,13 +12,13 @@
 /// Provides access to module-level information and version details
 public enum ModuleInfo {
   /// Current module version
-  public static let version = "1.0.0"
+  public static let version="1.0.0"
 
   /// Migration status
-  public static let migrationVersion = "2.0.0"
+  public static let migrationVersion="2.0.0"
 
   /// Migration date
-  public static let migrationDate = "2025-03-05"
+  public static let migrationDate="2025-03-05"
 }
 
 // Export all necessary types and modules
@@ -29,4 +29,4 @@ public enum ModuleInfo {
 @_exported import struct UmbraCoreTypes.SecureBytes
 
 // Define standard error type for XPC protocols
-public typealias XPCSecurityError = CoreErrors.SecurityError
+public typealias XPCSecurityError=CoreErrors.SecurityError

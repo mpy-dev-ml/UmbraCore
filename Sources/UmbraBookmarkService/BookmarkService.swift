@@ -5,7 +5,7 @@ import UmbraXPC
 @MainActor
 public final class BookmarkService: NSObject, BookmarkServiceProtocol {
   /// Set of URLs currently being accessed
-  private var activeAccessURLs: Set<URL> = []
+  private var activeAccessURLs: Set<URL>=[]
 
   public override init() {
     super.init()
@@ -13,7 +13,7 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol {
 
   public func createBookmark(
     for url: URL,
-    options: URL.BookmarkCreationOptions = [.withSecurityScope]
+    options: URL.BookmarkCreationOptions=[.withSecurityScope]
   ) async throws -> Data {
     guard url.isFileURL else {
       throw BookmarkError.invalidBookmarkData
@@ -24,7 +24,7 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol {
     }
 
     do {
-      let bookmarkData = try url.bookmarkData(
+      let bookmarkData=try url.bookmarkData(
         options: options,
         includingResourceValuesForKeys: nil,
         relativeTo: nil
@@ -37,11 +37,11 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol {
 
   public func resolveBookmark(
     _ bookmarkData: Data,
-    options: URL.BookmarkResolutionOptions = [.withSecurityScope]
+    options: URL.BookmarkResolutionOptions=[.withSecurityScope]
   ) async throws -> (URL, Bool) {
     do {
-      var isStale = false
-      let url = try URL(
+      var isStale=false
+      let url=try URL(
         resolvingBookmarkData: bookmarkData,
         options: options,
         relativeTo: nil,
@@ -95,20 +95,20 @@ extension BookmarkService: NSXPCListenerDelegate {
     shouldAcceptNewConnection newConnection: NSXPCConnection
   ) -> Bool {
     // Configure the connection on this thread
-    let exportedInterface = NSXPCInterface(with: BookmarkServiceProtocol.self)
-    newConnection.exportedInterface = exportedInterface
+    let exportedInterface=NSXPCInterface(with: BookmarkServiceProtocol.self)
+    newConnection.exportedInterface=exportedInterface
 
     // Create a weak reference to avoid potential retain cycles
     weak var weakSelf = self
-
-    // Use MainActor.run to properly handle actor isolation
-    Task {
-      // Safely access self on the main actor
-      await MainActor.run {
-        if let strongSelf = weakSelf {
-          newConnection.exportedObject = strongSelf
-          newConnection.resume()
-        }
+    let connectionToResume = newConnection
+    
+    // Use a proper actor-isolated approach
+    Task { @MainActor in
+      // Since we're now in a MainActor-isolated context, we can safely access
+      // the weak reference without crossing actor boundaries
+      if let strongSelf = weakSelf {
+        connectionToResume.exportedObject = strongSelf
+        connectionToResume.resume()
       }
     }
 

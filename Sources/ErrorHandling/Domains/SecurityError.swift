@@ -305,11 +305,11 @@ public enum SecurityError: Error, UmbraError, CustomStringConvertible {
 extension SecurityError {
   /// Create a security error from another error
   public static func from(error: Error) -> SecurityError {
-    if let securityError = error as? SecurityError {
+    if let securityError=error as? SecurityError {
       return securityError
     }
     // Explicitly cast to NSError to avoid ambiguity with localizedDescription
-    let nsError = error as NSError
+    let nsError=error as NSError
     return SecurityError.unknown("Wrapped error: " + nsError.localizedDescription)
   }
 }

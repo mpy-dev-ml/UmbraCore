@@ -11,14 +11,14 @@ struct LsCommand: ResticCommand {
   var commandName: String { "ls" }
 
   var environment: [String: String] {
-    var env = options.environmentVariables
-    env["RESTIC_PASSWORD"] = options.password
-    env["RESTIC_REPOSITORY"] = options.repository
+    var env=options.environmentVariables
+    env["RESTIC_PASSWORD"]=options.password
+    env["RESTIC_REPOSITORY"]=options.repository
     return env
   }
 
   var commandArguments: [String] {
-    var args = options.arguments
+    var args=options.arguments
     args.append(snapshotId)
     return args
   }
@@ -38,35 +38,35 @@ final class ResticCLIHelperTests: ResticTestCase {
   }
 
   func testBackupCommand() async throws {
-    let mockRepository = try MockResticRepository()
-    let helper = ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
+    let mockRepository=try MockResticRepository()
+    let helper=ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
 
     // Create test files
-    let testData = "Test file content"
-    let testDir = (mockRepository.testFilesPath as NSString)
-    let test1Path = testDir.appendingPathComponent("test1.txt")
-    let test2Path = testDir.appendingPathComponent("test2.txt")
+    let testData="Test file content"
+    let testDir=(mockRepository.testFilesPath as NSString)
+    let test1Path=testDir.appendingPathComponent("test1.txt")
+    let test2Path=testDir.appendingPathComponent("test2.txt")
     try testData.write(toFile: test1Path, atomically: true, encoding: .utf8)
     try testData.write(toFile: test2Path, atomically: true, encoding: .utf8)
 
     // Create a backup
-    let options = CommonOptions(
+    let options=CommonOptions(
       repository: mockRepository.path,
       password: mockRepository.password,
       validateCredentials: true,
       jsonOutput: true
     )
 
-    let backupCommand = BackupCommand(options: options)
+    let backupCommand=BackupCommand(options: options)
     backupCommand.addPath(test1Path)
     backupCommand.addPath(test2Path)
     backupCommand.tag("test-backup")
     backupCommand.setCachePath(mockRepository.cachePath)
 
-    _ = try await helper.execute(backupCommand)
+    _=try await helper.execute(backupCommand)
 
     // Verify backup exists
-    let snapshotCommand = SnapshotCommand(
+    let snapshotCommand=SnapshotCommand(
       options: CommonOptions(
         repository: mockRepository.path,
         password: mockRepository.password,
@@ -76,8 +76,8 @@ final class ResticCLIHelperTests: ResticTestCase {
       tags: ["test-backup"]
     )
 
-    let snapshotOutput = try await helper.execute(snapshotCommand)
-    let snapshots: [SnapshotInfo] = try JSONDecoder().decode(
+    let snapshotOutput=try await helper.execute(snapshotCommand)
+    let snapshots: [SnapshotInfo]=try JSONDecoder().decode(
       [SnapshotInfo].self,
       from: Data(snapshotOutput.utf8)
     )
@@ -90,32 +90,32 @@ final class ResticCLIHelperTests: ResticTestCase {
   }
 
   func testRestoreCommand() async throws {
-    let mockRepository = try MockResticRepository()
-    let helper = ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
+    let mockRepository=try MockResticRepository()
+    let helper=ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
 
     // Create test files and backup
-    let testData = "Test file content"
-    let testDir = (mockRepository.testFilesPath as NSString)
-    let testPath = testDir.appendingPathComponent("test.txt")
+    let testData="Test file content"
+    let testDir=(mockRepository.testFilesPath as NSString)
+    let testPath=testDir.appendingPathComponent("test.txt")
     try testData.write(toFile: testPath, atomically: true, encoding: .utf8)
 
     // Create a backup first
-    let backupOptions = CommonOptions(
+    let backupOptions=CommonOptions(
       repository: mockRepository.path,
       password: mockRepository.password,
       validateCredentials: true,
       jsonOutput: true
     )
 
-    let backupCommand = BackupCommand(options: backupOptions)
+    let backupCommand=BackupCommand(options: backupOptions)
     backupCommand.addPath(testPath)
     backupCommand.tag("test-restore")
     backupCommand.setCachePath(mockRepository.cachePath)
 
-    _ = try await helper.execute(backupCommand)
+    _=try await helper.execute(backupCommand)
 
     // Get the snapshot ID
-    let snapshotCommand = SnapshotCommand(
+    let snapshotCommand=SnapshotCommand(
       options: CommonOptions(
         repository: mockRepository.path,
         password: mockRepository.password,
@@ -125,30 +125,30 @@ final class ResticCLIHelperTests: ResticTestCase {
       tags: ["test-restore"]
     )
 
-    let snapshotOutput = try await helper.execute(snapshotCommand)
-    let snapshots: [SnapshotInfo] = try JSONDecoder().decode(
+    let snapshotOutput=try await helper.execute(snapshotCommand)
+    let snapshots: [SnapshotInfo]=try JSONDecoder().decode(
       [SnapshotInfo].self,
       from: Data(snapshotOutput.utf8)
     )
     XCTAssertFalse(snapshots.isEmpty, "Should have at least one snapshot")
-    let snapshotId = snapshots[0].id
+    let snapshotId=snapshots[0].id
 
     // First restore test - with verification
-    let restoreOptions = CommonOptions(
+    let restoreOptions=CommonOptions(
       repository: mockRepository.path,
       password: mockRepository.password,
       validateCredentials: true,
       jsonOutput: true
     )
 
-    let restoreCommand = RestoreCommand(
+    let restoreCommand=RestoreCommand(
       options: restoreOptions,
       snapshotId: snapshotId,
       targetPath: mockRepository.restorePath,
       verify: true
     )
 
-    let restoreOutput = try await helper.execute(restoreCommand)
+    let restoreOutput=try await helper.execute(restoreCommand)
     print("\nRestore output:")
     print(restoreOutput)
 
@@ -163,14 +163,14 @@ final class ResticCLIHelperTests: ResticTestCase {
     try FileManager.default.removeItem(atPath: mockRepository.restorePath)
 
     // Second restore test - with verification
-    let restoreCommand2 = RestoreCommand(
+    let restoreCommand2=RestoreCommand(
       options: restoreOptions,
       snapshotId: snapshotId,
       targetPath: mockRepository.restorePath,
       verify: true
     )
 
-    let restoreOutput2 = try await helper.execute(restoreCommand2)
+    let restoreOutput2=try await helper.execute(restoreCommand2)
     print("\nRestore output (second restore):")
     print(restoreOutput2)
 
@@ -183,32 +183,32 @@ final class ResticCLIHelperTests: ResticTestCase {
   }
 
   func testSnapshotListing() async throws {
-    let mockRepository = try MockResticRepository()
-    let helper = ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
+    let mockRepository=try MockResticRepository()
+    let helper=ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
 
     // Create test files
-    let testData = "Test file content"
-    let testDir = (mockRepository.testFilesPath as NSString)
-    let testPath = testDir.appendingPathComponent("test.txt")
+    let testData="Test file content"
+    let testDir=(mockRepository.testFilesPath as NSString)
+    let testPath=testDir.appendingPathComponent("test.txt")
     try testData.write(toFile: testPath, atomically: true, encoding: .utf8)
 
     // Create a backup
-    let options = CommonOptions(
+    let options=CommonOptions(
       repository: mockRepository.path,
       password: mockRepository.password,
       validateCredentials: true,
       jsonOutput: true
     )
 
-    let backupCommand = BackupCommand(options: options)
+    let backupCommand=BackupCommand(options: options)
     backupCommand.addPath(mockRepository.testFilesPath)
     backupCommand.tag("test-snapshot")
     backupCommand.setCachePath(mockRepository.cachePath)
 
-    _ = try await helper.execute(backupCommand)
+    _=try await helper.execute(backupCommand)
 
     // List snapshots
-    let snapshotCommand = SnapshotCommand(
+    let snapshotCommand=SnapshotCommand(
       options: CommonOptions(
         repository: mockRepository.path,
         password: mockRepository.password,
@@ -218,8 +218,8 @@ final class ResticCLIHelperTests: ResticTestCase {
       tags: ["test-snapshot"]
     )
 
-    let snapshotOutput = try await helper.execute(snapshotCommand)
-    let snapshots: [SnapshotInfo] = try JSONDecoder().decode(
+    let snapshotOutput=try await helper.execute(snapshotCommand)
+    let snapshots: [SnapshotInfo]=try JSONDecoder().decode(
       [SnapshotInfo].self,
       from: Data(snapshotOutput.utf8)
     )
@@ -236,26 +236,27 @@ final class ResticCLIHelperTests: ResticTestCase {
     testFilesPath: String,
     restorePath: String
   ) throws {
-    let fileManager = FileManager.default
+    let fileManager=FileManager.default
 
     print("\nVerifying restored files:")
     print("Test files path: \(testFilesPath)")
     print("Restore path: \(restorePath)")
 
     // Check that the restore directory exists
-    let restoreExists = fileManager.fileExists(atPath: restorePath)
+    let restoreExists=fileManager.fileExists(atPath: restorePath)
     XCTAssertTrue(restoreExists, "Restore directory should exist at \(restorePath)")
 
     // Check that at least one file was restored
-    let enumerator = fileManager.enumerator(atPath: restorePath)
-    var hasFiles = false
-    while let file = enumerator?.nextObject() as? String {
-      let fullPath = (restorePath as NSString).appendingPathComponent(file)
-      var isDirectory: ObjCBool = false
+    let enumerator=fileManager.enumerator(atPath: restorePath)
+    var hasFiles=false
+    while let file=enumerator?.nextObject() as? String {
+      let fullPath=(restorePath as NSString).appendingPathComponent(file)
+      var isDirectory: ObjCBool=false
       if
         fileManager.fileExists(atPath: fullPath, isDirectory: &isDirectory) && !isDirectory
-          .boolValue {
-        hasFiles = true
+          .boolValue
+      {
+        hasFiles=true
         break
       }
     }

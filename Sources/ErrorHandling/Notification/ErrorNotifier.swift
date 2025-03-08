@@ -32,11 +32,11 @@ public protocol ErrorNotificationService: Sendable {
 
 /// Represents the level of notification for an error
 public enum ErrorNotificationLevel: Int, Comparable, Sendable {
-  case debug = 0 // Developer-focused, typically not shown to end users
-  case info = 1 // Informational, non-critical
-  case warning = 2 // Warning that might need attention
-  case error = 3 // Error that needs attention
-  case critical = 4 // Critical error that requires immediate attention
+  case debug=0 // Developer-focused, typically not shown to end users
+  case info=1 // Informational, non-critical
+  case warning=2 // Warning that might need attention
+  case error=3 // Error that needs attention
+  case critical=4 // Critical error that requires immediate attention
 
   public static func < (lhs: ErrorNotificationLevel, rhs: ErrorNotificationLevel) -> Bool {
     lhs.rawValue < rhs.rawValue
@@ -65,16 +65,16 @@ public enum ErrorNotificationLevel: Int, Comparable, Sendable {
 @MainActor
 public final class ErrorNotifier {
   /// The shared instance
-  public static let shared = ErrorNotifier()
+  public static let shared=ErrorNotifier()
 
   /// Registered notification services
-  private var notificationServices: [ErrorNotificationService] = []
+  private var notificationServices: [ErrorNotificationService]=[]
 
   /// The minimum level for notifications
   public var minimumNotificationLevel: ErrorNotificationLevel = .warning
 
   /// Whether automatic notification is enabled
-  public var automaticNotificationEnabled: Bool = true
+  public var automaticNotificationEnabled: Bool=true
 
   /// Private initialiser to enforce singleton pattern
   private init() {}
@@ -94,7 +94,7 @@ public final class ErrorNotifier {
   public func notifyUser(
     about error: ErrorHandlingInterfaces.UmbraError,
     level: ErrorNotificationLevel,
-    recoveryOptions: [ErrorHandlingRecovery.ErrorRecoveryOption]? = nil
+    recoveryOptions: [ErrorHandlingRecovery.ErrorRecoveryOption]?=nil
   ) async -> UUID? {
     // Skip if level is below minimum
     guard level >= minimumNotificationLevel else {
@@ -102,23 +102,24 @@ public final class ErrorNotifier {
     }
 
     // Find appropriate notification services for this error's domain
-    let applicableServices = notificationServices.filter { service in
+    let applicableServices=notificationServices.filter { service in
       service.supportedErrorDomains.contains(error.domain) &&
         service.supportedLevels.contains(level)
     }
 
     // Get recovery options if not provided
-    let options = recoveryOptions ?? ErrorHandlingRecovery.ErrorRecoveryRegistry.shared
+    let options=recoveryOptions ?? ErrorHandlingRecovery.ErrorRecoveryRegistry.shared
       .recoveryOptions(for: error)
 
     // Try each service until one handles the notification
     for service in applicableServices {
       if
-        let chosenOptionID = await service.notifyUser(
+        let chosenOptionID=await service.notifyUser(
           about: error,
           level: level,
           recoveryOptions: options
-        ) {
+        )
+      {
         return chosenOptionID
       }
     }
@@ -137,24 +138,25 @@ public final class ErrorNotifier {
     level: ErrorNotificationLevel
   ) async -> Bool {
     // Get recovery options
-    let options = ErrorHandlingRecovery.ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
+    let options=ErrorHandlingRecovery.ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
 
     // Skip if no options available
     guard !options.isEmpty else {
       // Just notify without recovery options
-      _ = await notifyUser(about: error, level: level)
+      _=await notifyUser(about: error, level: level)
       return false
     }
 
     // Notify user and get chosen option
     if
-      let chosenOptionID = await notifyUser(
+      let chosenOptionID=await notifyUser(
         about: error,
         level: level,
         recoveryOptions: options
-      ) {
+      )
+    {
       // Find the chosen option
-      if let chosenOption = options.first(where: { $0.id == chosenOptionID }) {
+      if let chosenOption=options.first(where: { $0.id == chosenOptionID }) {
         // Attempt recovery with the chosen option
         await chosenOption.perform()
         return true
@@ -174,7 +176,7 @@ extension ErrorHandlingInterfaces.UmbraError {
   /// - Returns: The chosen recovery option ID, if any
   public func notify(
     level: ErrorNotificationLevel = .error,
-    logError: Bool = true
+    logError: Bool=true
   ) async -> UUID? {
     // Log the error if requested
     if logError {
@@ -201,7 +203,7 @@ extension ErrorHandlingInterfaces.UmbraError {
   /// - Returns: Whether recovery was successful
   public func notifyAndRecover(
     level: ErrorNotificationLevel = .error,
-    logError: Bool = true
+    logError: Bool=true
   ) async -> Bool {
     // Log the error if requested
     if logError {

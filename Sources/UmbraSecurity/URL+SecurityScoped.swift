@@ -17,7 +17,7 @@ extension URL {
   ///   - Insufficient permissions
   ///   - File system errors
   public func createSecurityScopedBookmark() async -> Result<Data, XPCSecurityError> {
-    let path = path
+    let path=path
     do {
       return try .success(bookmarkData(
         options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess],
@@ -34,7 +34,7 @@ extension URL {
   /// - Throws: SecurityError.bookmarkError if bookmark creation fails
   public func createSecurityScopedBookmarkData() async
   -> Result<CoreTypes.SecureBytes, XPCSecurityError> {
-    let data = try await createSecurityScopedBookmark()
+    let data=try await createSecurityScopedBookmark()
     return .success(CoreTypes.SecureBytes([UInt8](data)))
   }
 
@@ -49,8 +49,8 @@ extension URL {
   ///   - Insufficient permissions
   public static func resolveSecurityScopedBookmark(_ bookmarkData: Data) async throws
   -> (URL, Bool) {
-    var isStale = false
-    let url = try URL(
+    var isStale=false
+    let url=try URL(
       resolvingBookmarkData: bookmarkData,
       options: .withSecurityScope,
       relativeTo: nil,

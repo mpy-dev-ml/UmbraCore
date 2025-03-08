@@ -7,7 +7,8 @@ import ErrorHandlingProtocols
 import ErrorHandlingRecovery
 import Foundation
 import UmbraLogging
-import UmbraLoggingAdapters
+
+// Removed UmbraLoggingAdapters import to fix library evolution issues
 
 /// Examples of how to use the enhanced error handling system
 public final class ErrorHandlingExamples {
@@ -16,7 +17,7 @@ public final class ErrorHandlingExamples {
   public func securityErrorExample() {
     do {
       try authenticateUser(username: "user", password: "pass")
-    } catch let error as SecurityError {
+    } catch let error as UmbraErrors.Security.Core {
       // Handle security error with rich context
       handleSecurityError(error)
     } catch {
@@ -28,47 +29,34 @@ public final class ErrorHandlingExamples {
   /// Example of mapping between error types
   @MainActor
   public func errorMappingExample() {
-    // Get an instance of SecurityError
-    let securityError = authenticationFailedError("Invalid credentials")
+    // Get an instance of Security.Core error
+    let securityError=authenticationFailedError("Invalid credentials")
 
-    // Map to CoreError using the registry
-    if let coreError = ErrorRegistry.shared.map(securityError, to: CoreError.self) {
-      print("Mapped to CoreError: \(coreError.localizedDescription)")
+    // Map to different error type using the mapper
+    if let xpcError=UmbraErrorMapper.Security.mapCoreToXPC(securityError) {
+      print("Mapped to XPC error: \(xpcError)")
     }
 
-    // Create a CoreError
-    let coreError = CoreError.insufficientPermissions
+    // Create a network error
+    let networkError=UmbraErrors.Network.Core.connectionFailed(reason: "Connection timeout")
 
-    // Map back to SecurityError
-    if let mappedSecurityError = ErrorRegistry.shared.map(coreError, to: SecurityError.self) {
-      print("Mapped back to SecurityError: \(mappedSecurityError.errorDescription)")
-    }
+    // Log the network error
+    print("Network error: \(networkError)")
   }
 
   /// Example of adding context to errors
   public func contextEnrichmentExample() {
     do {
       try performOperation()
-    } catch let error as UmbraError {
-      // Enrich the error with additional context
-      let enrichedError = error.with(context: ErrorContext.withDetails(
-        message: "Operation failed with additional details",
-        source: "ContextExample",
-        code: "enriched_error"
-      ))
-
-      // Log the enriched error
-      enrichedError.logAsError("Enriched error example")
-
-      // Extract information from the context
-      if
-        let file = enrichedError.context.typedValue(for: "file", as: String.self),
-        let line = enrichedError.context.typedValue(for: "line", as: Int.self) {
-        print("Error occurred in file \(file) at line \(line)")
-      }
     } catch {
-      // Handle other errors
-      print("Unexpected error: \(error.localizedDescription)")
+      // With the new error system, we'd handle context differently
+      // This is a simplified example
+      print("Operation failed: \(error)")
+
+      if let securityError=error as? UmbraErrors.Security.Core {
+        // Handle specific security error
+        print("Security error: \(securityError)")
+      }
     }
   }
 
@@ -77,61 +65,42 @@ public final class ErrorHandlingExamples {
     do {
       try performNetworkOperation()
     } catch {
-      // Wrap the error in a GenericUmbraError
-      let wrappedError = ErrorFactory.wrapError(
-        error,
-        domain: "NetworkOperations",
-        code: "network_failure",
-        description: "Network operation failed"
-      )
+      // With the new error system, we'd wrap errors differently
+      // This is a simplified example
+      let networkError=error as? UmbraErrors.Network.Core ??
+        UmbraErrors.Network.Core.unknownError(reason: error.localizedDescription)
 
-      // Access the underlying error
-      if let underlyingError = wrappedError.underlyingError {
-        print("Underlying error: \(underlyingError.localizedDescription)")
-      }
-
-      // Log the wrapped error
-      wrappedError.logAsError()
+      print("Network error: \(networkError)")
     }
   }
 
-  /// Example of using SwiftyBeaver logging with errors
+  /// Example of using logging with errors
   public func loggingExample() {
     // Create errors with different severity levels
-    let debugError = SecurityError.generalError("This is a debug-level issue")
-      .with(source: makeErrorSource())
+    let debugError=UmbraErrors.Security.Core.internalError(reason: "This is a debug-level issue")
 
-    let infoError = SecurityError.connectionFailed("Connection temporarily unavailable")
-      .with(source: makeErrorSource())
+    let infoError=UmbraErrors.Network.Core
+      .connectionFailed(reason: "Connection temporarily unavailable")
 
-    let warningError = SecurityError.authorizationFailed("Permissions will expire soon")
-      .with(source: makeErrorSource())
+    let warningError=UmbraErrors.Security.Core.invalidInput(reason: "Permissions will expire soon")
 
-    let criticalError = SecurityError.tamperedData("Data integrity violation detected")
-      .with(source: makeErrorSource())
-      .with(context: ErrorContext(
-        source: "DataValidator",
-        code: "integrity_violation",
-        message: "Checksum verification failed",
-        metadata: [
-          "expectedHash": "a1b2c3d4e5f6",
-          "actualHash": "a1b2c3d4e5f7",
-          "userID": "user123",
-          "documentID": "doc456"
-        ]
-      ))
+    // Create a map for details
+    let details: [String: String]=[
+      "expectedHash": "a1b2c3d4e5f6",
+      "actualHash": "a1b2c3d4e5f7",
+      "userID": "user123",
+      "documentID": "doc456"
+    ]
 
-    // Log each error at the appropriate level
-    debugError.logAsDebug("Debugging information")
-    infoError.logAsInfo("System status")
-    warningError.logAsWarning("Security notice")
-    criticalError.logAsError("CRITICAL SECURITY ALERT")
+    // Use hashVerificationFailed which is appropriate for integrity violations
+    let criticalError=UmbraErrors.Security.Core
+      .hashVerificationFailed(reason: "Data integrity violation detected")
 
-    // Demonstrate using the ErrorLogger directly
-    ErrorLogger.shared.logError(
-      criticalError,
-      additionalMessage: "Security team has been notified"
-    )
+    // Simple logging (no adapters)
+    print("Debug: \(debugError)")
+    print("Info: \(infoError)")
+    print("Warning: \(warningError)")
+    print("Critical: \(criticalError)")
   }
 
   // MARK: - Private Methods
@@ -143,50 +112,48 @@ public final class ErrorHandlingExamples {
 
   private func performOperation() throws {
     // Simulated operation failure
-    throw SecurityError.cryptoOperationFailed("Failed to encrypt data")
-      .with(source: makeErrorSource())
+    throw UmbraErrors.Security.Core.internalError(reason: "Failed to encrypt data")
   }
 
   private func performNetworkOperation() throws {
     // Simulated network error
-    struct NetworkError: Error {
-      let message: String
-    }
-
-    throw NetworkError(message: "Connection timeout")
+    throw UmbraErrors.Network.Core.connectionFailed(reason: "Connection timeout")
   }
 
-  private func handleSecurityError(_ error: SecurityError) {
-    error.logAsError("Security system encountered an error")
-
-    // Log source information if available
-    if let source = error.source {
-      print("Error occurred at \(source.function) in \(source.fileName):\(source.line)")
-    }
-
-    // Extract additional context
-    for (key, value) in error.context.metadata {
-      print("Context [\(key)]: \(String(describing: value))")
-    }
+  private func handleSecurityError(_ error: UmbraErrors.Security.Core) {
+    print("Security system encountered an error: \(error)")
 
     // Handle different types of security errors
     switch error {
-      case .authenticationFailed:
-        print("Authentication failed, prompting user to re-enter credentials")
+      case let .encryptionFailed(reason):
+        print("Encryption failed: \(reason)")
 
-      case .authorizationFailed:
-        print("Authorization failed, checking user permissions")
+      case let .decryptionFailed(reason):
+        print("Decryption failed: \(reason)")
 
-      case .cryptoOperationFailed:
-        print("Cryptographic operation failed, checking algorithm and keys")
+      case let .keyGenerationFailed(reason):
+        print("Key generation failed: \(reason)")
+
+      case let .invalidKey(reason):
+        print("Invalid key: \(reason)")
+
+      case let .hashVerificationFailed(reason):
+        print("Hash verification failed: \(reason)")
+
+      case let .invalidInput(reason):
+        print("Invalid input: \(reason)")
+
+      case let .internalError(reason):
+        print("Internal security error: \(reason)")
 
       default:
-        print("Other security error: \(error.code)")
+        print("Other security error: \(error)")
     }
   }
 
   /// Creates an authentication failed error with the given reason
-  private func authenticationFailedError(_ reason: String) -> SecurityError {
-    SecurityError.authenticationFailed(reason: reason)
+  private func authenticationFailedError(_ reason: String) -> UmbraErrors.Security.Core {
+    // Using a valid error from the Core enum since authentication isn't directly in Core
+    UmbraErrors.Security.Core.invalidInput(reason: "Authentication failed: \(reason)")
   }
 }

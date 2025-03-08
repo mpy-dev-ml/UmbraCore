@@ -1,7 +1,7 @@
+import CoreErrors
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import CoreErrors
 
 /// CryptoServiceAdapter provides a bridge between Foundation-based cryptographic implementations
 /// and the Foundation-free CryptoServiceProtocol.
@@ -19,7 +19,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
   /// Create a new CryptoServiceAdapter
   /// - Parameter implementation: The Foundation-dependent crypto implementation
   public init(implementation: any FoundationCryptoServiceImpl) {
-    self.implementation = implementation
+    self.implementation=implementation
   }
 
   // MARK: - CryptoServiceProtocol Implementation
@@ -29,11 +29,11 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     using key: SecureBytes
   ) async -> Result<SecureBytes, SecurityError> {
     // Convert SecureBytes to Data for the Foundation implementation
-    let dataToEncrypt = DataAdapter.data(from: data)
-    let keyData = DataAdapter.data(from: key)
+    let dataToEncrypt=DataAdapter.data(from: data)
+    let keyData=DataAdapter.data(from: key)
 
     // Call the implementation
-    let result = await implementation.encrypt(data: dataToEncrypt, using: keyData)
+    let result=await implementation.encrypt(data: dataToEncrypt, using: keyData)
 
     // Convert the result back to the protocol's types
     switch result {
@@ -49,11 +49,11 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     using key: SecureBytes
   ) async -> Result<SecureBytes, SecurityError> {
     // Convert SecureBytes to Data for the Foundation implementation
-    let encryptedData = DataAdapter.data(from: data)
-    let keyData = DataAdapter.data(from: key)
+    let encryptedData=DataAdapter.data(from: data)
+    let keyData=DataAdapter.data(from: key)
 
     // Call the implementation
-    let result = await implementation.decrypt(data: encryptedData, using: keyData)
+    let result=await implementation.decrypt(data: encryptedData, using: keyData)
 
     // Convert the result back to the protocol's types
     switch result {
@@ -65,7 +65,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
   }
 
   public func generateKey() async -> Result<SecureBytes, SecurityError> {
-    let result = await implementation.generateKey()
+    let result=await implementation.generateKey()
 
     switch result {
       case let .success(keyData):
@@ -76,8 +76,8 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
   }
 
   public func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-    let dataToHash = DataAdapter.data(from: data)
-    let result = await implementation.hash(data: dataToHash)
+    let dataToHash=DataAdapter.data(from: data)
+    let result=await implementation.hash(data: dataToHash)
 
     switch result {
       case let .success(hashData):
@@ -88,8 +88,8 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
   }
 
   public func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
-    let dataToVerify = DataAdapter.data(from: data)
-    let hashData = DataAdapter.data(from: hash)
+    let dataToVerify=DataAdapter.data(from: data)
+    let hashData=DataAdapter.data(from: hash)
 
     return await implementation.verify(data: dataToVerify, against: hashData)
   }
@@ -99,7 +99,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
   /// - Returns: Result containing random data or error
   public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
     // Call the implementation
-    let result = await implementation.generateRandomData(length: length)
+    let result=await implementation.generateRandomData(length: length)
 
     // Convert the result back to the protocol's types
     switch result {
@@ -116,15 +116,15 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Convert SecureBytes to Data for the Foundation implementation
-    let dataToEncrypt = DataAdapter.data(from: data)
-    let keyData = DataAdapter.data(from: key)
+    let dataToEncrypt=DataAdapter.data(from: data)
+    let keyData=DataAdapter.data(from: key)
 
     // Convert config to Foundation types
-    let ivData = config.initializationVector.map { DataAdapter.data(from: $0) }
-    let aadData = config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
+    let ivData=config.initializationVector.map { DataAdapter.data(from: $0) }
+    let aadData=config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
 
     // Call the implementation
-    let result = await implementation.encryptSymmetric(
+    let result=await implementation.encryptSymmetric(
       data: dataToEncrypt,
       key: keyData,
       algorithm: config.algorithm,
@@ -135,7 +135,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     )
 
     // Process the result
-    if result.success, let resultData = result.data {
+    if result.success, let resultData=result.data {
       return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
     } else {
       return SecurityResultDTO(
@@ -151,15 +151,15 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Convert SecureBytes to Data for the Foundation implementation
-    let encryptedData = DataAdapter.data(from: data)
-    let keyData = DataAdapter.data(from: key)
+    let encryptedData=DataAdapter.data(from: data)
+    let keyData=DataAdapter.data(from: key)
 
     // Convert config to Foundation types
-    let ivData = config.initializationVector.map { DataAdapter.data(from: $0) }
-    let aadData = config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
+    let ivData=config.initializationVector.map { DataAdapter.data(from: $0) }
+    let aadData=config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
 
     // Call the implementation
-    let result = await implementation.decryptSymmetric(
+    let result=await implementation.decryptSymmetric(
       data: encryptedData,
       key: keyData,
       algorithm: config.algorithm,
@@ -170,7 +170,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     )
 
     // Process the result
-    if result.success, let resultData = result.data {
+    if result.success, let resultData=result.data {
       return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
     } else {
       return SecurityResultDTO(
@@ -186,11 +186,11 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Convert SecureBytes to Data for the Foundation implementation
-    let dataToEncrypt = DataAdapter.data(from: data)
-    let publicKeyData = DataAdapter.data(from: publicKey)
+    let dataToEncrypt=DataAdapter.data(from: data)
+    let publicKeyData=DataAdapter.data(from: publicKey)
 
     // Call the implementation
-    let result = await implementation.encryptAsymmetric(
+    let result=await implementation.encryptAsymmetric(
       data: dataToEncrypt,
       publicKey: publicKeyData,
       algorithm: config.algorithm,
@@ -199,7 +199,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     )
 
     // Process the result
-    if result.success, let resultData = result.data {
+    if result.success, let resultData=result.data {
       return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
     } else {
       return SecurityResultDTO(
@@ -215,11 +215,11 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Convert SecureBytes to Data for the Foundation implementation
-    let encryptedData = DataAdapter.data(from: data)
-    let privateKeyData = DataAdapter.data(from: privateKey)
+    let encryptedData=DataAdapter.data(from: data)
+    let privateKeyData=DataAdapter.data(from: privateKey)
 
     // Call the implementation
-    let result = await implementation.decryptAsymmetric(
+    let result=await implementation.decryptAsymmetric(
       data: encryptedData,
       privateKey: privateKeyData,
       algorithm: config.algorithm,
@@ -228,7 +228,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     )
 
     // Process the result
-    if result.success, let resultData = result.data {
+    if result.success, let resultData=result.data {
       return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
     } else {
       return SecurityResultDTO(
@@ -243,17 +243,17 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Convert SecureBytes to Data for the Foundation implementation
-    let dataToHash = DataAdapter.data(from: data)
+    let dataToHash=DataAdapter.data(from: data)
 
     // Call the implementation
-    let result = await implementation.hash(
+    let result=await implementation.hash(
       data: dataToHash,
       algorithm: config.algorithm,
       options: config.options
     )
 
     // Process the result
-    if result.success, let resultData = result.data {
+    if result.success, let resultData=result.data {
       return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
     } else {
       return SecurityResultDTO(
@@ -347,23 +347,23 @@ public struct FoundationSecurityResult: Sendable {
   public let errorMessage: String?
 
   public init(data: Data) {
-    success = true
-    self.data = data
-    errorCode = nil
-    errorMessage = nil
+    success=true
+    self.data=data
+    errorCode=nil
+    errorMessage=nil
   }
 
   public init() {
-    success = true
-    data = nil
-    errorCode = nil
-    errorMessage = nil
+    success=true
+    data=nil
+    errorCode=nil
+    errorMessage=nil
   }
 
   public init(errorCode: Int, errorMessage: String) {
-    success = false
-    data = nil
-    self.errorCode = errorCode
-    self.errorMessage = errorMessage
+    success=false
+    data=nil
+    self.errorCode=errorCode
+    self.errorMessage=errorMessage
   }
 }

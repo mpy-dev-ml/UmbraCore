@@ -6,7 +6,7 @@ import UmbraCoreTypes
 // we need to use the correct type paths to avoid ambiguity issues
 
 /// Type alias for CoreErrors.SecurityError - our target error type
-public typealias CESecurityError = CoreErrors.SecurityError
+public typealias CESecurityError=CoreErrors.SecurityError
 
 /// Create a local SecureBytesError enum that mirrors the one in UmbraCoreTypes.CoreErrors
 public enum SecureBytesError: Error, Equatable {

@@ -39,16 +39,16 @@ public struct GenericUmbraError: ErrorHandlingInterfaces.UmbraError, CustomStrin
     domain: String,
     code: String,
     errorDescription: String,
-    underlyingError: Error? = nil,
-    source: ErrorHandlingCommon.ErrorSource? = nil,
-    context: ErrorHandlingCommon.ErrorContext? = nil
+    underlyingError: Error?=nil,
+    source: ErrorHandlingCommon.ErrorSource?=nil,
+    context: ErrorHandlingCommon.ErrorContext?=nil
   ) {
-    self.domain = domain
-    self.code = code
-    self.errorDescription = errorDescription
-    self.underlyingError = underlyingError
-    self.source = source
-    self.context = context ?? ErrorHandlingCommon.ErrorContext(
+    self.domain=domain
+    self.code=code
+    self.errorDescription=errorDescription
+    self.underlyingError=underlyingError
+    self.source=source
+    self.context=context ?? ErrorHandlingCommon.ErrorContext(
       source: domain,
       operation: "unknown",
       details: errorDescription
@@ -108,9 +108,9 @@ extension GenericUmbraError {
     domain: String,
     code: String,
     description: String,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line
   ) -> GenericUmbraError {
     GenericUmbraError(
       domain: domain,
@@ -131,7 +131,7 @@ extension GenericUmbraError {
   /// - Returns: A new GenericUmbraError
   public static func validationError(
     message: String,
-    code: String = "validation_error"
+    code: String="validation_error"
   ) -> GenericUmbraError {
     GenericUmbraError(
       domain: "Validation",
@@ -147,7 +147,7 @@ extension GenericUmbraError {
   /// - Returns: A new GenericUmbraError
   public static func internalError(
     message: String,
-    code: String = "internal_error"
+    code: String="internal_error"
   ) -> GenericUmbraError {
     GenericUmbraError(
       domain: "Internal",
@@ -163,7 +163,7 @@ extension GenericUmbraError {
   /// - Returns: A new GenericUmbraError
   public static func wrapped(
     _ error: Error,
-    errorDescription: String = "Wrapped error"
+    errorDescription: String="Wrapped error"
   ) -> GenericUmbraError {
     GenericUmbraError(
       domain: "Wrapped",

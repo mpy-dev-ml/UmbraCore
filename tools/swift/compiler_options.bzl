@@ -25,7 +25,7 @@ CONCURRENCY_SAFETY_OPTIONS = [
 
 # Target platform options
 PLATFORM_OPTIONS = [
-    "-target", "arm64-apple-macos14.0",
+    "-target", "arm64-apple-macos15.4",
 ]
 
 # Performance optimization options for release builds

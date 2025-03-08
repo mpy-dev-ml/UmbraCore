@@ -3,6 +3,7 @@ load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 umbra_swift_library(
     name = "ErrorHandlingUtilities",
     srcs = glob(["*.swift"]),
+    # Disable library evolution to match dependencies that don't support it (SwiftyBeaver)
     library_evolution = False,
     deps = [
         "//Sources/ErrorHandling/Core:ErrorHandlingCore",

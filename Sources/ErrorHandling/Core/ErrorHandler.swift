@@ -9,7 +9,7 @@ import Foundation
 public final class ErrorHandler {
   /// Shared instance of the error handler
   @MainActor
-  public static let shared = ErrorHandler()
+  public static let shared=ErrorHandler()
 
   /// The logger used for error logging
   private var logger: ErrorLoggingProtocol?
@@ -22,19 +22,19 @@ public final class ErrorHandler {
 
   /// Private initialiser to enforce singleton pattern
   private init() {
-    recoveryProviders = []
+    recoveryProviders=[]
   }
 
   /// Set the logger to use for error logging
   /// - Parameter logger: The logger to use
   public func setLogger(_ logger: ErrorLoggingProtocol) {
-    self.logger = logger
+    self.logger=logger
   }
 
   /// Set the notification handler to use for presenting errors
   /// - Parameter handler: The notification handler to use
   public func setNotificationHandler(_ handler: ErrorNotificationProtocol) {
-    notificationHandler = handler
+    notificationHandler=handler
   }
 
   /// Register a recovery options provider
@@ -53,15 +53,15 @@ public final class ErrorHandler {
   public func handle(
     _ error: some UmbraError,
     severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line
   ) {
     // Create a source object for the error
-    let source = ErrorSource(file: file, function: function, line: line)
+    let source=ErrorSource(file: file, function: function, line: line)
 
     // Enrich the error with source information
-    let enrichedError = error.with(source: source)
+    let enrichedError=error.with(source: source)
 
     // Log the error
     logger?.log(error: enrichedError, severity: severity)
@@ -69,7 +69,7 @@ public final class ErrorHandler {
     // Present error to the user if appropriate and notification handler is set
     if severity.shouldNotify, let notificationHandler {
       // Collect recovery options from all providers
-      let recoveryOptions = recoveryProviders.flatMap {
+      let recoveryOptions=recoveryProviders.flatMap {
         $0.recoveryOptions(for: enrichedError)
       }
 
@@ -98,9 +98,9 @@ extension ErrorHandler {
   public func handleSecurity(
     _ error: ErrorHandlingDomains.SecurityError,
     severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line
   ) {
     handle(error, severity: severity, file: file, function: function, line: line)
   }
@@ -115,9 +115,9 @@ extension ErrorHandler {
   public func handleRepository(
     _ error: ErrorHandlingDomains.RepositoryError,
     severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line
   ) {
     handle(error, severity: severity, file: file, function: function, line: line)
   }

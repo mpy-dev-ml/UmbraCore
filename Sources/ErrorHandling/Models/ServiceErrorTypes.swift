@@ -17,29 +17,29 @@ public enum ErrorSeverity: String, Codable, Sendable {
 @frozen
 public enum ServiceErrorType: String, Sendable, CaseIterable {
   /// Configuration-related errors
-  case configuration = "Configuration"
+  case configuration="Configuration"
   /// Operation-related errors
-  case operation = "Operation"
+  case operation="Operation"
   /// State-related errors
-  case state = "State"
+  case state="State"
   /// Resource-related errors
-  case resource = "Resource"
+  case resource="Resource"
   /// Dependency-related errors
-  case dependency = "Dependency"
+  case dependency="Dependency"
   /// Network-related errors
-  case network = "Network"
+  case network="Network"
   /// Authentication-related errors
-  case authentication = "Authentication"
+  case authentication="Authentication"
   /// Timeout-related errors
-  case timeout = "Timeout"
+  case timeout="Timeout"
   /// Initialization-related errors
-  case initialization = "Initialization"
+  case initialization="Initialization"
   /// Lifecycle-related errors
-  case lifecycle = "Lifecycle"
+  case lifecycle="Lifecycle"
   /// Permission-related errors
-  case permission = "Permission"
+  case permission="Permission"
   /// Unknown errors
-  case unknown = "Unknown"
+  case unknown="Unknown"
 
   /// User-friendly description of the error type
   public var description: String {

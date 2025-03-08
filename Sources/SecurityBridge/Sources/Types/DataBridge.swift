@@ -16,19 +16,19 @@ extension SecurityBridge {
     /// Initialize with Foundation Data
     /// - Parameter data: Foundation Data object
     public init(_ data: Data) {
-      self.data = data
+      self.data=data
     }
 
     /// Initialize with raw bytes
     /// - Parameter bytes: Array of bytes
     public init(_ bytes: [UInt8]) {
-      data = Data(bytes)
+      data=Data(bytes)
     }
 
     /// Initialize with secure bytes
     /// - Parameter secureBytes: SecureBytes object
     public init(_ secureBytes: SecureBytes) {
-      data = DataAdapter.data(from: secureBytes)
+      data=DataAdapter.data(from: secureBytes)
     }
 
     // MARK: - Conversion Methods

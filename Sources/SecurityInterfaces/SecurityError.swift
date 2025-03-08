@@ -1,6 +1,6 @@
 import SecurityInterfacesBase
 import UmbraCoreTypes /// Errors that can occur during security operations
-import XPCProtocolsCoreimport XPCProtocolsCore
+import XPCProtocolsCore
 
 public enum SecurityInterfacesError: Error, Sendable {
   /// Bookmark creation failed
@@ -31,29 +31,29 @@ public enum SecurityInterfacesError: Error, Sendable {
   public var errorDescription: String? {
     switch self {
       case let .bookmarkCreationFailed(path):
-        "Failed to create security bookmark for path: \(path)"
+        return "Failed to create security bookmark for path: \(path)"
       case .bookmarkResolutionFailed:
-        "Failed to resolve security bookmark"
+        return "Failed to resolve security bookmark"
       case let .bookmarkStale(path):
-        "Security bookmark is stale for path: \(path)"
+        return "Security bookmark is stale for path: \(path)"
       case let .bookmarkNotFound(path):
-        "Security bookmark not found for path: \(path)"
+        return "Security bookmark not found for path: \(path)"
       case let .resourceAccessFailed(path):
-        "Failed to access security-scoped resource: \(path)"
+        return "Failed to access security-scoped resource: \(path)"
       case .randomGenerationFailed:
-        "Failed to generate random data"
+        return "Failed to generate random data"
       case .hashingFailed:
-        "Failed to perform hashing operation"
+        return "Failed to perform hashing operation"
       case .itemNotFound:
-        "Security item not found"
+        return "Security item not found"
       case let .operationFailed(message):
-        "Security operation failed: \(message)"
+        return "Security operation failed: \(message)"
       case let .bookmarkError(message):
-        "Security bookmark error: \(message)"
+        return "Security bookmark error: \(message)"
       case let .accessError(message):
-        "Security access error: \(message)"
+        return "Security access error: \(message)"
       case let .wrapped(error):
-        "Wrapped security error: \(error.localizedDescription)"
+        return "Wrapped security error: \(error.localizedDescription)"
     }
   }
 
@@ -64,9 +64,11 @@ public enum SecurityInterfacesError: Error, Sendable {
   public func toBaseError() -> SecurityInterfacesBase.SecurityError? {
     switch self {
       case let .wrapped(baseError):
-        baseError
-      default:
-        nil
+        return baseError
+      case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale, 
+           .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
+           .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError:
+        return nil
     }
   }
 }

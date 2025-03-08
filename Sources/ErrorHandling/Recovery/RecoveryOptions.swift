@@ -19,12 +19,12 @@ public struct RecoveryOptions: Sendable, Equatable {
   ///   - message: Optional message explaining the error and recovery options
   public init(
     actions: [RecoveryAction],
-    title: String? = nil,
-    message: String? = nil
+    title: String?=nil,
+    message: String?=nil
   ) {
-    self.actions = actions
-    self.title = title
-    self.message = message
+    self.actions=actions
+    self.title=title
+    self.message=message
   }
 
   /// Find the default recovery action, if one exists
@@ -66,8 +66,8 @@ extension RecoveryOptions {
   ///   - cancelHandler: The action to perform when cancelling
   /// - Returns: RecoveryOptions with retry and cancel actions
   public static func retryCancel(
-    title: String? = nil,
-    message: String? = nil,
+    title: String?=nil,
+    message: String?=nil,
     retryHandler: @escaping @Sendable () -> Void,
     cancelHandler: @escaping @Sendable () -> Void
   ) -> RecoveryOptions {
@@ -90,8 +90,8 @@ extension RecoveryOptions {
   ///   - cancelHandler: The action to perform when cancelling
   /// - Returns: RecoveryOptions with retry, ignore, and cancel actions
   public static func retryIgnoreCancel(
-    title: String? = nil,
-    message: String? = nil,
+    title: String?=nil,
+    message: String?=nil,
     retryHandler: @escaping @Sendable () -> Void,
     ignoreHandler: @escaping @Sendable () -> Void,
     cancelHandler: @escaping @Sendable () -> Void

@@ -134,15 +134,15 @@ public struct FoundationCryptoResult {
   /// Initialize with data
   /// - Parameter data: Result data
   public init(data: Data?) {
-    self.data = data
-    error = nil
+    self.data=data
+    error=nil
   }
 
   /// Initialize with error
   /// - Parameter error: Result error
   public init(error: Error) {
-    data = nil
-    self.error = error
+    data=nil
+    self.error=error
   }
 
   /// Convert to Swift Result type

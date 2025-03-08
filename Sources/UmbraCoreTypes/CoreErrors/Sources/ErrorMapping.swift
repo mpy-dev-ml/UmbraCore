@@ -28,11 +28,11 @@ public func mapFromCoreErrors(_ error: Error) -> Error {
   // For specific error types, we need to handle the translation explicitly
   // as the default mapper doesn't handle these specialised cases
 
-  if let resourceError = error as? CoreErrors.ResourceError {
+  if let resourceError=error as? CoreErrors.ResourceError {
     return mapFromCoreResourceError(resourceError)
   }
 
-  if let securityError = error as? CoreErrors.SecurityError {
+  if let securityError=error as? CoreErrors.SecurityError {
     return mapFromCoreSecurityError(securityError)
   }
 

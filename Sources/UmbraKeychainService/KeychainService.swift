@@ -21,7 +21,7 @@ import UmbraLogging
 /// ```
 public actor KeychainService {
   /// Logger instance for tracking operations.
-  private let log = SwiftyBeaver.self
+  private let log=SwiftyBeaver.self
 
   /// Creates a new keychain service instance.
   public init() {}
@@ -40,7 +40,7 @@ public actor KeychainService {
     accessGroup: String?,
     data: Data
   ) async throws {
-    var query: [String: Any] = [
+    var query: [String: Any]=[
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrAccount as String: account,
       kSecAttrService as String: service,
@@ -48,12 +48,12 @@ public actor KeychainService {
     ]
 
     if let accessGroup {
-      query[kSecAttrAccessGroup as String] = accessGroup
+      query[kSecAttrAccessGroup as String]=accessGroup
     }
 
-    let status = SecItemAdd(query as CFDictionary, nil)
+    let status=SecItemAdd(query as CFDictionary, nil)
     guard status == errSecSuccess else {
-      let error = convertError(status)
+      let error=convertError(status)
       log.error("Failed to add keychain item", context: [
         "error": String(describing: error),
         "status": String(status),
@@ -87,23 +87,23 @@ public actor KeychainService {
     accessGroup: String?,
     data: Data
   ) async throws {
-    var query: [String: Any] = [
+    var query: [String: Any]=[
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrAccount as String: account,
       kSecAttrService as String: service
     ]
 
     if let accessGroup {
-      query[kSecAttrAccessGroup as String] = accessGroup
+      query[kSecAttrAccessGroup as String]=accessGroup
     }
 
-    let attributes: [String: Any] = [
+    let attributes: [String: Any]=[
       kSecValueData as String: data
     ]
 
-    let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+    let status=SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
     guard status == errSecSuccess else {
-      let error = convertError(status)
+      let error=convertError(status)
       log.error("Failed to update keychain item", context: [
         "error": String(describing: error),
         "status": String(status),
@@ -135,19 +135,19 @@ public actor KeychainService {
     service: String,
     accessGroup: String?
   ) async throws {
-    var query: [String: Any] = [
+    var query: [String: Any]=[
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrAccount as String: account,
       kSecAttrService as String: service
     ]
 
     if let accessGroup {
-      query[kSecAttrAccessGroup as String] = accessGroup
+      query[kSecAttrAccessGroup as String]=accessGroup
     }
 
-    let status = SecItemDelete(query as CFDictionary)
+    let status=SecItemDelete(query as CFDictionary)
     guard status == errSecSuccess else {
-      let error = convertError(status)
+      let error=convertError(status)
       log.error("Failed to remove keychain item", context: [
         "error": String(describing: error),
         "status": String(status),
@@ -180,7 +180,7 @@ public actor KeychainService {
     service: String,
     accessGroup: String?
   ) async throws -> Bool {
-    var query: [String: Any] = [
+    var query: [String: Any]=[
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrAccount as String: account,
       kSecAttrService as String: service,
@@ -188,17 +188,17 @@ public actor KeychainService {
     ]
 
     if let accessGroup {
-      query[kSecAttrAccessGroup as String] = accessGroup
+      query[kSecAttrAccessGroup as String]=accessGroup
     }
 
-    let status = SecItemCopyMatching(query as CFDictionary, nil)
+    let status=SecItemCopyMatching(query as CFDictionary, nil)
     switch status {
       case errSecSuccess:
         return true
       case errSecItemNotFound:
         return false
       default:
-        let error = convertError(status)
+        let error=convertError(status)
         log.error("Failed to check keychain item existence", context: [
           "error": String(describing: error),
           "status": String(status),
@@ -224,7 +224,7 @@ public actor KeychainService {
     service: String,
     accessGroup: String?
   ) async throws -> Data {
-    var query: [String: Any] = [
+    var query: [String: Any]=[
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrAccount as String: account,
       kSecAttrService as String: service,
@@ -232,13 +232,13 @@ public actor KeychainService {
     ]
 
     if let accessGroup {
-      query[kSecAttrAccessGroup as String] = accessGroup
+      query[kSecAttrAccessGroup as String]=accessGroup
     }
 
     var result: AnyObject?
-    let status = SecItemCopyMatching(query as CFDictionary, &result)
+    let status=SecItemCopyMatching(query as CFDictionary, &result)
     guard status == errSecSuccess else {
-      let error = convertError(status)
+      let error=convertError(status)
       log.error("Failed to retrieve keychain item", context: [
         "error": String(describing: error),
         "status": String(status),
@@ -250,7 +250,7 @@ public actor KeychainService {
       throw error
     }
 
-    guard let data = result as? Data else {
+    guard let data=result as? Data else {
       log.error("Retrieved keychain item is not Data", context: [
         "operation": "retrieveItem",
         "account": account,

@@ -14,16 +14,16 @@ open class ResticTestCase: XCTestCase {
     try await super.setUp()
 
     // Create mock repository
-    mockRepository = try MockResticRepository()
+    mockRepository=try MockResticRepository()
 
     // Initialize CLI helper
-    helper = ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
+    helper=ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
   }
 
   open override func tearDown() async throws {
     try mockRepository?.cleanup()
-    mockRepository = nil
-    helper = nil
+    mockRepository=nil
+    helper=nil
     try await super.tearDown()
   }
 }

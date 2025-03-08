@@ -34,19 +34,19 @@ public protocol UmbraError: Error, Sendable, CustomStringConvertible {
 /// Error severity levels for classification and logging
 public enum ErrorSeverity: String, Comparable, Sendable {
   /// Critical error that requires immediate attention
-  case critical = "Critical"
+  case critical="Critical"
 
   /// Error that significantly affects functionality
-  case error = "Error"
+  case error="Error"
 
   /// Warning about potential issues or degraded service
-  case warning = "Warning"
+  case warning="Warning"
 
   /// Informational message about non-critical events
-  case info = "Information"
+  case info="Information"
 
   /// Debug information for development purposes
-  case debug = "Debug"
+  case debug="Debug"
 
   /// Returns true if this severity level should trigger a user notification
   public var shouldNotify: Bool {
@@ -59,10 +59,10 @@ public enum ErrorSeverity: String, Comparable, Sendable {
   }
 
   public static func < (lhs: ErrorSeverity, rhs: ErrorSeverity) -> Bool {
-    let order: [ErrorSeverity] = [.debug, .info, .warning, .error, .critical]
+    let order: [ErrorSeverity]=[.debug, .info, .warning, .error, .critical]
     guard
-      let lhsIndex = order.firstIndex(of: lhs),
-      let rhsIndex = order.firstIndex(of: rhs)
+      let lhsIndex=order.firstIndex(of: lhs),
+      let rhsIndex=order.firstIndex(of: rhs)
     else {
       return false
     }

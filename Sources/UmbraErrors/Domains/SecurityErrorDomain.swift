@@ -3,18 +3,18 @@ import Foundation
 /// Domain for security-related errors
 public enum SecurityErrorDomain: String, CaseIterable, Sendable {
   /// Domain identifier
-  public static let domain = "Security"
+  public static let domain="Security"
 
   /// Error codes within the security domain
-  case bookmarkError = "BOOKMARK_ERROR"
-  case accessError = "ACCESS_ERROR"
-  case encryptionFailed = "ENCRYPTION_FAILED"
-  case decryptionFailed = "DECRYPTION_FAILED"
-  case invalidKey = "INVALID_KEY"
-  case keyGenerationFailed = "KEY_GENERATION_FAILED"
-  case certificateInvalid = "CERTIFICATE_INVALID"
-  case unauthorisedAccess = "UNAUTHORISED_ACCESS"
-  case secureStorageFailure = "SECURE_STORAGE_FAILURE"
+  case bookmarkError="BOOKMARK_ERROR"
+  case accessError="ACCESS_ERROR"
+  case encryptionFailed="ENCRYPTION_FAILED"
+  case decryptionFailed="DECRYPTION_FAILED"
+  case invalidKey="INVALID_KEY"
+  case keyGenerationFailed="KEY_GENERATION_FAILED"
+  case certificateInvalid="CERTIFICATE_INVALID"
+  case unauthorisedAccess="UNAUTHORISED_ACCESS"
+  case secureStorageFailure="SECURE_STORAGE_FAILURE"
 
   /// Returns a human-readable description for this error code
   public var description: String {
@@ -44,7 +44,7 @@ public enum SecurityErrorDomain: String, CaseIterable, Sendable {
 /// Enhanced implementation of a SecurityError
 public struct SecurityError: DomainError {
   /// Domain identifier
-  public static let domain = SecurityErrorDomain.domain
+  public static let domain=SecurityErrorDomain.domain
 
   /// The specific error code
   public let errorCode: SecurityErrorDomain
@@ -75,16 +75,16 @@ public struct SecurityError: DomainError {
   ///   - context: Additional context information
   public init(
     code: SecurityErrorDomain,
-    description: String? = nil,
-    source: ErrorSource? = nil,
-    underlyingError: Error? = nil,
-    context: ErrorContext = ErrorContext()
+    description: String?=nil,
+    source: ErrorSource?=nil,
+    underlyingError: Error?=nil,
+    context: ErrorContext=ErrorContext()
   ) {
-    errorCode = code
-    errorDescription = description ?? code.description
-    self.source = source
-    self.underlyingError = underlyingError
-    self.context = context
+    errorCode=code
+    errorDescription=description ?? code.description
+    self.source=source
+    self.underlyingError=underlyingError
+    self.context=context
   }
 
   /// Creates a new instance with the given context
@@ -131,10 +131,10 @@ extension SecurityError {
   ///   - function: Function name (auto-filled by the compiler)
   /// - Returns: A new SecurityError
   public static func bookmarkError(
-    message: String? = nil,
-    file: String = #file,
-    line: Int = #line,
-    function: String = #function
+    message: String?=nil,
+    file: String=#file,
+    line: Int=#line,
+    function: String=#function
   ) -> SecurityError {
     makeError(
       SecurityError(
@@ -155,10 +155,10 @@ extension SecurityError {
   ///   - function: Function name (auto-filled by the compiler)
   /// - Returns: A new SecurityError
   public static func accessError(
-    message: String? = nil,
-    file: String = #file,
-    line: Int = #line,
-    function: String = #function
+    message: String?=nil,
+    file: String=#file,
+    line: Int=#line,
+    function: String=#function
   ) -> SecurityError {
     makeError(
       SecurityError(
@@ -180,19 +180,19 @@ extension SecurityError {
   ///   - function: Function name (auto-filled by the compiler)
   /// - Returns: A new SecurityError
   public static func encryptionFailed(
-    message: String? = nil,
-    cause: Error? = nil,
-    file: String = #file,
-    line: Int = #line,
-    function: String = #function
+    message: String?=nil,
+    cause: Error?=nil,
+    file: String=#file,
+    line: Int=#line,
+    function: String=#function
   ) -> SecurityError {
-    var error = SecurityError(
+    var error=SecurityError(
       code: .encryptionFailed,
       description: message
     )
 
     if let cause {
-      error = error.with(underlyingError: cause)
+      error=error.with(underlyingError: cause)
     }
 
     return makeError(
@@ -212,19 +212,19 @@ extension SecurityError {
   ///   - function: Function name (auto-filled by the compiler)
   /// - Returns: A new SecurityError
   public static func decryptionFailed(
-    message: String? = nil,
-    cause: Error? = nil,
-    file: String = #file,
-    line: Int = #line,
-    function: String = #function
+    message: String?=nil,
+    cause: Error?=nil,
+    file: String=#file,
+    line: Int=#line,
+    function: String=#function
   ) -> SecurityError {
-    var error = SecurityError(
+    var error=SecurityError(
       code: .decryptionFailed,
       description: message
     )
 
     if let cause {
-      error = error.with(underlyingError: cause)
+      error=error.with(underlyingError: cause)
     }
 
     return makeError(
@@ -243,10 +243,10 @@ extension SecurityError {
   ///   - function: Function name (auto-filled by the compiler)
   /// - Returns: A new SecurityError
   public static func invalidKey(
-    message: String? = nil,
-    file: String = #file,
-    line: Int = #line,
-    function: String = #function
+    message: String?=nil,
+    file: String=#file,
+    line: Int=#line,
+    function: String=#function
   ) -> SecurityError {
     makeError(
       SecurityError(

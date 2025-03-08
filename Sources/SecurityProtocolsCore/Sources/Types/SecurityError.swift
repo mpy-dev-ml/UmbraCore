@@ -45,29 +45,31 @@ extension SecurityError: CustomStringConvertible {
   public var description: String {
     switch self {
       case let .encryptionFailed(reason):
-        "Encryption failed: \(reason)"
+        return "Encryption failed: \(reason)"
       case let .decryptionFailed(reason):
-        "Decryption failed: \(reason)"
+        return "Decryption failed: \(reason)"
       case let .keyGenerationFailed(reason):
-        "Key generation failed: \(reason)"
+        return "Key generation failed: \(reason)"
       case .invalidKey:
-        "Invalid key"
+        return "Invalid key"
       case .hashVerificationFailed:
-        "Hash verification failed"
+        return "Hash verification failed"
       case let .randomGenerationFailed(reason):
-        "Secure random number generation failed: \(reason)"
+        return "Secure random number generation failed: \(reason)"
       case let .invalidInput(reason):
-        "Invalid input: \(reason)"
+        return "Invalid input: \(reason)"
       case let .storageOperationFailed(reason):
-        "Storage operation failed: \(reason)"
+        return "Storage operation failed: \(reason)"
       case .timeout:
-        "Security operation timed out"
+        return "Security operation timed out"
       case let .serviceError(code, reason):
-        "Security service error (\(code)): \(reason)"
+        return "Security service error (\(code)): \(reason)"
       case let .internalError(message):
-        "Internal security error: \(message)"
+        return "Internal security error: \(message)"
       case .notImplemented:
-        "Operation not implemented"
+        return "Operation not implemented"
+      @unknown default:
+        return "Unknown security error occurred"
     }
   }
 }

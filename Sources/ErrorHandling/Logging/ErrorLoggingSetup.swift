@@ -17,11 +17,11 @@ extension ErrorLogger {
   ) -> ErrorLogger {
     configure { config in
       // Capture the minimum log level value - not the config itself
-      let configMinLevel = config.minimumLevel
+      let configMinLevel=config.minimumLevel
 
       // Create a filter that checks domain and applies level-based filtering
-      let domainFilter: (Error) -> Bool = { error in
-        guard let umbraError = error as? ErrorHandlingInterfaces.UmbraError else {
+      let domainFilter: (Error) -> Bool={ error in
+        guard let umbraError=error as? ErrorHandlingInterfaces.UmbraError else {
           return false
         }
 
@@ -51,11 +51,11 @@ extension ErrorLogger {
   ) -> ErrorLogger {
     configure { config in
       // Capture the minimum log level value - not the config itself
-      let configMinLevel = config.minimumLevel
+      let configMinLevel=config.minimumLevel
 
       // Create a filter that checks error code and applies level-based filtering
-      let codeFilter: (Error) -> Bool = { error in
-        guard let umbraError = error as? ErrorHandlingInterfaces.UmbraError else {
+      let codeFilter: (Error) -> Bool={ error in
+        guard let umbraError=error as? ErrorHandlingInterfaces.UmbraError else {
           return false
         }
 
@@ -85,12 +85,12 @@ extension ErrorLogger {
   ) -> ErrorLogger {
     configure { config in
       // Capture the minimum log level value - not the config itself
-      let configMinLevel = config.minimumLevel
+      let configMinLevel=config.minimumLevel
 
-      let sourceFilter: (Error) -> Bool = { error in
+      let sourceFilter: (Error) -> Bool={ error in
         guard
-          let umbraError = error as? ErrorHandlingInterfaces.UmbraError,
-          let source = umbraError.source
+          let umbraError=error as? ErrorHandlingInterfaces.UmbraError,
+          let source=umbraError.source
         else {
           return false
         }
@@ -115,14 +115,14 @@ extension ErrorLogger {
   public func setupSystemInfoLogging() -> ErrorLogger {
     configure { config in
       // Add system information as metadata
-      let systemInfoFilter: (Error) -> Bool = { _ in
+      let systemInfoFilter: (Error) -> Bool={ _ in
         // Return false to never filter out errors based on system info
         // This is just used to add system info as metadata
         false
       }
 
       // Set the filter
-      config.filters = [systemInfoFilter]
+      config.filters=[systemInfoFilter]
     }
   }
 }

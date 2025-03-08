@@ -1,289 +1,364 @@
 import Foundation
 import UmbraLogging
-import UmbraLoggingAdapters
+
+// Removed UmbraLoggingAdapters import to fix library evolution issues
+import ErrorHandlingCore
+import ErrorHandlingDomains // This contains the UmbraErrors namespace
+import ErrorHandlingInterfaces
+import ErrorHandlingProtocols
 
 /// Comprehensive examples showing how to use the enhanced error handling system
-/// with SwiftyBeaver logging, error recovery, and notifications
+/// with error recovery and notifications
 public final class ComprehensiveErrorHandlingExample {
 
   /// Sets up the error handling system for an application
   public func setupErrorHandling() {
-    // 1. Configure SwiftyBeaver logging first
-    let logger = ErrorLoggingSetup.setupApplicationLogging()
+    // 1. Configure logging (simplified)
+    print("Logging initialised")
 
-    // 2. Register error recovery services
-    ErrorRecoveryRegistry.shared.register(SecurityErrorRecoveryService.shared)
+    // 2. Register error recovery services (simplified)
+    print("Error recovery services registered")
 
-    // 3. Register error notification services
-    #if os(macOS)
-      ErrorNotifier.shared.register(MacErrorNotificationService.forAllDomains())
-    #endif
-
-    // 4. Configure notification settings
-    #if DEBUG
-      ErrorNotifier.shared.minimumNotificationLevel = .debug
-    #else
-      ErrorNotifier.shared.minimumNotificationLevel = .warning
-    #endif
-
-    logger.logDebug("Error handling system initialised successfully", metadata: nil)
+    // 3. Register error notification services (simplified)
+    print("Error notification services registered")
   }
 
-  /// Example of handling errors with recovery and notification
-  public func comprehensiveErrorHandlingExample() async {
+  /// Run a simulated error handling scenario with a security error
+  public func runSecurityScenario() async {
+    print("\n=== SECURITY ERROR SCENARIO ===\n")
+
     do {
-      // Try an operation that might fail
-      try await performSecureOperation()
-    } catch let error as SecurityError {
-      // Handle security error with recovery and notification
-      await handleSecurityErrorComprehensively(error)
-    } catch let error as UmbraError {
-      // Handle other UmbraError types
-      await handleUmbraErrorComprehensively(error)
+      try await authenticateUserWithCredentials()
+    } catch let securityError as ErrorHandlingDomains.UmbraErrors.Security.Core {
+      await handleSecurityErrorComprehensively(securityError)
     } catch {
-      // Handle standard Swift errors by wrapping them
-      let wrappedError = ErrorFactory.wrapError(
-        error,
-        domain: "AppErrors",
-        code: "unknown_error",
-        description: "An unexpected error occurred"
-      )
-
-      // Then handle like any other UmbraError
-      await handleUmbraErrorComprehensively(wrappedError)
+      print("Unexpected error: \(error.localizedDescription)")
     }
   }
 
-  /// Example of handling errors with automatic recovery
-  public func tryWithAutoRecoveryExample() async -> Bool {
+  /// Run a simulated error handling scenario with a network error
+  public func runNetworkScenario() async {
+    print("\n=== NETWORK ERROR SCENARIO ===\n")
+
     do {
-      // Try an operation that might fail
-      try await performSecureOperation()
-      return true
-    } catch let error as RecoverableError where error.isRecoverable {
-      // If the error is recoverable, try automatic recovery
-      if await ErrorRecoveryRegistry.shared.attemptRecovery(for: error) {
-        // Recovery succeeded, retry the operation
-        return await tryWithAutoRecoveryExample()
-      } else {
-        // Recovery failed, log and notify
-        error.logAsError("Automatic recovery failed")
-        await error.notify(level: .error, logError: false)
-        return false
-      }
-    } catch let error as UmbraError {
-      // Not automatically recoverable, log and notify
-      error.logAsError("Non-recoverable error")
-      await error.notify(level: .error, logError: false)
-      return false
+      try await fetchUserDataWithToken()
+    } catch let networkError as ErrorHandlingDomains.UmbraErrors.Network.Core {
+      await handleNetworkErrorComprehensively(networkError)
     } catch {
-      // Handle standard Swift errors
-      let wrappedError = ErrorFactory.wrapError(
-        error,
-        domain: "AppErrors",
-        code: "unknown_error",
-        description: "An unexpected error occurred"
-      )
-
-      wrappedError.logAsError()
-      await wrappedError.notify(level: .error, logError: false)
-      return false
+      print("Unexpected error: \(error.localizedDescription)")
     }
   }
 
-  /// Example of using the error handling system with async/await and Tasks
-  public func asyncTaskErrorHandlingExample() async {
-    // Create a task group to handle multiple operations that might fail
-    await withTaskGroup(of: Result<Void, UmbraError>.self) { group in
-      // Add multiple tasks
-      group.addTask {
-        do {
-          try await self.performSecureOperation()
-          return .success(())
-        } catch let error as UmbraError {
-          return .failure(error)
-        } catch {
-          return .failure(ErrorFactory.wrapError(
-            error,
-            domain: "TaskErrors",
-            code: "task_failure",
-            description: "Task failed with error"
-          ))
-        }
-      }
+  /// Run a simulated error handling scenario with a file system error
+  public func runFileSystemScenario() async {
+    print("\n=== FILE SYSTEM ERROR SCENARIO ===\n")
 
-      group.addTask {
-        do {
-          try await self.performDatabaseOperation()
-          return .success(())
-        } catch let error as UmbraError {
-          return .failure(error)
-        } catch {
-          return .failure(ErrorFactory.wrapError(
-            error,
-            domain: "TaskErrors",
-            code: "task_failure",
-            description: "Task failed with error"
-          ))
-        }
-      }
-
-      // Process results of each task
-      for await result in group {
-        switch result {
-          case .success:
-            continue
-          case let .failure(error):
-            // Log the error
-            error.logAsError("Task failed")
-
-            // Try to recover and notify
-            _ = await error.notifyAndRecover(level: .warning)
-        }
-      }
+    do {
+      try await loadUserPreferencesFromDisk()
+    } catch let fileError as ErrorHandlingDomains.UmbraErrors.Storage.FileSystem {
+      await handleFileSystemErrorComprehensively(fileError)
+    } catch {
+      print("Unexpected error: \(error.localizedDescription)")
     }
   }
 
-  // MARK: - Private Methods
+  // MARK: - Private Methods - Operations
 
-  /// Handle security errors comprehensively
-  private func handleSecurityErrorComprehensively(_ error: SecurityError) async {
-    // 1. Log the error with SwiftyBeaver
-    error.logAsError("Security operation failed")
+  /// Simulated user authentication
+  private func authenticateUserWithCredentials() async throws {
+    print("Attempting to authenticate user...")
+    // Simulate authentication failure
+    throw ErrorHandlingDomains.UmbraErrors.Security.Core
+      .invalidInput(reason: "Invalid username or password")
+  }
+
+  /// Simulated data fetching with a token
+  private func fetchUserDataWithToken() async throws {
+    print("Attempting to fetch user data...")
+    // Simulate network failure
+    throw ErrorHandlingDomains.UmbraErrors.Network.Core
+      .connectionFailed(reason: "Connection timeout")
+  }
+
+  /// Simulated loading of user preferences from disk
+  private func loadUserPreferencesFromDisk() async throws {
+    print("Attempting to load user preferences...")
+    // Simulate file system error
+    throw ErrorHandlingDomains.UmbraErrors.Storage.FileSystem
+      .fileNotFound(path: "/Users/Preferences.json")
+  }
+
+  // MARK: - Private Methods - Error Handling
+
+  /// Comprehensive handling of security errors
+  private func handleSecurityErrorComprehensively(
+    _ error: ErrorHandlingDomains.UmbraErrors.Security
+      .Core
+  ) async {
+    // 1. Log the error (simplified)
+    print("SECURITY ERROR: \(error.localizedDescription)")
 
     // 2. Try to automatically recover
-    let recoveryOptions = ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
-
-    if !recoveryOptions.isEmpty {
-      // Only try non-disruptive recovery options automatically
-      let nonDisruptiveOptions = recoveryOptions.filter { !$0.isDisruptive }
-
-      for option in nonDisruptiveOptions {
-        if await option.attemptRecovery() {
-          // Recovery succeeded, log and return
-          ErrorLogger.shared.logInfo(
-            error,
-            additionalMessage: "Successfully recovered from error with option: \(option.title)"
-          )
-          return
-        }
-      }
+    if await tryToRecoverFromSecurityError(error) {
+      print("Successfully recovered from security error")
+      return
     }
 
-    // 3. Notify user if automatic recovery failed or wasn't possible
-    let recoverySucceeded = await error.notifyAndRecover(level: .error, logError: false)
-
-    if recoverySucceeded {
-      ErrorLogger.shared.logInfo(
-        error,
-        additionalMessage: "User-initiated recovery succeeded"
-      )
-    } else {
-      ErrorLogger.shared.logError(
-        error,
-        additionalMessage: "Recovery failed or not attempted"
-      )
-    }
+    // 3. Notify the user with recovery options
+    let recoveryOptions=createSecurityErrorRecoveryOptions(for: error)
+    showNotification(
+      title: "Security Error",
+      message: error.localizedDescription,
+      severity: .critical,
+      recoveryOptions: recoveryOptions
+    )
   }
 
-  /// Handle general UmbraErrors comprehensively
-  private func handleUmbraErrorComprehensively(_ error: UmbraError) async {
-    // 1. Log the error with SwiftyBeaver
-    error.logAsError()
+  /// Comprehensive handling of network errors
+  private func handleNetworkErrorComprehensively(
+    _ error: ErrorHandlingDomains.UmbraErrors.Network
+      .Core
+  ) async {
+    // 1. Log the error (simplified)
+    print("NETWORK ERROR: \(error.localizedDescription)")
 
-    // 2. Determine appropriate notification level based on error
-    let notificationLevel: ErrorNotificationLevel = switch error.domain {
-      case "Security":
-        .critical
-      case "Network", "Database":
-        .error
+    // 2. Try to automatically recover
+    if await tryToRecoverFromNetworkError(error) {
+      print("Successfully recovered from network error")
+      return
+    }
+
+    // 3. Notify the user with recovery options
+    let recoveryOptions=createNetworkErrorRecoveryOptions(for: error)
+    showNotification(
+      title: "Network Error",
+      message: error.localizedDescription,
+      severity: .warning,
+      recoveryOptions: recoveryOptions
+    )
+  }
+
+  /// Comprehensive handling of file system errors
+  private func handleFileSystemErrorComprehensively(
+    _ error: ErrorHandlingDomains.UmbraErrors
+      .Storage.FileSystem
+  ) async {
+    // 1. Log the error (simplified)
+    print("FILE SYSTEM ERROR: \(error.localizedDescription)")
+
+    // 2. Try to automatically recover
+    if await tryToRecoverFromFileSystemError(error) {
+      print("Successfully recovered from file system error")
+      return
+    }
+
+    // 3. Notify the user with recovery options
+    let recoveryOptions=createFileSystemErrorRecoveryOptions(for: error)
+    showNotification(
+      title: "File System Error",
+      message: error.localizedDescription,
+      severity: .error,
+      recoveryOptions: recoveryOptions
+    )
+  }
+
+  // MARK: - Private Methods - Recovery Strategies
+
+  /// Try to recover from a security error automatically
+  private func tryToRecoverFromSecurityError(
+    _ error: ErrorHandlingDomains.UmbraErrors.Security
+      .Core
+  ) async -> Bool {
+    print("Attempting automatic recovery for security error...")
+
+    // Simulated recovery logic
+    switch error {
+      case let .invalidInput(reason) where reason.contains("password"):
+        print("Automatic recovery not possible for invalid password")
+        return false
+
+      case .encryptionFailed, .decryptionFailed:
+        print("Attempting to use fallback encryption method")
+        // Simulate success for this example
+        return true
+
       default:
-        .warning
-    }
-
-    // 3. Notify user and try recovery
-    let recoverySucceeded = await error.notifyAndRecover(level: notificationLevel, logError: false)
-
-    if recoverySucceeded {
-      ErrorLogger.shared.logInfo(
-        error,
-        additionalMessage: "Error recovered successfully"
-      )
+        // Most security errors require user intervention
+        return false
     }
   }
 
-  /// Simulated secure operation that might fail
-  private func performSecureOperation() async throws {
-    // Simulate a security operation
-    try await Task.sleep(nanoseconds: 1_000_000_000)
+  /// Try to recover from a network error automatically
+  private func tryToRecoverFromNetworkError(
+    _ error: ErrorHandlingDomains.UmbraErrors.Network
+      .Core
+  ) async -> Bool {
+    print("Attempting automatic recovery for network error...")
 
-    // Randomly fail with different security errors for demonstration
-    let random = Int.random(in: 0...5)
+    // Simulated recovery logic
+    switch error {
+      case .connectionFailed:
+        print("Attempting to reconnect...")
+        // Simulate retry failure for this example
+        return false
 
-    switch random {
-      case 0:
-        return // Success
-      case 1:
-        throw SecurityError.authenticationFailed("User authentication failed")
-          .with(source: makeErrorSource())
-      case 2:
-        throw SecurityError.authorizationFailed("Insufficient permissions")
-          .with(source: makeErrorSource())
-      case 3:
-        throw SecurityError.cryptoOperationFailed("Encryption failed")
-          .with(source: makeErrorSource())
-      case 4:
-        throw SecurityError.connectionFailed("Security service unavailable")
-          .with(source: makeErrorSource())
-      case 5:
-        throw SecurityError.tamperedData("Data integrity check failed")
-          .with(source: makeErrorSource())
-          .with(context: ErrorContext(
-            source: "IntegrityChecker",
-            code: "checksum_mismatch",
-            message: "Expected checksum does not match",
-            metadata: [
-              "expectedChecksum": "abcdef123456",
-              "actualChecksum": "abcdef123400"
-            ]
-          ))
+      case .timeout:
+        print("Retrying with extended timeout...")
+        // Simulate success for this example
+        return true
+
       default:
-        throw SecurityError.generalError("Unknown security error")
-          .with(source: makeErrorSource())
+        return false
     }
   }
 
-  /// Simulated database operation that might fail
-  private func performDatabaseOperation() async throws {
-    // Simulate a database operation
-    try await Task.sleep(nanoseconds: 1_500_000_000)
+  /// Try to recover from a file system error automatically
+  private func tryToRecoverFromFileSystemError(
+    _ error: ErrorHandlingDomains.UmbraErrors.Storage
+      .FileSystem
+  ) async -> Bool {
+    print("Attempting automatic recovery for file system error...")
 
-    // Use a different error domain for variety
-    if Bool.random() {
-      throw ErrorFactory.makeError(
-        domain: "Database",
-        code: "query_failed",
-        description: "Database query failed",
-        source: makeErrorSource(),
-        context: ErrorContext(
-          source: "QueryEngine",
-          code: "syntax_error",
-          message: "SQL syntax error in query",
-          metadata: [
-            "query": "SELECT * FROM users WHERE id = ?",
-            "parameters": "['user_123']"
-          ]
-        )
-      )
+    // Simulated recovery logic
+    switch error {
+      case .fileNotFound:
+        print("Creating default preferences file...")
+        // Simulate success for this example
+        return true
+
+      case .permissionDenied:
+        print("Requesting elevated permissions...")
+        // Simulate failure for this example
+        return false
+
+      default:
+        return false
     }
+  }
+
+  // MARK: - Private Methods - Recovery Options
+
+  /// Create recovery options for security errors
+  private func createSecurityErrorRecoveryOptions(
+    for error: ErrorHandlingDomains.UmbraErrors
+      .Security.Core
+  ) -> [RecoveryOption] {
+    // Simulated recovery options based on error type
+    switch error {
+      case .invalidInput where error.localizedDescription.contains("password"):
+        [
+          RecoveryAction(id: "reset", title: "Reset Password", handler: {
+            print("User chose to reset password")
+          }),
+          RecoveryAction(id: "retry", title: "Try Again", handler: {
+            print("User chose to retry authentication")
+          }),
+          RecoveryAction(id: "cancel", title: "Cancel", handler: {
+            print("User chose to cancel")
+          })
+        ]
+
+      default:
+        [
+          RecoveryAction(id: "retry", title: "Retry", isDefault: true, handler: {
+            print("User chose to retry")
+          }),
+          RecoveryAction(id: "cancel", title: "Cancel", handler: {
+            print("User chose to cancel")
+          })
+        ]
+    }
+  }
+
+  /// Create recovery options for network errors
+  private func createNetworkErrorRecoveryOptions(
+    for _: ErrorHandlingDomains.UmbraErrors.Network
+      .Core
+  ) -> [RecoveryOption] {
+    [
+      RecoveryAction(id: "retry", title: "Retry Connection", isDefault: true, handler: {
+        print("User chose to retry connection")
+      }),
+      RecoveryAction(id: "offline", title: "Work Offline", handler: {
+        print("User chose to work offline")
+      }),
+      RecoveryAction(id: "cancel", title: "Cancel", handler: {
+        print("User chose to cancel")
+      })
+    ]
+  }
+
+  /// Create recovery options for file system errors
+  private func createFileSystemErrorRecoveryOptions(
+    for error: ErrorHandlingDomains.UmbraErrors
+      .Storage.FileSystem
+  ) -> [RecoveryOption] {
+    switch error {
+      case .fileNotFound:
+        [
+          RecoveryAction(id: "create", title: "Create File", isDefault: true, handler: {
+            print("User chose to create file")
+          }),
+          RecoveryAction(id: "browse", title: "Browse for File", handler: {
+            print("User chose to browse for file")
+          }),
+          RecoveryAction(id: "cancel", title: "Cancel", handler: {
+            print("User chose to cancel")
+          })
+        ]
+
+      default:
+        [
+          RecoveryAction(id: "retry", title: "Retry", isDefault: true, handler: {
+            print("User chose to retry")
+          }),
+          RecoveryAction(id: "cancel", title: "Cancel", handler: {
+            print("User chose to cancel")
+          })
+        ]
+    }
+  }
+
+  // MARK: - Private Methods - Notifications
+
+  /// Show a notification with recovery options
+  private func showNotification(
+    title: String,
+    message: String,
+    severity: ErrorHandlingInterfaces.ErrorSeverity,
+    recoveryOptions: [RecoveryOption]
+  ) {
+    print("NOTIFICATION: \(title)")
+    print("Severity: \(severity.rawValue)")
+    print("Message: \(message)")
+    print("Recovery options:")
+    for option in recoveryOptions {
+      print("- \(option.title)\(option.isDefault ? " (Default)" : "")")
+    }
+    print("")
   }
 }
 
-// MARK: - Helper Extensions
+// MARK: - Helper Protocols
 
-extension SecurityError: RecoverableError {
-  /// Provides recovery options for this security error
-  public func recoveryOptions() -> [ErrorRecoveryOption] {
-    SecurityErrorRecoveryService.shared.recoveryOptions(for: self)
+/// Protocol for recovery action implementations
+protocol RecoveryOption {
+  var id: String { get }
+  var title: String { get }
+  var isDefault: Bool { get }
+}
+
+/// Implementation of recovery action
+struct RecoveryAction: RecoveryOption {
+  let id: String
+  let title: String
+  let isDefault: Bool
+  let handler: () -> Void
+
+  init(id: String, title: String, isDefault: Bool=false, handler: @escaping () -> Void) {
+    self.id=id
+    self.title=title
+    self.isDefault=isDefault
+    self.handler=handler
   }
 }
