@@ -1,6 +1,7 @@
 import CoreErrors
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import ErrorHandling
 
 /// Factory class that provides convenience methods for creating protocol adapters
 /// during the migration from legacy protocols to the new XPCProtocolsCore protocols.
@@ -35,44 +36,18 @@ public enum XPCProtocolMigrationFactory {
     LegacyXPCServiceAdapter(service: legacyService)
   }
 
-  /// Convert from XPCSecurityError to legacy SecurityError
-  ///
-  /// - Parameter error: XPCSecurityError to convert
-  /// - Returns: Legacy SecurityError
-  @available(*, deprecated, message: "Use XPCSecurityError instead")
-  public static func convertToLegacyError(_ error: XPCSecurityError) -> SecurityError {
-    // Use the centralised mapper for consistent error handling
-    CoreErrors.SecurityErrorMapper.mapToSPCError(error)
-  }
-
   /// Convert from legacy error to XPCSecurityError
   ///
   /// - Parameter error: Legacy error to convert
   /// - Returns: Standardised XPCSecurityError
   public static func convertToStandardError(_ error: Error) -> XPCSecurityError {
-    // Use the centralised mapper for consistent error handling
-    CoreErrors.SecurityErrorMapper.mapToXPCError(error)
-  }
-
-  /// Convert from SecurityProtocolsCore.SecurityError to XPCSecurityError
-  ///
-  /// - Parameter error: Security error from the SecurityProtocolsCore module
-  /// - Returns: Equivalent XPCSecurityError
-  public static func convertSecurityCoreError(
-    _ error: SecurityProtocolsCore.SecurityError
-  ) -> XPCSecurityError {
-    // Use the centralised mapper for consistent error handling
-    CoreErrors.SecurityErrorMapper.mapToXPCError(error)
-  }
-
-  /// Convert from XPCSecurityError to SecurityProtocolsCore.SecurityError
-  ///
-  /// - Parameter error: XPC error
-  /// - Returns: Equivalent SecurityProtocolsCore.SecurityError
-  public static func convertToSecurityCoreError(_ error: XPCSecurityError) -> SecurityProtocolsCore
-  .SecurityError {
-    // Use the centralised mapper for consistent error handling
-    CoreErrors.SecurityErrorMapper.mapToSPCError(error)
+    // If the error is already an XPCSecurityError, return it directly
+    if let xpcError = error as? XPCSecurityError {
+      return xpcError
+    }
+    
+    // Otherwise create a general error with the original error's description
+    return .internalError(reason: error.localizedDescription)
   }
 
   /// Convert any error to XPCSecurityError
@@ -80,7 +55,12 @@ public enum XPCProtocolMigrationFactory {
   /// - Parameter error: Any error
   /// - Returns: XPCSecurityError representation
   public static func anyErrorToXPCError(_ error: Error) -> XPCSecurityError {
-    // Use the centralised mapper for consistent error handling
-    CoreErrors.SecurityErrorMapper.mapToXPCError(error)
+    // If the error is already an XPCSecurityError, return it directly
+    if let xpcError = error as? XPCSecurityError {
+      return xpcError
+    }
+    
+    // Otherwise create a general error with the original error's description
+    return .internalError(reason: error.localizedDescription)
   }
 }
