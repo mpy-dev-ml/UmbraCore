@@ -18,10 +18,10 @@ public enum SecurityBridgeErrorMapper {
 
   /// Maps any error to a SecurityError
   /// - Parameter error: The error to map
-  /// - Returns: A SecurityProtocolsCore.SecurityError representation of the error
-  public static func mapToSecurityError(_ error: Error) -> SecurityProtocolsCore.SecurityError {
+  /// - Returns: A UmbraErrors.Security.Protocols representation of the error
+  public static func mapToSecurityError(_ error: Error) -> UmbraErrors.Security.Protocols {
     // Use our canonical error mapper from CoreErrors
-    CoreErrors.SecurityErrorMapper.mapToSPCError(error) as! SecurityProtocolsCore.SecurityError
+    CoreErrors.SecurityErrorMapper.mapToSPCError(error) as! UmbraErrors.Security.Protocols
   }
 
   /// Maps a security error to an XPC error type for transmission over XPC

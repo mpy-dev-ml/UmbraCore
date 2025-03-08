@@ -1,3 +1,4 @@
+import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
 
@@ -188,12 +189,13 @@ extension Result where Success == Data, Failure == Error {
 
 extension SecurityBridge {
   /// Helper to convert a Foundation.Result to a domain result
-  static func mapResult<T>(_ result: Result<T, Error>) -> Result<T, SecurityError> {
+  static func mapResult<T>(_ result: Result<T, Error>)
+  -> Result<T, UmbraErrors.Security.Protocols> {
     switch result {
       case let .success(value):
         .success(value)
       case let .failure(error):
-        .failure(SecurityError.internalError(error.localizedDescription))
+        .failure(UmbraErrors.Security.Protocols.internalError(error.localizedDescription))
     }
   }
 }

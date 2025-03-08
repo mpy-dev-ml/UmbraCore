@@ -10,7 +10,7 @@ import UmbraLogging
 import XPCProtocolsCore
 
 // Type alias to disambiguate SecurityError types
-typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+typealias SPCSecurityError=UmbraErrors.Security.Protocols
 
 /// Manages security operations and access control
 public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProviderProtocol {

@@ -22,7 +22,7 @@ public final class SecurityUtils: @unchecked Sendable {
   /// Generate cryptographically secure random data
   /// - Parameter length: Length of random data to generate
   /// - Returns: Random data of specified length
-  /// - Throws: SecurityProtocolsCore.SecurityError if random generation fails
+  /// - Throws: UmbraErrors.Security.Protocols if random generation fails
   public func generateRandomData(_ length: Int) throws -> Data {
     var data=Data(count: length)
     let result=data.withUnsafeMutableBytes { bytes in
@@ -30,7 +30,7 @@ public final class SecurityUtils: @unchecked Sendable {
     }
 
     guard result == errSecSuccess else {
-      throw SecurityProtocolsCore.SecurityError.randomGenerationFailed
+      throw UmbraErrors.Security.Protocols.randomGenerationFailed
     }
 
     return data
@@ -41,7 +41,7 @@ public final class SecurityUtils: @unchecked Sendable {
   ///   - data: Data to hash
   ///   - algorithm: Hash algorithm to use
   /// - Returns: Hashed data
-  /// - Throws: SecurityProtocolsCore.SecurityError if hashing fails
+  /// - Throws: UmbraErrors.Security.Protocols if hashing fails
   public func hash(_ data: Data, using algorithm: SecurityTypesTypes.HashAlgorithm) throws -> Data {
     switch algorithm {
       case .sha256:

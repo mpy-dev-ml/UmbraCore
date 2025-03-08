@@ -4,7 +4,7 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 
 // Type alias to disambiguate SecurityError types
-typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+typealias SPCSecurityError=UmbraErrors.Security.Protocols
 
 /// Factory class that provides convenience methods for creating protocol adapters
 /// during the migration from legacy protocols to the new XPCProtocolsCore protocols.

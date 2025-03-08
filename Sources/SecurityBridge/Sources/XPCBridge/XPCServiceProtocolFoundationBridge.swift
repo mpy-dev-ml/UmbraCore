@@ -197,7 +197,7 @@ extension SecurityBridge {
       } else if let nsNumber=result as? NSNumber {
         return .success(nsNumber.boolValue)
       } else {
-        return .failure(CoreErrors.SecurityError.general("Unknown result type"))
+        return .failure(UmbraErrors.Security.Protocols.internalError("Unknown result type"))
       }
     }
 
@@ -273,7 +273,7 @@ extension SecurityBridge {
       } else if let nsString=result as? NSString {
         return .success(nsString as String)
       } else {
-        return .failure(CoreErrors.SecurityError.general("Invalid version format"))
+        return .failure(UmbraErrors.Security.Protocols.internalError("Invalid version format"))
       }
     }
 
@@ -330,8 +330,8 @@ extension SecurityBridge {
     private func mapXPCError(_ error: Error) -> XPCSecurityError {
       if let securityError=error as? XPCSecurityError {
         return securityError
-      } else if let securityError=error as? SecurityProtocolsCore.SecurityError {
-        // Convert from SecurityProtocolsCore.SecurityError to XPCSecurityError
+      } else if let securityError=error as? UmbraErrors.Security.Protocols {
+        // Convert from UmbraErrors.Security.Protocols to XPCSecurityError
         // (CoreErrors.SecurityError)
         switch securityError {
           case .encryptionFailed:
@@ -341,7 +341,7 @@ extension SecurityBridge {
           case .keyGenerationFailed:
             return CoreErrors.SecurityError.keyGenerationFailed
           case .invalidKey, .invalidInput:
-            return CoreErrors.SecurityError.invalidData
+            return UmbraErrors.Security.Protocols.invalidFormat(reason: "Invalid data")
           case .hashVerificationFailed, .randomGenerationFailed:
             return CoreErrors.SecurityError.hashingFailed
           case .storageOperationFailed:
@@ -349,15 +349,15 @@ extension SecurityBridge {
           case .timeout, .serviceError:
             return CoreErrors.SecurityError.serviceFailed
           case .internalError:
-            return CoreErrors.SecurityError.general(error.localizedDescription)
+            return UmbraErrors.Security.Protocols.internalError(error.localizedDescription)
           case .notImplemented:
             return CoreErrors.SecurityError.notImplemented
           @unknown default:
-            return CoreErrors.SecurityError.general(error.localizedDescription)
+            return UmbraErrors.Security.Protocols.internalError(error.localizedDescription)
         }
       } else {
         // Map generic error to appropriate error
-        return CoreErrors.SecurityError.general(error.localizedDescription)
+        return UmbraErrors.Security.Protocols.internalError(error.localizedDescription)
       }
     }
 

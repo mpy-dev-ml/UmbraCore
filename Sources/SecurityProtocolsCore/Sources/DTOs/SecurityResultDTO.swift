@@ -1,4 +1,5 @@
 import ErrorHandling
+import ErrorHandlingDomains
 import UmbraCoreTypes
 
 /// FoundationIndependent representation of a security operation result.
@@ -21,7 +22,7 @@ public struct SecurityResultDTO: Sendable, Equatable {
   public let errorMessage: String?
 
   /// Security error type
-  public let error: UmbraErrors.Security.Protocol?
+  public let error: UmbraErrors.Security.Protocols?
 
   // MARK: - Initializers
 
@@ -56,12 +57,17 @@ public struct SecurityResultDTO: Sendable, Equatable {
     error=nil
   }
 
-  /// Initialize with success flag and error
+  /// Initialize a security result
+  ///
   /// - Parameters:
-  ///   - success: Whether the operation succeeded
+  ///   - success: Result status
   ///   - error: Optional error type
   ///   - errorDetails: Optional detailed error message
-  public init(success: Bool, error: UmbraErrors.Security.Protocol?=nil, errorDetails: String?=nil) {
+  public init(
+    success: Bool,
+    error: UmbraErrors.Security.Protocols?=nil,
+    errorDetails: String?=nil
+  ) {
     self.success=success
     data=nil
     self.error=error
@@ -69,36 +75,24 @@ public struct SecurityResultDTO: Sendable, Equatable {
     // Derive error code based on error type
     if let error {
       switch error {
-        case .encryptionFailed:
+        case .invalidFormat:
           errorCode=1001
-        case .decryptionFailed:
+        case .unsupportedOperation:
           errorCode=1002
-        case .keyGenerationFailed:
+        case .incompatibleVersion:
           errorCode=1003
-        case .invalidKey:
+        case .missingProtocolImplementation:
           errorCode=1004
-        case .hashVerificationFailed:
+        case .invalidState:
           errorCode=1005
-        case .randomGenerationFailed:
-          errorCode=1006
-        case .invalidInput:
-          errorCode=1007
-        case .storageOperationFailed:
-          errorCode=1008
-        case .timeout:
-          errorCode=1009
-        case let .serviceError(code, _):
-          errorCode=code
         case .internalError:
-          errorCode=1010
-        case .notImplemented:
-          errorCode=1011
+          errorCode=1006
         @unknown default:
           errorCode=1099
       }
 
-      // Use error description if no specific details provided
-      errorMessage=errorDetails ?? error.description
+      // Set error description
+      errorMessage=errorDetails ?? String(describing: error)
     } else {
       errorCode=nil
       errorMessage=errorDetails
@@ -114,7 +108,7 @@ public struct SecurityResultDTO: Sendable, Equatable {
     data=nil
     self.errorCode=errorCode
     self.errorMessage=errorMessage
-    error = .serviceError(code: errorCode, reason: errorMessage)
+    error = .internalError("Error code: \(errorCode), Message: \(errorMessage)")
   }
 
   // MARK: - Utility Methods
@@ -141,13 +135,13 @@ public struct SecurityResultDTO: Sendable, Equatable {
     SecurityResultDTO(errorCode: code, errorMessage: message)
   }
 
-  /// Create a failure result with a UmbraErrors.Security.Protocol error
+  /// Create a failure result DTO
   /// - Parameters:
-  ///   - error: The security error that occurred
-  ///   - details: Optional additional details
+  ///   - error: The security error type
+  ///   - details: Optional error details
   /// - Returns: A failure result DTO
   public static func failure(
-    error: UmbraErrors.Security.Protocol,
+    error: UmbraErrors.Security.Protocols,
     details: String?=nil
   ) -> SecurityResultDTO {
     SecurityResultDTO(success: false, error: error, errorDetails: details)

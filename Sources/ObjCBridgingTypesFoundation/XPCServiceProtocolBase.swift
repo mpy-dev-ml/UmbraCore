@@ -1,9 +1,20 @@
 import CoreErrors
+import ErrorHandlingDomains
 import Foundation
 import XPCProtocolsCore
 
 /// Custom error for Foundation bridging that doesn't require direct NSError use
 public enum FoundationBridgingError: Error, Sendable {
+  /// Invalid data format
+  case invalidDataFormat(details: String)
+
+  /// Failed to convert data
+  case conversionFailed(details: String)
+
+  /// Service connection error
+  case serviceConnectionFailed(details: String)
+
+  /// Implementation missing
   case implementationMissing(String)
 }
 
@@ -49,7 +60,10 @@ extension XPCServiceProtocolBaseFoundation {
         }
       }
     } catch {
-      return .failure(XPCSecurityError.cryptoError)
+      return .failure(
+        XPCSecurityError
+          .internalError("Crypto operation failed: \(error.localizedDescription)")
+      )
     }
   }
 

@@ -1,12 +1,13 @@
 import CoreErrors
 import CoreTypesInterfaces
+import ErrorHandlingDomains
 import FoundationBridgeTypes
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
 
 // Type alias to disambiguate SecurityError types
-typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+typealias SPCSecurityError=UmbraErrors.Security.Protocols
 
 // MARK: - SecurityConfigDTO Extensions
 
@@ -83,6 +84,6 @@ extension SecurityResultDTO {
     }
 
     // Default error case if transformation fails
-    return .failure(CoreErrors.SecurityError.invalidData)
+    return .failure(CoreErrors.SecurityError.invalidInput(reason: "Invalid data format"))
   }
 }

@@ -1,4 +1,5 @@
 import ErrorHandling
+import ErrorHandlingDomains
 import UmbraCoreTypes
 
 /// Protocol defining secure key management operations in a FoundationIndependent manner.
@@ -8,7 +9,7 @@ public protocol KeyManagementProtocol: Sendable {
   /// - Parameter identifier: A string identifying the key.
   /// - Returns: The security key as `SecureBytes` or an error.
   func retrieveKey(withIdentifier identifier: String) async
-    -> Result<SecureBytes, UmbraErrors.Security.Protocol>
+    -> Result<SecureBytes, UmbraErrors.Security.Protocols>
 
   /// Stores a security key with the given identifier.
   /// - Parameters:
@@ -16,13 +17,13 @@ public protocol KeyManagementProtocol: Sendable {
   ///   - identifier: A string identifier for the key.
   /// - Returns: Success or an error.
   func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async
-    -> Result<Void, UmbraErrors.Security.Protocol>
+    -> Result<Void, UmbraErrors.Security.Protocols>
 
   /// Deletes a security key with the given identifier.
   /// - Parameter identifier: A string identifying the key to delete.
   /// - Returns: Success or an error.
   func deleteKey(withIdentifier identifier: String) async
-    -> Result<Void, UmbraErrors.Security.Protocol>
+    -> Result<Void, UmbraErrors.Security.Protocols>
 
   /// Rotates a security key, creating a new key and optionally re-encrypting data.
   /// - Parameters:
@@ -35,9 +36,9 @@ public protocol KeyManagementProtocol: Sendable {
   ) async -> Result<(
     newKey: SecureBytes,
     reencryptedData: SecureBytes?
-  ), UmbraErrors.Security.Protocol>
+  ), UmbraErrors.Security.Protocols>
 
   /// Lists all available key identifiers.
   /// - Returns: An array of key identifiers or an error.
-  func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocol>
+  func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols>
 }

@@ -136,7 +136,7 @@ final class ErrorHandlingSystemTests: XCTestCase {
   func testErrorMapping() {
     // Given
     let externalError=NSError(
-      domain: "SecurityProtocolsCore.SecurityError",
+      domain: "UmbraErrors.Security.Protocols",
       code: 401,
       userInfo: [NSLocalizedDescriptionKey: "Authentication failed: Token expired"]
     )

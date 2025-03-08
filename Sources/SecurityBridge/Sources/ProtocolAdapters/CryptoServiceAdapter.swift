@@ -1,10 +1,11 @@
 import CoreErrors
+import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 
-// Type alias to disambiguate SecurityError types
-typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+// Removing duplicate type alias that's already defined in other files
+// typealias SPCSecurityError=UmbraErrors.Security.Protocols
 
 /// CryptoServiceAdapter provides a bridge between Foundation-based cryptographic implementations
 /// and the Foundation-free CryptoServiceProtocol.
@@ -30,7 +31,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
   public func encrypt(
     data: SecureBytes,
     using key: SecureBytes
-  ) async -> Result<SecureBytes, SecurityError> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Convert SecureBytes to Data for the Foundation implementation
     let dataToEncrypt=DataAdapter.data(from: data)
     let keyData=DataAdapter.data(from: key)
@@ -50,7 +51,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
   public func decrypt(
     data: SecureBytes,
     using key: SecureBytes
-  ) async -> Result<SecureBytes, SecurityError> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Convert SecureBytes to Data for the Foundation implementation
     let encryptedData=DataAdapter.data(from: data)
     let keyData=DataAdapter.data(from: key)
@@ -67,7 +68,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     }
   }
 
-  public func generateKey() async -> Result<SecureBytes, SecurityError> {
+  public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     let result=await implementation.generateKey()
 
     switch result {
@@ -78,7 +79,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     }
   }
 
-  public func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
+  public func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     let dataToHash=DataAdapter.data(from: data)
     let result=await implementation.hash(data: dataToHash)
 
@@ -90,17 +91,26 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     }
   }
 
-  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
+  public func verify(
+    data: SecureBytes,
+    against hash: SecureBytes
+  ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
     let dataToVerify=DataAdapter.data(from: data)
     let hashData=DataAdapter.data(from: hash)
 
-    return await implementation.verify(data: dataToVerify, against: hashData)
+    do {
+      let isValid=try implementation.verify(data: dataToVerify, against: hashData)
+      return .success(isValid)
+    } catch {
+      return .failure(mapError(error))
+    }
   }
 
   /// Generate cryptographically secure random data
   /// - Parameter length: Number of random bytes to generate
   /// - Returns: Result containing random data or error
-  public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
+  public func generateRandomData(length: Int) async
+  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Call the implementation
     let result=await implementation.generateRandomData(length: length)
 
@@ -117,34 +127,40 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    // Convert SecureBytes to Data for the Foundation implementation
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     let dataToEncrypt=DataAdapter.data(from: data)
     let keyData=DataAdapter.data(from: key)
 
-    // Convert config to Foundation types
+    // Extract configuration options if present
+    let algorithm=cryptoAlgorithmFrom(config)
     let ivData=config.initializationVector.map { DataAdapter.data(from: $0) }
     let aadData=config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
 
-    // Call the implementation
-    let result=await implementation.encryptSymmetric(
-      data: dataToEncrypt,
-      key: keyData,
-      algorithm: config.algorithm,
-      keySizeInBits: config.keySizeInBits,
-      iv: ivData,
-      aad: aadData,
-      options: config.options
-    )
+    // Configure encrypt options
+    var options: [String: Any]=[:]
+    if let algorithm {
+      options["algorithm"]=algorithm
+    }
+    if let ivData {
+      options["iv"]=ivData
+    }
+    if let aadData {
+      options["aad"]=aadData
+    }
 
-    // Process the result
-    if result.success, let resultData=result.data {
-      return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
-    } else {
-      return SecurityResultDTO(
-        errorCode: result.errorCode ?? -1,
-        errorMessage: result.errorMessage ?? "Unknown error during symmetric encryption"
-      )
+    do {
+      let resultData=try implementation.encryptSymmetric(
+        data: dataToEncrypt,
+        key: keyData,
+        algorithm: config.algorithm,
+        keySizeInBits: config.keySizeInBits,
+        iv: ivData,
+        aad: aadData,
+        options: config.options
+      ).data
+      return .success(DataAdapter.secureBytes(from: resultData))
+    } catch {
+      return .failure(mapError(error))
     }
   }
 
@@ -152,34 +168,40 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    // Convert SecureBytes to Data for the Foundation implementation
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     let encryptedData=DataAdapter.data(from: data)
     let keyData=DataAdapter.data(from: key)
 
-    // Convert config to Foundation types
+    // Extract configuration options if present
+    let algorithm=cryptoAlgorithmFrom(config)
     let ivData=config.initializationVector.map { DataAdapter.data(from: $0) }
     let aadData=config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
 
-    // Call the implementation
-    let result=await implementation.decryptSymmetric(
-      data: encryptedData,
-      key: keyData,
-      algorithm: config.algorithm,
-      keySizeInBits: config.keySizeInBits,
-      iv: ivData,
-      aad: aadData,
-      options: config.options
-    )
+    // Configure decrypt options
+    var options: [String: Any]=[:]
+    if let algorithm {
+      options["algorithm"]=algorithm
+    }
+    if let ivData {
+      options["iv"]=ivData
+    }
+    if let aadData {
+      options["aad"]=aadData
+    }
 
-    // Process the result
-    if result.success, let resultData=result.data {
-      return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
-    } else {
-      return SecurityResultDTO(
-        errorCode: result.errorCode ?? -1,
-        errorMessage: result.errorMessage ?? "Unknown error during symmetric decryption"
-      )
+    do {
+      let resultData=try implementation.decryptSymmetric(
+        data: encryptedData,
+        key: keyData,
+        algorithm: config.algorithm,
+        keySizeInBits: config.keySizeInBits,
+        iv: ivData,
+        aad: aadData,
+        options: config.options
+      ).data
+      return .success(DataAdapter.secureBytes(from: resultData))
+    } catch {
+      return .failure(mapError(error))
     }
   }
 
@@ -187,28 +209,26 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     data: SecureBytes,
     publicKey: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    // Convert SecureBytes to Data for the Foundation implementation
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     let dataToEncrypt=DataAdapter.data(from: data)
     let publicKeyData=DataAdapter.data(from: publicKey)
 
-    // Call the implementation
-    let result=await implementation.encryptAsymmetric(
-      data: dataToEncrypt,
-      publicKey: publicKeyData,
-      algorithm: config.algorithm,
-      keySizeInBits: config.keySizeInBits,
-      options: config.options
-    )
+    // Configure options
+    var options: [String: Any]=[:]
+    if let algorithm=cryptoAlgorithmFrom(config) {
+      options["algorithm"]=algorithm
+    }
 
-    // Process the result
-    if result.success, let resultData=result.data {
-      return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
-    } else {
-      return SecurityResultDTO(
-        errorCode: result.errorCode ?? -1,
-        errorMessage: result.errorMessage ?? "Unknown error during asymmetric encryption"
-      )
+    do {
+      let resultData=try implementation.encryptAsymmetric(
+        data: dataToEncrypt,
+        publicKey: publicKeyData,
+        algorithm: config.algorithm,
+        options: config.options
+      ).data
+      return .success(DataAdapter.secureBytes(from: resultData))
+    } catch {
+      return .failure(mapError(error))
     }
   }
 
@@ -216,67 +236,66 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     data: SecureBytes,
     privateKey: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    // Convert SecureBytes to Data for the Foundation implementation
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     let encryptedData=DataAdapter.data(from: data)
     let privateKeyData=DataAdapter.data(from: privateKey)
 
-    // Call the implementation
-    let result=await implementation.decryptAsymmetric(
-      data: encryptedData,
-      privateKey: privateKeyData,
-      algorithm: config.algorithm,
-      keySizeInBits: config.keySizeInBits,
-      options: config.options
-    )
+    // Configure options
+    var options: [String: Any]=[:]
+    if let algorithm=cryptoAlgorithmFrom(config) {
+      options["algorithm"]=algorithm
+    }
 
-    // Process the result
-    if result.success, let resultData=result.data {
-      return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
-    } else {
-      return SecurityResultDTO(
-        errorCode: result.errorCode ?? -1,
-        errorMessage: result.errorMessage ?? "Unknown error during asymmetric decryption"
-      )
+    do {
+      let resultData=try implementation.decryptAsymmetric(
+        data: encryptedData,
+        privateKey: privateKeyData,
+        algorithm: config.algorithm,
+        options: config.options
+      ).data
+      return .success(DataAdapter.secureBytes(from: resultData))
+    } catch {
+      return .failure(mapError(error))
     }
   }
 
   public func hash(
     data: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    // Convert SecureBytes to Data for the Foundation implementation
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     let dataToHash=DataAdapter.data(from: data)
 
-    // Call the implementation
-    let result=await implementation.hash(
-      data: dataToHash,
-      algorithm: config.algorithm,
-      options: config.options
-    )
+    // Extract hash algorithm if specified
+    let algorithm=cryptoAlgorithmFrom(config)
 
-    // Process the result
-    if result.success, let resultData=result.data {
-      return SecurityResultDTO(data: DataAdapter.secureBytes(from: resultData))
-    } else {
-      return SecurityResultDTO(
-        errorCode: result.errorCode ?? -1,
-        errorMessage: result.errorMessage ?? "Unknown error during hashing"
-      )
+    // Configure options
+    var options: [String: Any]=[:]
+    if let algorithm {
+      options["algorithm"]=algorithm
+    }
+
+    do {
+      let resultData=try implementation.hash(
+        data: dataToHash,
+        algorithm: config.algorithm,
+        options: config.options
+      ).data
+      return .success(DataAdapter.secureBytes(from: resultData))
+    } catch {
+      return .failure(mapError(error))
     }
   }
 
   // MARK: - Helper Methods
 
-  /// Maps an error to a SecurityError using the centralised error mapper.
-  ///
-  /// This method provides a standardised way of handling errors throughout the application.
-  /// It uses the centralised error mapper to convert any error into a SecurityError.
-  ///
-  /// - Parameter error: The error to be mapped.
-  /// - Returns: A SecurityError representing the original error.
-  private func mapError(_ error: Error) -> SecurityError {
-    CoreErrors.SecurityErrorMapper.mapToSPCError(error)
+  /// Map any error to a Security.Protocols error
+  /// - Parameter error: Original error
+  /// - Returns: A Security.Protocols error
+  private func mapError(_ error: Error) -> UmbraErrors.Security.Protocols {
+    if let securityError=error as? UmbraErrors.Security.Protocols {
+      return securityError
+    }
+    return CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
   }
 }
 

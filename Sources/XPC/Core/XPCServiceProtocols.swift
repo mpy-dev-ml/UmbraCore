@@ -81,7 +81,10 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+            .resume(returning: .failure(.internalError(
+              error?
+                .localizedDescription ?? "Unknown error"
+            )))
         }
       }
     }
@@ -97,7 +100,10 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+            .resume(returning: .failure(.internalError(
+              error?
+                .localizedDescription ?? "Unknown error"
+            )))
         }
       }
     }
@@ -113,7 +119,10 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+            .resume(returning: .failure(.internalError(
+              error?
+                .localizedDescription ?? "Unknown error"
+            )))
         }
       }
     }
@@ -129,7 +138,10 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+            .resume(returning: .failure(.internalError(
+              error?
+                .localizedDescription ?? "Unknown error"
+            )))
         }
       }
     }
@@ -145,7 +157,7 @@ extension ModernCryptoXPCServiceProtocol {
         if let error=error as? XPCSecurityError {
           continuation.resume(returning: .failure(error))
         } else if let error {
-          continuation.resume(returning: .failure(.general(error.localizedDescription)))
+          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
         } else {
           continuation.resume(returning: .success(()))
         }
@@ -163,7 +175,10 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.general(error?.localizedDescription ?? "Unknown error")))
+            .resume(returning: .failure(.internalError(
+              error?
+                .localizedDescription ?? "Unknown error"
+            )))
         }
       }
     }
@@ -176,7 +191,7 @@ extension ModernCryptoXPCServiceProtocol {
         if let error=error as? XPCSecurityError {
           continuation.resume(returning: .failure(error))
         } else if let error {
-          continuation.resume(returning: .failure(.general(error.localizedDescription)))
+          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
         } else {
           continuation.resume(returning: .success(()))
         }
@@ -191,7 +206,7 @@ extension ModernCryptoXPCServiceProtocol {
         if let error=error as? XPCSecurityError {
           continuation.resume(returning: .failure(error))
         } else if let error {
-          continuation.resume(returning: .failure(.general(error.localizedDescription)))
+          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
         } else {
           continuation.resume(returning: .success(isValid))
         }
@@ -206,7 +221,7 @@ extension ModernCryptoXPCServiceProtocol {
         if let error=error as? XPCSecurityError {
           continuation.resume(returning: .failure(error))
         } else if let error {
-          continuation.resume(returning: .failure(.general(error.localizedDescription)))
+          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
         } else {
           continuation.resume(returning: .success(version))
         }

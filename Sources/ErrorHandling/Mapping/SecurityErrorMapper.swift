@@ -11,7 +11,7 @@ public struct SecurityErrorMapper {
   /// Initialises a new mapper
   public init() {}
 
-  /// Maps from SecurityProtocolsCore.SecurityError to our consolidated UmbraSecurityError
+  /// Maps from UmbraErrors.Security.Protocols to our consolidated UmbraSecurityError
   /// Note: We avoid using fully qualified names to prevent type resolution issues
   /// described in the module structure
   /// - Parameter error: The source SecurityError

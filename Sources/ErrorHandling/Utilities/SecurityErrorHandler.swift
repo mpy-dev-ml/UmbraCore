@@ -219,29 +219,35 @@ public final class SecurityErrorHandler: @unchecked Sendable {
   /// - Returns: ErrorNotification for displaying to the user
   func createNotificationForUI(for error: Error) -> ErrorHandlingNotification.ErrorNotification {
     // Create recovery options based on the error type
-    let recoveryOptions=createRecoveryOptions(for: error)
+    let recoveryOptions=addSecurityRecoveryOptions(
+      for: error,
+      retryAction: { /* Empty retry action */ },
+      cancelAction: { /* Empty cancel action */ }
+    )
 
-    // Use a conditional cast with explicit type to avoid ambiguity
-    if let securityError=error as? SecurityExternalError {
-      return ErrorHandlingNotification.ErrorNotification(
-        error: securityError,
-        title: "Security Alert",
-        message: securityError.errorDescription,
-        recoveryOptions: recoveryOptions?.actions ?? []
+    // Convert RecoveryActions to ClosureRecoveryOptions
+    let closureOptions=recoveryOptions.actions.map { action in
+      ErrorHandlingNotification.ClosureRecoveryOption(
+        title: action.title,
+        description: action.description,
+        action: { await action.perform() }
       )
-    } else if let securityError=error as? SecurityCoreErrorWrapper {
+    }
+
+    // Use a conditional cast with appropriate type
+    if let securityError=error as? SecurityCoreErrorWrapper {
       return ErrorHandlingNotification.ErrorNotification(
         error: securityError,
         title: "Security Alert",
         message: securityError.errorDescription,
-        recoveryOptions: recoveryOptions?.actions ?? []
+        recoveryOptions: closureOptions
       )
     } else {
       return ErrorHandlingNotification.ErrorNotification(
         error: error,
         title: "Security Alert",
         message: String(describing: error),
-        recoveryOptions: recoveryOptions?.actions ?? []
+        recoveryOptions: closureOptions
       )
     }
   }
@@ -384,16 +390,14 @@ extension SecurityErrorHandler {
   /// - Parameter error: Any error to handle as a security error
   @MainActor
   public static func handleExampleError(_ error: Error) {
-    // Create recovery options
-    let recoveryOptions=shared.addSecurityRecoveryOptions(
+    // Create recovery options but assign to _ since we're not using the result
+    _=shared.addSecurityRecoveryOptions(
       for: error,
       retryAction: {
-        print("Retrying after security error")
-        // Implement retry logic here
+        print("Retrying...")
       },
       cancelAction: {
-        print("Cancelled after security error")
-        // Implement cancel logic here
+        print("Cancelled")
       }
     )
 

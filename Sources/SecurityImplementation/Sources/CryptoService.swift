@@ -17,56 +17,18 @@
  * **Memory Safety**: Sensitive cryptographic materials are stored in SecureBytes containers
    which provide basic memory protections, but these protections are not comprehensive.
 
- * **Side-Channel Attacks**: The current implementation has not been reviewed for resistance
-   to timing and other side-channel attacks. Caution is advised in high-security contexts.
-
- * **Key Management**: Keys must be properly generated, stored, and rotated according to
-   security best practices. The KeyManager class provides some facilities for this.
-
- ## Performance Characteristics
-
- * **Symmetric Encryption**: AES-GCM provides good performance and scales well for
-   large data volumes. Performance is generally CPU-bound and benefits from hardware
-   acceleration when available.
-
- * **Asymmetric Encryption**: The current implementation is not optimized for performance.
-   For large data volumes, a hybrid approach is recommended (encrypt data with symmetric
-   key, encrypt the symmetric key with asymmetric key).
-
- * **Memory Usage**: Operations involving large data sets may cause temporary memory
-   pressure due to data copying. Consider streaming approaches for very large data sets.
-
- ## Thread Safety
-
- All public methods are thread-safe and can be called concurrently from multiple threads.
- The class is marked as Sendable and follows Swift concurrency best practices.
-
- ## Usage Examples
-
- ```swift
- // Symmetric encryption example
- let cryptoService = CryptoService()
- let key = await cryptoService.generateKey().get()
- let data = SecureBytes("Secret message".data(using: .utf8)!)
-
- // Encrypt
- let encryptResult = await cryptoService.encrypt(data: data, using: key)
- let encryptedData = encryptResult.data
-
- // Decrypt
- let decryptResult = await cryptoService.decrypt(data: encryptedData!, using: key)
- let decryptedData = decryptResult.data
- ```
-
- ## Swift 6 Compatibility
-
- This module is designed to be compatible with Swift 6, adhering to the latest Swift
- language features and avoiding deprecated APIs.
+ * **Side-Channel Attacks**: The current implementation doesn't include mitigations for
+   timing attacks, power analysis, or other side-channel vulnerabilities.
  */
 
-import CryptoSwiftFoundationIndependent
+import CoreErrors
+import ErrorHandlingDomains
+import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
+
+// Alias UmbraErrors.Security.Protocols as SecurityError to match the existing code expectations
+typealias SecurityError=UmbraErrors.Security.Protocols
 
 /// Implementation of CryptoServiceProtocol that provides cryptographic operations
 /// without any dependency on Foundation. This implementation handles encryption,

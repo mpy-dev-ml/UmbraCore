@@ -1,16 +1,16 @@
 import CoreErrors
+import ErrorHandlingDomains
 import SecurityProtocolsCore
 import XPCProtocolsCore
 
 /// Provides standardised error mapping between different security error types
 public enum SecurityErrorMapper {
-  /// Map any error to SecurityError from SecurityProtocolsCore
+  /// Map any error to Security.Protocols error type
   /// - Parameter error: The error to map
-  /// - Returns: A SecurityError representation of the error from SecurityProtocolsCore
-  public static func toSecurityError(_ error: Error) -> SecurityProtocolsCore.SecurityError {
-    // Delegate to the canonical implementation in CoreErrors and cast the result
-    // The force cast is safe because mapToSPCError is designed to be used in this context
-    CoreErrors.SecurityErrorMapper.mapToSPCError(error) as! SecurityProtocolsCore.SecurityError
+  /// - Returns: A Security.Protocols representation of the error
+  public static func toSecurityError(_ error: Error) -> UmbraErrors.Security.Protocols {
+    // Delegate to the canonical implementation in CoreErrors
+    CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
   }
 
   /// Map any error to CoreErrors.SecurityError

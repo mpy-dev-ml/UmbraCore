@@ -1,12 +1,14 @@
-import ErrorHandlingCore
-import ErrorHandlingDomains
-
-// Removed ErrorHandlingLogging import to fix library evolution issues
 import ErrorHandling // Add this import to access the wrapper types
 import ErrorHandlingCommon
+import ErrorHandlingCore
+import ErrorHandlingDomains
 import ErrorHandlingInterfaces
 import ErrorHandlingMapping
 import ErrorHandlingNotification
+
+// Use the direct protocol name from ErrorHandling.Interfaces
+// Define the full type name instead of using a typealias
+typealias RecoveryOptionType=ErrorHandlingInterfaces.RecoveryOption
 
 /// Example class demonstrating the usage of the error handling system
 ///
@@ -42,8 +44,8 @@ public class ErrorHandlingExample {
   /// Sample recovery provider for demonstration purposes
   private class SampleRecoveryProvider: RecoveryOptionsProvider {
     /// Provides recovery options for security errors
-    public func recoveryOptions(for error: Error)
-    -> [ErrorHandlingNotification.ClosureRecoveryOption]? {
+    public func recoveryOptions(for error: some UmbraError)
+    -> [ErrorHandlingInterfaces.RecoveryOption] {
       // Map to security error if possible
       if let securityError=error as? SecurityCoreErrorWrapper {
         // Provide different recovery options based on error type
@@ -59,7 +61,7 @@ public class ErrorHandlingExample {
                 action: { print("Using backup key...") }
               )
             ]
-          case .keyNotFound:
+          case .keyGenerationFailed:
             return [
               ErrorHandlingNotification.ClosureRecoveryOption(
                 title: "Create New Key",
@@ -68,6 +70,17 @@ public class ErrorHandlingExample {
               ErrorHandlingNotification.ClosureRecoveryOption(
                 title: "Import Key",
                 action: { print("Importing key...") }
+              )
+            ]
+          case .encryptionFailed:
+            return [
+              ErrorHandlingNotification.ClosureRecoveryOption(
+                title: "Retry Encryption",
+                action: { print("Retrying encryption...") }
+              ),
+              ErrorHandlingNotification.ClosureRecoveryOption(
+                title: "Skip",
+                action: { print("Skipping encryption") }
               )
             ]
           default:
@@ -112,7 +125,7 @@ public class ErrorHandlingExample {
 
     // Report the error
     Task {
-      await errorHandler.reportError(wrappedError)
+      await errorHandler.handle(wrappedError)
       print("Security error handled.")
 
       // Demonstrate error mapping
@@ -132,21 +145,18 @@ public class ErrorHandlingExample {
     let externalError=ExternalError(message: "External API connection failed")
 
     // Try to map to security error
-    // Remove the try? since it doesn't throw
-    if let securityMapper=SecurityErrorMapper() {
-      // Check if the map method exists
-      if let securityError=securityMapper.mapFromAny(externalError) {
-        print("Successfully mapped to security error: \(securityError)")
-      } else {
-        // Handle unmapped errors with an application error
-        let coreAppError=UmbraErrors.Application.Core.internalError(
-          reason: "Failed to map external security error"
-        )
-        let wrappedAppError=ApplicationCoreErrorWrapper(coreAppError)
-        print("Mapped to application error: \(wrappedAppError.errorDescription)")
-      }
+    let securityMapper=SecurityErrorMapper()
+
+    // Check if the map method exists
+    if let securityError=securityMapper.mapFromAny(externalError) {
+      print("Successfully mapped to security error: \(securityError)")
     } else {
-      print("Failed to create security mapper")
+      // Handle unmapped errors with an application error
+      let coreAppError=UmbraErrors.Application.Core.internalError(
+        reason: "Failed to map external security error"
+      )
+      let wrappedAppError=ApplicationCoreErrorWrapper(coreAppError)
+      print("Mapped to application error: \(wrappedAppError.errorDescription)")
     }
   }
 
@@ -163,7 +173,7 @@ public class ErrorHandlingExample {
     print("Error domain: \(securityError.domain)")
     print("Error code: \(securityError.code)")
     print("Error description: \(securityError.errorDescription)")
-    print("Recovery suggestion: \(securityError.recoverySuggestion)")
+    print("Recovery suggestion: \(securityError.recoverySuggestion ?? "None available")")
 
     // Add context to the error
     let contextualError=securityError.with(

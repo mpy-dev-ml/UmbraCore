@@ -8,7 +8,7 @@ import XPCProtocolsCore
 /// Type aliases for convenience
 typealias SecureBytes=UmbraCoreTypes.SecureBytes
 typealias BinaryData=SecurityInterfacesBase.BinaryData
-typealias XPCSecurityError=SecurityProtocolsCore.SecurityError
+typealias XPCSecurityError=UmbraErrors.Security.Protocols
 
 /// Import the SecurityProtocolError directly
 @_exported import enum XPCProtocolsCore.SecurityProtocolError

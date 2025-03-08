@@ -1,13 +1,14 @@
 import CoreErrors
 import CryptoTypes
 import ErrorHandling
+import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
 
 // Type alias to disambiguate SecurityError types
-typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+typealias SPCSecurityError=UmbraErrors.Security.Protocols
 
 /// CryptoXPCServiceAdapter
 ///
@@ -62,7 +63,7 @@ public final class CryptoXPCServiceAdapter: @unchecked Sendable {
 
     // Map known error types
     switch error {
-      case let secError as SecurityProtocolsCore.UmbraErrors.Security.Protocol:
+      case let secError as SecurityProtocolsCore.UmbraErrors.Security.Protocols:
         // Map from SecurityProtocolsCore to XPCProtocolsCore error domain
         return XPCSecurityError.internalError(reason: secError.description)
       default:

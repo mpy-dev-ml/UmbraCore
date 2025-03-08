@@ -1,10 +1,11 @@
 import CoreErrors
+import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 
 // Type alias to disambiguate SecurityError types
-typealias SPCSecurityError=SecurityProtocolsCore.SecurityError
+typealias SPCSecurityError=UmbraErrors.Security.Protocols
 
 /// KeyManagementAdapter provides a bridge between Foundation-based key management implementations
 /// and the Foundation-free KeyManagementProtocol.
@@ -28,33 +29,34 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
   // MARK: - KeyManagementProtocol Implementation
 
   public func retrieveKey(withIdentifier identifier: String) async
-  -> Result<SecureBytes, SecurityError> {
+  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     let result=await implementation.retrieveKey(withIdentifier: identifier)
 
-    switch result {
-      case let .success(keyData):
-        return .success(DataAdapter.secureBytes(from: keyData))
-      case let .failure(error):
-        return .failure(mapError(error))
+    if let keyData=result.data {
+      return .success(DataAdapter.secureBytes(from: keyData))
+    } else {
+      return .failure(mapError(KMError.keyNotFound))
     }
   }
 
   public func storeKey(
     _ key: SecureBytes,
     withIdentifier identifier: String
-  ) async -> Result<Void, SecurityError> {
+  ) async -> Result<Void, UmbraErrors.Security.Protocols> {
     let keyData=DataAdapter.data(from: key)
     let result=await implementation.storeKey(keyData, withIdentifier: identifier)
 
-    switch result {
-      case .success:
-        return .success(())
-      case let .failure(error):
-        return .failure(mapError(error))
+    if result.success {
+      return .success(())
+    } else {
+      let message=result.errorMessage ?? "Unknown key storage error"
+      let error=KMError.keyStorageFailed(reason: message)
+      return .failure(mapError(error))
     }
   }
 
-  public func deleteKey(withIdentifier identifier: String) async -> Result<Void, SecurityError> {
+  public func deleteKey(withIdentifier identifier: String) async
+  -> Result<Void, UmbraErrors.Security.Protocols> {
     let result=await implementation.deleteKey(withIdentifier: identifier)
 
     switch result {
@@ -71,7 +73,7 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
   ) async -> Result<(
     newKey: SecureBytes,
     reencryptedData: SecureBytes?
-  ), SecurityError> {
+  ), UmbraErrors.Security.Protocols> {
     // Convert SecureBytes to Data for the Foundation implementation
     let dataToReencryptData=dataToReencrypt.map { DataAdapter.data(from: $0) }
 
@@ -98,7 +100,7 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     }
   }
 
-  public func listKeyIdentifiers() async -> Result<[String], SecurityError> {
+  public func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
     let result=await implementation.listKeyIdentifiers()
 
     switch result {
@@ -111,15 +113,11 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
 
   // MARK: - Helper Methods
 
-  /// Maps an error to a SecurityError using the centralised error mapper.
-  ///
-  /// This method provides a standardised way of handling errors throughout the application.
-  /// It uses the centralised error mapper to convert any error into a SecurityError.
-  ///
-  /// - Parameter error: The error to be mapped.
+  /// Map any error to a SecurityError
+  /// - Parameter error: Original error
   /// - Returns: A SecurityError representing the original error.
-  private func mapError(_ error: Error) -> SecurityError {
-    CoreErrors.SecurityErrorMapper.mapToSPCError(error)
+  private func mapError(_ error: Error) -> UmbraErrors.Security.Protocols {
+    CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
   }
 }
 

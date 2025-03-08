@@ -1,4 +1,5 @@
 import ErrorHandling
+import ErrorHandlingDomains
 @testable import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
@@ -13,9 +14,9 @@ class SecurityProtocolsCoreTests: XCTestCase {
 
   func testSecurityProtocolErrorEquatable() {
     // Test that the errors are equatable
-    let error1=UmbraErrors.Security.Protocol.encryptionFailed(reason: "test")
-    let error2=UmbraErrors.Security.Protocol.encryptionFailed(reason: "test")
-    let error3=UmbraErrors.Security.Protocol.decryptionFailed(reason: "test")
+    let error1=UmbraErrors.Security.Protocols.internalError("Encryption failed: " + "test")
+    let error2=UmbraErrors.Security.Protocols.internalError("Encryption failed: " + "test")
+    let error3=UmbraErrors.Security.Protocols.internalError("Decryption failed: " + "test")
 
     XCTAssertEqual(error1, error2)
     XCTAssertNotEqual(error1, error3)
@@ -23,11 +24,11 @@ class SecurityProtocolsCoreTests: XCTestCase {
 
   func testSecurityProtocolErrorDescription() {
     // Test that the errors have descriptions
-    let error1=UmbraErrors.Security.Protocol.encryptionFailed(reason: "test")
-    let error2=UmbraErrors.Security.Protocol.invalidKey
+    let error1=UmbraErrors.Security.Protocols.internalError("Encryption failed: " + "test")
+    let error2=UmbraErrors.Security.Protocols.invalidFormat(reason: "Invalid key")
 
-    XCTAssertEqual(error1.description, "Encryption failed: test")
-    XCTAssertEqual(error2.description, "Invalid key")
+    XCTAssertEqual(String(describing: error1), "internalError(Encryption failed: test)")
+    XCTAssertEqual(String(describing: error2), "invalidFormat(reason: Invalid key)")
   }
 
   // MARK: - SecurityOperation Tests
@@ -84,7 +85,7 @@ class SecurityProtocolsCoreTests: XCTestCase {
 
   func testFailureResultCreation() {
     // Test failure result creation
-    let error=UmbraErrors.Security.Protocol.encryptionFailed(reason: "test")
+    let error=UmbraErrors.Security.Protocols.internalError("Encryption failed: " + "test")
     let result=SecurityResultDTO.failure(error: error, details: "Operation failed")
 
     XCTAssertFalse(result.success)

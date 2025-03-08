@@ -157,7 +157,7 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
   }
 
   func generateRandomData(length: Int) async
-  -> Result<UmbraCoreTypes.SecureBytes, SecurityProtocolsCore.SecurityError> {
+  -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
     let bytes=[UInt8](repeating: 0, count: length)
     return .success(UmbraCoreTypes.SecureBytes(bytes))
   }
@@ -168,7 +168,7 @@ private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol
   func generateKey(
     type _: String,
     size: Int
-  ) async -> Result<UmbraCoreTypes.SecureBytes, SecurityProtocolsCore.SecurityError> {
+  ) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
     // Dummy implementation
     .success(UmbraCoreTypes.SecureBytes([UInt8](repeating: 0, count: size / 8)))
   }
@@ -176,19 +176,19 @@ private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol
   func storeKey(
     _: UmbraCoreTypes.SecureBytes,
     withIdentifier _: String
-  ) async -> Result<Void, SecurityProtocolsCore.SecurityError> {
+  ) async -> Result<Void, UmbraErrors.Security.Protocols> {
     // Dummy implementation
     .success(())
   }
 
   func retrieveKey(withIdentifier _: String) async
-  -> Result<UmbraCoreTypes.SecureBytes, SecurityProtocolsCore.SecurityError> {
+  -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
     // Dummy implementation
     .success(UmbraCoreTypes.SecureBytes([UInt8](repeating: 0, count: 32)))
   }
 
   func deleteKey(withIdentifier _: String) async
-  -> Result<Void, SecurityProtocolsCore.SecurityError> {
+  -> Result<Void, UmbraErrors.Security.Protocols> {
     // Dummy implementation
     .success(())
   }
@@ -199,7 +199,7 @@ private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol
   ) async -> Result<(
     newKey: UmbraCoreTypes.SecureBytes,
     reencryptedData: UmbraCoreTypes.SecureBytes?
-  ), SecurityProtocolsCore.SecurityError> {
+  ), UmbraErrors.Security.Protocols> {
     // Dummy implementation
     .success((
       newKey: UmbraCoreTypes.SecureBytes([UInt8](repeating: 0, count: 32)),
@@ -207,7 +207,7 @@ private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol
     ))
   }
 
-  func listKeyIdentifiers() async -> Result<[String], SecurityProtocolsCore.SecurityError> {
+  func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
     // Dummy implementation
     .success(["key1", "key2", "key3"])
   }
