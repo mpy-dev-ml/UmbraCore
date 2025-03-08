@@ -1,18 +1,6 @@
 import Foundation
 import UmbraCoreTypes
-
-/// Custom error for security interfaces that doesn't require Foundation
-public enum SecurityProtocolError: Error, Sendable, Equatable {
-  case implementationMissing(String)
-
-  /// Equatable implementation
-  public static func == (lhs: SecurityProtocolError, rhs: SecurityProtocolError) -> Bool {
-    switch (lhs, rhs) {
-      case let (.implementationMissing(lhsName), .implementationMissing(rhsName)):
-        lhsName == rhsName
-    }
-  }
-}
+import ErrorHandling
 
 /// Protocol defining the base XPC service interface without Foundation dependencies
 @objc
@@ -20,43 +8,25 @@ public protocol XPCServiceProtocolBasic: NSObjectProtocol, Sendable {
   /// Protocol identifier - used for protocol negotiation
   static var protocolIdentifier: String { get }
 
-  /// Test connectivity
-  @objc
-  func ping() async -> NSObject?
+  /// Basic ping method to test if service is responsive
+  /// - Returns: YES if the service is responsive
+  @objc func ping() async -> Bool
 
-  /// Synchronize keys across processes
-  /// - Parameter syncData: The key data to synchronize
-  /// - Returns: Result with void success or error
-  @objc
-  func synchroniseKeys(_ syncData: NSData) async -> NSObject?
+  /// Basic synchronisation of keys between XPC service and client 
+  /// - Parameter bytes: Raw byte array for key synchronisation
+  /// - Returns: Result with success or failure
+  @objc func synchroniseKeys(_ bytes: [UInt8]) async -> Result<Void, UmbraErrors.Security.XPC>
 }
 
-// MARK: - Extensions
-
+/// Default protocol implementation
 extension XPCServiceProtocolBasic {
-  /// Default implementation of protocol identifier
+  /// Default protocol identifier
   public static var protocolIdentifier: String {
-    "com.umbra.xpc.service.base"
+    "com.umbra.xpc.service.protocol.basic"
   }
-
-  /// Default implementation of ping - can be overridden by conforming types
-  public func ping() async -> NSObject? {
-    NSNumber(value: true)
-  }
-
-  /// Implementation for synchronising keys with byte array (for legacy compatibility)
-  public func synchroniseKeys(_ bytes: [UInt8]) async -> Result<Void, SecurityProtocolError> {
-    // Convert bytes to NSData
-    let nsData=NSData(bytes: bytes, length: bytes.count)
-
-    // Call the @objc protocol method
-    let result=await synchroniseKeys(nsData)
-
-    // Handle the result based on the returned NSObject
-    if result != nil {
-      return .success(())
-    } else {
-      return .failure(.implementationMissing("Key synchronisation failed"))
-    }
+  
+  /// Default implementation of ping - always succeeds
+  public func ping() async -> Bool {
+    true
   }
 }

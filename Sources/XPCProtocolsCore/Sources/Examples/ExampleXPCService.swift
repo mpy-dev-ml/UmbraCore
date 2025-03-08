@@ -1,4 +1,5 @@
 import UmbraCoreTypes
+import ErrorHandling
 
 /// Example implementation of XPCServiceProtocolComplete
 ///
@@ -48,81 +49,119 @@ public class ExampleXPCService: XPCServiceProtocolStandardStandardStandardComple
     .success(())
   }
 
-  /// Synchronize encryption keys
+  /// Synchronise encryption keys
   public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
-    // In a real implementation, this would process the synchronization data
-    if syncData.count < 8 {
-      return .failure(.cryptoError)
+    // For example purposes, we'll simply validate the data is not empty
+    if syncData.count == 0 {
+      return .failure(.invalidData(reason: "Empty synchronisation data"))
     }
-
-    // Process the key data
+    
+    // Pretend we successfully synchronised the keys
     return .success(())
   }
 
   // MARK: - XPCServiceProtocolComplete Implementation
 
-  /// Test connectivity with complete protocol
+  /// Implementation of ping for complete protocol
   public func pingComplete() async -> Result<Bool, XPCSecurityError> {
-    // You could implement additional verification specific to complete protocol
+    // Could include more comprehensive validation
     await pingStandard()
   }
 
-  /// Encrypt data
+  /// Encrypt data - example implementation
   public func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    // In a real implementation, you would perform actual encryption
-    // This is just a placeholder
-
-    if data.isEmpty {
-      return .failure(.cryptoError)
+    // For example purposes, we'll simply check for empty data
+    if data.count == 0 {
+      return .failure(.invalidData(reason: "Cannot encrypt empty data"))
     }
-
-    // For demonstration, we'll just append a byte
-    var result=data
-    result.append(contentsOf: [0xFF])
-
-    return .success(result)
+    
+    do {
+      // Simple example encryption (XOR with a fixed value)
+      // In a real implementation, you would use proper cryptography
+      var encryptedBytes = [UInt8](repeating: 0, count: data.count)
+      for i in 0..<data.count {
+        encryptedBytes[i] = data[i] ^ 0x42 // Simple XOR with fixed value
+      }
+      
+      return .success(SecureBytes(bytes: encryptedBytes))
+    } catch {
+      return .failure(.encryptionFailed(reason: "Failed to encrypt data: \(error.localizedDescription)"))
+    }
   }
 
-  /// Decrypt data
+  /// Decrypt data - example implementation
   public func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    // In a real implementation, you would perform actual decryption
-    // This is just a placeholder
-
-    if data.isEmpty || data.count < 2 {
-      return .failure(.cryptoError)
+    // For example purposes, we'll simply check for empty data
+    if data.count == 0 {
+      return .failure(.invalidData(reason: "Cannot decrypt empty data"))
     }
-
-    // For demonstration, we'll just remove the last byte
-    var bytes=data.bytes
-    bytes.removeLast()
-
-    return .success(SecureBytes(bytes))
+    
+    do {
+      // Simple example decryption (XOR with a fixed value)
+      // In a real implementation, you would use proper cryptography
+      var decryptedBytes = [UInt8](repeating: 0, count: data.count)
+      for i in 0..<data.count {
+        decryptedBytes[i] = data[i] ^ 0x42 // Simple XOR with fixed value
+      }
+      
+      return .success(SecureBytes(bytes: decryptedBytes))
+    } catch {
+      return .failure(.decryptionFailed(reason: "Failed to decrypt data: \(error.localizedDescription)"))
+    }
   }
 
-  /// Generate a cryptographic key
+  /// Generate a cryptographic key - example implementation
   public func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
-    // In a real implementation, you would generate a proper cryptographic key
-    // This is just a placeholder that creates a fixed "key"
-
-    let demoKey: [UInt8]=[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]
-    return .success(SecureBytes(demoKey))
+    do {
+      // Simple example key generation (random bytes)
+      // In a real implementation, you would use proper key generation
+      let keyLength = 32 // 256 bits
+      var keyBytes = [UInt8](repeating: 0, count: keyLength)
+      
+      // Fill with random data - in a real implementation, use a cryptographically secure source
+      for i in 0..<keyLength {
+        keyBytes[i] = UInt8.random(in: 0...255)
+      }
+      
+      return .success(SecureBytes(bytes: keyBytes))
+    } catch {
+      return .failure(.keyGenerationFailed(reason: "Failed to generate key: \(error.localizedDescription)"))
+    }
   }
 
-  /// Hash data
+  /// Hash data - example implementation
   public func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-    // In a real implementation, you would compute a proper hash
-    // This is just a placeholder
-
-    if data.isEmpty {
-      return .failure(.cryptoError)
+    // For example purposes, we'll simply check for empty data
+    if data.count == 0 {
+      return .failure(.invalidData(reason: "Cannot hash empty data"))
     }
-
-    // For demonstration, we'll just create a simple "hash"
-    var hashValue: UInt8=0
-    for byte in data.bytes {
-      hashValue ^= byte
+    
+    // Simple example hash function (sum of bytes)
+    // In a real implementation, you would use a proper cryptographic hash function
+    var hashValue: UInt8 = 0
+    for byte in data {
+      hashValue = hashValue &+ byte // Wrapping addition
     }
+    
+    return .success(SecureBytes(bytes: [hashValue]))
+  }
 
-    return .success(SecureBytes([hashValue]))
+  /// Other methods would be implemented similarly with proper error handling
+  public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+    .failure(.notImplemented(reason: "Key export not implemented in example"))
+  }
+
+  public func importKey(
+    _ keyData: SecureBytes,
+    identifier: String?
+  ) async -> Result<String, XPCSecurityError> {
+    .failure(.notImplemented(reason: "Key import not implemented in example"))
+  }
+
+  public func generateKey(
+    type: KeyType,
+    bits: Int
+  ) async -> Result<SecureBytes, XPCSecurityError> {
+    .failure(.notImplemented(reason: "Parameterised key generation not implemented in example"))
   }
 }
