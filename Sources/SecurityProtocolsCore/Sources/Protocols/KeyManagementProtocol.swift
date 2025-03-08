@@ -1,4 +1,5 @@
 import UmbraCoreTypes
+import ErrorHandling
 
 /// Protocol defining secure key management operations in a FoundationIndependent manner.
 /// All operations use only primitive types and FoundationIndependent custom types.
@@ -6,7 +7,7 @@ public protocol KeyManagementProtocol: Sendable {
   /// Retrieves a security key by its identifier.
   /// - Parameter identifier: A string identifying the key.
   /// - Returns: The security key as `SecureBytes` or an error.
-  func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, SecurityError>
+  func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, UmbraErrors.Security.Protocol>
 
   /// Stores a security key with the given identifier.
   /// - Parameters:
@@ -14,12 +15,12 @@ public protocol KeyManagementProtocol: Sendable {
   ///   - identifier: A string identifier for the key.
   /// - Returns: Success or an error.
   func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async
-    -> Result<Void, SecurityError>
+    -> Result<Void, UmbraErrors.Security.Protocol>
 
   /// Deletes a security key with the given identifier.
   /// - Parameter identifier: A string identifying the key to delete.
   /// - Returns: Success or an error.
-  func deleteKey(withIdentifier identifier: String) async -> Result<Void, SecurityError>
+  func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocol>
 
   /// Rotates a security key, creating a new key and optionally re-encrypting data.
   /// - Parameters:
@@ -32,9 +33,9 @@ public protocol KeyManagementProtocol: Sendable {
   ) async -> Result<(
     newKey: SecureBytes,
     reencryptedData: SecureBytes?
-  ), SecurityError>
+  ), UmbraErrors.Security.Protocol>
 
   /// Lists all available key identifiers.
   /// - Returns: An array of key identifiers or an error.
-  func listKeyIdentifiers() async -> Result<[String], SecurityError>
+  func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocol>
 }

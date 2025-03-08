@@ -9,14 +9,14 @@ This document outlines the concrete tasks required to implement the error domain
 - [x] Implement Security error domain hierarchy (Core, XPC, Protocol)
 - [x] Implement Storage error domain hierarchy
 - [x] Implement Network error domain hierarchy
-- [ ] Implement Application error domain hierarchy
+- [x] Implement Application error domain hierarchy
 - [ ] Add comprehensive documentation for each error type
 
 ### 1.2 Error Mapping Utilities
 - [x] Implement UmbraErrorMapper for Security domain
 - [x] Implement mapping utilities for Storage domain
 - [x] Implement mapping utilities for Network domain
-- [ ] Implement mapping utilities for Application domain
+- [x] Implement mapping utilities for Application domain
 - [ ] Create unit tests for all mapping utilities
 
 ### 1.3 Module Version Information
@@ -47,19 +47,19 @@ This document outlines the concrete tasks required to implement the error domain
 - [ ] Update unit tests to use new error types
 
 ### 2.4 SecurityBridge Module
-- [ ] Update imports to use UmbraErrors
-- [ ] Replace all references to SecurityProtocolsCore.SecurityError
-- [ ] Replace all references to XPCProtocolsCore.SecurityError
-- [ ] Replace all references to CoreErrors.SecurityError
-- [ ] Update error handling in XPCServiceAdapter
-- [ ] Update error handling in CryptoServiceAdapter
+- [x] Update imports to use UmbraErrors
+- [x] Replace all references to SecurityProtocolsCore.SecurityError
+- [x] Replace all references to XPCProtocolsCore.SecurityError
+- [x] Replace all references to CoreErrors.SecurityError
+- [x] Update error handling in XPCServiceAdapter
+- [x] Update error handling in CryptoServiceAdapter
 - [ ] Update unit tests to use new error types
 
 ### 2.5 Other Security-Related Modules
-- [ ] Identify all modules using existing SecurityError types
-- [ ] Update imports for each module
-- [ ] Replace all type references
-- [ ] Update error handling code
+- [x] Identify all modules using existing SecurityError types
+- [x] Update imports for each module
+- [x] Replace all type references
+- [x] Update error handling code
 - [ ] Update unit tests
 
 ## Phase 3: Testing & Validation (Estimated: 1 week)
@@ -81,6 +81,10 @@ bazelisk test --verbose_failures //...
 ```
 
 ### 3.3 Edge Case Validation
+- [x] Fix warnings related to unused `self` references
+- [x] Address non-exhaustive switch statements for Swift 6 compatibility
+- [x] Fix conditional downcasting issues
+- [x] Fix warnings about unused results from function calls
 - [ ] Verify error handling with nil values
 - [ ] Test behavior with nested errors
 - [ ] Validate serialisation/deserialisation of errors
@@ -100,6 +104,7 @@ bazelisk test --verbose_failures //...
 - [ ] Explain pattern for extending error domains
 
 ### 4.3 Code Reviews & Knowledge Transfer
+- [x] Successfully merged error-domain-refactoring branch into umbracore-alpha
 - [ ] Schedule code walkthrough sessions
 - [ ] Create review checklist for error handling patterns
 - [ ] Document lessons learned from the refactoring
@@ -132,7 +137,8 @@ bazelisk test --verbose_failures //...
 
 ## Next Steps
 
-1. Review this implementation plan with the team
-2. Assign tasks to team members
-3. Set up regular sync meetings to track progress
-4. Establish definition of done for each task
+1. Address remaining compilation errors in SecurityBridge module
+2. Complete unit test updates for all modified modules
+3. Focus on Phase 2 remaining tasks - removing old error enums
+4. Enhance documentation with comprehensive examples
+5. Validate error serialisation/deserialisation across module boundaries
