@@ -8,6 +8,9 @@ umbracore_foundation_free_module(
         "//Sources/SecurityProtocolsCore",
         "//Sources/SecureBytes",
         "//Sources/CryptoSwiftFoundationIndependent",
+        "//Sources/CoreErrors",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+        "//Sources/UmbraCoreTypes",
     ],
     copts = [
         "-target", "arm64-apple-macos15.4",
@@ -16,6 +19,7 @@ umbracore_foundation_free_module(
         "-O", # Enable optimizations
         "-cross-module-optimization", # Enable cross-module optimization
     ],
+    srcs = glob(["Sources/*.swift", "Sources/CryptoServices/*.swift"]),
 )
 
 umbracore_module_test(

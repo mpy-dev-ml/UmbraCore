@@ -69,8 +69,9 @@
  ```
  */
 
-import SecurityProtocolsCore
+import ErrorHandlingDomains
 import UmbraCoreTypes
+import SecurityProtocolsCore
 
 /// A concrete implementation of `KeyManagementProtocol` that stores and manages cryptographic keys.
 /// This implementation provides a simple in-memory storage for keys with support for key
@@ -95,11 +96,11 @@ public final class KeyManager: KeyManagementProtocol {
   /// - Parameter identifier: The identifier of the key to retrieve
   /// - Returns: The key or an error if the key does not exist
   public func retrieveKey(withIdentifier identifier: String) async
-  -> Result<SecureBytes, SecurityError> {
+  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     if let key=await keyStorage.get(identifier: identifier) {
       .success(key)
     } else {
-      .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+      .failure(.invalidFormat(reason: "Key not found: \(identifier)"))
     }
   }
 
@@ -111,7 +112,7 @@ public final class KeyManager: KeyManagementProtocol {
   public func storeKey(
     _ key: SecureBytes,
     withIdentifier identifier: String
-  ) async -> Result<Void, SecurityError> {
+  ) async -> Result<Void, UmbraErrors.Security.Protocols> {
     await keyStorage.set(key: key, identifier: identifier)
     return .success(())
   }
@@ -119,12 +120,12 @@ public final class KeyManager: KeyManagementProtocol {
   /// Delete a key with the given identifier
   /// - Parameter identifier: The identifier of the key to delete
   /// - Returns: Success or failure
-  public func deleteKey(withIdentifier identifier: String) async -> Result<Void, SecurityError> {
+  public func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
     if await keyStorage.contains(identifier: identifier) {
       await keyStorage.remove(identifier: identifier)
       return .success(())
     } else {
-      return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+      return .failure(.invalidFormat(reason: "Key not found: \(identifier)"))
     }
   }
 
@@ -139,10 +140,10 @@ public final class KeyManager: KeyManagementProtocol {
   ) async -> Result<(
     newKey: SecureBytes,
     reencryptedData: SecureBytes?
-  ), SecurityError> {
+  ), UmbraErrors.Security.Protocols> {
     // Check if the key exists first
     guard let oldKey=await keyStorage.get(identifier: identifier) else {
-      return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+      return .failure(.invalidFormat(reason: "Key not found: \(identifier)"))
     }
 
     // Generate a new key
@@ -157,45 +158,29 @@ public final class KeyManager: KeyManagementProtocol {
         // If data was provided to re-encrypt
         if let dataToReencrypt {
           // First decrypt the data with the old key
-          let decryptResult=await crypto.decryptSymmetric(
-            data: dataToReencrypt,
-            key: oldKey,
-            config: SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
-          )
+          let decryptResult=await crypto.decrypt(data: dataToReencrypt, using: oldKey)
 
-          switch decryptResult.success {
-            case true:
-              guard let decryptedData=decryptResult.data else {
-                return .failure(.decryptionFailed(reason: "Failed to decrypt data with old key"))
-              }
-
+          switch decryptResult {
+            case .success(let decryptedData):
               // Then encrypt it with the new key
-              let encryptResult=await crypto.encryptSymmetric(
-                data: decryptedData,
-                key: newKey,
-                config: SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
-              )
+              let encryptResult=await crypto.encrypt(data: decryptedData, using: newKey)
 
-              switch encryptResult.success {
-                case true:
-                  guard let reencryptedData=encryptResult.data else {
-                    return .failure(
-                      .encryptionFailed(reason: "Failed to encrypt data with new key")
-                    )
+              switch encryptResult {
+                case .success(let reencryptedData):
+                  // Store the new key with the same identifier
+                  let storeResult=await storeKey(newKey, withIdentifier: identifier)
+
+                  switch storeResult {
+                    case .success:
+                      return .success((newKey: newKey, reencryptedData: reencryptedData))
+                    case .failure(let error):
+                      return .failure(error)
                   }
-                  return .success((newKey: newKey, reencryptedData: reencryptedData))
-                case false:
-                  return .failure(
-                    encryptResult
-                      .error ?? .encryptionFailed(reason: "Unknown encryption error")
-                  )
+                case .failure(let error):
+                  return .failure(error)
               }
-
-            case false:
-              return .failure(
-                decryptResult
-                  .error ?? .decryptionFailed(reason: "Unknown decryption error")
-              )
+            case .failure(let error):
+              return .failure(error)
           }
         } else {
           // No data to re-encrypt
@@ -211,9 +196,9 @@ public final class KeyManager: KeyManagementProtocol {
   /// - Parameter identifier: The identifier of the key to rotate
   /// - Returns: The new key or an error if the key does not exist
   public func rotateKey(withIdentifier identifier: String) async
-  -> Result<SecureBytes, SecurityError> {
+  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Delegate to the full rotation method
-    let result=await rotateKey(withIdentifier: identifier, dataToReencrypt: nil)
+    let result=await rotateKey(withIdentifier: identifier, dataToReencrypt: nil as SecureBytes?)
 
     // Convert the result type
     switch result {
@@ -226,18 +211,18 @@ public final class KeyManager: KeyManagementProtocol {
 
   /// List all key identifiers
   /// - Returns: A list of all key identifiers
-  public func listKeyIdentifiers() async -> Result<[String], SecurityError> {
+  public func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
     let identifiers=await keyStorage.allIdentifiers()
     return .success(identifiers)
   }
 
-  /// Generate a new key
-  /// - Parameter keySize: The size of the key to generate in bits
+  /// Generate a new key with the specified size
+  /// - Parameter keySize: The size of the key in bits
   /// - Returns: The generated key
-  public func generateKey(keySize: Int) async -> Result<SecureBytes, SecurityError> {
+  public func generateKey(keySize: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Basic implementation that delegates to CryptoService
     let crypto=CryptoService()
-    return await crypto.generateSecureRandomBytes(count: keySize / 8)
+    return await crypto.generateRandomData(length: keySize / 8)
   }
 
   // MARK: - Helper Classes
