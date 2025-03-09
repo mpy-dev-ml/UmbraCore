@@ -1,16 +1,16 @@
 /**
  # UmbraCore Cryptographic Hashing Service
- 
- This file provides hashing and message authentication capabilities for the UmbraCore security 
- framework. It implements the cryptographic hashing portions of the CryptoServiceProtocol and 
+
+ This file provides hashing and message authentication capabilities for the UmbraCore security
+ framework. It implements the cryptographic hashing portions of the CryptoServiceProtocol and
  provides secure hashing algorithms such as SHA-256 and HMAC-SHA256.
- 
+
  ## Security Considerations
- 
+
  * Uses SHA-256 which is currently considered secure for most applications.
- * HMAC-SHA256 is used for message authentication codes which provides both integrity and 
+ * HMAC-SHA256 is used for message authentication codes which provides both integrity and
    authenticity.
- * Be aware that hash functions may require upgrading in the future as cryptographic standards 
+ * Be aware that hash functions may require upgrading in the future as cryptographic standards
    evolve.
  */
 
@@ -26,14 +26,14 @@ import UmbraCoreTypes
 /// code generation to ensure data integrity and authenticity.
 public struct HashingService: Sendable {
   // MARK: - Initialisation
-  
+
   /// Creates a new instance of HashingService.
   public init() {
     // No initialisation needed - stateless service
   }
-  
+
   // MARK: - Public API
-  
+
   /// Hashes the provided data using a cryptographically strong algorithm.
   /// - Parameter data: The data to hash as `SecureBytes`.
   /// - Returns: The resulting hash as `SecureBytes` or an error.
@@ -41,37 +41,37 @@ public struct HashingService: Sendable {
     data: SecureBytes
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Use SHA-256 through CryptoWrapper
-    let hashedData = CryptoWrapper.sha256(data)
+    let hashedData=CryptoWrapper.sha256(data)
     return .success(hashedData)
   }
-  
+
   /// Verifies the integrity of data against a known hash.
   /// - Parameters:
   ///   - data: The data to verify as `SecureBytes`.
   ///   - hash: The expected hash value as `SecureBytes`.
   /// - Returns: Boolean indicating whether the hash matches.
   public func verify(
-    data: SecureBytes, 
+    data: SecureBytes,
     against hash: SecureBytes
   ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
     // Calculate hash of the provided data
-    let calculatedHash = CryptoWrapper.sha256(data)
-    
+    let calculatedHash=CryptoWrapper.sha256(data)
+
     // Implement constant-time comparison to prevent timing attacks
-    var result: UInt8 = 0
-    
+    var result: UInt8=0
+
     // Only compare if lengths match
     if calculatedHash.count == hash.count {
       for i in 0..<calculatedHash.count {
         result |= calculatedHash[i] ^ hash[i]
       }
-      
+
       return .success(result == 0)
     } else {
       return .success(false)
     }
   }
-  
+
   /// Generate a cryptographic hash of data with specified configuration.
   /// - Parameters:
   ///   - data: Data to hash.
@@ -79,16 +79,16 @@ public struct HashingService: Sendable {
   /// - Returns: Result containing hash or error.
   public func hash(
     data: SecureBytes,
-    config: SecurityConfigDTO
+    config _: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Currently we only support SHA-256, but this function allows for future algorithm selection
     // via the config parameter
-    
+
     // Use SHA-256 through CryptoWrapper
-    let hashedData = CryptoWrapper.sha256(data)
+    let hashedData=CryptoWrapper.sha256(data)
     return .success(hashedData)
   }
-  
+
   /// Generates a message authentication code (MAC) for the given data using HMAC-SHA256.
   /// - Parameters:
   ///   - data: The data to authenticate.
@@ -106,12 +106,12 @@ public struct HashingService: Sendable {
     guard !data.isEmpty, !key.isEmpty else {
       return .failure(.invalidInput(reason: "Input data or key is empty"))
     }
-    
+
     // Use HMAC-SHA256 through CryptoWrapper
-    let mac = CryptoWrapper.hmacSHA256(data: data, key: key)
+    let mac=CryptoWrapper.hmacSHA256(data: data, key: key)
     return .success(mac)
   }
-  
+
   /// Verify a message authentication code (MAC) for data.
   /// - Parameters:
   ///   - mac: The MAC to verify.
@@ -124,17 +124,17 @@ public struct HashingService: Sendable {
     using key: SecureBytes
   ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
     // Calculate a MAC for the data with the provided key
-    let calculatedMAC = CryptoWrapper.hmacSHA256(data: data, key: key)
-    
+    let calculatedMAC=CryptoWrapper.hmacSHA256(data: data, key: key)
+
     // Implement constant-time comparison to prevent timing attacks
-    var result: UInt8 = 0
-    
+    var result: UInt8=0
+
     // Only compare if lengths match
     if calculatedMAC.count == mac.count {
       for i in 0..<calculatedMAC.count {
         result |= calculatedMAC[i] ^ mac[i]
       }
-      
+
       return .success(result == 0)
     } else {
       return .success(false)

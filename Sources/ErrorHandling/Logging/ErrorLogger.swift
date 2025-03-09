@@ -46,6 +46,48 @@ public class ErrorLogger {
     self.configuration=configuration
   }
 
+  /// Log an error with a specific severity level
+  /// - Parameters:
+  ///   - error: The error to log
+  ///   - severity: The severity level of the error
+  ///   - additionalContext: Additional context to include in the log
+  public func log(
+    _ error: Error,
+    severity: ErrorSeverity,
+    additionalContext: [String: Any]? = nil
+  ) async {
+    // Skip if severity is below minimum level
+    guard severity >= configuration.minimumSeverity else {
+      return
+    }
+
+    // Create error message
+    let message = formatErrorMessage(error)
+    
+    // Create metadata from error and add additional context
+    var metadata = createMetadataFromError(error)
+    if let additionalContext = additionalContext {
+      for (key, value) in additionalContext {
+        metadata[key] = value
+      }
+    }
+    
+    // Log using the direct SwiftyBeaver level mapping
+    let logLevel = severity.toSwiftyBeaverLevel()
+    switch logLevel {
+    case .error:
+      await logger.error(message, metadata: metadata)
+    case .warning:
+      await logger.warning(message, metadata: metadata)
+    case .info:
+      await logger.info(message, metadata: metadata)
+    case .debug:
+      await logger.debug(message, metadata: metadata)
+    case .verbose:
+      await logger.debug("\(message) [TRACE]", metadata: metadata)
+    }
+  }
+  
   /// Log an error directly
   /// - Parameters:
   ///   - error: The error to log
@@ -55,50 +97,42 @@ public class ErrorLogger {
   ///   - additionalMetadata: Additional metadata to include in log
   public func logError(
     _ error: Error,
-    file: String=#file,
-    function: String=#function,
-    line: Int=#line,
-    additionalMetadata: LogMetadata?=nil
+    file: String = #file,
+    function: String = #function,
+    line: Int = #line,
+    additionalMetadata: LogMetadata? = nil
   ) async {
     // Skip if filtered out
     if isFiltered(error) { return }
-
-    // Create base metadata for log entry
-    var metadata=createMetadataFromError(error)
-
-    // Add file, function, and line information if enabled
+    
+    // Add file, function, and line information
+    var contextInfo: [String: Any] = [:]
+    
     if configuration.includeFileInfo {
-      metadata["file"]=file
+      contextInfo["file"] = file
     }
-
+    
     if configuration.includeFunctionNames {
-      metadata["function"]=function
+      contextInfo["function"] = function
     }
-
+    
     if configuration.includeLineNumbers {
-      metadata["line"]=String(line)
+      contextInfo["line"] = String(line)
     }
-
+    
     // Add additional metadata if provided
     if let additionalMetadata {
       for (key, value) in additionalMetadata.asDictionary {
-        if let stringValue=value as? String {
-          metadata[key]=stringValue
+        if let stringValue = value as? String {
+          contextInfo[key] = stringValue
         }
       }
     }
-
-    // Get the error description
-    let description: String=if let umbraError=error as? ErrorHandlingInterfaces.UmbraError {
-      "[\(umbraError.domain):\(umbraError.code)] \(umbraError.errorDescription)"
-    } else {
-      error.localizedDescription
-    }
-
-    // Log the error with the logger
-    await logger.error(description, metadata: metadata)
+    
+    // Log with error severity
+    await log(error, severity: .error, additionalContext: contextInfo)
   }
-
+  
   /// Log a message at warning level
   /// - Parameters:
   ///   - message: The message to log
@@ -108,28 +142,38 @@ public class ErrorLogger {
   ///   - metadata: Optional metadata to include
   public func logWarning(
     _ message: String,
-    file: String=#file,
-    function: String=#function,
-    line: Int=#line,
-    metadata: LogMetadata?=nil
+    file: String = #file,
+    function: String = #function,
+    line: Int = #line,
+    metadata: LogMetadata? = nil
   ) async {
-    var logMetadata=metadata ?? LogMetadata()
-
+    var contextInfo: [String: Any] = [:]
+    
     if configuration.includeFileInfo {
-      logMetadata["file"]=file
+      contextInfo["file"] = file
     }
-
+    
     if configuration.includeFunctionNames {
-      logMetadata["function"]=function
+      contextInfo["function"] = function
     }
-
+    
     if configuration.includeLineNumbers {
-      logMetadata["line"]=String(line)
+      contextInfo["line"] = String(line)
     }
-
-    await logger.warning(message, metadata: logMetadata)
+    
+    // Add metadata if provided
+    if let metadata {
+      for (key, value) in metadata.asDictionary {
+        if let stringValue = value as? String {
+          contextInfo[key] = stringValue
+        }
+      }
+    }
+    
+    // Log direct message with warning severity
+    await logger.warning(message, metadata: LogMetadata(contextInfo))
   }
-
+  
   /// Log a message at info level
   /// - Parameters:
   ///   - message: The message to log
@@ -139,28 +183,38 @@ public class ErrorLogger {
   ///   - metadata: Optional metadata to include
   public func logInfo(
     _ message: String,
-    file: String=#file,
-    function: String=#function,
-    line: Int=#line,
-    metadata: LogMetadata?=nil
+    file: String = #file,
+    function: String = #function,
+    line: Int = #line,
+    metadata: LogMetadata? = nil
   ) async {
-    var logMetadata=metadata ?? LogMetadata()
-
+    var contextInfo: [String: Any] = [:]
+    
     if configuration.includeFileInfo {
-      logMetadata["file"]=file
+      contextInfo["file"] = file
     }
-
+    
     if configuration.includeFunctionNames {
-      logMetadata["function"]=function
+      contextInfo["function"] = function
     }
-
+    
     if configuration.includeLineNumbers {
-      logMetadata["line"]=String(line)
+      contextInfo["line"] = String(line)
     }
-
-    await logger.info(message, metadata: logMetadata)
+    
+    // Add metadata if provided
+    if let metadata {
+      for (key, value) in metadata.asDictionary {
+        if let stringValue = value as? String {
+          contextInfo[key] = stringValue
+        }
+      }
+    }
+    
+    // Log direct message with info severity
+    await logger.info(message, metadata: LogMetadata(contextInfo))
   }
-
+  
   /// Log a message at debug level
   /// - Parameters:
   ///   - message: The message to log
@@ -170,26 +224,36 @@ public class ErrorLogger {
   ///   - metadata: Optional metadata to include
   public func logDebug(
     _ message: String,
-    file: String=#file,
-    function: String=#function,
-    line: Int=#line,
-    metadata: LogMetadata?=nil
+    file: String = #file,
+    function: String = #function,
+    line: Int = #line,
+    metadata: LogMetadata? = nil
   ) async {
-    var logMetadata=metadata ?? LogMetadata()
-
+    var contextInfo: [String: Any] = [:]
+    
     if configuration.includeFileInfo {
-      logMetadata["file"]=file
+      contextInfo["file"] = file
     }
-
+    
     if configuration.includeFunctionNames {
-      logMetadata["function"]=function
+      contextInfo["function"] = function
     }
-
+    
     if configuration.includeLineNumbers {
-      logMetadata["line"]=String(line)
+      contextInfo["line"] = String(line)
     }
-
-    await logger.debug(message, metadata: logMetadata)
+    
+    // Add metadata if provided
+    if let metadata {
+      for (key, value) in metadata.asDictionary {
+        if let stringValue = value as? String {
+          contextInfo[key] = stringValue
+        }
+      }
+    }
+    
+    // Log direct message with debug severity
+    await logger.debug(message, metadata: LogMetadata(contextInfo))
   }
 
   // MARK: - Private Helpers
@@ -224,6 +288,17 @@ public class ErrorLogger {
     return metadata
   }
 
+  /// Formats an error message for logging
+  /// - Parameter error: The error to format
+  /// - Returns: A formatted error message
+  private func formatErrorMessage(_ error: Error) -> String {
+    if let umbraError=error as? ErrorHandlingInterfaces.UmbraError {
+      return "[\(umbraError.domain):\(umbraError.code)] \(umbraError.errorDescription)"
+    } else {
+      return error.localizedDescription
+    }
+  }
+
   /// Checks if an error should be filtered out
   /// - Parameter error: The error to check
   /// - Returns: True if the error should be filtered out
@@ -234,15 +309,15 @@ public class ErrorLogger {
         return true
       }
     }
-
+    
     return false
   }
 }
 
 /// Configuration options for the ErrorLogger
 public struct ErrorLoggerConfiguration {
-  /// The minimum log level to output
-  public var minimumLevel: UmbraLogLevel
+  /// The minimum severity level to output
+  public var minimumSeverity: ErrorSeverity
 
   /// Whether to use OSLog API instead of print for console output
   public var useOSLog: Bool
@@ -273,7 +348,7 @@ public struct ErrorLoggerConfiguration {
 
   /// Initialises with default values
   public init(
-    minimumLevel: UmbraLogLevel = .info,
+    minimumSeverity: ErrorSeverity = .info,
     useOSLog: Bool=true,
     osLogSubsystem: String="com.umbracorp.umbra",
     osLogCategory: String="errors",
@@ -284,7 +359,7 @@ public struct ErrorLoggerConfiguration {
     useJsonFormat: Bool=false,
     filters: [(Error) -> Bool]=[]
   ) {
-    self.minimumLevel=minimumLevel
+    self.minimumSeverity=minimumSeverity
     self.useOSLog=useOSLog
     self.osLogSubsystem=osLogSubsystem
     self.osLogCategory=osLogCategory
@@ -306,7 +381,7 @@ extension ErrorLogger {
     let logger=ErrorLogger.shared
 
     return logger.configure { config in
-      config.minimumLevel = .debug
+      config.minimumSeverity = .debug
       config.useJsonFormat=false
       config.includeFileInfo=true
       config.includeLineNumbers=true
@@ -320,7 +395,7 @@ extension ErrorLogger {
     let logger=ErrorLogger.shared
 
     return logger.configure { config in
-      config.minimumLevel = .warning
+      config.minimumSeverity = .warning
       config.useJsonFormat=true // For easier parsing of logs in production
       config.includeFileInfo=true
       config.includeLineNumbers=true
@@ -333,7 +408,7 @@ extension ErrorLogger {
     let logger=ErrorLogger.shared
 
     return logger.configure { config in
-      config.minimumLevel = .error // Only log errors during tests
+      config.minimumSeverity = .error // Only log errors during tests
       config.useJsonFormat=false
       config.includeFileInfo=true
       config.includeLineNumbers=true

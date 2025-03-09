@@ -9,6 +9,6 @@ umbra_swift_test(
         "//Sources/ErrorHandling",
         "//Sources/UmbraLogging",
         "//Sources/UmbraLoggingAdapters",
-        "//Tests/UmbraTestKit/UmbraTestKit",
+        "//Tests/UmbraTestKit:UmbraTestKit",
     ],
 )

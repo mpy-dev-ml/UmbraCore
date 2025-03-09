@@ -274,20 +274,20 @@ public struct SecureBytes: Sendable, Equatable, Hashable, Codable {
   /// - Returns: A new SecureBytes instance containing the specified bytes
   /// - Throws: `SecureBytesError.outOfBounds` if the range is outside the valid range
   public func slice(from startIndex: Int, length: Int) throws -> SecureBytes {
-    let endIndex = startIndex + length
+    let endIndex=startIndex + length
     guard startIndex >= 0 && endIndex <= storage.count else {
       throw SecureBytesError.outOfBounds
     }
-    
+
     return SecureBytes(bytes: Array(storage[startIndex..<endIndex]))
   }
-  
+
   /// Performs a secure constant-time comparison with another SecureBytes
   /// - Parameter other: The SecureBytes to compare with
   /// - Returns: true if the contents are identical, false otherwise
   public func secureCompare(with other: SecureBytes) -> Bool {
     // Use the existing constant-time comparison from == operator
-    return self == other
+    self == other
   }
 
   /// Appends a single byte to the end of the SecureBytes.

@@ -92,25 +92,25 @@ public struct UmbraSecurityError: Error, UmbraError, Sendable, CustomStringConve
   }
 
   /// Source information about where the error occurred
-  public let source: ErrorHandlingCommon.ErrorSource?
+  public let source: ErrorHandlingInterfaces.ErrorSource?
 
   /// The underlying error, if any
   public let underlyingError: Error?
 
   /// Additional context for the error
-  public let context: ErrorHandlingCommon.ErrorContext
+  public let context: ErrorHandlingInterfaces.ErrorContext
 
   /// Initialize a new security error
   public init(
     errorType: SecurityErrorType,
-    source: ErrorHandlingCommon.ErrorSource?=nil,
+    source: ErrorHandlingInterfaces.ErrorSource?=nil,
     underlyingError: Error?=nil,
-    context: ErrorHandlingCommon.ErrorContext?=nil
+    context: ErrorHandlingInterfaces.ErrorContext?=nil
   ) {
     self.errorType=errorType
     self.source=source
     self.underlyingError=underlyingError
-    self.context=context ?? ErrorHandlingCommon.ErrorContext(
+    self.context=context ?? ErrorHandlingInterfaces.ErrorContext(
       source: "Security",
       operation: "securityOperation",
       details: errorType.message
@@ -118,7 +118,7 @@ public struct UmbraSecurityError: Error, UmbraError, Sendable, CustomStringConve
   }
 
   /// Creates a new instance of the error with additional context
-  public func with(context: ErrorHandlingCommon.ErrorContext) -> Self {
+  public func with(context: ErrorHandlingInterfaces.ErrorContext) -> Self {
     UmbraSecurityError(
       errorType: errorType,
       source: source,
@@ -138,7 +138,7 @@ public struct UmbraSecurityError: Error, UmbraError, Sendable, CustomStringConve
   }
 
   /// Creates a new instance of the error with source information
-  public func with(source: ErrorHandlingCommon.ErrorSource) -> Self {
+  public func with(source: ErrorHandlingInterfaces.ErrorSource) -> Self {
     UmbraSecurityError(
       errorType: errorType,
       source: source,
@@ -156,10 +156,10 @@ public struct UmbraSecurityError: Error, UmbraError, Sendable, CustomStringConve
   ) -> UmbraSecurityError {
     UmbraSecurityError(
       errorType: type,
-      source: ErrorHandlingCommon.ErrorSource(
+      source: ErrorHandlingInterfaces.ErrorSource(
         file: file,
-        function: function,
-        line: line
+        line: line,
+        function: function
       )
     )
   }

@@ -1,17 +1,17 @@
 /**
  # UmbraCore Symmetric Cryptography Service
- 
+
  This file provides symmetric encryption capabilities for the UmbraCore security framework.
  It implements the symmetric encryption portions of the CryptoServiceProtocol and provides
  AES-GCM encryption with appropriate security measures.
- 
+
  ## Security Considerations
- 
- * Symmetric encryption uses AES-GCM with 256-bit keys, which is considered strong by 
+
+ * Symmetric encryption uses AES-GCM with 256-bit keys, which is considered strong by
    current standards.
- * Memory safety is implemented via SecureBytes containers which provide basic memory 
+ * Memory safety is implemented via SecureBytes containers which provide basic memory
    protections.
- * The implementation doesn't currently include mitigations for timing attacks or other 
+ * The implementation doesn't currently include mitigations for timing attacks or other
    side-channel vulnerabilities.
  */
 
@@ -23,18 +23,18 @@ import UmbraCoreTypes
 
 /// Provides symmetric encryption operations to the CryptoService.
 ///
-/// This struct offers methods for encrypting and decrypting data using symmetric 
+/// This struct offers methods for encrypting and decrypting data using symmetric
 /// cryptographic algorithms, with both basic and advanced configuration options.
 public struct SymmetricCrypto: Sendable {
   // MARK: - Initialisation
-  
+
   /// Creates a new instance of SymmetricCrypto.
   public init() {
     // No initialisation needed - stateless service
   }
-  
+
   // MARK: - Public API
-  
+
   /// Encrypts data using the specified key.
   /// - Parameters:
   ///   - data: The data to encrypt.
@@ -51,14 +51,14 @@ public struct SymmetricCrypto: Sendable {
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     do {
       // Generate a random IV
-      let iv = CryptoWrapper.generateRandomIVSecure()
-      
+      let iv=CryptoWrapper.generateRandomIVSecure()
+
       // Encrypt the data with AES-GCM
-      let encryptedData = try CryptoWrapper.aesEncrypt(data: data, key: key, iv: iv)
-      
+      let encryptedData=try CryptoWrapper.aesEncrypt(data: data, key: key, iv: iv)
+
       // Prepend the IV to the encrypted data
-      let result = SecureBytes.combine(iv, encryptedData)
-      
+      let result=SecureBytes.combine(iv, encryptedData)
+
       return .success(result)
     } catch {
       return .failure(.encryptionFailed(
@@ -66,7 +66,7 @@ public struct SymmetricCrypto: Sendable {
       ))
     }
   }
-  
+
   /// Decrypts data using the specified key.
   /// - Parameters:
   ///   - data: The encrypted data (should include the IV as first 12 bytes).
@@ -84,15 +84,15 @@ public struct SymmetricCrypto: Sendable {
       guard data.count > 12 else {
         return .failure(.invalidInput(reason: "Encrypted data too short"))
       }
-      
+
       // Extract the IV and ciphertext
-      let splitResult = try data.split(at: 12)
-      let iv = splitResult.0
-      let encryptedData = splitResult.1
-      
+      let splitResult=try data.split(at: 12)
+      let iv=splitResult.0
+      let encryptedData=splitResult.1
+
       // Decrypt the data
-      let decryptedData = try CryptoWrapper.aesDecrypt(data: encryptedData, key: key, iv: iv)
-      
+      let decryptedData=try CryptoWrapper.aesDecrypt(data: encryptedData, key: key, iv: iv)
+
       return .success(decryptedData)
     } catch {
       return .failure(.decryptionFailed(
@@ -100,7 +100,7 @@ public struct SymmetricCrypto: Sendable {
       ))
     }
   }
-  
+
   /// Encrypt data using a symmetric key with advanced configuration.
   /// - Parameters:
   ///   - data: Data to encrypt.
@@ -114,16 +114,16 @@ public struct SymmetricCrypto: Sendable {
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     do {
       // Use IV from config or generate a random one
-      let iv = config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
-      
+      let iv=config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
+
       // Encrypt the data with the provided or random IV
-      let encryptedData = try CryptoWrapper.aesEncrypt(data: data, key: key, iv: iv)
-      
+      let encryptedData=try CryptoWrapper.aesEncrypt(data: data, key: key, iv: iv)
+
       // If IV was not in config, we need to prepend it to the result
-      let result = config.initializationVector != nil ? 
-        encryptedData : 
+      let result=config.initializationVector != nil ?
+        encryptedData :
         SecureBytes.combine(iv, encryptedData)
-      
+
       return .success(result)
     } catch {
       return .failure(.encryptionFailed(
@@ -131,7 +131,7 @@ public struct SymmetricCrypto: Sendable {
       ))
     }
   }
-  
+
   /// Decrypt data using a symmetric key with advanced configuration.
   /// - Parameters:
   ///   - data: Data to decrypt.
@@ -146,25 +146,25 @@ public struct SymmetricCrypto: Sendable {
     do {
       let iv: SecureBytes
       let dataToDecrypt: SecureBytes
-      
-      if let providedIv = config.initializationVector {
+
+      if let providedIv=config.initializationVector {
         // If IV is provided in config, use it
-        iv = providedIv
-        dataToDecrypt = data
+        iv=providedIv
+        dataToDecrypt=data
       } else {
         // Extract IV from data (first 12 bytes)
         guard data.count > 12 else {
           return .failure(.invalidInput(reason: "Encrypted data too short"))
         }
-        
-        let splitResult = try data.split(at: 12)
-        iv = splitResult.0
-        dataToDecrypt = splitResult.1
+
+        let splitResult=try data.split(at: 12)
+        iv=splitResult.0
+        dataToDecrypt=splitResult.1
       }
-      
+
       // Decrypt the data
-      let decryptedData = try CryptoWrapper.aesDecrypt(data: dataToDecrypt, key: key, iv: iv)
-      
+      let decryptedData=try CryptoWrapper.aesDecrypt(data: dataToDecrypt, key: key, iv: iv)
+
       return .success(decryptedData)
     } catch {
       return .failure(.decryptionFailed(

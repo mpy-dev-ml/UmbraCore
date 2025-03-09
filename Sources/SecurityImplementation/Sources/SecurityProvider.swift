@@ -91,10 +91,10 @@ public final class SecurityProvider: SecurityProviderProtocol {
 
   /// The crypto service for cryptographic operations
   public let cryptoService: CryptoServiceProtocol
-  
+
   /// The key manager for key management operations
   public let keyManager: KeyManagementProtocol
-  
+
   /// Core implementation that handles provider functionality
   private let providerCore: SecurityProviderCore
 
@@ -102,9 +102,9 @@ public final class SecurityProvider: SecurityProviderProtocol {
 
   /// Creates a new instance with default services
   public init() {
-    cryptoService = CryptoService()
-    keyManager = KeyManager()
-    providerCore = SecurityProviderCore(cryptoService: cryptoService, keyManager: keyManager)
+    cryptoService=CryptoService()
+    keyManager=KeyManager()
+    providerCore=SecurityProviderCore(cryptoService: cryptoService, keyManager: keyManager)
   }
 
   /// Creates a new instance with the specified services
@@ -112,9 +112,9 @@ public final class SecurityProvider: SecurityProviderProtocol {
   ///   - cryptoService: The crypto service to use
   ///   - keyManager: The key manager to use
   public init(cryptoService: CryptoServiceProtocol, keyManager: KeyManagementProtocol) {
-    self.cryptoService = cryptoService
-    self.keyManager = keyManager
-    self.providerCore = SecurityProviderCore(cryptoService: cryptoService, keyManager: keyManager)
+    self.cryptoService=cryptoService
+    self.keyManager=keyManager
+    providerCore=SecurityProviderCore(cryptoService: cryptoService, keyManager: keyManager)
   }
 
   // MARK: - SecurityProviderProtocol
@@ -128,7 +128,7 @@ public final class SecurityProvider: SecurityProviderProtocol {
     operation: SecurityOperation,
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    return await providerCore.performSecureOperation(operation: operation, config: config)
+    await providerCore.performSecureOperation(operation: operation, config: config)
   }
 
   /**
@@ -165,6 +165,6 @@ public final class SecurityProvider: SecurityProviderProtocol {
    ```
    */
   public func createSecureConfig(options: [String: Any]?) -> SecurityConfigDTO {
-    return providerCore.createSecureConfig(options: options)
+    providerCore.createSecureConfig(options: options)
   }
 }

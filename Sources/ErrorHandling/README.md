@@ -75,6 +75,100 @@ let retryOption = ErrorRecoveryOption(
 )
 ```
 
+## Architectural Design
+
+### Error Type Structure
+
+The UmbraCore error handling system follows a deliberate dual-representation architecture:
+
+1. **Domain-Specific Errors** (`Domains/*.swift`)
+   - Internal implementation details of error handling
+   - Conform to `UmbraError` protocol
+   - Carry rich context information
+   - Example: `UmbraErrors.Security.Core` in `SecurityErrorDomain.swift`
+
+2. **Public API Errors** (`Types/*.swift`)
+   - Public-facing error representations
+   - Simplified, flattened error structure
+   - Designed for API consumers
+   - Example: `SecurityError` in `SecurityErrorTypes.swift`
+
+3. **Error Mappers** (`Mapping/*.swift`)
+   - Map between domain-specific and public API errors
+   - Ensure consistent representation
+   - Handle error transformation and enrichment
+
+This separation enables internal code to work with rich error types while providing
+API consumers with a simpler, more stable error interface.
+
+### Error Namespace Structure
+
+UmbraCore uses a consistent namespace hierarchy for domain-specific errors:
+
+```
+UmbraErrors
+├── Security
+│   ├── Core (authentication, encryption, etc.)
+│   ├── Protocols (protocol implementation failures)
+│   └── XPC (XPC communication errors)
+├── Network
+│   ├── Core (general network failures)
+│   └── HTTP (HTTP-specific errors)
+├── Application
+│   ├── Core (lifecycle, resources, etc.)
+│   └── UI (interface-related errors)
+├── Resource
+│   ├── Core (general resource management)
+│   ├── File (file system specific resource errors)
+│   └── Pool (resource pool management errors)
+├── Logging
+│   └── Core (logging system errors)
+├── Bookmark
+│   └── Core (security-scoped bookmark errors)
+├── XPC
+│   ├── Core (XPC communication errors)
+│   └── Protocols (XPC protocol-specific errors)
+├── Crypto
+│   └── Core (cryptography operation errors)
+└── Repository
+    └── Core (data repository errors)
+```
+
+This hierarchical structure assists with error categorisation, explicit type referencing, 
+and preventing namespace collisions.
+
+### Error Case Naming Conventions
+
+UmbraCore follows these naming conventions for error cases:
+
+- **Past tense** for failure events: `authenticationFailed`, `connectionLost`
+- **Present tense** for state descriptions: `invalidState`, `insufficientPrivileges`
+- **Consistent parameters**: 
+  - Use `reason:` for explanatory strings
+  - Use domain-specific parameters where appropriate (e.g., `protocolName:`, `state:`)
+
+## Code Guidelines
+
+Follow these guidelines when working with the error handling system:
+
+1. **For Internal Code**:
+   - Use domain-specific errors from `UmbraErrors` namespace
+   - Provide full context with file/line/function information
+   - Use error recovery mechanisms when appropriate
+
+2. **For API Boundaries**:
+   - Map internal errors to public API errors using appropriate mappers
+   - Preserve essential context when mapping errors
+   - Don't expose internal implementation details
+
+3. **When Creating New Error Types**:
+   - Place domain-specific implementations in `Domains/`
+   - Place public API representations in `Types/`
+   - Create appropriate mappers in `Mapping/`
+   - Follow error case naming conventions
+   - Keep files under 300 lines
+   - Split by responsibility when files grow too large
+
 ## Usage Examples
 
 ### Basic Error Handling

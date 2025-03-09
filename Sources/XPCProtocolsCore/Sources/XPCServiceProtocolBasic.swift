@@ -1,17 +1,17 @@
 /**
  # Basic XPC Service Protocol
- 
+
  This file defines the most fundamental protocol for XPC services in UmbraCore.
  The basic protocol establishes minimal functionality that all XPC services must implement,
  providing a foundation for the more advanced protocol levels.
- 
+
  ## Features
- 
+
  * Protocol identification capability for service discovery
  * Basic connectivity testing (ping)
  * Simplified key synchronisation mechanism
  * Foundation-free interface design
- 
+
  This protocol serves as the base for all XPC service implementations in UmbraCore
  and ensures a consistent minimum API across all services.
  */

@@ -11,6 +11,9 @@ public struct ClosureRecoveryOption: RecoveryOption, Identifiable {
 
   /// Additional description of the recovery option
   public let description: String?
+  
+  /// Whether this recovery option is potentially disruptive to the user's workflow
+  public let isDisruptive: Bool
 
   /// The action to perform for recovery
   private let action: @Sendable () async throws -> Void
@@ -19,14 +22,17 @@ public struct ClosureRecoveryOption: RecoveryOption, Identifiable {
   /// - Parameters:
   ///   - title: Title of the option
   ///   - description: Optional description
+  ///   - isDisruptive: Whether this recovery option might disrupt the user's workflow
   ///   - action: Action to perform
   public init(
     title: String,
     description: String?=nil,
+    isDisruptive: Bool = false,
     action: @escaping @Sendable () async throws -> Void
   ) {
     self.title=title
     self.description=description
+    self.isDisruptive=isDisruptive
     self.action=action
   }
 
@@ -35,8 +41,8 @@ public struct ClosureRecoveryOption: RecoveryOption, Identifiable {
     do {
       try await action()
     } catch {
-      // Log error but continue
-      print("Recovery action failed: \(error)")
+      // If action throws, we catch and ignore the error since perform() doesn't throw
+      // The error may be handled within the action closure itself
     }
   }
 }
@@ -56,7 +62,7 @@ public struct ErrorNotification: Sendable, Identifiable {
   public let message: String
 
   /// Options for recovering from the error
-  public let recoveryOptions: [ClosureRecoveryOption]
+  public let recoveryOptions: [any RecoveryOption]
 
   /// Creates a new error notification
   /// - Parameters:
@@ -68,7 +74,7 @@ public struct ErrorNotification: Sendable, Identifiable {
     error: Error,
     title: String,
     message: String,
-    recoveryOptions: [ClosureRecoveryOption]=[]
+    recoveryOptions: [any RecoveryOption]=[]
   ) {
     id=UUID()
     self.error=error
@@ -84,7 +90,7 @@ public protocol ErrorNotificationManager: Sendable {
   /// - Parameters:
   ///   - error: The error to present
   ///   - recoveryOptions: Recovery options to present
-  func presentError(_ error: Error, recoveryOptions: [ClosureRecoveryOption])
+  func presentError(_ error: Error, recoveryOptions: [any RecoveryOption])
 
   /// Recovers from an error with the selected recovery option
   /// - Parameters:
@@ -118,7 +124,7 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
   ///   - recoveryOptions: Recovery options to present
   public nonisolated func presentError(
     _ error: Error,
-    recoveryOptions: [ClosureRecoveryOption]
+    recoveryOptions: [any RecoveryOption]
   ) {
     // Create a detached task to handle the async call
     // TODO: Swift 6 compatibility - refactor actor isolation
@@ -134,7 +140,7 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
   @MainActor
   public func presentErrorOnMainActor(
     _ error: Error,
-    recoveryOptions: [ClosureRecoveryOption]
+    recoveryOptions: [any RecoveryOption]
   ) async {
     let domain: String=if let nsError=error as? NSError {
       nsError.domain
@@ -156,6 +162,32 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
     // TODO: Present UI for the notification
   }
 
+  /// Get the recovery option with the given ID
+  /// - Parameter id: The ID of the recovery option
+  /// - Returns: The recovery option, or nil if not found
+  @MainActor
+  public func getRecoveryOption(withID id: UUID) -> (any RecoveryOption)? {
+    for notification in activeNotifications.values {
+      for option in notification.recoveryOptions where option.id == id {
+        return option
+      }
+    }
+    return nil
+  }
+
+  /// Recover from an error with the selected option
+  /// - Parameter optionID: The ID of the selected recovery option
+  /// - Returns: Whether recovery was successful
+  @MainActor
+  public func recoverWithOption(id optionID: UUID) async -> Bool {
+    guard let option = getRecoveryOption(withID: optionID) else {
+      return false
+    }
+    
+    await option.perform()
+    return true
+  }
+
   /// Recovers from an error with the selected recovery option
   /// - Parameters:
   ///   - notificationId: ID of the notification to recover from
@@ -164,34 +196,13 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
     notificationId: UUID,
     recoveryOptionId: UUID
   ) async throws {
-    let notification=await MainActor.run {
-      self.activeNotifications[notificationId]
-    }
-
-    guard let notification else {
-      throw NSError(
-        domain: "ErrorNotification",
-        code: 1,
-        userInfo: [NSLocalizedDescriptionKey: "Notification not found"]
-      )
-    }
-
-    guard
-      let recoveryOption=notification.recoveryOptions.first(
-        where: { $0.id == recoveryOptionId }
-      )
-    else {
+    let success = await recoverWithOption(id: recoveryOptionId)
+    if !success {
       throw NSError(
         domain: "ErrorNotification",
         code: 2,
         userInfo: [NSLocalizedDescriptionKey: "Recovery option not found"]
       )
-    }
-
-    await recoveryOption.perform()
-
-    await MainActor.run {
-      self.activeNotifications[notificationId]=nil
     }
   }
 

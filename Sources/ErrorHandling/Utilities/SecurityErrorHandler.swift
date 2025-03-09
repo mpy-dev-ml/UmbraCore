@@ -1,15 +1,11 @@
+import ErrorHandling
+import ErrorHandlingCommon
 import ErrorHandlingCore
 import ErrorHandlingDomains
 import ErrorHandlingInterfaces
-
-// Using ErrorHandlingInterfaces for UmbraError
-import ErrorHandling // Import the main module with wrapper types
-import ErrorHandlingCommon
-import ErrorHandlingNotification // Add explicit import for notification types
-import ErrorHandlingModels // Add import for ErrorHandler
-
-// Removed ErrorHandlingLogging import to fix library evolution issues
 import ErrorHandlingMapping
+import ErrorHandlingModels
+import ErrorHandlingNotification
 import ErrorHandlingRecovery
 import Foundation
 
@@ -63,9 +59,13 @@ private struct GenericError: ErrorHandlingInterfaces.UmbraError {
 }
 
 /// A utility class for handling security errors across different modules
+/// This class is responsible for mapping security errors to a common format and logging them
 public final class SecurityErrorHandler: @unchecked Sendable {
   /// The shared instance for the handler
   public static let shared=SecurityErrorHandler()
+
+  /// The error mapper used to transform errors
+  private let errorMapper=SecurityErrorMapper()
 
   /// Private initialiser to enforce singleton pattern
   private init() {}
@@ -77,7 +77,7 @@ public final class SecurityErrorHandler: @unchecked Sendable {
   ///   - file: File name (auto-filled by the compiler)
   ///   - function: Function name (auto-filled by the compiler)
   ///   - line: Line number (auto-filled by the compiler)
-  @MainActor // Add MainActor to make this function compatible with ErrorHandler
+  @MainActor
   public func handleSecurityError(
     _ error: Error,
     severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
@@ -85,82 +85,12 @@ public final class SecurityErrorHandler: @unchecked Sendable {
     function: String=#function,
     line: Int=#line
   ) {
-    // Use a type check pattern to avoid ambiguity
-    guard let securityError=error as? SecurityCoreErrorWrapper else {
-      // Just log the error if it's not a security error we can handle
-      print("Unhandled security error: \(String(describing: error))")
-      return
-    }
-
-    // Map the security error to the required properties
-    let domain="Security.Core"
-    let code: String
-    let message: String
-    let details: [String: String]=[:]
-
-    switch securityError.wrappedError {
-      case let .encryptionFailed(reason):
-        code="ENCRYPTION_FAILED"
-        message="Encryption failed: \(reason)"
-      case let .decryptionFailed(reason):
-        code="DECRYPTION_FAILED"
-        message="Decryption failed: \(reason)"
-      case let .keyGenerationFailed(reason):
-        code="KEY_GENERATION_FAILED"
-        message="Key generation failed: \(reason)"
-      case let .invalidKey(reason):
-        code="INVALID_KEY"
-        message="Invalid key: \(reason)"
-      case let .hashVerificationFailed(reason):
-        code="HASH_VERIFICATION_FAILED"
-        message="Hash verification failed: \(reason)"
-      case let .randomGenerationFailed(reason):
-        code="RANDOM_GENERATION_FAILED"
-        message="Random generation failed: \(reason)"
-      case let .invalidInput(reason):
-        code="INVALID_INPUT"
-        message="Invalid input: \(reason)"
-      case let .storageOperationFailed(reason):
-        code="STORAGE_OPERATION_FAILED"
-        message="Storage operation failed: \(reason)"
-      case let .timeout(operation):
-        code="TIMEOUT"
-        message="Operation timed out: \(operation)"
-      case let .serviceError(errorCode, reason):
-        code="SERVICE_ERROR_\(errorCode)"
-        message="Service error: \(reason)"
-      case let .internalError(detail):
-        code="INTERNAL_ERROR"
-        message="Internal error: \(detail)"
-      case let .notImplemented(feature):
-        code="NOT_IMPLEMENTED"
-        message="Not implemented: \(feature)"
-      @unknown default:
-        code="UNKNOWN"
-        message="Unknown security error"
-    }
-
-    // Create source information
-    let source=ErrorHandlingCommon.ErrorSource(
-      file: file,
-      function: function,
-      line: line
-    )
-
-    // Create a generic error that we know conforms to UmbraError
-    let genericError=GenericError(
-      domain: domain,
-      code: code,
-      message: message,
-      details: details,
-      source: source,
-      underlyingError: nil,
-      context: ErrorHandlingCommon.ErrorContext(
-        source: "SecurityErrorHandler",
-        operation: "handleSecurityError",
-        details: "Handling \(code)",
-        underlyingError: error
-      )
+    // Map the error to our common format
+    let genericError=mapToGenericError(
+      error,
+      sourceFile: file,
+      sourceFunction: function,
+      sourceLine: line
     )
 
     // Use the generic error with the error handler
@@ -173,244 +103,136 @@ public final class SecurityErrorHandler: @unchecked Sendable {
     )
   }
 
-  /// Add recovery options for security errors
+  /// Maps an error to our generic error format
   /// - Parameters:
-  ///   - error: The error to handle
-  ///   - retryAction: The action to take when retry is selected
-  ///   - cancelAction: The action to take when cancel is selected
-  /// - Returns: Recovery options for the error
-  public func addSecurityRecoveryOptions(
-    for error: Error,
-    retryAction: @escaping @Sendable () -> Void,
-    cancelAction: @escaping @Sendable () -> Void
-  ) -> RecoveryOptions {
-    // Try to map to our SecurityCoreErrorWrapper type
+  ///   - error: The error to map
+  ///   - sourceFile: The source file where the error occurred
+  ///   - sourceFunction: The function where the error occurred
+  ///   - sourceLine: The line number where the error occurred
+  /// - Returns: A generic error that conforms to UmbraError
+  private func mapToGenericError(
+    _ error: Error,
+    sourceFile: String,
+    sourceFunction: String,
+    sourceLine: Int
+  ) -> GenericError {
+    // Extract error details from the security error
+    let domain="security.umbracore.dev"
+    let code: String
+    let message: String
+
+    // Try to map the error using our error mapper
     if let securityError=error as? SecurityCoreErrorWrapper {
-      // Return recovery options based on the security error type
-      switch securityError.wrappedError {
-        case .invalidKey:
-          // Use the factory methods from RecoveryOptions for consistent type handling
-          RecoveryOptions.retryCancel(
-            title: "Access Denied",
-            message: String(describing: securityError),
-            retryHandler: retryAction,
-            cancelHandler: cancelAction
-          )
-        default:
-          RecoveryOptions.retryCancel(
-            title: "Security Error",
-            message: String(describing: securityError),
-            retryHandler: retryAction,
-            cancelHandler: cancelAction
-          )
-      }
+      // Extract code and message from the error
+      let errorInfo=extractErrorInfo(from: securityError.wrappedError)
+      code=errorInfo.code
+      message=errorInfo.message
+    } else if let mappedError=errorMapper.mapFromAny(error) {
+      // Use the mapped error information
+      code=String(describing: mappedError).uppercased().replacingOccurrences(of: " ", with: "_")
+      message=extractMessage(from: mappedError)
     } else {
-      // Not a security error, or couldn't be mapped
-      RecoveryOptions.retryCancel(
-        title: "Security Error",
-        message: String(describing: error),
-        retryHandler: retryAction,
-        cancelHandler: cancelAction
-      )
+      // Generic fallback for unknown errors
+      code="UNKNOWN_SECURITY_ERROR"
+      message="Unhandled security error: \(String(describing: error))"
     }
-  }
 
-  /// Creates a notification for security errors
-  /// - Parameter error: Error to create a notification for
-  /// - Returns: ErrorNotification for displaying to the user
-  func createNotificationForUI(for error: Error) -> ErrorHandlingNotification.ErrorNotification {
-    // Create recovery options based on the error type
-    let recoveryOptions=addSecurityRecoveryOptions(
-      for: error,
-      retryAction: { /* Empty retry action */ },
-      cancelAction: { /* Empty cancel action */ }
+    // Create source information
+    let source=ErrorHandlingCommon.ErrorSource(
+      file: sourceFile,
+      function: sourceFunction,
+      line: sourceLine
     )
 
-    // Convert RecoveryActions to ClosureRecoveryOptions
-    let closureOptions=recoveryOptions.actions.map { action in
-      ErrorHandlingNotification.ClosureRecoveryOption(
-        title: action.title,
-        description: action.description,
-        action: { await action.perform() }
+    // Create a generic error that conforms to UmbraError
+    return GenericError(
+      domain: domain,
+      code: code,
+      message: message,
+      details: [:],
+      source: source,
+      underlyingError: error,
+      context: ErrorHandlingCommon.ErrorContext(
+        source: "SecurityErrorHandler",
+        operation: "handleSecurityError",
+        details: "Handling \(code)",
+        underlyingError: error
       )
-    }
-
-    // Use a conditional cast with appropriate type
-    if let securityError=error as? SecurityCoreErrorWrapper {
-      return ErrorHandlingNotification.ErrorNotification(
-        error: securityError,
-        title: "Security Alert",
-        message: securityError.errorDescription,
-        recoveryOptions: closureOptions
-      )
-    } else {
-      return ErrorHandlingNotification.ErrorNotification(
-        error: error,
-        title: "Security Alert",
-        message: String(describing: error),
-        recoveryOptions: closureOptions
-      )
-    }
-  }
-
-  /// Map a security error to recovery options
-  /// - Parameter securityError: The security error
-  /// - Returns: Recovery options for the security error
-  private func mappedSecurityErrorToRecoveryOptions(
-    _ securityError: SecurityCoreErrorWrapper
-  ) -> RecoveryOptions {
-    // Determine appropriate recovery options based on the error type
-    switch securityError.wrappedError {
-      case let .invalidInput(reason) where reason.contains("authentication"):
-        RecoveryOptions.retryCancel(
-          title: "Authentication Required",
-          message: String(describing: securityError),
-          retryHandler: {
-            print("Retrying after security error")
-            // Implement retry logic here
-          },
-          cancelHandler: {
-            print("Cancelled after security error")
-            // Implement cancel logic here
-          }
-        )
-
-      case let .invalidInput(reason) where reason.contains("session"):
-        RecoveryOptions.retryCancel(
-          title: "Session Expired",
-          message: String(describing: securityError),
-          retryHandler: {
-            print("Retrying after security error")
-            // Implement retry logic here
-          },
-          cancelHandler: {
-            print("Cancelled after security error")
-            // Implement cancel logic here
-          }
-        )
-
-      case .invalidKey:
-        RecoveryOptions.retryCancel(
-          title: "Access Denied",
-          message: String(describing: securityError),
-          retryHandler: {
-            print("Retrying after security error")
-            // Implement retry logic here
-          },
-          cancelHandler: {
-            print("Cancelled after security error")
-            // Implement cancel logic here
-          }
-        )
-
-      case let .invalidInput(reason) where reason.contains("permission"):
-        RecoveryOptions.retryCancel(
-          title: "Access Denied",
-          message: String(describing: securityError),
-          retryHandler: {
-            print("Retrying after security error")
-            // Implement retry logic here
-          },
-          cancelHandler: {
-            print("Cancelled after security error")
-            // Implement cancel logic here
-          }
-        )
-
-      default:
-        // Default recovery options for other security errors
-        RecoveryOptions.retryCancel(
-          title: "Security Error",
-          message: String(describing: securityError),
-          retryHandler: {
-            print("Retrying after security error")
-            // Implement retry logic here
-          },
-          cancelHandler: {
-            print("Cancelled after security error")
-            // Implement cancel logic here
-          }
-        )
-    }
-  }
-
-  /// Example usage to explain how errors are handled
-  @MainActor
-  public func exampleHandling() {
-    // Create a security error
-    let securityError=SecurityCoreErrorWrapper(
-      UmbraErrors.Security.Core
-        .invalidInput(reason: "Incorrect password format")
     )
-
-    // Handle the security error with the handler
-    handleSecurityError(securityError)
-
-    // Create a notification for the error
-    let notification=createNotificationForUI(for: securityError)
-
-    // Display the notification (simplified example)
-    print("A security notification would be displayed: \(notification.title)")
   }
 
-  @MainActor // Add MainActor to match handleSecurityError
-  func createErrorNotification(
-    from error: Error,
-    severity _: ErrorHandlingInterfaces.ErrorSeverity
-  ) -> ErrorHandlingNotification.ErrorNotification {
-    // Create recovery options based on the severity
-    let recoveryOptions: [ErrorHandlingNotification.ClosureRecoveryOption]=[]
-
-    // Use a conditional cast with explicit type to avoid ambiguity
-    if let securityError=error as? SecurityCoreErrorWrapper {
-      // Get error message using the custom description
-      let errorMessage=securityError.errorDescription
-      let errorTitle="Security Error"
-
-      return ErrorHandlingNotification.ErrorNotification(
-        error: securityError,
-        title: errorTitle,
-        message: errorMessage,
-        recoveryOptions: recoveryOptions
-      )
-    } else {
-      // Handle non-security errors
-      return ErrorHandlingNotification.ErrorNotification(
-        error: error,
-        title: "Error",
-        message: String(describing: error),
-        recoveryOptions: recoveryOptions
-      )
+  /// Extracts the error code and message from a security error
+  /// - Parameter error: The security error to extract information from
+  /// - Returns: A tuple containing the error code and message
+  private func extractErrorInfo(
+    from error: UmbraErrors.Security
+      .Core
+  ) -> (code: String, message: String) {
+    switch error {
+      case let .encryptionFailed(reason):
+        return ("ENCRYPTION_FAILED", "Encryption failed: \(reason)")
+      case let .decryptionFailed(reason):
+        return ("DECRYPTION_FAILED", "Decryption failed: \(reason)")
+      case let .keyGenerationFailed(reason):
+        return ("KEY_GENERATION_FAILED", "Key generation failed: \(reason)")
+      case let .invalidKey(reason):
+        return ("INVALID_KEY", "Invalid key: \(reason)")
+      case let .hashVerificationFailed(reason):
+        return ("HASH_VERIFICATION_FAILED", "Hash verification failed: \(reason)")
+      case let .randomGenerationFailed(reason):
+        return ("RANDOM_GENERATION_FAILED", "Random generation failed: \(reason)")
+      case let .invalidInput(reason):
+        return ("INVALID_INPUT", "Invalid input: \(reason)")
+      case let .storageOperationFailed(reason):
+        return ("STORAGE_OPERATION_FAILED", "Storage operation failed: \(reason)")
+      case let .timeout(operation):
+        return ("TIMEOUT", "Operation timed out: \(operation)")
+      case let .serviceError(errorCode, reason):
+        return ("SERVICE_ERROR_\(errorCode)", "Service error: \(reason)")
+      case let .internalError(detail):
+        return ("INTERNAL_ERROR", "Internal error: \(detail)")
+      case let .notImplemented(feature):
+        return ("NOT_IMPLEMENTED", "Not implemented: \(feature)")
+      @unknown default:
+        return ("UNKNOWN", "Unknown security error")
     }
   }
-}
 
-/// Extension to provide usage examples
-extension SecurityErrorHandler {
-  /// Example usage of the security error handler
-  /// - Parameter error: Any error to handle as a security error
-  @MainActor
-  public static func handleExampleError(_ error: Error) {
-    // Create recovery options but assign to _ since we're not using the result
-    _=shared.addSecurityRecoveryOptions(
-      for: error,
-      retryAction: {
-        print("Retrying...")
-      },
-      cancelAction: {
-        print("Cancelled")
-      }
-    )
-
-    // Create a notification
-    let notification=shared.createNotificationForUI(
-      for: error
-    )
-
-    // Log and handle the error
-    shared.handleSecurityError(error)
-
-    // The notification can be shown in the UI
-    print("A security notification would be displayed: \(notification.title)")
+  /// Extracts a human-readable message from a mapped security error
+  /// - Parameter error: The mapped security error
+  /// - Returns: A human-readable error message
+  private func extractMessage(from error: UmbraSecurityError) -> String {
+    switch error {
+      case let .authenticationFailed(reason):
+        "Authentication failed: \(reason)"
+      case let .unauthorizedAccess(reason):
+        "Unauthorized access: \(reason)"
+      case let .invalidCredentials(reason):
+        "Invalid credentials: \(reason)"
+      case let .sessionExpired(reason):
+        "Session expired: \(reason)"
+      case let .tokenExpired(reason):
+        "Token expired: \(reason)"
+      case let .encryptionFailed(reason):
+        "Encryption failed: \(reason)"
+      case let .decryptionFailed(reason):
+        "Decryption failed: \(reason)"
+      case let .keyGenerationFailed(reason):
+        "Key generation failed: \(reason)"
+      case let .hashingFailed(reason):
+        "Hashing failed: \(reason)"
+      case let .signatureInvalid(reason):
+        "Signature invalid: \(reason)"
+      case let .permissionDenied(reason):
+        "Permission denied: \(reason)"
+      case let .certificateInvalid(reason):
+        "Certificate invalid: \(reason)"
+      case let .secureChannelFailed(reason):
+        "Secure channel failed: \(reason)"
+      case let .securityConfigurationError(reason):
+        "Security configuration error: \(reason)"
+      case let .unknown(reason):
+        "Unknown security error: \(reason)"
+    }
   }
 }

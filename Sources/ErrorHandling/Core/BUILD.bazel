@@ -10,7 +10,8 @@ umbra_swift_library(
         "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
         "//Sources/ErrorHandling/Logging:ErrorHandlingLogging",
-        "//Sources/ErrorHandling/Recovery:ErrorHandlingRecovery",
+        # Removing dependency on Recovery to break circular dependency
+        # "//Sources/ErrorHandling/Recovery:ErrorHandlingRecovery",
         "//Sources/ErrorHandling/Notification:ErrorHandlingNotification",
     ],
 )

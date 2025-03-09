@@ -5,6 +5,12 @@ umbra_swift_library(
     srcs = glob(["*.swift"]),
     deps = [
         "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
+        "//Sources/ErrorHandling/Core:ErrorHandlingCore",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
         "//Sources/ErrorHandling/Interfaces:ErrorHandlingInterfaces",
+        "//Sources/ErrorHandling/Mapping:ErrorHandlingMapping",
+        "//Sources/ErrorHandling/Models:ErrorHandlingModels",
+        # Removed dependency on ErrorHandlingNotification to break the cycle
+        # "//Sources/ErrorHandling/Notification:ErrorHandlingNotification",
     ],
 )

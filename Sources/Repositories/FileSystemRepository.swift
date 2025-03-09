@@ -124,7 +124,7 @@ public actor FileSystemRepository: Repository {
     public let location: URL
     public let state: RepositoryState
     public let stats: RepositoryStatistics
-    
+
     /// Public initializer to create a repository data struct
     public init(
       identifier: String,
@@ -132,10 +132,10 @@ public actor FileSystemRepository: Repository {
       state: RepositoryState,
       stats: RepositoryStatistics
     ) {
-      self.identifier = identifier
-      self.location = location
-      self.state = state
-      self.stats = stats
+      self.identifier=identifier
+      self.location=location
+      self.state=state
+      self.stats=stats
     }
   }
 
@@ -143,15 +143,15 @@ public actor FileSystemRepository: Repository {
   private enum CodingKeys: String, CodingKey {
     case identifier, location, state, stats
   }
-  
+
   /// Encode this repository to an encoder
   /// This method must be nonisolated to satisfy the Encodable protocol requirement
   public nonisolated func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
+    var container=encoder.container(keyedBy: CodingKeys.self)
     try container.encode(identifier, forKey: .identifier)
     try container.encode(location, forKey: .location)
     try container.encode(state, forKey: .state)
-    
+
     // Use the thread-safe accessor for stats
     try container.encode(statsAccessor.getStats(), forKey: .stats)
   }
@@ -160,32 +160,32 @@ public actor FileSystemRepository: Repository {
   /// Uses an isolation-safe approach that avoids direct actor property access
   public nonisolated init(from decoder: Decoder) throws {
     // Extract the data in a synchronous context
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-    
+    let container=try decoder.container(keyedBy: CodingKeys.self)
+
     // Create a RepositoryData struct with the decoded values
-    let data = RepositoryData(
-      identifier: try container.decode(String.self, forKey: .identifier),
-      location: try container.decode(URL.self, forKey: .location),
-      state: try container.decode(RepositoryState.self, forKey: .state),
-      stats: try container.decode(RepositoryStatistics.self, forKey: .stats)
+    let data=try RepositoryData(
+      identifier: container.decode(String.self, forKey: .identifier),
+      location: container.decode(URL.self, forKey: .location),
+      state: container.decode(RepositoryState.self, forKey: .state),
+      stats: container.decode(RepositoryStatistics.self, forKey: .stats)
     )
-    
+
     // Initialize properties
-    self.identifier = data.identifier
-    self.location = data.location
-    self.state = data.state
-    self.stats = data.stats
-    self.statsAccessor = StatsAccessor()
-    
+    identifier=data.identifier
+    location=data.location
+    state=data.state
+    stats=data.stats
+    statsAccessor=StatsAccessor()
+
     // Using createLogger() from UmbraLogging which abstracts the implementation
-    self.logger = UmbraLogging.createLogger()
+    logger=UmbraLogging.createLogger()
   }
 
   /// Swift 6 compatible decode method that follows the modern approach
   /// This complies with Swift concurrency rules by avoiding direct use of non-Sendable types
   public static func decode(from decoder: Decoder) throws -> FileSystemRepository {
     // Use the nonisolated initializer which is required by the Decodable protocol
-    return try FileSystemRepository(from: decoder)
+    try FileSystemRepository(from: decoder)
   }
 
   // MARK: - RepositoryCore

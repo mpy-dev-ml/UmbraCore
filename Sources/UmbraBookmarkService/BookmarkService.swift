@@ -10,29 +10,29 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCList
   /// Thread-safe access for connections outside the MainActor
   /// Uses an actor to provide isolation without imposing MainActor requirements
   private actor ConnectionsRegistry {
-    private var connections: [UUID: NSXPCConnection] = [:]
-    
+    private var connections: [UUID: NSXPCConnection]=[:]
+
     func store(_ id: UUID, connection: NSXPCConnection) {
-      connections[id] = connection
+      connections[id]=connection
     }
-    
+
     func retrieve(_ id: UUID) -> NSXPCConnection? {
-      let connection = connections[id]
+      let connection=connections[id]
       connections.removeValue(forKey: id)
       return connection
     }
-    
+
     /// Process a connection with a handler while keeping it isolated within the actor
     /// This avoids passing NSXPCConnection across actor boundaries
     func processConnection(_ id: UUID, with handler: @Sendable (NSXPCConnection) -> Void) {
-      guard let connection = connections[id] else { return }
+      guard let connection=connections[id] else { return }
       handler(connection)
       connections.removeValue(forKey: id)
     }
   }
-  
+
   // The connections registry provides thread-safe access outside MainActor
-  private let connectionsRegistry = ConnectionsRegistry()
+  private let connectionsRegistry=ConnectionsRegistry()
 
   public override init() {
     super.init()
@@ -118,18 +118,18 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCList
     shouldAcceptNewConnection newConnection: NSXPCConnection
   ) -> Bool {
     // Create a unique ID to track this connection
-    let connectionId = UUID()
-    
+    let connectionId=UUID()
+
     // Configure the connection interface before storing it
     // This can be done outside the MainActor
-    let exportedInterface = NSXPCInterface(with: BookmarkServiceProtocol.self)
-    newConnection.exportedInterface = exportedInterface
-    
+    let exportedInterface=NSXPCInterface(with: BookmarkServiceProtocol.self)
+    newConnection.exportedInterface=exportedInterface
+
     // Create a detached task to handle the connection safely
     Task.detached {
       // First store the connection in our thread-safe registry
       await self.connectionsRegistry.store(connectionId, connection: newConnection)
-      
+
       // Then notify the MainActor that a connection is ready to be set up
       // Using a separate method call avoids sending the NSXPCConnection directly
       await MainActor.run {
@@ -137,10 +137,10 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCList
         self.prepareToSetupConnection(withId: connectionId)
       }
     }
-    
+
     return true
   }
-  
+
   // Initial setup method that runs on the MainActor but doesn't await anything
   @MainActor
   private func prepareToSetupConnection(withId id: UUID) {
@@ -149,7 +149,7 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCList
       await finaliseConnectionSetup(withId: id)
     }
   }
-  
+
   // Final setup method that can use async/await
   @MainActor
   private func finaliseConnectionSetup(withId id: UUID) async {
@@ -157,7 +157,7 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCList
     await connectionsRegistry.processConnection(id) { connection in
       // These operations happen within the actor's context via the closure
       // The NSXPCConnection doesn't cross actor boundaries
-      connection.exportedObject = self
+      connection.exportedObject=self
       connection.resume()
     }
   }

@@ -52,7 +52,7 @@ public final class ErrorHandler {
   ///   - line: Line number (auto-filled by the compiler)
   public func handle(
     _ error: some UmbraError,
-    severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
+    severity: ErrorSeverity = .error,
     file: String=#file,
     function: String=#function,
     line: Int=#line
@@ -80,13 +80,15 @@ public final class ErrorHandler {
 
   /// Get recovery options for an error from all registered providers
   /// - Parameter error: The error to get recovery options for
-  /// - Returns: Array of recovery options
-  public func recoveryOptions(for error: some UmbraError) -> [RecoveryOption] {
-    recoveryProviders.flatMap { $0.recoveryOptions(for: error) }
+  /// - Returns: An array of recovery options
+  public func getRecoveryOptions(for error: some UmbraError) -> [any RecoveryOption] {
+    recoveryProviders.flatMap {
+      $0.recoveryOptions(for: error)
+    }
   }
 }
 
-/// Extension for convenience methods targeting specific error types
+// Domain-specific error handling extensions
 extension ErrorHandler {
   /// Handle a security error
   /// - Parameters:
@@ -97,7 +99,7 @@ extension ErrorHandler {
   ///   - line: Line number (auto-filled by the compiler)
   public func handleSecurity(
     _ error: ErrorHandlingDomains.SecurityError,
-    severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
+    severity: ErrorSeverity = .error,
     file: String=#file,
     function: String=#function,
     line: Int=#line
@@ -114,7 +116,7 @@ extension ErrorHandler {
   ///   - line: Line number (auto-filled by the compiler)
   public func handleRepository(
     _ error: ErrorHandlingDomains.RepositoryError,
-    severity: ErrorHandlingInterfaces.ErrorSeverity = .error,
+    severity: ErrorSeverity = .error,
     file: String=#file,
     function: String=#function,
     line: Int=#line

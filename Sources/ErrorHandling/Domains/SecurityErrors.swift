@@ -85,25 +85,25 @@ extension UmbraErrors {
 
       /// Internal error within protocol handling
       case internalError(String)
-      
+
       /// Input data is in an invalid format
       case invalidInput(reason: String)
-      
+
       /// General encryption failure
       case encryptionFailed(reason: String)
-      
+
       /// General decryption failure
       case decryptionFailed(reason: String)
-      
+
       /// Secure random number generation failed
       case randomGenerationFailed(reason: String)
-      
+
       /// Secure storage operation failed
       case storageOperationFailed(reason: String)
-      
+
       /// General security service error
       case serviceError(code: Int, reason: String)
-      
+
       /// Operation not implemented
       case notImplemented
     }

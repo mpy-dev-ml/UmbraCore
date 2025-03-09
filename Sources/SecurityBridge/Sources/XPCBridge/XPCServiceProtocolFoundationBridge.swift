@@ -370,10 +370,10 @@ extension SecurityBridge {
     /// - Returns: A properly mapped XPCSecurityError
     private func mapSecurityProtocolError(_ error: Error) -> XPCSecurityError {
       // If SecurityProtocolError is unavailable, we use a general mapping approach
-      if let xpcError = error as? XPCSecurityError {
-        return xpcError
+      if let xpcError=error as? XPCSecurityError {
+        xpcError
       } else {
-        return UmbraErrors.Security.XPC.internalError(error.localizedDescription)
+        UmbraErrors.Security.XPC.internalError(error.localizedDescription)
       }
     }
   }

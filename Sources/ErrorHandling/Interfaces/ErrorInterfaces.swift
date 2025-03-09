@@ -1,4 +1,3 @@
-import ErrorHandlingCommon
 import Foundation
 
 /// Protocol defining the fundamental error interface
@@ -13,81 +12,22 @@ public protocol UmbraError: Error, Sendable, CustomStringConvertible {
   var errorDescription: String { get }
 
   /// Optional source information about where the error occurred
-  var source: ErrorHandlingCommon.ErrorSource? { get }
+  var source: ErrorSource? { get }
 
   /// Optional underlying error that caused this error
   var underlyingError: Error? { get }
 
   /// Additional context information about the error
-  var context: ErrorHandlingCommon.ErrorContext { get }
+  var context: ErrorContext { get }
 
   /// Creates a new instance of the error with additional context
-  func with(context: ErrorHandlingCommon.ErrorContext) -> Self
+  func with(context: ErrorContext) -> Self
 
   /// Creates a new instance of the error with a specified underlying error
   func with(underlyingError: Error) -> Self
 
   /// Creates a new instance of the error with source information
-  func with(source: ErrorHandlingCommon.ErrorSource) -> Self
-}
-
-/// Error severity levels for classification and logging
-public enum ErrorSeverity: String, Comparable, Sendable {
-  /// Critical error that requires immediate attention
-  case critical="Critical"
-
-  /// Error that significantly affects functionality
-  case error="Error"
-
-  /// Warning about potential issues or degraded service
-  case warning="Warning"
-
-  /// Informational message about non-critical events
-  case info="Information"
-
-  /// Debug information for development purposes
-  case debug="Debug"
-
-  /// Returns true if this severity level should trigger a user notification
-  public var shouldNotify: Bool {
-    switch self {
-      case .critical, .error:
-        true
-      case .warning, .info, .debug:
-        false
-    }
-  }
-
-  public static func < (lhs: ErrorSeverity, rhs: ErrorSeverity) -> Bool {
-    let order: [ErrorSeverity]=[.debug, .info, .warning, .error, .critical]
-    guard
-      let lhsIndex=order.firstIndex(of: lhs),
-      let rhsIndex=order.firstIndex(of: rhs)
-    else {
-      return false
-    }
-    return lhsIndex < rhsIndex
-  }
-}
-
-/// Protocol for error recovery options
-public protocol RecoveryOption: Sendable {
-  /// The title of the recovery option
-  var title: String { get }
-
-  /// Additional description of the recovery option
-  var description: String? { get }
-
-  /// Action to perform when the recovery option is selected
-  func perform() async
-}
-
-/// Protocol for providing recovery options for errors
-public protocol RecoveryOptionsProvider {
-  /// Get recovery options for a specific error
-  /// - Parameter error: The error to get recovery options for
-  /// - Returns: Array of recovery options
-  func recoveryOptions<E: UmbraError>(for error: E) -> [RecoveryOption]
+  func with(source: ErrorSource) -> Self
 }
 
 /// Protocol for error logging services
@@ -149,4 +89,40 @@ public protocol ErrorNotificationProtocol {
   ///   - error: The error to present
   ///   - recoveryOptions: Optional recovery options to present to the user
   func presentError<E: UmbraError>(_ error: E, recoveryOptions: [RecoveryOption])
+}
+
+/// Protocol for error handling services
+@MainActor
+public protocol ErrorHandlingService: Sendable {
+  /// Handle an error
+  /// - Parameters:
+  ///   - error: The error to handle
+  ///   - severity: The severity of the error
+  ///   - file: Source file where the error occurred
+  ///   - function: Function where the error occurred
+  ///   - line: Line number where the error occurred
+  func handle(
+    _ error: some UmbraError,
+    severity: ErrorSeverity,
+    file: String,
+    function: String,
+    line: Int
+  )
+
+  /// Get recovery options for an error
+  /// - Parameter error: The error to get recovery options for
+  /// - Returns: Available recovery options
+  func getRecoveryOptions(for error: some UmbraError) -> [any RecoveryOption]
+
+  /// Set the logger to use for logging errors
+  /// - Parameter logger: The logger to use
+  func setLogger(_ logger: ErrorLoggingProtocol)
+
+  /// Set the notification handler to use for presenting errors to users
+  /// - Parameter handler: The notification handler to use
+  func setNotificationHandler(_ handler: ErrorNotificationProtocol)
+
+  /// Register a provider of recovery options
+  /// - Parameter provider: The provider to register
+  func registerRecoveryProvider(_ provider: RecoveryOptionsProvider)
 }

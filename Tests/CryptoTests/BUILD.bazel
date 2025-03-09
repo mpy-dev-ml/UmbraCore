@@ -11,7 +11,7 @@ umbra_swift_test(
     deps = [
         "//Sources/CryptoTypes",
         "//Sources/UmbraCryptoService",
-        "//Tests/UmbraTestKit/UmbraTestKit",
+        "//Tests/UmbraTestKit:UmbraTestKit",
         "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
 )

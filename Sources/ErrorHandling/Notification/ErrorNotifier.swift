@@ -1,100 +1,97 @@
+import ErrorHandlingCommon
 import ErrorHandlingInterfaces
-import ErrorHandlingRecovery
 import Foundation
 import UmbraLogging
 
-/// Protocol for services that can notify users about errors
-@MainActor
-public protocol ErrorNotificationService: Sendable {
-  /// Present a notification to the user about an error
-  /// - Parameters:
-  ///   - error: The error to notify the user about
-  ///   - level: The severity level of the notification
-  ///   - recoveryOptions: Available recovery options to present
-  /// - Returns: The ID of the chosen recovery option, if applicable
-  func notifyUser(
-    about error: some UmbraError,
-    level: ErrorNotificationLevel,
-    recoveryOptions: [ErrorRecoveryOption]
-  ) async -> UUID?
-
-  /// Whether this service can handle a particular error
-  /// - Parameter error: The error to check
-  /// - Returns: Whether this service can handle the error
-  func canHandle(_ error: some UmbraError) -> Bool
-
-  /// The types of errors that this service can handle
-  var supportedErrorDomains: [String] { get }
-
-  /// The notification levels that this service supports
-  var supportedLevels: [ErrorNotificationLevel] { get }
-}
-
-/// Represents the level of notification for an error
-public enum ErrorNotificationLevel: Int, Comparable, Sendable {
-  case debug=0 // Developer-focused, typically not shown to end users
-  case info=1 // Informational, non-critical
-  case warning=2 // Warning that might need attention
-  case error=3 // Error that needs attention
-  case critical=4 // Critical error that requires immediate attention
-
-  public static func < (lhs: ErrorNotificationLevel, rhs: ErrorNotificationLevel) -> Bool {
-    lhs.rawValue < rhs.rawValue
-  }
-
-  /// Converts a UmbraLogLevel to ErrorNotificationLevel
-  /// - Parameter logLevel: The log level to convert
-  /// - Returns: The corresponding notification level
-  public static func from(logLevel: UmbraLogLevel) -> ErrorNotificationLevel {
-    switch logLevel {
-      case .verbose, .debug:
-        .debug
-      case .info:
-        .info
-      case .warning:
-        .warning
-      case .error:
-        .error
-      case .critical, .fault:
-        .critical
-    }
-  }
-}
-
 /// Central coordinating service for error notifications
 @MainActor
-public final class ErrorNotifier {
+public final class ErrorNotifier: @preconcurrency ErrorNotificationProtocol {
   /// The shared instance
-  public static let shared=ErrorNotifier()
+  public static let shared = ErrorNotifier()
 
   /// Registered notification services
-  private var notificationServices: [ErrorNotificationService]=[]
+  private var notificationServices: [ErrorNotificationService] = []
 
   /// The minimum level for notifications
   public var minimumNotificationLevel: ErrorNotificationLevel = .warning
 
   /// Whether automatic notification is enabled
-  public var automaticNotificationEnabled: Bool=true
+  public var automaticNotificationEnabled: Bool = true
 
   /// Private initialiser to enforce singleton pattern
   private init() {}
 
-  /// Registers a notification service
+  /// Register a notification service
   /// - Parameter service: The service to register
   public func register(_ service: ErrorNotificationService) {
     notificationServices.append(service)
   }
 
-  /// Notifies the user about an error
+  /// Set the minimum notification level
+  /// - Parameter level: The minimum level
+  public func setMinimumLevel(_ level: ErrorNotificationLevel) {
+    minimumNotificationLevel = level
+  }
+
+  /// Set whether automatic notification is enabled
+  /// - Parameter enabled: Whether to enable automatic notification
+  public func setAutomaticNotification(_ enabled: Bool) {
+    automaticNotificationEnabled = enabled
+  }
+
+  /// Process an error automatically if automatic notification is enabled
+  /// - Parameters:
+  ///   - error: The error to process
+  ///   - severity: The severity of the error
+  ///   - file: Source file where the error occurred
+  ///   - function: Function where the error occurred
+  ///   - line: Line number where the error occurred
+  public func processError(
+    _ error: ErrorHandlingInterfaces.UmbraError,
+    severity: ErrorHandlingCommon.ErrorSeverity,
+    file: String,
+    function: String,
+    line: Int
+  ) {
+    guard automaticNotificationEnabled else {
+      return
+    }
+
+    // Map severity to notification level
+    let level = severity.toNotificationLevel()
+
+    // Only notify if level is sufficient
+    guard level >= minimumNotificationLevel else {
+      return
+    }
+
+    // Create task to avoid UI blocking
+    Task {
+      await notifyUser(about: error, level: level)
+    }
+  }
+
+  /// Present an error to the user
+  /// - Parameters:
+  ///   - error: The error to present
+  ///   - recoveryOptions: Optional recovery options
+  public nonisolated func presentError<E: UmbraError>(_ error: E, recoveryOptions: [any RecoveryOption]) {
+    Task { @MainActor in
+      // Default to error notification level if not specified
+      await notifyUser(about: error, level: .error, recoveryOptions: recoveryOptions)
+    }
+  }
+
+  /// Notify the user about an error
   /// - Parameters:
   ///   - error: The error to notify about
   ///   - level: The notification level
-  ///   - recoveryOptions: Optional recovery options to present
-  /// - Returns: The chosen recovery option ID, if any
+  ///   - recoveryOptions: Optional recovery options
+  /// - Returns: The ID of the selected recovery option, if any
   public func notifyUser(
     about error: ErrorHandlingInterfaces.UmbraError,
     level: ErrorNotificationLevel,
-    recoveryOptions: [ErrorHandlingRecovery.ErrorRecoveryOption]?=nil
+    recoveryOptions: [any RecoveryOption]? = nil
   ) async -> UUID? {
     // Skip if level is below minimum
     guard level >= minimumNotificationLevel else {
@@ -102,19 +99,18 @@ public final class ErrorNotifier {
     }
 
     // Find appropriate notification services for this error's domain
-    let applicableServices=notificationServices.filter { service in
+    let applicableServices = notificationServices.filter { service in
       service.supportedErrorDomains.contains(error.domain) &&
         service.supportedLevels.contains(level)
     }
 
     // Get recovery options if not provided
-    let options=recoveryOptions ?? ErrorHandlingRecovery.ErrorRecoveryRegistry.shared
-      .recoveryOptions(for: error)
+    let options = recoveryOptions ?? ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
 
     // Try each service until one handles the notification
     for service in applicableServices {
       if
-        let chosenOptionID=await service.notifyUser(
+        let chosenOptionID = await service.notifyUser(
           about: error,
           level: level,
           recoveryOptions: options
@@ -138,88 +134,60 @@ public final class ErrorNotifier {
     level: ErrorNotificationLevel
   ) async -> Bool {
     // Get recovery options
-    let options=ErrorHandlingRecovery.ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
+    let options = ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
 
     // Skip if no options available
     guard !options.isEmpty else {
       // Just notify without recovery options
-      _=await notifyUser(about: error, level: level)
+      _ = await notifyUser(about: error, level: level)
       return false
     }
 
-    // Notify user and get chosen option
+    // Notify and get selected option
     if
-      let chosenOptionID=await notifyUser(
+      let selectedOptionID = await notifyUser(
         about: error,
         level: level,
         recoveryOptions: options
       )
     {
-      // Find the chosen option
-      if let chosenOption=options.first(where: { $0.id == chosenOptionID }) {
-        // Attempt recovery with the chosen option
-        await chosenOption.perform()
+      // Find the selected option
+      for option in options where option.id == selectedOptionID {
+        // Perform recovery
+        await option.perform()
         return true
       }
     }
 
+    // No option was selected or recovery failed
     return false
   }
 }
 
-/// Extension to UmbraError for notification capabilities
+// Extension to add convenience methods to UmbraError
 extension ErrorHandlingInterfaces.UmbraError {
   /// Notifies the user about this error
   /// - Parameters:
   ///   - level: The notification level
   ///   - logError: Whether to also log the error
-  /// - Returns: The chosen recovery option ID, if any
   public func notify(
     level: ErrorNotificationLevel = .error,
-    logError: Bool=true
-  ) async -> UUID? {
-    // Log the error if requested
-    if logError {
-      switch level {
-        case .debug:
-          print("DEBUG: [\(domain)] \(errorDescription)")
-        case .info:
-          print("INFO: [\(domain)] \(errorDescription)")
-        case .warning:
-          print("WARNING: [\(domain)] \(errorDescription)")
-        case .error, .critical:
-          print("ERROR: [\(domain)] \(errorDescription)")
-      }
+    logError: Bool = true
+  ) {
+    Task {
+      await ErrorNotifier.shared.notifyUser(about: self, level: level)
     }
-
-    // Notify the user
-    return await ErrorNotifier.shared.notifyUser(about: self, level: level)
   }
 
-  /// Notifies the user about this error and attempts recovery if an option is chosen
+  /// Notifies the user about this error and attempts recovery
   /// - Parameters:
   ///   - level: The notification level
   ///   - logError: Whether to also log the error
   /// - Returns: Whether recovery was successful
   public func notifyAndRecover(
     level: ErrorNotificationLevel = .error,
-    logError: Bool=true
+    logError: Bool = true
   ) async -> Bool {
-    // Log the error if requested
-    if logError {
-      switch level {
-        case .debug:
-          print("DEBUG: [\(domain)] \(errorDescription)")
-        case .info:
-          print("INFO: [\(domain)] \(errorDescription)")
-        case .warning:
-          print("WARNING: [\(domain)] \(errorDescription)")
-        case .error, .critical:
-          print("ERROR: [\(domain)] \(errorDescription)")
-      }
-    }
-
-    // Notify and recover
-    return await ErrorNotifier.shared.notifyAndRecover(from: self, level: level)
+    await ErrorNotifier.shared.notifyAndRecover(from: self, level: level)
   }
 }

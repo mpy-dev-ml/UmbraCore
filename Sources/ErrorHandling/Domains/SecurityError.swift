@@ -1,4 +1,3 @@
-import ErrorHandlingCommon
 import ErrorHandlingInterfaces
 import Foundation
 
@@ -109,7 +108,7 @@ public enum SecurityError: Error, UmbraError, CustomStringConvertible {
   }
 
   /// Source information for the error (optional)
-  public var source: ErrorHandlingCommon.ErrorSource? {
+  public var source: ErrorHandlingInterfaces.ErrorSource? {
     switch self {
       case .authenticationFailed, .unauthorizedAccess, .invalidCredentials, .sessionExpired,
            .tokenExpired,
@@ -141,7 +140,7 @@ public enum SecurityError: Error, UmbraError, CustomStringConvertible {
   }
 
   /// Context information about the error
-  public var context: ErrorHandlingCommon.ErrorContext {
+  public var context: ErrorHandlingInterfaces.ErrorContext {
     switch self {
       case .authenticationFailed, .unauthorizedAccess, .invalidCredentials, .sessionExpired,
            .tokenExpired,
@@ -152,12 +151,12 @@ public enum SecurityError: Error, UmbraError, CustomStringConvertible {
            .certificateVerificationFailed, .certificateTrustFailed, .secureChannelFailed,
            .securityPolicyViolation,
            .securityConfigurationError, .unknown:
-        ErrorHandlingCommon.ErrorContext(source: "SecurityError", operation: "security_operation")
+        ErrorHandlingInterfaces.ErrorContext(source: "SecurityError", operation: "security_operation")
     }
   }
 
   /// Create a new instance with updated context
-  public func with(context _: ErrorHandlingCommon.ErrorContext) -> SecurityError {
+  public func with(context: ErrorHandlingInterfaces.ErrorContext) -> SecurityError {
     switch self {
       case let .authenticationFailed(msg):
         .authenticationFailed(msg)
@@ -205,7 +204,7 @@ public enum SecurityError: Error, UmbraError, CustomStringConvertible {
   }
 
   /// Create a new instance with an underlying error
-  public func with(underlyingError _: Error) -> SecurityError {
+  public func with(underlyingError: Error) -> SecurityError {
     switch self {
       case let .authenticationFailed(msg):
         .authenticationFailed(msg)
@@ -253,7 +252,7 @@ public enum SecurityError: Error, UmbraError, CustomStringConvertible {
   }
 
   /// Create a new instance with source information
-  public func with(source _: ErrorHandlingCommon.ErrorSource) -> SecurityError {
+  public func with(source: ErrorHandlingInterfaces.ErrorSource) -> SecurityError {
     switch self {
       case let .authenticationFailed(msg):
         .authenticationFailed(msg)
@@ -305,11 +304,11 @@ public enum SecurityError: Error, UmbraError, CustomStringConvertible {
 extension SecurityError {
   /// Create a security error from another error
   public static func from(error: Error) -> SecurityError {
-    if let securityError=error as? SecurityError {
+    if let securityError = error as? SecurityError {
       return securityError
     }
     // Explicitly cast to NSError to avoid ambiguity with localizedDescription
-    let nsError=error as NSError
+    let nsError = error as NSError
     return SecurityError.unknown("Wrapped error: " + nsError.localizedDescription)
   }
 }

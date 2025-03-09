@@ -8,7 +8,6 @@ import ErrorHandlingNotification
 
 // Use the direct protocol name from ErrorHandling.Interfaces
 // Define the full type name instead of using a typealias
-typealias RecoveryOptionType=ErrorHandlingInterfaces.RecoveryOption
 
 /// Example class demonstrating the usage of the error handling system
 ///

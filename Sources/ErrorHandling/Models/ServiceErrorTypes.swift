@@ -1,5 +1,5 @@
-import Foundation
 import ErrorHandlingCommon
+import Foundation
 
 /// Severity level for service errors
 @frozen

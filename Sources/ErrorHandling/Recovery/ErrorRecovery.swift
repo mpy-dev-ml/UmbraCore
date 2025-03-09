@@ -110,60 +110,86 @@ extension RecoverableError {
   }
 }
 
-/// Protocol for error recovery services
-public protocol ErrorRecoveryService: AnyObject, Sendable {
-  /// Gets recovery options for a specific error
-  /// - Parameter error: The error to recover from
-  /// - Returns: Array of recovery options, if available
-  func recoveryOptions(for error: ErrorHandlingInterfaces.UmbraError) -> [ErrorRecoveryOption]
-
-  /// Attempts to recover from an error using all available options
-  /// - Parameter error: The error to recover from
-  /// - Returns: Whether recovery was successful
-  func attemptRecovery(for error: ErrorHandlingInterfaces.UmbraError) async -> Bool
-}
-
-/// A registry of error recovery services
-@MainActor
-public final class ErrorRecoveryRegistry {
+/// Concrete implementation of recovery options
+/// This builds on the ErrorRecoveryOption interface defined in ErrorHandlingInterfaces
+public final class RecoveryManager: RecoveryOptionsProvider, Sendable {
   /// The shared instance
-  public static let shared=ErrorRecoveryRegistry()
-
-  /// Registered recovery services
-  private var services: [any ErrorRecoveryService]=[]
-
+  @MainActor public static let shared = RecoveryManager()
+  
   /// Private initialiser to enforce singleton pattern
-  private init() {}
-
-  /// Register a new recovery service
-  /// - Parameter service: The service to register
-  public func register(service: any ErrorRecoveryService) {
-    services.append(service)
+  private init() {
+    // Register with the interface registry
+    // ErrorRecoveryRegistry.shared.register(self)
   }
-
-  /// Get recovery options for an error from all registered services
+  
+  /// Collection of registered domain-specific recovery handlers
+  @MainActor private var handlers: [String: any RecoveryOptionsProvider] = [:]
+  
+  /// Register a domain-specific recovery handler
+  /// - Parameters:
+  ///   - handler: The handler to register
+  ///   - domain: The error domain this handler can process
+  @MainActor public func registerHandler(_ handler: any RecoveryOptionsProvider, for domain: String) {
+    handlers[domain] = handler
+  }
+  
+  /// Get recovery options for a specific error
   /// - Parameter error: The error to get recovery options for
-  /// - Returns: Array of recovery options from all services
-  public func recoveryOptions(
-    for error: ErrorHandlingInterfaces
-      .UmbraError
-  ) -> [ErrorRecoveryOption] {
-    var options: [ErrorRecoveryOption]=[]
-    for service in services {
-      options.append(contentsOf: service.recoveryOptions(for: error))
+  /// - Returns: Recovery options, or nil if no recovery is available
+  public func recoveryOptions(for error: Error) -> RecoveryOptions? {
+    // Get the error domain
+    let domain = String(describing: type(of: error))
+    
+    // Need to access handlers in a thread-safe way
+    let domainHandler = Task { @MainActor in
+      return handlers[domain]
+    }.value
+    
+    // Look for a domain-specific handler
+    if let handler = domainHandler {
+      return handler.recoveryOptions(for: error)
     }
-    return options
+    
+    // Default recovery options if no specific handler
+    if let umbraError = error as? UmbraError {
+      return createDefaultRecoveryOptions(for: umbraError)
+    }
+    
+    // No recovery options available
+    return nil
   }
-
-  /// Attempt to recover from an error using all registered services
-  /// - Parameter error: The error to recover from
-  /// - Returns: Whether recovery was successful
-  public func attemptRecovery(for error: ErrorHandlingInterfaces.UmbraError) async -> Bool {
-    for service in services {
-      if await service.attemptRecovery(for: error) {
-        return true
-      }
-    }
-    return false
+  
+  /// Provides default recovery options for common error types
+  /// - Parameter error: The error to provide recovery options for
+  /// - Returns: RecoveryOptions containing default recovery actions
+  private func createDefaultRecoveryOptions(for error: UmbraError) -> RecoveryOptions {
+    // Create standard retry and cancel actions
+    let retryAction = RecoveryAction(
+      id: "retry",
+      title: "Try Again",
+      description: "Retry the operation that failed",
+      isDisruptive: false,
+      isDefault: true,
+      handler: { /* Implementation would vary based on the error */ }
+    )
+    
+    let cancelAction = RecoveryAction(
+      id: "cancel",
+      title: "Cancel",
+      description: "Skip this operation",
+      isDisruptive: false,
+      isDefault: false,
+      handler: { /* Do nothing */ }
+    )
+    
+    // Create a message based on the error
+    let message = "An error occurred: \(error.localizedDescription)"
+    
+    // Return standard recovery options
+    return RecoveryOptions(
+      actions: [retryAction, cancelAction],
+      title: "Operation Failed",
+      message: message
+    )
   }
 }

@@ -1,4 +1,3 @@
-import ErrorHandlingCommon
 import ErrorHandlingInterfaces
 import Foundation
 
@@ -22,10 +21,10 @@ public struct GenericUmbraError: ErrorHandlingInterfaces.UmbraError, CustomStrin
   public let underlyingError: Error?
 
   /// Source information about where the error occurred
-  public let source: ErrorHandlingCommon.ErrorSource?
+  public let source: ErrorHandlingInterfaces.ErrorSource?
 
   /// Additional context for the error
-  public let context: ErrorHandlingCommon.ErrorContext
+  public let context: ErrorHandlingInterfaces.ErrorContext
 
   /// Creates a new GenericUmbraError instance
   /// - Parameters:
@@ -39,16 +38,16 @@ public struct GenericUmbraError: ErrorHandlingInterfaces.UmbraError, CustomStrin
     domain: String,
     code: String,
     errorDescription: String,
-    underlyingError: Error?=nil,
-    source: ErrorHandlingCommon.ErrorSource?=nil,
-    context: ErrorHandlingCommon.ErrorContext?=nil
+    underlyingError: Error? = nil,
+    source: ErrorHandlingInterfaces.ErrorSource? = nil,
+    context: ErrorHandlingInterfaces.ErrorContext? = nil
   ) {
-    self.domain=domain
-    self.code=code
-    self.errorDescription=errorDescription
-    self.underlyingError=underlyingError
-    self.source=source
-    self.context=context ?? ErrorHandlingCommon.ErrorContext(
+    self.domain = domain
+    self.code = code
+    self.errorDescription = errorDescription
+    self.underlyingError = underlyingError
+    self.source = source
+    self.context = context ?? ErrorHandlingInterfaces.ErrorContext(
       source: domain,
       operation: "unknown",
       details: errorDescription
@@ -56,7 +55,7 @@ public struct GenericUmbraError: ErrorHandlingInterfaces.UmbraError, CustomStrin
   }
 
   /// Creates a new instance of the error with additional context
-  public func with(context: ErrorHandlingCommon.ErrorContext) -> Self {
+  public func with(context: ErrorHandlingInterfaces.ErrorContext) -> Self {
     GenericUmbraError(
       domain: domain,
       code: code,
@@ -80,7 +79,7 @@ public struct GenericUmbraError: ErrorHandlingInterfaces.UmbraError, CustomStrin
   }
 
   /// Creates a new instance of the error with source information
-  public func with(source: ErrorHandlingCommon.ErrorSource) -> Self {
+  public func with(source: ErrorHandlingInterfaces.ErrorSource) -> Self {
     GenericUmbraError(
       domain: domain,
       code: code,
@@ -108,18 +107,18 @@ extension GenericUmbraError {
     domain: String,
     code: String,
     description: String,
-    file: String=#file,
-    function: String=#function,
-    line: Int=#line
+    file: String = #file,
+    function: String = #function,
+    line: Int = #line
   ) -> GenericUmbraError {
     GenericUmbraError(
       domain: domain,
       code: code,
       errorDescription: description,
-      source: ErrorHandlingCommon.ErrorSource(
+      source: ErrorHandlingInterfaces.ErrorSource(
         file: file,
-        function: function,
-        line: line
+        line: line,
+        function: function
       )
     )
   }
@@ -131,7 +130,7 @@ extension GenericUmbraError {
   /// - Returns: A new GenericUmbraError
   public static func validationError(
     message: String,
-    code: String="validation_error"
+    code: String = "validation_error"
   ) -> GenericUmbraError {
     GenericUmbraError(
       domain: "Validation",
@@ -147,7 +146,7 @@ extension GenericUmbraError {
   /// - Returns: A new GenericUmbraError
   public static func internalError(
     message: String,
-    code: String="internal_error"
+    code: String = "internal_error"
   ) -> GenericUmbraError {
     GenericUmbraError(
       domain: "Internal",
@@ -163,7 +162,7 @@ extension GenericUmbraError {
   /// - Returns: A new GenericUmbraError
   public static func wrapped(
     _ error: Error,
-    errorDescription: String="Wrapped error"
+    errorDescription: String = "Wrapped error"
   ) -> GenericUmbraError {
     GenericUmbraError(
       domain: "Wrapped",

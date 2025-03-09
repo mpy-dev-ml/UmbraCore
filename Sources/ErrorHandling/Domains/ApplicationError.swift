@@ -1,4 +1,3 @@
-import ErrorHandlingCommon
 import ErrorHandlingInterfaces
 import Foundation
 
@@ -110,7 +109,7 @@ public enum ApplicationError: Error, UmbraError, CustomStringConvertible {
   }
 
   /// Source information for the error (optional)
-  public var source: ErrorHandlingCommon.ErrorSource? {
+  public var source: ErrorHandlingInterfaces.ErrorSource? {
     switch self {
       case .configurationError, .initializationError, .resourceNotFound, .resourceAlreadyExists,
            .operationTimeout, .operationCancelled, .invalidState, .dependencyError,
@@ -121,13 +120,13 @@ public enum ApplicationError: Error, UmbraError, CustomStringConvertible {
   }
 
   /// Context information about the error
-  public var context: ErrorHandlingCommon.ErrorContext {
+  public var context: ErrorHandlingInterfaces.ErrorContext {
     switch self {
       case .configurationError, .initializationError, .resourceNotFound, .resourceAlreadyExists,
            .operationTimeout, .operationCancelled, .invalidState, .dependencyError,
            .externalServiceError, .viewError, .renderingError, .inputValidationError,
            .resourceLoadingError, .lifecycleError, .stateError, .settingsError, .unknown:
-        ErrorHandlingCommon.ErrorContext(
+        ErrorHandlingInterfaces.ErrorContext(
           source: "ApplicationError",
           operation: "application_operation"
         )
@@ -237,7 +236,7 @@ public enum ApplicationError: Error, UmbraError, CustomStringConvertible {
   }
 
   /// Create a new instance with updated context
-  public func with(context _: ErrorHandlingCommon.ErrorContext) -> ApplicationError {
+  public func with(context: ErrorHandlingInterfaces.ErrorContext) -> ApplicationError {
     switch self {
       case let .configurationError(msg):
         .configurationError(msg)
@@ -277,7 +276,7 @@ public enum ApplicationError: Error, UmbraError, CustomStringConvertible {
   }
 
   /// Create a new instance with an underlying error
-  public func with(underlyingError _: Error) -> ApplicationError {
+  public func with(underlyingError: Error) -> ApplicationError {
     switch self {
       case let .configurationError(msg):
         .configurationError(msg)
@@ -317,7 +316,7 @@ public enum ApplicationError: Error, UmbraError, CustomStringConvertible {
   }
 
   /// Create a new instance with source information
-  public func with(source _: ErrorHandlingCommon.ErrorSource) -> ApplicationError {
+  public func with(source: ErrorHandlingInterfaces.ErrorSource) -> ApplicationError {
     switch self {
       case let .configurationError(msg):
         .configurationError(msg)

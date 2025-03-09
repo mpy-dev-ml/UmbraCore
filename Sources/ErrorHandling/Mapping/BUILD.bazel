@@ -4,8 +4,11 @@ umbra_swift_library(
     name = "ErrorHandlingMapping",
     srcs = glob(["*.swift"]),
     deps = [
+        "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+        "//Sources/ErrorHandling/Interfaces:ErrorHandlingInterfaces",
         "//Sources/ErrorHandling/Models:ErrorHandlingModels",
         "//Sources/ErrorHandling/Protocols:ErrorHandlingProtocols",
+        "//Sources/ErrorHandling/Types:ErrorHandlingTypes",
     ],
 )

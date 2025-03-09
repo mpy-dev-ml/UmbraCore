@@ -1,6 +1,6 @@
+import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import Foundation
 
 /// Default implementation of SecurityProviderProtocol using CryptoSwiftFoundationIndependent
 public final class SecurityProviderImpl: SecurityProviderProtocol {
@@ -63,21 +63,21 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
         let data=SecureBytes(bytes: Array("Hello, secure world!".utf8))
 
         // Perform encryption
-        let encryptResult = await cryptoService.encryptSymmetric(
+        let encryptResult=await cryptoService.encryptSymmetric(
           data: data,
           key: key,
           config: config
         )
-        
+
         // Convert Result to SecurityResultDTO
         switch encryptResult {
-        case .success(let encryptedData):
-          return SecurityResultDTO.success(data: encryptedData)
-        case .failure(let error):
-          return SecurityResultDTO.failure(
-            code: 500,
-            message: "Encryption failed: \(error)"
-          )
+          case let .success(encryptedData):
+            return SecurityResultDTO.success(data: encryptedData)
+          case let .failure(error):
+            return SecurityResultDTO.failure(
+              code: 500,
+              message: "Encryption failed: \(error)"
+            )
         }
 
       case .symmetricDecryption:
@@ -99,17 +99,17 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
         let data=SecureBytes(bytes: Array("Hello, secure world!".utf8))
 
         // Perform hashing
-        let hashResult = await cryptoService.hash(data: data, config: config)
-        
+        let hashResult=await cryptoService.hash(data: data, config: config)
+
         // Convert Result to SecurityResultDTO
         switch hashResult {
-        case .success(let hashData):
-          return SecurityResultDTO.success(data: hashData)
-        case .failure(let error):
-          return SecurityResultDTO.failure(
-            code: 500,
-            message: "Hashing failed: \(error)"
-          )
+          case let .success(hashData):
+            return SecurityResultDTO.success(data: hashData)
+          case let .failure(error):
+            return SecurityResultDTO.failure(
+              code: 500,
+              message: "Hashing failed: \(error)"
+            )
         }
 
       case .macGeneration:
@@ -153,10 +153,10 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
         return SecurityResultDTO.success(data: randomData)
 
       case .keyGeneration:
-        let randomResult = await cryptoService.generateRandomData(length: config.keySizeInBits / 8)
+        let randomResult=await cryptoService.generateRandomData(length: config.keySizeInBits / 8)
 
-        guard case let .success(randomData) = randomResult else {
-          if case let .failure(error) = randomResult {
+        guard case let .success(randomData)=randomResult else {
+          if case let .failure(error)=randomResult {
             return SecurityResultDTO.failure(
               code: 500,
               message: "Failed to generate random data: \(error)"
@@ -169,13 +169,13 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
         }
 
         // Store the generated key
-        let keyResult = await keyManager.storeKey(
+        let keyResult=await keyManager.storeKey(
           randomData,
           withIdentifier: "generated_key_\(Date().timeIntervalSince1970)"
         )
 
-        guard case .success = keyResult else {
-          if case let .failure(error) = keyResult {
+        guard case .success=keyResult else {
+          if case let .failure(error)=keyResult {
             return SecurityResultDTO.failure(
               code: 500,
               message: "Failed to generate key: \(error)"

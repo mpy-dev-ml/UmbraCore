@@ -3,7 +3,6 @@ import Foundation
   import AppKit
 #endif
 import ErrorHandlingInterfaces
-import ErrorHandlingRecovery
 
 /// A macOS implementation of the ErrorNotificationService
 @MainActor
@@ -40,9 +39,9 @@ public final class MacErrorNotificationService: ErrorNotificationService {
   ///   - recoveryOptions: Recovery options to present
   /// - Returns: The chosen recovery option ID, if any
   public func notifyUser(
-    about error: some UmbraError,
+    about error: some Error,
     level: ErrorNotificationLevel,
-    recoveryOptions: [ErrorRecoveryOption]
+    recoveryOptions: [any RecoveryOption]
   ) async -> UUID? {
     // Skip if this service doesn't support the error domain or level
     if !canHandle(error) || !supportedLevels.contains(level) {
@@ -50,64 +49,15 @@ public final class MacErrorNotificationService: ErrorNotificationService {
     }
 
     #if os(macOS)
-      // Create and configure the alert
+      // Get error information
+      let domain=getDomain(for: error)
+      let title=getTitle(for: error, domain: domain)
+      let message=getMessage(for: error)
+
+      // Setup alert with error information
       let alert=NSAlert()
-      configureAlert(alert, for: error, level: level)
-
-      // Add recovery options as buttons if available
-      if !recoveryOptions.isEmpty {
-        addRecoveryButtons(to: alert, options: recoveryOptions)
-      } else {
-        // Add default OK button if no recovery options
-        alert.addButton(withTitle: "OK")
-      }
-
-      // Run the alert modally and get the user's choice
-      let response=alert.runModal()
-
-      // The button indexes are 1000, 1001, 1002, etc.
-      // Subtract 1000 and check if it's valid for our options
-      let buttonIndex=Int(response.rawValue) - 1000
-      if buttonIndex >= 0 && buttonIndex < recoveryOptions.count {
-        return recoveryOptions[buttonIndex].id
-      }
-    #endif
-
-    return nil
-  }
-
-  /// Checks if this service can handle a specific error
-  /// - Parameter error: The error to check
-  /// - Returns: Whether this service can handle the error
-  public func canHandle(_ error: some UmbraError) -> Bool {
-    // If no specific domains are defined, handle all
-    if supportedErrorDomains.isEmpty {
-      return true
-    }
-
-    // Otherwise, check if the error's domain is supported
-    return supportedErrorDomains.contains(error.domain)
-  }
-
-  // MARK: - Private Methods
-
-  #if os(macOS)
-    /// Configures an alert for an error
-    /// - Parameters:
-    ///   - alert: The alert to configure
-    ///   - error: The error to display
-    ///   - level: The notification level
-    @MainActor
-    private func configureAlert(
-      _ alert: NSAlert,
-      for error: ErrorHandlingInterfaces.UmbraError,
-      level: ErrorNotificationLevel
-    ) {
-      // Set the alert's title based on error domain
-      alert.messageText="Error in \(error.domain)"
-
-      // Set the alert's message to the error description
-      alert.informativeText=error.errorDescription
+      alert.messageText=title
+      alert.informativeText=message
 
       // Configure alert style based on level
       switch level {
@@ -117,71 +67,107 @@ public final class MacErrorNotificationService: ErrorNotificationService {
           alert.alertStyle = .warning
         case .error, .critical:
           alert.alertStyle = .critical
+        @unknown default:
+          alert.alertStyle = .critical
       }
 
-      // Set appropriate icon for the error domain if available
-      if let icon=iconForErrorDomain(error.domain) {
-        alert.icon=icon
+      // Add recovery options to alert
+      for option in recoveryOptions {
+        let buttonTitle=option.title
+        alert.addButton(withTitle: buttonTitle)
       }
+
+      // Show alert and get user response
+      let response=alert.runModal()
+
+      // Determine which button was clicked (first button is NSAlertFirstButtonReturn)
+      let buttonIndex=Int(response.rawValue) - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
+
+      // Return ID of selected recovery option if valid
+      if buttonIndex >= 0 && buttonIndex < recoveryOptions.count {
+        return recoveryOptions[buttonIndex].id
+      }
+
+      return nil
+    #else
+      // Not supported on non-macOS platforms
+      return nil
+    #endif
+  }
+
+  /// Whether this service can handle a particular error
+  /// - Parameter error: The error to check
+  /// - Returns: Whether this service can handle the error
+  public func canHandle(_ error: some Error) -> Bool {
+    // If no specific domains are defined, handle all
+    if supportedErrorDomains.isEmpty {
+      return true
     }
 
-    /// Gets an appropriate icon for an error domain
-    /// - Parameter domain: The error domain
-    /// - Returns: An icon for the error, if available
-    private func iconForErrorDomain(_ domain: String) -> NSImage? {
-      switch domain {
-        case "Security":
-          NSImage(systemSymbolName: "lock.shield", accessibilityDescription: "Security Error")
-        case "Network", "Connectivity":
-          NSImage(systemSymbolName: "network", accessibilityDescription: "Network Error")
-        case "FileSystem":
-          NSImage(
-            systemSymbolName: "folder.badge.questionmark",
-            accessibilityDescription: "File System Error"
-          )
-        case "Database":
-          NSImage(
-            systemSymbolName: "externaldrive.badge.exclamationmark",
-            accessibilityDescription: "Database Error"
-          )
-        default:
-          NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "Error")
-      }
-    }
+    // Check if error domain is supported
+    let domain=getDomain(for: error)
+    return supportedErrorDomains.contains(domain)
+  }
 
-    /// Adds recovery option buttons to an alert
+  #if os(macOS)
+    /// Configures an alert for an error
     /// - Parameters:
-    ///   - alert: The alert to add buttons to
-    ///   - options: The recovery options to add
-    @MainActor
-    private func addRecoveryButtons(
-      to alert: NSAlert,
-      options: [ErrorHandlingRecovery.ErrorRecoveryOption]
-    ) {
-      // Add a button for each recovery option (limited to what macOS supports)
-      let maxOptions=3
-      for (index, option) in options.prefix(maxOptions).enumerated() {
-        let button=alert.addButton(withTitle: option.title)
+    ///   - alert: The alert to configure
+    ///   - error: The error to display
+    ///   - level: The notification level
+    private func configureAlert(_ alert: NSAlert, for error: Error, level: ErrorNotificationLevel) {
+      let domain=getDomain(for: error)
+      alert.messageText=getTitle(for: error, domain: domain)
+      alert.informativeText=getMessage(for: error)
 
-        // Set button tooltip if description is available
-        if let description=option.description {
-          button.toolTip=description
-        }
-
-        // Make the first button the default and primary action
-        if index == 0 {
-          button.keyEquivalent="\r" // Return key
-
-          // If the option is disruptive, use a different key equivalent
-          if option.isDisruptive {
-            button.keyEquivalent=""
-          }
-        }
+      // Configure alert style based on level
+      switch level {
+        case .debug, .info:
+          alert.alertStyle = .informational
+        case .warning:
+          alert.alertStyle = .warning
+        case .error, .critical:
+          alert.alertStyle = .critical
+        @unknown default:
+          alert.alertStyle = .critical
       }
-
-      // Add a "Cancel" button as the last option
-      let cancelButton=alert.addButton(withTitle: "Cancel")
-      cancelButton.keyEquivalent="\u{1b}" // Escape key
     }
   #endif
+
+  /// Gets the domain for an error
+  /// - Parameter error: The error to get the domain for
+  /// - Returns: The error domain
+  private func getDomain(for error: Error) -> String {
+    if let umbraError=error as? UmbraError {
+      return umbraError.domain
+    } else if let nsError=error as? NSError {
+      return nsError.domain
+    } else {
+      return "Unknown"
+    }
+  }
+
+  /// Gets a title for an error
+  /// - Parameters:
+  ///   - error: The error
+  ///   - domain: The error domain
+  /// - Returns: A user-friendly title
+  private func getTitle(for error: Error, domain: String) -> String {
+    if let umbraError=error as? UmbraError {
+      return "Error in \(domain): \(umbraError.code)"
+    } else {
+      return "Error in \(domain)"
+    }
+  }
+
+  /// Gets a message for an error
+  /// - Parameter error: The error
+  /// - Returns: A user-friendly message
+  private func getMessage(for error: Error) -> String {
+    if let umbraError=error as? UmbraError {
+      return umbraError.errorDescription
+    } else {
+      return error.localizedDescription
+    }
+  }
 }

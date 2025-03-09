@@ -1,165 +1,132 @@
-import ErrorHandlingCommon
 import ErrorHandlingDomains
 import ErrorHandlingInterfaces
 import Foundation
-
-/// A type alias for our new, consolidated SecurityError type
-public typealias UmbraSecurityError=ErrorHandlingDomains.SecurityError
+import ErrorHandlingTypes
 
 /// Maps between different SecurityError implementations
-public struct SecurityErrorMapper {
+public struct SecurityErrorMapper: ErrorMapper {
+  /// The source error type
+  public typealias SourceType = UmbraErrors.Security.Core
+  
+  /// The target error type
+  public typealias TargetType = ErrorHandlingTypes.SecurityError
+  
   /// Initialises a new mapper
   public init() {}
 
-  /// Maps from UmbraErrors.Security.Protocols to our consolidated UmbraSecurityError
-  /// Note: We avoid using fully qualified names to prevent type resolution issues
-  /// described in the module structure
-  /// - Parameter error: The source SecurityError
-  /// - Returns: The mapped UmbraSecurityError
-  public func mapFromSecurityProtocolsCore(_ error: Error) -> UmbraSecurityError {
-    // Extract the type information using reflection to avoid direct type names
-    // which would cause compilation issues
-    let errorDescription=String(describing: error)
-
-    // Map common cases by examining the error description
+  /// Maps from source error type to target error type
+  /// - Parameter error: The source error
+  /// - Returns: The mapped target error
+  public func mapError(_ error: SourceType) -> TargetType {
+    return .domainCoreError(error)
+  }
+  
+  /// Maps from any error to the consolidated SecurityError
+  /// - Parameter error: The source error
+  /// - Returns: The mapped SecurityError if applicable, or nil if not mappable
+  public func mapToSecurityError(_ error: Error) -> ErrorHandlingTypes.SecurityError? {
+    if let securityCoreError = error as? UmbraErrors.Security.Core {
+      return .domainCoreError(securityCoreError)
+    }
+    
+    if let protocolsError = error as? UmbraErrors.Security.Protocols {
+      return .domainProtocolError(protocolsError)
+    }
+    
+    if let xpcError = error as? UmbraErrors.Security.XPC {
+      return .domainXPCError(xpcError)
+    }
+    
+    // Attempt to map special cases based on error description
+    let errorDescription = String(describing: error)
+    
     if errorDescription.contains("authentication") {
-      return .authenticationFailed("Authentication failed (mapped)")
-    } else if errorDescription.contains("authorization") {
-      return .unauthorizedAccess("Authorization failed (mapped)")
-    } else if errorDescription.contains("credential") {
-      return .invalidCredentials("Invalid credentials (mapped)")
-    } else if errorDescription.contains("session") {
-      return .sessionExpired("Session expired (mapped)")
-    } else if errorDescription.contains("token") {
-      return .tokenExpired("Token expired (mapped)")
-    } else if errorDescription.contains("encryption") {
-      return .encryptionFailed("Encryption failed (mapped)")
-    } else if errorDescription.contains("decryption") {
-      return .decryptionFailed("Decryption failed (mapped)")
-    } else if errorDescription.contains("signature") {
-      return .signatureInvalid("Signature invalid (mapped)")
+      return .authenticationFailed(reason: "Authentication failed: \(errorDescription)")
     } else if errorDescription.contains("permission") {
-      return .permissionDenied("Permission denied (mapped)")
+      return .permissionDenied(reason: "Permission denied: \(errorDescription)")
+    } else if errorDescription.contains("unauthorized") || errorDescription.contains("unauthorised") {
+      return .unauthorizedAccess(reason: errorDescription)
     } else if errorDescription.contains("certificate") {
-      return .certificateInvalid("Certificate invalid (mapped)")
-    } else {
-      return .unknown("Mapped from SecurityProtocolsCore: \(errorDescription)")
+      return .certificateInvalid(reason: errorDescription)
+    } else if errorDescription.contains("encryption") {
+      return .encryptionFailed(reason: errorDescription)
+    } else if errorDescription.contains("decryption") {
+      return .decryptionFailed(reason: errorDescription)
+    } else if errorDescription.contains("hash") {
+      return .hashingFailed(reason: errorDescription)
     }
+    
+    return nil
   }
+}
 
-  /// Maps from SecurityTypes.SecurityError to our consolidated UmbraSecurityError
-  /// - Parameter error: The source SecurityError
-  /// - Returns: The mapped UmbraSecurityError
-  public func mapFromSecurityTypes(_ error: Error) -> UmbraSecurityError {
-    let errorDescription=String(describing: error)
-
-    // Map based on error description
-    if errorDescription.contains("authentication") {
-      return .authenticationFailed("Authentication failed (mapped from SecurityTypes)")
-    } else if errorDescription.contains("authorization") {
-      return .unauthorizedAccess("Authorization failed (mapped from SecurityTypes)")
-    } else if errorDescription.contains("crypto") {
-      return .encryptionFailed("Cryptographic operation failed (mapped from SecurityTypes)")
-    } else {
-      return .unknown("Mapped from SecurityTypes: \(errorDescription)")
-    }
+extension SecurityErrorMapper: BidirectionalErrorMapper {
+  /// Maps from source to target error type
+  /// - Parameter error: The source error
+  /// - Returns: The mapped error
+  public func mapAtoB(_ error: UmbraErrors.Security.Core) -> ErrorHandlingTypes.SecurityError {
+    return mapError(error)
   }
-
-  /// Maps from XPCProtocolsCore.SecurityProtocolError to our consolidated UmbraSecurityError
-  /// - Parameter error: The source SecurityProtocolError
-  /// - Returns: The mapped UmbraSecurityError
-  public func mapFromXPCProtocolsCore(_ error: Error) -> UmbraSecurityError {
-    // Similar approach for XPC errors
-    let errorDescription=String(describing: error)
-
-    if errorDescription.contains("permission") {
-      return .permissionDenied("Permission denied (mapped from XPC)")
-    } else if errorDescription.contains("authentication") {
-      return .authenticationFailed("Authentication failed (mapped from XPC)")
-    } else {
-      return .unknown("Mapped from XPC: \(errorDescription)")
-    }
-  }
-
-  /// Maps from UmbraErrors.Security.Core to our consolidated UmbraSecurityError
-  /// - Parameter error: The source UmbraErrors.Security.Core error
-  /// - Returns: The mapped UmbraSecurityError
-  public func mapFromTyped(_ error: UmbraErrors.Security.Core) -> UmbraSecurityError {
+  
+  /// Maps from target to source error type
+  /// - Parameter error: The source error
+  /// - Returns: The mapped error
+  public func mapBtoA(_ error: ErrorHandlingTypes.SecurityError) -> UmbraErrors.Security.Core {
     switch error {
-      case let .invalidKey(reason):
-        return .invalidCredentials("Invalid key: \(reason)")
-      case let .invalidInput(reason):
-        if reason.contains("authentication") {
-          return .authenticationFailed("Authentication failed: \(reason)")
-        } else if reason.contains("permission") {
-          return .permissionDenied("Permission denied: \(reason)")
-        } else if reason.contains("session") {
-          return .sessionExpired("Session expired: \(reason)")
-        } else {
-          return .securityConfigurationError("Invalid input: \(reason)")
-        }
-      case let .internalError(details):
-        return .unknown("Internal error: \(details)")
-      case let .encryptionFailed(reason):
-        return .encryptionFailed("Encryption failed: \(reason)")
-      case let .decryptionFailed(reason):
-        return .decryptionFailed("Decryption failed: \(reason)")
-      case let .keyGenerationFailed(reason):
-        return .keyGenerationFailed("Key generation failed: \(reason)")
-      case let .hashVerificationFailed(reason):
-        return .hashingFailed("Hash verification failed: \(reason)")
-      case let .randomGenerationFailed(reason):
-        return .securityConfigurationError("Random generation failed: \(reason)")
-      case let .storageOperationFailed(reason):
-        return .securityConfigurationError("Storage operation failed: \(reason)")
-      case let .timeout(operation):
-        return .secureChannelFailed("Operation timed out: \(operation)")
-      case let .serviceError(code, reason):
-        return .unknown("Service error \(code): \(reason)")
-      case let .notImplemented(feature):
-        return .securityConfigurationError("Feature not implemented: \(feature)")
-      @unknown default:
-        return .unknown("Unknown security error: \(error)")
+    case .domainCoreError(let coreError):
+      return coreError
+    case .unauthorizedAccess:
+      return .invalidState(state: "Unauthorized", expectedState: "Authorized")
+    case .permissionDenied:
+      return .invalidInput(message: "Permission denied")
+    case .encryptionFailed:
+      return .operationFailed(operation: "encryption")
+    case .decryptionFailed:
+      return .operationFailed(operation: "decryption")
+    case .hashingFailed:
+      return .operationFailed(operation: "hashing")
+    case .signatureInvalid:
+      return .invalidInput(message: "Invalid signature")
+    case .sessionExpired:
+      return .invalidState(state: "Expired", expectedState: "Valid")
+    case .tokenExpired:
+      return .invalidState(state: "Expired", expectedState: "Valid")
+    case .certificateExpired:
+      return .invalidState(state: "Expired", expectedState: "Valid")
+    case .certificateInvalid:
+      return .invalidInput(message: "Invalid certificate")
+    case .certificateVerificationFailed:
+      return .operationFailed(operation: "certificate verification")
+    case .certificateTrustFailed:
+      return .operationFailed(operation: "certificate trust validation")
+    case .insufficientPrivileges:
+      return .invalidState(state: "Insufficient privileges", expectedState: "Sufficient privileges")
+    case .accessRevoked:
+      return .invalidState(state: "Access revoked", expectedState: "Access granted")
+    case .securityPolicyViolation:
+      return .invalidInput(message: "Security policy violation")
+    case .authenticationFailed:
+      return .invalidInput(message: "Authentication failed")
+    case .invalidCredentials:
+      return .invalidInput(message: "Invalid credentials supplied")
+    case .securityConfigurationError:
+      return .internalError("Security configuration error")
+    case .domainProtocolError, .domainXPCError, .unknown, .keyGenerationFailed,
+         .secureChannelFailed, .internalError:
+      return .internalError("Internal security error")
     }
   }
+}
 
-  /// Maps any Error to our consolidated UmbraSecurityError if it represents a security issue
-  /// - Parameter error: Any error type
-  /// - Returns: The mapped UmbraSecurityError if applicable, nil otherwise
-  public func mapFromAny(_ error: Error) -> UmbraSecurityError? {
-    // First, check if it's already our type
-    if let umbraError=error as? UmbraSecurityError {
-      return umbraError
-    }
-
-    // Check the module name to determine how to map
-    let errorType=String(describing: type(of: error))
-
-    if errorType.contains("SecurityProtocolsCore") {
-      return mapFromSecurityProtocolsCore(error)
-    } else if errorType.contains("SecurityTypes") {
-      return mapFromSecurityTypes(error)
-    } else if errorType.contains("XPCProtocolsCore") {
-      return mapFromXPCProtocolsCore(error)
-    } else if errorType.contains("UmbraErrors.Security.Core") {
-      if let typedError=error as? UmbraErrors.Security.Core {
-        return mapFromTyped(typedError)
-      }
-      return .unknown("Unable to cast to UmbraErrors.Security.Core")
-    } else {
-      // Only map if it seems like a security error
-      let errorDescription=String(describing: error).lowercased()
-      if
-        errorDescription.contains("security") ||
-        errorDescription.contains("authentication") ||
-        errorDescription.contains("authorization") ||
-        errorDescription.contains("permission") ||
-        errorDescription.contains("crypto")
-      {
-        return .unknown("Mapped from unknown type: \(errorDescription)")
-      }
-      return nil
-    }
+/// Error registry extension for registering the security error mapper
+extension ErrorMapperRegistry {
+  /// Register the security error mapper with the registry
+  public func registerSecurityErrorMapper() {
+    registerMapper(
+      sourceType: UmbraErrors.Security.Core.self,
+      targetType: ErrorHandlingTypes.SecurityError.self,
+      factory: { SecurityErrorMapper() }
+    )
   }
 }
 
