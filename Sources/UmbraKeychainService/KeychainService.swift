@@ -1,6 +1,6 @@
 import Foundation
 import Security
-import SwiftyBeaver
+import LoggingWrapper
 import UmbraLogging
 
 /// A thread-safe service for managing secure keychain operations.
@@ -21,10 +21,13 @@ import UmbraLogging
 /// ```
 public actor KeychainService {
   /// Logger instance for tracking operations.
-  private let log=SwiftyBeaver.self
+  private let logger = Logger.self
 
   /// Creates a new keychain service instance.
-  public init() {}
+  public init() {
+    // Ensure logger is configured
+    Logger.configure()
+  }
 
   /// Adds a new item to the keychain.
   ///
@@ -54,7 +57,7 @@ public actor KeychainService {
     let status=SecItemAdd(query as CFDictionary, nil)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      log.error("Failed to add keychain item", context: [
+      logger.error("Failed to add keychain item", metadata: [
         "error": String(describing: error),
         "status": String(status),
         "operation": "addItem",
@@ -65,7 +68,7 @@ public actor KeychainService {
       throw error
     }
 
-    log.info("Successfully added keychain item", context: [
+    logger.info("Successfully added keychain item", metadata: [
       "operation": "addItem",
       "account": account,
       "service": service,
@@ -104,7 +107,7 @@ public actor KeychainService {
     let status=SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      log.error("Failed to update keychain item", context: [
+      logger.error("Failed to update keychain item", metadata: [
         "error": String(describing: error),
         "status": String(status),
         "operation": "updateItem",
@@ -115,7 +118,7 @@ public actor KeychainService {
       throw error
     }
 
-    log.info("Successfully updated keychain item", context: [
+    logger.info("Successfully updated keychain item", metadata: [
       "operation": "updateItem",
       "account": account,
       "service": service,
@@ -148,7 +151,7 @@ public actor KeychainService {
     let status=SecItemDelete(query as CFDictionary)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      log.error("Failed to remove keychain item", context: [
+      logger.error("Failed to remove keychain item", metadata: [
         "error": String(describing: error),
         "status": String(status),
         "operation": "removeItem",
@@ -159,7 +162,7 @@ public actor KeychainService {
       throw error
     }
 
-    log.info("Successfully removed keychain item", context: [
+    logger.info("Successfully removed keychain item", metadata: [
       "operation": "removeItem",
       "account": account,
       "service": service,
@@ -199,7 +202,7 @@ public actor KeychainService {
         return false
       default:
         let error=convertError(status)
-        log.error("Failed to check keychain item existence", context: [
+        logger.error("Failed to check keychain item existence", metadata: [
           "error": String(describing: error),
           "status": String(status),
           "operation": "containsItem",
@@ -239,7 +242,7 @@ public actor KeychainService {
     let status=SecItemCopyMatching(query as CFDictionary, &result)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      log.error("Failed to retrieve keychain item", context: [
+      logger.error("Failed to retrieve keychain item", metadata: [
         "error": String(describing: error),
         "status": String(status),
         "operation": "retrieveItem",
@@ -251,7 +254,7 @@ public actor KeychainService {
     }
 
     guard let data=result as? Data else {
-      log.error("Retrieved keychain item is not Data", context: [
+      logger.error("Retrieved keychain item is not Data", metadata: [
         "operation": "retrieveItem",
         "account": account,
         "service": service,
@@ -261,7 +264,7 @@ public actor KeychainService {
       throw KeychainError.unexpectedData
     }
 
-    log.info("Successfully retrieved keychain item", context: [
+    logger.info("Successfully retrieved keychain item", metadata: [
       "operation": "retrieveItem",
       "account": account,
       "service": service,
