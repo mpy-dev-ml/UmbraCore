@@ -87,6 +87,20 @@ public struct SecurityResultDTO: Sendable, Equatable {
           errorCode=1005
         case .internalError:
           errorCode=1006
+        case .invalidInput:
+          errorCode=1007
+        case .encryptionFailed:
+          errorCode=1008
+        case .decryptionFailed:
+          errorCode=1009
+        case .randomGenerationFailed:
+          errorCode=1010
+        case .storageOperationFailed:
+          errorCode=1011
+        case .serviceError:
+          errorCode=1012
+        case .notImplemented:
+          errorCode=1013
         @unknown default:
           errorCode=1099
       }

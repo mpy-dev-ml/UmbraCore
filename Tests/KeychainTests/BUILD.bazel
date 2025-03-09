@@ -7,6 +7,6 @@ umbra_swift_test(
     module_name = "KeychainTests",
     deps = [
         "//Sources/UmbraKeychainService",
-        "//TestSupport/UmbraTestKit",
+        "//Tests/UmbraTestKit/UmbraTestKit",
     ],
 )

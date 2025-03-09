@@ -1,0 +1,394 @@
+/**
+ # UmbraCore Key Manager
+ 
+ This file provides the main implementation of the `KeyManagementProtocol`,
+ serving as a facade for all key management operations in the UmbraCore security framework.
+ 
+ ## Responsibilities
+ 
+ * Coordinate between specialised key management components
+ * Generate, store, retrieve, and delete cryptographic keys
+ * Manage key lifecycle (rotation, expiration)
+ * Ensure proper access controls for key operations
+ 
+ ## Design Pattern
+ 
+ This class follows the Facade design pattern, providing a simple interface to a complex
+ subsystem of key management components:
+ 
+ * KeyStore: Handles key storage and retrieval
+ * KeyGenerator: Creates new cryptographic keys
+ * KeyLifecycle: Manages key rotation and retirement
+ * KeyUtils: Provides utility functions for key operations
+ 
+ ## Security Considerations
+ 
+ * Keys are stored in SecureBytes containers to minimise exposure
+ * Key operations follow the principle of least privilege
+ * Key lifecycle is managed to ensure keys are rotated appropriately
+ * All operations include validation to prevent misuse
+ */
+
+import Foundation
+import SecurityProtocolsCore
+import UmbraCoreTypes
+import ErrorHandlingDomains
+import struct UmbraCoreTypes.SecureBytes
+
+/// Configuration for key rotation operations
+public struct RotationConfig: Sendable {
+  /// Identifier of the key to rotate
+  public let keyIdentifier: String
+  
+  /// Optional data to re-encrypt with the new key
+  public let dataToReencrypt: SecureBytes?
+  
+  /// Creates a new rotation configuration
+  /// - Parameters:
+  ///   - keyIdentifier: Identifier of the key to rotate
+  ///   - dataToReencrypt: Optional data to re-encrypt with the new key
+  public init(keyIdentifier: String, dataToReencrypt: SecureBytes? = nil) {
+    self.keyIdentifier = keyIdentifier
+    self.dataToReencrypt = dataToReencrypt
+  }
+}
+
+/// Implementation of the KeyManagementProtocol that provides a unified interface
+/// to key management services.
+public final class KeyManager: KeyManagementProtocol {
+  // MARK: - Properties
+  
+  /// The key store component for key storage and retrieval
+  private let keyStore: SecureKeyStorage
+  
+  /// The key generator component for creating new keys
+  private let keyGenerator: KeyGenerator
+  
+  /// The key utilities component for key operations
+  private let keyUtils: KeyManager.SecurityUtilsProtocol
+  
+  // MARK: - Initialisation
+  
+  /// Creates a new KeyManager with default implementations
+  public init() {
+    self.keyStore = SecureKeyStorage()
+    self.keyGenerator = KeyGenerator()
+    
+    // Create an adaptor to bridge between SecurityUtils and KeyManager.SecurityUtilsProtocol
+    // This adaptor pattern allows KeyManager to use SecurityUtils while maintaining
+    // its own protocol definition for better encapsulation
+    self.keyUtils = SecurityUtilsAdapter()
+  }
+  
+  /// Creates a new KeyManager with the specified components
+  /// - Parameters:
+  ///   - keyStore: The key storage to use
+  ///   - keyGenerator: The key generator to use
+  ///   - keyUtils: The key utilities to use
+  public init(
+    keyStore: SecureKeyStorage,
+    keyGenerator: KeyGenerator,
+    keyUtils: KeyManager.SecurityUtilsProtocol
+  ) {
+    self.keyStore = keyStore
+    self.keyGenerator = keyGenerator
+    self.keyUtils = keyUtils
+  }
+  
+  // MARK: - KeyManagementProtocol Implementation
+  
+  /// Generates a key with the specified parameters
+  /// - Parameters:
+  ///   - bits: The key size in bits
+  ///   - keyType: The type of key to generate
+  ///   - purpose: The purpose of the key
+  /// - Returns: A result containing the generated key or an error
+  public func generateKey(
+    bits: Int,
+    keyType: KeyType,
+    purpose: KeyPurpose
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Determine the algorithm to use based on key type
+    var algorithm: String
+    
+    switch keyType {
+    case .symmetric:
+      algorithm = "AES"
+    case .asymmetric:
+      algorithm = "RSA"
+    case .hmac:
+      algorithm = "HMAC-SHA256"
+    default:
+      return .failure(.invalidInput(reason: "Unsupported key type: \(keyType)"))
+    }
+    
+    // Generate the key
+    let generateResult = await keyGenerator.generateKey(
+      bits: bits,
+      algorithm: algorithm
+    )
+    
+    guard generateResult.success, let key = generateResult.data else {
+      return .failure(.serviceError(code: 500, reason: "Key generation failed"))
+    }
+    
+    return .success(key)
+  }
+  
+  /// Retrieves a key by its identifier
+  /// - Parameter identifier: The identifier of the key to retrieve
+  /// - Returns: The key if found, or an error if not found
+  public func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    return await keyStore.retrieveKey(withIdentifier: identifier)
+  }
+  
+  /// Stores a key with the specified identifier
+  /// - Parameters:
+  ///   - key: The key to store
+  ///   - identifier: The identifier to associate with the key
+  /// - Returns: A result indicating success or an error
+  public func storeKey(
+    _ key: SecureBytes,
+    withIdentifier identifier: String
+  ) async -> Result<Void, UmbraErrors.Security.Protocols> {
+    // Validate the key before storing
+    guard key.count >= 16 else {
+      return .failure(.invalidInput(reason: "Key length (\(key.count) bytes) is less than minimum required (16 bytes)"))
+    }
+    
+    return await keyStore.storeKey(key, withIdentifier: identifier)
+  }
+  
+  /// Deletes a key by identifier
+  /// - Parameter identifier: The identifier of the key to delete
+  /// - Returns: Success or an error
+  public func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
+    return await keyStore.deleteSecurely(identifier: identifier)
+  }
+  
+  /// Rotates a key, optionally re-encrypting data with the new key
+  /// - Parameters:
+  ///   - identifier: The identifier of the key to rotate
+  ///   - dataToReencrypt: Optional data to re-encrypt with the new key
+  /// - Returns: The new key and re-encrypted data (if provided) or an error
+  public func rotateKey(
+    withIdentifier identifier: String,
+    dataToReencrypt: SecureBytes?
+  ) async -> Result<(
+    newKey: SecureBytes,
+    reencryptedData: SecureBytes?
+  ), UmbraErrors.Security.Protocols> {
+    // First, retrieve the old key
+    let retrieveResult = await keyStore.retrieveKey(withIdentifier: identifier)
+    
+    switch retrieveResult {
+    case .success(let oldKey):
+      // Generate a new key of the same size
+      let keySize = oldKey.count * 8
+      
+      // Generate key using the internal key generator
+      let generateResult = await keyGenerator.generateKey(
+        bits: keySize,
+        algorithm: "AES"
+      )
+      
+      guard generateResult.success, let newKey = generateResult.data else {
+        return .failure(.serviceError(code: 500, reason: "Failed to generate new key for rotation"))
+      }
+      
+      // Re-encrypt the data if provided
+      var reencryptedData: SecureBytes? = nil
+      if let dataToReencrypt = dataToReencrypt {
+        // For re-encryption, we need to decrypt with the old key and encrypt with the new key
+        let retrieveConfig = SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
+        let decryptResult = await keyUtils.decryptSymmetricDTO(
+          data: dataToReencrypt,
+          key: oldKey,
+          config: retrieveConfig
+        )
+        
+        guard decryptResult.success, let decryptedData = decryptResult.data else {
+          return .failure(.decryptionFailed(reason: "Failed to decrypt data with old key during rotation"))
+        }
+        
+        let encryptResult = await keyUtils.encryptSymmetricDTO(
+          data: decryptedData,
+          key: newKey,
+          config: retrieveConfig
+        )
+        
+        guard encryptResult.success, let encryptedData = encryptResult.data else {
+          return .failure(.encryptionFailed(reason: "Failed to encrypt data with new key during rotation"))
+        }
+        
+        reencryptedData = encryptedData
+      }
+      
+      // Store the new key
+      let storeResult = await keyStore.storeKey(newKey, withIdentifier: identifier)
+      
+      switch storeResult {
+      case .success:
+        return .success((newKey: newKey, reencryptedData: reencryptedData))
+      case .failure(let error):
+        return .failure(.keyStoreFailed(reason: "Failed to store rotated key: \(error)"))
+      }
+      
+    case .failure(let error):
+      return .failure(.keyNotFound(identifier: identifier, innerError: error))
+    }
+  }
+  
+  /// Internal implementation of the key rotation using the new RotationConfig
+  /// Supports the updated interface while maintaining compatibility
+  internal func rotateKeyInternal(
+    config: RotationConfig,
+    keyType: KeyType,
+    bits: Int,
+    purpose: KeyPurpose
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // First retrieve the old key
+    let retrieveResult = await retrieveKey(withIdentifier: config.keyIdentifier)
+    
+    switch retrieveResult {
+    case .success(let oldKey):
+      var reencryptedData: SecureBytes? = nil
+      if let dataToReencrypt = config.dataToReencrypt {
+        // For re-encryption, we need to decrypt with the old key and encrypt with the new key
+        let retrieveConfig = SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
+        let decryptResult = await keyUtils.decryptSymmetricDTO(
+          data: dataToReencrypt,
+          key: oldKey,
+          config: retrieveConfig
+        )
+        
+        guard decryptResult.success, let decryptedData = decryptResult.data else {
+          return .failure(.decryptionFailed(reason: "Failed to decrypt data with old key during rotation"))
+        }
+        
+        reencryptedData = decryptedData
+      }
+      
+      // Generate a new key of the same size
+      let keySize = oldKey.count * 8
+      let config = SecurityConfigDTO(algorithm: "AES", keySizeInBits: keySize)
+      let generateResult = await keyGenerator.generateKey(
+        bits: keySize,
+        algorithm: "AES"
+      )
+      
+      guard generateResult.success, let newKey = generateResult.data else {
+        return .failure(.serviceError(code: 500, reason: "Failed to generate new key for rotation"))
+      }
+      
+      // Store the new key
+      let storeResult = await keyStore.storeKey(newKey, withIdentifier: config.keyIdentifier!)
+      
+      switch storeResult {
+      case .success:
+        return .success(newKey)
+      case .failure(let error):
+        return .failure(.keyStoreFailed(reason: "Failed to store rotated key: \(error)"))
+      }
+      
+    case .failure(let error):
+      return .failure(.keyNotFound(identifier: config.keyIdentifier, innerError: error))
+    }
+  }
+  
+  /// Lists all available key identifiers
+  /// - Returns: An array of key identifiers
+  public func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
+    return await keyStore.listKeyIdentifiers()
+  }
+  
+  /// Generate random data of specified length
+  /// - Parameter length: Number of bytes to generate
+  /// - Returns: The generated random data or an error
+  public func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Validate length
+    guard length > 0 else {
+      return .failure(.invalidInput(reason: "Random data length must be greater than 0"))
+    }
+    
+    // Use the key generator to produce random bytes
+    return await keyGenerator.generateRandomData(length: length)
+  }
+}
+
+// MARK: - Utility Adapters
+
+/// Adapter to bridge between SecurityUtils and KeyManager.SecurityUtilsProtocol
+private class SecurityUtilsAdapter: KeyManager.SecurityUtilsProtocol {
+  // Instead of directly importing SecurityUtils, create a function that
+  // accesses the existing SecurityUtilsProtocol implementation within the module
+  private let utils = SecurityUtilsFactory.createDefaultUtils()
+  
+  func decryptSymmetricDTO(
+    data: SecureBytes,
+    key: SecureBytes, 
+    config: SecurityConfigDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    return await utils.decryptSymmetricDTO(data: data, key: key, config: config)
+  }
+  
+  func encryptSymmetricDTO(
+    data: SecureBytes,
+    key: SecureBytes,
+    config: SecurityConfigDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    return await utils.encryptSymmetricDTO(data: data, key: key, config: config)
+  }
+}
+
+// Factory to create the SecurityUtilsProtocol implementation
+private enum SecurityUtilsFactory {
+  // This function creates the default SecurityUtils implementation
+  // and handles the import indirectly
+  static func createDefaultUtils() -> SecurityProtocolsCore.SecurityUtilsProtocol {
+    // This references the concrete implementation while avoiding direct imports
+    return SecurityProtocolsCore.SecurityProviderFactory.defaultSecurityProvider().utils
+  }
+}
+
+// MARK: - Error extensions
+
+/// Extension to add key management specific errors
+extension UmbraErrors.Security.Protocols {
+  /// Error indicating a key was not found
+  /// - Parameters:
+  ///   - identifier: The identifier that was searched for
+  ///   - innerError: Optional underlying error
+  /// - Returns: A keyNotFound error
+  static func keyNotFound(identifier: String, innerError: Error? = nil) -> Self {
+    let details = "Key with identifier '\(identifier)' not found"
+    if let innerError = innerError {
+      return .internalError("Key retrieval failed: \(details). Error: \(innerError)")
+    } else {
+      return .invalidInput(reason: details)
+    }
+  }
+  
+  /// Error indicating key store operation failed
+  /// - Parameter reason: The reason for the failure
+  /// - Returns: A keyStoreFailed error
+  static func keyStoreFailed(reason: String) -> Self {
+    return .storageOperationFailed(reason: reason)
+  }
+}
+
+extension KeyManager {
+  public protocol SecurityUtilsProtocol: Sendable {
+    func decryptSymmetricDTO(
+      data: SecureBytes,
+      key: SecureBytes,
+      config: SecurityConfigDTO
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    
+    func encryptSymmetricDTO(
+      data: SecureBytes,
+      key: SecureBytes,
+      config: SecurityConfigDTO
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+  }
+}

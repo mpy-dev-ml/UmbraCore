@@ -8,6 +8,6 @@ umbra_swift_test(
     deps = [
         "//Sources/ErrorHandling",
         "//Sources/UmbraLogging",
-        "//TestSupport/UmbraTestKit",
+        "//Tests/UmbraTestKit/UmbraTestKit",
     ],
 )

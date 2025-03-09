@@ -1,6 +1,7 @@
-import CryptoSwiftFoundationIndependent
+import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import ErrorHandlingDomains
 
 /// In-memory implementation of KeyManagementProtocol
 /// This is a basic implementation that stores keys in memory for demonstration purposes
@@ -26,7 +27,7 @@ public actor KeyManagementImpl: KeyManagementProtocol {
   // MARK: - KeyManagementProtocol Implementation
 
   public func retrieveKey(withIdentifier identifier: String) async
-  -> Result<SecureBytes, SecurityError> {
+  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // If secure storage is available, use it
     if let secureStorage {
       let result=await secureStorage.retrieveSecurely(identifier: identifier)
@@ -55,7 +56,7 @@ public actor KeyManagementImpl: KeyManagementProtocol {
   public func storeKey(
     _ key: SecureBytes,
     withIdentifier identifier: String
-  ) async -> Result<Void, SecurityError> {
+  ) async -> Result<Void, UmbraErrors.Security.Protocols> {
     // If secure storage is available, use it
     if let secureStorage {
       let result=await secureStorage.storeSecurely(data: key, identifier: identifier)
@@ -74,7 +75,7 @@ public actor KeyManagementImpl: KeyManagementProtocol {
     return .success(())
   }
 
-  public func deleteKey(withIdentifier identifier: String) async -> Result<Void, SecurityError> {
+  public func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
     // If secure storage is available, use it
     if let secureStorage {
       let result=await secureStorage.deleteSecurely(identifier: identifier)
@@ -102,73 +103,68 @@ public actor KeyManagementImpl: KeyManagementProtocol {
     return .success(())
   }
 
-  public func rotateKey(
-    withIdentifier identifier: String,
-    dataToReencrypt: SecureBytes?
-  ) async -> Result<(
-    newKey: SecureBytes,
-    reencryptedData: SecureBytes?
-  ), SecurityError> {
+  /// - Returns: A result containing the key or an error
+  public func rotateKey(withIdentifier identifier: String, andRencryptData dataToReencrypt: SecureBytes?) async -> Result<(newKey: SecureBytes, oldKey: SecureBytes), UmbraErrors.Security.Protocols> {
     // Retrieve the old key
-    let oldKeyResult=await retrieveKey(withIdentifier: identifier)
-    guard case let .success(oldKey)=oldKeyResult else {
-      if case let .failure(error)=oldKeyResult {
+    let oldKeyResult = await retrieveKey(withIdentifier: identifier)
+    guard case let .success(oldKey) = oldKeyResult else {
+      if case let .failure(error) = oldKeyResult {
         return .failure(error)
       }
-      return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+      return .failure(.keyNotFound(identifier: identifier))
     }
-
-    // Generate a new key
-    let newKey=CryptoWrapper.generateRandomKeySecure()
-
-    // Re-encrypt data if provided
-    var reencryptedData: SecureBytes?
-    if let dataToReencrypt {
-      do {
-        // Extract IV (first 12 bytes) and ciphertext from the combined data
-        let ivSize=12 // AES GCM IV size is 12 bytes
-        guard dataToReencrypt.count > ivSize else {
-          return .failure(.invalidInput(reason: "Data is too short to contain IV"))
+    
+    do {
+      // Get a key generator to create the new key
+      let keyGenerator = KeyGenerator()
+      
+      // Generate a new key
+      let keyResult = await keyGenerator.generateKey(bits: 256, keyType: .symmetric, purpose: .encryption)
+      guard case let .success(newKey) = keyResult else {
+        if case let .failure(error) = keyResult {
+          return .failure(error)
         }
-
-        let (existingIv, existingCiphertext)=try dataToReencrypt.split(at: ivSize)
-
-        // First decrypt with old key and existing IV
-        let decryptedData=try CryptoWrapper.decryptAES_GCM(
-          data: existingCiphertext,
-          key: oldKey,
-          iv: existingIv
-        )
-
-        // Then encrypt with new key
-        let newIv=CryptoWrapper.generateRandomIVSecure()
-        let encryptedData=try CryptoWrapper.encryptAES_GCM(
-          data: decryptedData,
-          key: newKey,
-          iv: newIv
-        )
-
-        // Combine IV with encrypted data
-        reencryptedData=SecureBytes.combine(newIv, encryptedData)
-      } catch {
-        return .failure(
-          .storageOperationFailed(
-            reason: "Failed to re-encrypt data: \(error.localizedDescription)"
-          )
-        )
+        return .failure(.keyGenerationFailed(reason: "Unknown error"))
       }
+      
+      // Re-encrypt data if provided
+      if let existingCiphertext = dataToReencrypt {
+        // First decrypt with old key
+        let decryptResult = await keyGenerator.decryptData(existingCiphertext, using: oldKey)
+        guard case let .success(decryptedData) = decryptResult else {
+          if case let .failure(error) = decryptResult {
+            return .failure(error)
+          }
+          return .failure(.decryptionFailed(reason: "Failed to decrypt with old key"))
+        }
+        
+        // Then encrypt with new key
+        let encryptResult = await keyGenerator.encryptData(decryptedData, using: newKey)
+        guard case let .success(_) = encryptResult else {
+          if case let .failure(error) = encryptResult {
+            return .failure(error)
+          }
+          return .failure(.encryptionFailed(reason: "Failed to encrypt with new key"))
+        }
+      }
+      
+      // Store the new key
+      let storeResult = await storeKey(newKey, withIdentifier: identifier)
+      guard case .success = storeResult else {
+        if case let .failure(error) = storeResult {
+          return .failure(error)
+        }
+        return .failure(.keyStoreFailed(reason: "Failed to store new key"))
+      }
+      
+      // Return both keys
+      return .success((newKey: newKey, oldKey: oldKey))
+    } catch {
+      return .failure(.generalError(error: error))
     }
-
-    // Store the new key
-    let storeResult=await storeKey(newKey, withIdentifier: identifier)
-    if case let .failure(error)=storeResult {
-      return .failure(error)
-    }
-
-    return .success((newKey: newKey, reencryptedData: reencryptedData))
   }
 
-  public func listKeyIdentifiers() async -> Result<[String], SecurityError> {
+  public func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
     // If secure storage is available, it should provide a way to list keys
     // For now, we'll just return the in-memory keys
     .success(Array(keyStore.keys))

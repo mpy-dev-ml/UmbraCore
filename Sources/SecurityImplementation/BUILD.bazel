@@ -19,7 +19,22 @@ umbracore_foundation_free_module(
         "-O", # Enable optimizations
         "-cross-module-optimization", # Enable cross-module optimization
     ],
-    srcs = glob(["Sources/*.swift", "Sources/CryptoServices/*.swift"]),
+    srcs = glob(
+        [
+            "Sources/*.swift",
+            "Sources/CryptoServices/Core/*.swift",
+            "Sources/CryptoServices/Asymmetric/*.swift",
+            "Sources/CryptoServices/Symmetric/*.swift",
+            "Sources/CryptoServices/Hashing/*.swift",
+            "Sources/Provider/*.swift",
+            "Sources/KeyManagement/*.swift",
+            "Sources/Utils/*.swift",
+        ],
+        # Exclude the top-level duplicates in favor of the organized structure
+        exclude = [
+            "Sources/CryptoServices/*.swift",
+        ],
+    ),
 )
 
 umbracore_module_test(

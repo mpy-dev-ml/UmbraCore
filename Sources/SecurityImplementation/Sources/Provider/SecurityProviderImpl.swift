@@ -1,5 +1,6 @@
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import Foundation
 
 /// Default implementation of SecurityProviderProtocol using CryptoSwiftFoundationIndependent
 public final class SecurityProviderImpl: SecurityProviderProtocol {
@@ -29,8 +30,8 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
   /// Convenience initializer with default implementations
   public convenience init() {
     self.init(
-      cryptoService: CryptoServiceImpl(),
-      keyManager: KeyManagementImpl()
+      cryptoService: CryptoService(),
+      keyManager: KeyManager()
     )
   }
 
@@ -49,7 +50,7 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
           if case let .failure(error)=keyResult {
             return SecurityResultDTO.failure(
               code: 500,
-              message: "Failed to generate key: \(error.description)"
+              message: "Failed to generate key: \(error)"
             )
           }
           return SecurityResultDTO.failure(
@@ -62,11 +63,22 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
         let data=SecureBytes(bytes: Array("Hello, secure world!".utf8))
 
         // Perform encryption
-        return await cryptoService.encryptSymmetric(
+        let encryptResult = await cryptoService.encryptSymmetric(
           data: data,
           key: key,
           config: config
         )
+        
+        // Convert Result to SecurityResultDTO
+        switch encryptResult {
+        case .success(let encryptedData):
+          return SecurityResultDTO.success(data: encryptedData)
+        case .failure(let error):
+          return SecurityResultDTO.failure(
+            code: 500,
+            message: "Encryption failed: \(error)"
+          )
+        }
 
       case .symmetricDecryption:
         // This would typically retrieve a key and decrypt provided data
@@ -87,7 +99,18 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
         let data=SecureBytes(bytes: Array("Hello, secure world!".utf8))
 
         // Perform hashing
-        return await cryptoService.hash(data: data, config: config)
+        let hashResult = await cryptoService.hash(data: data, config: config)
+        
+        // Convert Result to SecurityResultDTO
+        switch hashResult {
+        case .success(let hashData):
+          return SecurityResultDTO.success(data: hashData)
+        case .failure(let error):
+          return SecurityResultDTO.failure(
+            code: 500,
+            message: "Hashing failed: \(error)"
+          )
+        }
 
       case .macGeneration:
         return SecurityResultDTO.failure(
@@ -118,7 +141,7 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
           if case let .failure(error)=randomResult {
             return SecurityResultDTO.failure(
               code: 500,
-              message: "Failed to generate random data: \(error.description)"
+              message: "Failed to generate random data: \(error)"
             )
           }
           return SecurityResultDTO.failure(
@@ -130,22 +153,41 @@ public final class SecurityProviderImpl: SecurityProviderProtocol {
         return SecurityResultDTO.success(data: randomData)
 
       case .keyGeneration:
-        let keyResult=await cryptoService.generateKey()
+        let randomResult = await cryptoService.generateRandomData(length: config.keySizeInBits / 8)
 
-        guard case let .success(key)=keyResult else {
-          if case let .failure(error)=keyResult {
+        guard case let .success(randomData) = randomResult else {
+          if case let .failure(error) = randomResult {
             return SecurityResultDTO.failure(
               code: 500,
-              message: "Failed to generate key: \(error.description)"
+              message: "Failed to generate random data: \(error)"
             )
           }
           return SecurityResultDTO.failure(
             code: 500,
-            message: "Unknown key generation error"
+            message: "Unknown random generation error"
           )
         }
 
-        return SecurityResultDTO.success(data: key)
+        // Store the generated key
+        let keyResult = await keyManager.storeKey(
+          randomData,
+          withIdentifier: "generated_key_\(Date().timeIntervalSince1970)"
+        )
+
+        guard case .success = keyResult else {
+          if case let .failure(error) = keyResult {
+            return SecurityResultDTO.failure(
+              code: 500,
+              message: "Failed to generate key: \(error)"
+            )
+          }
+          return SecurityResultDTO.failure(
+            code: 500,
+            message: "Unknown key storage error"
+          )
+        }
+
+        return SecurityResultDTO.success(data: randomData)
 
       case .keyStorage, .keyRetrieval, .keyRotation, .keyDeletion:
         return SecurityResultDTO.failure(
