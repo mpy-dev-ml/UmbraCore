@@ -3,7 +3,7 @@ import ErrorHandlingCommon
 import ErrorHandlingInterfaces
 
 /// Extension to bridge between ErrorSeverity and ErrorNotificationLevel
-extension ErrorSeverity {
+extension ErrorHandlingCommon.ErrorSeverity {
   /// Converts the error severity to a notification level
   /// - Returns: The corresponding ErrorNotificationLevel
   public func toNotificationLevel() -> ErrorNotificationLevel {
@@ -26,7 +26,7 @@ extension ErrorSeverity {
 extension ErrorNotificationLevel {
   /// Convert a notification level to a severity level
   /// - Returns: The corresponding ErrorSeverity
-  public func toSeverityLevel() -> ErrorSeverity {
+  public func toSeverityLevel() -> ErrorHandlingCommon.ErrorSeverity {
     switch self {
     case .critical:
       return .critical
@@ -37,6 +37,8 @@ extension ErrorNotificationLevel {
     case .info:
       return .info
     case .debug:
+      return .debug
+    @unknown default:
       return .debug
     }
   }
