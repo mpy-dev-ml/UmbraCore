@@ -3,7 +3,7 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 
 // Alias UmbraErrors.Security.Protocols as SecurityError to match the existing code expectations
-typealias SecurityError=UmbraErrors.Security.Protocols
+public typealias SecurityError=UmbraErrors.Security.Protocols
 
 /// Type-erased wrapper for CryptoServiceProtocol
 /// This allows for cleaner interfaces without exposing implementation details

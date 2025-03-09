@@ -28,7 +28,7 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 
 // Alias UmbraErrors.Security.Protocols as SecurityError to match the existing code expectations
-typealias SecurityError=UmbraErrors.Security.Protocols
+public typealias SecurityError=UmbraErrors.Security.Protocols
 
 /// Implementation of CryptoServiceProtocol that provides cryptographic operations
 /// without any dependency on Foundation. This implementation handles encryption,

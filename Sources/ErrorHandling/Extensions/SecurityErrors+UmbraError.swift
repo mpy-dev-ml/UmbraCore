@@ -252,6 +252,20 @@ public struct SecurityProtocolsErrorWrapper: UmbraError {
         return "INVALID_STATE"
       case .internalError:
         return "INTERNAL_ERROR"
+      case .invalidInput:
+        return "INVALID_INPUT"
+      case .encryptionFailed:
+        return "ENCRYPTION_FAILED"
+      case .decryptionFailed:
+        return "DECRYPTION_FAILED"
+      case .randomGenerationFailed:
+        return "RANDOM_GENERATION_FAILED"
+      case .storageOperationFailed:
+        return "STORAGE_OPERATION_FAILED"
+      case .serviceError:
+        return "SERVICE_ERROR"
+      case .notImplemented:
+        return "NOT_IMPLEMENTED"
       @unknown default:
         return "UNKNOWN_ERROR"
     }
@@ -272,6 +286,20 @@ public struct SecurityProtocolsErrorWrapper: UmbraError {
         return "Protocol in invalid state: current '\(state)', expected '\(expectedState)'"
       case let .internalError(reason):
         return "Internal error within protocol handling: \(reason)"
+      case let .invalidInput(reason):
+        return "Invalid input data: \(reason)"
+      case let .encryptionFailed(reason):
+        return "Encryption operation failed: \(reason)"
+      case let .decryptionFailed(reason):
+        return "Decryption operation failed: \(reason)"
+      case let .randomGenerationFailed(reason):
+        return "Secure random generation failed: \(reason)"
+      case let .storageOperationFailed(reason):
+        return "Secure storage operation failed: \(reason)"
+      case let .serviceError(code, reason):
+        return "Security service error (code \(code)): \(reason)"
+      case .notImplemented:
+        return "Operation not implemented"
       @unknown default:
         return "Unknown protocol security error"
     }

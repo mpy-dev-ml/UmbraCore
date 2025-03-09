@@ -5,6 +5,13 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
 
+// For protocol compatibility - bridging between error types
+// This allows us to implement protocols that require Protocols error type
+// while maintaining XPC error type internally
+extension UmbraErrors.Security {
+  typealias ProtocolErrorType = UmbraErrors.Security.Protocols
+}
+
 /// Constants for XPC service configuration
 public enum XPCServiceConstants {
   public static let defaultServiceName="com.umbra.security.xpcservice"
@@ -94,34 +101,34 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
 
   // MARK: - Error Mapping
 
-  private func mapSecurityError(_ error: Error) -> UmbraErrors.Security.Protocols {
-    if let securityError=error as? UmbraErrors.Security.Protocols {
+  private func mapSecurityError(_ error: Error) -> UmbraErrors.Security.XPC {
+    if let securityError=error as? UmbraErrors.Security.XPC {
       securityError
     } else if let coreError=error as? CoreErrors.SecurityError {
       mapError(coreError)
     } else {
-      UmbraErrors.Security.Protocols.internalError(error.localizedDescription)
+      UmbraErrors.Security.XPC.internalError(error.localizedDescription)
     }
   }
 
-  /// Map CoreErrors.SecurityError to UmbraErrors.Security.Protocols
-  private func mapError(_ error: CoreErrors.SecurityError) -> UmbraErrors.Security.Protocols {
+  /// Map CoreErrors.SecurityError to UmbraErrors.Security.XPC
+  private func mapError(_ error: CoreErrors.SecurityError) -> UmbraErrors.Security.XPC {
     switch error {
       case .encryptionFailed:
-        UmbraErrors.Security.Protocols.internalError("Encryption operation failed")
+        UmbraErrors.Security.XPC.internalError("Encryption operation failed")
       case .decryptionFailed:
-        UmbraErrors.Security.Protocols.internalError("Decryption operation failed")
+        UmbraErrors.Security.XPC.internalError("Decryption operation failed")
       case .keyGenerationFailed:
-        UmbraErrors.Security.Protocols.internalError("Key generation failed")
+        UmbraErrors.Security.XPC.internalError("Key generation failed")
       case .invalidData:
-        UmbraErrors.Security.Protocols.invalidFormat(reason: "Invalid data format")
+        UmbraErrors.Security.XPC.invalidFormat(reason: "Invalid data format")
       case .notImplemented:
-        UmbraErrors.Security.Protocols.unsupportedOperation(name: "operation")
+        UmbraErrors.Security.XPC.unsupportedOperation(name: "operation")
       case let .general(message):
-        UmbraErrors.Security.Protocols.internalError(message)
-      // Handle other cases with appropriate UmbraErrors.Security.Protocols types
+        UmbraErrors.Security.XPC.internalError(message)
+      // Handle other cases with appropriate UmbraErrors.Security.XPC types
       default:
-        UmbraErrors.Security.Protocols.internalError("Security error: \(error)")
+        UmbraErrors.Security.XPC.internalError("Security error: \(error)")
     }
   }
 
@@ -130,21 +137,21 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
   /// This method provides a consistent way of handling XPC errors throughout the application.
   /// - Parameter error: The XPC error to be mapped.
   /// - Returns: A SecurityError representing the XPC error.
-  private func mapXPCError(_ error: Error) -> UmbraErrors.Security.Protocols {
-    // Use the central error mapper to convert to UmbraErrors.Security.Protocols
+  private func mapXPCError(_ error: Error) -> UmbraErrors.Security.XPC {
+    // Use the central error mapper to convert to UmbraErrors.Security.XPC
     CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
   }
 
-  /// Convert SecurityBridgeErrors to UmbraErrors.Security.Protocols
-  private func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.Protocols {
+  /// Convert SecurityBridgeErrors to UmbraErrors.Security.XPC
+  private func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
     if error.domain == "com.umbra.security.xpc" {
       if let message=error.userInfo[NSLocalizedDescriptionKey] as? String {
-        return UmbraErrors.Security.Protocols.internalError(message)
+        return UmbraErrors.Security.XPC.internalError(message)
       } else {
-        return UmbraErrors.Security.Protocols.internalError("Unknown error: \(error.code)")
+        return UmbraErrors.Security.XPC.internalError("Unknown error: \(error.code)")
       }
     } else {
-      return UmbraErrors.Security.Protocols.internalError(error.localizedDescription)
+      return UmbraErrors.Security.XPC.internalError(error.localizedDescription)
     }
   }
 
@@ -152,13 +159,13 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
   private func processSecurityResult<T>(
     _ result: NSObject?,
     transform: (NSData) -> T
-  ) -> Result<T, UmbraErrors.Security.Protocols> {
+  ) -> Result<T, UmbraErrors.Security.XPC> {
     if let error=result as? NSError {
       .failure(mapSecurityError(error))
     } else if let nsData=result as? NSData {
       .success(transform(nsData))
     } else {
-      .failure(UmbraErrors.Security.Protocols.internalError("Invalid result format"))
+      .failure(UmbraErrors.Security.XPC.internalError("Invalid result format"))
     }
   }
 }
@@ -167,24 +174,107 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
 
 extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   public func ping() async -> Result<Bool, UmbraErrors.Security.Protocols> {
-    await withCheckedContinuation { continuation in
+    // Map XPC error type to Protocols error type for protocol compliance
+    let result = await withCheckedContinuation { continuation in
       Task {
-        let result=await serviceProxy.getServiceVersion()
-        // Map the XPC result to the protocol result
-        switch result {
-          case .success:
-            continuation.resume(returning: .success(true))
-          case let .failure(error):
-            continuation.resume(returning: .failure(mapXPCError(error)))
-        }
+        let result = await serviceProxy.getServiceVersion()
+        continuation.resume(returning: result != nil)
       }
+    }
+    return .success(result)
+  }
+  
+  public func encrypt(
+    data: SecureBytes,
+    using key: SecureBytes
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Convert internal XPC error type to Protocols error type
+    let result = await encrypt(data: data, key: key)
+    switch result {
+      case .success(let data):
+        return .success(data)
+      case .failure(let error):
+        // Map XPC error to Protocol error
+        return .failure(mapToProtocolError(error))
+    }
+  }
+  
+  public func decrypt(
+    data: SecureBytes,
+    using key: SecureBytes
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Convert internal XPC error type to Protocols error type
+    let result = await decrypt(data: data, key: key)
+    switch result {
+      case .success(let data):
+        return .success(data)
+      case .failure(let error):
+        // Map XPC error to Protocol error
+        return .failure(mapToProtocolError(error))
+    }
+  }
+  
+  public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Convert internal XPC error type to Protocols error type
+    let result = await withCheckedContinuation { continuation in
+      Task {
+        let result = await serviceProxy.generateKey()
+        continuation.resume(returning: result)
+      }
+    }
+    
+    switch result {
+      case .success(let key):
+        return .success(key)
+      case .failure(let error):
+        // Map XPC error to Protocol error
+        return .failure(mapToProtocolError(error))
+    }
+  }
+  
+  public func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Convert internal XPC error type to Protocols error type
+    let result = await hash(data: data)
+    switch result {
+      case .success(let hash):
+        return .success(hash)
+      case .failure(let error):
+        // Map XPC error to Protocol error
+        return .failure(mapToProtocolError(error))
+    }
+  }
+  
+  // Helper to map between error types
+  private func mapToProtocolError(_ error: UmbraErrors.Security.XPC) -> UmbraErrors.Security.Protocols {
+    // Map XPC error to Protocol error based on case
+    switch error {
+      case .encryptionFailed:
+        return .encryptionFailed
+      case .decryptionFailed:
+        return .decryptionFailed
+      case .keyGenerationFailed:
+        return .keyGenerationFailed
+      case .invalidFormat(let reason):
+        return .invalidFormat(reason: reason)
+      case .hashingFailed:
+        return .hashVerificationFailed
+      case .serviceUnavailable:
+        return .serviceError
+      case .internalError(let message):
+        return .internalError(message)
+      case .notImplemented:
+        return .notImplemented
+      case .unsupportedOperation(let name):
+        return .unsupportedOperation(name: name)
+      @unknown default:
+        return .internalError("Unknown error: \(error)")
     }
   }
 
   public func encrypt(
     data: SecureBytes,
     key: SecureBytes?
-  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     let keyData=key.map { DataAdapter.data(from: $0) }
 
     return await withCheckedContinuation { continuation in
@@ -209,14 +299,14 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   public func encrypt(
     data: SecureBytes,
     using key: SecureBytes
-  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     await encrypt(data: data, key: key)
   }
 
   public func decrypt(
     data: SecureBytes,
     key: SecureBytes?
-  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     let keyData=key.map { DataAdapter.data(from: $0) }
 
     return await withCheckedContinuation { continuation in
@@ -241,12 +331,12 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   public func decrypt(
     data: SecureBytes,
     using key: SecureBytes
-  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     await decrypt(data: data, key: key)
   }
 
   public func hash(data: SecureBytes) async
-  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     await withCheckedContinuation { continuation in
       Task {
         // Use hashData instead of hash
@@ -279,7 +369,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   public func verify(
     data: SecureBytes,
     against signature: SecureBytes
-  ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+  ) async -> Result<Bool, UmbraErrors.Security.XPC> {
     await withCheckedContinuation { continuation in
       Task {
         let result = await serviceProxy.verify(
@@ -301,7 +391,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     data: SecureBytes,
     key: SecureBytes,
     config _: SecurityProtocolsCore.SecurityConfigDTO
-  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     let result=await encrypt(data: data, using: key)
     switch result {
       case let .success(encryptedData):
@@ -315,7 +405,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     data: SecureBytes,
     key: SecureBytes,
     config _: SecurityProtocolsCore.SecurityConfigDTO
-  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     let result=await decrypt(data: data, using: key)
     switch result {
       case let .success(decryptedData):
@@ -329,30 +419,30 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     data _: SecureBytes,
     publicKey _: SecureBytes,
     config _: SecurityProtocolsCore.SecurityConfigDTO
-  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     // XPC service doesn't directly support asymmetric encryption
     // Return error indicating unsupported operation
-    .failure(UmbraErrors.Security.Protocols.unsupportedOperation(name: "asymmetric encryption"))
+    .failure(UmbraErrors.Security.XPC.unsupportedOperation(name: "asymmetric encryption"))
   }
 
   public func decryptAsymmetric(
     data _: SecureBytes,
     privateKey _: SecureBytes,
     config _: SecurityProtocolsCore.SecurityConfigDTO
-  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     // XPC service doesn't directly support asymmetric decryption
     // Return error indicating unsupported operation
-    .failure(UmbraErrors.Security.Protocols.unsupportedOperation(name: "asymmetric decryption"))
+    .failure(UmbraErrors.Security.XPC.unsupportedOperation(name: "asymmetric decryption"))
   }
 
   public func hash(
     data: SecureBytes,
     config _: SecurityProtocolsCore.SecurityConfigDTO
-  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  ) async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     await hash(data: data)
   }
 
-  public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     await withCheckedContinuation { continuation in
       Task {
         let result = await serviceProxy.generateKey()
@@ -368,19 +458,22 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   }
 
   public func generateKeyPair(
-    keyType: SecurityProtocolsCore.AsymmetricKeyType,
+    keyType: String, // Changed from SecurityProtocolsCore.AsymmetricKeyType to String
     keyIdentifier: String? = nil
   ) async -> Result<
     (publicKey: SecureBytes, privateKey: SecureBytes),
-    UmbraErrors.Security.Protocols
+    UmbraErrors.Security.XPC
   > {
     await withCheckedContinuation { continuation in
       Task {
-        let result = await serviceProxy.generateKeyPair(
-          type: keyType.rawValue,
-          identifier: keyIdentifier ?? ""
-        )
-        
+        let selector=NSSelectorFromString("generateKeyPair:type:identifier:")
+        let result = (connection.remoteObjectProxy as AnyObject).perform(
+          selector,
+          with: keyType,
+          keyIdentifier as NSString?,
+          metadata as NSDictionary?
+        )?.takeRetainedValue()
+
         switch result {
         case .success(let keyPair):
           let publicKey = DataAdapter.secureBytes(from: keyPair.publicKey)
@@ -395,6 +488,17 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
 
   public func generateRandomData(length: Int) async
   -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    let internalResult = await generateRandomBytes(length: length)
+    switch internalResult {
+      case .success(let data):
+        return .success(data)
+      case .failure(let error):
+        return .failure(mapToProtocolError(error))
+    }
+  }
+
+  public func generateRandomBytes(length: Int) async
+  -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     await withCheckedContinuation { continuation in
       Task {
         // The serviceProxy.generateRandomData should return the correct type
@@ -411,14 +515,14 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
           } else {
             continuation
               .resume(returning: .failure(
-                UmbraErrors.Security.Protocols
+                UmbraErrors.Security.XPC
                   .internalError("Unknown result type")
               ))
           }
         } else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .internalError("No result returned")
             ))
         }
@@ -433,7 +537,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
   public func storeKey(
     _ key: SecureBytes,
     withIdentifier identifier: String
-  ) async -> Result<Void, UmbraErrors.Security.Protocols> {
+  ) async -> Result<Void, UmbraErrors.Security.XPC> {
     await withCheckedContinuation { continuation in
       Task {
         let dataBytes=DataAdapter.data(from: key)
@@ -455,7 +559,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
   }
 
   public func retrieveKey(withIdentifier identifier: String) async
-  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  -> Result<SecureBytes, UmbraErrors.Security.XPC> {
     await withCheckedContinuation { continuation in
       Task {
         let result=await serviceProxy.retrieveSecurely(identifier: identifier)
@@ -472,14 +576,14 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
           } else {
             continuation
               .resume(returning: .failure(
-                UmbraErrors.Security.Protocols
+                UmbraErrors.Security.XPC
                   .internalError("Unknown result type")
               ))
           }
         } else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .internalError("Invalid result format")
             ))
         }
@@ -488,7 +592,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
   }
 
   public func deleteKey(withIdentifier identifier: String) async
-  -> Result<Void, UmbraErrors.Security.Protocols> {
+  -> Result<Void, UmbraErrors.Security.XPC> {
     await withCheckedContinuation { continuation in
       Task {
         let result=await serviceProxy.deleteSecurely(identifier: identifier)
@@ -509,7 +613,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
   ) async
     -> Result<
       (newKey: SecureBytes, reencryptedData: SecureBytes?),
-      UmbraErrors.Security.Protocols
+      UmbraErrors.Security.XPC
     >
   {
     await withCheckedContinuation { continuation in
@@ -529,14 +633,14 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
           } else {
             continuation
               .resume(returning: .failure(
-                UmbraErrors.Security.Protocols
+                UmbraErrors.Security.XPC
                   .internalError("Unknown result type")
               ))
           }
         } else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .internalError("Invalid result format")
             ))
         }
@@ -544,7 +648,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
     }
   }
 
-  public func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
+  public func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.XPC> {
     await withCheckedContinuation { continuation in
       Task {
         let selector=NSSelectorFromString("listKeyIdentifiers")
@@ -554,7 +658,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
         else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .invalidFormat(reason: "Invalid data")
             ))
           return
@@ -571,7 +675,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.KeyManagementProtocol {
 
 extension XPCServiceAdapter: XPCServiceProtocolStandard {
   @objc
-  public func generateRandomData(length: Int) async -> NSObject? {
+  public func generateRandomBytes(length: Int) async -> NSObject? {
     await withCheckedContinuation { continuation in
       Task {
         let selector=NSSelectorFromString("generateRandomDataWithLength:")
@@ -748,7 +852,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
         else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .invalidFormat(reason: "Invalid data")
             ))
           return
@@ -783,7 +887,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
         else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .invalidFormat(reason: "Invalid data")
             ))
           return
@@ -822,7 +926,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
         } else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .invalidFormat(reason: "Invalid data")
             ))
         }
@@ -842,7 +946,7 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
     await withCheckedContinuation { continuation in
       Task {
         let selector=NSSelectorFromString("generateKeyWithType:identifier:metadata:")
-        let result=(connection.remoteObjectProxy as AnyObject).perform(
+        let result = (connection.remoteObjectProxy as AnyObject).perform(
           selector,
           with: keyType.rawValue,
           with: keyIdentifier as NSString?,
@@ -852,7 +956,7 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
         if let result {
           continuation.resume(returning: .success(result as String))
         } else {
-          continuation.resume(returning: .failure(CoreErrors.SecurityError.keyGenerationFailed))
+          continuation.resume(returning: .failure(UmbraErrors.Security.XPC.keyGenerationFailed))
         }
       }
     }
@@ -879,7 +983,7 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
         else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .invalidFormat(reason: "Invalid data")
             ))
           return
@@ -918,7 +1022,7 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
         } else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .invalidFormat(reason: "Invalid data")
             ))
         }
@@ -940,7 +1044,7 @@ extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
         else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .invalidFormat(reason: "Invalid data")
             ))
           return
@@ -962,7 +1066,7 @@ extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
         else {
           continuation
             .resume(returning: .failure(
-              UmbraErrors.Security.Protocols
+              UmbraErrors.Security.XPC
                 .invalidFormat(reason: "Invalid data")
             ))
           return
@@ -977,16 +1081,16 @@ extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
 // MARK: - Helper Functions for Security Operations
 
 extension XPCServiceAdapter {
-  /// Convert SecurityBridgeErrors to UmbraErrors.Security.Protocols
-  private func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.Protocols {
+  /// Convert SecurityBridgeErrors to UmbraErrors.Security.XPC
+  private func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
     if error.domain == "com.umbra.security.xpc" {
       if let message=error.userInfo[NSLocalizedDescriptionKey] as? String {
-        return UmbraErrors.Security.Protocols.internalError(message)
+        return UmbraErrors.Security.XPC.internalError(message)
       } else {
-        return UmbraErrors.Security.Protocols.internalError("Unknown error: \(error.code)")
+        return UmbraErrors.Security.XPC.internalError("Unknown error: \(error.code)")
       }
     } else {
-      return UmbraErrors.Security.Protocols.internalError(error.localizedDescription)
+      return UmbraErrors.Security.XPC.internalError(error.localizedDescription)
     }
   }
 
@@ -994,13 +1098,13 @@ extension XPCServiceAdapter {
   private func processSecurityResult<T>(
     _ result: NSObject?,
     transform: (NSData) -> T
-  ) -> Result<T, UmbraErrors.Security.Protocols> {
+  ) -> Result<T, UmbraErrors.Security.XPC> {
     if let error=result as? NSError {
       .failure(mapSecurityError(error))
     } else if let nsData=result as? NSData {
       .success(transform(nsData))
     } else {
-      .failure(UmbraErrors.Security.Protocols.internalError("Invalid result format"))
+      .failure(UmbraErrors.Security.XPC.internalError("Invalid result format"))
     }
   }
 }

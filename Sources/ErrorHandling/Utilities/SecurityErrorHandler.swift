@@ -6,6 +6,7 @@ import ErrorHandlingInterfaces
 import ErrorHandling // Import the main module with wrapper types
 import ErrorHandlingCommon
 import ErrorHandlingNotification // Add explicit import for notification types
+import ErrorHandlingModels // Add import for ErrorHandler
 
 // Removed ErrorHandlingLogging import to fix library evolution issues
 import ErrorHandlingMapping
@@ -163,7 +164,7 @@ public final class SecurityErrorHandler: @unchecked Sendable {
     )
 
     // Use the generic error with the error handler
-    ErrorHandler.shared.handle(
+    ErrorHandlingCore.ErrorHandler.shared.handle(
       genericError,
       severity: severity,
       file: file,

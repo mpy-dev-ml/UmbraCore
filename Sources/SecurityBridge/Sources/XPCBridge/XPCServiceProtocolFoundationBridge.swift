@@ -332,32 +332,32 @@ extension SecurityBridge {
         return securityError
       } else if let securityError=error as? UmbraErrors.Security.Protocols {
         // Convert from UmbraErrors.Security.Protocols to XPCSecurityError
-        // (CoreErrors.SecurityError)
+        // (XPCSecurityError is UmbraErrors.Security.XPC per typealias)
         switch securityError {
           case .encryptionFailed:
-            return CoreErrors.SecurityError.encryptionFailed
+            return UmbraErrors.Security.XPC.encryptionFailed
           case .decryptionFailed:
-            return CoreErrors.SecurityError.decryptionFailed
+            return UmbraErrors.Security.XPC.decryptionFailed
           case .keyGenerationFailed:
-            return CoreErrors.SecurityError.keyGenerationFailed
+            return UmbraErrors.Security.XPC.keyGenerationFailed
           case .invalidKey, .invalidInput:
-            return UmbraErrors.Security.Protocols.invalidFormat(reason: "Invalid data")
+            return UmbraErrors.Security.XPC.invalidFormat(reason: "Invalid data")
           case .hashVerificationFailed, .randomGenerationFailed:
-            return CoreErrors.SecurityError.hashingFailed
+            return UmbraErrors.Security.XPC.hashingFailed
           case .storageOperationFailed:
-            return CoreErrors.SecurityError.serviceFailed
+            return UmbraErrors.Security.XPC.serviceUnavailable
           case .timeout, .serviceError:
-            return CoreErrors.SecurityError.serviceFailed
+            return UmbraErrors.Security.XPC.serviceUnavailable
           case .internalError:
-            return UmbraErrors.Security.Protocols.internalError(error.localizedDescription)
+            return UmbraErrors.Security.XPC.internalError(error.localizedDescription)
           case .notImplemented:
-            return CoreErrors.SecurityError.notImplemented
+            return UmbraErrors.Security.XPC.notImplemented
           @unknown default:
-            return UmbraErrors.Security.Protocols.internalError(error.localizedDescription)
+            return UmbraErrors.Security.XPC.internalError(error.localizedDescription)
         }
       } else {
         // Map generic error to appropriate error
-        return UmbraErrors.Security.Protocols.internalError(error.localizedDescription)
+        return UmbraErrors.Security.XPC.internalError(error.localizedDescription)
       }
     }
 
@@ -368,8 +368,13 @@ extension SecurityBridge {
     ///
     /// - Parameter error: The protocol error to map
     /// - Returns: A properly mapped XPCSecurityError
-    private func mapSecurityProtocolError(_ error: SecurityProtocolError) -> XPCSecurityError {
-      CoreErrors.SecurityErrorMapper.mapToXPCError(error)
+    private func mapSecurityProtocolError(_ error: Error) -> XPCSecurityError {
+      // If SecurityProtocolError is unavailable, we use a general mapping approach
+      if let xpcError = error as? XPCSecurityError {
+        return xpcError
+      } else {
+        return UmbraErrors.Security.XPC.internalError(error.localizedDescription)
+      }
     }
   }
 }

@@ -49,6 +49,20 @@ public enum SecurityErrorMapper {
           return .internalError("Invalid state: current '\(state)', expected '\(expectedState)'")
         case let .internalError(reason):
           return .internalError(reason)
+        case let .invalidInput(reason):
+          return .invalidInput(reason: reason)
+        case let .encryptionFailed(reason):
+          return .encryptionFailed(reason: reason)
+        case let .decryptionFailed(reason):
+          return .decryptionFailed(reason: reason)
+        case let .randomGenerationFailed(reason):
+          return .randomGenerationFailed(reason: reason)
+        case let .storageOperationFailed(reason):
+          return .storageOperationFailed(reason: reason)
+        case let .serviceError(code, reason):
+          return .serviceError(code: code, reason: reason)
+        case .notImplemented:
+          return .notImplemented(feature: "Security operation")
         @unknown default:
           return .internalError("Unknown protocol error")
       }
@@ -177,13 +191,27 @@ public enum SecurityErrorMapper {
         case let .unsupportedOperation(name):
           return .unexpectedSelector(name: name)
         case let .incompatibleVersion(version):
-          return .versionMismatch(expected: "Unknown", found: version)
+          return .internalError("Incompatible version: \(version)")
         case let .missingProtocolImplementation(protocolName):
           return .internalError("Missing protocol implementation: \(protocolName)")
         case let .invalidState(state, expectedState):
           return .internalError("Invalid state: current '\(state)', expected '\(expectedState)'")
         case let .internalError(reason):
           return .internalError(reason)
+        case let .invalidInput(reason):
+          return .invalidResponse(reason: "Invalid input: \(reason)")
+        case let .encryptionFailed(reason):
+          return .internalError("Encryption failed: \(reason)")
+        case let .decryptionFailed(reason):
+          return .internalError("Decryption failed: \(reason)")
+        case let .randomGenerationFailed(reason):
+          return .internalError("Random generation failed: \(reason)")
+        case let .storageOperationFailed(reason):
+          return .internalError("Storage operation failed: \(reason)")
+        case let .serviceError(code, reason):
+          return .internalError("Service error (\(code)): \(reason)")
+        case .notImplemented:
+          return .unexpectedSelector(name: "Security operation")
         @unknown default:
           return .internalError("Unknown protocol error")
       }

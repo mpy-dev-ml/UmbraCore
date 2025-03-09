@@ -117,48 +117,75 @@ public actor FileSystemRepository: Repository {
 
   // MARK: - Codable
 
-  enum CodingKeys: String, CodingKey {
-    case identifier
-    case state
-    case location
-    case stats
+  /// Structure to hold repository data for decoding purposes
+  /// This type is Sendable and can be safely passed across actor boundaries
+  public struct RepositoryData: Codable, Sendable {
+    public let identifier: String
+    public let location: URL
+    public let state: RepositoryState
+    public let stats: RepositoryStatistics
+    
+    /// Public initializer to create a repository data struct
+    public init(
+      identifier: String,
+      location: URL,
+      state: RepositoryState,
+      stats: RepositoryStatistics
+    ) {
+      self.identifier = identifier
+      self.location = location
+      self.state = state
+      self.stats = stats
+    }
   }
 
+  /// Keys for Codable conformance
+  private enum CodingKeys: String, CodingKey {
+    case identifier, location, state, stats
+  }
+  
+  /// Encode this repository to an encoder
+  /// This method must be nonisolated to satisfy the Encodable protocol requirement
   public nonisolated func encode(to encoder: Encoder) throws {
-    var container=encoder.container(keyedBy: CodingKeys.self)
+    var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(identifier, forKey: .identifier)
-    try container.encode(state, forKey: .state)
     try container.encode(location, forKey: .location)
-
+    try container.encode(state, forKey: .state)
+    
     // Use the thread-safe accessor for stats
     try container.encode(statsAccessor.getStats(), forKey: .stats)
   }
 
-  /// Create a new instance by decoding from the specified decoder
-  ///
-  /// This initialiser needs to be isolated (not nonisolated) in Swift 6
-  /// because Decoder doesn't conform to Sendable. We use @preconcurrency to
-  /// suppress the current warning, but this will need further changes for
-  /// full Swift 6 compatibility.
-  @preconcurrency
-  @available(*, deprecated, message: "Will need to be refactored for Swift 6")
-  public init(from decoder: Decoder) throws {
-    let container=try decoder.container(keyedBy: CodingKeys.self)
-    // Decode all values before initialising properties for better error handling
-    let decodedIdentifier=try container.decode(String.self, forKey: .identifier)
-    let decodedLocation=try container.decode(URL.self, forKey: .location)
-    let decodedState=try container.decode(RepositoryState.self, forKey: .state)
-    let decodedStats=try container.decode(RepositoryStatistics.self, forKey: .stats)
-
-    // Initialise properties
-    identifier=decodedIdentifier
-    location=decodedLocation
-    state=decodedState
-    stats=decodedStats
-    statsAccessor=StatsAccessor()
-
+  /// Swift 6 compatible implementation of Decodable protocol requirement
+  /// Uses an isolation-safe approach that avoids direct actor property access
+  public nonisolated init(from decoder: Decoder) throws {
+    // Extract the data in a synchronous context
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    
+    // Create a RepositoryData struct with the decoded values
+    let data = RepositoryData(
+      identifier: try container.decode(String.self, forKey: .identifier),
+      location: try container.decode(URL.self, forKey: .location),
+      state: try container.decode(RepositoryState.self, forKey: .state),
+      stats: try container.decode(RepositoryStatistics.self, forKey: .stats)
+    )
+    
+    // Initialize properties
+    self.identifier = data.identifier
+    self.location = data.location
+    self.state = data.state
+    self.stats = data.stats
+    self.statsAccessor = StatsAccessor()
+    
     // Using createLogger() from UmbraLogging which abstracts the implementation
-    logger=UmbraLogging.createLogger()
+    self.logger = UmbraLogging.createLogger()
+  }
+
+  /// Swift 6 compatible decode method that follows the modern approach
+  /// This complies with Swift concurrency rules by avoiding direct use of non-Sendable types
+  public static func decode(from decoder: Decoder) throws -> FileSystemRepository {
+    // Use the nonisolated initializer which is required by the Decodable protocol
+    return try FileSystemRepository(from: decoder)
   }
 
   // MARK: - RepositoryCore

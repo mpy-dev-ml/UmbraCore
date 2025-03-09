@@ -1,8 +1,9 @@
 import Foundation
+import ErrorHandlingCommon
 
 /// Severity level for service errors
 @frozen
-public enum ErrorSeverity: String, Codable, Sendable {
+public enum ServiceErrorSeverity: String, Codable, Sendable {
   /// Critical errors that require immediate attention
   case critical
   /// Serious errors that affect functionality

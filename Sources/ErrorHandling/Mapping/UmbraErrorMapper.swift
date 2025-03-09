@@ -58,8 +58,22 @@ public enum UmbraErrorMapper {
         case let .invalidState(state, expectedState):
           return .serviceError(
             code: 2003,
-            reason: "Protocol in invalid state: \(state), expected: \(expectedState)"
+            reason: "Invalid protocol state: \(state), expected: \(expectedState)"
           )
+        case let .invalidInput(reason):
+          return .invalidInput(reason: reason)
+        case let .encryptionFailed(reason):
+          return .encryptionFailed(reason: reason)
+        case let .decryptionFailed(reason):
+          return .decryptionFailed(reason: reason)
+        case let .randomGenerationFailed(reason):
+          return .randomGenerationFailed(reason: reason)
+        case let .storageOperationFailed(reason):
+          return .storageOperationFailed(reason: reason)
+        case let .serviceError(code, reason):
+          return .serviceError(code: code, reason: reason)
+        case .notImplemented:
+          return .notImplemented(feature: "Protocol operation")
         case let .internalError(message):
           return .internalError("Protocol internal error: \(message)")
         @unknown default:
