@@ -1,27 +1,27 @@
 import ErrorHandlingInterfaces
 import Foundation
-@preconcurrency import SwiftyBeaver
+import LoggingWrapper
 import UmbraLogging
 import UmbraLoggingAdapters
 
-/// A SwiftyBeaver adapter that conforms to LoggingProtocol
-public final class SwiftyBeaverAdapter: LoggingProtocol, Sendable {
+/// A logging adapter that conforms to LoggingProtocol
+public final class LoggingWrapperAdapter: LoggingProtocol, Sendable {
   public init() {}
 
   public func error(_ message: String, metadata: LogMetadata?) async {
-    SwiftyBeaver.error(message, context: metadata)
+    Logger.error(message, metadata)
   }
 
   public func warning(_ message: String, metadata: LogMetadata?) async {
-    SwiftyBeaver.warning(message, context: metadata)
+    Logger.warning(message, metadata)
   }
 
   public func info(_ message: String, metadata: LogMetadata?) async {
-    SwiftyBeaver.info(message, context: metadata)
+    Logger.info(message, metadata)
   }
 
   public func debug(_ message: String, metadata: LogMetadata?) async {
-    SwiftyBeaver.debug(message, context: metadata)
+    Logger.debug(message, metadata)
   }
 }
 
@@ -39,7 +39,7 @@ public class ErrorLogger {
 
   /// Initialises with the default logger and configuration
   public init(
-    logger: LoggingProtocol=SwiftyBeaverAdapter(),
+    logger: LoggingProtocol=LoggingWrapperAdapter(),
     configuration: ErrorLoggerConfiguration=ErrorLoggerConfiguration()
   ) {
     self.logger=logger

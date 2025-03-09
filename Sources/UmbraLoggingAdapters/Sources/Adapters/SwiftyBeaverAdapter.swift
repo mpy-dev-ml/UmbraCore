@@ -1,15 +1,35 @@
 import Foundation
-import SwiftyBeaver
+import LoggingWrapper
 import UmbraLogging
 
-/// Adapter for converting between UmbraLogging and SwiftyBeaver types
-public enum SwiftyBeaverAdapter {
-  /// Convert UmbraLogLevel to SwiftyBeaver.Level
+/// Adapter for converting between UmbraLogging and LoggingWrapper types
+public enum LoggingLevelAdapter {
+  /// Convert UmbraLogLevel to LoggingWrapper.LogLevel
   /// - Parameter level: The UmbraLogLevel to convert
-  /// - Returns: The equivalent SwiftyBeaver.Level
-  public static func convertLevel(_ level: UmbraLogLevel) -> SwiftyBeaver.Level {
+  /// - Returns: The equivalent LoggingWrapper.LogLevel
+  public static func convertLevel(_ level: UmbraLogLevel) -> LogLevel {
     switch level {
       case .verbose:
+        .trace
+      case .debug:
+        .debug
+      case .info:
+        .info
+      case .warning:
+        .warning
+      case .error:
+        .error
+      case .critical, .fault:
+        .critical
+    }
+  }
+
+  /// Convert LoggingWrapper.LogLevel to UmbraLogLevel
+  /// - Parameter level: The LogLevel to convert
+  /// - Returns: The equivalent UmbraLogLevel
+  public static func convertToUmbraLevel(_ level: LogLevel) -> UmbraLogLevel {
+    switch level {
+      case .trace:
         .verbose
       case .debug:
         .debug
@@ -17,25 +37,17 @@ public enum SwiftyBeaverAdapter {
         .info
       case .warning:
         .warning
-      case .error, .critical, .fault:
-        .error // SwiftyBeaver doesn't have critical/fault levels
+      case .error:
+        .error
+      case .critical:
+        .critical
     }
   }
 
-  /// Create a SwiftyBeaver console destination with default formatting
-  /// - Returns: A configured console destination
-  public static func createConsoleDestination() -> ConsoleDestination {
-    let console=ConsoleDestination()
-    console.format="$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
-    return console
-  }
-
-  /// Create a SwiftyBeaver file destination
-  /// - Parameter path: Path to the log file
-  /// - Returns: A configured file destination
-  public static func createFileDestination(path: String) -> FileDestination {
-    let file=FileDestination()
-    file.logFileURL=URL(fileURLWithPath: path)
-    return file
+  /// Configure the logger with default settings
+  /// - Returns: True if configuration was successful
+  public static func configureDefaultLogger() -> Bool {
+    Logger.configure()
+    return true
   }
 }

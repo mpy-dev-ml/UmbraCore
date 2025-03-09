@@ -1,77 +1,69 @@
 import Foundation
-import SwiftyBeaver
+import LoggingWrapper
 import UmbraLogging
 
-/// A thread-safe logging service implementation that wraps SwiftyBeaver
+/// A thread-safe logging service implementation that wraps LoggingWrapper
 public actor LoggerImplementation: LoggingProtocol {
   /// The shared logger instance
-  public static let shared=LoggerImplementation()
-
-  /// The underlying SwiftyBeaver logger
-  private let log=SwiftyBeaver.self
+  public static let shared = LoggerImplementation()
 
   /// Initialise the logger with default configuration
   public init() {
-    let console=ConsoleDestination()
-    console.format="$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
-    log.addDestination(console)
+    // LoggingWrapper has its own internal configuration
+    Logger.configure()
   }
 
   /// Initialise the logger with specific destinations
-  /// - Parameter destinations: Array of log destinations (typically SwiftyBeaver destinations)
+  /// - Parameter destinations: Array of log destinations
   private init(destinations: [Any]) {
-    for destination in destinations {
-      if let destination=destination as? BaseDestination {
-        log.addDestination(destination)
-      }
-    }
+    // LoggingWrapper handles destinations internally
+    Logger.configure()
   }
 
   /// Swift 6-compatible factory method to create a logger with specific destinations
   /// - Parameter destinations: Array of Sendable-compliant destinations
   /// - Returns: A new LoggerImplementation instance
   public static func withDestinations(_ destinations: [some Sendable]) -> LoggerImplementation {
-    // Create a new logger instance
-    let logger=LoggerImplementation()
-
-    // For each destination, create a new destination within the actor instead of passing
-    // the existing destination directly, which would cause data races in Swift 6
-    Task {
-      for _ in destinations {
-        // Create a new console destination with standard formatting
-        // This approach avoids sending non-Sendable objects to the actor
-        let console=ConsoleDestination()
-        console.format="$DHH:mm:ss.SSS$d $C$L$c $N.$F:$l - $M"
-
-        // Add the destination within the actor's isolation domain
-        await logger.addDestination(console)
-      }
-    }
-
+    // Create a new logger instance with default configuration
+    // LoggingWrapper doesn't expose destination configuration in the same way as SwiftyBeaver
+    let logger = LoggerImplementation()
+    
+    // Configure the logger
+    Logger.configure()
+    
     return logger
-  }
-
-  /// Add a destination to the logger (actor-isolated)
-  /// - Parameter destination: The destination to add
-  public func addDestination(_ destination: BaseDestination) {
-    log.addDestination(destination)
   }
 
   /// Log a message at the specified level
   /// - Parameter entry: The log entry to record
   private func log(_ entry: LogEntry) {
-    let context=entry.metadata?.asDictionary
-    switch entry.level {
+    let logLevel = mapToLogLevel(entry.level)
+    
+    if let metadata = entry.metadata {
+      // If we have metadata, include it in the message
+      Logger.log(logLevel, "\(entry.message) | \(metadata)")
+    } else {
+      Logger.log(logLevel, entry.message)
+    }
+  }
+  
+  /// Maps UmbraLogLevel to LoggingWrapper's LogLevel
+  /// - Parameter umbraLevel: The UmbraLogLevel to map
+  /// - Returns: The corresponding LogLevel
+  private func mapToLogLevel(_ umbraLevel: UmbraLogLevel) -> LogLevel {
+    switch umbraLevel {
       case .verbose:
-        log.verbose(entry.message, file: "", function: "", line: 0, context: context)
+        return .trace
       case .debug:
-        log.debug(entry.message, file: "", function: "", line: 0, context: context)
+        return .debug
       case .info:
-        log.info(entry.message, file: "", function: "", line: 0, context: context)
+        return .info
       case .warning:
-        log.warning(entry.message, file: "", function: "", line: 0, context: context)
-      case .error, .critical, .fault:
-        log.error(entry.message, file: "", function: "", line: 0, context: context)
+        return .warning
+      case .error:
+        return .error
+      case .critical, .fault:
+        return .critical
     }
   }
 

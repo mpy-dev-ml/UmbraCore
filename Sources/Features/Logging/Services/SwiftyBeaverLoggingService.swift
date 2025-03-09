@@ -3,21 +3,20 @@ import FeaturesLoggingModels
 import FeaturesLoggingProtocols
 import Foundation
 import SecurityTypes
-import SwiftyBeaver
+import LoggingWrapper
 
-/// A logging service implementation using SwiftyBeaver
-public actor SwiftyBeaverLoggingService: LoggingProtocol {
-  private let logger=SwiftyBeaver.self
-  private var isInitialized=false
-  private var logFileDestination: FileDestination?
+/// A logging service implementation using LoggingWrapper
+public actor LoggingWrapperService: LoggingProtocol {
+  private var isInitialized = false
+  private var logFilePath: String?
 
-  /// Initialize the SwiftyBeaver logging service
+  /// Initialize the logging service
   /// - Parameter path: Path to the log file
   public func initialize(with path: String) async throws {
     guard !isInitialized else { return }
 
     // Create log directory if it doesn't exist
-    let directoryPath=(path as NSString).deletingLastPathComponent
+    let directoryPath = (path as NSString).deletingLastPathComponent
     do {
       try FileManager.default.createDirectory(
         atPath: directoryPath,
@@ -28,14 +27,12 @@ public actor SwiftyBeaverLoggingService: LoggingProtocol {
       throw LoggingError.directoryCreationFailed(path: directoryPath)
     }
 
-    // Configure file destination
-    let destination=FileDestination()
-    destination.logFileURL=URL(fileURLWithPath: path)
-
-    // Add destination to logger
-    logger.addDestination(destination)
-    logFileDestination=destination
-    isInitialized=true
+    // Configure logger (LoggingWrapper handles destinations internally)
+    Logger.configure()
+    
+    // Store the path for reference
+    logFilePath = path
+    isInitialized = true
   }
 
   public func log(_ entry: LogEntry) async throws {
@@ -47,25 +44,23 @@ public actor SwiftyBeaverLoggingService: LoggingProtocol {
       throw LoggingError.writeError(reason: "Log message cannot be empty")
     }
 
-    let message=entry.metadata?.isEmpty == false ? "\(entry.message) | \(entry.metadata!)" : entry
-      .message
+    let message = entry.metadata?.isEmpty == false ? "\(entry.message) | \(entry.metadata!)" : entry.message
 
     switch entry.level {
       case .debug:
-        logger.debug(message)
+        Logger.debug(message)
       case .info:
-        logger.info(message)
+        Logger.info(message)
       case .warning:
-        logger.warning(message)
+        Logger.warning(message)
       case .error:
-        logger.error(message)
+        Logger.error(message)
     }
   }
 
   public func stop() async {
-    guard let destination=logFileDestination else { return }
-    logger.removeDestination(destination)
-    isInitialized=false
-    logFileDestination=nil
+    // LoggingWrapper doesn't need explicit shutdown
+    isInitialized = false
+    logFilePath = nil
   }
 }

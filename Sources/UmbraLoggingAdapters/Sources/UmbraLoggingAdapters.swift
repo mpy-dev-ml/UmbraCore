@@ -2,12 +2,12 @@
 ///
 /// This module provides adapter implementations for the UmbraLogging interfaces.
 /// It contains the concrete implementations of the logging system that delegate
-/// to the underlying logging frameworks like SwiftyBeaver.
+/// to the underlying logging frameworks via the LoggingWrapper module.
 ///
 /// The adapter pattern used here helps maintain clean separation between the
 /// logging interfaces defined in UmbraLogging and their implementations.
 import Foundation
-import SwiftyBeaver
+import LoggingWrapper
 import UmbraLogging
 
 /// Facade for UmbraLoggingAdapters module

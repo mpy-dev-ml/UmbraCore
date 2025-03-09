@@ -1,17 +1,17 @@
 // ErrorLoggingExample.swift
-// Examples of using the improved error logging with SwiftyBeaver integration
+// Examples of using the improved error logging with LoggingWrapper integration
 //
-// This file demonstrates how to use the improved error severity and SwiftyBeaver
+// This file demonstrates how to use the improved error severity and LoggingWrapper
 // integration for consistent error reporting across the UmbraCore framework.
 
 import Foundation
-import SwiftyBeaver
+import LoggingWrapper
 import ErrorHandlingInterfaces
 
-/// Example demonstrating the integrated error severity and SwiftyBeaver logging
+/// Example demonstrating the integrated error severity and logging
 struct ErrorLoggingExample {
   
-  /// Configures SwiftyBeaver for different environments
+  /// Configures logging for different environments
   static func configureLogging(environment: Environment) async {
     // Get the shared logger instance
     let logger = ErrorLogger.shared
@@ -114,42 +114,42 @@ struct ErrorLoggingExample {
     await logger.logDebug("Processing file...")
   }
   
-  /// Example of how SwiftyBeaver levels map to ErrorSeverity
+  /// Example of how LoggingWrapper levels map to ErrorSeverity
   static func demonstrateSeverityMapping() {
-    // Convert SwiftyBeaver levels to ErrorSeverity
-    let errorLevel = ErrorSeverity.from(swiftyBeaverLevel: .error)
-    let warningLevel = ErrorSeverity.from(swiftyBeaverLevel: .warning)
-    let infoLevel = ErrorSeverity.from(swiftyBeaverLevel: .info)
-    let debugLevel = ErrorSeverity.from(swiftyBeaverLevel: .debug)
-    let verboseLevel = ErrorSeverity.from(swiftyBeaverLevel: .verbose)
+    // Convert LoggingWrapper levels to ErrorSeverity
+    let errorLevel = ErrorSeverity.from(loggingWrapperLevel: .error)
+    let warningLevel = ErrorSeverity.from(loggingWrapperLevel: .warning)
+    let infoLevel = ErrorSeverity.from(loggingWrapperLevel: .info)
+    let debugLevel = ErrorSeverity.from(loggingWrapperLevel: .debug)
+    let traceLevel = ErrorSeverity.from(loggingWrapperLevel: .trace)
     
-    // Convert ErrorSeverity to SwiftyBeaver levels
-    let criticalToSB = ErrorSeverity.critical.toSwiftyBeaverLevel()
-    let errorToSB = ErrorSeverity.error.toSwiftyBeaverLevel()
-    let warningToSB = ErrorSeverity.warning.toSwiftyBeaverLevel()
-    let infoToSB = ErrorSeverity.info.toSwiftyBeaverLevel()
-    let debugToSB = ErrorSeverity.debug.toSwiftyBeaverLevel()
-    let traceToSB = ErrorSeverity.trace.toSwiftyBeaverLevel()
+    // Convert ErrorSeverity to LoggingWrapper levels
+    let criticalToLW = ErrorSeverity.critical.toLoggingWrapperLevel()
+    let errorToLW = ErrorSeverity.error.toLoggingWrapperLevel()
+    let warningToLW = ErrorSeverity.warning.toLoggingWrapperLevel()
+    let infoToLW = ErrorSeverity.info.toLoggingWrapperLevel()
+    let debugToLW = ErrorSeverity.debug.toLoggingWrapperLevel()
+    let traceToLW = ErrorSeverity.trace.toLoggingWrapperLevel()
     
     // Convert ErrorSeverity to notification levels
     let criticalNotification = ErrorSeverity.critical.toNotificationLevel()
     let errorNotification = ErrorSeverity.error.toNotificationLevel()
     let warningNotification = ErrorSeverity.warning.toNotificationLevel()
     
-    print("SwiftyBeaver to ErrorSeverity mappings:")
-    print("SwiftyBeaver.error -> \(errorLevel)")
-    print("SwiftyBeaver.warning -> \(warningLevel)")
-    print("SwiftyBeaver.info -> \(infoLevel)")
-    print("SwiftyBeaver.debug -> \(debugLevel)")
-    print("SwiftyBeaver.verbose -> \(verboseLevel)")
+    print("LoggingWrapper to ErrorSeverity mappings:")
+    print("LoggingWrapper.error -> \(errorLevel)")
+    print("LoggingWrapper.warning -> \(warningLevel)")
+    print("LoggingWrapper.info -> \(infoLevel)")
+    print("LoggingWrapper.debug -> \(debugLevel)")
+    print("LoggingWrapper.trace -> \(traceLevel)")
     
-    print("\nErrorSeverity to SwiftyBeaver mappings:")
-    print("ErrorSeverity.critical -> \(criticalToSB)")
-    print("ErrorSeverity.error -> \(errorToSB)")
-    print("ErrorSeverity.warning -> \(warningToSB)")
-    print("ErrorSeverity.info -> \(infoToSB)")
-    print("ErrorSeverity.debug -> \(debugToSB)")
-    print("ErrorSeverity.trace -> \(traceToSB)")
+    print("\nErrorSeverity to LoggingWrapper mappings:")
+    print("ErrorSeverity.critical -> \(criticalToLW)")
+    print("ErrorSeverity.error -> \(errorToLW)")
+    print("ErrorSeverity.warning -> \(warningToLW)")
+    print("ErrorSeverity.info -> \(infoToLW)")
+    print("ErrorSeverity.debug -> \(debugToLW)")
+    print("ErrorSeverity.trace -> \(traceToLW)")
     
     print("\nErrorSeverity to notification level mappings:")
     print("ErrorSeverity.critical -> \(criticalNotification)")
