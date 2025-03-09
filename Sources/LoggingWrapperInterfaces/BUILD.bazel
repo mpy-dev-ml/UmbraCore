@@ -1,0 +1,8 @@
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+umbra_swift_library(
+    name = "LoggingWrapperInterfaces",
+    srcs = glob(["*.swift"]),
+    # Keep library evolution enabled for this interfaces module
+    enable_library_evolution = True,
+)

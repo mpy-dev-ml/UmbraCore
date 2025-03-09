@@ -1,0 +1,12 @@
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+umbra_swift_library(
+    name = "LoggingWrapper",
+    srcs = glob(["*.swift"]),
+    # Explicitly disable library evolution for this module
+    enable_library_evolution = False,
+    deps = [
+        "//Sources/LoggingWrapperInterfaces:LoggingWrapperInterfaces",
+        "@swiftpkg_swiftybeaver//:SwiftyBeaver",
+    ],
+)

@@ -1,7 +1,44 @@
 import Foundation
-@preconcurrency import SwiftyBeaver
+import LoggingWrapperInterfaces
 
 /// Error severity levels for classification and logging
+///
+/// This enum provides a standardised way to categorise errors by severity throughout 
+/// the UmbraCore framework. It establishes a clear hierarchy of error importance,
+/// with critical errors being the most severe and trace being the least severe.
+///
+/// ErrorSeverity is designed to work seamlessly with the logging system through
+/// the LoggingWrapperInterfaces module, allowing for consistent error handling
+/// and logging across the entire codebase.
+///
+/// ## Integration with Logging System
+///
+/// ErrorSeverity directly maps to the LogLevel enum from LoggingWrapperInterfaces,
+/// providing a unified approach to error severity and log levels:
+///
+/// - `.critical` → LogLevel.critical
+/// - `.error` → LogLevel.error
+/// - `.warning` → LogLevel.warning
+/// - `.info` → LogLevel.info
+/// - `.debug` → LogLevel.debug
+/// - `.trace` → LogLevel.trace
+///
+/// ## Usage Example
+///
+/// ```swift
+/// func processResult(_ result: Result<Data, Error>) {
+///     switch result {
+///     case .success(let data):
+///         // Process data
+///     case .failure(let error):
+///         if let appError = error as? AppError {
+///             appError.severity.log("Error occurred: \(appError.localizedDescription)")
+///         } else {
+///             ErrorSeverity.error.log("Unknown error: \(error.localizedDescription)")
+///         }
+///     }
+/// }
+/// ```
 public enum ErrorSeverity: String, Comparable, Sendable {
   /// Critical error that requires immediate attention
   case critical = "Critical"
@@ -59,28 +96,12 @@ public enum ErrorSeverity: String, Comparable, Sendable {
     }
   }
   
-  /// Converts the error severity to a SwiftyBeaver log level
-  /// - Returns: The corresponding SwiftyBeaver log level
-  public func toSwiftyBeaverLevel() -> SwiftyBeaver.Level {
+  /// Converts to LogLevel for logging purposes
+  /// - Returns: The corresponding LogLevel
+  public func toLogLevel() -> LogLevel {
     switch self {
-    case .critical, .error:
-      return .error
-    case .warning:
-      return .warning
-    case .info:
-      return .info
-    case .debug:
-      return .debug
-    case .trace:
-      return .verbose
-    }
-  }
-  
-  /// Converts a SwiftyBeaver log level to an ErrorSeverity
-  /// - Parameter level: The SwiftyBeaver log level
-  /// - Returns: The corresponding ErrorSeverity
-  public static func from(swiftyBeaverLevel level: SwiftyBeaver.Level) -> ErrorSeverity {
-    switch level {
+    case .critical:
+      return .critical
     case .error:
       return .error
     case .warning:
@@ -89,7 +110,27 @@ public enum ErrorSeverity: String, Comparable, Sendable {
       return .info
     case .debug:
       return .debug
-    case .verbose:
+    case .trace:
+      return .trace
+    }
+  }
+  
+  /// Creates an ErrorSeverity from a LogLevel
+  /// - Parameter logLevel: The log level to convert
+  /// - Returns: The corresponding ErrorSeverity
+  public static func from(logLevel: LogLevel) -> ErrorSeverity {
+    switch logLevel {
+    case .critical:
+      return .critical
+    case .error:
+      return .error
+    case .warning:
+      return .warning
+    case .info:
+      return .info
+    case .debug:
+      return .debug
+    case .trace:
       return .trace
     }
   }
