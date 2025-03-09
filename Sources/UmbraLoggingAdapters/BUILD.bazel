@@ -10,6 +10,8 @@ umbra_swift_library(
     swift_mode = "default",
     enable_library_evolution = False,  # Disable library evolution for SwiftyBeaver compatibility
     deps = [
+        "//Sources/LoggingWrapper:LoggingWrapper",
+        "//Sources/LoggingWrapperInterfaces:LoggingWrapperInterfaces",
         "//Sources/UmbraLogging",
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
     ],
