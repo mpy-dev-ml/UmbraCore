@@ -51,6 +51,20 @@ public enum SecurityErrorMapper {
           )
         case let .internalError(reason):
           return .internalError(reason: reason)
+        case let .invalidInput(details):
+          return .internalError(reason: "Invalid input: \(details)")
+        case let .encryptionFailed(reason):
+          return .internalError(reason: "Encryption failed: \(reason)")
+        case let .decryptionFailed(reason):
+          return .internalError(reason: "Decryption failed: \(reason)")
+        case let .randomGenerationFailed(reason):
+          return .internalError(reason: "Random generation failed: \(reason)")
+        case let .storageOperationFailed(reason):
+          return .internalError(reason: "Storage operation failed: \(reason)")
+        case let .serviceError(details):
+          return .internalError(reason: "Service error: \(details)")
+        case let .notImplemented(feature):
+          return .internalError(reason: "Not implemented: \(feature)")
         @unknown default:
           return .internalError(reason: "Unknown protocol error")
       }
@@ -193,6 +207,20 @@ public enum SecurityErrorMapper {
           return .internalError("Invalid state: current '\(state)', expected '\(expectedState)'")
         case let .internalError(reason):
           return .internalError(reason)
+        case let .invalidInput(details):
+          return .internalError("Invalid input: \(details)")
+        case let .encryptionFailed(reason):
+          return .internalError("Encryption failed: \(reason)")
+        case let .decryptionFailed(reason):
+          return .internalError("Decryption failed: \(reason)")
+        case let .randomGenerationFailed(reason):
+          return .internalError("Random generation failed: \(reason)")
+        case let .storageOperationFailed(reason):
+          return .internalError("Storage operation failed: \(reason)")
+        case let .serviceError(details):
+          return .internalError("Service error: \(details)")
+        case let .notImplemented(feature):
+          return .internalError("Not implemented: \(feature)")
         @unknown default:
           return .internalError("Unknown protocol error")
       }
