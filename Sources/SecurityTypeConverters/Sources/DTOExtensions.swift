@@ -84,6 +84,6 @@ extension SecurityResultDTO {
     }
 
     // Default error case if transformation fails
-    return .failure(CoreErrors.SecurityError.invalidInput(reason: "Invalid data format"))
+    return .failure(CoreErrors.SecurityError.internalError(reason: "Invalid data format"))
   }
 }

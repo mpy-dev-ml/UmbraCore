@@ -62,7 +62,7 @@ extension XPCServiceProtocolBaseFoundation {
     } catch {
       return .failure(
         XPCSecurityError
-          .internalError("Crypto operation failed: \(error.localizedDescription)")
+          .internalError(reason: "Crypto operation failed: \(error.localizedDescription)")
       )
     }
   }

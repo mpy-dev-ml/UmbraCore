@@ -22,17 +22,17 @@ public final class AnyCryptoService: CryptoServiceProtocol {
   private let _generateKey: @Sendable () async -> Result<SecureBytes, SecurityError>
   private let _generateRandomData: @Sendable (Int) async -> Result<SecureBytes, SecurityError>
 
-  // New required methods
-  private let _verify: @Sendable (SecureBytes, SecureBytes) async -> Bool
+  // New required methods with corrected return types
+  private let _verify: @Sendable (SecureBytes, SecureBytes) async -> Result<Bool, SecurityError>
   private let _encryptSymmetric: @Sendable (SecureBytes, SecureBytes, SecurityConfigDTO) async
-    -> SecurityResultDTO
+    -> Result<SecureBytes, SecurityError>
   private let _decryptSymmetric: @Sendable (SecureBytes, SecureBytes, SecurityConfigDTO) async
-    -> SecurityResultDTO
+    -> Result<SecureBytes, SecurityError>
   private let _encryptAsymmetric: @Sendable (SecureBytes, SecureBytes, SecurityConfigDTO) async
-    -> SecurityResultDTO
+    -> Result<SecureBytes, SecurityError>
   private let _decryptAsymmetric: @Sendable (SecureBytes, SecureBytes, SecurityConfigDTO) async
-    -> SecurityResultDTO
-  private let _hashWithConfig: @Sendable (SecureBytes, SecurityConfigDTO) async -> SecurityResultDTO
+    -> Result<SecureBytes, SecurityError>
+  private let _hashWithConfig: @Sendable (SecureBytes, SecurityConfigDTO) async -> Result<SecureBytes, SecurityError>
 
   // MARK: - Initialization
 
@@ -46,7 +46,7 @@ public final class AnyCryptoService: CryptoServiceProtocol {
     _generateKey={ @Sendable [service] in await service.generateKey() }
     _generateRandomData={ @Sendable [service] in await service.generateRandomData(length: $0) }
 
-    // New property initializations
+    // New property initializations with correct return types
     _verify={ @Sendable [service] in await service.verify(data: $0, against: $1) }
     _encryptSymmetric={ @Sendable [service] in
       await service.encryptSymmetric(data: $0, key: $1, config: $2)
@@ -91,9 +91,9 @@ public final class AnyCryptoService: CryptoServiceProtocol {
     await _generateRandomData(length)
   }
 
-  // New method implementations
+  // New method implementations with correct return types
 
-  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
+  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, SecurityError> {
     await _verify(data, hash)
   }
 
@@ -101,7 +101,7 @@ public final class AnyCryptoService: CryptoServiceProtocol {
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     await _encryptSymmetric(data, key, config)
   }
 
@@ -109,7 +109,7 @@ public final class AnyCryptoService: CryptoServiceProtocol {
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     await _decryptSymmetric(data, key, config)
   }
 
@@ -117,7 +117,7 @@ public final class AnyCryptoService: CryptoServiceProtocol {
     data: SecureBytes,
     publicKey: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     await _encryptAsymmetric(data, publicKey, config)
   }
 
@@ -125,14 +125,14 @@ public final class AnyCryptoService: CryptoServiceProtocol {
     data: SecureBytes,
     privateKey: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     await _decryptAsymmetric(data, privateKey, config)
   }
 
   public func hash(
     data: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     await _hashWithConfig(data, config)
   }
 }

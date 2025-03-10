@@ -42,7 +42,7 @@ public func mapExternalToCoreError(_ error: Error) -> UmbraErrors.Security.Core 
   }
 
   // Otherwise map to an appropriate security error
-  return UmbraErrors.Security.Core.internalError("Mapped from \(String(describing: error))")
+  return UmbraErrors.Security.Core.internalError(reason: "Mapped from \(String(describing: error))")
 }
 
 /// Maps from CoreErrors.SecurityError to an appropriate external error type
@@ -95,9 +95,9 @@ public func externalErrorToCoreError(_ error: Error) -> CoreErrors.SecurityError
 
   // Map based on error type
   if let externalError=error as? ExternalError {
-    return CoreErrors.SecurityError.internalError(externalError.reason)
+    return CoreErrors.SecurityError.internalError(reason: externalError.reason)
   }
 
   // Default fallback
-  return CoreErrors.SecurityError.internalError(error.localizedDescription)
+  return CoreErrors.SecurityError.internalError(reason: error.localizedDescription)
 }

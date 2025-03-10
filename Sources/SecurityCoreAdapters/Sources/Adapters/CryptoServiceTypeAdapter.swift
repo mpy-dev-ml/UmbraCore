@@ -71,7 +71,7 @@ public struct CryptoServiceTypeAdapter<
     return result.map { transformations.transformOutputKey?($0) ?? $0 }
   }
 
-  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
+  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, SecurityError> {
     let transformedData=transformations.transformInputData?(data) ?? data
     let transformedHash=transformations.transformInputData?(hash) ?? hash
 
@@ -90,7 +90,7 @@ public struct CryptoServiceTypeAdapter<
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     let transformedData=transformations.transformInputData?(data) ?? data
     let transformedKey=transformations.transformInputKey?(key) ?? key
 
@@ -105,7 +105,7 @@ public struct CryptoServiceTypeAdapter<
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     let transformedData=transformations.transformInputData?(data) ?? data
     let transformedKey=transformations.transformInputKey?(key) ?? key
 
@@ -120,7 +120,7 @@ public struct CryptoServiceTypeAdapter<
     data: SecureBytes,
     publicKey: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     let transformedData=transformations.transformInputData?(data) ?? data
     let transformedKey=transformations.transformInputKey?(publicKey) ?? publicKey
 
@@ -135,7 +135,7 @@ public struct CryptoServiceTypeAdapter<
     data: SecureBytes,
     privateKey: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     let transformedData=transformations.transformInputData?(data) ?? data
     let transformedKey=transformations.transformInputKey?(privateKey) ?? privateKey
 
@@ -149,7 +149,7 @@ public struct CryptoServiceTypeAdapter<
   public func hash(
     data: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
+  ) async -> Result<SecureBytes, SecurityError> {
     let transformedData=transformations.transformInputData?(data) ?? data
 
     return await adaptee.hash(
