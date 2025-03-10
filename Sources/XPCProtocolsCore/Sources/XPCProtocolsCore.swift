@@ -21,6 +21,7 @@ import CoreErrors
 @_exported import ErrorHandling
 import Foundation
 import UmbraCoreTypes
+import ErrorHandlingDomains
 @_exported import struct UmbraCoreTypes.SecureBytes
 
 /// Provides access to the XPC protocol factory methods and module-level information

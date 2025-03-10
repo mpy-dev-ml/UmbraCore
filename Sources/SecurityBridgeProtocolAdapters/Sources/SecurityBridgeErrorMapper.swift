@@ -3,6 +3,7 @@ import SecurityInterfacesProtocols
 import SecurityProtocolsCore
 import SecurityTypeConverters
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Error type specific to the security bridge layer
 public enum SecurityBridgeError: Error {

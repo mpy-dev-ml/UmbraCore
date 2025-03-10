@@ -1,6 +1,7 @@
 import Core
 import Foundation
 import XCTest
+import ErrorHandlingDomains
 
 final class SecurityTests: XCTestCase {
   func testServiceInitialization() async throws {

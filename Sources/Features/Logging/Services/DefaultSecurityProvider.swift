@@ -1,6 +1,7 @@
 import Foundation
 import UmbraCoreTypes
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Default implementation of SecurityProvider for production use
 @available(macOS 14.0, *)

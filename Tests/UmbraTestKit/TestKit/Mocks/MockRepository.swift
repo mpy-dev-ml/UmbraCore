@@ -3,6 +3,7 @@ import RepositoriesTypes
 import SecurityInterfaces
 import SecurityTypes
 import SecurityTypesProtocols
+import ErrorHandlingDomains
 
 /// A mock repository implementation for testing that handles sandbox security
 public actor MockRepository: RepositoryCore & RepositoryLocking & RepositoryMaintenance {

@@ -1,6 +1,7 @@
 import Foundation
 import SecurityInterfaces
 import SecurityTypesProtocols
+import ErrorHandlingDomains
 
 /// Mock implementation of security provider for testing
 public actor MockSecurityProvider: SecurityInterfaces.SecurityProvider {

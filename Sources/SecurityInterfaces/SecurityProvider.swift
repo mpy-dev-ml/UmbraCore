@@ -6,6 +6,7 @@ import SecurityBridge
 import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import ErrorHandlingDomains
 
 /// Protocol defining security-related operations for managing secure resource access
 public protocol SecurityProvider: SecurityProviderBase {

@@ -1,6 +1,7 @@
 import Core
 import SecurityInterfaces
 import XCTest
+import ErrorHandlingDomains
 
 /// Error statistics for reporting
 public struct ErrorStats {

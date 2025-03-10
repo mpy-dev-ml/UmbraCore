@@ -1,5 +1,6 @@
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import ErrorHandlingDomains
 
 /// Type adapter that converts between different crypto service implementations
 /// This allows us to adapt between different implementations of crypto services

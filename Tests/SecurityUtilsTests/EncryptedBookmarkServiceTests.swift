@@ -4,6 +4,7 @@
 @testable import UmbraMocks
 @testable import UmbraSecurityUtils
 import XCTest
+import ErrorHandlingDomains
 
 final class EncryptedBookmarkServiceTests: XCTestCase {
   var cryptoService: CryptoServiceProtocol!

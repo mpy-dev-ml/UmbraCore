@@ -1,5 +1,6 @@
 import Foundation
 import OSLog
+import ErrorHandlingDomains
 
 /// Example class demonstrating best practices for error handling with the new system
 public class ErrorHandlingExamples {

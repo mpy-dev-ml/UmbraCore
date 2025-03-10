@@ -3,6 +3,7 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 @testable import UmbraSecurityCore
 import XCTest
+import ErrorHandlingDomains
 
 final class CryptoServiceAdaptersTests: XCTestCase {
 

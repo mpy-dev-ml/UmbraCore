@@ -1,4 +1,5 @@
 import Foundation
+import ErrorHandlingDomains
 
 /// Errors that can occur during security operations
 public enum SecurityError: LocalizedError {

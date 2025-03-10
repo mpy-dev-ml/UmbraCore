@@ -2,6 +2,7 @@ import Core
 import SecurityTypes
 import SecurityTypesProtocols
 import XCTest
+import ErrorHandlingDomains
 
 /// Error statistics for reporting
 public struct ErrorStats {

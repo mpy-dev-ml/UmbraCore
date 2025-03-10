@@ -2,6 +2,7 @@
 import Foundation
 import UmbraCoreTypes
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Manages secure storage and retrieval of credentials
 public actor CredentialManager {

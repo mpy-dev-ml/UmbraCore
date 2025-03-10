@@ -8,6 +8,7 @@ import SecurityTypesProtocols
 import UmbraCoreTypes
 import UmbraLogging
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 // Type alias to disambiguate SecurityError types
 typealias SPCSecurityError=UmbraErrors.Security.Protocols

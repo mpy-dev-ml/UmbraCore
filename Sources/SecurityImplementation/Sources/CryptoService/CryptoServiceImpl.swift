@@ -1,6 +1,7 @@
 import CryptoSwiftFoundationIndependent
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import ErrorHandlingDomains
 
 /// Implementation of the CryptoServiceProtocol using CryptoSwiftFoundationIndependent
 public final class CryptoServiceImpl: CryptoServiceProtocol {

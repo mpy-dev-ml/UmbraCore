@@ -5,6 +5,7 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Test suite for the SecurityProvider implementation
 class SecurityProviderTests: XCTestCase {

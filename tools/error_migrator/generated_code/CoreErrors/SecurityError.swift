@@ -1,4 +1,5 @@
 import Foundation
+import ErrorHandlingDomains
 
 /// SecurityError error type
 public enum SecurityError: Error {

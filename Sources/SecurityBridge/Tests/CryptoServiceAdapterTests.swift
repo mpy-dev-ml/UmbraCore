@@ -3,6 +3,7 @@ import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
+import ErrorHandlingDomains
 
 // MARK: - Result Extension
 

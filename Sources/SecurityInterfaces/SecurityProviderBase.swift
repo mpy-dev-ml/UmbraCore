@@ -1,5 +1,6 @@
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import ErrorHandlingDomains
 
 /// Base protocol defining core security operations that don't require Foundation
 /// @Warning: This protocol is maintained for backward compatibility only.

@@ -1,5 +1,6 @@
 import ErrorHandlingInterfaces
 import Foundation
+import ErrorHandlingDomains
 
 /// Domain-specific error type for security operations
 public enum SecurityError: Error, UmbraError, CustomStringConvertible {

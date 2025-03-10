@@ -1,4 +1,5 @@
 import Foundation
+import ErrorHandlingDomains
 
 /// Represents errors that can occur during security-related operations.
 ///

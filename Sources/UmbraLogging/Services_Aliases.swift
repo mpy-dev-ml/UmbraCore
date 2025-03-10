@@ -1,4 +1,5 @@
 import CoreErrors
+import ErrorHandlingDomains
 
 /// Type alias for backward compatibility
 public typealias KeyManagerError=CoreErrors.KeyManagerError

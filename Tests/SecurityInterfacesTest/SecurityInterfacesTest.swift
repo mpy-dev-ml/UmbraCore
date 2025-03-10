@@ -1,4 +1,5 @@
 import Foundation
+import ErrorHandlingDomains
 @testable import SecurityInterfaces
 
 // This module exists to provide @testable access to SecurityInterfaces

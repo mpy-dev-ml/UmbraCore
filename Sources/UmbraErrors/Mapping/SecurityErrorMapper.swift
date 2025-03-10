@@ -1,5 +1,6 @@
 import CoreErrors
 import Foundation
+import ErrorHandlingDomains
 
 /// Mapper from the enhanced SecurityError to CoreErrors.SecurityError
 public struct EnhancedToCoreSecurityErrorMapper: ErrorMapper {

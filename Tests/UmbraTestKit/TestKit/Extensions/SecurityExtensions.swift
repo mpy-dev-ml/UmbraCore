@@ -1,6 +1,7 @@
 import Foundation
 import SecurityInterfaces
 import SecurityTypes
+import ErrorHandlingDomains
 
 // Define a protocol for URL-based security access
 public protocol URLSecurityProvider {

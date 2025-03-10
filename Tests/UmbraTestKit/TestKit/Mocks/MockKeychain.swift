@@ -2,6 +2,7 @@ import Foundation
 import SecurityInterfaces
 import SecurityTypes
 import SecurityTypesProtocols
+import ErrorHandlingDomains
 
 /// Mock implementation of the secure storage provider
 public actor MockKeychain: SecureStorageProvider {

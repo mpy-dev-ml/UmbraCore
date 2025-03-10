@@ -4,6 +4,7 @@ import SecurityInterfaces
 import SecurityTypes
 import UmbraCoreTypes
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Extension to URL for security-scoped bookmark operations
 extension URL {

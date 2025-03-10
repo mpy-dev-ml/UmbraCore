@@ -1,6 +1,7 @@
 import SecurityInterfacesBase
 import UmbraCoreTypes /// Errors that can occur during security operations
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 public enum SecurityInterfacesError: Error, Sendable {
   /// Bookmark creation failed

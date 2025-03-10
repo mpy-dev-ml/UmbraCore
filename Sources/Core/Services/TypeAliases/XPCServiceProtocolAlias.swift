@@ -1,6 +1,7 @@
 import CoreErrors
 import UmbraCoreTypes
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Alias to the modern XPC service protocol from XPCProtocolsCore
 public typealias XPCServiceProtocol=XPCProtocolsCore.ServiceProtocolStandard

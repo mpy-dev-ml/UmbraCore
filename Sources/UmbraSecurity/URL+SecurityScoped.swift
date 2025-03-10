@@ -6,6 +6,7 @@ import SecurityTypes
 import SecurityTypesProtocols
 import UmbraCoreTypes
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Extension to URL that provides functionality for working with security-scoped bookmarks.
 /// Security-scoped bookmarks allow an app to maintain access to user-selected files and directories

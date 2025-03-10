@@ -2,6 +2,7 @@ import CoreErrors
 import SecurityInterfacesProtocols
 import UmbraCoreTypes
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Base errors that can occur during security operations
 /// This is a Foundation-free version of SecurityError

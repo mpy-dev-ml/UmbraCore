@@ -2,6 +2,7 @@ import SecurityTypes
 @testable import UmbraCore
 import UmbraTestKit
 import XCTest
+import ErrorHandlingDomains
 
 actor CoreService {
   private let securityProvider: SecurityProvider

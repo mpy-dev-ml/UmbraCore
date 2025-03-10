@@ -4,6 +4,7 @@ import SecurityInterfaces
 import UmbraCoreTypes
 import UmbraSecurity
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Protocol for URL-based operations
 public protocol URLProvider: Sendable {
