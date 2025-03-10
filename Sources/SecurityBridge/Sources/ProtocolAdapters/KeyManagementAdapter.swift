@@ -7,6 +7,13 @@ import UmbraCoreTypes
 // Type alias to disambiguate SecurityError types
 typealias SPCSecurityError=UmbraErrors.Security.Protocols
 
+// Key Management Error enum for internal error handling
+private enum KMError: Error {
+    case keyNotFound
+    case keyStorageFailed(reason: String)
+    case keyRotationFailed(reason: String)
+}
+
 /// KeyManagementAdapter provides a bridge between Foundation-based key management implementations
 /// and the Foundation-free KeyManagementProtocol.
 ///
@@ -32,10 +39,11 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
   -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     let result=await implementation.retrieveKey(withIdentifier: identifier)
 
-    if let keyData=result.data {
-      return .success(DataAdapter.secureBytes(from: keyData))
-    } else {
-      return .failure(mapError(KMError.keyNotFound))
+    switch result {
+      case let .success(keyData):
+        return .success(DataAdapter.secureBytes(from: keyData))
+      case .failure:
+        return .failure(mapError(KMError.keyNotFound))
     }
   }
 
@@ -46,12 +54,13 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     let keyData=DataAdapter.data(from: key)
     let result=await implementation.storeKey(keyData, withIdentifier: identifier)
 
-    if result.success {
-      return .success(())
-    } else {
-      let message=result.errorMessage ?? "Unknown key storage error"
-      let error=KMError.keyStorageFailed(reason: message)
-      return .failure(mapError(error))
+    switch result {
+      case .success:
+        return .success(())
+      case let .failure(error):
+        let message = error.localizedDescription
+        let kmError = KMError.keyStorageFailed(reason: message)
+        return .failure(mapError(kmError))
     }
   }
 

@@ -45,37 +45,37 @@ final class CryptoServiceAdaptersTests: XCTestCase {
     )
 
     // Results for mocking
-    let mockEncryptResult: Result<SecureBytes, SecurityError>
-    let mockDecryptResult: Result<SecureBytes, SecurityError>
-    let mockHashResult: Result<SecureBytes, SecurityError>
-    let mockGenerateKeyResult: Result<SecureBytes, SecurityError>
+    let mockEncryptResult: Result<SecureBytes, UmbraErrors.Security.Protocols>
+    let mockDecryptResult: Result<SecureBytes, UmbraErrors.Security.Protocols>
+    let mockHashResult: Result<SecureBytes, UmbraErrors.Security.Protocols>
+    let mockGenerateKeyResult: Result<SecureBytes, UmbraErrors.Security.Protocols>
     let mockVerifyResult: Bool
-    let mockGenerateRandomDataResult: Result<SecureBytes, SecurityError>
+    let mockGenerateRandomDataResult: Result<SecureBytes, UmbraErrors.Security.Protocols>
     let mockSecurityResult: SecurityResultDTO
 
     init(
-      mockEncryptResult: Result<SecureBytes, SecurityError> = .success(SecureBytes(bytes: [
+      mockEncryptResult: Result<SecureBytes, UmbraErrors.Security.Protocols> = .success(SecureBytes(bytes: [
         0x01,
         0x02,
         0x03
       ])),
-      mockDecryptResult: Result<SecureBytes, SecurityError> = .success(SecureBytes(bytes: [
+      mockDecryptResult: Result<SecureBytes, UmbraErrors.Security.Protocols> = .success(SecureBytes(bytes: [
         0x04,
         0x05,
         0x06
       ])),
-      mockHashResult: Result<SecureBytes, SecurityError> = .success(SecureBytes(bytes: [
+      mockHashResult: Result<SecureBytes, UmbraErrors.Security.Protocols> = .success(SecureBytes(bytes: [
         0x07,
         0x08,
         0x09
       ])),
-      mockGenerateKeyResult: Result<SecureBytes, SecurityError> = .success(SecureBytes(bytes: [
+      mockGenerateKeyResult: Result<SecureBytes, UmbraErrors.Security.Protocols> = .success(SecureBytes(bytes: [
         0x0A,
         0x0B,
         0x0C
       ])),
       mockVerifyResult: Bool=true,
-      mockGenerateRandomDataResult: Result<SecureBytes, SecurityError> =
+      mockGenerateRandomDataResult: Result<SecureBytes, UmbraErrors.Security.Protocols> =
         .success(SecureBytes(bytes: [
           0x10,
           0x11,
@@ -147,7 +147,7 @@ final class CryptoServiceAdaptersTests: XCTestCase {
     func encrypt(
       data _: SecureBytes,
       using _: SecureBytes
-    ) async -> Result<SecureBytes, SecurityError> {
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { encryptCalled=true }
       return mockEncryptResult
     }
@@ -155,27 +155,27 @@ final class CryptoServiceAdaptersTests: XCTestCase {
     func decrypt(
       data _: SecureBytes,
       using _: SecureBytes
-    ) async -> Result<SecureBytes, SecurityError> {
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { decryptCalled=true }
       return mockDecryptResult
     }
 
-    func hash(data _: SecureBytes) async -> Result<SecureBytes, SecurityError> {
+    func hash(data _: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { hashCalled=true }
       return mockHashResult
     }
 
-    func generateKey() async -> Result<SecureBytes, SecurityError> {
+    func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { generateKeyCalled=true }
       return mockGenerateKeyResult
     }
 
-    func verify(data _: SecureBytes, against _: SecureBytes) async -> Bool {
+    func verify(data _: SecureBytes, against _: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
       stateQueue.sync { verifyCalled=true }
-      return mockVerifyResult
+      return .success(mockVerifyResult)
     }
 
-    func generateRandomData(length _: Int) async -> Result<SecureBytes, SecurityError> {
+    func generateRandomData(length _: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { generateRandomDataCalled=true }
       return mockGenerateRandomDataResult
     }
@@ -184,44 +184,44 @@ final class CryptoServiceAdaptersTests: XCTestCase {
       data _: SecureBytes,
       key _: SecureBytes,
       config _: SecurityConfigDTO
-    ) async -> SecurityResultDTO {
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { encryptSymmetricCalled=true }
-      return mockSecurityResult
+      return .success(mockSecurityResult.data ?? SecureBytes(bytes: []))
     }
 
     func decryptSymmetric(
       data _: SecureBytes,
       key _: SecureBytes,
       config _: SecurityConfigDTO
-    ) async -> SecurityResultDTO {
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { decryptSymmetricCalled=true }
-      return mockSecurityResult
+      return .success(mockSecurityResult.data ?? SecureBytes(bytes: []))
     }
 
     func encryptAsymmetric(
       data _: SecureBytes,
       publicKey _: SecureBytes,
       config _: SecurityConfigDTO
-    ) async -> SecurityResultDTO {
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { encryptAsymmetricCalled=true }
-      return mockSecurityResult
+      return .success(mockSecurityResult.data ?? SecureBytes(bytes: []))
     }
 
     func decryptAsymmetric(
       data _: SecureBytes,
       privateKey _: SecureBytes,
       config _: SecurityConfigDTO
-    ) async -> SecurityResultDTO {
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { decryptAsymmetricCalled=true }
-      return mockSecurityResult
+      return .success(mockSecurityResult.data ?? SecureBytes(bytes: []))
     }
 
     func hash(
       data _: SecureBytes,
       config _: SecurityConfigDTO
-    ) async -> SecurityResultDTO {
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
       stateQueue.sync { hashWithConfigCalled=true }
-      return mockSecurityResult
+      return .success(mockSecurityResult.data ?? SecureBytes(bytes: []))
     }
   }
 
