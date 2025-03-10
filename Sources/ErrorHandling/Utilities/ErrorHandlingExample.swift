@@ -46,7 +46,7 @@ public class ErrorHandlingExample {
     /// Provides recovery options for security errors
     public func recoveryOptions(for error: some Error) -> ErrorHandlingInterfaces.RecoveryOptions? {
       // Map to security error if possible
-      if let securityError = error as? SecurityCoreErrorWrapper {
+      if let securityError=error as? SecurityCoreErrorWrapper {
         // Provide different recovery options based on error type
         switch securityError.wrappedError {
           case .authenticationFailed, .authorizationFailed:
@@ -56,14 +56,14 @@ public class ErrorHandlingExample {
               actions: [
                 ErrorHandlingInterfaces.RecoveryAction(
                   title: "Retry Authentication",
-                  handler: { 
+                  handler: {
                     print("Retrying authentication...")
                     return true
                   }
                 ),
                 ErrorHandlingInterfaces.RecoveryAction(
                   title: "Use Alternative Method",
-                  handler: { 
+                  handler: {
                     print("Using alternative authentication method...")
                     return true
                   }
@@ -77,7 +77,7 @@ public class ErrorHandlingExample {
               actions: [
                 ErrorHandlingInterfaces.RecoveryAction(
                   title: "Try Again",
-                  handler: { 
+                  handler: {
                     print("Retrying cryptographic operation...")
                     return true
                   }
@@ -91,14 +91,14 @@ public class ErrorHandlingExample {
               actions: [
                 ErrorHandlingInterfaces.RecoveryAction(
                   title: "Retry Operation",
-                  handler: { 
+                  handler: {
                     print("Retrying operation...")
                     return true
                   }
                 ),
                 ErrorHandlingInterfaces.RecoveryAction(
                   title: "Cancel",
-                  handler: { 
+                  handler: {
                     print("Operation cancelled by user")
                     return true
                   }
@@ -107,7 +107,7 @@ public class ErrorHandlingExample {
             )
         }
       }
-      
+
       // Default recovery options
       return ErrorHandlingInterfaces.RecoveryOptions(
         title: "Error",
@@ -115,7 +115,7 @@ public class ErrorHandlingExample {
         actions: [
           ErrorHandlingInterfaces.RecoveryAction(
             title: "OK",
-            handler: { 
+            handler: {
               print("User acknowledged error")
               return true
             }
@@ -166,7 +166,7 @@ public class ErrorHandlingExample {
     let securityMapper=SecurityErrorMapper()
 
     // Map external error to core error
-    if let mappedError = securityMapper.mapToCoreError(externalError) {
+    if let mappedError=securityMapper.mapToCoreError(externalError) {
       print("Successfully mapped to security error: \(mappedError)")
     } else {
       // Handle unmapped errors with an application error

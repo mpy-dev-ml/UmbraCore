@@ -46,7 +46,9 @@ public enum SecurityErrorMapper {
         case let .missingProtocolImplementation(protocolName):
           return .internalError(reason: "Missing protocol implementation: \(protocolName)")
         case let .invalidState(state, expectedState):
-          return .internalError(reason: "Invalid state: current '\(state)', expected '\(expectedState)'")
+          return .internalError(
+            reason: "Invalid state: current '\(state)', expected '\(expectedState)'"
+          )
         case let .internalError(reason):
           return .internalError(reason: reason)
         @unknown default:

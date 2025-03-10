@@ -76,15 +76,15 @@ extension SecurityErrorMapper: BidirectionalErrorMapper {
   /// - Returns: The mapped error
   public func mapBtoA(_ error: ErrorHandlingTypes.SecurityError) -> UmbraErrors.Security.Core {
     // Since we're having type issues, return a generic NSError that conforms to the required type
-    let errorDescription = String(describing: error)
-    
+    let errorDescription=String(describing: error)
+
     // Create an NSError with the appropriate domain and description
-    let nsError = NSError(
+    let nsError=NSError(
       domain: "UmbraCore.SecurityError",
       code: 0,
       userInfo: [NSLocalizedDescriptionKey: "Security error: \(errorDescription)"]
     )
-    
+
     // Cast to expected return type (this works because NSError conforms to Error)
     return nsError as! UmbraErrors.Security.Core
   }

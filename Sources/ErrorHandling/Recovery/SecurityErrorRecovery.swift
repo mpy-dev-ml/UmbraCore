@@ -34,12 +34,12 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
   /// Implement RecoveryOptionsProvider protocol
   public func recoveryOptions(for error: Error) -> RecoveryOptions? {
     // Try to map to our SecurityCoreErrorWrapper type
-    if let securityError = error as? SecurityCoreErrorWrapper {
+    if let securityError=error as? SecurityCoreErrorWrapper {
       // Return recovery options based on the security error type
       return createRecoveryOptions(for: securityError)
-    } else if let securityCoreError = error as? UmbraErrors.Security.Core {
+    } else if let securityCoreError=error as? UmbraErrors.Security.Core {
       // Wrap the core error and process it
-      let wrapper = SecurityCoreErrorWrapper(securityCoreError)
+      let wrapper=SecurityCoreErrorWrapper(securityCoreError)
       return createRecoveryOptions(for: wrapper)
     } else {
       // Not a security error, or couldn't be mapped
@@ -55,7 +55,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
     var actions: [RecoveryAction]=[]
 
     switch error.wrappedError {
-      case .authenticationFailed(_):
+      case .authenticationFailed:
         actions.append(
           RecoveryAction(
             id: "retry-auth",
@@ -66,7 +66,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
           )
         )
 
-      case .encryptionFailed(_):
+      case .encryptionFailed:
         actions.append(
           RecoveryAction(
             id: "retry-encryption",
@@ -77,7 +77,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
           )
         )
 
-      case .decryptionFailed(_):
+      case .decryptionFailed:
         actions.append(
           RecoveryAction(
             id: "retry-decryption",
@@ -88,7 +88,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
           )
         )
 
-      case .hashingFailed(_):
+      case .hashingFailed:
         actions.append(
           RecoveryAction(
             id: "retry-hash",
@@ -99,7 +99,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
           )
         )
 
-      case .signatureInvalid(_):
+      case .signatureInvalid:
         actions.append(
           RecoveryAction(
             id: "retry-signature",
@@ -110,7 +110,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
           )
         )
 
-      case .certificateInvalid(_):
+      case .certificateInvalid:
         actions.append(
           RecoveryAction(
             id: "trust-cert",
@@ -121,7 +121,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
           )
         )
 
-      case .certificateExpired(_):
+      case .certificateExpired:
         actions.append(
           RecoveryAction(
             id: "ignore-expiry",
@@ -132,7 +132,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
           )
         )
 
-      case .policyViolation(let policy, _):
+      case let .policyViolation(policy, _):
         actions.append(
           RecoveryAction(
             id: "override-policy",
@@ -143,7 +143,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
           )
         )
 
-      case .authorizationFailed(_):
+      case .authorizationFailed:
         actions.append(
           RecoveryAction(
             id: "retry-auth",
@@ -154,7 +154,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
           )
         )
 
-      case .insufficientPermissions(let resource, let requiredPermission):
+      case let .insufficientPermissions(resource, requiredPermission):
         actions.append(
           RecoveryAction(
             id: "request_permission",
@@ -202,26 +202,29 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
   /// Helper to get user-friendly title and message for security errors
   private func getTitleAndMessage(for error: UmbraErrors.Security.Core) -> (String, String) {
     switch error {
-      case .encryptionFailed(_):
+      case .encryptionFailed:
         ("Encryption Failed", "Could not encrypt data")
-      case .decryptionFailed(_):
+      case .decryptionFailed:
         ("Decryption Failed", "Could not decrypt data")
-      case .hashingFailed(_):
+      case .hashingFailed:
         ("Hashing Failed", "Could not hash data")
-      case .signatureInvalid(_):
+      case .signatureInvalid:
         ("Invalid Signature", "The cryptographic signature is invalid")
-      case .certificateInvalid(_):
+      case .certificateInvalid:
         ("Invalid Certificate", "The certificate is invalid")
-      case .certificateExpired(_):
+      case .certificateExpired:
         ("Certificate Expired", "The certificate has expired")
-      case .policyViolation(let policy, _):
+      case let .policyViolation(policy, _):
         ("Security Policy Violation", "Operation violates security policy '\(policy)'")
-      case .authenticationFailed(_):
+      case .authenticationFailed:
         ("Authentication Failed", "Authentication failed")
-      case .authorizationFailed(_):
+      case .authorizationFailed:
         ("Authorisation Failed", "Authorisation failed")
-      case .insufficientPermissions(let resource, let requiredPermission):
-        ("Insufficient Permissions", "You don't have permission to access '\(resource)': \(requiredPermission) required")
+      case let .insufficientPermissions(resource, requiredPermission):
+        (
+          "Insufficient Permissions",
+          "You don't have permission to access '\(resource)': \(requiredPermission) required"
+        )
       default:
         ("Security Error", "A security error occurred")
     }
@@ -300,7 +303,7 @@ extension SecurityErrorRecovery {
   /// Example usage of the security error recovery
   public func exampleUsage() {
     // Create a security error
-    let securityError = UmbraErrors.Security.Core.authenticationFailed(reason: "Incorrect password")
+    let securityError=UmbraErrors.Security.Core.authenticationFailed(reason: "Incorrect password")
 
     // Get recovery options
     let options=recoveryOptions(for: securityError)

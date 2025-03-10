@@ -145,18 +145,18 @@ public final class RecoveryManager: RecoveryOptionsProvider, Sendable {
   @MainActor
   public func recoveryOptions(for error: Error) async -> RecoveryOptions? {
     // Get the error domain
-    let domain = String(describing: type(of: error))
+    let domain=String(describing: type(of: error))
 
     // Access handlers directly since we're in the MainActor context
-    let domainHandler = handlers[domain]
+    let domainHandler=handlers[domain]
 
     // Look for a domain-specific handler
-    if let handler = domainHandler {
+    if let handler=domainHandler {
       return await handler.recoveryOptions(for: error)
     }
 
     // Default recovery options if no specific handler
-    if let umbraError = error as? UmbraError {
+    if let umbraError=error as? UmbraError {
       return createDefaultRecoveryOptions(for: umbraError)
     }
 
@@ -169,7 +169,7 @@ public final class RecoveryManager: RecoveryOptionsProvider, Sendable {
   /// - Returns: RecoveryOptions containing default recovery actions
   private func createDefaultRecoveryOptions(for error: UmbraError) -> RecoveryOptions {
     // Create standard retry and cancel actions
-    let retryAction = RecoveryAction(
+    let retryAction=RecoveryAction(
       id: "retry",
       title: "Try Again",
       description: "Retry the operation that failed",
@@ -177,7 +177,7 @@ public final class RecoveryManager: RecoveryOptionsProvider, Sendable {
       handler: { /* Implementation would vary based on the error */ }
     )
 
-    let cancelAction = RecoveryAction(
+    let cancelAction=RecoveryAction(
       id: "cancel",
       title: "Cancel",
       description: "Skip this operation",
@@ -186,8 +186,8 @@ public final class RecoveryManager: RecoveryOptionsProvider, Sendable {
     )
 
     // Create a message based on the error
-    let errorMessage = String(describing: error)
-    let message: String = "An error occurred: \(errorMessage)"
+    let errorMessage=String(describing: error)
+    let message="An error occurred: \(errorMessage)"
 
     // Return standard recovery options
     return RecoveryOptions(

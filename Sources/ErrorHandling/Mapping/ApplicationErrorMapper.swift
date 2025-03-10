@@ -67,8 +67,8 @@ public class ApplicationErrorMapper: ErrorMapper {
   /// - Returns: The mapped ApplicationError
   public func mapFromTyped(_ error: UmbraErrors.Application.Core) -> ApplicationError {
     // Simplify the mapping to avoid issues with mismatched enum cases
-    let errorDescription = String(describing: error)
-    
+    let errorDescription=String(describing: error)
+
     // Basic mapping based on the error description
     if errorDescription.contains("configurationError") {
       return .configurationError("Configuration error: \(errorDescription)")
@@ -91,8 +91,8 @@ public class ApplicationErrorMapper: ErrorMapper {
   /// - Returns: The mapped ApplicationError
   private func mapFromUI(_ error: UmbraErrors.Application.UI) -> ApplicationError {
     // Use string descriptions to avoid pattern matching problems
-    let errorDescription = String(describing: error)
-    
+    let errorDescription=String(describing: error)
+
     if errorDescription.contains("viewNotFound") {
       return .viewError("View not found error: \(errorDescription)")
     } else if errorDescription.contains("renderingError") {
@@ -110,8 +110,8 @@ public class ApplicationErrorMapper: ErrorMapper {
   /// - Returns: The mapped ApplicationError
   private func mapFromLifecycle(_ error: UmbraErrors.Application.Lifecycle) -> ApplicationError {
     // Use string description to avoid pattern matching problems with enum cases
-    let errorDescription = String(describing: error)
-    
+    let errorDescription=String(describing: error)
+
     if errorDescription.contains("launchError") {
       return .lifecycleError("Launch error: \(errorDescription)")
     } else if errorDescription.contains("backgroundTransition") {
@@ -137,8 +137,8 @@ public class ApplicationErrorMapper: ErrorMapper {
   /// - Returns: The mapped ApplicationError
   private func mapFromSettings(_ error: UmbraErrors.Application.Core) -> ApplicationError {
     // Use string descriptions to categorize settings-related errors
-    let errorDescription = String(describing: error)
-    
+    let errorDescription=String(describing: error)
+
     if errorDescription.contains("configurationMissing") {
       return .settingsError("Settings not found: \(errorDescription)")
     } else if errorDescription.contains("configurationInvalid") {

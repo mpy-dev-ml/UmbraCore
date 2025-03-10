@@ -6,17 +6,17 @@ import Foundation
 @preconcurrency // Defer isolation checking to runtime
 public final class SecurityErrorRecoveryService {
   /// Shared instance
-  public static let shared = SecurityErrorRecoveryService()
+  public static let shared=SecurityErrorRecoveryService()
 
   /// Recovery providers registered with this service
   /// Made private(set) to maintain Sendable conformance
-  private let providers = AtomicArray<any ErrorHandlingInterfaces.RecoveryOptionsProvider>()
+  private let providers=AtomicArray<any ErrorHandlingInterfaces.RecoveryOptionsProvider>()
 
   /// Private initialiser to enforce singleton pattern
   private init() {
     // Will be registered later to avoid circular references
   }
-  
+
   /// Call this method once to initialize the service properly
   @MainActor
   public static func initialize() {
@@ -33,7 +33,7 @@ extension SecurityErrorRecoveryService: ErrorRecoveryService {
   public func registerProvider(_ provider: any ErrorHandlingInterfaces.RecoveryOptionsProvider) {
     providers.append(provider)
   }
-  
+
   /// Get available recovery options for an error
   /// - Parameter error: The error to get recovery options for
   /// - Returns: Available recovery options
@@ -44,7 +44,7 @@ extension SecurityErrorRecoveryService: ErrorRecoveryService {
     }
 
     // Collect options from all providers
-    var allOptions: [any RecoveryOption] = []
+    var allOptions: [any RecoveryOption]=[]
 
     // Add options from registered providers
     for provider in providers.values {
@@ -53,7 +53,7 @@ extension SecurityErrorRecoveryService: ErrorRecoveryService {
 
     // If no providers handled it, use built-in recovery options
     if allOptions.isEmpty {
-      allOptions = defaultRecoveryOptions(for: error)
+      allOptions=defaultRecoveryOptions(for: error)
     }
 
     return allOptions
@@ -64,14 +64,14 @@ extension SecurityErrorRecoveryService: ErrorRecoveryService {
   ///   - error: The error to recover from
   ///   - context: Additional context for recovery
   /// - Returns: Whether recovery was successful
-  public func attemptRecovery(from error: some Error, context: [String: Any]?) async -> Bool {
+  public func attemptRecovery(from error: some Error, context _: [String: Any]?) async -> Bool {
     // Only attempt recovery for security errors
     guard checkIsSecurity(error: error) else {
       return false
     }
 
     // Get recovery options
-    let options = getRecoveryOptions(for: error)
+    let options=getRecoveryOptions(for: error)
 
     // Try each option in order
     for option in options {
@@ -82,7 +82,7 @@ extension SecurityErrorRecoveryService: ErrorRecoveryService {
 
       // Attempt recovery with this option
       await option.perform()
-      
+
       // Since we don't have a way to know if recovery succeeded,
       // assume the first non-disruptive option worked
       return true
@@ -105,8 +105,8 @@ extension SecurityErrorRecoveryService: ErrorHandlingInterfaces.RecoveryOptionsP
     }
 
     // Map strings to recovery options
-    let errorString = String(describing: error).lowercased()
-    var options: [any RecoveryOption] = []
+    let errorString=String(describing: error).lowercased()
+    var options: [any RecoveryOption]=[]
 
     if errorString.contains("authentication") {
       options.append(
@@ -136,7 +136,7 @@ extension SecurityErrorRecoveryService: ErrorHandlingInterfaces.RecoveryOptionsP
           recoveryAction: { /* Generic retry implementation */ }
         )
       )
-      
+
       options.append(
         ErrorRecoveryOption(
           title: "Cancel",
@@ -164,15 +164,15 @@ extension SecurityErrorRecoveryService: RecoveryOptionsProvider {
     }
 
     // Convert from individual options to a RecoveryOptions structure
-    let errorString = String(describing: error).lowercased()
-    var actions: [RecoveryAction] = []
-    var title: String? = nil
-    var message: String? = nil
+    let errorString=String(describing: error).lowercased()
+    var actions: [RecoveryAction]=[]
+    var title: String?
+    var message: String?
 
     if errorString.contains("authentication") {
-      title = "Authentication Failed"
-      message = "You need to re-authenticate to continue"
-      actions = [
+      title="Authentication Failed"
+      message="You need to re-authenticate to continue"
+      actions=[
         RecoveryAction(
           id: "retry-auth",
           title: "Try Again",
@@ -182,9 +182,9 @@ extension SecurityErrorRecoveryService: RecoveryOptionsProvider {
         )
       ]
     } else if errorString.contains("certificate") {
-      title = "Certificate Issue"
-      message = "There's a problem with the security certificate"
-      actions = [
+      title="Certificate Issue"
+      message="There's a problem with the security certificate"
+      actions=[
         RecoveryAction(
           id: "trust-cert",
           title: "Trust Certificate",
@@ -195,9 +195,9 @@ extension SecurityErrorRecoveryService: RecoveryOptionsProvider {
       ]
     } else {
       // Generic security error
-      title = "Security Error"
-      message = "A security error has occurred"
-      actions = [
+      title="Security Error"
+      message="A security error has occurred"
+      actions=[
         RecoveryAction(
           id: "retry",
           title: "Retry",
@@ -231,16 +231,16 @@ extension SecurityErrorRecoveryService {
   /// - Returns: Whether the error is a security error
   private func checkIsSecurity(error: some Error) -> Bool {
     // Check for common security error types
-    let nsError = error as NSError
-    return nsError.domain.contains("Security") || 
-           String(describing: error).contains("Security")
+    let nsError=error as NSError
+    return nsError.domain.contains("Security") ||
+      String(describing: error).contains("Security")
   }
 
   /// Default recovery options for built-in security errors
   /// - Parameter error: The error to get recovery options for
   /// - Returns: The default recovery options
   private func defaultRecoveryOptions(for error: some Error) -> [any RecoveryOption] {
-    let errorString = String(describing: error).lowercased()
+    let errorString=String(describing: error).lowercased()
 
     if errorString.contains("authentication") || errorString.contains("unauthorised") {
       return [createRetryAuthenticationOption()]
@@ -290,15 +290,15 @@ extension SecurityErrorRecoveryService {
 
 /// A thread-safe array wrapper for Sendable conformance
 final class AtomicArray<Element>: @unchecked Sendable {
-  private let lock = NSLock()
-  private var _values: [Element] = []
-  
+  private let lock=NSLock()
+  private var _values: [Element]=[]
+
   var values: [Element] {
     lock.lock()
     defer { lock.unlock() }
     return _values
   }
-  
+
   func append(_ element: Element) {
     lock.lock()
     defer { lock.unlock() }

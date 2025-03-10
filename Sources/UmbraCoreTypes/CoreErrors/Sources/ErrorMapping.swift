@@ -81,7 +81,8 @@ private func mapFromCoreSecurityError(_ error: CoreErrors.SecurityError) -> Erro
     case let .authorizationFailed(reason):
       return ResourceLocatorError.generalError("Authorisation failed: \(reason)")
     case let .insufficientPermissions(resource, requiredPermission):
-      return ResourceLocatorError.generalError("Insufficient permissions for \(resource): \(requiredPermission) required")
+      return ResourceLocatorError
+        .generalError("Insufficient permissions for \(resource): \(requiredPermission) required")
     case let .encryptionFailed(reason):
       return ResourceLocatorError.generalError("Encryption failed: \(reason)")
     case let .decryptionFailed(reason):
@@ -92,14 +93,15 @@ private func mapFromCoreSecurityError(_ error: CoreErrors.SecurityError) -> Erro
       return ResourceLocatorError.generalError("Invalid signature: \(reason)")
     case let .certificateInvalid(reason):
       return ResourceLocatorError.generalError("Invalid certificate: \(reason)")
-    case let .certificateExpired(reason): 
+    case let .certificateExpired(reason):
       return ResourceLocatorError.generalError("Certificate expired: \(reason)")
     case let .policyViolation(policy, reason):
       return ResourceLocatorError.generalError("Policy violation (\(policy)): \(reason)")
     case let .secureConnectionFailed(reason):
       return ResourceLocatorError.generalError("Secure connection failed: \(reason)")
     case let .secureStorageFailed(operation, reason):
-      return ResourceLocatorError.generalError("Secure storage operation \(operation) failed: \(reason)")
+      return ResourceLocatorError
+        .generalError("Secure storage operation \(operation) failed: \(reason)")
     case let .dataIntegrityViolation(reason):
       return ResourceLocatorError.generalError("Data integrity violation: \(reason)")
     case let .internalError(reason):
