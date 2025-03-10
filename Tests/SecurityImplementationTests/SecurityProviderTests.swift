@@ -124,7 +124,7 @@ final class SecurityProviderTests: XCTestCase {
     }
 
     // Verify the two random data sets are different (extremely low probability they would be equal)
-    XCTAssertNotEqual(randomData, randomData2)
+    XCTAssertNotEqual(randomData, randomData2, "Random data should be unique between generations")
   }
 
   // MARK: - Hashing Tests
@@ -142,28 +142,25 @@ final class SecurityProviderTests: XCTestCase {
     // Perform hashing operation with provided data
     let result=await cryptoService.hash(data: data, config: config)
 
-    XCTAssertTrue(result.success, "Hashing should succeed")
+    // Verify hashing was successful
+    switch result {
+    case .success(let hash):
+      // Verify hash has correct length for SHA-256 (32 bytes)
+      XCTAssertEqual(hash.count, 32, "SHA-256 hash should be 32 bytes")
 
-    guard let hash=result.data else {
-      XCTFail("Hashing should return data")
-      return
+      // Verify same data produces same hash
+      let repeatResult=await cryptoService.hash(data: data, config: config)
+
+      switch repeatResult {
+      case .success(let repeatHash):
+        // Verify hash consistency
+        XCTAssertEqual(hash, repeatHash, "Hash should be consistent for the same input")
+      case .failure(let error):
+        XCTFail("Repeat hashing failed with error: \(error)")
+      }
+    case .failure(let error):
+      XCTFail("Hashing failed with error: \(error)")
     }
-
-    // Verify hash has correct length for SHA-256 (32 bytes)
-    XCTAssertEqual(hash.count, 32)
-
-    // Verify same data produces same hash
-    let repeatResult=await cryptoService.hash(data: data, config: config)
-
-    XCTAssertTrue(repeatResult.success, "Repeat hashing should succeed")
-
-    guard let repeatHash=repeatResult.data else {
-      XCTFail("Repeat hashing should return data")
-      return
-    }
-
-    // Verify hash consistency
-    XCTAssertEqual(hash, repeatHash)
   }
 
   // MARK: - Unsupported Operations Tests
@@ -191,7 +188,7 @@ final class SecurityProviderTests: XCTestCase {
       )
 
       XCTAssertFalse(result.success, "Operation \(operation) should report as unsupported")
-      XCTAssertNotNil(result.errorMessage, "Error message should be provided")
+      XCTAssertNotNil(result.errorMessage, "Error message should be provided for unsupported operation \(operation)")
     }
   }
 }

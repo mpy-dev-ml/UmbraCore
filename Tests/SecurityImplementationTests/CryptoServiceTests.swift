@@ -24,10 +24,11 @@ final class CryptoServiceTests: XCTestCase {
     let result=await cryptoService.generateKey()
 
     // Verify success case
-    if case let .success(key)=result {
+    switch result {
+    case .success(let key):
       XCTAssertEqual(key.count, 32) // AES-256 key should be 32 bytes
-    } else {
-      XCTFail("Key generation should succeed")
+    case .failure(let error):
+      XCTFail("Key generation should succeed, but failed with: \(error)")
     }
   }
 
@@ -39,7 +40,8 @@ final class CryptoServiceTests: XCTestCase {
 
     // Generate a key
     let keyResult=await cryptoService.generateKey()
-    guard case let .success(key)=keyResult else {
+    
+    guard case .success(let key) = keyResult else {
       XCTFail("Failed to generate key")
       return
     }
@@ -56,32 +58,30 @@ final class CryptoServiceTests: XCTestCase {
     )
 
     // Verify encryption was successful
-    XCTAssertTrue(encryptResult.success, "Encryption should succeed")
-    guard let encryptedData=encryptResult.data else {
-      XCTFail("Encrypted data should not be nil")
-      return
+    switch encryptResult {
+    case .success(let encryptedData):
+      // Verify encrypted data is not empty and is different from plaintext
+      XCTAssertFalse(encryptedData.isEmpty, "Encrypted data should not be empty")
+      XCTAssertNotEqual(encryptedData, plaintext, "Encrypted data should be different from plaintext")
+
+      // Now decrypt the encrypted data
+      let decryptResult=await cryptoService.decryptSymmetric(
+        data: encryptedData,
+        key: key,
+        config: config
+      )
+
+      // Verify decryption was successful
+      switch decryptResult {
+      case .success(let decryptedData):
+        // Verify decrypted data matches original plaintext
+        XCTAssertEqual(decryptedData, plaintext, "Decrypted data should match original plaintext")
+      case .failure(let error):
+        XCTFail("Decryption failed with error: \(error)")
+      }
+    case .failure(let error):
+      XCTFail("Encryption failed with error: \(error)")
     }
-
-    // Verify encrypted data is not empty and is different from plaintext
-    XCTAssertFalse(encryptedData.isEmpty)
-    XCTAssertNotEqual(encryptedData, plaintext)
-
-    // Now decrypt the encrypted data
-    let decryptResult=await cryptoService.decryptSymmetric(
-      data: encryptedData,
-      key: key,
-      config: config
-    )
-
-    // Verify decryption was successful
-    XCTAssertTrue(decryptResult.success, "Decryption should succeed")
-    guard let decryptedData=decryptResult.data else {
-      XCTFail("Decrypted data should not be nil")
-      return
-    }
-
-    // Verify decrypted data matches original plaintext
-    XCTAssertEqual(decryptedData, plaintext)
   }
 
   // MARK: - Test Hashing
@@ -98,41 +98,38 @@ final class CryptoServiceTests: XCTestCase {
     let result=await cryptoService.hash(data: data, config: config)
 
     // Verify hashing was successful
-    XCTAssertTrue(result.success, "Hashing should succeed")
-    guard let hash=result.data else {
-      XCTFail("Hash data should not be nil")
-      return
+    switch result {
+    case .success(let hash):
+      // Verify hash has expected length for SHA-256 (32 bytes)
+      XCTAssertEqual(hash.count, 32, "SHA-256 hash should be 32 bytes")
+
+      // Hash the same data again
+      let repeatResult=await cryptoService.hash(data: data, config: config)
+
+      // Verify repeat hashing was successful
+      switch repeatResult {
+      case .success(let repeatHash):
+        // Verify hash consistency (same data should produce same hash)
+        XCTAssertEqual(hash, repeatHash, "Same data should produce the same hash")
+
+        // Hash different data
+        let differentData=SecureBytes(bytes: Array("Different data".utf8))
+        let differentResult=await cryptoService.hash(data: differentData, config: config)
+
+        // Verify different data hashing was successful
+        switch differentResult {
+        case .success(let differentHash):
+          // Verify different data produces different hash
+          XCTAssertNotEqual(hash, differentHash, "Different data should produce different hash")
+        case .failure(let error):
+          XCTFail("Different data hashing failed with error: \(error)")
+        }
+      case .failure(let error):
+        XCTFail("Repeat hashing failed with error: \(error)")
+      }
+    case .failure(let error):
+      XCTFail("Hashing failed with error: \(error)")
     }
-
-    // Verify hash has expected length for SHA-256 (32 bytes)
-    XCTAssertEqual(hash.count, 32)
-
-    // Hash the same data again
-    let repeatResult=await cryptoService.hash(data: data, config: config)
-
-    // Verify repeat hashing was successful
-    XCTAssertTrue(repeatResult.success, "Repeat hashing should succeed")
-    guard let repeatHash=repeatResult.data else {
-      XCTFail("Repeat hash data should not be nil")
-      return
-    }
-
-    // Verify hash consistency (same data should produce same hash)
-    XCTAssertEqual(hash, repeatHash)
-
-    // Hash different data
-    let differentData=SecureBytes(bytes: Array("Different data".utf8))
-    let differentResult=await cryptoService.hash(data: differentData, config: config)
-
-    // Verify different data hashing was successful
-    XCTAssertTrue(differentResult.success, "Different data hashing should succeed")
-    guard let differentHash=differentResult.data else {
-      XCTFail("Different hash data should not be nil")
-      return
-    }
-
-    // Verify different data produces different hash
-    XCTAssertNotEqual(hash, differentHash)
   }
 
   // MARK: - Test Error Cases
@@ -158,6 +155,12 @@ final class CryptoServiceTests: XCTestCase {
     )
 
     // Verify encryption fails with appropriate error
-    XCTAssertFalse(encryptResult.success, "Encryption with invalid key should fail")
+    switch encryptResult {
+    case .success:
+      XCTFail("Encryption with invalid key should fail but succeeded")
+    case .failure:
+      // Test passes - encryption with invalid key should fail
+      break
+    }
   }
 }
