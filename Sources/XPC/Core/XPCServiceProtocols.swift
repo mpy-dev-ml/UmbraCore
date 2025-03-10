@@ -81,10 +81,8 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.internalError(
-              error?
-                .localizedDescription ?? "Unknown error"
-            )))
+            .resume(returning: .failure(.internalError(reason: error?
+              .localizedDescription ?? "Unknown error")))
         }
       }
     }
@@ -100,10 +98,8 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.internalError(
-              error?
-                .localizedDescription ?? "Unknown error"
-            )))
+            .resume(returning: .failure(.internalError(reason: error?
+              .localizedDescription ?? "Unknown error")))
         }
       }
     }
@@ -119,10 +115,8 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.internalError(
-              error?
-                .localizedDescription ?? "Unknown error"
-            )))
+            .resume(returning: .failure(.internalError(reason: error?
+              .localizedDescription ?? "Unknown error")))
         }
       }
     }
@@ -138,10 +132,8 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.internalError(
-              error?
-                .localizedDescription ?? "Unknown error"
-            )))
+            .resume(returning: .failure(.internalError(reason: error?
+              .localizedDescription ?? "Unknown error")))
         }
       }
     }
@@ -157,7 +149,7 @@ extension ModernCryptoXPCServiceProtocol {
         if let error=error as? XPCSecurityError {
           continuation.resume(returning: .failure(error))
         } else if let error {
-          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
+          continuation.resume(returning: .failure(.internalError(reason: error.localizedDescription)))
         } else {
           continuation.resume(returning: .success(()))
         }
@@ -175,10 +167,8 @@ extension ModernCryptoXPCServiceProtocol {
           continuation.resume(returning: .failure(error))
         } else {
           continuation
-            .resume(returning: .failure(.internalError(
-              error?
-                .localizedDescription ?? "Unknown error"
-            )))
+            .resume(returning: .failure(.internalError(reason: error?
+              .localizedDescription ?? "Unknown error")))
         }
       }
     }
@@ -191,7 +181,7 @@ extension ModernCryptoXPCServiceProtocol {
         if let error=error as? XPCSecurityError {
           continuation.resume(returning: .failure(error))
         } else if let error {
-          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
+          continuation.resume(returning: .failure(.internalError(reason: error.localizedDescription)))
         } else {
           continuation.resume(returning: .success(()))
         }
@@ -206,7 +196,7 @@ extension ModernCryptoXPCServiceProtocol {
         if let error=error as? XPCSecurityError {
           continuation.resume(returning: .failure(error))
         } else if let error {
-          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
+          continuation.resume(returning: .failure(.internalError(reason: error.localizedDescription)))
         } else {
           continuation.resume(returning: .success(isValid))
         }
@@ -221,7 +211,7 @@ extension ModernCryptoXPCServiceProtocol {
         if let error=error as? XPCSecurityError {
           continuation.resume(returning: .failure(error))
         } else if let error {
-          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
+          continuation.resume(returning: .failure(.internalError(reason: error.localizedDescription)))
         } else {
           continuation.resume(returning: .success(version))
         }
@@ -230,9 +220,10 @@ extension ModernCryptoXPCServiceProtocol {
   }
 }
 
-/// Security XPC service protocol that extends XPCServiceProtocolStandard with objc compatibility
+/// Security XPC service protocol that provides ObjC compatibility for security bookmarks
+/// Note: This doesn't inherit from XPCServiceProtocolStandard to avoid @objc compatibility issues
 @objc(SecurityXPCServiceProtocol)
-public protocol SecurityXPCServiceProtocol: XPCServiceProtocolStandard {
+public protocol SecurityXPCServiceProtocol: NSObjectProtocol {
   /// Creates a security-scoped bookmark
   func createBookmark(
     forPath path: String,
@@ -251,7 +242,7 @@ public protocol SecurityXPCServiceProtocol: XPCServiceProtocolStandard {
     withReply reply: @escaping (Bool, Error?) -> Void
   )
 
-  /// Validates the connection to the XPC service
+  /// Validate the connection to the XPC service
   func validateConnection(completion: @escaping (Bool, Error?) -> Void)
 
   /// Gets the version of the XPC service
