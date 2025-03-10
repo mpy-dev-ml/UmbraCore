@@ -99,7 +99,7 @@ public final class KeyManager: KeyManagementProtocol {
   /// - Parameters:
   ///   - bits: The key size in bits
   ///   - keyType: The type of key to generate
-  ///   - purpose: The purpose of the key
+  ///   - purpose _: The purpose of the key
   /// - Returns: A result containing the generated key or an error
   public func generateKey(
     bits: Int,
@@ -117,7 +117,7 @@ public final class KeyManager: KeyManagementProtocol {
       case .hmac:
         algorithm="HMAC-SHA256"
       default:
-        return .failure(.invalidInput(reason: "Unsupported key type: \(keyType)"))
+        return .failure(.invalidInput("Unsupported key type: \(keyType)"))
     }
 
     // Generate the key
@@ -127,7 +127,7 @@ public final class KeyManager: KeyManagementProtocol {
     )
 
     guard generateResult.success, let key=generateResult.data else {
-      return .failure(.serviceError(code: 500, reason: "Key generation failed"))
+      return .failure(.serviceError("Key generation failed (code: 500)"))
     }
 
     return .success(key)
@@ -153,9 +153,7 @@ public final class KeyManager: KeyManagementProtocol {
     // Validate the key before storing
     guard key.count >= 16 else {
       return .failure(
-        .invalidInput(
-          reason: "Key length (\(key.count) bytes) is less than minimum required (16 bytes)"
-        )
+        .invalidInput("Key length (\(key.count) bytes) is less than minimum required (16 bytes)")
       )
     }
 
@@ -197,10 +195,7 @@ public final class KeyManager: KeyManagementProtocol {
         )
 
         guard generateResult.success, let newKey=generateResult.data else {
-          return .failure(.serviceError(
-            code: 500,
-            reason: "Failed to generate new key for rotation"
-          ))
+          return .failure(.serviceError("Failed to generate new key for rotation (code: 500)"))
         }
 
         // Re-encrypt the data if provided
@@ -208,31 +203,43 @@ public final class KeyManager: KeyManagementProtocol {
         if let dataToReencrypt {
           // For re-encryption, we need to decrypt with the old key and encrypt with the new key
           let retrieveConfig=SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
-          let decryptResult=await keyUtils.decryptSymmetricDTO(
+          let decryptResult=try? await keyUtils.decryptSymmetricDTO(
             data: dataToReencrypt,
             key: oldKey,
             config: retrieveConfig
           )
 
-          guard decryptResult.success, let decryptedData=decryptResult.data else {
+          guard let decryptResult else {
             return .failure(
-              .decryptionFailed(reason: "Failed to decrypt data with old key during rotation")
+              .decryptionFailed("Failed to decrypt data with old key during rotation")
             )
           }
 
-          let encryptResult=await keyUtils.encryptSymmetricDTO(
-            data: decryptedData,
+          switch decryptResult {
+            case let .success(decryptedData):
+              reencryptedData=decryptedData
+            case let .failure(error):
+              return .failure(error)
+          }
+
+          let encryptResult=try? await keyUtils.encryptSymmetricDTO(
+            data: reencryptedData!,
             key: newKey,
             config: retrieveConfig
           )
 
-          guard encryptResult.success, let encryptedData=encryptResult.data else {
+          guard let encryptResult else {
             return .failure(
-              .encryptionFailed(reason: "Failed to encrypt data with new key during rotation")
+              .encryptionFailed("Failed to encrypt data with new key during rotation")
             )
           }
 
-          reencryptedData=encryptedData
+          switch encryptResult {
+            case let .success(encryptedData):
+              reencryptedData=encryptedData
+            case let .failure(error):
+              return .failure(error)
+          }
         }
 
         // Store the new key
@@ -267,19 +274,24 @@ public final class KeyManager: KeyManagementProtocol {
         if let dataToReencrypt=config.dataToReencrypt {
           // For re-encryption, we need to decrypt with the old key and encrypt with the new key
           let retrieveConfig=SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
-          let decryptResult=await keyUtils.decryptSymmetricDTO(
+          let decryptResult=try? await keyUtils.decryptSymmetricDTO(
             data: dataToReencrypt,
             key: oldKey,
             config: retrieveConfig
           )
 
-          guard decryptResult.success, let decryptedData=decryptResult.data else {
+          guard let decryptResult else {
             return .failure(
-              .decryptionFailed(reason: "Failed to decrypt data with old key during rotation")
+              .decryptionFailed("Failed to decrypt data with old key during rotation")
             )
           }
 
-          reencryptedData=decryptedData
+          switch decryptResult {
+            case let .success(decryptedData):
+              reencryptedData=decryptedData
+            case let .failure(error):
+              return .failure(error)
+          }
         }
 
         // Generate a new key of the same size
@@ -291,10 +303,7 @@ public final class KeyManager: KeyManagementProtocol {
         )
 
         guard generateResult.success, let newKey=generateResult.data else {
-          return .failure(.serviceError(
-            code: 500,
-            reason: "Failed to generate new key for rotation"
-          ))
+          return .failure(.serviceError("Failed to generate new key for rotation (code: 500)"))
         }
 
         // Store the new key
@@ -325,7 +334,7 @@ public final class KeyManager: KeyManagementProtocol {
   -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Validate length
     guard length > 0 else {
-      return .failure(.invalidInput(reason: "Random data length must be greater than 0"))
+      return .failure(.invalidInput("Random data length must be greater than 0"))
     }
 
     // Use the key generator to produce random bytes
@@ -336,17 +345,32 @@ public final class KeyManager: KeyManagementProtocol {
 // MARK: - Utility Adapters
 
 /// Adapter to bridge between SecurityUtils and KeyManager.SecurityUtilsProtocol
-private class SecurityUtilsAdapter: KeyManager.SecurityUtilsProtocol {
-  // Instead of directly importing SecurityUtils, create a function that
-  // accesses the existing SecurityUtilsProtocol implementation within the module
-  private let utils=SecurityUtilsFactory.createDefaultUtils()
+private final class SecurityUtilsAdapter: KeyManager.SecurityUtilsProtocol {
+  // Create a new instance of SecurityUtils with a CryptoServiceCore
+  private let utils: SecurityUtils
+
+  init() {
+    // Create a CryptoServiceCore instance to pass to SecurityUtils
+    let cryptoService=CryptoServiceCore()
+    utils=SecurityUtils(cryptoService: cryptoService)
+  }
 
   func decryptSymmetricDTO(
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    await utils.decryptSymmetricDTO(data: data, key: key, config: config)
+    let result=await utils.decryptSymmetricDTO(data: data, key: key, config: config)
+
+    // Convert SecurityResultDTO to Result<SecureBytes, UmbraErrors.Security.Protocols>
+    if result.success, let data=result.data {
+      return .success(data)
+    } else {
+      return .failure(.serviceError(
+        result
+          .errorMessage ?? "Decryption failed with unknown error (code: \(result.errorCode ?? 500))"
+      ))
+    }
   }
 
   func encryptSymmetricDTO(
@@ -354,17 +378,17 @@ private class SecurityUtilsAdapter: KeyManager.SecurityUtilsProtocol {
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    await utils.encryptSymmetricDTO(data: data, key: key, config: config)
-  }
-}
+    let result=await utils.encryptSymmetricDTO(data: data, key: key, config: config)
 
-// Factory to create the SecurityUtilsProtocol implementation
-private enum SecurityUtilsFactory {
-  // This function creates the default SecurityUtils implementation
-  // and handles the import indirectly
-  static func createDefaultUtils() -> SecurityProtocolsCore.SecurityUtilsProtocol {
-    // This references the concrete implementation while avoiding direct imports
-    SecurityProtocolsCore.SecurityProviderFactory.defaultSecurityProvider().utils
+    // Convert SecurityResultDTO to Result<SecureBytes, UmbraErrors.Security.Protocols>
+    if result.success, let data=result.data {
+      return .success(data)
+    } else {
+      return .failure(.serviceError(
+        result
+          .errorMessage ?? "Encryption failed with unknown error (code: \(result.errorCode ?? 500))"
+      ))
+    }
   }
 }
 
@@ -382,7 +406,7 @@ extension UmbraErrors.Security.Protocols {
     if let innerError {
       return .internalError("Key retrieval failed: \(details). Error: \(innerError)")
     } else {
-      return .invalidInput(reason: details)
+      return .invalidInput(details)
     }
   }
 
@@ -390,7 +414,7 @@ extension UmbraErrors.Security.Protocols {
   /// - Parameter reason: The reason for the failure
   /// - Returns: A keyStoreFailed error
   static func keyStoreFailed(reason: String) -> Self {
-    .storageOperationFailed(reason: reason)
+    .storageOperationFailed(reason)
   }
 }
 

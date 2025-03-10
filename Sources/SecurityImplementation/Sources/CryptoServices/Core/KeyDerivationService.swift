@@ -21,7 +21,7 @@ final class KeyDerivationService: Sendable {
   // MARK: - Properties
 
   /// CryptoServiceCore for low-level cryptographic operations
-  private let cryptoService = CryptoServiceCore()
+  private let cryptoService=CryptoServiceCore()
 
   // MARK: - Initialisation
 
@@ -75,13 +75,14 @@ final class KeyDerivationService: Sendable {
     }
 
     // Use the cryptoService to generate random data
-    let result = await cryptoService.generateRandomData(length: length)
-    
+    let result=await cryptoService.generateRandomData(length: length)
+
     switch result {
-    case .success(let randomData):
-      return randomData
-    case .failure(let error):
-      throw CryptoError.randomDataGenerationError("Failed to generate secure random bytes: \(error)")
+      case let .success(randomData):
+        return randomData
+      case let .failure(error):
+        throw CryptoError
+          .randomDataGenerationError("Failed to generate secure random bytes: \(error)")
     }
   }
 

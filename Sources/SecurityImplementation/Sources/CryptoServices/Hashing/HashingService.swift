@@ -50,7 +50,8 @@ final class HashingService: Sendable {
     guard isSupportedHashAlgorithm(algorithm) else {
       return SecurityResultDTO(
         success: false,
-        error: UmbraErrors.Security.Protocols.unsupportedOperation(name: "Hash algorithm: \(algorithm)"),
+        error: UmbraErrors.Security.Protocols
+          .unsupportedOperation(name: "Hash algorithm: \(algorithm)"),
         errorDetails: "The specified hash algorithm is not supported"
       )
     }
@@ -60,11 +61,11 @@ final class HashingService: Sendable {
 
     // Create a simple "hash" representation for demonstration
     // DO NOT use this in production - this is just a placeholder!
-    var hashedBytes = Array("\(algorithm):".utf8)
-    
+    var hashedBytes=Array("\(algorithm):".utf8)
+
     // Append the first 8 bytes of the original data (or fewer if data is smaller)
-    let dataArray = Array(0..<data.count).map { data[$0] }
-    let bytesToAppend = dataArray.prefix(8)
+    let dataArray=Array(0..<data.count).map { data[$0] }
+    let bytesToAppend=dataArray.prefix(8)
     hashedBytes.append(contentsOf: bytesToAppend)
 
     // Add some padding to make it look like a real hash
@@ -72,7 +73,7 @@ final class HashingService: Sendable {
       hashedBytes.append(UInt8.random(in: 0...255))
     }
 
-    let hashedData = SecureBytes(bytes: hashedBytes)
+    let hashedData=SecureBytes(bytes: hashedBytes)
 
     return SecurityResultDTO(data: hashedData)
   }

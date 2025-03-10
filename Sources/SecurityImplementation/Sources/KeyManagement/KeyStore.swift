@@ -76,7 +76,7 @@ final class KeyStore {
   ) -> Result<Void, UmbraErrors.Security.Protocols> {
     // Validate inputs
     guard !identifier.isEmpty else {
-      return .failure(.invalidInput(reason: "Key identifier cannot be empty"))
+      return .failure(.invalidInput("Key identifier cannot be empty"))
     }
 
     var result: Result<Void, UmbraErrors.Security.Protocols> = .success(())
@@ -84,7 +84,7 @@ final class KeyStore {
     queue.sync(flags: .barrier) {
       // Check if the key already exists
       if self.keyStore[identifier] != nil {
-        result = .failure(.invalidInput(reason: "Key with identifier \(identifier) already exists"))
+        result = .failure(.invalidInput("Key with identifier \(identifier) already exists"))
         return
       }
 

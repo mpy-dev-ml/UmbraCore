@@ -96,7 +96,10 @@ public final class CryptoService: CryptoServiceProtocol {
     if result.success, let key=result.data {
       return .success(key)
     } else {
-      return .failure(.serviceError(result.errorMessage ?? "Unknown error (code: \(result.errorCode ?? -1))"))
+      return .failure(.serviceError(
+        result
+          .errorMessage ?? "Unknown error (code: \(result.errorCode ?? -1))"
+      ))
     }
   }
 
@@ -111,7 +114,10 @@ public final class CryptoService: CryptoServiceProtocol {
     if result.success, let hash=result.data {
       return .success(hash)
     } else {
-      return .failure(.serviceError(result.errorMessage ?? "Unknown error (code: \(result.errorCode ?? -1))"))
+      return .failure(.serviceError(
+        result
+          .errorMessage ?? "Unknown error (code: \(result.errorCode ?? -1))"
+      ))
     }
   }
 
@@ -146,7 +152,7 @@ public final class CryptoService: CryptoServiceProtocol {
     data: SecureBytes,
     key: SecureBytes
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    return await encryptSymmetric(
+    await encryptSymmetric(
       data: data,
       key: key,
       config: SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
@@ -164,9 +170,9 @@ public final class CryptoService: CryptoServiceProtocol {
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    let dto = await encryptSymmetricDTO(data: data, key: key, config: config)
-    
-    if dto.success, let encryptedData = dto.data {
+    let dto=await encryptSymmetricDTO(data: data, key: key, config: config)
+
+    if dto.success, let encryptedData=dto.data {
       return .success(encryptedData)
     } else {
       return .failure(.encryptionFailed(dto.errorMessage ?? "Unknown error"))
@@ -182,7 +188,7 @@ public final class CryptoService: CryptoServiceProtocol {
     data: SecureBytes,
     key: SecureBytes
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    return await decryptSymmetric(
+    await decryptSymmetric(
       data: data,
       key: key,
       config: SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
@@ -200,9 +206,9 @@ public final class CryptoService: CryptoServiceProtocol {
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    let dto = await decryptSymmetricDTO(data: data, key: key, config: config)
-    
-    if dto.success, let decryptedData = dto.data {
+    let dto=await decryptSymmetricDTO(data: data, key: key, config: config)
+
+    if dto.success, let decryptedData=dto.data {
       return .success(decryptedData)
     } else {
       return .failure(.decryptionFailed(dto.errorMessage ?? "Unknown error"))
@@ -218,9 +224,9 @@ public final class CryptoService: CryptoServiceProtocol {
     data: SecureBytes,
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    let dto = await hashDTO(data: data, config: config)
-    
-    if dto.success, let hashData = dto.data {
+    let dto=await hashDTO(data: data, config: config)
+
+    if dto.success, let hashData=dto.data {
       return .success(hashData)
     } else {
       return .failure(.serviceError(dto.errorMessage ?? "Unknown error"))
@@ -238,9 +244,9 @@ public final class CryptoService: CryptoServiceProtocol {
     publicKey: SecureBytes,
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    let dto = await encryptAsymmetricDTO(data: data, publicKey: publicKey, config: config)
-    
-    if dto.success, let encryptedData = dto.data {
+    let dto=await encryptAsymmetricDTO(data: data, publicKey: publicKey, config: config)
+
+    if dto.success, let encryptedData=dto.data {
       return .success(encryptedData)
     } else {
       return .failure(.encryptionFailed(dto.errorMessage ?? "Unknown error"))
@@ -258,9 +264,9 @@ public final class CryptoService: CryptoServiceProtocol {
     privateKey: SecureBytes,
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    let dto = await decryptAsymmetricDTO(data: data, privateKey: privateKey, config: config)
-    
-    if dto.success, let decryptedData = dto.data {
+    let dto=await decryptAsymmetricDTO(data: data, privateKey: privateKey, config: config)
+
+    if dto.success, let decryptedData=dto.data {
       return .success(decryptedData)
     } else {
       return .failure(.decryptionFailed(dto.errorMessage ?? "Unknown error"))
@@ -276,10 +282,10 @@ public final class CryptoService: CryptoServiceProtocol {
     guard length > 0 else {
       return .failure(.invalidInput("Random data length must be greater than 0"))
     }
-    
-    var randomBytes = [UInt8](repeating: 0, count: length)
-    let status = SecRandomCopyBytes(kSecRandomDefault, length, &randomBytes)
-    
+
+    var randomBytes=[UInt8](repeating: 0, count: length)
+    let status=SecRandomCopyBytes(kSecRandomDefault, length, &randomBytes)
+
     if status == errSecSuccess {
       return .success(SecureBytes(bytes: randomBytes))
     } else {
@@ -292,21 +298,21 @@ public final class CryptoService: CryptoServiceProtocol {
   /// Generate a cryptographic key with the specified configuration
   /// - Parameter config: Configuration for key generation
   /// - Returns: The generated key or error information
-  public func generateKeyDTO(config: SecurityConfigDTO) async -> SecurityResultDTO {
+  public func generateKeyDTO(config _: SecurityConfigDTO) async -> SecurityResultDTO {
     // Generate a key using the core service
-    let result = await serviceCore.generateKey()
-    
+    let result=await serviceCore.generateKey()
+
     // Convert the result to SecurityResultDTO
     switch result {
-    case .success(let key):
-      return SecurityResultDTO(success: true, data: key)
-    case .failure(let error):
-      return SecurityResultDTO(errorCode: 500, errorMessage: "Key generation failed: \(error)")
+      case let .success(key):
+        return SecurityResultDTO(success: true, data: key)
+      case let .failure(error):
+        return SecurityResultDTO(errorCode: 500, errorMessage: "Key generation failed: \(error)")
     }
   }
 
   // MARK: - DTO Methods
-  
+
   /// Encrypts data using symmetric encryption with DTO.
   /// - Parameters:
   ///   - data: Data to encrypt
@@ -318,7 +324,7 @@ public final class CryptoService: CryptoServiceProtocol {
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    return await serviceCore.encryptSymmetricDTO(data: data, key: key, config: config)
+    await serviceCore.encryptSymmetricDTO(data: data, key: key, config: config)
   }
 
   /// Decrypts data using symmetric encryption with DTO.
@@ -332,7 +338,7 @@ public final class CryptoService: CryptoServiceProtocol {
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    return await serviceCore.decryptSymmetricDTO(data: data, key: key, config: config)
+    await serviceCore.decryptSymmetricDTO(data: data, key: key, config: config)
   }
 
   /// Hashes data with DTO.
@@ -345,12 +351,12 @@ public final class CryptoService: CryptoServiceProtocol {
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Convert Result to SecurityResultDTO
-    let result = await serviceCore.hash(data: data, config: config)
-    
+    let result=await serviceCore.hash(data: data, config: config)
+
     switch result {
-      case .success(let hashData):
+      case let .success(hashData):
         return SecurityResultDTO(data: hashData)
-      case .failure(let error):
+      case let .failure(error):
         return SecurityResultDTO(
           success: false,
           error: error
@@ -370,12 +376,12 @@ public final class CryptoService: CryptoServiceProtocol {
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Convert Result to SecurityResultDTO
-    let result = await serviceCore.encryptAsymmetric(data: data, publicKey: publicKey, config: config)
-    
+    let result=await serviceCore.encryptAsymmetric(data: data, publicKey: publicKey, config: config)
+
     switch result {
-      case .success(let encryptedData):
+      case let .success(encryptedData):
         return SecurityResultDTO(data: encryptedData)
-      case .failure(let error):
+      case let .failure(error):
         return SecurityResultDTO(
           success: false,
           error: error
@@ -395,12 +401,16 @@ public final class CryptoService: CryptoServiceProtocol {
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
     // Convert Result to SecurityResultDTO
-    let result = await serviceCore.decryptAsymmetric(data: data, privateKey: privateKey, config: config)
-    
+    let result=await serviceCore.decryptAsymmetric(
+      data: data,
+      privateKey: privateKey,
+      config: config
+    )
+
     switch result {
-      case .success(let decryptedData):
+      case let .success(decryptedData):
         return SecurityResultDTO(data: decryptedData)
-      case .failure(let error):
+      case let .failure(error):
         return SecurityResultDTO(
           success: false,
           error: error

@@ -101,7 +101,7 @@ public final class SecurityUtils: SecurityUtilsProtocol {
   // MARK: - Initialisation
 
   /// Creates a new security utilities service
-  public init(cryptoService: CryptoServiceProtocol=CryptoServiceCore()) {
+  public init(cryptoService: CryptoServiceProtocol) {
     self.cryptoService=cryptoService
   }
 
@@ -118,11 +118,22 @@ public final class SecurityUtils: SecurityUtilsProtocol {
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    await cryptoService.encryptSymmetric(
+    let result=await cryptoService.encryptSymmetric(
       data: data,
       key: key,
       config: config
     )
+
+    switch result {
+      case let .success(encryptedData):
+        return SecurityResultDTO(success: true, data: encryptedData)
+      case let .failure(error):
+        return SecurityResultDTO(
+          success: false,
+          error: error,
+          errorDetails: "Symmetric encryption failed"
+        )
+    }
   }
 
   /// Decrypt data using symmetric encryption
@@ -136,11 +147,22 @@ public final class SecurityUtils: SecurityUtilsProtocol {
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    await cryptoService.decryptSymmetric(
+    let result=await cryptoService.decryptSymmetric(
       data: data,
       key: key,
       config: config
     )
+
+    switch result {
+      case let .success(decryptedData):
+        return SecurityResultDTO(success: true, data: decryptedData)
+      case let .failure(error):
+        return SecurityResultDTO(
+          success: false,
+          error: error,
+          errorDetails: "Symmetric decryption failed"
+        )
+    }
   }
 
   /// Encrypt data using asymmetric encryption
@@ -154,11 +176,22 @@ public final class SecurityUtils: SecurityUtilsProtocol {
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    await cryptoService.encryptAsymmetric(
+    let result=await cryptoService.encryptAsymmetric(
       data: data,
-      key: key,
+      publicKey: key,
       config: config
     )
+
+    switch result {
+      case let .success(encryptedData):
+        return SecurityResultDTO(success: true, data: encryptedData)
+      case let .failure(error):
+        return SecurityResultDTO(
+          success: false,
+          error: error,
+          errorDetails: "Asymmetric encryption failed"
+        )
+    }
   }
 
   /// Decrypt data using asymmetric encryption
@@ -172,11 +205,22 @@ public final class SecurityUtils: SecurityUtilsProtocol {
     key: SecureBytes,
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    await cryptoService.decryptAsymmetric(
+    let result=await cryptoService.decryptAsymmetric(
       data: data,
-      key: key,
+      privateKey: key,
       config: config
     )
+
+    switch result {
+      case let .success(decryptedData):
+        return SecurityResultDTO(success: true, data: decryptedData)
+      case let .failure(error):
+        return SecurityResultDTO(
+          success: false,
+          error: error,
+          errorDetails: "Asymmetric decryption failed"
+        )
+    }
   }
 
   /// Generate a cryptographic hash of the input data
@@ -188,10 +232,21 @@ public final class SecurityUtils: SecurityUtilsProtocol {
     data: SecureBytes,
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    await cryptoService.hashData(
+    let result=await cryptoService.hash(
       data: data,
       config: config
     )
+
+    switch result {
+      case let .success(hashData):
+        return SecurityResultDTO(success: true, data: hashData)
+      case let .failure(error):
+        return SecurityResultDTO(
+          success: false,
+          error: error,
+          errorDetails: "Hashing operation failed"
+        )
+    }
   }
 
   /// Derive a key from input data
@@ -205,10 +260,42 @@ public final class SecurityUtils: SecurityUtilsProtocol {
     salt: SecureBytes,
     config: SecurityConfigDTO
   ) async -> SecurityResultDTO {
-    await cryptoService.deriveKey(
-      data: data,
-      salt: salt,
+    // Since there's no deriveKey method in the protocol, we need to implement this differently
+    // For now, we'll use a combination of hash and the salt to simulate key derivation
+
+    // Get raw bytes from SecureBytes objects
+    var dataBytes=[UInt8]()
+    for i in 0..<data.count {
+      dataBytes.append(data[i])
+    }
+
+    var saltBytes=[UInt8]()
+    for i in 0..<salt.count {
+      saltBytes.append(salt[i])
+    }
+
+    // Combine the bytes
+    var combinedBytes=dataBytes
+    combinedBytes.append(contentsOf: saltBytes)
+
+    // Create a new SecureBytes object with the combined data
+    let saltedData=SecureBytes(bytes: combinedBytes)
+
+    // Hash the combined data
+    let result=await cryptoService.hash(
+      data: saltedData,
       config: config
     )
+
+    switch result {
+      case let .success(derivedKey):
+        return SecurityResultDTO(success: true, data: derivedKey)
+      case let .failure(error):
+        return SecurityResultDTO(
+          success: false,
+          error: error,
+          errorDetails: "Key derivation failed"
+        )
+    }
   }
 }

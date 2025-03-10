@@ -82,22 +82,22 @@ extension ErrorRecoveryOption {
 public struct RecoveryOptions: Sendable {
   /// Title for the recovery options group
   public let title: String
-  
+
   /// Descriptive message about the error
   public let message: String
-  
+
   /// Available recovery actions
   public let actions: [RecoveryAction]
-  
+
   /// Creates a new RecoveryOptions instance
   /// - Parameters:
   ///   - title: Title for the recovery options group
   ///   - message: Descriptive message about the error
   ///   - actions: Available recovery actions
   public init(title: String, message: String, actions: [RecoveryAction]) {
-    self.title = title
-    self.message = message
-    self.actions = actions
+    self.title=title
+    self.message=message
+    self.actions=actions
   }
 }
 
@@ -105,24 +105,24 @@ public struct RecoveryOptions: Sendable {
 public struct RecoveryAction: Sendable, Identifiable {
   /// Unique identifier for this action
   public let id: String
-  
+
   /// User-facing title for this action
   public let title: String
-  
+
   /// Action to perform when selected
   private let handler: @Sendable () -> Bool
-  
+
   /// Creates a new RecoveryAction
   /// - Parameters:
   ///   - id: Unique identifier for this action
   ///   - title: User-facing title for this action
   ///   - handler: Action to perform when selected
   public init(id: String, title: String, handler: @escaping @Sendable () -> Bool) {
-    self.id = id
-    self.title = title
-    self.handler = handler
+    self.id=id
+    self.title=title
+    self.handler=handler
   }
-  
+
   /// Perform the recovery action
   /// - Returns: Whether the recovery was successful
   public func perform() -> Bool {

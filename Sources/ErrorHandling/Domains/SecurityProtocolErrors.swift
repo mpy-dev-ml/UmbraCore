@@ -21,25 +21,25 @@ extension UmbraErrors.Security {
 
     /// An unspecified internal error occurred within the protocol implementation
     case internalError(String)
-    
+
     /// Invalid input was provided to the protocol
     case invalidInput(String)
-    
+
     /// Encryption operation failed
     case encryptionFailed(String)
-    
+
     /// Decryption operation failed
     case decryptionFailed(String)
-    
+
     /// Random data generation failed
     case randomGenerationFailed(String)
-    
+
     /// Storage operation failed
     case storageOperationFailed(String)
-    
+
     /// Service error occurred
     case serviceError(String)
-    
+
     /// Operation not implemented
     case notImplemented(String)
 
@@ -324,36 +324,39 @@ extension UmbraErrors.Security.Protocols {
   ///   - lhs: Left-hand side instance
   ///   - rhs: Right-hand side instance
   /// - Returns: True if the instances are equal, false otherwise
-  public static func == (lhs: UmbraErrors.Security.Protocols, rhs: UmbraErrors.Security.Protocols) -> Bool {
+  public static func == (
+    lhs: UmbraErrors.Security.Protocols,
+    rhs: UmbraErrors.Security.Protocols
+  ) -> Bool {
     switch (lhs, rhs) {
       case let (.missingProtocolImplementation(lhsName), .missingProtocolImplementation(rhsName)):
-        return lhsName == rhsName
+        lhsName == rhsName
       case let (.invalidFormat(lhsReason), .invalidFormat(rhsReason)):
-        return lhsReason == rhsReason
+        lhsReason == rhsReason
       case let (.unsupportedOperation(lhsName), .unsupportedOperation(rhsName)):
-        return lhsName == rhsName
+        lhsName == rhsName
       case let (.incompatibleVersion(lhsVersion), .incompatibleVersion(rhsVersion)):
-        return lhsVersion == rhsVersion
+        lhsVersion == rhsVersion
       case let (.invalidState(lhsState, lhsExpected), .invalidState(rhsState, rhsExpected)):
-        return lhsState == rhsState && lhsExpected == rhsExpected
+        lhsState == rhsState && lhsExpected == rhsExpected
       case let (.internalError(lhsMessage), .internalError(rhsMessage)):
-        return lhsMessage == rhsMessage
+        lhsMessage == rhsMessage
       case let (.invalidInput(lhsMessage), .invalidInput(rhsMessage)):
-        return lhsMessage == rhsMessage
+        lhsMessage == rhsMessage
       case let (.encryptionFailed(lhsMessage), .encryptionFailed(rhsMessage)):
-        return lhsMessage == rhsMessage
+        lhsMessage == rhsMessage
       case let (.decryptionFailed(lhsMessage), .decryptionFailed(rhsMessage)):
-        return lhsMessage == rhsMessage
+        lhsMessage == rhsMessage
       case let (.randomGenerationFailed(lhsMessage), .randomGenerationFailed(rhsMessage)):
-        return lhsMessage == rhsMessage
+        lhsMessage == rhsMessage
       case let (.storageOperationFailed(lhsMessage), .storageOperationFailed(rhsMessage)):
-        return lhsMessage == rhsMessage
+        lhsMessage == rhsMessage
       case let (.serviceError(lhsMessage), .serviceError(rhsMessage)):
-        return lhsMessage == rhsMessage
+        lhsMessage == rhsMessage
       case let (.notImplemented(lhsMessage), .notImplemented(rhsMessage)):
-        return lhsMessage == rhsMessage
+        lhsMessage == rhsMessage
       default:
-        return false
+        false
     }
   }
 }

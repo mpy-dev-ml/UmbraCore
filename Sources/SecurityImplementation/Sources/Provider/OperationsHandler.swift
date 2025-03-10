@@ -99,7 +99,7 @@ final class OperationsHandler {
 
       @unknown default:
         return SecurityResultDTO.failure(
-          error: .notImplemented
+          error: .notImplemented("Unknown operation type")
         )
     }
   }
@@ -120,7 +120,7 @@ final class OperationsHandler {
         // Check if we have input data
         guard let inputData=config.inputData else {
           return SecurityResultDTO.failure(
-            error: .invalidInput(reason: "No input data provided for encryption")
+            error: .invalidInput("No input data provided for encryption")
           )
         }
 
@@ -150,7 +150,7 @@ final class OperationsHandler {
         // Check if we have input data
         guard let inputData=config.inputData else {
           return SecurityResultDTO.failure(
-            error: .invalidInput(reason: "No input data provided for decryption")
+            error: .invalidInput("No input data provided for decryption")
           )
         }
 
@@ -175,7 +175,7 @@ final class OperationsHandler {
     // Check if we have input data
     guard let inputData=config.inputData else {
       return SecurityResultDTO.failure(
-        error: .invalidInput(reason: "No input data provided for hashing")
+        error: .invalidInput("No input data provided for hashing")
       )
     }
 
@@ -194,7 +194,7 @@ final class OperationsHandler {
   ) async -> SecurityResultDTO {
     // These operations are currently not implemented
     SecurityResultDTO.failure(
-      error: .notImplemented
+      error: .notImplemented("Asymmetric encryption not implemented")
     )
   }
 
@@ -206,7 +206,7 @@ final class OperationsHandler {
   ) async -> SecurityResultDTO {
     // These operations are currently not implemented
     SecurityResultDTO.failure(
-      error: .notImplemented
+      error: .notImplemented("Asymmetric decryption not implemented")
     )
   }
 
@@ -218,7 +218,7 @@ final class OperationsHandler {
   ) async -> SecurityResultDTO {
     // These operations are currently not implemented
     SecurityResultDTO.failure(
-      error: .notImplemented
+      error: .notImplemented("MAC generation not implemented")
     )
   }
 
@@ -230,7 +230,7 @@ final class OperationsHandler {
   ) async -> SecurityResultDTO {
     // These operations are currently not implemented
     SecurityResultDTO.failure(
-      error: .notImplemented
+      error: .notImplemented("Signature generation not implemented")
     )
   }
 
@@ -242,7 +242,7 @@ final class OperationsHandler {
   ) async -> SecurityResultDTO {
     // These operations are currently not implemented
     SecurityResultDTO.failure(
-      error: .notImplemented
+      error: .notImplemented("Signature verification not implemented")
     )
   }
 
@@ -254,7 +254,7 @@ final class OperationsHandler {
   ) async -> SecurityResultDTO {
     // These operations are currently not implemented
     SecurityResultDTO.failure(
-      error: .notImplemented
+      error: .notImplemented("Random generation not implemented")
     )
   }
 
@@ -270,8 +270,7 @@ final class OperationsHandler {
     // Key management operations should be performed via the KeyManagement interface
     SecurityResultDTO.failure(
       error: .serviceError(
-        code: 104,
-        reason: "Key management operations should be performed via KeyManagement interface"
+        "Key management operations should be performed via KeyManagement interface (code: 104)"
       )
     )
   }
@@ -299,14 +298,16 @@ final class OperationsHandler {
           return .success(key)
         case .failure:
           return .failure(
-            .serviceError(code: 100, reason: "Key not found: \(keyID)")
+            .serviceError(
+              "Key not found: \(keyID) (code: 100)"
+            )
           )
       }
     }
 
     // Neither key nor key identifier provided
     return .failure(
-      .invalidInput(reason: "No key or key identifier provided")
+      .invalidInput("No key or key identifier provided")
     )
   }
 }

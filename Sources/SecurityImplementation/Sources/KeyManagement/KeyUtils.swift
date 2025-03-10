@@ -89,19 +89,19 @@ final class KeyUtils {
   ) -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Validate parameters
     guard !password.isEmpty else {
-      return .failure(.invalidInput(reason: "Password cannot be empty"))
+      return .failure(.invalidInput("Password cannot be empty"))
     }
 
     guard salt.count >= 16 else {
-      return .failure(.invalidInput(reason: "Salt must be at least 16 bytes"))
+      return .failure(.invalidInput("Salt must be at least 16 bytes"))
     }
 
     guard iterations >= 10000 else {
-      return .failure(.invalidInput(reason: "Iterations must be at least 10,000"))
+      return .failure(.invalidInput("Iterations must be at least 10,000"))
     }
 
     guard keyLengthBytes > 0 else {
-      return .failure(.invalidInput(reason: "Key length must be greater than 0"))
+      return .failure(.invalidInput("Key length must be greater than 0"))
     }
 
     // For demo purposes, we'll use a simple approach
@@ -173,7 +173,7 @@ final class KeyUtils {
     // In a real implementation, this would properly parse PEM format
 
     // Check for key type
-    var keyType: KeyType?=if pemString.contains("BEGIN SYMMETRIC KEY") {
+    let keyType: KeyType?=if pemString.contains("BEGIN SYMMETRIC KEY") {
       .symmetric
     } else if pemString.contains("BEGIN ASYMMETRIC KEY") {
       .asymmetric
@@ -208,7 +208,7 @@ final class KeyUtils {
 
     // Decode base64
     guard let data=Data(base64Encoded: base64Content) else {
-      return .failure(.invalidInput(reason: "Invalid base64 encoding"))
+      return .failure(.invalidInput("Invalid base64 encoding"))
     }
 
     // Create the key

@@ -190,16 +190,17 @@ public final class KeyGenerator: Sendable {
     do {
       // For AES, we generate a random key using secure random bytes
       if algorithm.lowercased() == "aes" {
-        var keyBytes = [UInt8](repeating: 0, count: 32) // 256-bit key
-        let status = SecRandomCopyBytes(kSecRandomDefault, keyBytes.count, &keyBytes)
-        
+        var keyBytes=[UInt8](repeating: 0, count: 32) // 256-bit key
+        let status=SecRandomCopyBytes(kSecRandomDefault, keyBytes.count, &keyBytes)
+
         if status == errSecSuccess {
-          let secureKeyBytes = SecureBytes(bytes: keyBytes)
+          let secureKeyBytes=SecureBytes(bytes: keyBytes)
           return SecurityResultDTO(success: true, data: secureKeyBytes)
         } else {
           return SecurityResultDTO(
-            success: false, 
-            error: UmbraErrors.Security.Protocols.encryptionFailed("Failed to generate secure random key: \(status)")
+            success: false,
+            error: UmbraErrors.Security.Protocols
+              .encryptionFailed("Failed to generate secure random key: \(status)")
           )
         }
       } else {
@@ -210,7 +211,7 @@ public final class KeyGenerator: Sendable {
       }
     } catch {
       return SecurityResultDTO(
-        success: false, 
+        success: false,
         error: UmbraErrors.Security.Protocols.serviceError(
           "Failed to generate key: \(error.localizedDescription)"
         )
@@ -259,7 +260,7 @@ public final class KeyGenerator: Sendable {
     // For demonstration purposes, we're just generating random data
     // In a real implementation, this would use proper asymmetric key generation
     // via RSA, ECC, or another asymmetric algorithm
-    return .failure(
+    .failure(
       .notImplemented("Key type asymmetric is not supported")
     )
   }
@@ -301,13 +302,14 @@ public final class KeyGenerator: Sendable {
 
   private func secureRandomBytes(count: Int) throws -> [UInt8] {
     // Use secure random generation to ensure cryptographic security
-    var randomBytes = [UInt8](repeating: 0, count: count)
-    let status = SecRandomCopyBytes(kSecRandomDefault, count, &randomBytes)
-    
+    var randomBytes=[UInt8](repeating: 0, count: count)
+    let status=SecRandomCopyBytes(kSecRandomDefault, count, &randomBytes)
+
     if status == errSecSuccess {
       return randomBytes
     } else {
-      throw UmbraErrors.Security.Protocols.randomGenerationFailed("Failed to generate secure random bytes: \(status)")
+      throw UmbraErrors.Security.Protocols
+        .randomGenerationFailed("Failed to generate secure random bytes: \(status)")
     }
   }
 }

@@ -62,11 +62,11 @@ final class SymmetricCrypto: Sendable {
 
     // Create a simple "encrypted" representation for demonstration
     // DO NOT use this in production - this is just a placeholder!
-    var encryptedBytes = Array("ENCRYPTED:".utf8)
+    var encryptedBytes=Array("ENCRYPTED:".utf8)
     for i in 0..<data.count {
       encryptedBytes.append(data[i])
     }
-    let encryptedData = SecureBytes(bytes: encryptedBytes)
+    let encryptedData=SecureBytes(bytes: encryptedBytes)
 
     return SecurityResultDTO(data: encryptedData)
   }
@@ -101,18 +101,19 @@ final class SymmetricCrypto: Sendable {
 
     // Check if this is our placeholder encrypted data
     let prefix=Array("ENCRYPTED:".utf8)
-    let dataArray = Array(0..<data.count).map { data[$0] }
+    let dataArray=Array(0..<data.count).map { data[$0] }
     if data.count > prefix.count, prefix.elementsEqual(dataArray.prefix(prefix.count)) {
       // Extract the original data
-      let decryptedBytes = Array(dataArray.dropFirst(prefix.count))
-      let decryptedData = SecureBytes(bytes: decryptedBytes)
+      let decryptedBytes=Array(dataArray.dropFirst(prefix.count))
+      let decryptedData=SecureBytes(bytes: decryptedBytes)
       return SecurityResultDTO(data: decryptedData)
     }
 
     // If not our placeholder format, return an error
     return SecurityResultDTO(
       success: false,
-      error: UmbraErrors.Security.Protocols.invalidFormat(reason: "Unable to decrypt data: invalid format")
+      error: UmbraErrors.Security.Protocols
+        .invalidFormat(reason: "Unable to decrypt data: invalid format")
     )
   }
 

@@ -1,11 +1,10 @@
-// Copyright 2024 Umbra Security. All rights reserved.
-
 import ErrorHandlingDomains
 import ErrorHandlingInterfaces
 import ErrorHandlingTypes
 import Foundation
 
-/// A bidirectional mapper for converting between `SecurityError` and `UmbraErrors.GeneralSecurity.Core` error types.
+/// A bidirectional mapper for converting between `SecurityError` and
+/// `UmbraErrors.GeneralSecurity.Core` error types.
 ///
 /// # Overview
 /// This mapper provides functionality to convert between the flat `SecurityError` type and the
@@ -30,10 +29,10 @@ import Foundation
 /// - Use descriptive reasons when mapping to provide context for the error
 public struct SecurityErrorMapper: ErrorMapper {
   /// The source error type
-  public typealias SourceType = UmbraErrors.GeneralSecurity.Core
+  public typealias SourceType=UmbraErrors.GeneralSecurity.Core
 
   /// The target error type
-  public typealias TargetType = ErrorHandlingTypes.SecurityError
+  public typealias TargetType=ErrorHandlingTypes.SecurityError
 
   /// Initialises a new mapper
   public init() {}
@@ -49,20 +48,20 @@ public struct SecurityErrorMapper: ErrorMapper {
   /// - Parameter error: The source error
   /// - Returns: The mapped SecurityError if applicable, or nil if not mappable
   public func mapToSecurityError(_ error: Error) -> ErrorHandlingTypes.SecurityError? {
-    if let securityCoreError = error as? UmbraErrors.GeneralSecurity.Core {
+    if let securityCoreError=error as? UmbraErrors.GeneralSecurity.Core {
       return .domainCoreError(securityCoreError)
     }
 
-    if let protocolsError = error as? UmbraErrors.Security.Protocols {
+    if let protocolsError=error as? UmbraErrors.Security.Protocols {
       return .domainProtocolError(protocolsError)
     }
 
-    if let xpcError = error as? UmbraErrors.Security.XPC {
+    if let xpcError=error as? UmbraErrors.Security.XPC {
       return .domainXPCError(xpcError)
     }
 
     // Attempt to map special cases based on error description
-    let errorDescription = String(describing: error)
+    let errorDescription=String(describing: error)
 
     if errorDescription.contains("authentication") {
       return .authenticationFailed(reason: "Authentication failed: \(errorDescription)")
@@ -92,34 +91,34 @@ public struct SecurityErrorMapper: ErrorMapper {
   /// - Returns: The mapped core error if applicable, or nil if not mappable
   public func mapToCoreError(_ error: Error) -> UmbraErrors.GeneralSecurity.Core? {
     // Direct mapping if already a core error
-    if let coreError = error as? UmbraErrors.GeneralSecurity.Core {
+    if let coreError=error as? UmbraErrors.GeneralSecurity.Core {
       return coreError
     }
 
     // Map via SecurityError if possible
-    if let securityError = mapToSecurityError(error) {
+    if let securityError=mapToSecurityError(error) {
       switch securityError {
-        case .domainCoreError(let coreError):
+        case let .domainCoreError(coreError):
           return coreError
-        case .authenticationFailed(let reason):
+        case let .authenticationFailed(reason):
           return .invalidInput(reason: reason)
-        case .permissionDenied(let reason):
+        case let .permissionDenied(reason):
           return .invalidInput(reason: reason)
-        case .unauthorizedAccess(let reason):
+        case let .unauthorizedAccess(reason):
           return .invalidInput(reason: reason)
-        case .encryptionFailed(let reason):
+        case let .encryptionFailed(reason):
           return .encryptionFailed(reason: reason)
-        case .decryptionFailed(let reason):
+        case let .decryptionFailed(reason):
           return .decryptionFailed(reason: reason)
-        case .keyGenerationFailed(let reason):
+        case let .keyGenerationFailed(reason):
           return .keyGenerationFailed(reason: reason)
-        case .hashingFailed(let reason):
+        case let .hashingFailed(reason):
           return .hashVerificationFailed(reason: reason)
-        case .signatureInvalid(let reason):
+        case let .signatureInvalid(reason):
           return .hashVerificationFailed(reason: reason)
         case .domainProtocolError, .domainXPCError:
           return .serviceError(code: 1001, reason: "Protocol or XPC error: \(securityError)")
-        case .internalError(let reason):
+        case let .internalError(reason):
           return .internalError(reason)
         default:
           // Handle other cases generically
@@ -128,7 +127,7 @@ public struct SecurityErrorMapper: ErrorMapper {
     }
 
     // Attempt to map based on error description
-    let errorDescription = String(describing: error)
+    let errorDescription=String(describing: error)
 
     if errorDescription.contains("authentication") || errorDescription.contains("login") {
       return .invalidInput(reason: "Authentication failed: \(errorDescription)")
@@ -153,52 +152,54 @@ extension SecurityErrorMapper: BidirectionalErrorMapper {
   /// Maps from source to target error type
   /// - Parameter error: The source error
   /// - Returns: The mapped error
-  public func mapAtoB(_ error: UmbraErrors.GeneralSecurity.Core) -> ErrorHandlingTypes.SecurityError {
+  public func mapAtoB(_ error: UmbraErrors.GeneralSecurity.Core) -> ErrorHandlingTypes
+  .SecurityError {
     mapError(error)
   }
 
   /// Maps from target error type to source error type
   /// - Parameter error: The target error
   /// - Returns: The mapped source error
-  public func mapBtoA(_ error: ErrorHandlingTypes.SecurityError) -> UmbraErrors.GeneralSecurity.Core {
+  public func mapBtoA(_ error: ErrorHandlingTypes.SecurityError) -> UmbraErrors.GeneralSecurity
+  .Core {
     switch error {
-      case .domainCoreError(let coreError):
-        return coreError
-      case .authenticationFailed(let reason):
-        return .invalidInput(reason: reason)
-      case .permissionDenied(let reason):
-        return .invalidInput(reason: reason)
-      case .unauthorizedAccess(let reason):
-        return .invalidInput(reason: reason)
-      case .encryptionFailed(let reason):
-        return .encryptionFailed(reason: reason)
-      case .decryptionFailed(let reason):
-        return .decryptionFailed(reason: reason)
-      case .keyGenerationFailed(let reason):
-        return .keyGenerationFailed(reason: reason)
-      case .hashingFailed(let reason):
-        return .hashVerificationFailed(reason: reason)
-      case .signatureInvalid(let reason):
-        return .hashVerificationFailed(reason: reason)
-      case .certificateInvalid(let reason):
-        return .invalidInput(reason: reason)
-      case .secureChannelFailed(let reason):
-        return .serviceError(code: 1002, reason: reason)
-      case .securityConfigurationError(let reason):
-        return .internalError("Configuration error: \(reason)")
-      case .internalError(let reason):
-        return .internalError(reason)
-      case .invalidCredentials(let reason):
-        return .invalidInput(reason: reason)
-      case .sessionExpired(let reason):
-        return .invalidInput(reason: reason)
-      case .tokenExpired(let reason):
-        return .invalidInput(reason: reason)
-      case .unknown(let reason):
-        return .internalError("Unknown error: \(reason)")
+      case let .domainCoreError(coreError):
+        coreError
+      case let .authenticationFailed(reason):
+        .invalidInput(reason: reason)
+      case let .permissionDenied(reason):
+        .invalidInput(reason: reason)
+      case let .unauthorizedAccess(reason):
+        .invalidInput(reason: reason)
+      case let .encryptionFailed(reason):
+        .encryptionFailed(reason: reason)
+      case let .decryptionFailed(reason):
+        .decryptionFailed(reason: reason)
+      case let .keyGenerationFailed(reason):
+        .keyGenerationFailed(reason: reason)
+      case let .hashingFailed(reason):
+        .hashVerificationFailed(reason: reason)
+      case let .signatureInvalid(reason):
+        .hashVerificationFailed(reason: reason)
+      case let .certificateInvalid(reason):
+        .invalidInput(reason: reason)
+      case let .secureChannelFailed(reason):
+        .serviceError(code: 1002, reason: reason)
+      case let .securityConfigurationError(reason):
+        .internalError("Configuration error: \(reason)")
+      case let .internalError(reason):
+        .internalError(reason)
+      case let .invalidCredentials(reason):
+        .invalidInput(reason: reason)
+      case let .sessionExpired(reason):
+        .invalidInput(reason: reason)
+      case let .tokenExpired(reason):
+        .invalidInput(reason: reason)
+      case let .unknown(reason):
+        .internalError("Unknown error: \(reason)")
       default:
         // Default fallback for unmappable errors
-        return .internalError("Unmapped error: \(error)")
+        .internalError("Unmapped error: \(error)")
     }
   }
 }

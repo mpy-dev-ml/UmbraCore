@@ -37,18 +37,18 @@ public actor KeyManagementImpl: KeyManagementProtocol {
         case let .failure(error):
           switch error {
             case .keyNotFound:
-              return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+              return .failure(.invalidInput("Key not found: \(identifier)"))
             default:
-              return .failure(.storageOperationFailed(reason: "Storage error: \(error)"))
+              return .failure(.storageOperationFailed("Storage error: \(error)"))
           }
         @unknown default:
-          return .failure(.storageOperationFailed(reason: "Unknown storage result"))
+          return .failure(.internalError("Unknown storage result"))
       }
     }
 
     // Fallback to in-memory storage
     guard let key=keyStore[identifier] else {
-      return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+      return .failure(.invalidInput("Key not found: \(identifier)"))
     }
     return .success(key)
   }
@@ -64,9 +64,9 @@ public actor KeyManagementImpl: KeyManagementProtocol {
         case .success:
           return .success(())
         case let .failure(error):
-          return .failure(.storageOperationFailed(reason: "Storage error: \(error)"))
+          return .failure(.storageOperationFailed("Storage error: \(error)"))
         @unknown default:
-          return .failure(.storageOperationFailed(reason: "Unknown storage result"))
+          return .failure(.internalError("Unknown storage result"))
       }
     }
 
@@ -86,44 +86,48 @@ public actor KeyManagementImpl: KeyManagementProtocol {
         case let .failure(error):
           switch error {
             case .keyNotFound:
-              return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+              return .failure(.invalidInput("Key not found: \(identifier)"))
             default:
-              return .failure(.storageOperationFailed(reason: "Deletion error: \(error)"))
+              return .failure(.storageOperationFailed("Storage error: \(error)"))
           }
         @unknown default:
-          return .failure(.storageOperationFailed(reason: "Unknown deletion result"))
+          return .failure(.internalError("Unknown deletion result"))
       }
     }
 
     // Fallback to in-memory storage
     guard keyStore[identifier] != nil else {
-      return .failure(.storageOperationFailed(reason: "Key not found: \(identifier)"))
+      return .failure(.invalidInput("Key not found: \(identifier)"))
     }
 
     keyStore.removeValue(forKey: identifier)
     return .success(())
   }
 
-  /// - Returns: A result containing the key or an error
+  /// Rotates a security key, creating a new key and optionally re-encrypting data.
+  /// - Parameters:
+  ///   - identifier: A string identifying the key to rotate.
+  ///   - dataToReencrypt: Optional data to re-encrypt with the new key.
+  /// - Returns: The new key and re-encrypted data (if provided) or an error.
   public func rotateKey(
     withIdentifier identifier: String,
-    andRencryptData dataToReencrypt: SecureBytes?
-  ) async -> Result<(newKey: SecureBytes, oldKey: SecureBytes), UmbraErrors.Security.Protocols> {
+    dataToReencrypt: SecureBytes?
+  ) async -> Result<(
+    newKey: SecureBytes,
+    reencryptedData: SecureBytes?
+  ), UmbraErrors.Security.Protocols> {
     // Retrieve the old key
     let oldKeyResult=await retrieveKey(withIdentifier: identifier)
     guard case let .success(oldKey)=oldKeyResult else {
       if case let .failure(error)=oldKeyResult {
         return .failure(error)
       }
-      return .failure(.keyNotFound(identifier: identifier))
+      return .failure(.invalidInput("Failed to retrieve old key"))
     }
 
     do {
-      // Get a key generator to create the new key
-      let keyGenerator=KeyGenerator()
-
       // Generate a new key
-      let keyResult=await keyGenerator.generateKey(
+      let keyResult=await KeyGenerator().generateKey(
         bits: 256,
         keyType: .symmetric,
         purpose: .encryption
@@ -132,28 +136,40 @@ public actor KeyManagementImpl: KeyManagementProtocol {
         if case let .failure(error)=keyResult {
           return .failure(error)
         }
-        return .failure(.keyGenerationFailed(reason: "Unknown error"))
+        return .failure(.internalError("Unknown key generation error"))
       }
 
       // Re-encrypt data if provided
+      var reencryptedData: SecureBytes?
       if let existingCiphertext=dataToReencrypt {
         // First decrypt with old key
-        let decryptResult=await keyGenerator.decryptData(existingCiphertext, using: oldKey)
+        let cryptoService=CryptoServiceCore()
+        let decryptResult=await cryptoService.decryptSymmetric(
+          data: existingCiphertext,
+          key: oldKey,
+          config: SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
+        )
         guard case let .success(decryptedData)=decryptResult else {
           if case let .failure(error)=decryptResult {
             return .failure(error)
           }
-          return .failure(.decryptionFailed(reason: "Failed to decrypt with old key"))
+          return .failure(.decryptionFailed("Failed to decrypt with old key"))
         }
 
         // Then encrypt with new key
-        let encryptResult=await keyGenerator.encryptData(decryptedData, using: newKey)
-        guard case .success=encryptResult else {
+        let encryptResult=await cryptoService.encryptSymmetric(
+          data: decryptedData,
+          key: newKey,
+          config: SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
+        )
+        guard case let .success(encryptedData)=encryptResult else {
           if case let .failure(error)=encryptResult {
             return .failure(error)
           }
-          return .failure(.encryptionFailed(reason: "Failed to encrypt with new key"))
+          return .failure(.encryptionFailed("Failed to encrypt with new key"))
         }
+
+        reencryptedData=encryptedData
       }
 
       // Store the new key
@@ -162,13 +178,12 @@ public actor KeyManagementImpl: KeyManagementProtocol {
         if case let .failure(error)=storeResult {
           return .failure(error)
         }
-        return .failure(.keyStoreFailed(reason: "Failed to store new key"))
+        return .failure(.storageOperationFailed("Failed to store new key"))
       }
 
-      // Return both keys
-      return .success((newKey: newKey, oldKey: oldKey))
+      return .success((newKey: newKey, reencryptedData: reencryptedData))
     } catch {
-      return .failure(.generalError(error: error))
+      return .failure(.internalError("Key rotation failed: \(error)"))
     }
   }
 

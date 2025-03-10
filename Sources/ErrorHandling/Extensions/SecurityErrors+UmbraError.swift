@@ -1,12 +1,11 @@
-// Copyright 2024 Umbra Security. All rights reserved.
-
 import ErrorHandlingCommon
 import ErrorHandlingDomains
 import ErrorHandlingInterfaces
 import Foundation
 
-/// This file contains wrapper types for security-related errors that conform to the UmbraError protocol.
-/// 
+/// This file contains wrapper types for security-related errors that conform to the UmbraError
+/// protocol.
+///
 /// # Overview
 /// The wrappers in this file provide a consistent interface for working with security errors
 /// across the UmbraCore framework. Each wrapper type:
@@ -19,7 +18,8 @@ import Foundation
 /// # Usage
 /// ```swift
 /// // Create a security error with context
-/// let error = SecurityCoreErrorWrapper(UmbraErrors.GeneralSecurity.Core.invalidKey(reason: "Key too short"))
+/// let error = SecurityCoreErrorWrapper(UmbraErrors.GeneralSecurity.Core.invalidKey(reason: "Key
+/// too short"))
 ///     .with(source: ErrorSource(file: #file, line: #line, function: #function))
 ///
 /// // Access error properties
@@ -55,9 +55,9 @@ extension ErrorHandlingInterfaces.ErrorContext {
 public struct SecurityCoreErrorWrapper: UmbraError, CustomStringConvertible {
   public private(set) var wrappedError: UmbraErrors.GeneralSecurity.Core
   public private(set) var context: ErrorHandlingInterfaces.ErrorContext = .empty()
-  
+
   public init(_ error: UmbraErrors.GeneralSecurity.Core) {
-    wrappedError = error
+    wrappedError=error
   }
 
   /// The domain that this error belongs to
@@ -128,7 +128,7 @@ public struct SecurityCoreErrorWrapper: UmbraError, CustomStringConvertible {
         return "Unknown security error"
     }
   }
-  
+
   public var description: String {
     "SecurityCoreError: \(errorDescription)"
   }
@@ -186,12 +186,12 @@ public struct SecurityCoreErrorWrapper: UmbraError, CustomStringConvertible {
         return .error
     }
   }
-  
+
   /// Optional source information about where the error occurred
   public var source: ErrorHandlingInterfaces.ErrorSource? {
     context.source.isEmpty ? nil : ErrorHandlingInterfaces.ErrorSource(file: context.source)
   }
-  
+
   /// Optional underlying error that caused this error
   public var underlyingError: Error? {
     context.underlyingError
@@ -199,8 +199,8 @@ public struct SecurityCoreErrorWrapper: UmbraError, CustomStringConvertible {
 
   /// Create a new error with the given context
   public func with(context: ErrorHandlingInterfaces.ErrorContext) -> SecurityCoreErrorWrapper {
-    var copy = self
-    copy.context = context
+    var copy=self
+    copy.context=context
     return copy
   }
 
@@ -215,7 +215,7 @@ public struct SecurityCoreErrorWrapper: UmbraError, CustomStringConvertible {
       )
     )
   }
-  
+
   /// Create a new error with the given underlying error
   public func with(underlyingError: Error) -> SecurityCoreErrorWrapper {
     with(
@@ -247,7 +247,7 @@ public struct SecurityXPCErrorWrapper: UmbraError, CustomStringConvertible {
   public private(set) var context: ErrorHandlingInterfaces.ErrorContext = .empty()
 
   public init(_ error: UmbraErrors.GeneralSecurity.XPC) {
-    wrappedError = error
+    wrappedError=error
   }
 
   /// The domain that this error belongs to
@@ -298,7 +298,7 @@ public struct SecurityXPCErrorWrapper: UmbraError, CustomStringConvertible {
         return "Unknown XPC error"
     }
   }
-  
+
   public var description: String {
     "SecurityXPCError: \(errorDescription)"
   }
@@ -346,12 +346,12 @@ public struct SecurityXPCErrorWrapper: UmbraError, CustomStringConvertible {
         return .error
     }
   }
-  
+
   /// Optional source information about where the error occurred
   public var source: ErrorHandlingInterfaces.ErrorSource? {
     context.source.isEmpty ? nil : ErrorHandlingInterfaces.ErrorSource(file: context.source)
   }
-  
+
   /// Optional underlying error that caused this error
   public var underlyingError: Error? {
     context.underlyingError
@@ -359,8 +359,8 @@ public struct SecurityXPCErrorWrapper: UmbraError, CustomStringConvertible {
 
   /// Create a new error with the given context
   public func with(context: ErrorHandlingInterfaces.ErrorContext) -> SecurityXPCErrorWrapper {
-    var copy = self
-    copy.context = context
+    var copy=self
+    copy.context=context
     return copy
   }
 
@@ -375,7 +375,7 @@ public struct SecurityXPCErrorWrapper: UmbraError, CustomStringConvertible {
       )
     )
   }
-  
+
   /// Create a new error with the given underlying error
   public func with(underlyingError: Error) -> SecurityXPCErrorWrapper {
     with(
@@ -395,7 +395,7 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
   public private(set) var context: ErrorHandlingInterfaces.ErrorContext = .empty()
 
   public init(_ error: UmbraErrors.Security.Protocols) {
-    wrappedError = error
+    wrappedError=error
   }
 
   /// The domain that this error belongs to
@@ -470,7 +470,7 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
         return "Unknown protocol error"
     }
   }
-  
+
   public var description: String {
     "SecurityProtocolsError: \(errorDescription)"
   }
@@ -513,33 +513,33 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
   public var severity: ErrorHandlingInterfaces.ErrorSeverity {
     switch wrappedError {
       case .invalidFormat:
-        return .warning
+        .warning
       case .incompatibleVersion:
-        return .critical
+        .critical
       case .invalidInput:
-        return .warning
+        .warning
       case .encryptionFailed:
-        return .error
+        .error
       case .decryptionFailed:
-        return .error
+        .error
       case .randomGenerationFailed:
-        return .warning
+        .warning
       case .storageOperationFailed:
-        return .error
+        .error
       case .serviceError:
-        return .error
+        .error
       case .notImplemented:
-        return .error
+        .error
       default:
-        return .error
+        .error
     }
   }
-  
+
   /// Optional source information about where the error occurred
   public var source: ErrorHandlingInterfaces.ErrorSource? {
     context.source.isEmpty ? nil : ErrorHandlingInterfaces.ErrorSource(file: context.source)
   }
-  
+
   /// Optional underlying error that caused this error
   public var underlyingError: Error? {
     context.underlyingError
@@ -547,8 +547,8 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
 
   /// Create a new error with the given context
   public func with(context: ErrorHandlingInterfaces.ErrorContext) -> SecurityProtocolsErrorWrapper {
-    var copy = self
-    copy.context = context
+    var copy=self
+    copy.context=context
     return copy
   }
 
@@ -563,7 +563,7 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
       )
     )
   }
-  
+
   /// Create a new error with the given underlying error
   public func with(underlyingError: Error) -> SecurityProtocolsErrorWrapper {
     with(
@@ -575,7 +575,7 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
       )
     )
   }
-  
+
   /// Create a new error with the given operation
   public func with(operation: String) -> SecurityProtocolsErrorWrapper {
     with(

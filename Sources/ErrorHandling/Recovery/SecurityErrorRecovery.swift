@@ -1,5 +1,3 @@
-// Copyright 2024 Umbra Security. All rights reserved.
-
 import ErrorHandlingCommon
 import ErrorHandlingCore
 import ErrorHandlingDomains
@@ -48,7 +46,7 @@ public struct SecurityCoreErrorWrapper: Error, Sendable {
   /// Initialise with a security error
   /// - Parameter error: The error to wrap
   public init(_ error: UmbraErrors.GeneralSecurity.Core) {
-    wrappedError = error
+    wrappedError=error
   }
 }
 
@@ -56,10 +54,10 @@ public struct SecurityCoreErrorWrapper: Error, Sendable {
 /// This class separates recovery functionality from error handling
 public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsProvider {
   /// The shared instance for the recovery service
-  public static let shared = SecurityErrorRecovery()
+  public static let shared=SecurityErrorRecovery()
 
   /// The error mapper used to transform errors
-  private let errorMapper = SecurityErrorMapper()
+  private let errorMapper=SecurityErrorMapper()
 
   /// Private initialiser to enforce singleton pattern
   private init() {}
@@ -67,12 +65,12 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
   /// Implement RecoveryOptionsProvider protocol
   public func recoveryOptions(for error: Error) -> RecoveryOptions? {
     // Try to map to our SecurityCoreErrorWrapper type
-    if let securityError = error as? SecurityCoreErrorWrapper {
+    if let securityError=error as? SecurityCoreErrorWrapper {
       // Return recovery options based on the security error type
       return createRecoveryOptions(for: securityError)
-    } else if let securityCoreError = error as? UmbraErrors.GeneralSecurity.Core {
+    } else if let securityCoreError=error as? UmbraErrors.GeneralSecurity.Core {
       // Wrap the core error and process it
-      let wrapper = SecurityCoreErrorWrapper(securityCoreError)
+      let wrapper=SecurityCoreErrorWrapper(securityCoreError)
       return createRecoveryOptions(for: wrapper)
     } else {
       // Not a security error, or couldn't be mapped
@@ -84,7 +82,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
   /// - Parameter error: The security error to create options for
   private func createRecoveryOptions(for error: SecurityCoreErrorWrapper) -> RecoveryOptions {
     // Create appropriate actions based on the error type
-    var actions: [RecoveryAction] = []
+    var actions: [RecoveryAction]=[]
 
     switch error.wrappedError {
       case .encryptionFailed, .decryptionFailed:
@@ -318,7 +316,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
             }
           )
         )
-        
+
       @unknown default:
         // Handle any future cases we don't know about yet
         actions.append(
@@ -333,7 +331,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
     }
 
     // Create the recovery options with the appropriate title and message
-    let (title, message) = getTitleAndMessage(for: error.wrappedError)
+    let (title, message)=getTitleAndMessage(for: error.wrappedError)
     return RecoveryOptions(
       actions: actions,
       title: title,
@@ -378,7 +376,7 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
   /// Example of how to use the recovery options
   /// - Parameter sampleError: A sample error to get recovery options for
   public func exampleUsage(sampleError: UmbraErrors.GeneralSecurity.Core) {
-    if let options = recoveryOptions(for: sampleError) {
+    if let options=recoveryOptions(for: sampleError) {
       print("Recovery options for \(sampleError):")
       print("Title: \(options.title ?? "No title")")
       print("Message: \(options.message ?? "No message")")

@@ -138,7 +138,7 @@ public final class SecureKeyStorage: SafeStorage, Sendable {
   ) async -> Result<Void, UmbraErrors.Security.Protocols> {
     // Check if key already exists
     if await contains(identifier: identifier) {
-      return .failure(.invalidInput(reason: "Key with identifier \(identifier) already exists"))
+      return .failure(.invalidInput("Key with identifier \(identifier) already exists"))
     }
 
     await set(key: data, identifier: identifier)

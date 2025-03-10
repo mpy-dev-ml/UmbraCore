@@ -119,10 +119,7 @@ final class KeyLifecycle {
 
           case let .failure(error):
             // Convert UmbraErrors.Security.Protocols to UmbraErrors.Security.Protocols
-            return .failure(.serviceError(
-              code: 500,
-              reason: "Failed to generate new key: \(error)"
-            ))
+            return .failure(.serviceError("Failed to generate new key: \(error)"))
         }
 
       case let .failure(error):
