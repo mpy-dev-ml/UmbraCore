@@ -15,6 +15,22 @@ final class ErrorHandlingSystemTests: XCTestCase {
 
   // MARK: - Test Mocks
 
+  private enum RecoveryOption: ErrorHandlingProtocols.RecoveryOption {
+    case retry
+    case cancel
+    
+    var title: String {
+      switch self {
+      case .retry: return "Retry"
+      case .cancel: return "Cancel"
+      }
+    }
+    
+    func perform() async {
+      // No-op for testing
+    }
+  }
+
   private class MockNotificationHandler: ErrorNotificationHandler {
     var presentedNotifications: [ErrorNotification]=[]
     var dismissedIds: [UUID]=[]
@@ -34,12 +50,15 @@ final class ErrorHandlingSystemTests: XCTestCase {
   }
 
   private class MockRecoveryProvider: RecoveryOptionsProvider {
-    var requestedErrors: [Error]=[]
-    var optionsToReturn: RecoveryOptions?
-
-    func recoveryOptions(for error: Error) -> RecoveryOptions? {
-      requestedErrors.append(error)
-      return optionsToReturn
+    var shouldProvideOptions = true
+    var optionsToReturn: [ErrorHandlingProtocols.RecoveryOption] = [RecoveryOption.retry, RecoveryOption.cancel]
+    
+    func recoveryOptions(for error: Error) async -> [ErrorHandlingProtocols.RecoveryOption] {
+      if shouldProvideOptions {
+        return optionsToReturn
+      } else {
+        return []
+      }
     }
   }
 
@@ -113,12 +132,7 @@ final class ErrorHandlingSystemTests: XCTestCase {
   func testErrorWithRecoveryOptions() {
     // Given
     let error=SecurityError.authenticationFailed("Invalid credentials")
-    let recoveryOptions=RecoveryOptions.retryCancel(
-      title: "Authentication Failed",
-      message: "Your credentials could not be verified. Would you like to retry?",
-      retryHandler: {},
-      cancelHandler: {}
-    )
+    let recoveryOptions: [RecoveryOption] = [.retry, .cancel]
     mockRecoveryProvider.optionsToReturn=recoveryOptions
 
     // When
@@ -130,7 +144,7 @@ final class ErrorHandlingSystemTests: XCTestCase {
 
     let notification=mockNotificationHandler.presentedNotifications[0]
     XCTAssertNotNil(notification.recoveryOptions)
-    XCTAssertEqual(notification.recoveryOptions?.actions.count, 2)
+    XCTAssertEqual(notification.recoveryOptions?.count, 2)
   }
 
   func testErrorMapping() {
@@ -142,7 +156,7 @@ final class ErrorHandlingSystemTests: XCTestCase {
     )
 
     // When
-    let securityErrorMapper=SecurityErrorMapper()
+    let securityErrorMapper=LegacySecurityErrorMapper()
     let mappedError=securityErrorMapper.mapFromAny(externalError)
 
     // Then
@@ -182,14 +196,14 @@ final class ErrorHandlingSystemTests: XCTestCase {
     XCTAssertEqual(error.errorContext?.metadata["key"] as? String, "value")
   }
 
-  func testSecurityErrorHandlerWithMixedErrors() {
+  func testSecurityErrorHandlerWithMixedErrors() async {
     // Given
     let securityHandler=SecurityErrorHandler.shared
     securityHandler.errorHandler=errorHandler
 
     // When - Handle our direct SecurityError
     let ourError=SecurityError.permissionDenied("Insufficient privileges")
-    securityHandler.handleSecurityError(ourError)
+    await securityHandler.handleSecurityError(ourError)
 
     // Then
     XCTAssertEqual(mockLogger.loggedErrors.count, 1)
@@ -204,7 +218,7 @@ final class ErrorHandlingSystemTests: XCTestCase {
       code: 403,
       userInfo: [NSLocalizedDescriptionKey: "Authorization failed: Access denied to resource"]
     )
-    securityHandler.handleSecurityError(externalError)
+    await securityHandler.handleSecurityError(externalError)
 
     // Then
     XCTAssertEqual(mockLogger.loggedErrors.count, 1)

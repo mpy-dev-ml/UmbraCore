@@ -4,13 +4,14 @@ load("//:bazel/macros/swift.bzl", "umbra_swift_test")
 # Temporarily disabled due to architectural issues that need more comprehensive fixes
 # To re-enable, rename back to "ErrorHandlingTests"
 umbra_swift_test(
-    name = "ErrorHandlingTests_disabled",
+    name = "ErrorHandlingTests",
     srcs = [
         "CommonErrorTests.swift",
         "CoreErrorTests.swift",
         "ErrorHandlingSystemTests.swift",
     ],
     module_name = "ErrorHandlingTests",
+    enable_library_evolution = False,  # Disabled since we depend on modules without library evolution
     deps = [
         "//Sources/CoreTypesInterfaces",
         "//Sources/ErrorHandling",

@@ -8,8 +8,8 @@ import ErrorHandlingModels
 import Foundation
 
 /// A utility class for mapping security errors between different domains
-public class SecurityErrorMapper {
-  /// Initialiser for the SecurityErrorMapper
+public class LegacySecurityErrorMapper {
+  /// Initialiser for the LegacySecurityErrorMapper
   public init() {}
 
   /// Maps an external error to a security core error

@@ -98,62 +98,23 @@ extension DomainError {
 }
 
 /// Error severity levels for classification and logging
-public enum ErrorSeverity: String, Comparable, Sendable {
-  /// Critical error that requires immediate attention
-  case critical="Critical"
+public typealias ErrorSeverity = ErrorHandlingCommon.ErrorSeverity
 
-  /// Error that significantly affects functionality
-  case error="Error"
-
-  /// Warning about potential issues or degraded service
-  case warning="Warning"
-
-  /// Informational message about non-critical events
-  case info="Information"
-
-  /// Debug information for development purposes
-  case debug="Debug"
-
-  /// Returns true if this severity level should trigger a user notification
-  public var shouldNotify: Bool {
-    switch self {
-      case .critical, .error:
-        true
-      case .warning, .info, .debug:
-        false
-    }
-  }
-
-  public static func < (lhs: ErrorSeverity, rhs: ErrorSeverity) -> Bool {
-    let order: [ErrorSeverity]=[.debug, .info, .warning, .error, .critical]
-    guard
-      let lhsIndex=order.firstIndex(of: lhs),
-      let rhsIndex=order.firstIndex(of: rhs)
-    else {
-      return false
-    }
-    return lhsIndex < rhsIndex
-  }
-}
-
-/// Protocol for error recovery options
+/// Protocol for recovery options that can be presented to the user
 public protocol RecoveryOption: Sendable {
-  /// The title of the recovery option
+  /// Descriptive title for the recovery option
   var title: String { get }
-
-  /// Additional description of the recovery option
-  var description: String? { get }
-
+  
   /// Action to perform when the recovery option is selected
   func perform() async
 }
 
 /// Protocol for providing recovery options for errors
-public protocol RecoveryOptionsProvider {
+public protocol RecoveryOptionsProvider: Sendable {
   /// Get recovery options for a specific error
   /// - Parameter error: The error to get recovery options for
   /// - Returns: Array of recovery options
-  func recoveryOptions<E: UmbraError>(for error: E) -> [RecoveryOption]
+  func recoveryOptions(for error: Error) -> [RecoveryOption]
 }
 
 /// Protocol for error logging services
