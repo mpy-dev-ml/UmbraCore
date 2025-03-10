@@ -44,84 +44,83 @@ public class ErrorHandlingExample {
   /// Sample recovery provider for demonstration purposes
   private final class SampleRecoveryProvider: RecoveryOptionsProvider {
     /// Provides recovery options for security errors
-    public func recoveryOptions(for error: some Error) -> ErrorHandlingInterfaces.RecoveryOptions? {
+    public func recoveryOptions(for error: some Error) -> [RecoveryOption]? {
       // Map to security error if possible
-      if let securityError=error as? SecurityCoreErrorWrapper {
+      if let securityError = error as? SecurityCoreErrorWrapper {
         // Provide different recovery options based on error type
         switch securityError.wrappedError {
-          case .authenticationFailed, .authorizationFailed:
-            return ErrorHandlingInterfaces.RecoveryOptions(
-              title: "Authentication Error",
-              message: securityError.errorDescription,
-              actions: [
-                ErrorHandlingInterfaces.RecoveryAction(
-                  title: "Retry Authentication",
-                  handler: {
-                    print("Retrying authentication...")
-                    return true
-                  }
-                ),
-                ErrorHandlingInterfaces.RecoveryAction(
-                  title: "Use Alternative Method",
-                  handler: {
-                    print("Using alternative authentication method...")
-                    return true
-                  }
-                )
-              ]
-            )
           case .encryptionFailed, .decryptionFailed:
-            return ErrorHandlingInterfaces.RecoveryOptions(
-              title: "Cryptographic Error",
-              message: securityError.errorDescription,
-              actions: [
-                ErrorHandlingInterfaces.RecoveryAction(
-                  title: "Try Again",
-                  handler: {
-                    print("Retrying cryptographic operation...")
-                    return true
-                  }
-                )
-              ]
-            )
+            return [
+              ErrorRecoveryOption(
+                title: "Try Again",
+                handler: {
+                  print("Retrying cryptographic operation...")
+                }
+              ),
+              ErrorRecoveryOption(
+                title: "Use Alternative Method",
+                handler: {
+                  print("Using alternative cryptographic method...")
+                }
+              )
+            ]
+          case .invalidKey:
+            return [
+              ErrorRecoveryOption(
+                title: "Regenerate Key",
+                handler: {
+                  print("Regenerating security key...")
+                }
+              ),
+              ErrorRecoveryOption(
+                title: "Import Existing Key",
+                handler: {
+                  print("Importing existing key...")
+                }
+              )
+            ]
+          case .hashVerificationFailed:
+            return [
+              ErrorRecoveryOption(
+                title: "Download Again",
+                handler: {
+                  print("Downloading file again...")
+                }
+              ),
+              ErrorRecoveryOption(
+                title: "Ignore Warning",
+                handler: {
+                  print("Ignoring integrity warning...")
+                }
+              )
+            ]
           default:
-            return ErrorHandlingInterfaces.RecoveryOptions(
-              title: "Security Error",
-              message: securityError.errorDescription,
-              actions: [
-                ErrorHandlingInterfaces.RecoveryAction(
-                  title: "Retry Operation",
-                  handler: {
-                    print("Retrying operation...")
-                    return true
-                  }
-                ),
-                ErrorHandlingInterfaces.RecoveryAction(
-                  title: "Cancel",
-                  handler: {
-                    print("Operation cancelled by user")
-                    return true
-                  }
-                )
-              ]
-            )
+            return [
+              ErrorRecoveryOption(
+                title: "Retry Operation",
+                handler: {
+                  print("Retrying operation...")
+                }
+              )
+            ]
         }
       }
 
-      // Default recovery options
-      return ErrorHandlingInterfaces.RecoveryOptions(
-        title: "Error",
-        message: error.localizedDescription,
-        actions: [
-          ErrorHandlingInterfaces.RecoveryAction(
-            title: "OK",
-            handler: {
-              print("User acknowledged error")
-              return true
-            }
-          )
-        ]
-      )
+      // Default recovery options for unknown errors
+      return [
+        ErrorRecoveryOption(
+          title: "Retry",
+          handler: {
+            print("Retrying operation...")
+          }
+        ),
+        ErrorRecoveryOption(
+          title: "Cancel",
+          handler: {
+            print("Operation cancelled")
+          }
+        )
+      ]
     }
   }
 
@@ -129,17 +128,17 @@ public class ErrorHandlingExample {
   @MainActor
   public func run() {
     // Set up the error handler
-    let errorHandler=ErrorHandler.shared
+    let errorHandler = ErrorHandler.shared
     errorHandler.setNotificationHandler(SampleNotificationHandler())
     errorHandler.registerRecoveryProvider(SampleRecoveryProvider())
 
     print("Starting error handling demonstration...")
 
     // Create a security error for demonstration
-    let securityError=UmbraErrors.Security.Core.invalidKey(reason: "Missing encryption key")
+    let securityError = UmbraErrors.GeneralSecurity.Core.invalidKey(reason: "Missing encryption key")
 
     // Manually create a wrapped error
-    let wrappedError=SecurityCoreErrorWrapper(securityError)
+    let wrappedError = SecurityCoreErrorWrapper(securityError)
 
     // Report the error
     Task {
@@ -160,21 +159,21 @@ public class ErrorHandlingExample {
       var description: String { message }
     }
 
-    let externalError=ExternalError(message: "External API connection failed")
+    let externalError = ExternalError(message: "External API connection failed")
 
     // Try to map to security error
-    let securityMapper=SecurityErrorMapper()
+    let securityMapper = SecurityErrorMapper()
 
     // Map external error to core error
-    if let mappedError=securityMapper.mapToCoreError(externalError) {
+    if let mappedError = securityMapper.mapToCoreError(externalError) {
       print("Successfully mapped to security error: \(mappedError)")
     } else {
       // Handle unmapped errors with an application error
-      let coreAppError=UmbraErrors.Application.Core.permissionDenied(
-        resource: "External API",
-        permission: "Authentication required"
+      let coreAppError = UmbraErrors.Application.Core.operationFailed(
+        operation: "External API",
+        reason: "Authentication required"
       )
-      let wrappedAppError=ApplicationCoreErrorWrapper(coreAppError)
+      let wrappedAppError = ApplicationCoreErrorWrapper(coreAppError)
       print("Mapped to application error: \(wrappedAppError.errorDescription)")
     }
   }
@@ -182,10 +181,10 @@ public class ErrorHandlingExample {
   /// Demonstrate direct usage of error mapping and handling
   public func demonstrateDirectUsage() {
     // Create a sample security error
-    let coreError=UmbraErrors.Security.Core.invalidKey(reason: "Key has expired")
+    let coreError = UmbraErrors.GeneralSecurity.Core.invalidKey(reason: "Key has expired")
 
     // Wrap the error in our conforming wrapper
-    let securityError=SecurityCoreErrorWrapper(coreError)
+    let securityError = SecurityCoreErrorWrapper(coreError)
 
     // Handle the wrapped error
     print("\nDemonstrating direct error handling...")
@@ -195,7 +194,7 @@ public class ErrorHandlingExample {
     print("Recovery suggestion: \(securityError.recoverySuggestion ?? "None available")")
 
     // Add context to the error
-    let contextualError=securityError.with(
+    let contextualError = securityError.with(
       context: ErrorHandlingCommon.ErrorContext(
         source: "KeyManager",
         operation: "validateKey",
@@ -215,8 +214,8 @@ public class ErrorHandlingExample {
 extension ErrorHandlingExample {
   /// Create an example notification for demonstration
   private func createDemoNotification() -> ErrorHandlingNotification.ErrorNotification {
-    let securityError=SecurityCoreErrorWrapper(
-      UmbraErrors.Security.Core.invalidKey(reason: "Expired key")
+    let securityError = SecurityCoreErrorWrapper(
+      UmbraErrors.GeneralSecurity.Core.invalidKey(reason: "Expired key")
     )
 
     return ErrorHandlingNotification.ErrorNotification(

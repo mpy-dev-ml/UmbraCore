@@ -12,10 +12,29 @@ private struct GenericError: ErrorHandlingInterfaces.UmbraError {
   let domain: String
   let code: String
   let message: String
-  let details: [String: Any]
-  let source: ErrorHandlingCommon.ErrorSource?
-  let underlyingError: Error?
-  let context: ErrorHandlingCommon.ErrorContext?
+  let details: [String: String] 
+  let source: ErrorHandlingInterfaces.ErrorSource?
+  var underlyingError: Error?
+  var context: ErrorHandlingInterfaces.ErrorContext
+
+  /// Initialiser with all properties
+  init(
+    domain: String,
+    code: String,
+    message: String,
+    details: [String: String], 
+    source: ErrorHandlingInterfaces.ErrorSource?,
+    underlyingError: Error?,
+    context: ErrorHandlingInterfaces.ErrorContext
+  ) {
+    self.domain = domain
+    self.code = code
+    self.message = message
+    self.details = details
+    self.source = source
+    self.underlyingError = underlyingError
+    self.context = context
+  }
 
   /// Conform to CustomStringConvertible
   var description: String {
@@ -28,21 +47,21 @@ private struct GenericError: ErrorHandlingInterfaces.UmbraError {
   }
 
   /// Create a new instance with additional context
-  func with(context: ErrorHandlingCommon.ErrorContext) -> GenericError {
-    var newError=self
-    newError.context=context
+  func with(context: ErrorHandlingInterfaces.ErrorContext) -> Self {
+    var newError = self
+    newError.context = context
     return newError
   }
 
   /// Create a new instance with an underlying error
-  func with(underlyingError: Error) -> GenericError {
-    var newError=self
-    newError.underlyingError=underlyingError
+  func with(underlyingError: Error) -> Self {
+    var newError = self
+    newError.underlyingError = underlyingError
     return newError
   }
 
   /// Create a new instance with source information
-  func with(source: ErrorHandlingCommon.ErrorSource) -> Self {
+  func with(source: ErrorHandlingInterfaces.ErrorSource) -> Self {
     GenericError(
       domain: domain,
       code: code,
@@ -56,9 +75,9 @@ private struct GenericError: ErrorHandlingInterfaces.UmbraError {
 
   /// Create a new instance with additional user info
   func with(userInfo: [String: Any]) -> Self {
-    var updatedDetails=details
+    var updatedDetails = details
     for (key, value) in userInfo {
-      updatedDetails[key]=value
+      updatedDetails[key] = String(describing: value)
     }
 
     return GenericError(
@@ -73,47 +92,62 @@ private struct GenericError: ErrorHandlingInterfaces.UmbraError {
   }
 }
 
-/// A handler for security-related errors in the UmbraCore security stack.
-/// This implementation provides consistent error handling across all security modules.
+/// A handler for security-related errors
 @MainActor
 public final class SecurityErrorHandler: @unchecked Sendable {
   /// The shared instance for the handler
-  public static let shared=SecurityErrorHandler()
+  public static let shared = SecurityErrorHandler()
 
   /// The error mapper used to transform errors
-  private let errorMapper=SecurityErrorMapper()
+  private let errorMapper = SecurityErrorMapper()
 
   /// Private initialiser to enforce singleton pattern
   private init() {}
 
-  /// Handle a security error with appropriate level and logging
-  ///
+  /// Handle a security error with the specified severity
   /// - Parameters:
   ///   - error: The error to handle
-  ///   - severity: The severity level of the error
+  ///   - severity: The severity of the error
   ///   - file: The file where the error occurred
   ///   - function: The function where the error occurred
-  ///   - line: The line number where the error occurred
-  ///   - userInfo: Additional information about the error
+  ///   - line: The line where the error occurred
+  ///   - userInfo _: Additional information about the error
   public func handle(
     _ error: Error,
     severity: ErrorHandlingInterfaces.ErrorSeverity,
-    file: String=#file,
-    function: String=#function,
-    line: Int=#line,
-    userInfo _: [String: Any]?=nil
+    file: String = #file,
+    function: String = #function,
+    line: Int = #line,
+    userInfo _: [String: Any]? = nil
   ) {
     // Create error context
-    let source=ErrorHandlingCommon.ErrorSource(file: file, function: function, line: line)
-    let context=ErrorHandlingCommon.ErrorContext(
+    let commonSource = ErrorHandlingCommon.ErrorSource(
+      file: file, 
+      function: function, 
+      line: line
+    )
+    
+    let commonContext = ErrorHandlingCommon.ErrorContext(
       source: "SecurityErrorHandler",
       operation: "handle",
-      details: "Handling security error",
-      underlyingError: error
+      details: "Handling security error"
+    )
+    
+    // Convert to interface types
+    let interfaceSource = ErrorHandlingInterfaces.ErrorSource(
+      file: commonSource.file,
+      line: commonSource.line,
+      function: commonSource.function
+    )
+    
+    let interfaceContext = ErrorHandlingInterfaces.ErrorContext(
+      source: commonContext.source,
+      operation: commonContext.operation,
+      details: commonContext.details ?? ""
     )
 
     // Map our severity to the core severity type
-    let mappedSeverity: ErrorHandlingCommon.ErrorSeverity=switch severity {
+    let mappedSeverity: ErrorHandlingCommon.ErrorSeverity = switch severity {
       case .critical:
         .critical
       case .error:
@@ -125,114 +159,89 @@ public final class SecurityErrorHandler: @unchecked Sendable {
       case .debug:
         .debug
       case .trace:
-        .debug // Map trace to debug as ErrorHandlingCommon might not have trace
+        .debug // Map trace to debug as it's the closest equivalent
       @unknown default:
         .error
     }
 
     // Create a generic error with our context
-    let genericError=GenericError(
+    let genericError = GenericError(
       domain: "Security",
       code: "SECURITY_ERROR",
       message: "An error occurred in the security module",
       details: [:],
-      source: source,
+      source: interfaceSource,
       underlyingError: error,
-      context: context
+      context: interfaceContext
     )
 
     // Delegate to the core error handler
     ErrorHandlingCore.ErrorHandler.shared.handle(
       genericError,
-      severity: mappedSeverity,
-      file: file,
-      function: function,
-      line: line
+      severity: mappedSeverity
     )
 
-    // Log the full error details if needed
+    // Also log the error directly
     log(error: error, severity: severity)
   }
 
-  /// Log an error with appropriate severity
+  /// Log an error with the specified severity
   private func log(error: Error, severity: ErrorHandlingInterfaces.ErrorSeverity) {
-    var code="UNKNOWN"
-    var message="Unknown error"
+    var code = "UNKNOWN"
+    var message = "Unknown error"
 
     // Try to map the error using our error mapper
-    if let securityError=error as? SecurityCoreErrorWrapper {
+    if let securityError = error as? SecurityCoreErrorWrapper {
       // Extract code and message from the error
-      let (errorCode, errorMessage)=getErrorCodeAndMessage(securityError.wrappedError)
-      code=errorCode
-      message=errorMessage
-    } else if let securityCoreError=error as? UmbraErrors.Security.Core {
+      let (errorCode, errorMessage) = getErrorCodeAndMessage(securityError.wrappedError)
+      code = errorCode
+      message = errorMessage
+    } else if let securityCoreError = error as? UmbraErrors.Security.Core {
       // Direct mapping from core error
-      let (errorCode, errorMessage)=getErrorCodeAndMessage(securityCoreError)
-      code=errorCode
-      message=errorMessage
+      let (errorCode, errorMessage) = getErrorCodeAndMessage(securityCoreError)
+      code = errorCode
+      message = errorMessage
     } else {
       // Generic fallback for unknown errors
-      code="UNKNOWN_SECURITY_ERROR"
-      message=String(describing: error)
+      code = "UNKNOWN_SECURITY_ERROR"
+      message = String(describing: error)
     }
 
-    // Log the error with the appropriate severity
+    // Log the error with the specified severity
     switch severity {
       case .critical:
         print("[CRITICAL] Security error \(code): \(message)")
       case .error:
         print("[ERROR] Security error \(code): \(message)")
       case .warning:
-        print("[WARNING] Security issue \(code): \(message)")
+        print("[WARNING] Security error \(code): \(message)")
       case .info:
-        print("[INFO] Security notice \(code): \(message)")
+        print("[INFO] Security error \(code): \(message)")
       case .debug:
-        print("[DEBUG] Security debug \(code): \(message)")
+        print("[DEBUG] Security error \(code): \(message)")
       case .trace:
-        print("[TRACE] Security trace \(code): \(message)")
+        print("[TRACE] Security error \(code): \(message)")
       @unknown default:
-        print("[ERROR] Security error \(code): \(message)")
+        print("[UNKNOWN] Security error \(code): \(message)")
     }
   }
 
-  /// Maps a security error to a tuple containing a code and message
-  private func getErrorCodeAndMessage(
-    _ error: UmbraErrors.Security.Core
-  ) -> (code: String, message: String) {
-    switch error {
-      case let .authenticationFailed(reason):
-        return ("AUTHENTICATION_FAILED", "Authentication failed: \(reason)")
-      case let .authorizationFailed(reason):
-        return ("AUTHORIZATION_FAILED", "Authorization failed: \(reason)")
-      case let .insufficientPermissions(resource, requiredPermission):
-        return (
-          "INSUFFICIENT_PERMISSIONS",
-          "Insufficient permissions to access \(resource). Required: \(requiredPermission)"
-        )
-      case let .encryptionFailed(reason):
-        return ("ENCRYPTION_FAILED", "Encryption failed: \(reason)")
-      case let .decryptionFailed(reason):
-        return ("DECRYPTION_FAILED", "Decryption failed: \(reason)")
-      case let .hashingFailed(reason):
-        return ("HASHING_FAILED", "Hashing operation failed: \(reason)")
-      case let .signatureInvalid(reason):
-        return ("SIGNATURE_INVALID", "Signature verification failed: \(reason)")
-      case let .certificateInvalid(reason):
-        return ("CERTIFICATE_INVALID", "Certificate is invalid: \(reason)")
-      case let .certificateExpired(reason):
-        return ("CERTIFICATE_EXPIRED", "Certificate has expired: \(reason)")
-      case let .policyViolation(policy, reason):
-        return ("POLICY_VIOLATION", "Security policy violation (\(policy)): \(reason)")
-      case let .secureConnectionFailed(reason):
-        return ("SECURE_CONNECTION_FAILED", "Secure connection failed: \(reason)")
-      case let .secureStorageFailed(operation, reason):
-        return ("SECURE_STORAGE_FAILED", "Secure storage operation \(operation) failed: \(reason)")
-      case let .dataIntegrityViolation(reason):
-        return ("DATA_INTEGRITY_VIOLATION", "Data integrity violation detected: \(reason)")
-      case let .internalError(detail):
-        return ("INTERNAL_ERROR", "Internal security error: \(detail)")
-      @unknown default:
-        return ("UNKNOWN", "Unknown security error")
+  /// Extract error code and message from a security error
+  private func getErrorCodeAndMessage(_ error: Error) -> (String, String) {
+    // Default values
+    var code = "UNKNOWN"
+    var message = "Unknown error"
+
+    // Try to extract from security core error
+    if let securityError = error as? UmbraErrors.Security.Core {
+      code = String(describing: securityError).components(separatedBy: "(").first ?? "UNKNOWN"
+      message = String(describing: securityError)
+    } else {
+      // Generic fallback
+      code = "SECURITY_ERROR"
+      message = String(describing: error)
     }
+
+    return (code, message)
   }
 }
