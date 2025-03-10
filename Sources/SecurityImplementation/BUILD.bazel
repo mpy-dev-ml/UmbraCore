@@ -22,6 +22,7 @@ umbracore_foundation_free_module(
     srcs = glob(
         [
             "Sources/*.swift",
+            "Sources/CryptoService/*.swift",
             "Sources/CryptoServices/Core/*.swift",
             "Sources/CryptoServices/Asymmetric/*.swift",
             "Sources/CryptoServices/Symmetric/*.swift",

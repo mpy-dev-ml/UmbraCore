@@ -2,99 +2,124 @@ import CryptoSwiftFoundationIndependent
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import ErrorHandlingDomains
+import ErrorHandling
+import Foundation
 
-/// Implementation of the CryptoServiceProtocol using CryptoSwiftFoundationIndependent
+// Importing necessary crypto services
+@_implementationOnly import class Security.SecKey
+@_implementationOnly import struct Security.SecKeyAlgorithm
+@_implementationOnly import func Security.SecRandomCopyBytes
+@_implementationOnly import var Security.kSecRandomDefault
+@_implementationOnly import var Security.errSecSuccess
+
+/// Implementation of the CryptoServiceProtocol
 public final class CryptoServiceImpl: CryptoServiceProtocol {
 
+  // MARK: - Properties
+  
+  /// Service for symmetric encryption operations
+  private let symmetricCrypto: SymmetricCrypto
+  
+  /// Service for hashing operations
+  private let hashingService: HashingService
+  
+  /// Service for key generation
+  private let keyGenerator: KeyGenerator
+  
   // MARK: - Initialization
 
-  public init() {}
+  public init() {
+    self.symmetricCrypto = SymmetricCrypto()
+    self.hashingService = HashingService()
+    self.keyGenerator = KeyGenerator()
+  }
 
   // MARK: - CryptoServiceProtocol Implementation
 
   public func encrypt(
     data: SecureBytes,
     using key: SecureBytes
-  ) async -> Result<SecureBytes, SecurityError> {
-    do {
-      // Default to AES-GCM with a random IV
-      let iv=CryptoWrapper.generateRandomIVSecure()
-
-      // Combine IV with encrypted data
-      let encrypted=try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
-
-      // Return IV + encrypted data
-      let ivData=iv
-      let combinedData=SecureBytes.combine(ivData, encrypted)
-
-      return .success(combinedData)
-    } catch {
-      return .failure(
-        .encryptionFailed(reason: "Failed to encrypt data: \(error.localizedDescription)")
-      )
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Use the symmetric crypto service with default configuration
+    let result = await symmetricCrypto.encryptData(
+      data: data,
+      key: key,
+      algorithm: "AES-GCM",
+      iv: nil
+    )
+    
+    if result.success, let encryptedData = result.data {
+      return .success(encryptedData)
+    } else {
+      return .failure(.encryptionFailed(result.errorMessage ?? "Unknown encryption error"))
     }
   }
 
   public func decrypt(
     data: SecureBytes,
     using key: SecureBytes
-  ) async -> Result<SecureBytes, SecurityError> {
-    do {
-      // Extract IV from combined data (first 12 bytes)
-      guard data.count > 12 else {
-        return .failure(.invalidInput(reason: "Encrypted data too short"))
-      }
-
-      let (iv, encryptedData)=try data.split(at: 12)
-
-      // Decrypt the data
-      let decrypted=try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
-
-      return .success(decrypted)
-    } catch {
-      return .failure(
-        .decryptionFailed(reason: "Failed to decrypt data: \(error.localizedDescription)")
-      )
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Use the symmetric crypto service with default configuration
+    let result = await symmetricCrypto.decryptData(
+      data: data,
+      key: key, 
+      algorithm: "AES-GCM",
+      iv: nil
+    )
+    
+    if result.success, let decryptedData = result.data {
+      return .success(decryptedData)
+    } else {
+      return .failure(.decryptionFailed(result.errorMessage ?? "Unknown decryption error"))
     }
   }
 
-  public func generateKey() async -> Result<SecureBytes, SecurityError> {
-    // Generate a 256-bit key (32 bytes)
-    let key=CryptoWrapper.generateRandomKeySecure(size: 32)
-    return .success(key)
+  public func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Use SHA-256 as the default algorithm
+    await hash(data: data, config: SecurityConfigDTO(algorithm: "SHA-256", keySizeInBits: 256))
   }
 
-  public func hash(data: SecureBytes) async -> Result<SecureBytes, SecurityError> {
-    let hashedData=CryptoWrapper.sha256(data)
-    return .success(hashedData)
+  public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Generate a secure random key with 256-bit size for AES
+    let result = await keyGenerator.generateKey(bits: 256, algorithm: "AES")
+    
+    if result.success, let key = result.data {
+      return .success(key)
+    } else {
+      return .failure(.internalError(result.errorMessage ?? "Unknown key generation error"))
+    }
   }
 
-  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Bool {
-    let computedHash=CryptoWrapper.sha256(data)
-    return computedHash == hash
+  public func verify(
+    data: SecureBytes,
+    against hash: SecureBytes
+  ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+    // Hash the data using SHA-256
+    let hashResult = await self.hash(data: data)
+    
+    switch hashResult {
+      case let .success(computedHash):
+        // Compare the computed hash with the provided hash
+        let match = (0..<min(computedHash.count, hash.count))
+          .allSatisfy { computedHash[$0] == hash[$0] }
+          && computedHash.count == hash.count
+        return .success(match)
+      case let .failure(error):
+        return .failure(error)
+    }
   }
 
-  /// Generate cryptographically secure random data
-  /// - Parameter length: The length of random data to generate in bytes
-  /// - Returns: Result containing random data or error
-  public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
-    do {
-      var randomBytes=[UInt8](repeating: 0, count: length)
+  // MARK: - Extended Protocol Methods
 
-      // Generate random bytes using CryptoKit's secure random number generator
-      let status=try CryptoWrapper.generateSecureRandomBytes(&randomBytes, length: length)
-
-      if status {
-        return .success(SecureBytes(bytes: randomBytes))
-      } else {
-        return .failure(.randomGenerationFailed(reason: "Failed to generate secure random bytes"))
-      }
-    } catch {
-      return .failure(
-        .randomGenerationFailed(
-          reason: "Error during random generation: \(error.localizedDescription)"
-        )
-      )
+  public func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Generate secure random data of specified length
+    var randomBytes = [UInt8](repeating: 0, count: length)
+    let status = SecRandomCopyBytes(kSecRandomDefault, length, &randomBytes)
+    
+    if status == errSecSuccess {
+      return .success(SecureBytes(bytes: randomBytes))
+    } else {
+      return .failure(.internalError("Random data generation failed"))
     }
   }
 
@@ -104,32 +129,19 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    do {
-      // Use configuration to determine algorithm and parameters
-      switch config.algorithm {
-        case "AES-GCM":
-          // Use the provided IV or generate a new one
-          let iv=config.initializationVector ?? CryptoWrapper.generateRandomIVSecure()
-
-          // Encrypt the data
-          let encrypted=try CryptoWrapper.encryptAES_GCM(data: data, key: key, iv: iv)
-
-          // Combine IV with encrypted data
-          let combinedData=SecureBytes.combine(iv, encrypted)
-          return SecurityResultDTO.success(data: combinedData)
-
-        default:
-          return SecurityResultDTO.failure(
-            code: 400,
-            message: "Unsupported algorithm: \(config.algorithm)"
-          )
-      }
-    } catch {
-      return SecurityResultDTO.failure(
-        code: 500,
-        message: "Encryption failed: \(error.localizedDescription)"
-      )
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Use the symmetric crypto service with the provided configuration
+    let result = await symmetricCrypto.encryptData(
+      data: data,
+      key: key,
+      algorithm: config.algorithm,
+      iv: config.initializationVector
+    )
+    
+    if result.success, let encryptedData = result.data {
+      return .success(encryptedData)
+    } else {
+      return .failure(.encryptionFailed(result.errorMessage ?? "Unknown encryption error"))
     }
   }
 
@@ -137,79 +149,58 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     data: SecureBytes,
     key: SecureBytes,
     config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    do {
-      switch config.algorithm {
-        case "AES-GCM":
-          // If IV is provided, use it, otherwise extract from data
-          if let iv=config.initializationVector {
-            // Use the provided IV directly with the data
-            let decrypted=try CryptoWrapper.decryptAES_GCM(data: data, key: key, iv: iv)
-            return SecurityResultDTO.success(data: decrypted)
-          } else {
-            // Extract IV from combined data (first 12 bytes)
-            guard data.count > 12 else {
-              return SecurityResultDTO.failure(
-                code: 400,
-                message: "Encrypted data too short"
-              )
-            }
-
-            let (iv, encryptedData)=try data.split(at: 12)
-            let decrypted=try CryptoWrapper.decryptAES_GCM(data: encryptedData, key: key, iv: iv)
-            return SecurityResultDTO.success(data: decrypted)
-          }
-
-        default:
-          return SecurityResultDTO.failure(
-            code: 400,
-            message: "Unsupported algorithm: \(config.algorithm)"
-          )
-      }
-    } catch {
-      return SecurityResultDTO.failure(
-        code: 500,
-        message: "Decryption failed: \(error.localizedDescription)"
-      )
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Use the symmetric crypto service with the provided configuration
+    let result = await symmetricCrypto.decryptData(
+      data: data,
+      key: key,
+      algorithm: config.algorithm,
+      iv: config.initializationVector
+    )
+    
+    if result.success, let decryptedData = result.data {
+      return .success(decryptedData)
+    } else {
+      return .failure(.decryptionFailed(result.errorMessage ?? "Unknown decryption error"))
     }
   }
 
   // MARK: - Asymmetric Encryption
 
   public func encryptAsymmetric(
-    data _: SecureBytes,
-    publicKey _: SecureBytes,
-    config _: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    // Asymmetric encryption is not yet implemented in CryptoSwiftFoundationIndependent
-    // This would require more complex integration with platform-specific crypto APIs
-    SecurityResultDTO.failure(
-      code: 501,
-      message: "Asymmetric encryption not implemented"
-    )
+    data: SecureBytes,
+    publicKey: SecureBytes,
+    config: SecurityConfigDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // For now, return unsupported operation as we focus on symmetric operations
+    return .failure(.unsupportedOperation(name: "Asymmetric encryption not implemented"))
   }
 
   public func decryptAsymmetric(
-    data _: SecureBytes,
-    privateKey _: SecureBytes,
-    config _: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    // Asymmetric decryption is not yet implemented in CryptoSwiftFoundationIndependent
-    // This would require more complex integration with platform-specific crypto APIs
-    SecurityResultDTO.failure(
-      code: 501,
-      message: "Asymmetric decryption not implemented"
-    )
+    data: SecureBytes,
+    privateKey: SecureBytes,
+    config: SecurityConfigDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // For now, return unsupported operation as we focus on symmetric operations
+    return .failure(.unsupportedOperation(name: "Asymmetric decryption not implemented"))
   }
 
-  // MARK: - Hashing
+  // MARK: - Advanced Hashing
 
   public func hash(
     data: SecureBytes,
-    config _: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    // Currently only supporting SHA-256
-    let hashedData=CryptoWrapper.sha256(data)
-    return SecurityResultDTO.success(data: hashedData)
+    config: SecurityConfigDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    // Use the hashing service with the provided algorithm
+    let result = await hashingService.hashData(
+      data: data,
+      algorithm: config.algorithm
+    )
+    
+    if result.success, let hashedData = result.data {
+      return .success(hashedData)
+    } else {
+      return .failure(.internalError(result.errorMessage ?? "Unknown hashing error"))
+    }
   }
 }
