@@ -1,3 +1,4 @@
+import ErrorHandlingDomains
 import Foundation
 @testable import SecurityInterfaces
 import SecurityInterfacesBase
@@ -5,7 +6,6 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
 import XPCProtocolsCore
-import ErrorHandlingDomains
 
 /// Test suite for the SecurityProvider implementation
 class SecurityProviderTests: XCTestCase {

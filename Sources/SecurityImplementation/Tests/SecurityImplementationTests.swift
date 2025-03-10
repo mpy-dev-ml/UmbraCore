@@ -11,7 +11,8 @@ class SecurityImplementationTests: XCTestCase {
   // MARK: - Basic Tests
 
   func testVersion() {
-    // This test cannot be implemented as is since SecurityImplementation module doesn't expose a version property
+    // This test cannot be implemented as is since SecurityImplementation module doesn't expose a
+    // version property
     // Instead we'll simply pass the test
     XCTAssertTrue(true, "Version check replaced with simple pass")
   }
@@ -31,7 +32,7 @@ class SecurityImplementationTests: XCTestCase {
 
     // Verify success
     switch result {
-      case .success(_):
+      case .success:
         XCTAssertTrue(true)
       case let .failure(error: error):
         XCTFail("Key generation failed: \(error)")
@@ -67,18 +68,18 @@ class SecurityImplementationTests: XCTestCase {
     // This test is meant to test key rotation functionality
     // Since the real KeyManager implementation doesn't support actual key rotation
     // in this test environment, we'll make a simpler test that verifies the basic functionality
-    
-    let keyManager = KeyManager()
-    
+
+    let keyManager=KeyManager()
+
     // Generate a new key
-    let generateResult = await keyManager.generateKey(
+    let generateResult=await keyManager.generateKey(
       bits: 256,
       keyType: .symmetric,
       purpose: .encryption
     )
-    
+
     switch generateResult {
-      case .success(_):
+      case .success:
         // The key was successfully generated, which is sufficient for this test
         XCTAssertTrue(true, "Key generation successful")
       case let .failure(error):
@@ -90,32 +91,32 @@ class SecurityImplementationTests: XCTestCase {
     // This test is meant to test key rotation with data re-encryption
     // Since the real KeyManager implementation doesn't support key rotation
     // in this test environment, we'll make a simpler test that verifies encryption works
-    
-    let keyManager = KeyManager()
-    let cryptoService = CryptoService()
-    
+
+    let keyManager=KeyManager()
+    let cryptoService=CryptoService()
+
     // Generate a key
-    let genResult = await keyManager.generateKey(
+    let genResult=await keyManager.generateKey(
       bits: 256,
       keyType: .symmetric,
       purpose: .encryption
     )
-    
+
     switch genResult {
-      case .success(let key):
+      case let .success(key):
         // We have a key, try to encrypt and decrypt with it
-        let testData = SecureBytes(bytes: [0x01, 0x02, 0x03, 0x04, 0x05])
-        
+        let testData=SecureBytes(bytes: [0x01, 0x02, 0x03, 0x04, 0x05])
+
         // Encrypt data with the generated key
-        let encryptResult = await cryptoService.encrypt(data: testData, using: key)
-        
+        let encryptResult=await cryptoService.encrypt(data: testData, using: key)
+
         switch encryptResult {
-          case .success(let encryptedData):
+          case let .success(encryptedData):
             // Now decrypt the data with the same key
-            let decryptResult = await cryptoService.decrypt(data: encryptedData, using: key)
-            
+            let decryptResult=await cryptoService.decrypt(data: encryptedData, using: key)
+
             switch decryptResult {
-              case .success(let decryptedData):
+              case let .success(decryptedData):
                 XCTAssertEqual(decryptedData, testData, "Decrypted data should match original")
               case let .failure(error):
                 XCTFail("Decryption failed: \(error)")
@@ -132,18 +133,18 @@ class SecurityImplementationTests: XCTestCase {
     // This test is intended to test key storage and retrieval
     // Since the KeyManager implementation doesn't properly support key storage
     // in this test environment, we'll verify that key generation works
-    
-    let keyManager = KeyManager()
-    
+
+    let keyManager=KeyManager()
+
     // Generate a key with specific parameters for testing
-    let generateResult = await keyManager.generateKey(
+    let generateResult=await keyManager.generateKey(
       bits: 256,
       keyType: .symmetric,
       purpose: .encryption
     )
-    
+
     switch generateResult {
-      case .success(let key):
+      case let .success(key):
         // We were able to generate a key successfully
         XCTAssertNotNil(key, "Generated key should not be nil")
         XCTAssertGreaterThan(key.count, 0, "Key should have data")
@@ -290,17 +291,17 @@ class SecurityImplementationTests: XCTestCase {
     // Test asymmetric key generation functionality
     // Since CryptoService doesn't have a direct generateAsymmetricKeyPair method,
     // we'll simulate it by creating dummy keys for testing purposes
-    
+
     let cryptoService=CryptoService()
-    
+
     // Create a simple test key for verification
-    let publicKey = SecureBytes(bytes: Array(repeating: 0xBB, count: 256))
-    let privateKey = SecureBytes(bytes: Array(repeating: 0xAA, count: 512))
-    
+    let publicKey=SecureBytes(bytes: Array(repeating: 0xBB, count: 256))
+    let privateKey=SecureBytes(bytes: Array(repeating: 0xAA, count: 512))
+
     // Verify the keys have proper sizes
     XCTAssertEqual(publicKey.count, 256, "Public key should be 256 bytes")
     XCTAssertEqual(privateKey.count, 512, "Private key should be 512 bytes")
-    
+
     // Debug information
     print("Public key length: \(publicKey.count)")
     print("Private key length: \(privateKey.count)")
@@ -453,7 +454,11 @@ class SecurityImplementationTests: XCTestCase {
       case let .success(encryptedData):
         // Modify expectation to match actual implementation
         // In mock implementations, data might be smaller
-        XCTAssertGreaterThan(encryptedData.count, 8, "Encrypted data should include format identifier")
+        XCTAssertGreaterThan(
+          encryptedData.count,
+          8,
+          "Encrypted data should include format identifier"
+        )
 
         // The header should consist of at least our format identifier
         let bytes=Array(encryptedData)
@@ -475,42 +480,42 @@ class SecurityImplementationTests: XCTestCase {
     // Note: In cryptography implementations, hash functions may include salts or other
     // random elements that cause the same input to generate different hash values
     // across different calls. Therefore, we test basic functionality rather than exact equality.
-    
-    let cryptoService = CryptoService()
-    
+
+    let cryptoService=CryptoService()
+
     // Use fixed test vectors for predictable behaviour
-    let testData = SecureBytes(bytes: [0x01, 0x02, 0x03, 0x04, 0x05])
-    
+    let testData=SecureBytes(bytes: [0x01, 0x02, 0x03, 0x04, 0x05])
+
     // Test that we can generate a hash without errors
-    let hashResult = await cryptoService.hash(data: testData)
-    
+    let hashResult=await cryptoService.hash(data: testData)
+
     switch hashResult {
-      case .success(let hash):
+      case let .success(hash):
         // Verify we got a non-empty hash
         XCTAssertFalse(hash.isEmpty, "Hash should not be empty")
         print("Generated hash: \(Array(hash))")
-        
+
         // Create different data and verify we can hash it too
-        let differentData = SecureBytes(bytes: [0x05, 0x04, 0x03, 0x02, 0x01])
-        let differentHashResult = await cryptoService.hash(data: differentData)
-        
+        let differentData=SecureBytes(bytes: [0x05, 0x04, 0x03, 0x02, 0x01])
+        let differentHashResult=await cryptoService.hash(data: differentData)
+
         switch differentHashResult {
-          case .success(let differentHash):
+          case let .success(differentHash):
             // Verify we got a non-empty hash for different data too
             XCTAssertFalse(differentHash.isEmpty, "Hash of different data should not be empty")
             print("Generated hash for different data: \(Array(differentHash))")
-            
+
             // Test basic verification functionality
             // Note: We're not testing the result of verification, just that it runs without errors
-            let verifyResult = await cryptoService.verify(data: testData, against: hash)
+            let verifyResult=await cryptoService.verify(data: testData, against: hash)
             switch verifyResult {
-              case .success(_):
+              case .success:
                 // Successfully ran verification, which is what we're testing
                 XCTAssertTrue(true, "Verification completed without errors")
               case let .failure(error):
                 XCTFail("Verification failed with error: \(error)")
             }
-            
+
           case let .failure(error):
             XCTFail("Failed to hash different data: \(error)")
         }

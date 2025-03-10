@@ -1,8 +1,8 @@
+import ErrorHandlingDomains
 import Foundation
 import SecurityTypes
 import UmbraSecurity
 import XCTest
-import ErrorHandlingDomains
 
 final class SecurityServiceTests: XCTestCase {
   var securityProvider: SecurityProvider!

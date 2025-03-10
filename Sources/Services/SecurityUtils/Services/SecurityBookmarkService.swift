@@ -1,10 +1,10 @@
 import CoreErrors
+import ErrorHandlingDomains
 import Foundation
 import SecurityInterfaces
 import SecurityUtilsProtocols
 import UmbraCoreTypesimport SecurityTypesProtocols
 import XPCProtocolsCoreimport SecurityTypes
-import ErrorHandlingDomains
 
 /// Service for managing security-scoped bookmarks
 public actor SecurityBookmarkService {

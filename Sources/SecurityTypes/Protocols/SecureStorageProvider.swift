@@ -1,5 +1,5 @@
-import Foundation
 import ErrorHandlingDomains
+import Foundation
 
 /// Protocol for secure storage operations
 public protocol SecureStorageProvider: Sendable {

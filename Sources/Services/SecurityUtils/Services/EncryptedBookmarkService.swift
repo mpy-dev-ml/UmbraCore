@@ -1,10 +1,10 @@
 import CryptoTypes
 import CryptoTypesProtocols
 import CryptoTypesTypes
+import ErrorHandlingDomains
 import Foundation
 import SecurityTypes
 import SecurityUtilsProtocols
-import ErrorHandlingDomains
 
 /// Service for managing encrypted security-scoped bookmarks
 public actor EncryptedBookmarkService {

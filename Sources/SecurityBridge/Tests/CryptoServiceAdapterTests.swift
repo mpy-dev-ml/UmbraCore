@@ -1,9 +1,9 @@
+import ErrorHandlingDomains
 import Foundation
 @testable import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
-import ErrorHandlingDomains
 
 // MARK: - Result Extension
 

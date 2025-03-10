@@ -1,8 +1,8 @@
 import CoreErrors
+import ErrorHandlingDomains
 import SecurityInterfacesProtocols
 import UmbraCoreTypes
 import XPCProtocolsCore
-import ErrorHandlingDomains
 
 /// Base protocol for security providers
 /// This protocol is designed to be Foundation-free and serve as a base for more specific security

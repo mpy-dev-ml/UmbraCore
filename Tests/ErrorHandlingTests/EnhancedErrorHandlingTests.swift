@@ -1,6 +1,6 @@
 @testable import ErrorHandling
-import XCTest
 import ErrorHandlingDomains
+import XCTest
 
 final class EnhancedErrorHandlingTests: XCTestCase {
 

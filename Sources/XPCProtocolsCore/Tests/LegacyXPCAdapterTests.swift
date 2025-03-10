@@ -1,7 +1,7 @@
 import CoreErrors
+import ErrorHandlingDomains
 import UmbraCoreTypes
 import XCTest
-import ErrorHandlingDomains
 @testable import XPCProtocolsCore
 
 final class LegacyXPCAdapterTests: XCTestCase {

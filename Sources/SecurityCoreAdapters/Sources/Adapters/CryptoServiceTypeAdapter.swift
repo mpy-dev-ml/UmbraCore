@@ -1,6 +1,6 @@
+import ErrorHandlingDomains
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import ErrorHandlingDomains
 
 /// Type adapter that converts between different crypto service implementations
 /// This allows us to adapt between different implementations of crypto services
@@ -71,7 +71,10 @@ public struct CryptoServiceTypeAdapter<
     return result.map { transformations.transformOutputKey?($0) ?? $0 }
   }
 
-  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, SecurityError> {
+  public func verify(
+    data: SecureBytes,
+    against hash: SecureBytes
+  ) async -> Result<Bool, SecurityError> {
     let transformedData=transformations.transformInputData?(data) ?? data
     let transformedHash=transformations.transformInputData?(hash) ?? hash
 

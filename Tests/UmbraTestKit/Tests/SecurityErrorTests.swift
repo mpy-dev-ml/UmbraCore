@@ -1,7 +1,7 @@
 import Core
+import ErrorHandlingDomains
 import SecurityInterfaces
 import XCTest
-import ErrorHandlingDomains
 
 final class SecurityErrorTests: XCTestCase {
   func testErrorDescription() {

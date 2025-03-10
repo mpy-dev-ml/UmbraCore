@@ -1,5 +1,5 @@
-import Foundation
 import ErrorHandlingDomains
+import Foundation
 
 /// Extension for SecurityError to add additional error cases needed for implementations
 extension SecurityError {

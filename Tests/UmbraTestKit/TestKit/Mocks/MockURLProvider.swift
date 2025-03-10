@@ -1,9 +1,9 @@
 import Core
+import ErrorHandlingDomains
 import Foundation
 import SecurityInterfaces
 import SecurityTypes
 import SecurityTypesProtocols
-import ErrorHandlingDomains
 
 /// Mock implementation of URL security provider
 public actor MockURLProvider: SecurityInterfaces.SecurityProvider {

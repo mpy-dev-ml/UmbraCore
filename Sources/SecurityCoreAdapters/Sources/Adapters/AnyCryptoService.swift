@@ -32,7 +32,10 @@ public final class AnyCryptoService: CryptoServiceProtocol {
     -> Result<SecureBytes, SecurityError>
   private let _decryptAsymmetric: @Sendable (SecureBytes, SecureBytes, SecurityConfigDTO) async
     -> Result<SecureBytes, SecurityError>
-  private let _hashWithConfig: @Sendable (SecureBytes, SecurityConfigDTO) async -> Result<SecureBytes, SecurityError>
+  private let _hashWithConfig: @Sendable (SecureBytes, SecurityConfigDTO) async -> Result<
+    SecureBytes,
+    SecurityError
+  >
 
   // MARK: - Initialization
 
@@ -93,7 +96,10 @@ public final class AnyCryptoService: CryptoServiceProtocol {
 
   // New method implementations with correct return types
 
-  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, SecurityError> {
+  public func verify(
+    data: SecureBytes,
+    against hash: SecureBytes
+  ) async -> Result<Bool, SecurityError> {
     await _verify(data, hash)
   }
 

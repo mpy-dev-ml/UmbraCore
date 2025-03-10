@@ -1,8 +1,8 @@
+import ErrorHandlingDomains
 import SecurityTypes
 @testable import UmbraCore
 import UmbraTestKit
 import XCTest
-import ErrorHandlingDomains
 
 @available(macOS 14.0, *)
 final class URLSecurityTests: XCTestCase {

@@ -1,8 +1,8 @@
 import Core
+import ErrorHandlingDomains
 @testable import SecurityTypes
 import SecurityTypesProtocols
 import XCTest
-import ErrorHandlingDomains
 
 /// A mock security provider for testing
 actor TestMockSecurityProvider: SecurityProvider {

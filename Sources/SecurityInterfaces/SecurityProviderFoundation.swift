@@ -1,9 +1,9 @@
 import CoreTypesInterfaces
+import ErrorHandlingDomains
 import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
-import ErrorHandlingDomains
 
 /// Protocol defining Foundation-dependent security operations
 /// This is a non-Foundation dependent version that delegates to the Foundation bridge

@@ -1,7 +1,7 @@
 import Core
+import ErrorHandlingDomains
 import SecurityInterfaces
 import XCTest
-import ErrorHandlingDomains
 
 /// Error statistics for reporting
 public struct ErrorStats {

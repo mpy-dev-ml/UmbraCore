@@ -1,4 +1,5 @@
 import CoreTypesInterfaces
+import ErrorHandlingDomains
 import Foundation
 import FoundationBridgeTypes
 import SecurityBridge
@@ -6,7 +7,6 @@ import SecurityBridgeProtocolAdapters
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
-import ErrorHandlingDomains
 
 final class SecurityBridgeMigrationTests: XCTestCase {
   // MARK: - XPCServiceBridge Tests

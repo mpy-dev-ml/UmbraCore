@@ -1,7 +1,7 @@
 import Core
+import ErrorHandlingDomains
 import SecurityInterfaces
 import XCTest
-import ErrorHandlingDomains
 
 /// A mock security provider for testing
 actor TestMockSecurityProvider: SecurityProvider {

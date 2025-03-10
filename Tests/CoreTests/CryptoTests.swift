@@ -1,7 +1,7 @@
 import Core
+import ErrorHandlingDomains
 import Foundation
 import XCTest
-import ErrorHandlingDomains
 
 /// Tests for the CryptoService class that handles encryption, decryption, and key operations
 final class CryptoTests: XCTestCase {

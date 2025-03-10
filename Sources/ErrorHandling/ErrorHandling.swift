@@ -88,6 +88,7 @@
 /// - Thread-safe logging
 /// - Concurrent recovery handling
 import ErrorHandlingDomains
+
 public enum ErrorHandling {
   /// Current version of the ErrorHandling module
   public static let version="1.0.0"

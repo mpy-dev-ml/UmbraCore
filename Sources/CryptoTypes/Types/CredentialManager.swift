@@ -1,8 +1,8 @@
 // CryptoKit removed - cryptography will be handled in ResticBar
+import ErrorHandlingDomains
 import Foundation
 import UmbraCoreTypes
 import XPCProtocolsCore
-import ErrorHandlingDomains
 
 /// Manages secure storage and retrieval of credentials
 public actor CredentialManager {

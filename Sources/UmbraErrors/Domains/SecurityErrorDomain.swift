@@ -1,5 +1,5 @@
-import Foundation
 import ErrorHandlingDomains
+import Foundation
 
 /// Domain for security-related errors
 public enum SecurityErrorDomain: String, CaseIterable, Sendable {

@@ -1,37 +1,38 @@
 import CryptoSwiftFoundationIndependent
+import ErrorHandling
+import ErrorHandlingDomains
+import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import ErrorHandlingDomains
-import ErrorHandling
-import Foundation
+
+@_implementationOnly import var Security.errSecSuccess
+@_implementationOnly import var Security.kSecRandomDefault
 
 // Importing necessary crypto services
 @_implementationOnly import class Security.SecKey
 @_implementationOnly import struct Security.SecKeyAlgorithm
 @_implementationOnly import func Security.SecRandomCopyBytes
-@_implementationOnly import var Security.kSecRandomDefault
-@_implementationOnly import var Security.errSecSuccess
 
 /// Implementation of the CryptoServiceProtocol
 public final class CryptoServiceImpl: CryptoServiceProtocol {
 
   // MARK: - Properties
-  
+
   /// Service for symmetric encryption operations
   private let symmetricCrypto: SymmetricCrypto
-  
+
   /// Service for hashing operations
   private let hashingService: HashingService
-  
+
   /// Service for key generation
   private let keyGenerator: KeyGenerator
-  
+
   // MARK: - Initialization
 
   public init() {
-    self.symmetricCrypto = SymmetricCrypto()
-    self.hashingService = HashingService()
-    self.keyGenerator = KeyGenerator()
+    symmetricCrypto=SymmetricCrypto()
+    hashingService=HashingService()
+    keyGenerator=KeyGenerator()
   }
 
   // MARK: - CryptoServiceProtocol Implementation
@@ -41,14 +42,14 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     using key: SecureBytes
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Use the symmetric crypto service with default configuration
-    let result = await symmetricCrypto.encryptData(
+    let result=await symmetricCrypto.encryptData(
       data: data,
       key: key,
       algorithm: "AES-GCM",
       iv: nil
     )
-    
-    if result.success, let encryptedData = result.data {
+
+    if result.success, let encryptedData=result.data {
       return .success(encryptedData)
     } else {
       return .failure(.encryptionFailed(result.errorMessage ?? "Unknown encryption error"))
@@ -60,14 +61,14 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     using key: SecureBytes
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Use the symmetric crypto service with default configuration
-    let result = await symmetricCrypto.decryptData(
+    let result=await symmetricCrypto.decryptData(
       data: data,
-      key: key, 
+      key: key,
       algorithm: "AES-GCM",
       iv: nil
     )
-    
-    if result.success, let decryptedData = result.data {
+
+    if result.success, let decryptedData=result.data {
       return .success(decryptedData)
     } else {
       return .failure(.decryptionFailed(result.errorMessage ?? "Unknown decryption error"))
@@ -81,9 +82,9 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
 
   public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Generate a secure random key with 256-bit size for AES
-    let result = await keyGenerator.generateKey(bits: 256, algorithm: "AES")
-    
-    if result.success, let key = result.data {
+    let result=await keyGenerator.generateKey(bits: 256, algorithm: "AES")
+
+    if result.success, let key=result.data {
       return .success(key)
     } else {
       return .failure(.internalError(result.errorMessage ?? "Unknown key generation error"))
@@ -95,12 +96,12 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     against hash: SecureBytes
   ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
     // Hash the data using SHA-256
-    let hashResult = await self.hash(data: data)
-    
+    let hashResult=await self.hash(data: data)
+
     switch hashResult {
       case let .success(computedHash):
         // Compare the computed hash with the provided hash
-        let match = (0..<min(computedHash.count, hash.count))
+        let match=(0..<min(computedHash.count, hash.count))
           .allSatisfy { computedHash[$0] == hash[$0] }
           && computedHash.count == hash.count
         return .success(match)
@@ -111,11 +112,12 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
 
   // MARK: - Extended Protocol Methods
 
-  public func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  public func generateRandomData(length: Int) async
+  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Generate secure random data of specified length
-    var randomBytes = [UInt8](repeating: 0, count: length)
-    let status = SecRandomCopyBytes(kSecRandomDefault, length, &randomBytes)
-    
+    var randomBytes=[UInt8](repeating: 0, count: length)
+    let status=SecRandomCopyBytes(kSecRandomDefault, length, &randomBytes)
+
     if status == errSecSuccess {
       return .success(SecureBytes(bytes: randomBytes))
     } else {
@@ -131,14 +133,14 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Use the symmetric crypto service with the provided configuration
-    let result = await symmetricCrypto.encryptData(
+    let result=await symmetricCrypto.encryptData(
       data: data,
       key: key,
       algorithm: config.algorithm,
       iv: config.initializationVector
     )
-    
-    if result.success, let encryptedData = result.data {
+
+    if result.success, let encryptedData=result.data {
       return .success(encryptedData)
     } else {
       return .failure(.encryptionFailed(result.errorMessage ?? "Unknown encryption error"))
@@ -151,14 +153,14 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Use the symmetric crypto service with the provided configuration
-    let result = await symmetricCrypto.decryptData(
+    let result=await symmetricCrypto.decryptData(
       data: data,
       key: key,
       algorithm: config.algorithm,
       iv: config.initializationVector
     )
-    
-    if result.success, let decryptedData = result.data {
+
+    if result.success, let decryptedData=result.data {
       return .success(decryptedData)
     } else {
       return .failure(.decryptionFailed(result.errorMessage ?? "Unknown decryption error"))
@@ -168,21 +170,21 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
   // MARK: - Asymmetric Encryption
 
   public func encryptAsymmetric(
-    data: SecureBytes,
-    publicKey: SecureBytes,
-    config: SecurityConfigDTO
+    data _: SecureBytes,
+    publicKey _: SecureBytes,
+    config _: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // For now, return unsupported operation as we focus on symmetric operations
-    return .failure(.unsupportedOperation(name: "Asymmetric encryption not implemented"))
+    .failure(.unsupportedOperation(name: "Asymmetric encryption not implemented"))
   }
 
   public func decryptAsymmetric(
-    data: SecureBytes,
-    privateKey: SecureBytes,
-    config: SecurityConfigDTO
+    data _: SecureBytes,
+    privateKey _: SecureBytes,
+    config _: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // For now, return unsupported operation as we focus on symmetric operations
-    return .failure(.unsupportedOperation(name: "Asymmetric decryption not implemented"))
+    .failure(.unsupportedOperation(name: "Asymmetric decryption not implemented"))
   }
 
   // MARK: - Advanced Hashing
@@ -192,12 +194,12 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     config: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Use the hashing service with the provided algorithm
-    let result = await hashingService.hashData(
+    let result=await hashingService.hashData(
       data: data,
       algorithm: config.algorithm
     )
-    
-    if result.success, let hashedData = result.data {
+
+    if result.success, let hashedData=result.data {
       return .success(hashedData)
     } else {
       return .failure(.internalError(result.errorMessage ?? "Unknown hashing error"))
