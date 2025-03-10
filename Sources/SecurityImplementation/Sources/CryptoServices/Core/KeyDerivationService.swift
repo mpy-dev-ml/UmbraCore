@@ -20,14 +20,14 @@ final class KeyDerivationService: Sendable {
 
   // MARK: - Properties
 
-  /// CryptoWrapper for low-level cryptographic operations
-  private let cryptoWrapper: CryptoWrapper
+  /// CryptoServiceCore for low-level cryptographic operations
+  private let cryptoService = CryptoServiceCore()
 
   // MARK: - Initialisation
 
   /// Creates a new key derivation service
-  init(cryptoWrapper: CryptoWrapper=CryptoWrapper()) {
-    self.cryptoWrapper=cryptoWrapper
+  init() {
+    // No initialisation needed
   }
 
   // MARK: - Public Methods
@@ -50,14 +50,19 @@ final class KeyDerivationService: Sendable {
 
     // Generate key based on type
     switch keyType {
-      case .aes:
-        return try generateAESKey(bits: bits)
+      case .symmetric:
+        return try await generateAESKey(bits: bits)
       case .rsa:
-        return try generateRSAKey(bits: bits)
+        return try await generateRSAKey(bits: bits)
       case .hmac:
-        return try generateHMACKey(bits: bits)
+        return try await generateHMACKey(bits: bits)
       case .ec:
-        return try generateECKey(bits: bits)
+        return try await generateECKey(bits: bits)
+      case .asymmetric:
+        // Default to RSA for asymmetric keys
+        return try await generateRSAKey(bits: bits)
+      case .unknown:
+        throw CryptoError.unsupportedAlgorithm("Unknown key type")
     }
   }
 
@@ -69,14 +74,14 @@ final class KeyDerivationService: Sendable {
       throw CryptoError.invalidLength(length)
     }
 
-    // Use system-provided secure random generation
-    var bytes=[UInt8](repeating: 0, count: length)
-    let status=SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
-
-    if status == errSecSuccess {
-      return SecureBytes(bytes: bytes)
-    } else {
-      throw CryptoError.randomDataGenerationError("Failed to generate secure random bytes")
+    // Use the cryptoService to generate random data
+    let result = await cryptoService.generateRandomData(length: length)
+    
+    switch result {
+    case .success(let randomData):
+      return randomData
+    case .failure(let error):
+      throw CryptoError.randomDataGenerationError("Failed to generate secure random bytes: \(error)")
     }
   }
 
@@ -85,27 +90,20 @@ final class KeyDerivationService: Sendable {
   /// Generate an AES key
   /// - Parameter bits: Key size in bits
   /// - Returns: The generated key
-  private func generateAESKey(bits: Int) throws -> SecureBytes {
+  private func generateAESKey(bits: Int) async throws -> SecureBytes {
     // AES keys must be 128, 192, or 256 bits
     guard [128, 192, 256].contains(bits) else {
       throw CryptoError.invalidKeySize(bits)
     }
 
     // Generate random key of appropriate size
-    var bytes=[UInt8](repeating: 0, count: bits / 8)
-    let status=SecRandomCopyBytes(kSecRandomDefault, bits / 8, &bytes)
-
-    if status == errSecSuccess {
-      return SecureBytes(bytes: bytes)
-    } else {
-      throw CryptoError.keyGenerationError("Failed to generate AES key")
-    }
+    return try await generateRandomData(length: bits / 8)
   }
 
   /// Generate an RSA key
   /// - Parameter bits: Key size in bits
   /// - Returns: The generated key
-  private func generateRSAKey(bits: Int) throws -> SecureBytes {
+  private func generateRSAKey(bits: Int) async throws -> SecureBytes {
     // RSA keys should be at least 2048 bits
     guard bits >= 2048 else {
       throw CryptoError.invalidKeySize(bits)
@@ -113,13 +111,13 @@ final class KeyDerivationService: Sendable {
 
     // In a real implementation, this would generate a proper RSA key
     // For the demo, just return some random bytes
-    return try generateRandomData(length: bits / 8)
+    return try await generateRandomData(length: bits / 8)
   }
 
   /// Generate an EC key
   /// - Parameter bits: Key size in bits
   /// - Returns: The generated key
-  private func generateECKey(bits: Int) throws -> SecureBytes {
+  private func generateECKey(bits: Int) async throws -> SecureBytes {
     // EC key sizes are typically 256, 384, or 521 bits
     guard [256, 384, 521].contains(bits) else {
       throw CryptoError.invalidKeySize(bits)
@@ -127,19 +125,19 @@ final class KeyDerivationService: Sendable {
 
     // In a real implementation, this would generate a proper EC key
     // For the demo, just return some random bytes
-    return try generateRandomData(length: bits / 8)
+    return try await generateRandomData(length: bits / 8)
   }
 
   /// Generate an HMAC key
   /// - Parameter bits: Key size in bits
   /// - Returns: The generated key
-  private func generateHMACKey(bits: Int) throws -> SecureBytes {
+  private func generateHMACKey(bits: Int) async throws -> SecureBytes {
     // HMAC keys can be of any size, but should be at least 128 bits
     guard bits >= 128 else {
       throw CryptoError.invalidKeySize(bits)
     }
 
     // Generate random key of appropriate size
-    return try generateRandomData(length: bits / 8)
+    return try await generateRandomData(length: bits / 8)
   }
 }

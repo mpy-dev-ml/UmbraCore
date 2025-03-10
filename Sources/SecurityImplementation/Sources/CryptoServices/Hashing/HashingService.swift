@@ -41,9 +41,8 @@ final class HashingService: Sendable {
     guard !data.isEmpty else {
       return SecurityResultDTO(
         success: false,
-        data: nil,
-        errorCode: 400,
-        errorMessage: "Cannot hash empty data"
+        error: UmbraErrors.Security.Protocols.invalidInput("Cannot hash empty data"),
+        errorDetails: "Empty data provided for hashing"
       )
     }
 
@@ -51,9 +50,8 @@ final class HashingService: Sendable {
     guard isSupportedHashAlgorithm(algorithm) else {
       return SecurityResultDTO(
         success: false,
-        data: nil,
-        errorCode: 400,
-        errorMessage: "Unsupported hash algorithm: \(algorithm)"
+        error: UmbraErrors.Security.Protocols.unsupportedOperation(name: "Hash algorithm: \(algorithm)"),
+        errorDetails: "The specified hash algorithm is not supported"
       )
     }
 
@@ -62,17 +60,19 @@ final class HashingService: Sendable {
 
     // Create a simple "hash" representation for demonstration
     // DO NOT use this in production - this is just a placeholder!
-    var hashedData=SecureBytes(bytes: Array("\(algorithm):".utf8))
-    hashedData
-      .append(
-        contentsOf: data
-          .prefix(8)
-      ) // Include part of the original data as a simplistic "hash"
+    var hashedBytes = Array("\(algorithm):".utf8)
+    
+    // Append the first 8 bytes of the original data (or fewer if data is smaller)
+    let dataArray = Array(0..<data.count).map { data[$0] }
+    let bytesToAppend = dataArray.prefix(8)
+    hashedBytes.append(contentsOf: bytesToAppend)
 
     // Add some padding to make it look like a real hash
     for _ in 0..<8 {
-      hashedData.append(UInt8.random(in: 0...255))
+      hashedBytes.append(UInt8.random(in: 0...255))
     }
+
+    let hashedData = SecureBytes(bytes: hashedBytes)
 
     return SecurityResultDTO(data: hashedData)
   }

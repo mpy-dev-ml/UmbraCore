@@ -44,18 +44,14 @@ final class AsymmetricCrypto: Sendable {
     guard !data.isEmpty else {
       return SecurityResultDTO(
         success: false,
-        data: nil,
-        errorCode: 400,
-        errorMessage: "Cannot encrypt empty data"
+        error: UmbraErrors.Security.Protocols.invalidInput("Cannot encrypt empty data")
       )
     }
 
     guard !publicKey.isEmpty else {
       return SecurityResultDTO(
         success: false,
-        data: nil,
-        errorCode: 400,
-        errorMessage: "Public key cannot be empty"
+        error: UmbraErrors.Security.Protocols.invalidInput("Public key cannot be empty")
       )
     }
 
@@ -64,8 +60,11 @@ final class AsymmetricCrypto: Sendable {
 
     // Create a simple "encrypted" representation for demonstration
     // DO NOT use this in production - this is just a placeholder!
-    var encryptedData=SecureBytes(bytes: Array("ENCRYPTED:".utf8))
-    encryptedData.append(contentsOf: data)
+    var encryptedBytes = Array("ENCRYPTED:".utf8)
+    for i in 0..<data.count {
+      encryptedBytes.append(data[i])
+    }
+    let encryptedData = SecureBytes(bytes: encryptedBytes)
 
     return SecurityResultDTO(data: encryptedData)
   }
@@ -85,18 +84,14 @@ final class AsymmetricCrypto: Sendable {
     guard !data.isEmpty else {
       return SecurityResultDTO(
         success: false,
-        data: nil,
-        errorCode: 400,
-        errorMessage: "Cannot decrypt empty data"
+        error: UmbraErrors.Security.Protocols.invalidInput("Cannot decrypt empty data")
       )
     }
 
     guard !privateKey.isEmpty else {
       return SecurityResultDTO(
         success: false,
-        data: nil,
-        errorCode: 400,
-        errorMessage: "Private key cannot be empty"
+        error: UmbraErrors.Security.Protocols.invalidInput("Private key cannot be empty")
       )
     }
 
@@ -104,10 +99,11 @@ final class AsymmetricCrypto: Sendable {
     // This is just for the placeholder implementation
     let prefix=Array("ENCRYPTED:".utf8)
     if data.count > prefix.count {
-      let dataPrefix=Array(data.prefix(prefix.count))
-      if dataPrefix == prefix {
+      let dataArray = Array(0..<data.count).map { data[$0] }
+      if dataArray.prefix(prefix.count).elementsEqual(prefix) {
         // Extract the original data by removing our prefix
-        let decryptedData=data.suffix(from: prefix.count)
+        let decryptedBytes = Array(dataArray.dropFirst(prefix.count))
+        let decryptedData = SecureBytes(bytes: decryptedBytes)
         return SecurityResultDTO(data: decryptedData)
       }
     }
@@ -115,9 +111,7 @@ final class AsymmetricCrypto: Sendable {
     // If we get here, decryption failed or the data wasn't encrypted with our placeholder
     return SecurityResultDTO(
       success: false,
-      data: nil,
-      errorCode: 500,
-      errorMessage: "Decryption failed or invalid format"
+      error: UmbraErrors.Security.Protocols.invalidFormat(reason: "Decryption failed")
     )
   }
 }

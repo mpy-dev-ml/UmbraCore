@@ -78,7 +78,7 @@ public final class KeyGenerator: Sendable {
   ) -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Validate key size
     guard isValidKeySize(bits, for: keyType) else {
-      return .failure(.invalidInput(reason: "Invalid key size \(bits) for key type \(keyType)"))
+      return .failure(.invalidInput("Invalid key size \(bits) for key type \(keyType)"))
     }
 
     // Generate the key based on its type
@@ -93,7 +93,7 @@ public final class KeyGenerator: Sendable {
         return generateHMACKey(bits: bits)
 
       default:
-        return .failure(.invalidInput(reason: "Unsupported key type \(keyType)"))
+        return .failure(.invalidInput("Unsupported key type \(keyType)"))
     }
   }
 
@@ -105,7 +105,7 @@ public final class KeyGenerator: Sendable {
   ) -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Validate length
     guard length > 0 else {
-      return .failure(.invalidInput(reason: "Random data length must be greater than 0"))
+      return .failure(.invalidInput("Random data length must be greater than 0"))
     }
 
     // Create a buffer for the random data
@@ -133,7 +133,7 @@ public final class KeyGenerator: Sendable {
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Validate input
     guard bits >= 128 else {
-      return .failure(.invalidInput(reason: "Key size must be at least 128 bits"))
+      return .failure(.invalidInput("Key size must be at least 128 bits"))
     }
 
     // For now, use the simplified implementation
@@ -153,7 +153,7 @@ public final class KeyGenerator: Sendable {
       return SecurityResultDTO(
         success: false,
         error: UmbraErrors.Security.Protocols
-          .invalidInput(reason: "Key size must be greater than 0 bits")
+          .invalidInput("Key size must be greater than 0 bits")
       )
     }
 
@@ -173,7 +173,7 @@ public final class KeyGenerator: Sendable {
         return SecurityResultDTO(
           success: false,
           error: UmbraErrors.Security.Protocols
-            .invalidInput(reason: "Unsupported algorithm: \(algorithm)")
+            .invalidInput("Unsupported algorithm: \(algorithm)")
         )
     }
 
@@ -181,17 +181,27 @@ public final class KeyGenerator: Sendable {
       return SecurityResultDTO(
         success: false,
         error: UmbraErrors.Security.Protocols.invalidInput(
-          reason: "Invalid key size (\(bits) bits) for algorithm \(algorithm)"
+          "Invalid key size (\(bits) bits) for algorithm \(algorithm)"
         )
       )
     }
 
     // Generate key
     do {
-      // For AES, we generate a random key using generateRandomKeySecure
+      // For AES, we generate a random key using secure random bytes
       if algorithm.lowercased() == "aes" {
-        let keyBytes=CryptoWrapper.generateRandomKeySecure()
-        return SecurityResultDTO(success: true, data: keyBytes)
+        var keyBytes = [UInt8](repeating: 0, count: 32) // 256-bit key
+        let status = SecRandomCopyBytes(kSecRandomDefault, keyBytes.count, &keyBytes)
+        
+        if status == errSecSuccess {
+          let secureKeyBytes = SecureBytes(bytes: keyBytes)
+          return SecurityResultDTO(success: true, data: secureKeyBytes)
+        } else {
+          return SecurityResultDTO(
+            success: false, 
+            error: UmbraErrors.Security.Protocols.encryptionFailed("Failed to generate secure random key: \(status)")
+          )
+        }
       } else {
         // For other algorithms, generate appropriate random bytes
         let byteCount=bits / 8
@@ -200,10 +210,9 @@ public final class KeyGenerator: Sendable {
       }
     } catch {
       return SecurityResultDTO(
-        success: false,
+        success: false, 
         error: UmbraErrors.Security.Protocols.serviceError(
-          code: 500,
-          reason: "Failed to generate key: \(error.localizedDescription)"
+          "Failed to generate key: \(error.localizedDescription)"
         )
       )
     }
@@ -215,14 +224,14 @@ public final class KeyGenerator: Sendable {
   public func generateRandomData(length: Int) async
   -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     guard length > 0 else {
-      return .failure(.invalidInput(reason: "Random data length must be greater than 0"))
+      return .failure(.invalidInput("Random data length must be greater than 0"))
     }
 
     do {
       let randomBytes=try secureRandomBytes(count: length)
       return .success(SecureBytes(bytes: randomBytes))
     } catch {
-      return .failure(.randomGenerationFailed(reason: error.localizedDescription))
+      return .failure(.randomGenerationFailed(error.localizedDescription))
     }
   }
 
@@ -250,8 +259,8 @@ public final class KeyGenerator: Sendable {
     // For demonstration purposes, we're just generating random data
     // In a real implementation, this would use proper asymmetric key generation
     // via RSA, ECC, or another asymmetric algorithm
-    .failure(
-      .notImplemented
+    return .failure(
+      .notImplemented("Key type asymmetric is not supported")
     )
   }
 
@@ -291,32 +300,14 @@ public final class KeyGenerator: Sendable {
   }
 
   private func secureRandomBytes(count: Int) throws -> [UInt8] {
-    // Use CryptoWrapper for secure random generation to ensure consistency
-    let secureRandomData: SecureBytes
-
-    if count == 32 {
-      // Use the optimized method for 32-byte keys (256-bit)
-      secureRandomData=CryptoWrapper.generateRandomKeySecure()
-    } else if count == 12 {
-      // Use the optimized method for 12-byte IVs
-      secureRandomData=CryptoWrapper.generateRandomIVSecure()
+    // Use secure random generation to ensure cryptographic security
+    var randomBytes = [UInt8](repeating: 0, count: count)
+    let status = SecRandomCopyBytes(kSecRandomDefault, count, &randomBytes)
+    
+    if status == errSecSuccess {
+      return randomBytes
     } else {
-      // For other sizes, we need a more generic approach
-      // This is a simplified implementation - in a real system, we would
-      // use SecRandomCopyBytes or another cryptographically secure source
-      var randomBytes=[UInt8](repeating: 0, count: count)
-      let status=SecRandomCopyBytes(kSecRandomDefault, count, &randomBytes)
-
-      if status == errSecSuccess {
-        secureRandomData=SecureBytes(bytes: randomBytes)
-      } else {
-        throw UmbraErrors.Security.Protocols.randomGenerationFailed(
-          reason: "Failed to generate secure random bytes: \(status)"
-        )
-      }
+      throw UmbraErrors.Security.Protocols.randomGenerationFailed("Failed to generate secure random bytes: \(status)")
     }
-
-    // Convert SecureBytes to [UInt8] for the caller
-    return Array(secureRandomData)
   }
 }
