@@ -3,7 +3,7 @@ import Foundation
 
 extension UmbraErrors.Security {
   /// Protocol implementation errors in the security domain
-  public enum Protocols: Error, UmbraError, StandardErrorCapabilities {
+  public enum Protocols: Error, UmbraError, StandardErrorCapabilities, Equatable {
     /// A required protocol implementation is missing
     case missingProtocolImplementation(protocolName: String)
 
@@ -21,6 +21,27 @@ extension UmbraErrors.Security {
 
     /// An unspecified internal error occurred within the protocol implementation
     case internalError(String)
+    
+    /// Invalid input was provided to the protocol
+    case invalidInput(String)
+    
+    /// Encryption operation failed
+    case encryptionFailed(String)
+    
+    /// Decryption operation failed
+    case decryptionFailed(String)
+    
+    /// Random data generation failed
+    case randomGenerationFailed(String)
+    
+    /// Storage operation failed
+    case storageOperationFailed(String)
+    
+    /// Service error occurred
+    case serviceError(String)
+    
+    /// Operation not implemented
+    case notImplemented(String)
 
     // MARK: - UmbraError Protocol
 
@@ -44,6 +65,20 @@ extension UmbraErrors.Security {
           "invalid_state"
         case .internalError:
           "internal_error"
+        case .invalidInput:
+          "invalid_input"
+        case .encryptionFailed:
+          "encryption_failed"
+        case .decryptionFailed:
+          "decryption_failed"
+        case .randomGenerationFailed:
+          "random_generation_failed"
+        case .storageOperationFailed:
+          "storage_operation_failed"
+        case .serviceError:
+          "service_error"
+        case .notImplemented:
+          "not_implemented"
       }
     }
 
@@ -62,6 +97,20 @@ extension UmbraErrors.Security {
           "Invalid protocol state: current '\(state)', expected '\(expectedState)'"
         case let .internalError(message):
           "Internal protocol error: \(message)"
+        case let .invalidInput(message):
+          "Invalid input: \(message)"
+        case let .encryptionFailed(message):
+          "Encryption failed: \(message)"
+        case let .decryptionFailed(message):
+          "Decryption failed: \(message)"
+        case let .randomGenerationFailed(message):
+          "Random data generation failed: \(message)"
+        case let .storageOperationFailed(message):
+          "Storage operation failed: \(message)"
+        case let .serviceError(message):
+          "Service error: \(message)"
+        case let .notImplemented(message):
+          "Operation not implemented: \(message)"
       }
     }
 
@@ -100,6 +149,20 @@ extension UmbraErrors.Security {
           .invalidState(state: state, expectedState: expectedState)
         case let .internalError(message):
           .internalError(message)
+        case let .invalidInput(message):
+          .invalidInput(message)
+        case let .encryptionFailed(message):
+          .encryptionFailed(message)
+        case let .decryptionFailed(message):
+          .decryptionFailed(message)
+        case let .randomGenerationFailed(message):
+          .randomGenerationFailed(message)
+        case let .storageOperationFailed(message):
+          .storageOperationFailed(message)
+        case let .serviceError(message):
+          .serviceError(message)
+        case let .notImplemented(message):
+          .notImplemented(message)
       }
       // In a real implementation, we would attach the context
     }
@@ -180,5 +243,117 @@ extension UmbraErrors.Security.Protocols {
     function _: String=#function
   ) -> Self {
     .internalError(message)
+  }
+
+  /// Create an invalid input error
+  public static func makeInvalidInput(
+    message: String,
+    file _: String=#file,
+    line _: Int=#line,
+    function _: String=#function
+  ) -> Self {
+    .invalidInput(message)
+  }
+
+  /// Create an encryption failed error
+  public static func makeEncryptionFailed(
+    message: String,
+    file _: String=#file,
+    line _: Int=#line,
+    function _: String=#function
+  ) -> Self {
+    .encryptionFailed(message)
+  }
+
+  /// Create a decryption failed error
+  public static func makeDecryptionFailed(
+    message: String,
+    file _: String=#file,
+    line _: Int=#line,
+    function _: String=#function
+  ) -> Self {
+    .decryptionFailed(message)
+  }
+
+  /// Create a random generation failed error
+  public static func makeRandomGenerationFailed(
+    message: String,
+    file _: String=#file,
+    line _: Int=#line,
+    function _: String=#function
+  ) -> Self {
+    .randomGenerationFailed(message)
+  }
+
+  /// Create a storage operation failed error
+  public static func makeStorageOperationFailed(
+    message: String,
+    file _: String=#file,
+    line _: Int=#line,
+    function _: String=#function
+  ) -> Self {
+    .storageOperationFailed(message)
+  }
+
+  /// Create a service error
+  public static func makeServiceError(
+    message: String,
+    file _: String=#file,
+    line _: Int=#line,
+    function _: String=#function
+  ) -> Self {
+    .serviceError(message)
+  }
+
+  /// Create a not implemented error
+  public static func makeNotImplemented(
+    message: String,
+    file _: String=#file,
+    line _: Int=#line,
+    function _: String=#function
+  ) -> Self {
+    .notImplemented(message)
+  }
+}
+
+// MARK: - Equatable Implementation
+
+extension UmbraErrors.Security.Protocols {
+  /// Compares two UmbraErrors.Security.Protocols instances for equality
+  /// - Parameters:
+  ///   - lhs: Left-hand side instance
+  ///   - rhs: Right-hand side instance
+  /// - Returns: True if the instances are equal, false otherwise
+  public static func == (lhs: UmbraErrors.Security.Protocols, rhs: UmbraErrors.Security.Protocols) -> Bool {
+    switch (lhs, rhs) {
+      case let (.missingProtocolImplementation(lhsName), .missingProtocolImplementation(rhsName)):
+        return lhsName == rhsName
+      case let (.invalidFormat(lhsReason), .invalidFormat(rhsReason)):
+        return lhsReason == rhsReason
+      case let (.unsupportedOperation(lhsName), .unsupportedOperation(rhsName)):
+        return lhsName == rhsName
+      case let (.incompatibleVersion(lhsVersion), .incompatibleVersion(rhsVersion)):
+        return lhsVersion == rhsVersion
+      case let (.invalidState(lhsState, lhsExpected), .invalidState(rhsState, rhsExpected)):
+        return lhsState == rhsState && lhsExpected == rhsExpected
+      case let (.internalError(lhsMessage), .internalError(rhsMessage)):
+        return lhsMessage == rhsMessage
+      case let (.invalidInput(lhsMessage), .invalidInput(rhsMessage)):
+        return lhsMessage == rhsMessage
+      case let (.encryptionFailed(lhsMessage), .encryptionFailed(rhsMessage)):
+        return lhsMessage == rhsMessage
+      case let (.decryptionFailed(lhsMessage), .decryptionFailed(rhsMessage)):
+        return lhsMessage == rhsMessage
+      case let (.randomGenerationFailed(lhsMessage), .randomGenerationFailed(rhsMessage)):
+        return lhsMessage == rhsMessage
+      case let (.storageOperationFailed(lhsMessage), .storageOperationFailed(rhsMessage)):
+        return lhsMessage == rhsMessage
+      case let (.serviceError(lhsMessage), .serviceError(rhsMessage)):
+        return lhsMessage == rhsMessage
+      case let (.notImplemented(lhsMessage), .notImplemented(rhsMessage)):
+        return lhsMessage == rhsMessage
+      default:
+        return false
+    }
   }
 }

@@ -27,8 +27,8 @@ class SecurityProtocolsCoreTests: XCTestCase {
     let error1=UmbraErrors.Security.Protocols.internalError("Encryption failed: " + "test")
     let error2=UmbraErrors.Security.Protocols.invalidFormat(reason: "Invalid key")
 
-    XCTAssertEqual(String(describing: error1), "internalError(Encryption failed: test)")
-    XCTAssertEqual(String(describing: error2), "invalidFormat(reason: Invalid key)")
+    XCTAssertEqual(String(describing: error1), "[Security.Protocols.internal_error] Internal protocol error: Encryption failed: test")
+    XCTAssertEqual(String(describing: error2), "[Security.Protocols.invalid_format] Invalid data format for protocol: Invalid key")
   }
 
   // MARK: - SecurityOperation Tests

@@ -160,4 +160,41 @@ public struct SecurityResultDTO: Sendable, Equatable {
   ) -> SecurityResultDTO {
     SecurityResultDTO(success: false, error: error, errorDetails: details)
   }
+  
+  // MARK: - Equatable Conformance
+  
+  /// Compares two SecurityResultDTO instances for equality
+  /// - Parameters:
+  ///   - lhs: Left-hand side instance
+  ///   - rhs: Right-hand side instance
+  /// - Returns: True if the instances are equal, false otherwise
+  public static func == (lhs: SecurityResultDTO, rhs: SecurityResultDTO) -> Bool {
+    // Compare success status
+    guard lhs.success == rhs.success else { return false }
+    
+    // For successful results, compare data
+    if lhs.success {
+      if let lhsData = lhs.data, let rhsData = rhs.data {
+        return lhsData == rhsData
+      } else {
+        // If one has data and the other doesn't, they're not equal
+        return lhs.data == nil && rhs.data == nil
+      }
+    } else {
+      // For failure results, compare error codes and messages
+      if lhs.errorCode != rhs.errorCode {
+        return false
+      }
+      
+      // Compare error types
+      if let lhsError = lhs.error, let rhsError = rhs.error {
+        // Compare error types by their string representation
+        // This is a simple approach; a more robust solution would compare the enum cases directly
+        return String(describing: lhsError) == String(describing: rhsError)
+      } else {
+        // If one has an error and the other doesn't, they're not equal
+        return lhs.error == nil && rhs.error == nil
+      }
+    }
+  }
 }

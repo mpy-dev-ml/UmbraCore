@@ -418,6 +418,20 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
         return "INVALID_STATE"
       case .internalError:
         return "INTERNAL_ERROR"
+      case .invalidInput:
+        return "INVALID_INPUT"
+      case .encryptionFailed:
+        return "ENCRYPTION_FAILED"
+      case .decryptionFailed:
+        return "DECRYPTION_FAILED"
+      case .randomGenerationFailed:
+        return "RANDOM_GENERATION_FAILED"
+      case .storageOperationFailed:
+        return "STORAGE_OPERATION_FAILED"
+      case .serviceError:
+        return "SERVICE_ERROR"
+      case .notImplemented:
+        return "NOT_IMPLEMENTED"
       @unknown default:
         return "UNKNOWN_ERROR"
     }
@@ -438,6 +452,20 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
         return "Invalid state: \(state), expected: \(expectedState)"
       case let .internalError(reason):
         return "Internal protocol error: \(reason)"
+      case let .invalidInput(message):
+        return "Invalid input: \(message)"
+      case let .encryptionFailed(message):
+        return "Encryption failed: \(message)"
+      case let .decryptionFailed(message):
+        return "Decryption failed: \(message)"
+      case let .randomGenerationFailed(message):
+        return "Random data generation failed: \(message)"
+      case let .storageOperationFailed(message):
+        return "Storage operation failed: \(message)"
+      case let .serviceError(message):
+        return "Service error: \(message)"
+      case let .notImplemented(message):
+        return "Operation not implemented: \(message)"
       @unknown default:
         return "Unknown protocol error"
     }
@@ -462,6 +490,20 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
         return "Ensure the system is in the correct state before attempting this operation."
       case .internalError:
         return "Contact support if the problem persists."
+      case .invalidInput:
+        return "Check the format of your input data and try again."
+      case .encryptionFailed:
+        return "Check that you are using the correct key and that the data is in the expected format."
+      case .decryptionFailed:
+        return "Check that you are using the correct key and that the data is in the expected format."
+      case .randomGenerationFailed:
+        return "Try again or check system entropy sources."
+      case .storageOperationFailed:
+        return "Check storage permissions and available space."
+      case .serviceError:
+        return "Try again later or contact support if the problem persists."
+      case .notImplemented:
+        return "Contact support for assistance."
       @unknown default:
         return "Try again or contact support if the problem persists."
     }
@@ -474,6 +516,20 @@ public struct SecurityProtocolsErrorWrapper: UmbraError, CustomStringConvertible
         return .warning
       case .incompatibleVersion:
         return .critical
+      case .invalidInput:
+        return .warning
+      case .encryptionFailed:
+        return .error
+      case .decryptionFailed:
+        return .error
+      case .randomGenerationFailed:
+        return .warning
+      case .storageOperationFailed:
+        return .error
+      case .serviceError:
+        return .error
+      case .notImplemented:
+        return .error
       default:
         return .error
     }
