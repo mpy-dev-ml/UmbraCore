@@ -11,8 +11,8 @@ import Foundation
 public enum SecurityError: Error, Equatable, Sendable {
   // MARK: - Domain Error Wrappers
 
-  /// Core security error from UmbraErrors.Security.Core
-  case domainCoreError(UmbraErrors.Security.Core)
+  /// Core security error from UmbraErrors.GeneralSecurity.Core
+  case domainCoreError(UmbraErrors.GeneralSecurity.Core)
 
   /// Protocol-related security error from UmbraErrors.Security.Protocols
   case domainProtocolError(UmbraErrors.Security.Protocols)
