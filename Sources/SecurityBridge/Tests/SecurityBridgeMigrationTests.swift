@@ -1,4 +1,5 @@
 import CoreTypesInterfaces
+import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
 import FoundationBridgeTypes
@@ -7,6 +8,15 @@ import SecurityBridgeProtocolAdapters
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
+
+// Protocol definition for ServiceProtocolBasic used in tests
+protocol ServiceProtocolBasic {
+  static var protocolIdentifier: String { get }
+  
+  func ping() async -> Result<Bool, UmbraErrors.Security.Protocols>
+  func synchronizeKeys(_ keys: SecureBytes) async -> Result<Void, UmbraErrors.Security.Protocols>
+  func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+}
 
 final class SecurityBridgeMigrationTests: XCTestCase {
   // MARK: - XPCServiceBridge Tests
@@ -52,53 +62,41 @@ final class SecurityBridgeMigrationTests: XCTestCase {
     let adapter=SecurityBridgeProtocolAdapters.SecurityProviderProtocolAdapter(bridge: mockBridge)
 
     // Create test data using SecureBytes instead of legacy BinaryData
-    let testData=SecureBytes([1, 2, 3, 4, 5])
-    let testKey=SecureBytes([10, 20, 30, 40, 50])
+    let testData=SecureBytes(bytes: [1, 2, 3, 4, 5])
+    let testKey=SecureBytes(bytes: [10, 20, 30, 40, 50])
+    
+    // Convert SecureBytes to BinaryData for the adapter
+    let binaryData = CoreTypesInterfaces.BinaryData(bytes: [1, 2, 3, 4, 5])
+    let binaryKey = CoreTypesInterfaces.BinaryData(bytes: [10, 20, 30, 40, 50])
 
-    // Test with Result types
-    let encryptResult=await adapter.encrypt(testData, key: testKey)
-    switch encryptResult {
-      case let .success(encrypted):
-        var encryptedBytes=[UInt8]()
-        encrypted.withUnsafeBytes { buffer in
-          encryptedBytes=Array(buffer)
-        }
+    // Test with adapter using BinaryData
+    let encryptResult=try await adapter.encrypt(binaryData, key: binaryKey)
+    // Extract bytes from BinaryData using rawBytes
+    let encryptedBytes = Array(encryptResult.rawBytes)
 
-        var testDataBytes=[UInt8]()
-        testData.withUnsafeBytes { buffer in
-          testDataBytes=Array(buffer)
-        }
-
-        XCTAssertNotEqual(encryptedBytes, testDataBytes)
-
-        let decryptResult=await adapter.decrypt(encrypted, key: testKey)
-        switch decryptResult {
-          case let .success(decrypted):
-            var decryptedBytes=[UInt8]()
-            decrypted.withUnsafeBytes { buffer in
-              decryptedBytes=Array(buffer)
-            }
-            XCTAssertEqual(decryptedBytes, testDataBytes)
-          case let .failure(error):
-            XCTFail("Decryption failed: \(error)")
-        }
-      case let .failure(error):
-        XCTFail("Encryption failed: \(error)")
+    var testDataBytes=[UInt8]()
+    testData.withUnsafeBytes { buffer in
+      testDataBytes = Array(buffer.map { $0 })
     }
+
+    XCTAssertNotEqual(encryptedBytes, testDataBytes)
+
+    // Convert back to BinaryData for decryption
+    let encryptedBinaryData = CoreTypesInterfaces.BinaryData(bytes: encryptedBytes)
+    let decryptResult=try await adapter.decrypt(encryptedBinaryData, key: binaryKey)
+    // Extract bytes from BinaryData using rawBytes
+    let decryptedBytes = Array(decryptResult.rawBytes)
+    
+    XCTAssertEqual(decryptedBytes, testDataBytes)
   }
 
-  func testSecurityProviderAdapterGenerateRandomData() async {
+  func testSecurityProviderAdapterGenerateRandomData() async throws {
     let mockBridge=MockSecurityProviderBridge()
     let adapter=SecurityBridgeProtocolAdapters.SecurityProviderProtocolAdapter(bridge: mockBridge)
 
-    // Test the newly added generateRandomData
-    let dataResult=await adapter.generateRandomData(length: 10)
-    switch dataResult {
-      case let .success(data):
-        XCTAssertEqual(data.count, 10)
-      case let .failure(error):
-        XCTFail("Generate random data failed: \(error)")
-    }
+    // Test the generateKey method with the required length parameter
+    let keyResult = try await adapter.generateKey(length: 32)
+    XCTAssertEqual(keyResult.count, 32) // Default key size
   }
 }
 
@@ -108,24 +106,24 @@ private class MockXPCServiceProtocolBasic: ServiceProtocolBasic,
 @unchecked Sendable {
   static var protocolIdentifier: String="mock.protocol"
 
-  func ping() async -> Result<Bool, SecurityError> {
+  func ping() async -> Result<Bool, UmbraErrors.Security.Protocols> {
     .success(true)
   }
 
-  func synchronizeKeys(_: SecureBytes) async -> Result<Void, SecurityError> {
+  func synchronizeKeys(_: SecureBytes) async -> Result<Void, UmbraErrors.Security.Protocols> {
     .success(())
   }
 
-  func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
+  func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     var bytes=[UInt8]()
     for i in 0..<length {
       bytes.append(UInt8(i % 256))
     }
-    return .success(SecureBytes(bytes))
+    return .success(SecureBytes(bytes: bytes))
   }
 }
 
-private class MockFoundationXPCService: NSObject, Sendable {
+private class MockFoundationXPCService: NSObject, @unchecked Sendable {
   func pingFoundation(completion: @escaping (Bool, Error?) -> Void) {
     completion(true, nil)
   }
@@ -167,13 +165,15 @@ private class FoundationToCoreTypesAdapter: ServiceProtocolBasic {
     self.service=service
   }
 
-  static var protocolIdentifier: String="com.umbra.xpc.service.adapter.foundation.bridge"
+  static var protocolIdentifier: String {
+    "com.umbra.xpc.service.adapter.foundation.bridge"
+  }
 
-  func ping() async -> Result<Bool, SecurityError> {
+  func ping() async -> Result<Bool, UmbraErrors.Security.Protocols> {
     await withCheckedContinuation { continuation in
-      service.pingFoundation { success, _ in
+      service.pingFoundation { success, error in
         if let error {
-          continuation.resume(returning: .failure(.general))
+          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
         } else {
           continuation.resume(returning: .success(success))
         }
@@ -181,45 +181,59 @@ private class FoundationToCoreTypesAdapter: ServiceProtocolBasic {
     }
   }
 
-  func synchronizeKeys(_: SecureBytes) async -> Result<Void, SecurityError> {
-    .success(())
+  func synchronizeKeys(_ keys: SecureBytes) async -> Result<Void, UmbraErrors.Security.Protocols> {
+    await withCheckedContinuation { continuation in
+      var keyData = Data()
+      keys.withUnsafeBytes { buffer in
+        keyData = Data(buffer)
+      }
+      
+      service.synchronizeKeys(keyData) { error in
+        if let error {
+          continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
+        } else {
+          continuation.resume(returning: .success(()))
+        }
+      }
+    }
   }
 
-  func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
+  func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     var bytes=[UInt8]()
     for i in 0..<length {
       bytes.append(UInt8(i % 256))
     }
-    return .success(SecureBytes(bytes))
+    return .success(SecureBytes(bytes: bytes))
   }
 }
 
-private class MockSecurityProviderBridge: @unchecked Sendable {
-  static var protocolIdentifier: String="mock.provider.bridge"
-
-  func encrypt(
-    _ data: DataBridge,
-    key _: DataBridge
-  ) async -> Result<DataBridge, SecurityError> {
-    // Simple "encryption" for test
-    let bytes=data.bytes.map { $0 ^ 0xFF } // Just XOR with 0xFF
-    return .success(DataBridge(bytes))
+/// Add mock implementation of MockSecurityProviderBridge to replace the previous incomplete version
+private final class MockSecurityProviderBridge: SecurityBridgeProtocolAdapters.SecurityProviderBridge {
+  // Add required protocol identifier
+  static var protocolIdentifier: String = "mock.security.provider.bridge"
+  
+  func encrypt(_ data: FoundationBridgeTypes.DataBridge, key: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes.DataBridge {
+    var dataBytes: [UInt8] = []
+    dataBytes = data.bytes
+    let encryptedData = Array(dataBytes.reversed())
+    return FoundationBridgeTypes.DataBridge(encryptedData)
   }
-
-  func decrypt(
-    _ data: DataBridge,
-    key _: DataBridge
-  ) async -> Result<DataBridge, SecurityError> {
-    // Simple "decryption" for test
-    let bytes=data.bytes.map { $0 ^ 0xFF } // Just XOR with 0xFF
-    return .success(DataBridge(bytes))
+  
+  func decrypt(_ data: FoundationBridgeTypes.DataBridge, key: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes.DataBridge {
+    var dataBytes: [UInt8] = []
+    dataBytes = data.bytes
+    let decryptedData = Array(dataBytes.reversed())
+    return FoundationBridgeTypes.DataBridge(decryptedData)
   }
-
-  func generateRandomData(length: Int) async -> Result<DataBridge, SecurityError> {
-    var bytes=[UInt8]()
-    for i in 0..<length {
-      bytes.append(UInt8(i % 256))
-    }
-    return .success(DataBridge(bytes))
+  
+  func generateKey(sizeInBytes: Int) async throws -> FoundationBridgeTypes.DataBridge {
+    let keyData = Array((0..<sizeInBytes).map { UInt8($0 % 256) })
+    return FoundationBridgeTypes.DataBridge(keyData)
+  }
+  
+  func hash(_ data: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes.DataBridge {
+    var hashedData: [UInt8] = []
+    hashedData = data.bytes
+    return FoundationBridgeTypes.DataBridge(hashedData)
   }
 }

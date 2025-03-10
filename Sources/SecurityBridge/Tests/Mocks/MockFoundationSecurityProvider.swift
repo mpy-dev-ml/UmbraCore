@@ -263,11 +263,11 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
   private let mockKeyManager: MockFoundationKeyManagement
   private let mockCryptoService: MockFoundationCryptoService
 
-  public var cryptoService: any FoundationCryptoService {
+  public var cryptoService: any FoundationCryptoServiceImpl {
     mockCryptoService
   }
 
-  public var keyManager: any FoundationKeyManagement {
+  public var keyManager: any FoundationKeyManagementImpl {
     mockKeyManager
   }
 

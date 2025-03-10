@@ -31,7 +31,7 @@ final class SecurityProviderAdapterTests: XCTestCase {
   // MARK: - Helper Methods
 
   private func createTestSecureBytes() -> SecureBytes {
-    SecureBytes([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+    SecureBytes(bytes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
   }
 
   private func createTestData() -> Data {
@@ -54,8 +54,8 @@ final class SecurityProviderAdapterTests: XCTestCase {
     XCTAssertEqual(convertedBack.count, secureBytes.count)
 
     // Compare contents
-    XCTAssertEqual(Array(data), secureBytes.unsafeBytes)
-    XCTAssertEqual(convertedBack.unsafeBytes, secureBytes.unsafeBytes)
+    XCTAssertEqual(Array(data), Array(secureBytes))
+    XCTAssertEqual(Array(convertedBack), Array(secureBytes))
   }
 
   /// Tests creating a security config
@@ -99,26 +99,26 @@ final class SecurityProviderAdapterTests: XCTestCase {
     XCTAssertEqual(emptyConvertedBack.count, 0)
 
     // Test large data
-    let largeSecureBytes=SecureBytes(count: 1024) // 1KB of zeros (smaller for performance)
+    let largeSecureBytes = try SecureBytes(count: 1024) // 1KB of zeros (smaller for performance)
     let largeData=DataAdapter.data(from: largeSecureBytes)
     XCTAssertEqual(largeData.count, 1024)
 
     // Test with random data (smaller sample for performance)
     var randomBytes=[UInt8](repeating: 0, count: 64)
     _=SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
-    let randomSecureBytes=SecureBytes(randomBytes)
+    let randomSecureBytes=SecureBytes(bytes: randomBytes)
     let randomData=DataAdapter.data(from: randomSecureBytes)
     let randomConvertedBack=DataAdapter.secureBytes(from: randomData)
 
     XCTAssertEqual(randomData.count, randomBytes.count)
-    XCTAssertEqual(randomConvertedBack.unsafeBytes, randomBytes)
+    XCTAssertEqual(Array(randomConvertedBack), randomBytes)
   }
 
   /// Tests a basic encryption-decryption flow using the adapter
   func testPerformSecureOperation() async throws {
     // Arrange
-    let testData=SecureBytes([1, 2, 3, 4, 5])
-    let testKey=SecureBytes([10, 20, 30, 40, 50])
+    let testData=SecureBytes(bytes: [1, 2, 3, 4, 5])
+    let testKey=SecureBytes(bytes: [10, 20, 30, 40, 50])
     let config=SecurityConfigDTO(
       algorithm: "AES-GCM",
       keySizeInBits: 256,

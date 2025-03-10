@@ -36,7 +36,7 @@ extension BaseXPCAdapter {
 
   /// Convert SecureBytes to NSData
   public func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
-    let data=Data(secureBytes.bytes)
+    let data=Data(Array(secureBytes))
     return data as NSData
   }
 
@@ -117,36 +117,34 @@ extension BaseXPCAdapter {
   /// Map NSError to UmbraErrors.Security.XPC
   public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
     if error.domain == "com.umbra.security.xpc" {
-      if let message=error.userInfo[NSLocalizedDescriptionKey] as? String {
+      if let message = error.userInfo[NSLocalizedDescriptionKey] as? String {
         if message.contains("invalid format") || message.contains("Invalid format") {
-          return UmbraErrors.Security.XPC.invalidFormat(reason: message)
+          return UmbraErrors.Security.XPC.invalidMessageFormat(reason: message)
         } else if message.contains("encryption failed") {
-          return UmbraErrors.Security.XPC.encryptionFailed(reason: message)
+          return UmbraErrors.Security.XPC.serviceError(code: error.code, reason: message)
         } else if message.contains("decryption failed") {
-          return UmbraErrors.Security.XPC.decryptionFailed(reason: message)
+          return UmbraErrors.Security.XPC.serviceError(code: error.code, reason: message)
         } else if message.contains("key not found") {
-          return UmbraErrors.Security.XPC.keyNotFound(identifier: message)
+          return UmbraErrors.Security.XPC.serviceError(code: error.code, reason: message)
         }
       }
 
       switch error.code {
         case 1001:
-          return UmbraErrors.Security.XPC.serviceUnavailable
+          return UmbraErrors.Security.XPC.serviceUnavailable(serviceName: "SecurityService")
         case 1002:
-          return UmbraErrors.Security.XPC.operationNotPermitted
+          return UmbraErrors.Security.XPC.insufficientPrivileges(service: "SecurityService", requiredPrivilege: "Operation")
         case 1003:
-          return UmbraErrors.Security.XPC.invalidOperation
+          return UmbraErrors.Security.XPC.serviceError(code: error.code, reason: "Invalid operation")
         default:
-          return UmbraErrors.Security.XPC.unknownError(
-            code: error.code,
-            message: error.localizedDescription
+          return UmbraErrors.Security.XPC.internalError(
+            "Unknown error (code: \(error.code), message: \(error.localizedDescription))"
           )
       }
     }
 
-    return UmbraErrors.Security.XPC.unknownError(
-      code: error.code,
-      message: error.localizedDescription
+    return UmbraErrors.Security.XPC.internalError(
+      "External error (domain: \(error.domain), code: \(error.code), message: \(error.localizedDescription))"
     )
   }
 

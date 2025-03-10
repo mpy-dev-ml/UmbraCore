@@ -2,8 +2,7 @@ import Foundation
 @testable import SecurityBridge
 import SecurityProtocolsCore
 
-final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecurityService,
-@unchecked Sendable {
+final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
   // MARK: - Test Control Properties
 
   var shouldFail=false
@@ -31,21 +30,23 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "com.umbracore.mock",
-          code: 500,
-          userInfo: [NSLocalizedDescriptionKey: "Encryption failed"]
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock encryption failed"]
         )
       )
-      return
-    }
-
-    if let dataToReturn=encryptedDataToReturn {
-      completion(dataToReturn, nil)
     } else {
-      // Simple mock encryption (append "ENCRYPTED")
-      var result=data
-      result.append(Data("ENCRYPTED".utf8))
-      completion(result, nil)
+      // Default implementation returns either the pre-configured data or original data
+      completion(encryptedDataToReturn ?? data, nil)
+    }
+  }
+
+  func encryptDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void) {
+    methodCalls.append("encryptDataXPC")
+
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock encryption failed")
+    } else {
+      // Default implementation returns either the pre-configured data or original data
+      completion(encryptedDataToReturn ?? data, nil, nil)
     }
   }
 
@@ -56,136 +57,184 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "com.umbracore.mock",
-          code: 500,
-          userInfo: [NSLocalizedDescriptionKey: "Decryption failed"]
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock decryption failed"]
         )
       )
-      return
-    }
-
-    if let dataToReturn=decryptedDataToReturn {
-      completion(dataToReturn, nil)
     } else {
-      // Simple mock decryption (remove "ENCRYPTED" suffix)
-      let suffixLength="ENCRYPTED".utf8.count
-      if data.count >= suffixLength {
-        let result=data.subdata(in: 0..<(data.count - suffixLength))
-        completion(result, nil)
-      } else {
-        completion(data, nil)
-      }
+      // Default implementation returns either the pre-configured data or original data
+      completion(decryptedDataToReturn ?? data, nil)
     }
   }
 
-  func generateKey(completion: @escaping (Data?, Error?) -> Void) {
-    methodCalls.append("generateKey")
+  func decryptDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void) {
+    methodCalls.append("decryptDataXPC")
+
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock decryption failed")
+    } else {
+      // Default implementation returns either the pre-configured data or original data
+      completion(decryptedDataToReturn ?? data, nil, nil)
+    }
+  }
+
+  func generateKey(bits: Int, completion: @escaping (Data?, Error?) -> Void) {
+    methodCalls.append("generateKey(bits: \(bits))")
 
     if shouldFail {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "com.umbracore.mock",
-          code: 500,
-          userInfo: [NSLocalizedDescriptionKey: "Key generation failed"]
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock key generation failed"]
         )
       )
-      return
+    } else {
+      // Default implementation returns pre-configured key data or a simple sequence
+      let defaultKeyData=Data((0..<32).map { UInt8($0 % 256) })
+      completion(keyDataToReturn ?? defaultKeyData, nil)
     }
+  }
 
-    // If there's specific test data to return, prioritize it
-    if let keyData=keyDataToReturn {
-      completion(keyData, nil)
-      return
+  func generateKeyXPC(bits _: Int, completion: @escaping (Data?, NSNumber?, String?) -> Void) {
+    methodCalls.append("generateKeyXPC")
+
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock key generation failed")
+    } else {
+      // Default implementation returns pre-configured key data or a simple sequence
+      let defaultKeyData=Data((0..<32).map { UInt8($0 % 256) })
+      completion(keyDataToReturn ?? defaultKeyData, nil, nil)
     }
-
-    // Generate a mock key
-    var keyData=Data(count: 32) // 256-bit key
-    for i in 0..<keyData.count {
-      keyData[i]=UInt8(i % 256)
-    }
-
-    completion(keyData, nil)
   }
 
   func generateRandomData(length: Int, completion: @escaping (Data?, Error?) -> Void) {
-    methodCalls.append("generateRandomData(\(length))")
+    methodCalls.append("generateRandomData")
 
     if shouldFail {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "com.umbracore.mock",
-          code: 500,
-          userInfo: [NSLocalizedDescriptionKey: "Random data generation failed"]
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock random data generation failed"]
         )
       )
-      return
+    } else {
+      // Default implementation returns pre-configured random data or a simple sequence
+      let defaultRandomData=Data((0..<length).map { UInt8($0 % 256) })
+      completion(randomDataToReturn ?? defaultRandomData, nil)
     }
-
-    // If there's specific test data to return, prioritize it
-    if let randomData=randomDataToReturn {
-      completion(randomData, nil)
-      return
-    }
-
-    // Generate mock random data
-    var randomData=Data(count: length)
-    for i in 0..<randomData.count {
-      randomData[i]=UInt8(i % 256)
-    }
-
-    completion(randomData, nil)
   }
 
+  func generateRandomDataXPC(_ length: Int, completion: @escaping (Data?, NSNumber?, String?) -> Void) {
+    methodCalls.append("generateRandomDataXPC")
+
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock random data generation failed")
+    } else {
+      // Default implementation returns pre-configured random data or a simple sequence
+      let defaultRandomData=Data((0..<length).map { UInt8($0 % 256) })
+      completion(randomDataToReturn ?? defaultRandomData, nil, nil)
+    }
+  }
+  
+  // MARK: - Hash functions
+
+  func calculateHash(data: Data, algorithm: String, completion: @escaping (Data?, Error?) -> Void) {
+    methodCalls.append("calculateHash(\(algorithm))")
+
+    if shouldFail {
+      completion(
+        nil,
+        errorToThrow ?? NSError(
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock hash calculation failed"]
+        )
+      )
+    } else {
+      // Default implementation returns pre-configured hash data or a simple mock hash
+      let defaultHashData=Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+      completion(hashDataToReturn ?? defaultHashData, nil)
+    }
+  }
+
+  func calculateHashXPC(
+    _ data: Data,
+    algorithm: String,
+    optionsJson: String,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  ) {
+    methodCalls.append("calculateHashXPC(\(algorithm))")
+
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock hash calculation failed")
+    } else {
+      // Default implementation returns pre-configured hash data or a simple mock hash
+      let defaultHashData=Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+      completion(hashDataToReturn ?? defaultHashData, nil, nil)
+    }
+  }
+  
   // MARK: - Key management methods
 
-  func retrieveKey(identifier: String, completion: @escaping (Data?, Error?) -> Void) {
-    methodCalls.append("retrieveKey(\(identifier))")
+  func storeSecurely(
+    _ credential: Data,
+    identifier: String,
+    completion: @escaping (Error?) -> Void
+  ) {
+    methodCalls.append("storeSecurely(\(identifier))")
+
+    if shouldFail {
+      completion(
+        errorToThrow ?? NSError(
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock credential storage failed"]
+        )
+      )
+    } else {
+      completion(nil)
+    }
+  }
+
+  func storeSecurelyXPC(
+    _ credential: Data,
+    identifier: String,
+    completion: @escaping (NSNumber?, String?) -> Void
+  ) {
+    methodCalls.append("storeSecurelyXPC(\(identifier))")
+
+    if shouldFail {
+      completion(NSNumber(value: 500), "Mock credential storage failed")
+    } else {
+      completion(nil, nil)
+    }
+  }
+
+  func retrieveSecurely(identifier: String, completion: @escaping (Data?, Error?) -> Void) {
+    methodCalls.append("retrieveSecurely(\(identifier))")
 
     if shouldFail {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "com.umbracore.mock",
-          code: 404,
-          userInfo: [NSLocalizedDescriptionKey: "Key not found"]
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock credential retrieval failed"]
         )
       )
-      return
+    } else {
+      // Default implementation returns a mock credential
+      let defaultCredential=Data([0xDE, 0xAD, 0xBE, 0xEF])
+      completion(defaultCredential, nil)
     }
-
-    completion(keyDataToReturn ?? Data([UInt8](identifier.utf8) + [0, 1, 2, 3, 4]), nil)
   }
 
-  func storeKey(key _: Data, identifier: String, completion: @escaping (Error?) -> Void) {
-    methodCalls.append("storeKey(\(identifier))")
+  func retrieveSecurelyXPC(
+    _ identifier: String,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  ) {
+    methodCalls.append("retrieveSecurelyXPC(\(identifier))")
 
     if shouldFail {
-      completion(errorToThrow ?? NSError(
-        domain: "com.umbracore.mock",
-        code: 500,
-        userInfo: [NSLocalizedDescriptionKey: "Failed to store key"]
-      ))
-      return
+      completion(nil, NSNumber(value: 500), "Mock credential retrieval failed")
+    } else {
+      // Default implementation returns a mock credential
+      let defaultCredential=Data([0xDE, 0xAD, 0xBE, 0xEF])
+      completion(defaultCredential, nil, nil)
     }
-
-    completion(nil)
-  }
-
-  func deleteKey(identifier: String, completion: @escaping (Error?) -> Void) {
-    methodCalls.append("deleteKey(\(identifier))")
-
-    if shouldFail {
-      completion(errorToThrow ?? NSError(
-        domain: "com.umbracore.mock",
-        code: 403,
-        userInfo: [NSLocalizedDescriptionKey: "Cannot delete key"]
-      ))
-      return
-    }
-
-    completion(nil)
   }
 
   func listKeyIdentifiers(completion: @escaping ([String]?, Error?) -> Void) {
@@ -195,235 +244,195 @@ final class MockFoundationXPCSecurityService: NSObject, FoundationXPCSecuritySer
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "com.umbracore.mock",
-          code: 500,
-          userInfo: [NSLocalizedDescriptionKey: "Failed to list keys"]
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock key listing failed"]
         )
       )
-      return
-    }
-
-    completion(keyListResponse ?? ["test-key-1", "test-key-2", "test-key-3"], nil)
-  }
-
-  // MARK: - Extended methods
-
-  func encryptSymmetricXPC(
-    data: Data,
-    key: Data,
-    algorithm: String,
-    keySizeInBits _: Int,
-    iv: Data?,
-    aad _: Data?,
-    optionsJson _: String,
-    completion: @escaping (Data?, NSNumber?, String?) -> Void
-  ) {
-    methodCalls.append("encryptSymmetricXPC(\(algorithm))")
-
-    if shouldFail {
-      completion(nil, NSNumber(value: 500), "Encryption failed")
-      return
-    }
-
-    // Return the expected data from the test if available
-    if let encryptedData=encryptedDataToReturn {
-      completion(encryptedData, nil, nil)
-      return
-    }
-
-    // Create mock encrypted data (prepend IV and key byte)
-    var result=Data()
-    if let iv {
-      result.append(iv)
-    }
-    if let firstByte=key.first {
-      result.append(Data([firstByte]))
-    }
-    result.append(data)
-
-    completion(result, nil, nil)
-  }
-
-  func decryptSymmetricXPC(
-    data: Data,
-    key _: Data,
-    algorithm: String,
-    keySizeInBits _: Int,
-    iv: Data?,
-    aad _: Data?,
-    optionsJson _: String,
-    completion: @escaping (Data?, NSNumber?, String?) -> Void
-  ) {
-    methodCalls.append("decryptSymmetricXPC(\(algorithm))")
-
-    if shouldFail {
-      completion(nil, NSNumber(value: 500), "Decryption failed")
-      return
-    }
-
-    // Return the expected data from the test if available
-    if let decryptedData=decryptedDataToReturn {
-      completion(decryptedData, nil, nil)
-      return
-    }
-
-    // Mock decryption - just return a subset of the input data
-    var startIndex=0
-    if let iv {
-      startIndex += iv.count
-    }
-    startIndex += 1 // Skip the key byte
-
-    if data.count <= startIndex {
-      completion(Data(), nil, nil)
     } else {
-      let result=data.subdata(in: startIndex..<data.count)
-      completion(result, nil, nil)
+      // Default implementation returns pre-configured list or a default list
+      let defaultKeys=["key1", "key2", "key3"]
+      completion(keyListResponse ?? defaultKeys, nil)
     }
   }
 
-  func encryptAsymmetricXPC(
-    data: Data,
-    publicKey: Data,
-    algorithm: String,
-    keySizeInBits _: Int,
-    optionsJson _: String,
-    completion: @escaping (Data?, NSNumber?, String?) -> Void
-  ) {
-    methodCalls.append("encryptAsymmetricXPC(\(algorithm))")
+  func listKeyIdentifiersXPC(completion: @escaping ([String]?, NSNumber?, String?) -> Void) {
+    methodCalls.append("listKeyIdentifiersXPC")
 
     if shouldFail {
-      completion(nil, NSNumber(value: 500), "Asymmetric encryption failed")
-      return
-    }
-
-    // Return the expected data from the test if available
-    if let encryptedData=encryptedDataToReturn {
-      completion(encryptedData, nil, nil)
-      return
-    }
-
-    // Simple mock encryption
-    var result=Data()
-    if let firstByte=publicKey.first {
-      result.append(Data([firstByte]))
-    }
-    result.append(data)
-
-    completion(result, nil, nil)
-  }
-
-  func decryptAsymmetricXPC(
-    data: Data,
-    privateKey _: Data,
-    algorithm: String,
-    keySizeInBits _: Int,
-    optionsJson _: String,
-    completion: @escaping (Data?, NSNumber?, String?) -> Void
-  ) {
-    methodCalls.append("decryptAsymmetricXPC(\(algorithm))")
-
-    if shouldFail {
-      completion(nil, NSNumber(value: 500), "Asymmetric decryption failed")
-      return
-    }
-
-    // Return the expected data from the test if available
-    if let decryptedData=decryptedDataToReturn {
-      completion(decryptedData, nil, nil)
-      return
-    }
-
-    // Mock decryption - just return the data without the first byte
-    if data.isEmpty {
-      completion(Data(), nil, nil)
+      completion(nil, NSNumber(value: 500), "Mock key listing failed")
     } else {
-      let result=data.subdata(in: 1..<data.count)
-      completion(result, nil, nil)
+      // Default implementation returns pre-configured list or a default list
+      let defaultKeys=["key1", "key2", "key3"]
+      completion(keyListResponse ?? defaultKeys, nil, nil)
     }
   }
+  
+  // MARK: - Digital signature methods
 
-  func hashDataXPC(
-    data: Data,
+  func signData(
+    _ data: Data,
     algorithm: String,
-    optionsJson _: String,
-    completion: @escaping (Data?, NSNumber?, String?) -> Void
+    completion: @escaping (Data?, Error?) -> Void
   ) {
-    methodCalls.append("hashDataXPC(\(algorithm))")
+    methodCalls.append("signData(\(algorithm))")
 
     if shouldFail {
-      completion(nil, NSNumber(value: 500), "Hashing failed")
-      return
+      completion(
+        nil,
+        errorToThrow ?? NSError(
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock signing failed"]
+        )
+      )
+    } else {
+      // Default implementation returns pre-configured signature or a simple mock
+      let defaultSignature=Data((0..<64).map { UInt8($0 % 256) })
+      completion(signatureToReturn ?? defaultSignature, nil)
     }
-
-    if let hashData=hashDataToReturn {
-      completion(hashData, nil, nil)
-      return
-    }
-
-    // Create a mock hash based on algorithm
-    let algorithmBytes=Data(algorithm.utf8)
-    var result=Data()
-    result.append(algorithmBytes.prefix(4))
-    result.append(data.prefix(4))
-
-    // Pad to 32 bytes for a common hash size
-    while result.count < 32 {
-      result.append(0)
-    }
-
-    completion(result, nil, nil)
   }
 
   func signDataXPC(
-    data: Data,
-    key: Data,
+    _ data: Data,
     algorithm: String,
-    keySizeInBits _: Int,
-    optionsJson _: String,
     completion: @escaping (Data?, NSNumber?, String?) -> Void
   ) {
     methodCalls.append("signDataXPC(\(algorithm))")
 
     if shouldFail {
       completion(nil, NSNumber(value: 500), "Signing failed")
-      return
+    } else {
+      // Default implementation returns pre-configured signature or a simple mock
+      let defaultSignature=Data((0..<64).map { UInt8($0 % 256) })
+      completion(signatureToReturn ?? defaultSignature, nil, nil)
     }
+  }
 
-    // Return the expected data from the test if available
-    if let signature=signatureToReturn {
-      completion(signature, nil, nil)
-      return
+  func verifySignature(
+    _ signature: Data,
+    forData data: Data,
+    algorithm: String,
+    completion: @escaping (Bool, Error?) -> Void
+  ) {
+    methodCalls.append("verifySignature(\(algorithm))")
+
+    if shouldFail {
+      completion(
+        false,
+        errorToThrow ?? NSError(
+          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock verification failed"]
+        )
+      )
+    } else {
+      // Default implementation returns pre-configured result
+      completion(verificationResult, nil)
     }
-
-    // Simple mock signature
-    var result=Data()
-    if let firstByte=key.first {
-      result.append(Data([firstByte]))
-    }
-    result.append(data)
-
-    completion(result, nil, nil)
   }
 
   func verifySignatureXPC(
-    data _: Data,
-    signature _: Data,
-    key _: Data,
+    _ signature: Data,
+    forData data: Data,
     algorithm: String,
-    keySizeInBits _: Int,
-    optionsJson _: String,
-    completion: @escaping (Bool?, NSNumber?, String?) -> Void
+    completion: @escaping (NSNumber?, NSNumber?, String?) -> Void
   ) {
     methodCalls.append("verifySignatureXPC(\(algorithm))")
 
     if shouldFail {
-      // Ensure a consistent false result when shouldFail is true
-      completion(false, nil, nil)
-      return
+      completion(nil, NSNumber(value: 500), "Verification failed")
+    } else {
+      // Default implementation returns pre-configured result
+      completion(NSNumber(value: verificationResult ? 1 : 0), nil, nil)
     }
-
-    // Return the verification result directly
-    completion(verificationResult, nil, nil)
+  }
+  
+  // MARK: - XPC-specific methods
+  
+  func hashDataXPC(
+    data: Data,
+    algorithm: String,
+    optionsJson: String,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  ) {
+    methodCalls.append("hashDataXPC(\(algorithm))")
+    
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock hashing failed")
+    } else {
+      // Return either the pre-configured hash or a simple hash of the data
+      completion(hashDataToReturn ?? Data([0xA1, 0xB2, 0xC3]), nil, nil)
+    }
+  }
+  
+  func encryptSymmetricXPC(
+    data: Data,
+    key: Data,
+    algorithm: String,
+    keySizeInBits: Int,
+    iv: Data?,
+    aad: Data?,
+    optionsJson: String,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  ) {
+    methodCalls.append("encryptSymmetricXPC(\(algorithm))")
+    
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock encryption failed")
+    } else {
+      // Return either the pre-configured encrypted data or the original data
+      completion(encryptedDataToReturn ?? data, nil, nil)
+    }
+  }
+  
+  func decryptSymmetricXPC(
+    data: Data,
+    key: Data,
+    algorithm: String,
+    keySizeInBits: Int,
+    iv: Data?,
+    aad: Data?,
+    optionsJson: String,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  ) {
+    methodCalls.append("decryptSymmetricXPC(\(algorithm))")
+    
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock decryption failed")
+    } else {
+      // Return either the pre-configured decrypted data or the original data
+      completion(decryptedDataToReturn ?? data, nil, nil)
+    }
+  }
+  
+  func encryptAsymmetricXPC(
+    data: Data,
+    publicKey: Data,
+    algorithm: String,
+    keySizeInBits: Int,
+    optionsJson: String,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  ) {
+    methodCalls.append("encryptAsymmetricXPC(\(algorithm))")
+    
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock asymmetric encryption failed")
+    } else {
+      // Return either the pre-configured encrypted data or the original data
+      completion(encryptedDataToReturn ?? data, nil, nil)
+    }
+  }
+  
+  func decryptAsymmetricXPC(
+    data: Data,
+    privateKey: Data,
+    algorithm: String,
+    keySizeInBits: Int,
+    optionsJson: String,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  ) {
+    methodCalls.append("decryptAsymmetricXPC(\(algorithm))")
+    
+    if shouldFail {
+      completion(nil, NSNumber(value: 500), "Mock asymmetric decryption failed")
+    } else {
+      // Return either the pre-configured decrypted data or the original data
+      completion(decryptedDataToReturn ?? data, nil, nil)
+    }
   }
 }

@@ -5,6 +5,71 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
 
+/// Protocol defining Foundation-dependent XPC security service.
+/// This protocol is designed for use with Foundation-based security implementations.
+@objc
+public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
+  // MARK: - Crypto Operations
+  
+  /// Encrypt data using XPC
+  /// - Parameters:
+  ///   - data: The data to encrypt
+  ///   - completion: Completion handler called with encrypted data or error
+  func encryptDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void)
+  
+  /// Decrypt data using XPC
+  /// - Parameters:
+  ///   - data: The data to decrypt
+  ///   - completion: Completion handler called with decrypted data or error
+  func decryptDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void)
+  
+  /// Generate random data using XPC
+  /// - Parameters:
+  ///   - length: Length of random data to generate
+  ///   - completion: Completion handler called with generated data or error
+  func generateRandomDataXPC(_ length: Int, completion: @escaping (Data?, NSNumber?, String?) -> Void)
+  
+  /// Hash data using XPC
+  /// - Parameters:
+  ///   - data: The data to hash
+  ///   - completion: Completion handler called with hash data or error
+  func hashDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void)
+  
+  /// Sign data using XPC
+  /// - Parameters:
+  ///   - data: The data to sign
+  ///   - algorithm: The algorithm to use for signing
+  ///   - completion: Completion handler called with signature or error
+  func signDataXPC(_ data: Data, algorithm: String, completion: @escaping (Data?, NSNumber?, String?) -> Void)
+  
+  /// Verify data against signature using XPC
+  /// - Parameters:
+  ///   - data: The data to verify
+  ///   - signature: The signature to verify against
+  ///   - algorithm: The algorithm used for signing
+  ///   - completion: Completion handler called with verification result
+  func verifyDataXPC(_ data: Data, signature: Data, algorithm: String, completion: @escaping (NSNumber?, NSNumber?, String?) -> Void)
+  
+  // MARK: - Key Management
+  
+  /// Retrieve a key by ID using XPC
+  /// - Parameters:
+  ///   - identifier: The key identifier
+  ///   - completion: Completion handler called with key data or error
+  func retrieveKeyXPC(withIdentifier identifier: String, completion: @escaping (Data?, NSNumber?, String?) -> Void)
+  
+  /// Store a key with ID using XPC
+  /// - Parameters:
+  ///   - key: The key data to store
+  ///   - identifier: The key identifier
+  ///   - completion: Completion handler called with result
+  func storeKeyXPC(_ key: Data, withIdentifier identifier: String, completion: @escaping (NSNumber?, String?) -> Void)
+  
+  /// List all key identifiers using XPC
+  /// - Parameter completion: Completion handler called with list of identifiers or error
+  func listKeyIdentifiers(completion: @escaping ([String]?, Error?) -> Void)
+}
+
 /// Protocol defining Foundation-dependent XPC service interface.
 /// This protocol is designed to work with the Objective-C runtime and NSXPCConnection.
 extension SecurityBridge {

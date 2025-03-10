@@ -66,7 +66,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
 
   func generateKey() async -> Result<Data, Error> {
     await withCheckedContinuation { continuation in
-      mockXPCService.generateKey { data, error in
+      mockXPCService.generateKey(bits: 256) { data, error in
         if let error {
           continuation.resume(returning: .failure(error))
         } else if let data {
@@ -362,8 +362,8 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testEncrypt() async throws {
     // Arrange
-    let inputData=SecureBytes([1, 2, 3, 4, 5])
-    let key=SecureBytes([10, 20, 30, 40, 50])
+    let inputData=SecureBytes(bytes: [1, 2, 3, 4, 5])
+    let key=SecureBytes(bytes: [10, 20, 30, 40, 50])
     mockXPCService.encryptedDataToReturn=Data([100, 110, 120, 130, 140])
 
     // Act
@@ -371,8 +371,12 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(encryptedData)=result {
-      XCTAssertEqual(encryptedData.bytes(), [100, 110, 120, 130, 140])
+    if case let .success(encrypted)=result {
+      var encryptedBytes = [UInt8]()
+      encrypted.withUnsafeBytes { buffer in
+        encryptedBytes = Array(buffer)
+      }
+      XCTAssertEqual(encryptedBytes, [100, 110, 120, 130, 140])
     } else {
       XCTFail("Expected successful encryption")
     }
@@ -383,8 +387,8 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testEncryptFailure() async throws {
     // Arrange
-    let inputData=SecureBytes([1, 2, 3, 4, 5])
-    let key=SecureBytes([10, 20, 30, 40, 50])
+    let inputData=SecureBytes(bytes: [1, 2, 3, 4, 5])
+    let key=SecureBytes(bytes: [10, 20, 30, 40, 50])
     mockXPCService.shouldFail=true
 
     // Act
@@ -409,8 +413,8 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testDecrypt() async throws {
     // Arrange
-    let encryptedData=SecureBytes([100, 110, 120, 130, 140])
-    let key=SecureBytes([10, 20, 30, 40, 50])
+    let encryptedData=SecureBytes(bytes: [100, 110, 120, 130, 140])
+    let key=SecureBytes(bytes: [10, 20, 30, 40, 50])
     mockXPCService.decryptedDataToReturn=Data([1, 2, 3, 4, 5])
 
     // Act
@@ -418,8 +422,12 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
     // Assert
     XCTAssertTrue(result.isSuccess)
-    if case let .success(decryptedData)=result {
-      XCTAssertEqual(decryptedData.bytes(), [1, 2, 3, 4, 5])
+    if case let .success(decrypted)=result {
+      var decryptedBytes = [UInt8]()
+      decrypted.withUnsafeBytes { buffer in
+        decryptedBytes = Array(buffer)
+      }
+      XCTAssertEqual(decryptedBytes, [1, 2, 3, 4, 5])
     } else {
       XCTFail("Expected successful decryption")
     }
@@ -430,8 +438,8 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testDecryptFailure() async throws {
     // Arrange
-    let encryptedData=SecureBytes([100, 110, 120, 130, 140])
-    let key=SecureBytes([10, 20, 30, 40, 50])
+    let encryptedData=SecureBytes(bytes: [100, 110, 120, 130, 140])
+    let key=SecureBytes(bytes: [10, 20, 30, 40, 50])
     mockXPCService.shouldFail=true
 
     // Act
@@ -456,7 +464,8 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
   func testGenerateKey() async throws {
     // Arrange
-    mockXPCService.keyDataToReturn=Data([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+    let expectedKey=Data([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+    mockXPCService.keyDataToReturn=expectedKey
 
     // Act
     let result=await adapter.generateKey()
@@ -464,13 +473,17 @@ final class CryptoServiceAdapterTests: XCTestCase {
     // Assert
     XCTAssertTrue(result.isSuccess)
     if case let .success(key)=result {
-      XCTAssertEqual(key.bytes(), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+      var keyBytes = [UInt8]()
+      key.withUnsafeBytes { buffer in
+        keyBytes = Array(buffer)
+      }
+      XCTAssertEqual(keyBytes, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
     } else {
       XCTFail("Expected successful key generation")
     }
 
     let methodCalls=mockXPCService.methodCalls
-    XCTAssertTrue(methodCalls.contains("generateKey"))
+    XCTAssertTrue(methodCalls.contains("generateKey(bits: 256)"))
   }
 
   func testGenerateKeyFailure() async throws {
@@ -492,7 +505,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
     }
 
     let methodCalls=mockXPCService.methodCalls
-    XCTAssertTrue(methodCalls.contains("generateKey"))
+    XCTAssertTrue(methodCalls.contains("generateKey(bits: 256)"))
   }
 
   // MARK: - Hashing Tests
@@ -670,7 +683,11 @@ final class CryptoServiceAdapterTests: XCTestCase {
     XCTAssertTrue(result.isSuccess)
     if case let .success(randomData)=result {
       XCTAssertEqual(randomData.count, expectedLength)
-      XCTAssertEqual(randomData.bytes(), [UInt8](repeating: 42, count: expectedLength))
+      var dataBytes = [UInt8]()
+      randomData.withUnsafeBytes { buffer in
+        dataBytes = Array(buffer)
+      }
+      XCTAssertEqual(dataBytes, [UInt8](repeating: 42, count: expectedLength))
     } else {
       XCTFail("Expected successful random data generation")
     }
@@ -714,7 +731,11 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
       // Default generation should produce sequential bytes
       let expectedBytes=(0..<requestedLength).map { UInt8($0 % 256) }
-      XCTAssertEqual(randomData.bytes(), expectedBytes)
+      var dataBytes = [UInt8]()
+      randomData.withUnsafeBytes { buffer in
+        dataBytes = Array(buffer)
+      }
+      XCTAssertEqual(dataBytes, expectedBytes)
     } else {
       XCTFail("Expected successful random data generation")
     }

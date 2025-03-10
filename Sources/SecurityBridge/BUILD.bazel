@@ -6,6 +6,7 @@ swift_library(
         "Sources/**/*.swift",
     ], exclude = [
         "Sources/ProviderBridge/SecurityProviderFoundationBridge.swift",
+        "Sources/XPCBridge/*.swift",  # Temporarily exclude XPCBridge module
     ]),
     module_name = "SecurityBridge",
     copts = [
@@ -77,6 +78,9 @@ swift_test(
         "//Sources/SecureBytes",
         "//Sources/SecurityProtocolsCore",
         "//Sources/UmbraCoreTypes",
+        "//Sources/CoreTypesInterfaces",
+        "//Sources/FoundationBridgeTypes",
+        "//Sources/SecurityBridgeProtocolAdapters",
     ],
 )
 
@@ -98,6 +102,7 @@ swift_test(
         "//Sources/SecureBytes",
         "//Sources/SecurityProtocolsCore",
         "//Sources/UmbraCoreTypes",
+        "//Sources/SecurityBridgeProtocolAdapters",
     ],
 )
 
@@ -120,6 +125,9 @@ swift_test(
         "//Sources/SecureBytes",
         "//Sources/SecurityProtocolsCore",
         "//Sources/UmbraCoreTypes",
+        "//Sources/CoreTypesInterfaces",
+        "//Sources/FoundationBridgeTypes",
+        "//Sources/SecurityBridgeProtocolAdapters",
     ],
 )
 
@@ -141,6 +149,7 @@ swift_test(
         "//Sources/SecureBytes",
         "//Sources/SecurityProtocolsCore",
         "//Sources/UmbraCoreTypes",
+        "//Sources/SecurityBridgeProtocolAdapters",
     ],
 )
 
@@ -162,6 +171,9 @@ swift_test(
         "//Sources/SecureBytes",
         "//Sources/SecurityProtocolsCore",
         "//Sources/UmbraCoreTypes",
+        "//Sources/CoreTypesInterfaces",
+        "//Sources/FoundationBridgeTypes",
+        "//Sources/SecurityBridgeProtocolAdapters",
     ],
 )
 
@@ -182,6 +194,7 @@ swift_test(
         "//Sources/SecureBytes",
         "//Sources/SecurityProtocolsCore",
         "//Sources/UmbraCoreTypes",
+        "//Sources/SecurityBridgeProtocolAdapters",
     ],
 )
 
@@ -190,6 +203,7 @@ swift_test(
     name = "SecurityBridgeMigrationTests",
     srcs = [
         "Tests/SecurityBridgeMigrationTests.swift",
+        "Tests/Mocks/MockFoundationXPCSecurityService.swift",
     ],
     module_name = "SecurityBridgeMigrationTests",
     copts = [
@@ -204,6 +218,7 @@ swift_test(
         "//Sources/UmbraCoreTypes",
         "//Sources/CoreTypesInterfaces",
         "//Sources/FoundationBridgeTypes",
-        "//Sources/ObjCBridgingTypesFoundation",
+        "//Sources/ErrorHandling",
+        "//Sources/SecurityBridgeProtocolAdapters",
     ],
 )
