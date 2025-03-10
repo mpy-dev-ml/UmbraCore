@@ -42,84 +42,94 @@ public class ErrorHandlingExample {
   }
 
   /// Sample recovery provider for demonstration purposes
-  private final class SampleRecoveryProvider: RecoveryOptionsProvider {
+  private final class SampleRecoveryProvider: ErrorHandlingInterfaces.RecoveryOptionsProvider {
     /// Provides recovery options for security errors
-    public func recoveryOptions(for error: some Error) -> [RecoveryOption]? {
+    public func recoveryOptions(for error: some Error) -> [any ErrorHandlingInterfaces.RecoveryOption] {
       // Map to security error if possible
       if let securityError = error as? SecurityCoreErrorWrapper {
         // Provide different recovery options based on error type
         switch securityError.wrappedError {
           case .encryptionFailed, .decryptionFailed:
             return [
-              ErrorRecoveryOption(
+              ErrorHandlingInterfaces.ErrorRecoveryOption(
                 title: "Try Again",
-                handler: {
+                description: "Retry the cryptographic operation",
+                handler: { @Sendable in
                   print("Retrying cryptographic operation...")
                 }
-              ),
-              ErrorRecoveryOption(
+              ) as any ErrorHandlingInterfaces.RecoveryOption,
+              ErrorHandlingInterfaces.ErrorRecoveryOption(
                 title: "Use Alternative Method",
-                handler: {
+                description: "Try a different cryptographic approach",
+                handler: { @Sendable in
                   print("Using alternative cryptographic method...")
                 }
-              )
+              ) as any ErrorHandlingInterfaces.RecoveryOption
             ]
           case .invalidKey:
             return [
-              ErrorRecoveryOption(
+              ErrorHandlingInterfaces.ErrorRecoveryOption(
                 title: "Regenerate Key",
-                handler: {
+                description: "Create a new security key",
+                handler: { @Sendable in
                   print("Regenerating security key...")
                 }
-              ),
-              ErrorRecoveryOption(
+              ) as any ErrorHandlingInterfaces.RecoveryOption,
+              ErrorHandlingInterfaces.ErrorRecoveryOption(
                 title: "Import Existing Key",
-                handler: {
+                description: "Use a previously saved key",
+                handler: { @Sendable in
                   print("Importing existing key...")
                 }
-              )
+              ) as any ErrorHandlingInterfaces.RecoveryOption
             ]
           case .hashVerificationFailed:
             return [
-              ErrorRecoveryOption(
+              ErrorHandlingInterfaces.ErrorRecoveryOption(
                 title: "Download Again",
-                handler: {
+                description: "Retry the download to get a clean file",
+                handler: { @Sendable in
                   print("Downloading file again...")
                 }
-              ),
-              ErrorRecoveryOption(
+              ) as any ErrorHandlingInterfaces.RecoveryOption,
+              ErrorHandlingInterfaces.ErrorRecoveryOption(
                 title: "Ignore Warning",
-                handler: {
+                description: "Continue despite integrity concerns",
+                isDisruptive: true,
+                handler: { @Sendable in
                   print("Ignoring integrity warning...")
                 }
-              )
+              ) as any ErrorHandlingInterfaces.RecoveryOption
             ]
           default:
             return [
-              ErrorRecoveryOption(
+              ErrorHandlingInterfaces.ErrorRecoveryOption(
                 title: "Retry Operation",
-                handler: {
+                description: "Try the operation again",
+                handler: { @Sendable in
                   print("Retrying operation...")
                 }
-              )
+              ) as any ErrorHandlingInterfaces.RecoveryOption
             ]
         }
       }
 
       // Default recovery options for unknown errors
       return [
-        ErrorRecoveryOption(
+        ErrorHandlingInterfaces.ErrorRecoveryOption(
           title: "Retry",
-          handler: {
+          description: "Try the operation again",
+          handler: { @Sendable in
             print("Retrying operation...")
           }
-        ),
-        ErrorRecoveryOption(
+        ) as any ErrorHandlingInterfaces.RecoveryOption,
+        ErrorHandlingInterfaces.ErrorRecoveryOption(
           title: "Cancel",
-          handler: {
+          description: "Cancel the current operation",
+          handler: { @Sendable in
             print("Operation cancelled")
           }
-        )
+        ) as any ErrorHandlingInterfaces.RecoveryOption
       ]
     }
   }
@@ -169,9 +179,8 @@ public class ErrorHandlingExample {
       print("Successfully mapped to security error: \(mappedError)")
     } else {
       // Handle unmapped errors with an application error
-      let coreAppError = UmbraErrors.Application.Core.operationFailed(
-        operation: "External API",
-        reason: "Authentication required"
+      let coreAppError = UmbraErrors.Application.Core.externalServiceError(
+        "External API authentication required"
       )
       let wrappedAppError = ApplicationCoreErrorWrapper(coreAppError)
       print("Mapped to application error: \(wrappedAppError.errorDescription)")
@@ -195,7 +204,7 @@ public class ErrorHandlingExample {
 
     // Add context to the error
     let contextualError = securityError.with(
-      context: ErrorHandlingCommon.ErrorContext(
+      context: ErrorHandlingInterfaces.ErrorContext(
         source: "KeyManager",
         operation: "validateKey",
         details: "Failed to validate key during authentication"

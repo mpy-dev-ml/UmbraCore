@@ -55,7 +55,7 @@ public final class ComprehensiveErrorHandlingExample {
 
     do {
       try await loadUserPreferencesFromDisk()
-    } catch let fileError as ErrorHandlingDomains.UmbraErrors.FileSystem.Core {
+    } catch let fileError as ErrorHandlingDomains.UmbraErrors.Storage.FileSystem {
       await handleFileSystemErrorComprehensively(fileError)
     } catch {
       print("Unexpected error: \(error.localizedDescription)")
@@ -82,7 +82,7 @@ public final class ComprehensiveErrorHandlingExample {
   private func loadUserPreferencesFromDisk() async throws {
     print("Attempting to load user preferences...")
     // Simulate file system error
-    throw ErrorHandlingDomains.UmbraErrors.FileSystem.Core
+    throw ErrorHandlingDomains.UmbraErrors.Storage.FileSystem
       .fileNotFound(path: "/Users/preferences.json")
   }
 
@@ -126,7 +126,7 @@ public final class ComprehensiveErrorHandlingExample {
 
   /// Comprehensive handling of file system errors with recovery and notification
   private func handleFileSystemErrorComprehensively(
-    _ error: ErrorHandlingDomains.UmbraErrors.FileSystem.Core
+    _ error: ErrorHandlingDomains.UmbraErrors.Storage.FileSystem
   ) async {
     // 1. Log the error (simplified)
     print("FILE SYSTEM ERROR: \(error.localizedDescription)")
@@ -174,7 +174,7 @@ public final class ComprehensiveErrorHandlingExample {
             return false
         }
         
-      case let error as ErrorHandlingDomains.UmbraErrors.FileSystem.Core:
+      case let error as ErrorHandlingDomains.UmbraErrors.Storage.FileSystem:
         switch error {
           case .fileNotFound(let path):
             print("Attempting to create missing file at \(path)...")
@@ -283,7 +283,7 @@ public final class ComprehensiveErrorHandlingExample {
 
   /// Get recovery options for file system errors
   private func getRecoveryOptionsForFileSystemError(
-    _ error: ErrorHandlingDomains.UmbraErrors.FileSystem.Core
+    _ error: ErrorHandlingDomains.UmbraErrors.Storage.FileSystem
   ) -> [RecoveryOption] {
     switch error {
       case .fileNotFound:
