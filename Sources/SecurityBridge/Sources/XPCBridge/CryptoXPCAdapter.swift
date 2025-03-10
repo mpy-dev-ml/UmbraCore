@@ -17,13 +17,14 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
   public let connection: NSXPCConnection
 
   /// The service proxy for making XPC calls
-  private let serviceProxy: any ComprehensiveSecurityServiceProtocol
+  private let serviceProxy: (any ComprehensiveSecurityServiceProtocol)?
 
   // MARK: - Initialisation
 
   /// Initialise with an NSXPCConnection
   /// - Parameter connection: The connection to the XPC service
-  public init(connection: NSXPCConnection, serviceProxy: any ComprehensiveSecurityServiceProtocol) {
+  /// - Parameter serviceProxy: The service proxy object for communicating with the XPC service
+  public init(connection: NSXPCConnection, serviceProxy: (any ComprehensiveSecurityServiceProtocol)?) {
     self.connection = connection
     self.serviceProxy = serviceProxy
     super.init()
@@ -36,27 +37,62 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
   private func mapXPCError(_ error: NSError) -> UmbraErrors.Security.XPC {
     mapSecurityError(error)
   }
+  
+  /// Maps NSError objects to UmbraErrors.Security.XPC error types
+  public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
+    // Check for known error domains and codes
+    if error.domain == NSURLErrorDomain {
+      return .connectionFailed(reason: error.localizedDescription)
+    } else if error.domain == "CryptoErrorDomain" {
+      // Map specific crypto error codes to appropriate UmbraErrors
+      switch error.code {
+      case 1001:
+        return .serviceError(code: error.code, reason: error.localizedDescription)
+      case 1002:
+        return .serviceError(code: error.code, reason: error.localizedDescription)
+      case 1003:
+        return .serviceError(code: error.code, reason: error.localizedDescription)
+      case 1004:
+        return .serviceError(code: error.code, reason: error.localizedDescription)
+      default:
+        return .serviceError(code: error.code, reason: error.localizedDescription)
+      }
+    }
+    
+    // Default error mapping
+    return .internalError(error.localizedDescription)
+  }
+  
+  /// Sets up the invalidation handler for the XPC connection
+  public func setupInvalidationHandler() {
+    connection.invalidationHandler = {
+      // Log the invalidation
+      print("XPC connection to CryptoService was invalidated")
+      // Optional: Notify any observers or reset state
+    }
+  }
 
   // MARK: - Data Conversion
   
   /// Convert NSData to SecureBytes
   public func convertNSDataToSecureBytes(_ data: NSData) -> SecureBytes {
     let length = data.length
-    let bytes = [UInt8](repeating: 0, count: length)
-    data.getBytes(UnsafeMutableRawPointer(mutating: bytes), length: length)
+    var bytes = [UInt8](repeating: 0, count: length)
+    data.getBytes(&bytes, length: length)
     return SecureBytes(bytes: bytes)
   }
   
   /// Convert SecureBytes to NSData
   public func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
-    let bytes = secureBytes.rawBytes
+    // Use Array constructor to access the bytes
+    let bytes = Array(secureBytes)
     return NSData(bytes: bytes, length: bytes.count)
   }
 
   public func isServiceAvailable() async -> Bool {
     await withCheckedContinuation { continuation in
       Task {
-        let result = await serviceProxy.getServiceVersion()
+        let result = await serviceProxy?.getServiceVersion() ?? ""
         continuation.resume(returning: !result.isEmpty)
       }
     }
@@ -64,25 +100,26 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
 
   // Helper to map XPC-specific errors to protocol errors
   private func mapToProtocolError(_ error: UmbraErrors.Security.XPC) -> UmbraErrors.Security.Protocols {
+    // Map XPC error to Protocol error based on case
     switch error {
     case .connectionFailed(let reason):
-      return .serviceError(code: "CONNECTION_FAILED", reason: reason)
+      return .serviceError(reason)
     case .serviceError(let code, let reason):
-      return .serviceError(code: "XPC_ERROR_\(code)", reason: reason)
+      return .serviceError("XPC_ERROR_\(code): \(reason)")
     case .timeout(let operation, _):
-      return .timeout(operation: operation)
+      return .serviceError("Operation \(operation) timed out")
     case .serviceUnavailable(let serviceName):
-      return .serviceError(code: "SERVICE_UNAVAILABLE", reason: "\(serviceName) is unavailable")
+      return .serviceError("Service unavailable: \(serviceName)")
     case .operationCancelled(let operation):
-      return .cancelled(operation: operation)
-    case .insufficientPrivileges(let service, _):
-      return .insufficientPermissions(resource: service)
+      return .serviceError("Operation cancelled: \(operation)")
+    case .insufficientPrivileges(let service, let privilege):
+      return .serviceError("Insufficient privileges for \(service): requires \(privilege)")
     case .invalidMessageFormat(let reason):
-      return .invalidInput(reason)
+      return .invalidFormat(reason: reason)
     case .internalError(let message):
       return .internalError(message)
     @unknown default:
-      return .internalError("Unknown XPC error occurred")
+      return .internalError("Unknown XPC error")
     }
   }
 
@@ -107,7 +144,7 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
     return await withCheckedContinuation { continuation in
       Task {
         // Use encryptData with the correct signature
-        let result = await serviceProxy.encryptData(nsData, keyIdentifier: keyIdentifier)
+        let result = await serviceProxy?.encryptData(nsData, keyIdentifier: keyIdentifier)
         
         if let encryptedData = result as? NSData {
           continuation.resume(returning: .success(convertNSDataToSecureBytes(encryptedData)))
@@ -144,7 +181,7 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
     return await withCheckedContinuation { continuation in
       Task {
         // Use decryptData with the correct signature
-        let result = await serviceProxy.decryptData(nsData, keyIdentifier: keyIdentifier)
+        let result = await serviceProxy?.decryptData(nsData, keyIdentifier: keyIdentifier)
         
         if let decryptedData = result as? NSData {
           continuation.resume(returning: .success(convertNSDataToSecureBytes(decryptedData)))
@@ -170,7 +207,7 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
         let nsData = convertSecureBytesToNSData(data)
         
         // Use hashData with the correct signature
-        let result = await serviceProxy.hashData(nsData)
+        let result = await serviceProxy?.hashData(nsData)
         
         if let hashData = result as? NSData {
           continuation.resume(returning: .success(convertNSDataToSecureBytes(hashData)))
@@ -189,7 +226,7 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     // Map XPC error type to Protocols error type for protocol compliance
     let result = await withCheckedContinuation { continuation in
       Task {
-        let result = await serviceProxy.getServiceVersion()
+        let result = await serviceProxy?.getServiceVersion() ?? ""
         continuation.resume(returning: !result.isEmpty)
       }
     }
@@ -231,7 +268,7 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     let result = await withCheckedContinuation { continuation in
       Task {
         // Use a default key type of symmetric if not specified
-        let result = await serviceProxy.generateKey(
+        let result = await serviceProxy?.generateKey(
           keyType: .symmetric,
           keyIdentifier: nil,
           metadata: nil
@@ -251,6 +288,8 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
             }
           case .failure(let error):
             continuation.resume(returning: Result<SecureBytes, UmbraErrors.Security.Protocols>.failure(mapToProtocolError(error)))
+          case .none:
+            continuation.resume(returning: Result<SecureBytes, UmbraErrors.Security.Protocols>.failure(.unsupportedOperation(name: "generateKey")))
         }
       }
     }
@@ -267,7 +306,7 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
         
         let completionHandler: (NSData?, NSError?) -> Void = { [self] hashData, error in
           if let error = error {
-            continuation.resume(returning: Result<SecureBytes, UmbraErrors.Security.Protocols>.failure(.serviceError(code: String(error.code), reason: error.localizedDescription)))
+            continuation.resume(returning: Result<SecureBytes, UmbraErrors.Security.Protocols>.failure(.serviceError("Error code: \(error.code), reason: \(error.localizedDescription)")))
           } else if let hashData = hashData {
             let secureBytes = convertNSDataToSecureBytes(hashData)
             continuation.resume(returning: Result<SecureBytes, UmbraErrors.Security.Protocols>.success(secureBytes))
@@ -284,7 +323,7 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
             with: completionHandler
           )
         } else {
-          continuation.resume(returning: Result<SecureBytes, UmbraErrors.Security.Protocols>.failure(.operationNotSupported(name: "hash")))
+          continuation.resume(returning: Result<SecureBytes, UmbraErrors.Security.Protocols>.failure(.unsupportedOperation(name: "hash")))
         }
       }
     }
@@ -382,7 +421,7 @@ public struct DataAdapter {
   
   /// Convert SecureBytes to Data
   static func data(from secureBytes: SecureBytes) -> Data {
-    let bytes = secureBytes.rawBytes
+    let bytes = Array(secureBytes)
     return Data(bytes)
   }
   

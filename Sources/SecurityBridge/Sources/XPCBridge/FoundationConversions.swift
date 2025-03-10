@@ -76,8 +76,7 @@ public enum FoundationConversions {
       _ = try JSONSerialization.jsonObject(with: data)
       return data
     } catch {
-      throw ErrorHandlingDomains.UmbraErrors.Security.DataConversion
-        .invalidConversion(reason: "Data is not valid JSON: \(error.localizedDescription)")
+      throw UmbraErrors.Security.Protocols.invalidFormat(reason: "Data is not valid JSON: \(error.localizedDescription)")
     }
   }
 
@@ -92,8 +91,7 @@ public enum FoundationConversions {
       let bytes = [UInt8](data)
       return UmbraCoreTypes.SecureBytes(bytes: bytes)
     } catch {
-      throw ErrorHandlingDomains.UmbraErrors.Security.DataConversion
-        .invalidConversion(reason: "Could not convert object to JSON: \(error.localizedDescription)")
+      throw UmbraErrors.Security.Protocols.invalidFormat(reason: "Could not convert object to JSON: \(error.localizedDescription)")
     }
   }
 }

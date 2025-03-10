@@ -16,8 +16,8 @@ public protocol BaseXPCAdapter {
   /// Convert SecureBytes to NSData
   func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData
 
-  /// Map NSError to UmbraErrors.Security.XPC
-  func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC
+  /// Map NSError to XPCSecurityError
+  func mapSecurityError(_ error: NSError) -> XPCSecurityError
 
   /// Handle the XPC connection invalidation
   func setupInvalidationHandler()
@@ -50,13 +50,13 @@ extension BaseXPCAdapter {
   public func processXPCResult<T>(
     _ result: NSObject?,
     transform: (NSData) -> T
-  ) -> Result<T, UmbraErrors.Security.XPC> {
+  ) -> Result<T, XPCSecurityError> {
     if let error=result as? NSError {
       .failure(mapSecurityError(error))
     } else if let nsData=result as? NSData {
       .success(transform(nsData))
     } else {
-      .failure(UmbraErrors.Security.XPC.invalidFormat(reason: "Unexpected result format"))
+      .failure(.invalidInput(details: "Unexpected result format"))
     }
   }
 
@@ -97,12 +97,21 @@ extension BaseXPCAdapter {
               with: arguments[1]
             )?.takeRetainedValue()
           case 3:
-            result=(connection.remoteObjectProxy as AnyObject).perform(
+            // Fix the syntax for calling a method with three arguments
+            let target = connection.remoteObjectProxy as AnyObject
+            let methodImp = target.method(for: selector)
+            let methodCall = unsafeBitCast(
+              methodImp,
+              to: (@convention(c) (AnyObject, Selector, AnyObject, AnyObject, AnyObject) -> Unmanaged<AnyObject>?).self
+            )
+            let resultManaged = methodCall(
+              target,
               selector,
-              with: arguments[0],
-              with: arguments[1],
-              with: arguments[2]
-            )?.takeRetainedValue()
+              arguments[0] as AnyObject,
+              arguments[1] as AnyObject,
+              arguments[2] as AnyObject
+            )
+            result = resultManaged?.takeRetainedValue()
           default:
             NSLog("Warning: Cannot execute XPC selector with more than 3 arguments")
             continuation.resume(returning: nil)
@@ -114,65 +123,60 @@ extension BaseXPCAdapter {
     }
   }
 
-  /// Map NSError to UmbraErrors.Security.XPC
-  public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
+  /// Map NSError to XPCSecurityError
+  public func mapSecurityError(_ error: NSError) -> XPCSecurityError {
     if error.domain == "com.umbra.security.xpc" {
       if let message = error.userInfo[NSLocalizedDescriptionKey] as? String {
         if message.contains("invalid format") || message.contains("Invalid format") {
-          return UmbraErrors.Security.XPC.invalidMessageFormat(reason: message)
+          return .invalidInput(details: message)
         } else if message.contains("encryption failed") {
-          return UmbraErrors.Security.XPC.serviceError(code: error.code, reason: message)
+          return .cryptographicError(operation: "encryption", details: message)
         } else if message.contains("decryption failed") {
-          return UmbraErrors.Security.XPC.serviceError(code: error.code, reason: message)
+          return .cryptographicError(operation: "decryption", details: message)
         } else if message.contains("key not found") {
-          return UmbraErrors.Security.XPC.serviceError(code: error.code, reason: message)
+          return .keyNotFound(identifier: message.components(separatedBy: ": ").last ?? "unknown")
         }
       }
 
       switch error.code {
         case 1001:
-          return UmbraErrors.Security.XPC.serviceUnavailable(serviceName: "SecurityService")
+          return .serviceUnavailable
         case 1002:
-          return UmbraErrors.Security.XPC.insufficientPrivileges(service: "SecurityService", requiredPrivilege: "Operation")
+          return .authorizationDenied(operation: "SecurityService operation")
         case 1003:
-          return UmbraErrors.Security.XPC.serviceError(code: error.code, reason: "Invalid operation")
+          return .operationNotSupported(name: "Invalid operation")
         default:
-          return UmbraErrors.Security.XPC.internalError(
-            "Unknown error (code: \(error.code), message: \(error.localizedDescription))"
-          )
+          return .internalError(reason: "Unknown error (code: \(error.code), message: \(error.localizedDescription))")
       }
     }
 
-    return UmbraErrors.Security.XPC.internalError(
-      "External error (domain: \(error.domain), code: \(error.code), message: \(error.localizedDescription))"
-    )
+    return .internalError(reason: "External error (domain: \(error.domain), code: \(error.code), message: \(error.localizedDescription))")
   }
 
-  /// Maps UmbraErrors.Security.XPC to UmbraErrors.Security.Protocols
-  public func mapToProtocolError(_ error: UmbraErrors.Security.XPC) -> UmbraErrors.Security
-  .Protocols {
+  /// Maps XPCSecurityError to UmbraErrors.Security.Protocols
+  public func mapToProtocolError(_ error: XPCSecurityError) -> UmbraErrors.Security.Protocols {
     // Map XPC error to Protocol error based on case
     switch error {
-      case .encryptionFailed:
-        .encryptionFailed
-      case .decryptionFailed:
-        .decryptionFailed
-      case .keyGenerationFailed:
-        .keyGenerationFailed
-      case let .invalidFormat(reason):
-        .invalidFormat(reason: reason)
-      case .hashingFailed:
-        .hashVerificationFailed
+      case let .cryptographicError(operation, details):
+        if operation == "encryption" {
+          return .encryptionFailed("\(details)")
+        } else if operation == "decryption" {
+          return .decryptionFailed("\(details)")
+        } else {
+          return .serviceError("Cryptographic operation failed: \(operation) - \(details)")
+        }
+      case let .keyNotFound(identifier):
+        return .serviceError("Key not found: \(identifier)")
+      case let .invalidInput(details):
+        return .invalidFormat(reason: details)
       case .serviceUnavailable:
-        .serviceError
-      case let .internalError(message):
-        .internalError(message)
-      case .notImplemented:
-        .notImplemented
-      case let .unsupportedOperation(name):
-        .unsupportedOperation(name: name)
+        return .serviceError("Service unavailable")
+      case let .internalError(reason):
+        return .internalError(reason)
+      case let .operationNotSupported(name):
+        return .unsupportedOperation(name: name)
       default:
-        .internalError("Unknown error: \(error)")
+        return .internalError("Unknown error: \(error)")
     }
   }
 }

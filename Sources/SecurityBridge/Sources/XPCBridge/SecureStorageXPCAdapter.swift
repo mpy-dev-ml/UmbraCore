@@ -25,10 +25,12 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
   /// - Parameter connection: The NSXPCConnection to use for communicating with the XPC service
   public init(connection: NSXPCConnection) {
     self.connection = connection
-    connection.remoteObjectInterface = NSXPCInterface(with: SecureStorageServiceProtocol.self)
+    let protocolObj = SecureStorageServiceProtocol.self as Any as! Protocol
+    connection.remoteObjectInterface = NSXPCInterface(with: protocolObj)
     
     // Set the exported interface
-    let exportedInterface = NSXPCInterface(with: XPCServiceProtocolBasic.self)
+    let exportedProtocolObj = XPCServiceProtocolBasic.self as Any as! Protocol
+    let exportedInterface = NSXPCInterface(with: exportedProtocolObj)
     connection.exportedInterface = exportedInterface
     
     // Resume the connection
@@ -40,23 +42,26 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
     super.init()
     
     // Set up invalidation handler
-    connection.invalidationHandler = { [weak self] in
-      self?.invalidationHandler?()
-    }
+    setupInvalidationHandler()
   }
   
   /// Convert NSData to SecureBytes
   public func convertNSDataToSecureBytes(_ data: NSData) -> SecureBytes {
     let length = data.length
-    let bytes = [UInt8](repeating: 0, count: length)
-    data.getBytes(UnsafeMutableRawPointer(mutating: bytes), length: length)
+    var bytes = [UInt8](repeating: 0, count: length)
+    data.getBytes(&bytes, length: length)
     return SecureBytes(bytes: bytes)
   }
   
   /// Convert SecureBytes to NSData
   public func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
-    let bytes = secureBytes.rawBytes
+    let bytes = Array(secureBytes)
     return NSData(bytes: bytes, length: bytes.count)
+  }
+  
+  /// Convert NSData to SecureBytes
+  public func convertToSecureBytes(_ data: NSData) -> SecureBytes {
+    return convertNSDataToSecureBytes(data)
   }
   
   /// Check if the service is available
@@ -96,8 +101,48 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
       continuation
         .resume(returning: .failure(
           UmbraErrors.Security.XPC
-            .invalidFormat(reason: "Unexpected result format")
+            .invalidMessageFormat(reason: "Unexpected result format")
         ))
+    }
+  }
+  
+  /// Map security errors to UmbraErrors
+  public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
+    // Check for known error domains and codes
+    if error.domain == NSURLErrorDomain {
+      return .connectionFailed(reason: error.localizedDescription)
+    } else if error.domain == "SecureStorageErrorDomain" {
+      // Map specific storage error codes to appropriate UmbraErrors
+      switch error.code {
+      case 1001:
+        return .insufficientPrivileges(service: "SecureStorage", requiredPrivilege: "read")
+      case 1002:
+        return .serviceError(code: error.code, reason: error.userInfo["identifier"] as? String ?? "unknown")
+      case 1003:
+        return .serviceError(code: error.code, reason: error.localizedDescription)
+      case 1004:
+        return .serviceError(code: error.code, reason: error.localizedDescription)
+      case 1005:
+        return .serviceError(code: error.code, reason: error.localizedDescription)
+      default:
+        return .internalError(error.localizedDescription)
+      }
+    }
+    
+    // Default error mapping
+    return .internalError(error.localizedDescription)
+  }
+  
+  /// Setup invalidation handler for the XPC connection
+  public func setupInvalidationHandler() {
+    connection.invalidationHandler = { [weak self] in
+      guard let self = self else { return }
+      
+      // Log the invalidation
+      print("XPC connection invalidated for SecureStorageXPCAdapter")
+      
+      // Call the custom invalidation handler if set
+      self.invalidationHandler?()
     }
   }
 }
@@ -116,7 +161,7 @@ extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
       Task {
         let nsData = convertSecureBytesToNSData(data)
         let result = await serviceProxy.storeData(
-          nsData,
+          convertToSecureBytes(nsData),
           identifier: identifier,
           metadata: metadata
         )
@@ -136,12 +181,8 @@ extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
       Task {
         let result = await serviceProxy.retrieveData(identifier: identifier)
         switch result {
-        case .success(let nsData):
-          if let nsData = nsData as? NSData {
-            continuation.resume(returning: .success(convertNSDataToSecureBytes(nsData)))
-          } else {
-            continuation.resume(returning: .failure(.serviceError(code: -1, reason: "Expected NSData but got \(type(of: nsData))")))
-          }
+        case .success(let data):
+          continuation.resume(returning: .success(data))
         case .failure(let error):
           continuation.resume(returning: .failure(error))
         }

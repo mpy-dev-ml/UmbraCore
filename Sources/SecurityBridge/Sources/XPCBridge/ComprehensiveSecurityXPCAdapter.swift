@@ -10,7 +10,8 @@ import XPCProtocolsCore
 ///
 /// This adapter handles comprehensive security operations by delegating to an XPC service,
 /// providing a unified API for service-level operations.
-public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter, XPCServiceProtocolBasic, KeyManagementServiceProtocol, @unchecked Sendable {
+@objc
+public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter, XPCServiceProtocolBasic, @unchecked Sendable {
   // MARK: - Properties
   
   /// Static identifier for the protocol
@@ -20,13 +21,32 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter, XP
   
   /// The NSXPCConnection used to communicate with the XPC service
   public let connection: NSXPCConnection
-
+  
+  /// The service proxy for the ComprehensiveSecurityServiceProtocol
+  public var serviceProxy: ComprehensiveSecurityServiceProtocol?
+  
   // MARK: - Initialisation
 
-  /// Initialise with an NSXPCConnection
-  /// - Parameter connection: The connection to the XPC service
+  /// Initialise with an XPC connection
   public init(connection: NSXPCConnection) {
-    self.connection=connection
+    self.connection = connection
+    
+    // Set up the XPC interface using ObjectiveC.Protocol to avoid Swift type errors
+    let protocolObj = ComprehensiveSecurityServiceProtocol.self as Any as! Protocol
+    let remoteInterface = NSXPCInterface(with: protocolObj)
+    connection.remoteObjectInterface = remoteInterface
+    
+    // Set the exported interface
+    let exportedProtocolObj = XPCServiceProtocolBasic.self as Any as! Protocol
+    let exportedInterface = NSXPCInterface(with: exportedProtocolObj)
+    connection.exportedInterface = exportedInterface
+    
+    // Resume the connection
+    connection.resume()
+    
+    // Get the remote object proxy
+    self.serviceProxy = connection.remoteObjectProxy as? ComprehensiveSecurityServiceProtocol
+    
     super.init()
     setupInvalidationHandler()
   }
@@ -77,6 +97,20 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter, XP
     }
     
     return result as? T
+  }
+  
+  /// Convert NSData to SecureBytes
+  public func convertNSDataToSecureBytes(_ data: NSData) -> SecureBytes {
+    let length = data.length
+    var bytes = [UInt8](repeating: 0, count: length)
+    data.getBytes(&bytes, length: length)
+    return SecureBytes(bytes: bytes)
+  }
+  
+  /// Convert SecureBytes to NSData
+  public func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
+    let bytes = [UInt8](secureBytes)
+    return NSData(bytes: bytes, length: bytes.count)
   }
   
   // MARK: - XPCServiceProtocolBasic Implementation
@@ -580,16 +614,5 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter, XP
         }
       }
     }
-  }
-  
-  // Helper functions to convert between SecureBytes and NSData
-  public func convertNSDataToSecureBytes(_ data: NSData) -> SecureBytes {
-    let bytes = [UInt8](Data(referencing: data))
-    return SecureBytes(bytes: bytes)
-  }
-  
-  public func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
-    let data = Data(Array(secureBytes))
-    return data as NSData
   }
 }

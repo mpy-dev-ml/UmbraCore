@@ -1,6 +1,7 @@
 import CoreErrors
 import ErrorHandlingDomains
 import Foundation
+import ObjectiveC
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
@@ -10,14 +11,11 @@ import XPCProtocolsCore
 ///
 /// This adapter handles key management operations by delegating to an XPC service,
 /// providing a unified API for key-related operations.
-public final class KeyManagementXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendable {
+@objc public final class KeyManagementXPCAdapter: NSObject, KeyManagementServiceProtocol, BaseXPCAdapter, @unchecked Sendable {
   // MARK: - Properties
 
   /// The NSXPCConnection used to communicate with the XPC service
   public let connection: NSXPCConnection
-  
-  /// The proxy for making XPC calls
-  private let serviceProxy: any KeyManagementServiceProtocol
   
   // MARK: - Initialisation
 
@@ -26,73 +24,103 @@ public final class KeyManagementXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
   /// - Parameter connection: The NSXPCConnection to use for communicating with the XPC service
   public init(connection: NSXPCConnection) {
     self.connection = connection
-    connection.remoteObjectInterface = NSXPCInterface(with: KeyManagementServiceProtocol.self)
+    
+    // Set up the XPC interface - use the KeyManagementServiceProtocol
+    let protocolObj = KeyManagementServiceProtocol.self as Any as! Protocol
+    connection.remoteObjectInterface = NSXPCInterface(with: protocolObj)
     
     // Set the exported interface
-    let exportedInterface = NSXPCInterface(with: XPCServiceProtocolBasic.self)
-    connection.exportedInterface = exportedInterface
+    let exportedProtocolObj = XPCServiceProtocolBasic.self as Any as! Protocol
+    connection.exportedInterface = NSXPCInterface(with: exportedProtocolObj)
     
     // Resume the connection
     connection.resume()
-    
-    // Get the remote object proxy
-    self.serviceProxy = connection.remoteObjectProxy as! any KeyManagementServiceProtocol
     
     super.init()
     setupInvalidationHandler()
   }
   
+  /// Set up an invalidation handler for the XPC connection
+  public func setupInvalidationHandler() {
+    connection.invalidationHandler = {
+      // Handle connection invalidation
+      print("XPC connection to KeyManagementService was invalidated")
+      // Optional: Take recovery action or notify observers
+    }
+  }
+  
   /// Convert NSData to SecureBytes
   public func convertNSDataToSecureBytes(_ data: NSData) -> SecureBytes {
-    let length = data.length
-    var bytes = [UInt8](repeating: 0, count: length)
-    data.getBytes(&bytes, length: length)
+    let bytes = [UInt8](Data(referencing: data))
     return SecureBytes(bytes: bytes)
   }
   
   /// Convert SecureBytes to NSData
   public func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
-    let bytes = [UInt8](secureBytes)
+    let bytes = Array(secureBytes)
     return NSData(bytes: bytes, length: bytes.count)
   }
   
-  /// Check if the service is available
-  public func isServiceAvailable() async -> Bool {
-    let result = await listKeyIdentifiers()
-    switch result {
-    case .success:
-      return true
-    case .failure:
-      return false
+  /// Execute an XPC selector with arguments
+  public func executeXPCSelector<T>(
+    _ selector: String,
+    withArguments arguments: [Any] = []
+  ) async -> T? {
+    await withCheckedContinuation { continuation in
+      // Get the proxy object
+      guard let proxy = connection.remoteObjectProxy as? NSObject else {
+        continuation.resume(returning: nil)
+        return
+      }
+      
+      // Check if the selector is supported
+      let sel = NSSelectorFromString(selector)
+      guard proxy.responds(to: sel) else {
+        continuation.resume(returning: nil)
+        return
+      }
+      
+      // Perform the selector with the provided arguments
+      let result = proxy.perform(sel, with: arguments)
+      continuation.resume(returning: result?.takeUnretainedValue() as? T)
     }
   }
   
-  /// Executes a selector on the XPC connection for key management
-  private func executeKeyManagementSelector<T>(
-    _ selector: String,
-    withArguments arguments: [Any]=[]
-  ) async -> T? {
-    await executeXPCSelector(selector, withArguments: arguments)
+  /// Check if the XPC service is available
+  private func isServiceAvailable() async -> Bool {
+    // Check if the connection is valid
+    guard let proxy = connection.remoteObjectProxy as? NSObject else {
+      return false
+    }
+    
+    // Check if the service responds to a basic method
+    let selector = NSSelectorFromString("listKeyIdentifiers")
+    return proxy.responds(to: selector)
   }
-}
-
-// MARK: - KeyManagementServiceProtocol Implementation
-
-extension KeyManagementXPCAdapter: KeyManagementServiceProtocol {
+  
+  // MARK: - KeyManagementServiceProtocol Implementation
+  
   public func generateKey(
     keyType: XPCProtocolTypeDefs.KeyType,
     keyIdentifier: String?,
     metadata: [String: String]?
   ) async -> Result<String, XPCSecurityError> {
-    // First check if service is available
-    let serviceAvailable = await isServiceAvailable()
-    if !serviceAvailable {
+    // First check if the service is available
+    guard await isServiceAvailable() else {
       return .failure(.serviceUnavailable)
     }
     
+    // Create a completion handler wrapper
     return await withCheckedContinuation { continuation in
+      // Get the proxy object
+      guard let proxy = connection.remoteObjectProxy as? KeyManagementServiceProtocol else {
+        continuation.resume(returning: .failure(.serviceUnavailable))
+        return
+      }
+      
+      // Call the generateKey method asynchronously
       Task {
-        let result = await serviceProxy.generateKey(
+        let result = await proxy.generateKey(
           keyType: keyType,
           keyIdentifier: keyIdentifier,
           metadata: metadata
@@ -102,29 +130,26 @@ extension KeyManagementXPCAdapter: KeyManagementServiceProtocol {
     }
   }
   
-  public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
-    // First check if service is available
-    let serviceAvailable = await isServiceAvailable()
-    if !serviceAvailable {
+  public func exportKey(
+    keyIdentifier: String
+  ) async -> Result<SecureBytes, XPCSecurityError> {
+    // First check if the service is available
+    guard await isServiceAvailable() else {
       return .failure(.serviceUnavailable)
     }
     
+    // Create a completion handler wrapper
     return await withCheckedContinuation { continuation in
+      // Get the proxy object
+      guard let proxy = connection.remoteObjectProxy as? KeyManagementServiceProtocol else {
+        continuation.resume(returning: .failure(.serviceUnavailable))
+        return
+      }
+      
+      // Call the exportKey method asynchronously
       Task {
-        let result = await serviceProxy.exportKey(keyIdentifier: keyIdentifier)
-        switch result {
-        case .success(let nsData):
-          if let nsData = nsData as? NSData {
-            continuation.resume(returning: .success(convertNSDataToSecureBytes(nsData)))
-          } else {
-            continuation
-              .resume(returning: .failure(
-                .serviceError(code: -1, reason: "Expected NSData but got \(type(of: nsData))")
-              ))
-          }
-        case .failure(let error):
-          continuation.resume(returning: .failure(error))
-        }
+        let result = await proxy.exportKey(keyIdentifier: keyIdentifier)
+        continuation.resume(returning: result)
       }
     }
   }
@@ -135,17 +160,23 @@ extension KeyManagementXPCAdapter: KeyManagementServiceProtocol {
     keyIdentifier: String?,
     metadata: [String: String]?
   ) async -> Result<String, XPCSecurityError> {
-    // First check if service is available
-    let serviceAvailable = await isServiceAvailable()
-    if !serviceAvailable {
+    // First check if the service is available
+    guard await isServiceAvailable() else {
       return .failure(.serviceUnavailable)
     }
     
+    // Create a completion handler wrapper
     return await withCheckedContinuation { continuation in
+      // Get the proxy object
+      guard let proxy = connection.remoteObjectProxy as? KeyManagementServiceProtocol else {
+        continuation.resume(returning: .failure(.serviceUnavailable))
+        return
+      }
+      
+      // Call the importKey method asynchronously
       Task {
-        let nsData = convertSecureBytesToNSData(keyData)
-        let result = await serviceProxy.importKey(
-          keyData: nsData,
+        let result = await proxy.importKey(
+          keyData: keyData,
           keyType: keyType,
           keyIdentifier: keyIdentifier,
           metadata: metadata
@@ -155,55 +186,72 @@ extension KeyManagementXPCAdapter: KeyManagementServiceProtocol {
     }
   }
   
-  public func deleteKey(keyIdentifier: String) async -> Result<Void, XPCSecurityError> {
-    // First check if service is available
-    let serviceAvailable = await isServiceAvailable()
-    if !serviceAvailable {
+  public func deleteKey(
+    keyIdentifier: String
+  ) async -> Result<Void, XPCSecurityError> {
+    // First check if the service is available
+    guard await isServiceAvailable() else {
       return .failure(.serviceUnavailable)
     }
     
+    // Create a completion handler wrapper
     return await withCheckedContinuation { continuation in
+      // Get the proxy object
+      guard let proxy = connection.remoteObjectProxy as? KeyManagementServiceProtocol else {
+        continuation.resume(returning: .failure(.serviceUnavailable))
+        return
+      }
+      
+      // Call the deleteKey method asynchronously
       Task {
-        let result = await serviceProxy.deleteKey(keyIdentifier: keyIdentifier)
+        let result = await proxy.deleteKey(keyIdentifier: keyIdentifier)
         continuation.resume(returning: result)
       }
     }
   }
   
   public func listKeyIdentifiers() async -> Result<[String], XPCSecurityError> {
+    // First check if the service is available
+    guard await isServiceAvailable() else {
+      return .failure(.serviceUnavailable)
+    }
+    
+    // Create a completion handler wrapper
     return await withCheckedContinuation { continuation in
+      // Get the proxy object
+      guard let proxy = connection.remoteObjectProxy as? KeyManagementServiceProtocol else {
+        continuation.resume(returning: .failure(.serviceUnavailable))
+        return
+      }
+      
+      // Call the listKeyIdentifiers method asynchronously
       Task {
-        let result = await serviceProxy.listKeyIdentifiers()
+        let result = await proxy.listKeyIdentifiers()
         continuation.resume(returning: result)
       }
     }
   }
   
-  public func getKeyMetadata(for keyIdentifier: String) async -> Result<[String: String]?, XPCSecurityError> {
-    // First check if service is available
-    let serviceAvailable = await isServiceAvailable()
-    if !serviceAvailable {
+  public func getKeyMetadata(
+    for keyIdentifier: String
+  ) async -> Result<[String: String]?, XPCSecurityError> {
+    // First check if the service is available
+    guard await isServiceAvailable() else {
       return .failure(.serviceUnavailable)
     }
     
+    // Create a completion handler wrapper
     return await withCheckedContinuation { continuation in
+      // Get the proxy object
+      guard let proxy = connection.remoteObjectProxy as? KeyManagementServiceProtocol else {
+        continuation.resume(returning: .failure(.serviceUnavailable))
+        return
+      }
+      
+      // Call the getKeyMetadata method asynchronously
       Task {
-        let result = await serviceProxy.getKeyMetadata(for: keyIdentifier)
-        
-        switch result {
-        case .success(let metadata):
-          continuation.resume(returning: .success(metadata))
-        case .failure(let error):
-          if case .serviceError(_, let reason) = error, 
-             reason.contains("metadata format") {
-            continuation
-              .resume(returning: .failure(
-                .serviceError(code: -1, reason: "Invalid metadata format")
-              ))
-          } else {
-            continuation.resume(returning: .failure(error))
-          }
-        }
+        let result = await proxy.getKeyMetadata(for: keyIdentifier)
+        continuation.resume(returning: result)
       }
     }
   }

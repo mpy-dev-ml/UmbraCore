@@ -8,10 +8,15 @@ import XPCProtocolsCore
 /// Type aliases for convenience
 typealias SecureBytes=UmbraCoreTypes.SecureBytes
 typealias BinaryData=SecurityInterfacesBase.BinaryData
-typealias XPCSecurityError=UmbraErrors.Security.Protocols
 
-/// Import the SecurityProtocolError directly
-@_exported import enum XPCProtocolsCore.SecurityProtocolError
+// Import XPCProtocolsCore.SecurityError directly
+@_exported import enum XPCProtocolsCore.SecurityError
+
+// NOTE: This typealias has been deprecated in favour of using XPCProtocolsCore.SecurityError directly.
+// It is kept temporarily for backward compatibility but will be removed in a future release.
+// For new code, please use XPCProtocolsCore.SecurityError instead.
+// @deprecated Use XPCProtocolsCore.SecurityError instead.
+// typealias XPCSecurityError=UmbraErrors.Security.Protocols
 
 // MARK: - Migration Support
 
@@ -104,12 +109,12 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
   }
 
   func hashData(_: SecureBytes) async throws -> SecureBytes {
-    throw SecurityProtocolError
+    throw SecurityError
       .implementationMissing("hashData is not implemented in legacy XPC service")
   }
 
   func signData(_: SecureBytes, keyIdentifier _: String) async throws -> SecureBytes {
-    throw SecurityProtocolError
+    throw SecurityError
       .implementationMissing("signData is not implemented in legacy XPC service")
   }
 
@@ -118,7 +123,7 @@ private struct XPCStandardAdapter: XPCServiceProtocolStandard {
     for _: SecureBytes,
     keyIdentifier _: String
   ) async throws -> Bool {
-    throw SecurityProtocolError
+    throw SecurityError
       .implementationMissing("verifySignature is not implemented in legacy XPC service")
   }
 }
