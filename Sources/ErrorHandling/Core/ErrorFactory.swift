@@ -18,7 +18,7 @@ public enum ErrorFactory {
     line: Int=#line,
     function: String=#function
   ) -> E {
-    let source=ErrorSource(file: file, function: function, line: line)
+    let source=ErrorHandlingInterfaces.ErrorSource(file: file, line: line, function: function)
     return error.with(source: source)
   }
 
@@ -37,7 +37,7 @@ public enum ErrorFactory {
     line: Int=#line,
     function: String=#function
   ) -> E {
-    let source=ErrorSource(file: file, function: function, line: line)
+    let source=ErrorHandlingInterfaces.ErrorSource(file: file, line: line, function: function)
     return error
       .with(source: source)
       .with(underlyingError: underlyingError)
@@ -58,10 +58,20 @@ public enum ErrorFactory {
     line: Int=#line,
     function: String=#function
   ) -> E {
-    let source=ErrorSource(file: file, function: function, line: line)
+    let source=ErrorHandlingInterfaces.ErrorSource(file: file, line: line, function: function)
+
+    // Create a new context with the appropriate constructor parameters
+    // Since we can't cast between the two types directly
+    let interfaceContext=ErrorHandlingInterfaces.ErrorContext(
+      source: file,
+      operation: function,
+      details: context.details,
+      underlyingError: nil
+    )
+
     return error
       .with(source: source)
-      .with(context: context)
+      .with(context: interfaceContext)
   }
 
   /// Creates a new UmbraError with source, context and underlying error information
@@ -81,10 +91,20 @@ public enum ErrorFactory {
     line: Int=#line,
     function: String=#function
   ) -> E {
-    let source=ErrorSource(file: file, function: function, line: line)
+    let source=ErrorHandlingInterfaces.ErrorSource(file: file, line: line, function: function)
+
+    // Create a new context with the appropriate constructor parameters
+    // Since we can't cast between the two types directly
+    let interfaceContext=ErrorHandlingInterfaces.ErrorContext(
+      source: file,
+      operation: function,
+      details: context.details,
+      underlyingError: nil
+    )
+
     return error
       .with(source: source)
-      .with(context: context)
+      .with(context: interfaceContext)
       .with(underlyingError: underlyingError)
   }
 
@@ -105,7 +125,7 @@ public enum ErrorFactory {
     line: Int=#line,
     function: String=#function
   ) -> ErrorHandlingModels.GenericUmbraError {
-    let source=ErrorSource(file: file, function: function, line: line)
+    let source=ErrorHandlingInterfaces.ErrorSource(file: file, line: line, function: function)
     return ErrorHandlingModels.GenericUmbraError(
       domain: domain,
       code: code,

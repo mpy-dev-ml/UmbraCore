@@ -102,7 +102,7 @@ public struct RepositoryError: Error, UmbraError, Sendable, CustomStringConverti
   public let errorType: RepositoryErrorType
 
   /// The domain for repository errors
-  public let domain: String = "Repository"
+  public let domain: String="Repository"
 
   /// The error code
   public var code: String {
@@ -131,14 +131,14 @@ public struct RepositoryError: Error, UmbraError, Sendable, CustomStringConverti
   /// Initialize a new repository error
   public init(
     errorType: RepositoryErrorType,
-    source: ErrorHandlingInterfaces.ErrorSource? = nil,
-    underlyingError: Error? = nil,
-    context: ErrorHandlingInterfaces.ErrorContext? = nil
+    source: ErrorHandlingInterfaces.ErrorSource?=nil,
+    underlyingError: Error?=nil,
+    context: ErrorHandlingInterfaces.ErrorContext?=nil
   ) {
-    self.errorType = errorType
-    self.source = source
-    self.underlyingError = underlyingError
-    self.context = context ?? ErrorHandlingInterfaces.ErrorContext(
+    self.errorType=errorType
+    self.source=source
+    self.underlyingError=underlyingError
+    self.context=context ?? ErrorHandlingInterfaces.ErrorContext(
       source: "Repository",
       operation: "repository_operation",
       details: errorType.message
@@ -178,9 +178,9 @@ public struct RepositoryError: Error, UmbraError, Sendable, CustomStringConverti
   /// Create a repository error with the specified type and message
   public static func create(
     _ type: RepositoryErrorType,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line
   ) -> RepositoryError {
     RepositoryError(
       errorType: type,
@@ -195,18 +195,18 @@ public struct RepositoryError: Error, UmbraError, Sendable, CustomStringConverti
   /// Convenience initializers for specific error types
   public static func notFound(
     _ message: String,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line
   ) -> RepositoryError {
     create(.repositoryNotFound(message), file: file, function: function, line: line)
   }
 
   public static func openFailed(
     _ message: String,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line
   ) -> RepositoryError {
     create(.repositoryOpenFailed(message), file: file, function: function, line: line)
   }

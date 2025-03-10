@@ -4,12 +4,14 @@ import ErrorHandlingInterfaces
 import Foundation
 
 // Create an extension to provide an empty context constructor
-extension ErrorHandlingCommon.ErrorContext {
+extension ErrorHandlingInterfaces.ErrorContext {
   /// Create a new error context with no additional information
-  public static func empty() -> ErrorHandlingCommon.ErrorContext {
-    ErrorHandlingCommon.ErrorContext(
+  public static func empty() -> ErrorHandlingInterfaces.ErrorContext {
+    ErrorHandlingInterfaces.ErrorContext(
       source: "Unknown",
-      operation: "Unknown"
+      operation: "Unknown",
+      details: nil,
+      underlyingError: nil
     )
   }
 }
@@ -34,30 +36,34 @@ public struct SecurityCoreErrorWrapper: UmbraError {
   /// A unique code that identifies this error within its domain
   public var code: String {
     switch wrappedError {
+      case .authenticationFailed:
+        return "AUTHENTICATION_FAILED"
+      case .authorizationFailed:
+        return "AUTHORIZATION_FAILED"
+      case .insufficientPermissions:
+        return "INSUFFICIENT_PERMISSIONS"
       case .encryptionFailed:
         return "ENCRYPTION_FAILED"
       case .decryptionFailed:
         return "DECRYPTION_FAILED"
-      case .keyGenerationFailed:
-        return "KEY_GENERATION_FAILED"
-      case .invalidKey:
-        return "INVALID_KEY"
-      case .hashVerificationFailed:
-        return "HASH_VERIFICATION_FAILED"
-      case .randomGenerationFailed:
-        return "RANDOM_GENERATION_FAILED"
-      case .invalidInput:
-        return "INVALID_INPUT"
-      case .storageOperationFailed:
-        return "STORAGE_OPERATION_FAILED"
-      case .timeout:
-        return "TIMEOUT"
-      case .serviceError:
-        return "SERVICE_ERROR"
+      case .hashingFailed:
+        return "HASHING_FAILED"
+      case .signatureInvalid:
+        return "SIGNATURE_INVALID"
+      case .certificateInvalid:
+        return "CERTIFICATE_INVALID"
+      case .certificateExpired:
+        return "CERTIFICATE_EXPIRED"
+      case .policyViolation:
+        return "POLICY_VIOLATION"
+      case .secureConnectionFailed:
+        return "SECURE_CONNECTION_FAILED"
+      case .secureStorageFailed:
+        return "SECURE_STORAGE_FAILED"
+      case .dataIntegrityViolation:
+        return "DATA_INTEGRITY_VIOLATION"
       case .internalError:
         return "INTERNAL_ERROR"
-      case .notImplemented:
-        return "NOT_IMPLEMENTED"
       @unknown default:
         return "UNKNOWN_ERROR"
     }
@@ -66,37 +72,41 @@ public struct SecurityCoreErrorWrapper: UmbraError {
   /// A human-readable description of the error
   public var errorDescription: String {
     switch wrappedError {
+      case let .authenticationFailed(reason):
+        return "Authentication failed: \(reason)"
+      case let .authorizationFailed(reason):
+        return "Authorization failed: \(reason)"
+      case let .insufficientPermissions(resource, requiredPermission):
+        return "Insufficient permissions to access \(resource). Required: \(requiredPermission)"
       case let .encryptionFailed(reason):
         return "Encryption failed: \(reason)"
       case let .decryptionFailed(reason):
         return "Decryption failed: \(reason)"
-      case let .keyGenerationFailed(reason):
-        return "Key generation failed: \(reason)"
-      case let .invalidKey(reason):
-        return "Invalid key: \(reason)"
-      case let .hashVerificationFailed(reason):
-        return "Hash verification failed: \(reason)"
-      case let .randomGenerationFailed(reason):
-        return "Random generation failed: \(reason)"
-      case let .invalidInput(reason):
-        return "Invalid input: \(reason)"
-      case let .storageOperationFailed(reason):
-        return "Storage operation failed: \(reason)"
-      case let .timeout(operation):
-        return "Operation timed out: \(operation)"
-      case let .serviceError(code, reason):
-        return "Security service error (\(code)): \(reason)"
+      case let .hashingFailed(reason):
+        return "Hashing operation failed: \(reason)"
+      case let .signatureInvalid(reason):
+        return "Signature verification failed: \(reason)"
+      case let .certificateInvalid(reason):
+        return "Certificate is invalid: \(reason)"
+      case let .certificateExpired(reason):
+        return "Certificate has expired: \(reason)"
+      case let .policyViolation(policy, reason):
+        return "Security policy violation (\(policy)): \(reason)"
+      case let .secureConnectionFailed(reason):
+        return "Secure connection failed: \(reason)"
+      case let .secureStorageFailed(operation, reason):
+        return "Secure storage operation \(operation) failed: \(reason)"
+      case let .dataIntegrityViolation(reason):
+        return "Data integrity violation detected: \(reason)"
       case let .internalError(message):
         return "Internal security error: \(message)"
-      case let .notImplemented(feature):
-        return "Not implemented: \(feature)"
       @unknown default:
-        return "Unknown security core error"
+        return "Unknown security error"
     }
   }
 
   /// Optional source information about where the error occurred
-  public var source: ErrorHandlingCommon.ErrorSource? {
+  public var source: ErrorHandlingInterfaces.ErrorSource? {
     nil
   }
 
@@ -106,12 +116,17 @@ public struct SecurityCoreErrorWrapper: UmbraError {
   }
 
   /// Additional context information about the error
-  public var context: ErrorHandlingCommon.ErrorContext {
-    .empty()
+  public var context: ErrorHandlingInterfaces.ErrorContext {
+    .init(
+      source: "SecurityCoreErrorWrapper",
+      operation: "Unknown",
+      details: nil,
+      underlyingError: nil
+    )
   }
 
   /// Creates a new instance of the error with additional context
-  public func with(context _: ErrorHandlingCommon.ErrorContext) -> Self {
+  public func with(context _: ErrorHandlingInterfaces.ErrorContext) -> Self {
     self
   }
 
@@ -121,7 +136,7 @@ public struct SecurityCoreErrorWrapper: UmbraError {
   }
 
   /// Creates a new instance of the error with source information
-  public func with(source _: ErrorHandlingCommon.ErrorSource) -> Self {
+  public func with(source _: ErrorHandlingInterfaces.ErrorSource) -> Self {
     self
   }
 
@@ -149,16 +164,18 @@ public struct SecurityXPCErrorWrapper: UmbraError {
     switch wrappedError {
       case .connectionFailed:
         return "CONNECTION_FAILED"
+      case .invalidMessageFormat:
+        return "INVALID_MESSAGE_FORMAT"
+      case .serviceError:
+        return "SERVICE_ERROR"
+      case .timeout:
+        return "TIMEOUT"
       case .serviceUnavailable:
         return "SERVICE_UNAVAILABLE"
-      case .invalidResponse:
-        return "INVALID_RESPONSE"
-      case .unexpectedSelector:
-        return "UNEXPECTED_SELECTOR"
-      case .versionMismatch:
-        return "VERSION_MISMATCH"
-      case .invalidServiceIdentifier:
-        return "INVALID_SERVICE_IDENTIFIER"
+      case .operationCancelled:
+        return "OPERATION_CANCELLED"
+      case .insufficientPrivileges:
+        return "INSUFFICIENT_PRIVILEGES"
       case .internalError:
         return "INTERNAL_ERROR"
       @unknown default:
@@ -170,26 +187,28 @@ public struct SecurityXPCErrorWrapper: UmbraError {
   public var errorDescription: String {
     switch wrappedError {
       case let .connectionFailed(reason):
-        return "Connection to XPC service failed: \(reason)"
-      case .serviceUnavailable:
-        return "XPC service is not available"
-      case let .invalidResponse(reason):
-        return "Received an invalid response from XPC service: \(reason)"
-      case let .unexpectedSelector(name):
-        return "Attempted to use an unexpected selector: \(name)"
-      case let .versionMismatch(expected, found):
-        return "Service version does not match expected version (expected: \(expected), found: \(found))"
-      case .invalidServiceIdentifier:
-        return "Service identifier is invalid"
+        return "Failed to connect to XPC service: \(reason)"
+      case let .invalidMessageFormat(reason):
+        return "Message format is invalid: \(reason)"
+      case let .serviceError(code, reason):
+        return "XPC service error (code \(code)): \(reason)"
+      case let .timeout(operation, timeoutMs):
+        return "XPC operation \(operation) timed out after \(timeoutMs)ms"
+      case let .serviceUnavailable(serviceName):
+        return "XPC service is not available: \(serviceName)"
+      case let .operationCancelled(operation):
+        return "XPC operation was cancelled: \(operation)"
+      case let .insufficientPrivileges(service, requiredPrivilege):
+        return "XPC service \(service) has insufficient privileges: requires \(requiredPrivilege)"
       case let .internalError(message):
-        return "Internal error within XPC handling: \(message)"
+        return "Internal XPC error: \(message)"
       @unknown default:
-        return "Unknown XPC security error"
+        return "Unknown XPC error"
     }
   }
 
   /// Optional source information about where the error occurred
-  public var source: ErrorHandlingCommon.ErrorSource? {
+  public var source: ErrorHandlingInterfaces.ErrorSource? {
     nil
   }
 
@@ -199,12 +218,17 @@ public struct SecurityXPCErrorWrapper: UmbraError {
   }
 
   /// Additional context information about the error
-  public var context: ErrorHandlingCommon.ErrorContext {
-    .empty()
+  public var context: ErrorHandlingInterfaces.ErrorContext {
+    .init(
+      source: "SecurityXPCErrorWrapper",
+      operation: "Unknown",
+      details: nil,
+      underlyingError: nil
+    )
   }
 
   /// Creates a new instance of the error with additional context
-  public func with(context _: ErrorHandlingCommon.ErrorContext) -> Self {
+  public func with(context _: ErrorHandlingInterfaces.ErrorContext) -> Self {
     self
   }
 
@@ -214,11 +238,11 @@ public struct SecurityXPCErrorWrapper: UmbraError {
   }
 
   /// Creates a new instance of the error with source information
-  public func with(source _: ErrorHandlingCommon.ErrorSource) -> Self {
+  public func with(source _: ErrorHandlingInterfaces.ErrorSource) -> Self {
     self
   }
 
-  /// CustomStringConvertible conformance
+  /// A textual representation of this instance.
   public var description: String {
     errorDescription
   }
@@ -252,20 +276,6 @@ public struct SecurityProtocolsErrorWrapper: UmbraError {
         return "INVALID_STATE"
       case .internalError:
         return "INTERNAL_ERROR"
-      case .invalidInput:
-        return "INVALID_INPUT"
-      case .encryptionFailed:
-        return "ENCRYPTION_FAILED"
-      case .decryptionFailed:
-        return "DECRYPTION_FAILED"
-      case .randomGenerationFailed:
-        return "RANDOM_GENERATION_FAILED"
-      case .storageOperationFailed:
-        return "STORAGE_OPERATION_FAILED"
-      case .serviceError:
-        return "SERVICE_ERROR"
-      case .notImplemented:
-        return "NOT_IMPLEMENTED"
       @unknown default:
         return "UNKNOWN_ERROR"
     }
@@ -274,39 +284,25 @@ public struct SecurityProtocolsErrorWrapper: UmbraError {
   /// A human-readable description of the error
   public var errorDescription: String {
     switch wrappedError {
-      case let .invalidFormat(reason):
-        return "Data format does not conform to protocol expectations: \(reason)"
-      case let .unsupportedOperation(name):
-        return "Operation is not supported by the protocol: \(name)"
-      case let .incompatibleVersion(version):
-        return "Protocol version is incompatible: \(version)"
       case let .missingProtocolImplementation(protocolName):
         return "Required protocol implementation is missing: \(protocolName)"
+      case let .invalidFormat(reason):
+        return "Data is in an invalid format: \(reason)"
+      case let .unsupportedOperation(name):
+        return "The requested operation is not supported: \(name)"
+      case let .incompatibleVersion(version):
+        return "Protocol version is incompatible: \(version)"
       case let .invalidState(state, expectedState):
         return "Protocol in invalid state: current '\(state)', expected '\(expectedState)'"
       case let .internalError(reason):
         return "Internal error within protocol handling: \(reason)"
-      case let .invalidInput(reason):
-        return "Invalid input data: \(reason)"
-      case let .encryptionFailed(reason):
-        return "Encryption operation failed: \(reason)"
-      case let .decryptionFailed(reason):
-        return "Decryption operation failed: \(reason)"
-      case let .randomGenerationFailed(reason):
-        return "Secure random generation failed: \(reason)"
-      case let .storageOperationFailed(reason):
-        return "Secure storage operation failed: \(reason)"
-      case let .serviceError(code, reason):
-        return "Security service error (code \(code)): \(reason)"
-      case .notImplemented:
-        return "Operation not implemented"
       @unknown default:
         return "Unknown protocol security error"
     }
   }
 
   /// Optional source information about where the error occurred
-  public var source: ErrorHandlingCommon.ErrorSource? {
+  public var source: ErrorHandlingInterfaces.ErrorSource? {
     nil
   }
 
@@ -316,12 +312,17 @@ public struct SecurityProtocolsErrorWrapper: UmbraError {
   }
 
   /// Additional context information about the error
-  public var context: ErrorHandlingCommon.ErrorContext {
-    .empty()
+  public var context: ErrorHandlingInterfaces.ErrorContext {
+    .init(
+      source: "SecurityProtocolsErrorWrapper",
+      operation: "Unknown",
+      details: nil,
+      underlyingError: nil
+    )
   }
 
   /// Creates a new instance of the error with additional context
-  public func with(context _: ErrorHandlingCommon.ErrorContext) -> Self {
+  public func with(context _: ErrorHandlingInterfaces.ErrorContext) -> Self {
     self
   }
 
@@ -331,7 +332,7 @@ public struct SecurityProtocolsErrorWrapper: UmbraError {
   }
 
   /// Creates a new instance of the error with source information
-  public func with(source _: ErrorHandlingCommon.ErrorSource) -> Self {
+  public func with(source _: ErrorHandlingInterfaces.ErrorSource) -> Self {
     self
   }
 

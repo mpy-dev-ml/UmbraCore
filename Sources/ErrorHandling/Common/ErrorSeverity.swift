@@ -3,7 +3,7 @@ import LoggingWrapperInterfaces
 
 /// Error severity levels for classification and logging
 ///
-/// This enum provides a standardised way to categorise errors by severity throughout 
+/// This enum provides a standardised way to categorise errors by severity throughout
 /// the UmbraCore framework. It establishes a clear hierarchy of error importance,
 /// with critical errors being the most severe and trace being the least severe.
 ///
@@ -41,100 +41,107 @@ import LoggingWrapperInterfaces
 /// ```
 public enum ErrorSeverity: String, Comparable, Sendable {
   /// Critical error that requires immediate attention
-  case critical = "Critical"
-  
+  case critical="Critical"
+
   /// Error that indicates a significant problem
-  case error = "Error"
-  
+  case error="Error"
+
   /// Warning about potential issues
-  case warning = "Warning"
-  
+  case warning="Warning"
+
   /// Informational message about error conditions
-  case info = "Info"
-  
+  case info="Info"
+
   /// Debug-level severity for minor issues
-  case debug = "Debug"
-  
+  case debug="Debug"
+
   /// Trace-level severity for detailed debugging
-  case trace = "Trace"
-  
+  case trace="Trace"
+
   /// Comparison implementation for Comparable protocol
   public static func < (lhs: ErrorSeverity, rhs: ErrorSeverity) -> Bool {
     // Reverse order: critical > error > warning > info > debug > trace
-    let order: [ErrorSeverity] = [.trace, .debug, .info, .warning, .error, .critical]
-    guard let lhsIndex = order.firstIndex(of: lhs),
-          let rhsIndex = order.firstIndex(of: rhs) else {
+    let order: [ErrorSeverity]=[.trace, .debug, .info, .warning, .error, .critical]
+    guard
+      let lhsIndex=order.firstIndex(of: lhs),
+      let rhsIndex=order.firstIndex(of: rhs)
+    else {
       return false
     }
     return lhsIndex < rhsIndex
   }
-  
+
   /// Indicates whether errors of this severity should be shown to the user
   public var shouldNotify: Bool {
     switch self {
-    case .critical, .error, .warning:
-      return true
-    case .info, .debug, .trace:
-      return false
+      case .critical, .error, .warning:
+        true
+      case .info, .debug, .trace:
+        false
     }
   }
-  
+
   /// Maps the severity level to an integer value that can be used for notification level mapping
   /// - Returns: An integer representing the notification level (0-4)
   public var notificationLevel: Int {
     switch self {
-    case .critical:
-      return 4 // Critical
-    case .error:
-      return 3 // Error
-    case .warning:
-      return 2 // Warning
-    case .info:
-      return 1 // Info
-    case .debug, .trace:
-      return 0 // Debug
+      case .critical:
+        4 // Critical
+      case .error:
+        3 // Error
+      case .warning:
+        2 // Warning
+      case .info:
+        1 // Info
+      case .debug, .trace:
+        0 // Debug
     }
   }
-  
-  /// Converts to LogLevel for logging purposes
-  /// - Returns: The corresponding LogLevel
+
+  /// Convert ErrorSeverity to the corresponding LogLevel
+  ///
+  /// This method provides a direct mapping between ErrorSeverity and
+  /// LoggingWrapperInterfaces.LogLevel, allowing for seamless integration
+  /// with the logging system.
+  ///
+  /// - Returns: The equivalent LogLevel value
   public func toLogLevel() -> LogLevel {
     switch self {
-    case .critical:
-      return .critical
-    case .error:
-      return .error
-    case .warning:
-      return .warning
-    case .info:
-      return .info
-    case .debug:
-      return .debug
-    case .trace:
-      return .trace
+      case .critical:
+        .critical
+      case .error:
+        .error
+      case .warning:
+        .warning
+      case .info:
+        .info
+      case .debug:
+        .debug
+      case .trace:
+        .trace
     }
   }
-  
+
   /// Creates an ErrorSeverity from a LogLevel
   /// - Parameter logLevel: The log level to convert
   /// - Returns: The corresponding ErrorSeverity
   public static func from(logLevel: LogLevel) -> ErrorSeverity {
     switch logLevel {
-    case .critical:
-      return .critical
-    case .error:
-      return .error
-    case .warning:
-      return .warning
-    case .info:
-      return .info
-    case .debug:
-      return .debug
-    case .trace:
-      return .trace
+      case .critical:
+        .critical
+      case .error:
+        .error
+      case .warning:
+        .warning
+      case .info:
+        .info
+      case .debug:
+        .debug
+      case .trace:
+        .trace
     }
   }
-  
+
   /// String representation of the severity level (in uppercase)
   public var stringValue: String {
     rawValue.uppercased()

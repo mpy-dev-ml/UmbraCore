@@ -4,6 +4,7 @@ import ErrorHandlingCore
 import ErrorHandlingDomains
 import ErrorHandlingInterfaces
 import ErrorHandlingMapping
+import ErrorHandlingModels
 import ErrorHandlingNotification
 
 // Use the direct protocol name from ErrorHandling.Interfaces
@@ -41,68 +42,86 @@ public class ErrorHandlingExample {
   }
 
   /// Sample recovery provider for demonstration purposes
-  private class SampleRecoveryProvider: RecoveryOptionsProvider {
+  private final class SampleRecoveryProvider: RecoveryOptionsProvider {
     /// Provides recovery options for security errors
-    public func recoveryOptions(for error: some UmbraError)
-    -> [ErrorHandlingInterfaces.RecoveryOption] {
+    public func recoveryOptions(for error: some Error) -> ErrorHandlingInterfaces.RecoveryOptions? {
       // Map to security error if possible
-      if let securityError=error as? SecurityCoreErrorWrapper {
+      if let securityError = error as? SecurityCoreErrorWrapper {
         // Provide different recovery options based on error type
         switch securityError.wrappedError {
-          case .invalidKey:
-            return [
-              ErrorHandlingNotification.ClosureRecoveryOption(
-                title: "Regenerate Key",
-                action: { print("Regenerating key...") }
-              ),
-              ErrorHandlingNotification.ClosureRecoveryOption(
-                title: "Try Backup Key",
-                action: { print("Using backup key...") }
-              )
-            ]
-          case .keyGenerationFailed:
-            return [
-              ErrorHandlingNotification.ClosureRecoveryOption(
-                title: "Create New Key",
-                action: { print("Creating new key...") }
-              ),
-              ErrorHandlingNotification.ClosureRecoveryOption(
-                title: "Import Key",
-                action: { print("Importing key...") }
-              )
-            ]
-          case .encryptionFailed:
-            return [
-              ErrorHandlingNotification.ClosureRecoveryOption(
-                title: "Retry Encryption",
-                action: { print("Retrying encryption...") }
-              ),
-              ErrorHandlingNotification.ClosureRecoveryOption(
-                title: "Skip",
-                action: { print("Skipping encryption") }
-              )
-            ]
+          case .authenticationFailed, .authorizationFailed:
+            return ErrorHandlingInterfaces.RecoveryOptions(
+              title: "Authentication Error",
+              message: securityError.errorDescription,
+              actions: [
+                ErrorHandlingInterfaces.RecoveryAction(
+                  title: "Retry Authentication",
+                  handler: { 
+                    print("Retrying authentication...")
+                    return true
+                  }
+                ),
+                ErrorHandlingInterfaces.RecoveryAction(
+                  title: "Use Alternative Method",
+                  handler: { 
+                    print("Using alternative authentication method...")
+                    return true
+                  }
+                )
+              ]
+            )
+          case .encryptionFailed, .decryptionFailed:
+            return ErrorHandlingInterfaces.RecoveryOptions(
+              title: "Cryptographic Error",
+              message: securityError.errorDescription,
+              actions: [
+                ErrorHandlingInterfaces.RecoveryAction(
+                  title: "Try Again",
+                  handler: { 
+                    print("Retrying cryptographic operation...")
+                    return true
+                  }
+                )
+              ]
+            )
           default:
-            return [
-              ErrorHandlingNotification.ClosureRecoveryOption(
-                title: "Retry",
-                action: { print("Retrying operation...") }
-              ),
-              ErrorHandlingNotification.ClosureRecoveryOption(
-                title: "Cancel",
-                action: { print("Operation cancelled") }
-              )
-            ]
+            return ErrorHandlingInterfaces.RecoveryOptions(
+              title: "Security Error",
+              message: securityError.errorDescription,
+              actions: [
+                ErrorHandlingInterfaces.RecoveryAction(
+                  title: "Retry Operation",
+                  handler: { 
+                    print("Retrying operation...")
+                    return true
+                  }
+                ),
+                ErrorHandlingInterfaces.RecoveryAction(
+                  title: "Cancel",
+                  handler: { 
+                    print("Operation cancelled by user")
+                    return true
+                  }
+                )
+              ]
+            )
         }
       }
-
-      // Default recovery options for other error types
-      return [
-        ErrorHandlingNotification.ClosureRecoveryOption(
-          title: "OK",
-          action: { print("Acknowledged") }
-        )
-      ]
+      
+      // Default recovery options
+      return ErrorHandlingInterfaces.RecoveryOptions(
+        title: "Error",
+        message: error.localizedDescription,
+        actions: [
+          ErrorHandlingInterfaces.RecoveryAction(
+            title: "OK",
+            handler: { 
+              print("User acknowledged error")
+              return true
+            }
+          )
+        ]
+      )
     }
   }
 
@@ -146,13 +165,14 @@ public class ErrorHandlingExample {
     // Try to map to security error
     let securityMapper=SecurityErrorMapper()
 
-    // Check if the map method exists
-    if let securityError=securityMapper.mapFromAny(externalError) {
-      print("Successfully mapped to security error: \(securityError)")
+    // Map external error to core error
+    if let mappedError = securityMapper.mapToCoreError(externalError) {
+      print("Successfully mapped to security error: \(mappedError)")
     } else {
       // Handle unmapped errors with an application error
-      let coreAppError=UmbraErrors.Application.Core.internalError(
-        reason: "Failed to map external security error"
+      let coreAppError=UmbraErrors.Application.Core.permissionDenied(
+        resource: "External API",
+        permission: "Authentication required"
       )
       let wrappedAppError=ApplicationCoreErrorWrapper(coreAppError)
       print("Mapped to application error: \(wrappedAppError.errorDescription)")

@@ -1,6 +1,6 @@
 import Foundation
-import Security
 import LoggingWrapper
+import Security
 import UmbraLogging
 
 /// A thread-safe service for managing secure keychain operations.
@@ -21,7 +21,7 @@ import UmbraLogging
 /// ```
 public actor KeychainService {
   /// Logger instance for tracking operations.
-  private let logger = Logger.self
+  private let logger=Logger.self
 
   /// Creates a new keychain service instance.
   public init() {

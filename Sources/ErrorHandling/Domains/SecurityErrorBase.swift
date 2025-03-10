@@ -1,8 +1,8 @@
 import ErrorHandlingInterfaces
 import Foundation
 
-/// Namespace for security-specific errors
-public enum UmbraErrors {
+/// Security-specific errors extension
+extension UmbraErrors {
   /// Security error domain
   public enum Security {
     // This namespace contains the various security error types

@@ -1,9 +1,13 @@
 import Foundation
 
 extension UmbraErrors {
-  /// Security-related error domains
-  public enum Security {
-    /// Core security errors spanning all security domains
+  /// General security-related error domains
+  /// For specialised security error types, see:
+  /// - SecurityCoreErrors.swift
+  /// - SecurityProtocolErrors.swift
+  /// - SecurityXPCErrors.swift
+  public enum GeneralSecurity {
+    /// Common security errors spanning all security domains
     public enum Core: Error, Sendable, Equatable {
       /// General encryption failure
       case encryptionFailed(reason: String)

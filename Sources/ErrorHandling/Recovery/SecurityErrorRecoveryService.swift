@@ -3,23 +3,34 @@ import ErrorHandlingInterfaces
 import Foundation
 
 /// Provides recovery options for security errors
-@MainActor
-public final class SecurityErrorRecoveryService: ErrorRecoveryService {
+@preconcurrency // Defer isolation checking to runtime
+public final class SecurityErrorRecoveryService {
   /// Shared instance
   public static let shared = SecurityErrorRecoveryService()
-  
+
   /// Recovery providers registered with this service
-  private var providers: [RecoveryOptionsProvider] = []
+  /// Made private(set) to maintain Sendable conformance
+  private let providers = AtomicArray<any ErrorHandlingInterfaces.RecoveryOptionsProvider>()
 
   /// Private initialiser to enforce singleton pattern
   private init() {
-    // Register with the recovery registry
-    ErrorRecoveryRegistry.shared.register(self)
+    // Will be registered later to avoid circular references
   }
   
+  /// Call this method once to initialize the service properly
+  @MainActor
+  public static func initialize() {
+    // Register shared instance with the registry
+    ErrorRecoveryRegistry.shared.register(shared)
+  }
+}
+
+// MARK: - ErrorRecoveryService Protocol Conformance
+
+extension SecurityErrorRecoveryService: ErrorRecoveryService {
   /// Register a provider of recovery options
   /// - Parameter provider: The provider to register
-  public func registerProvider(_ provider: any RecoveryOptionsProvider) {
+  public func registerProvider(_ provider: any ErrorHandlingInterfaces.RecoveryOptionsProvider) {
     providers.append(provider)
   }
   
@@ -28,35 +39,26 @@ public final class SecurityErrorRecoveryService: ErrorRecoveryService {
   /// - Returns: Available recovery options
   public func getRecoveryOptions(for error: some Error) -> [any RecoveryOption] {
     // If it's not a security error, return no options
-    guard isSecurity(error: error) else {
+    guard checkIsSecurity(error: error) else {
       return []
     }
-    
+
     // Collect options from all providers
     var allOptions: [any RecoveryOption] = []
-    
+
     // Add options from registered providers
-    for provider in providers {
-      if let options = provider.recoveryOptions(for: error) {
-        allOptions.append(contentsOf: options.actions.map { action in
-          return ErrorRecoveryOption(
-            title: action.title,
-            description: action.description,
-            isDisruptive: action.isDisruptive,
-            recoveryAction: { try await action.perform() }
-          )
-        })
-      }
+    for provider in providers.values {
+      allOptions.append(contentsOf: provider.recoveryOptions(for: error))
     }
-    
+
     // If no providers handled it, use built-in recovery options
     if allOptions.isEmpty {
       allOptions = defaultRecoveryOptions(for: error)
     }
-    
+
     return allOptions
   }
-  
+
   /// Attempt to automatically recover from an error
   /// - Parameters:
   ///   - error: The error to recover from
@@ -64,171 +66,242 @@ public final class SecurityErrorRecoveryService: ErrorRecoveryService {
   /// - Returns: Whether recovery was successful
   public func attemptRecovery(from error: some Error, context: [String: Any]?) async -> Bool {
     // Only attempt recovery for security errors
-    guard isSecurity(error: error) else {
+    guard checkIsSecurity(error: error) else {
       return false
     }
-    
+
     // Get recovery options
     let options = getRecoveryOptions(for: error)
-    
+
     // Try each option in order
     for option in options {
       // Skip options marked as disruptive (they require user interaction)
       guard !option.isDisruptive else {
         continue
       }
-      
+
       // Attempt recovery with this option
       await option.perform()
       
-      // Since we don't have a way to know if the option succeeded,
-      // we'll assume the first non-disruptive option worked
+      // Since we don't have a way to know if recovery succeeded,
+      // assume the first non-disruptive option worked
       return true
     }
-    
-    // No recovery option succeeded
-    return false
-  }
 
-  /// Determines if an error is a security-related error
-  /// - Parameter error: The error to check
-  /// - Returns: Whether this is a security error
-  private func isSecurity(error: some Error) -> Bool {
-    if let umbraError = error as? UmbraError {
-      return umbraError.domain.contains("Security")
-    }
     return false
   }
-  
-  /// Provides default recovery options for security errors
-  /// - Parameter error: The error to provide options for
+}
+
+// MARK: - RecoveryOptionsProvider Protocol Conformance (ErrorHandlingInterfaces)
+
+extension SecurityErrorRecoveryService: ErrorHandlingInterfaces.RecoveryOptionsProvider {
+  /// Provides recovery options for an error (ErrorHandlingInterfaces version)
+  /// - Parameter error: The error to provide recovery options for
   /// - Returns: Array of recovery options
-  private func defaultRecoveryOptions(for error: some Error) -> [any RecoveryOption] {
-    var options: [any RecoveryOption] = []
-    
-    // Try to extract error code for specific handling
-    let errorCode = extractErrorCode(from: error)
-    
-    // Handle specific security error types based on error code
-    switch errorCode {
-      case "authentication_failed":
-        options.append(createRetryAuthenticationOption())
-        options.append(createResetCredentialsOption())
-        
-      case "authorization_failed":
-        options.append(createRequestPermissionsOption())
-        
-      case "crypto_operation_failed":
-        options.append(createRetryWithAlternateAlgorithmOption())
-        
-      case "tampered_data":
-        options.append(createRestoreFromBackupOption())
-        
-      case "connection_failed":
-        options.append(createRetryConnectionOption())
-        
-      default:
-        // Add a generic option for unhandled security errors
-        options.append(createReportSecurityIssueOption())
+  public func recoveryOptions(for error: some Error) -> [any RecoveryOption] {
+    // If it's not a security error, return empty array
+    guard checkIsSecurity(error: error) else {
+      return []
     }
-    
-    // Always add a generic retry option
-    if !options.contains(where: { $0.title == "Retry" }) {
+
+    // Map strings to recovery options
+    let errorString = String(describing: error).lowercased()
+    var options: [any RecoveryOption] = []
+
+    if errorString.contains("authentication") {
+      options.append(
+        ErrorRecoveryOption(
+          title: "Try Again",
+          description: "Retry with different credentials",
+          isDisruptive: true,
+          recoveryAction: { /* Implementation to retry authentication */ }
+        )
+      )
+    } else if errorString.contains("certificate") {
+      options.append(
+        ErrorRecoveryOption(
+          title: "Trust Certificate",
+          description: "Trust this certificate for this session",
+          isDisruptive: true,
+          recoveryAction: { /* Implementation to trust certificate */ }
+        )
+      )
+    } else {
+      // Generic security error
       options.append(
         ErrorRecoveryOption(
           title: "Retry",
-          description: "Retry the operation that failed",
-          recoveryAction: { /* Implementation would depend on the error */ }
+          description: "Try the operation again",
+          isDisruptive: false,
+          recoveryAction: { /* Generic retry implementation */ }
+        )
+      )
+      
+      options.append(
+        ErrorRecoveryOption(
+          title: "Cancel",
+          description: "Cancel the operation",
+          isDisruptive: false,
+          recoveryAction: { /* Cancel implementation */ }
         )
       )
     }
-    
+
     return options
   }
-  
-  /// Extract error code from an error
-  /// - Parameter error: The error to extract from
-  /// - Returns: Error code string
-  private func extractErrorCode(from error: some Error) -> String {
-    if let umbraError = error as? UmbraError {
-      return umbraError.code
+}
+
+// MARK: - Internal RecoveryOptionsProvider Protocol Conformance
+
+extension SecurityErrorRecoveryService: RecoveryOptionsProvider {
+  /// Provides recovery options for an error (local RecoveryOptionsProvider protocol version)
+  /// - Parameter error: The error to provide recovery options for
+  /// - Returns: Recovery options struct, or nil if no recovery is possible
+  public func recoveryOptions(for error: Error) -> RecoveryOptions? {
+    // If it's not a security error, return nil
+    guard checkIsSecurity(error: error) else {
+      return nil
     }
-    return "unknown"
+
+    // Convert from individual options to a RecoveryOptions structure
+    let errorString = String(describing: error).lowercased()
+    var actions: [RecoveryAction] = []
+    var title: String? = nil
+    var message: String? = nil
+
+    if errorString.contains("authentication") {
+      title = "Authentication Failed"
+      message = "You need to re-authenticate to continue"
+      actions = [
+        RecoveryAction(
+          id: "retry-auth",
+          title: "Try Again",
+          description: "Retry with different credentials",
+          isDefault: true,
+          handler: { /* Implementation to retry authentication */ }
+        )
+      ]
+    } else if errorString.contains("certificate") {
+      title = "Certificate Issue"
+      message = "There's a problem with the security certificate"
+      actions = [
+        RecoveryAction(
+          id: "trust-cert",
+          title: "Trust Certificate",
+          description: "Trust this certificate for the current session",
+          isDefault: true,
+          handler: { /* Implementation to trust certificate */ }
+        )
+      ]
+    } else {
+      // Generic security error
+      title = "Security Error"
+      message = "A security error has occurred"
+      actions = [
+        RecoveryAction(
+          id: "retry",
+          title: "Retry",
+          description: "Try the operation again",
+          isDefault: true,
+          handler: { /* Generic retry implementation */ }
+        ),
+        RecoveryAction(
+          id: "cancel",
+          title: "Cancel",
+          description: "Cancel the operation",
+          isDefault: false,
+          handler: { /* Cancel implementation */ }
+        )
+      ]
+    }
+
+    return RecoveryOptions(
+      actions: actions,
+      title: title,
+      message: message
+    )
   }
-  
-  // MARK: - Recovery Option Factories
-  
-  /// Creates a recovery option for retrying authentication
+}
+
+// MARK: - Private Helpers
+
+extension SecurityErrorRecoveryService {
+  /// Check if an error is a security error
+  /// - Parameter error: The error to check
+  /// - Returns: Whether the error is a security error
+  private func checkIsSecurity(error: some Error) -> Bool {
+    // Check for common security error types
+    let nsError = error as NSError
+    return nsError.domain.contains("Security") || 
+           String(describing: error).contains("Security")
+  }
+
+  /// Default recovery options for built-in security errors
+  /// - Parameter error: The error to get recovery options for
+  /// - Returns: The default recovery options
+  private func defaultRecoveryOptions(for error: some Error) -> [any RecoveryOption] {
+    let errorString = String(describing: error).lowercased()
+
+    if errorString.contains("authentication") || errorString.contains("unauthorised") {
+      return [createRetryAuthenticationOption()]
+    } else if errorString.contains("certificate") || errorString.contains("trust") {
+      return [createBypassCertificateOption()]
+    } else {
+      // Create a cancel option manually rather than using a static property
+      return [
+        ErrorRecoveryOption(
+          title: "Cancel",
+          description: "Cancel and take no action",
+          isDisruptive: false,
+          recoveryAction: { /* No action required */ }
+        )
+      ]
+    }
+  }
+
+  /// Create a retry authentication option
+  /// - Returns: The recovery option
   private func createRetryAuthenticationOption() -> ErrorRecoveryOption {
     ErrorRecoveryOption(
-      id: UUID(uuidString: "E2A94E8F-8543-4F5B-B26E-346FB9442E72"),
       title: "Try Again",
       description: "Retry with different credentials",
-      recoveryAction: { /* Implementation would authenticate again */ }
-    )
-  }
-  
-  /// Creates a recovery option for resetting credentials
-  private func createResetCredentialsOption() -> ErrorRecoveryOption {
-    ErrorRecoveryOption(
-      id: UUID(uuidString: "7AB3CD12-0987-4321-ABCD-1234EFGH5678"),
-      title: "Reset Credentials",
-      description: "Reset your password or other credentials",
       isDisruptive: true,
-      recoveryAction: { /* Implementation would reset credentials */ }
+      recoveryAction: {
+        // This would typically show UI to re-authenticate
+        // Implementation not provided
+      }
     )
   }
-  
-  /// Creates a recovery option for requesting permissions
-  private func createRequestPermissionsOption() -> ErrorRecoveryOption {
+
+  /// Create a bypass certificate option
+  /// - Returns: The recovery option
+  private func createBypassCertificateOption() -> ErrorRecoveryOption {
     ErrorRecoveryOption(
-      id: UUID(uuidString: "F12A3456-7890-ABCD-EF12-34567890ABCD"),
-      title: "Request Access",
-      description: "Request permission from an administrator",
+      title: "Trust Certificate",
+      description: "Trust the server's certificate for this session",
       isDisruptive: true,
-      recoveryAction: { /* Implementation would request permissions */ }
+      recoveryAction: {
+        // This would typically show UI to confirm trust
+        // Implementation not provided
+      }
     )
   }
+}
+
+/// A thread-safe array wrapper for Sendable conformance
+final class AtomicArray<Element>: @unchecked Sendable {
+  private let lock = NSLock()
+  private var _values: [Element] = []
   
-  /// Creates a recovery option for using alternate crypto algorithm
-  private func createRetryWithAlternateAlgorithmOption() -> ErrorRecoveryOption {
-    ErrorRecoveryOption(
-      id: UUID(uuidString: "9876FEDC-BA09-8765-4321-0FEDCBA98765"),
-      title: "Try Alternate Algorithm",
-      description: "Attempt the operation with a different cryptographic algorithm",
-      recoveryAction: { /* Implementation would use alternate algorithm */ }
-    )
+  var values: [Element] {
+    lock.lock()
+    defer { lock.unlock() }
+    return _values
   }
   
-  /// Creates a recovery option for restoring from backup
-  private func createRestoreFromBackupOption() -> ErrorRecoveryOption {
-    ErrorRecoveryOption(
-      id: UUID(uuidString: "54321ABC-DEF9-8765-4321-ABCDEF123456"),
-      title: "Restore from Backup",
-      description: "Attempt to restore data from a recent backup",
-      isDisruptive: true,
-      recoveryAction: { /* Implementation would restore from backup */ }
-    )
-  }
-  
-  /// Creates a recovery option for retrying connection
-  private func createRetryConnectionOption() -> ErrorRecoveryOption {
-    ErrorRecoveryOption(
-      id: UUID(uuidString: "ABCDEF12-3456-7890-ABCD-EF1234567890"),
-      title: "Retry Connection",
-      description: "Attempt to reestablish the secure connection",
-      recoveryAction: { /* Implementation would retry connection */ }
-    )
-  }
-  
-  /// Creates a recovery option for reporting security issues
-  private func createReportSecurityIssueOption() -> ErrorRecoveryOption {
-    ErrorRecoveryOption(
-      id: UUID(uuidString: "1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D"),
-      title: "Report Issue",
-      description: "Report this security issue to the support team",
-      isDisruptive: true,
-      recoveryAction: { /* Implementation would report the issue */ }
-    )
+  func append(_ element: Element) {
+    lock.lock()
+    defer { lock.unlock() }
+    _values.append(element)
   }
 }

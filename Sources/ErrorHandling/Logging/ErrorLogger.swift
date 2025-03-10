@@ -9,19 +9,27 @@ public final class LoggingWrapperAdapter: LoggingProtocol, Sendable {
   public init() {}
 
   public func error(_ message: String, metadata: LogMetadata?) async {
-    Logger.error(message, metadata)
+    // Convert metadata to a string format that Logger can accept
+    let metadataStr=metadata != nil ? " \(metadata!.asDictionary)" : ""
+    Logger.error("\(message)\(metadataStr)", file: #file, function: #function, line: #line)
   }
 
   public func warning(_ message: String, metadata: LogMetadata?) async {
-    Logger.warning(message, metadata)
+    // Convert metadata to a string format that Logger can accept
+    let metadataStr=metadata != nil ? " \(metadata!.asDictionary)" : ""
+    Logger.warning("\(message)\(metadataStr)", file: #file, function: #function, line: #line)
   }
 
   public func info(_ message: String, metadata: LogMetadata?) async {
-    Logger.info(message, metadata)
+    // Convert metadata to a string format that Logger can accept
+    let metadataStr=metadata != nil ? " \(metadata!.asDictionary)" : ""
+    Logger.info("\(message)\(metadataStr)", file: #file, function: #function, line: #line)
   }
 
   public func debug(_ message: String, metadata: LogMetadata?) async {
-    Logger.debug(message, metadata)
+    // Convert metadata to a string format that Logger can accept
+    let metadataStr=metadata != nil ? " \(metadata!.asDictionary)" : ""
+    Logger.debug("\(message)\(metadataStr)", file: #file, function: #function, line: #line)
   }
 }
 
@@ -54,7 +62,7 @@ public class ErrorLogger {
   public func log(
     _ error: Error,
     severity: ErrorSeverity,
-    additionalContext: [String: Any]? = nil
+    additionalContext: [String: Any]?=nil
   ) async {
     // Skip if severity is below minimum level
     guard severity >= configuration.minimumSeverity else {
@@ -62,32 +70,35 @@ public class ErrorLogger {
     }
 
     // Create error message
-    let message = formatErrorMessage(error)
-    
+    let message=formatErrorMessage(error)
+
     // Create metadata from error and add additional context
-    var metadata = createMetadataFromError(error)
-    if let additionalContext = additionalContext {
+    var metadata=createMetadataFromError(error)
+    if let additionalContext {
       for (key, value) in additionalContext {
-        metadata[key] = value
+        metadata[key]=LogMetadata.string(value)
       }
     }
-    
-    // Log using the direct SwiftyBeaver level mapping
-    let logLevel = severity.toSwiftyBeaverLevel()
-    switch logLevel {
-    case .error:
-      await logger.error(message, metadata: metadata)
-    case .warning:
-      await logger.warning(message, metadata: metadata)
-    case .info:
-      await logger.info(message, metadata: metadata)
-    case .debug:
-      await logger.debug(message, metadata: metadata)
-    case .verbose:
-      await logger.debug("\(message) [TRACE]", metadata: metadata)
+
+    // Log using the direct severity-to-log-level mapping
+    switch severity {
+      case .critical:
+        await logger.error(message, metadata: metadata)
+      case .error:
+        await logger.error(message, metadata: metadata)
+      case .warning:
+        await logger.warning(message, metadata: metadata)
+      case .info:
+        await logger.info(message, metadata: metadata)
+      case .debug:
+        await logger.debug(message, metadata: metadata)
+      case .trace:
+        await logger.debug(message, metadata: metadata)
+      @unknown default:
+        await logger.error("Unknown severity level: \(message)", metadata: metadata)
     }
   }
-  
+
   /// Log an error directly
   /// - Parameters:
   ///   - error: The error to log
@@ -97,42 +108,42 @@ public class ErrorLogger {
   ///   - additionalMetadata: Additional metadata to include in log
   public func logError(
     _ error: Error,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line,
-    additionalMetadata: LogMetadata? = nil
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line,
+    additionalMetadata: LogMetadata?=nil
   ) async {
     // Skip if filtered out
     if isFiltered(error) { return }
-    
+
     // Add file, function, and line information
-    var contextInfo: [String: Any] = [:]
-    
+    var contextInfo: [String: Any]=[:]
+
     if configuration.includeFileInfo {
-      contextInfo["file"] = file
+      contextInfo["file"]=file
     }
-    
+
     if configuration.includeFunctionNames {
-      contextInfo["function"] = function
+      contextInfo["function"]=function
     }
-    
+
     if configuration.includeLineNumbers {
-      contextInfo["line"] = String(line)
+      contextInfo["line"]=String(line)
     }
-    
+
     // Add additional metadata if provided
     if let additionalMetadata {
       for (key, value) in additionalMetadata.asDictionary {
-        if let stringValue = value as? String {
-          contextInfo[key] = stringValue
+        if let stringValue=value as? String {
+          contextInfo[key]=stringValue
         }
       }
     }
-    
+
     // Log with error severity
     await log(error, severity: .error, additionalContext: contextInfo)
   }
-  
+
   /// Log a message at warning level
   /// - Parameters:
   ///   - message: The message to log
@@ -142,38 +153,38 @@ public class ErrorLogger {
   ///   - metadata: Optional metadata to include
   public func logWarning(
     _ message: String,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line,
-    metadata: LogMetadata? = nil
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line,
+    metadata: LogMetadata?=nil
   ) async {
-    var contextInfo: [String: Any] = [:]
-    
+    var contextInfo: [String: Any]=[:]
+
     if configuration.includeFileInfo {
-      contextInfo["file"] = file
+      contextInfo["file"]=file
     }
-    
+
     if configuration.includeFunctionNames {
-      contextInfo["function"] = function
+      contextInfo["function"]=function
     }
-    
+
     if configuration.includeLineNumbers {
-      contextInfo["line"] = String(line)
+      contextInfo["line"]=String(line)
     }
-    
+
     // Add metadata if provided
     if let metadata {
       for (key, value) in metadata.asDictionary {
-        if let stringValue = value as? String {
-          contextInfo[key] = stringValue
+        if let stringValue=value as? String {
+          contextInfo[key]=stringValue
         }
       }
     }
-    
+
     // Log direct message with warning severity
-    await logger.warning(message, metadata: LogMetadata(contextInfo))
+    await logger.warning(message, metadata: LogMetadata.from(contextInfo) ?? LogMetadata())
   }
-  
+
   /// Log a message at info level
   /// - Parameters:
   ///   - message: The message to log
@@ -183,38 +194,38 @@ public class ErrorLogger {
   ///   - metadata: Optional metadata to include
   public func logInfo(
     _ message: String,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line,
-    metadata: LogMetadata? = nil
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line,
+    metadata: LogMetadata?=nil
   ) async {
-    var contextInfo: [String: Any] = [:]
-    
+    var contextInfo: [String: Any]=[:]
+
     if configuration.includeFileInfo {
-      contextInfo["file"] = file
+      contextInfo["file"]=file
     }
-    
+
     if configuration.includeFunctionNames {
-      contextInfo["function"] = function
+      contextInfo["function"]=function
     }
-    
+
     if configuration.includeLineNumbers {
-      contextInfo["line"] = String(line)
+      contextInfo["line"]=String(line)
     }
-    
+
     // Add metadata if provided
     if let metadata {
       for (key, value) in metadata.asDictionary {
-        if let stringValue = value as? String {
-          contextInfo[key] = stringValue
+        if let stringValue=value as? String {
+          contextInfo[key]=stringValue
         }
       }
     }
-    
+
     // Log direct message with info severity
-    await logger.info(message, metadata: LogMetadata(contextInfo))
+    await logger.info(message, metadata: LogMetadata.from(contextInfo) ?? LogMetadata())
   }
-  
+
   /// Log a message at debug level
   /// - Parameters:
   ///   - message: The message to log
@@ -224,36 +235,36 @@ public class ErrorLogger {
   ///   - metadata: Optional metadata to include
   public func logDebug(
     _ message: String,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line,
-    metadata: LogMetadata? = nil
+    file: String=#file,
+    function: String=#function,
+    line: Int=#line,
+    metadata: LogMetadata?=nil
   ) async {
-    var contextInfo: [String: Any] = [:]
-    
+    var contextInfo: [String: Any]=[:]
+
     if configuration.includeFileInfo {
-      contextInfo["file"] = file
+      contextInfo["file"]=file
     }
-    
+
     if configuration.includeFunctionNames {
-      contextInfo["function"] = function
+      contextInfo["function"]=function
     }
-    
+
     if configuration.includeLineNumbers {
-      contextInfo["line"] = String(line)
+      contextInfo["line"]=String(line)
     }
-    
+
     // Add metadata if provided
     if let metadata {
       for (key, value) in metadata.asDictionary {
-        if let stringValue = value as? String {
-          contextInfo[key] = stringValue
+        if let stringValue=value as? String {
+          contextInfo[key]=stringValue
         }
       }
     }
-    
+
     // Log direct message with debug severity
-    await logger.debug(message, metadata: LogMetadata(contextInfo))
+    await logger.debug(message, metadata: LogMetadata.from(contextInfo) ?? LogMetadata())
   }
 
   // MARK: - Private Helpers
@@ -293,9 +304,9 @@ public class ErrorLogger {
   /// - Returns: A formatted error message
   private func formatErrorMessage(_ error: Error) -> String {
     if let umbraError=error as? ErrorHandlingInterfaces.UmbraError {
-      return "[\(umbraError.domain):\(umbraError.code)] \(umbraError.errorDescription)"
+      "[\(umbraError.domain):\(umbraError.code)] \(umbraError.errorDescription)"
     } else {
-      return error.localizedDescription
+      error.localizedDescription
     }
   }
 
@@ -309,7 +320,7 @@ public class ErrorLogger {
         return true
       }
     }
-    
+
     return false
   }
 }

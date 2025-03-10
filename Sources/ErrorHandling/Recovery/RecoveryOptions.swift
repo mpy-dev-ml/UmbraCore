@@ -49,11 +49,11 @@ public struct RecoveryOptions: Sendable, Equatable {
 }
 
 /// A protocol for error handlers that provide recovery options
-public protocol RecoveryOptionsProvider {
+public protocol RecoveryOptionsProvider: Sendable {
   /// Provides recovery options for the specified error
   /// - Parameter error: The error to provide recovery options for
   /// - Returns: Recovery options, or nil if no recovery is possible
-  func recoveryOptions(for error: Error) -> RecoveryOptions?
+  func recoveryOptions(for error: Error) async -> RecoveryOptions?
 }
 
 /// Extension to provide factory methods for common recovery option sets

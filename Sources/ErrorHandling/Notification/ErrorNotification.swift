@@ -11,7 +11,7 @@ public struct ClosureRecoveryOption: RecoveryOption, Identifiable {
 
   /// Additional description of the recovery option
   public let description: String?
-  
+
   /// Whether this recovery option is potentially disruptive to the user's workflow
   public let isDisruptive: Bool
 
@@ -27,7 +27,7 @@ public struct ClosureRecoveryOption: RecoveryOption, Identifiable {
   public init(
     title: String,
     description: String?=nil,
-    isDisruptive: Bool = false,
+    isDisruptive: Bool=false,
     action: @escaping @Sendable () async throws -> Void
   ) {
     self.title=title
@@ -180,10 +180,10 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
   /// - Returns: Whether recovery was successful
   @MainActor
   public func recoverWithOption(id optionID: UUID) async -> Bool {
-    guard let option = getRecoveryOption(withID: optionID) else {
+    guard let option=getRecoveryOption(withID: optionID) else {
       return false
     }
-    
+
     await option.perform()
     return true
   }
@@ -193,10 +193,10 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
   ///   - notificationId: ID of the notification to recover from
   ///   - recoveryOptionId: ID of the recovery option to use
   public func recoverFromError(
-    notificationId: UUID,
+    notificationId _: UUID,
     recoveryOptionId: UUID
   ) async throws {
-    let success = await recoverWithOption(id: recoveryOptionId)
+    let success=await recoverWithOption(id: recoveryOptionId)
     if !success {
       throw NSError(
         domain: "ErrorNotification",

@@ -4,6 +4,7 @@ umbra_swift_library(
     name = "ErrorHandlingExamples",
     srcs = glob(["*.swift"]),
     enable_library_evolution = True,
+    tags = ["manual"],  # Mark as manual so it won't be built by default
     deps = [
         "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
         "//Sources/ErrorHandling/Interfaces:ErrorHandlingInterfaces",

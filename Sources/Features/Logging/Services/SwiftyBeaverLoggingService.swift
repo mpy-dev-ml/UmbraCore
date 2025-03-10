@@ -2,12 +2,12 @@ import FeaturesLoggingErrors
 import FeaturesLoggingModels
 import FeaturesLoggingProtocols
 import Foundation
-import SecurityTypes
 import LoggingWrapper
+import SecurityTypes
 
 /// A logging service implementation using LoggingWrapper
 public actor LoggingWrapperService: LoggingProtocol {
-  private var isInitialized = false
+  private var isInitialized=false
   private var logFilePath: String?
 
   /// Initialize the logging service
@@ -16,7 +16,7 @@ public actor LoggingWrapperService: LoggingProtocol {
     guard !isInitialized else { return }
 
     // Create log directory if it doesn't exist
-    let directoryPath = (path as NSString).deletingLastPathComponent
+    let directoryPath=(path as NSString).deletingLastPathComponent
     do {
       try FileManager.default.createDirectory(
         atPath: directoryPath,
@@ -29,10 +29,10 @@ public actor LoggingWrapperService: LoggingProtocol {
 
     // Configure logger (LoggingWrapper handles destinations internally)
     Logger.configure()
-    
+
     // Store the path for reference
-    logFilePath = path
-    isInitialized = true
+    logFilePath=path
+    isInitialized=true
   }
 
   public func log(_ entry: LogEntry) async throws {
@@ -44,7 +44,8 @@ public actor LoggingWrapperService: LoggingProtocol {
       throw LoggingError.writeError(reason: "Log message cannot be empty")
     }
 
-    let message = entry.metadata?.isEmpty == false ? "\(entry.message) | \(entry.metadata!)" : entry.message
+    let message=entry.metadata?.isEmpty == false ? "\(entry.message) | \(entry.metadata!)" : entry
+      .message
 
     switch entry.level {
       case .debug:
@@ -60,7 +61,7 @@ public actor LoggingWrapperService: LoggingProtocol {
 
   public func stop() async {
     // LoggingWrapper doesn't need explicit shutdown
-    isInitialized = false
-    logFilePath = nil
+    isInitialized=false
+    logFilePath=nil
   }
 }

@@ -1,317 +1,108 @@
-# UmbraCore Project Analysis Report
+# UmbraCore Complexity Analysis Report
 
-*Generated on 9 March 2025 at 00:47:15*
+## Overview
 
-## Colour Legend
+- **Total modules analysed**: 84
+- **Total files analysed**: 2223
+- **Total lines of code**: 598235
+- **Average lines per file**: 269.1
 
-| Colour | Meaning |
-|--------|--------|
-| <span style="color:#FFA500">Amber</span> | File exceeds 500 lines of code - consider refactoring |
-| <span style="color:#FF0000">Red</span> | File exceeds 750 lines of code - high priority for refactoring |
+## Top 30 Most Complex Files
 
-## Summary
+These files have been identified as the most complex in the codebase based on various metrics including size, nesting depth, and control structure density. They are prime candidates for refactoring.
 
-| Metric | Value |
-|--------|-------|
-| Total Targets with Code | 31 |
-| Total Files | 213 |
-| Total Lines of Code | 26372 |
+| Module | File | LOC | Functions | Avg Func Length | Max Nesting | Long Functions | Deep Nesting | Complexity Score |
+|--------|------|-----|-----------|----------------|-------------|---------------|--------------|------------------|
+| .build | JSONEncoderTests.swift | 4529 | 1 | 4529.0 | 27 | 0 | 605 | 7757.8 |
+| .build | SyntaxVisitor.swift | 7085 | 1 | 7085.0 | 3 | 1 | 0 | 4364.5 |
+| .build | TreeDictionary Tests.swift | 2621 | 1 | 2621.0 | 9 | 1 | 229 | 3468.6 |
+| .build | SyntaxRewriter.swift | 4895 | 1 | 4895.0 | 5 | 1 | 4 | 3006.7 |
+| .build | Calendar_ICU.swift | 2288 | 4 | 572.0 | 6 | 2 | 264 | 2766.8 |
+| .build | Data.swift | 2855 | 9 | 317.2 | 8 | 2 | 261 | 2665.6 |
+| .build | Calendar_Gregorian.swift | 3119 | 12 | 259.9 | 7 | 5 | 249 | 2664.1 |
+| .build | Parser+TokenSpecSet.swift | 4225 | 0 | 0.0 | 4 | 0 | 244 | 2468.0 |
+| .build | GregorianCalendarTests.swift | 3900 | 1 | 3900.0 | 3 | 1 | 0 | 2368.6 |
+| .build | RawSyntaxValidation.swift | 3733 | 1 | 3733.0 | 5 | 1 | 7 | 2351.5 |
+| .build | Calendar_Enumerate.swift | 2474 | 15 | 164.9 | 8 | 5 | 226 | 2343.7 |
+| .build | ChildNameForKeyPath.swift | 3589 | 1 | 3589.0 | 2 | 1 | 0 | 2173.7 |
+| .build | PropertyListEncoderTests.swift | 2099 | 1 | 2099.0 | 8 | 0 | 105 | 2161.9 |
+| .build | Locale_ICU.swift | 1759 | 4 | 439.8 | 8 | 2 | 200 | 2123.3 |
+| .build | AttributedStringTests.swift | 2602 | 1 | 2602.0 | 6 | 1 | 53 | 2060.9 |
+| .build | FileOperations.swift | 1283 | 7 | 183.3 | 13 | 3 | 204 | 2019.2 |
+| .build | SwitchTests.swift | 1367 | 1 | 1367.0 | 6 | 0 | 128 | 1910.2 |
+| .build | XMLPlistScanner.swift | 1508 | 5 | 301.6 | 7 | 4 | 157 | 1697.4 |
+| .build | Calendar_Recurrence.swift | 926 | 4 | 231.5 | 9 | 3 | 163 | 1624.2 |
+| .build | BitSetTests.swift | 1569 | 2 | 784.5 | 7 | 1 | 124 | 1598.2 |
+| .build | InitDeinitTests.swift | 1096 | 1 | 1096.0 | 5 | 1 | 100 | 1492.6 |
+| .build | Cursor.swift | 2468 | 41 | 60.2 | 7 | 14 | 120 | 1480.3 |
+| .build | SyntaxNodesAB.swift | 5802 | 27 | 214.9 | 5 | 27 | 58 | 1470.6 |
+| .build | Declarations.swift | 2182 | 19 | 114.8 | 10 | 14 | 119 | 1461.4 |
+| .build | SyntaxAnyVisitor.swift | 2400 | 1 | 2400.0 | 2 | 1 | 0 | 1460.0 |
+| .build | Expressions.swift | 2636 | 35 | 75.3 | 7 | 12 | 116 | 1435.9 |
+| .build | JSONDecoder.swift | 1861 | 16 | 116.3 | 9 | 5 | 130 | 1427.9 |
+| .build | OrderedDictionaryBenchmarks.swift | 600 | 1 | 600.0 | 6 | 1 | 124 | 1401.0 |
+| .build | OrderedDictionary Tests.swift | 1366 | 55 | 24.8 | 7 | 1 | 140 | 1316.4 |
+| .build | ShareableDictionaryBenchmarks.swift | 532 | 1 | 532.0 | 6 | 1 | 116 | 1296.2 |
 
-## Targets by Lines of Code
+## Complexity by Module
 
-| Rank | Target | Type | Files | Lines of Code |
-|------|--------|------|-------|---------------|
-| 1 | `//Sources/ErrorHandling:ErrorHandling` | swift_library | 49 | 8151 |
-| 2 | `//Sources/SecurityImplementation:SecurityImplementation` | swift_library | 6 | 2483 |
-| 3 | `//Sources/ResticCLIHelper:ResticCLIHelper` | swift_library | 25 | 2121 |
-| 4 | `//Sources/SecurityBridge:SecurityBridge` | swift_library | 10 | 1994 |
-| 5 | `//Sources/Core:Core` | swift_library | 10 | 1659 |
-| 6 | `//Sources/XPCProtocolsCore:XPCProtocolsCore` | swift_library | 9 | 1553 |
-| 7 | `//Sources/UmbraCoreTypes:UmbraCoreTypes` | swift_library | 7 | 1171 |
-| 8 | `//Sources/UmbraSecurity:UmbraSecurity` | swift_library | 11 | 1107 |
-| 9 | `//Sources/XPC:XPC` | swift_library | 3 | 576 |
-| 10 | `//Sources/UmbraSecurityCore:UmbraSecurityCore` | swift_library | 3 | 573 |
-| 11 | `//Sources/CoreTypesImplementation:CoreTypesImplementation` | swift_library | 7 | 569 |
-| 12 | `//Sources/Repositories:Repositories` | swift_library | 7 | 529 |
-| 13 | `//Sources/CryptoTypes:CryptoTypes` | swift_library | 10 | 517 |
-| 14 | `//Sources/CoreTypesInterfaces:CoreTypesInterfaces` | swift_library | 8 | 421 |
-| 15 | `//Sources/SecureBytes:SecureBytes` | swift_library | 2 | 362 |
-| 16 | `//Sources/Services/SecurityUtils:SecurityUtils` | swift_library | 4 | 353 |
-| 17 | `//Sources/SecureString:SecureString` | swift_library | 2 | 267 |
-| 18 | `//Sources/Core/Services:CoreServices` | swift_library | 9 | 267 |
-| 19 | `//Sources/Resources:Resources` | swift_library | 4 | 260 |
-| 20 | `//Sources/SecurityInterfaces:SecurityInterfaces` | swift_library | 2 | 226 |
+### Top 10 Most Complex Modules
 
-## Top 20 Files by Lines of Code
+| Module | Files | Total LOC | Avg Complexity | Most Complex File | Highest Complexity |
+|--------|-------|-----------|----------------|-------------------|--------------------|
+| docs | 1 | 304 | 222.4 | ErrorHandlingExamples.swift | 222.4 |
+| UmbraSecurityCore | 4 | 835 | 222.4 | CryptoServiceAdaptersTests.swift | 517.7 |
+| .build | 1652 | 532988 | 208.4 | JSONEncoderTests.swift | 7757.8 |
+| SecurityBridge | 27 | 6375 | 203.9 | XPCServiceAdapter.swift | 1059.5 |
+| XPC | 4 | 666 | 194.3 | XPCServiceProtocols.swift | 554.5 |
+| SecurityImplementation | 30 | 6297 | 186.6 | SecurityImplementationTests.swift | 685.2 |
+| UmbraKeychainService | 7 | 1275 | 153.9 | KeychainXPCImplementation.swift | 280.2 |
+| Tests/KeychainTests | 5 | 601 | 150.2 | XPCServiceHelper.swift | 229.7 |
+| Tests/ResourcesTests | 1 | 155 | 143.6 | ResourcePoolTests.swift | 143.6 |
+| Tests/SecurityImplementationTests | 3 | 603 | 142.6 | KeyManagementTests.swift | 210.1 |
 
-| Rank | File | Lines of Code |
-|------|------|---------------|
-| 1 | `Sources/SecurityImplementation/Sources/CryptoService.swift` | <span style="color:#FF0000">1068</span> |
-| 2 | `Sources/SecurityBridge/Tests/CryptoServiceAdapterTests.swift` | <span style="color:#FFA500">721</span> |
-| 3 | `Sources/SecurityImplementation/Tests/SecurityImplementationTests.swift` | <span style="color:#FFA500">721</span> |
-| 4 | `Sources/ErrorHandling/Mapping/UmbraErrorMapper.swift` | <span style="color:#FFA500">504</span> |
-| 5 | `Sources/Core/Services/KeyManager.swift` | 424 |
-| 6 | `Sources/ErrorHandling/Utilities/SecurityErrorHandler.swift` | 416 |
-| 7 | `Sources/UmbraSecurityCore/Tests/CryptoServiceAdaptersTests.swift` | 402 |
-| 8 | `Sources/SecurityBridge/Tests/XPCServiceAdapterTests.swift` | 400 |
-| 9 | `Sources/XPCProtocolsCore/Tests/XPCProtocolsTests.swift` | 386 |
-| 10 | `Sources/ErrorHandling/Utilities/ComprehensiveErrorHandlingExample.swift` | 364 |
-| 11 | `Sources/ErrorHandling/Extensions/SecurityErrors+UmbraError.swift` | 364 |
-| 12 | `Sources/UmbraCoreTypes/Sources/SecureBytes.swift` | 362 |
-| 13 | `Sources/ErrorHandling/Domains/ApplicationError.swift` | 358 |
-| 14 | `Sources/ErrorHandling/Logging/ErrorLogger.swift` | 356 |
-| 15 | `Sources/XPC/Core/XPCServiceProtocols.swift` | 353 |
-| 16 | `Sources/SecurityImplementation/Sources/SecurityProvider.swift` | 348 |
-| 17 | `Sources/UmbraSecurity/Services/SecurityService.swift` | 341 |
-| 18 | `Sources/XPCProtocolsCore/Tests/CryptoXPCServiceAdapterTests.swift` | 330 |
-| 19 | `Sources/ErrorHandling/Models/ErrorContext.swift` | 322 |
-| 20 | `Sources/ErrorHandling/Domains/SecurityError.swift` | 315 |
+## Refactoring Recommendations
 
-## Detailed Breakdown: All Targets and Files
+Based on the complexity analysis, here are some recommendations for improving code quality:
 
-| Target | Target Type | Total LOC | File | File LOC |
-|--------|------------|-----------|------|----------|
-| `//Sources/ErrorHandling:ErrorHandling` | swift_library | 8151 | `Sources/ErrorHandling/Mapping/UmbraErrorMapper.swift` | <span style="color:#FFA500">504</span> |
-| | | | `Sources/ErrorHandling/Utilities/SecurityErrorHandler.swift` | 416 |
-| | | | `Sources/ErrorHandling/Utilities/ComprehensiveErrorHandlingExample.swift` | 364 |
-| | | | `Sources/ErrorHandling/Extensions/SecurityErrors+UmbraError.swift` | 364 |
-| | | | `Sources/ErrorHandling/Domains/ApplicationError.swift` | 358 |
-| | | | `Sources/ErrorHandling/Logging/ErrorLogger.swift` | 356 |
-| | | | `Sources/ErrorHandling/Models/ErrorContext.swift` | 322 |
-| | | | `Sources/ErrorHandling/Domains/SecurityError.swift` | 315 |
-| | | | `Sources/ErrorHandling/Recovery/SecurityErrorRecoveryService.swift` | 247 |
-| | | | `Sources/ErrorHandling/Domains/RepositoryError.swift` | 232 |
-| | | | `Sources/ErrorHandling/Notification/ErrorNotifier.swift` | 225 |
-| | | | `Sources/ErrorHandling/Protocols/ErrorHandlingProtocol.swift` | 218 |
-| | | | `Sources/ErrorHandling/Utilities/ErrorHandlingExample.swift` | 210 |
-| | | | `Sources/ErrorHandling/Notification/ErrorNotification.swift` | 205 |
-| | | | `Sources/ErrorHandling/Domains/SecurityErrorDomain.swift` | 202 |
-| | | | `Sources/ErrorHandling/Notification/MacErrorNotificationService.swift` | 187 |
-| | | | `Sources/ErrorHandling/Mapping/ApplicationErrorMapper.swift` | 187 |
-| | | | `Sources/ErrorHandling/Models/GenericUmbraError.swift` | 175 |
-| | | | `Sources/ErrorHandling/Mapping/SecurityErrorMapper.swift` | 173 |
-| | | | `Sources/ErrorHandling/Recovery/ErrorRecovery.swift` | 169 |
-| | | | `Sources/ErrorHandling/Extensions/ApplicationErrors+UmbraError.swift` | 167 |
-| | | | `Sources/ErrorHandling/Domains/NetworkErrors.swift` | 165 |
-| | | | `Sources/ErrorHandling/Utilities/ErrorHandlingExamples.swift` | 160 |
-| | | | `Sources/ErrorHandling/ModuleInfo/ModuleInfo.swift` | 154 |
-| | | | `Sources/ErrorHandling/Interfaces/ErrorInterfaces.swift` | 152 |
-| | | | `Sources/ErrorHandling/Logging/UmbraErrorLoggingExtensions.swift` | 143 |
-| | | | `Sources/ErrorHandling/Domains/ApplicationErrors.swift` | 134 |
-| | | | `Sources/ErrorHandling/Core/ErrorFactory.swift` | 132 |
-| | | | `Sources/ErrorHandling/Logging/ErrorLoggingSetup.swift` | 128 |
-| | | | `Sources/ErrorHandling/Core/ErrorHandler.swift` | 124 |
-| | | | `Sources/ErrorHandling/Mapping/ErrorRegistry.swift` | 120 |
-| | | | `Sources/ErrorHandling/Recovery/RecoveryAction.swift` | 118 |
-| | | | `Sources/ErrorHandling/Domains/SecurityErrors.swift` | 111 |
-| | | | `Sources/ErrorHandling/Domains/StorageErrors.swift` | 111 |
-| | | | `Sources/ErrorHandling/Recovery/RecoveryOptions.swift` | 109 |
-| | | | `Sources/ErrorHandling/Mapping/ErrorMapper.swift` | 86 |
-| | | | `Sources/ErrorHandling/Models/ServiceErrorTypes.swift` | 74 |
-| | | | `Sources/ErrorHandling/Common/ErrorContext.swift` | 72 |
-| | | | `Sources/ErrorHandling/Extensions/Error+Context.swift` | 65 |
-| | | | `Sources/ErrorHandling/Domains/RepositoryErrorDomain.swift` | 62 |
-| | | | `Sources/ErrorHandling/ModuleInfo/ModuleInfoTemplate.swift` | 53 |
-| | | | `Sources/ErrorHandling/Common/BaseErrorTypes.swift` | 50 |
-| | | | `Sources/ErrorHandling/Common/Common.swift` | 50 |
-| | | | `Sources/ErrorHandling/Protocols/ServiceErrorProtocol.swift` | 45 |
-| | | | `Sources/ErrorHandling/Models/CommonError.swift` | 39 |
-| | | | `Sources/ErrorHandling/Interfaces/LoggingInterfaces.swift` | 36 |
-| | | | `Sources/ErrorHandling/Models/CoreError.swift` | 29 |
-| | | | `Sources/ErrorHandling/Protocols/ErrorReporting.swift` | 27 |
-| | | | `Sources/ErrorHandling/Domains/UmbraErrors.swift` | 6 |
-| | | | | |
-| `//Sources/SecurityImplementation:SecurityImplementation` | swift_library | 2483 | `Sources/SecurityImplementation/Sources/CryptoService.swift` | <span style="color:#FF0000">1068</span> |
-| | | | `Sources/SecurityImplementation/Tests/SecurityImplementationTests.swift` | <span style="color:#FFA500">721</span> |
-| | | | `Sources/SecurityImplementation/Sources/SecurityProvider.swift` | 348 |
-| | | | `Sources/SecurityImplementation/Sources/KeyManager.swift` | 269 |
-| | | | `Sources/SecurityImplementation/Sources/Types.swift` | 46 |
-| | | | `Sources/SecurityImplementation/Sources/SecurityImplementation.swift` | 31 |
-| | | | | |
-| `//Sources/ResticCLIHelper:ResticCLIHelper` | swift_library | 2121 | `Sources/ResticCLIHelper/Models/SnapshotInfo.swift` | 244 |
-| | | | `Sources/ResticCLIHelper/Commands/BackupCommand.swift` | 232 |
-| | | | `Sources/ResticCLIHelper/Commands/SnapshotCommand.swift` | 228 |
-| | | | `Sources/ResticCLIHelper/Commands/ListCommand.swift` | 204 |
-| | | | `Sources/ResticCLIHelper/Commands/CopyCommand.swift` | 150 |
-| | | | `Sources/ResticCLIHelper/Commands/StatsCommand.swift` | 127 |
-| | | | `Sources/ResticCLIHelper/Commands/ForgetCommand.swift` | 109 |
-| | | | `Sources/ResticCLIHelper/Commands/RestoreCommand.swift` | 90 |
-| | | | `Sources/ResticCLIHelper/Commands/FindCommand.swift` | 73 |
-| | | | `Sources/ResticCLIHelper/Commands/LsCommand.swift` | 72 |
-| | | | `Sources/ResticCLIHelper/Commands/DiffCommand.swift` | 72 |
-| | | | `Sources/ResticCLIHelper/Models/FileMetadata.swift` | 71 |
-| | | | `Sources/ResticCLIHelper/Protocols/ResticCLIHelperProtocol.swift` | 68 |
-| | | | `Sources/ResticCLIHelper/Commands/CheckCommand.swift` | 54 |
-| | | | `Sources/ResticCLIHelper/Types/CommandResult.swift` | 48 |
-| | | | `Sources/ResticCLIHelper/Models/RepositoryStats.swift` | 40 |
-| | | | `Sources/ResticCLIHelper/Models/RepositoryObject.swift` | 37 |
-| | | | `Sources/ResticCLIHelper/Commands/InitCommand.swift` | 34 |
-| | | | `Sources/ResticCLIHelper/Commands/RepairCommand.swift` | 34 |
-| | | | `Sources/ResticCLIHelper/Commands/RebuildIndexCommand.swift` | 34 |
-| | | | `Sources/ResticCLIHelper/Commands/PruneCommand.swift` | 34 |
-| | | | `Sources/ResticCLIHelper/Types/ResticTypes.swift` | 34 |
-| | | | `Sources/ResticCLIHelper/Protocols/ResticCommand.swift` | 12 |
-| | | | `Sources/ResticCLIHelper/Types/ResticError.swift` | 11 |
-| | | | `Sources/ResticCLIHelper/Types/MaintenanceType.swift` | 9 |
-| | | | | |
-| `//Sources/SecurityBridge:SecurityBridge` | swift_library | 1994 | `Sources/SecurityBridge/Tests/CryptoServiceAdapterTests.swift` | <span style="color:#FFA500">721</span> |
-| | | | `Sources/SecurityBridge/Tests/XPCServiceAdapterTests.swift` | 400 |
-| | | | `Sources/SecurityBridge/Tests/SecurityBridgeMigrationTests.swift` | 224 |
-| | | | `Sources/SecurityBridge/Tests/SecurityBridgeTests.swift` | 151 |
-| | | | `Sources/SecurityBridge/Tests/SecurityProviderAdapterTests.swift` | 148 |
-| | | | `Sources/SecurityBridge/Tests/SanityTests.swift` | 105 |
-| | | | `Sources/SecurityBridge/Sources/SecurityBridgeError.swift` | 92 |
-| | | | `Sources/SecurityBridge/Tests/RandomDataTests.swift` | 71 |
-| | | | `Sources/SecurityBridge/Tests/TemporaryTests.swift` | 61 |
-| | | | `Sources/SecurityBridge/Sources/SecurityBridge.swift` | 21 |
-| | | | | |
-| `//Sources/Core:Core` | swift_library | 1659 | `Sources/Core/Services/KeyManager.swift` | 424 |
-| | | | `Sources/Core/Services/SecurityService.swift` | 289 |
-| | | | `Sources/Core/Services/CryptoService.swift` | 288 |
-| | | | `Sources/Core/Services/ServiceContainer.swift` | 274 |
-| | | | `Sources/Core/Services/SecurityError.swift` | 94 |
-| | | | `Sources/Core/Services/UmbraService.swift` | 83 |
-| | | | `Sources/Core/Services/CryptoError.swift` | 70 |
-| | | | `Sources/Core/UmbraCore/UmbraCore.swift` | 65 |
-| | | | `Sources/Core/Services/CoreService.swift` | 48 |
-| | | | `Sources/Core/Extensions/TimeInterval+Extensions.swift` | 24 |
-| | | | | |
-| `//Sources/XPCProtocolsCore:XPCProtocolsCore` | swift_library | 1553 | `Sources/XPCProtocolsCore/Tests/XPCProtocolsTests.swift` | 386 |
-| | | | `Sources/XPCProtocolsCore/Tests/CryptoXPCServiceAdapterTests.swift` | 330 |
-| | | | `Sources/XPCProtocolsCore/Tests/DeprecationWarningTests.swift` | 212 |
-| | | | `Sources/XPCProtocolsCore/Tests/LegacyXPCAdapterTests.swift` | 200 |
-| | | | `Sources/XPCProtocolsCore/Sources/XPCServiceProtocolStandard.swift` | 157 |
-| | | | `Sources/XPCProtocolsCore/Sources/XPCServiceProtocolComplete.swift` | 128 |
-| | | | `Sources/XPCProtocolsCore/Sources/XPCProtocolMigrationFactory.swift` | 69 |
-| | | | `Sources/XPCProtocolsCore/Sources/XPCProtocolsCore.swift` | 36 |
-| | | | `Sources/XPCProtocolsCore/Sources/XPCServiceProtocolBasic.swift` | 35 |
-| | | | | |
-| `//Sources/UmbraCoreTypes:UmbraCoreTypes` | swift_library | 1171 | `Sources/UmbraCoreTypes/Sources/SecureBytes.swift` | 362 |
-| | | | `Sources/UmbraCoreTypes/Tests/ResourceLocatorTests.swift` | 241 |
-| | | | `Sources/UmbraCoreTypes/Tests/SecureBytesTests.swift` | 184 |
-| | | | `Sources/UmbraCoreTypes/Sources/ResourceLocator.swift` | 135 |
-| | | | `Sources/UmbraCoreTypes/Tests/CoreErrorsMappingTests.swift` | 117 |
-| | | | `Sources/UmbraCoreTypes/Sources/SecureBytes+Extensions.swift` | 68 |
-| | | | `Sources/UmbraCoreTypes/Sources/TimePoint.swift` | 64 |
-| | | | | |
-| `//Sources/UmbraSecurity:UmbraSecurity` | swift_library | 1107 | `Sources/UmbraSecurity/Services/SecurityService.swift` | 341 |
-| | | | `Sources/UmbraSecurity/Services/SecurityProviderFoundationImpl.swift` | 207 |
-| | | | `Sources/UmbraSecurity/Services/SecurityServiceNoCrypto.swift` | 116 |
-| | | | `Sources/UmbraSecurity/Services/SecurityProviderFactory.swift` | 90 |
-| | | | `Sources/UmbraSecurity/Services/SecurityServiceBridge.swift` | 89 |
-| | | | `Sources/UmbraSecurity/Extensions/URL+SecurityScoped.swift` | 75 |
-| | | | `Sources/UmbraSecurity/Services/SecurityCryptoService.swift` | 68 |
-| | | | `Sources/UmbraSecurity/Services/SecurityServiceFactory.swift` | 51 |
-| | | | `Sources/UmbraSecurity/Services/SecurityServiceUltraMinimal.swift` | 33 |
-| | | | `Sources/UmbraSecurity/Services/SecurityServiceFactoryMinimal.swift` | 19 |
-| | | | `Sources/UmbraSecurity/Services/UmbraSecurityServicesModule.swift` | 18 |
-| | | | | |
-| `//Sources/XPC:XPC` | swift_library | 576 | `Sources/XPC/Core/XPCServiceProtocols.swift` | 353 |
-| | | | `Sources/XPC/Core/XPCConnectionManager.swift` | 147 |
-| | | | `Sources/XPC/Core/XPCError.swift` | 76 |
-| | | | | |
-| `//Sources/UmbraSecurityCore:UmbraSecurityCore` | swift_library | 573 | `Sources/UmbraSecurityCore/Tests/CryptoServiceAdaptersTests.swift` | 402 |
-| | | | `Sources/UmbraSecurityCore/Tests/DefaultCryptoServiceTests.swift` | 124 |
-| | | | `Sources/UmbraSecurityCore/Sources/UmbraSecurityCore.swift` | 47 |
-| | | | | |
-| `//Sources/CoreTypesImplementation:CoreTypesImplementation` | swift_library | 569 | `Sources/CoreTypesImplementation/Tests/ErrorAdaptersTests.swift` | 130 |
-| | | | `Sources/CoreTypesImplementation/Sources/ErrorAdapters.swift` | 103 |
-| | | | `Sources/CoreTypesImplementation/Sources/DefaultCoreProvider.swift` | 91 |
-| | | | `Sources/CoreTypesImplementation/Tests/SecureDataAdaptersTests.swift` | 72 |
-| | | | `Sources/CoreTypesImplementation/Sources/SecureDataAdapters.swift` | 60 |
-| | | | `Sources/CoreTypesImplementation/Sources/CoreTypesImplementation.swift` | 58 |
-| | | | `Sources/CoreTypesImplementation/Tests/CoreProviderTests.swift` | 55 |
-| | | | | |
-| `//Sources/Repositories:Repositories` | swift_library | 529 | `Sources/Repositories/Types/RepositoryError.swift` | 180 |
-| | | | `Sources/Repositories/Types/Repository.swift` | 95 |
-| | | | `Sources/Repositories/Types/RepositoryProtocols.swift` | 93 |
-| | | | `Sources/Repositories/Types/RepositoryState.swift` | 79 |
-| | | | `Sources/Repositories/Types/LogMetadataBuilder.swift` | 49 |
-| | | | `Sources/Repositories/Types/RepositoryStats.swift` | 28 |
-| | | | `Sources/Repositories/Protocols/RepositoryProtocol.swift` | 5 |
-| | | | | |
-| `//Sources/CryptoTypes:CryptoTypes` | swift_library | 517 | `Sources/CryptoTypes/Services/CredentialManager.swift` | 183 |
-| | | | `Sources/CryptoTypes/Services/DefaultCryptoService.swift` | 84 |
-| | | | `Sources/CryptoTypes/Types/CredentialManager.swift` | 80 |
-| | | | `Sources/CryptoTypes/Protocols/CryptoServiceProtocol.swift` | 42 |
-| | | | `Sources/CryptoTypes/Protocols/CryptoService.swift` | 34 |
-| | | | `Sources/CryptoTypes/Types/CryptoConfiguration.swift` | 29 |
-| | | | `Sources/CryptoTypes/Types/CryptoConfig.swift` | 21 |
-| | | | `Sources/CryptoTypes/Protocols/CredentialManagerProtocol.swift` | 20 |
-| | | | `Sources/CryptoTypes/Types/SecureStorageData.swift` | 18 |
-| | | | `Sources/CryptoTypes/Services/CryptoTypes_Services.swift` | 6 |
-| | | | | |
-| `//Sources/CoreTypesInterfaces:CoreTypesInterfaces` | swift_library | 421 | `Sources/CoreTypesInterfaces/Tests/SecureDataTests.swift` | 81 |
-| | | | `Sources/CoreTypesInterfaces/Sources/ErrorTypes.swift` | 74 |
-| | | | `Sources/CoreTypesInterfaces/Sources/SecureData.swift` | 66 |
-| | | | `Sources/CoreTypesInterfaces/Tests/ByteArrayTests.swift` | 64 |
-| | | | `Sources/CoreTypesInterfaces/Sources/ByteArray.swift` | 53 |
-| | | | `Sources/CoreTypesInterfaces/Sources/CoreProvider.swift` | 53 |
-| | | | `Sources/CoreTypesInterfaces/Sources/CoreTypesInterfaces.swift` | 15 |
-| | | | `Sources/CoreTypesInterfaces/Sources/Extensions.swift` | 15 |
-| | | | | |
-| `//Sources/SecureBytes:SecureBytes` | swift_library | 362 | `Sources/SecureBytes/Sources/SecureBytes.swift` | 196 |
-| | | | `Sources/SecureBytes/Tests/SecureBytesTests.swift` | 166 |
-| | | | | |
-| `//Sources/Services/SecurityUtils:SecurityUtils` | swift_library | 353 | `Sources/Services/SecurityUtils/Services/SecurityBookmarkService.swift` | 106 |
-| | | | `Sources/Services/SecurityUtils/Protocols/URLProvider.swift` | 98 |
-| | | | `Sources/Services/SecurityUtils/Services/EncryptedBookmarkService.swift` | 97 |
-| | | | `Sources/Services/SecurityUtils/Services/PathURLProvider.swift` | 52 |
-| | | | | |
-| `//Sources/SecureString:SecureString` | swift_library | 267 | `Sources/SecureString/Sources/SecureString.swift` | 179 |
-| | | | `Sources/SecureString/Tests/SecureStringTests.swift` | 88 |
-| | | | | |
-| `//Sources/Core/Services:CoreServices` | swift_library | 267 | `Sources/Core/Services/Types/KeyStatus.swift` | 77 |
-| | | | `Sources/Core/Services/Types/KeyMetadata.swift` | 64 |
-| | | | `Sources/Core/Services/Types/SecurityPolicy.swift` | 50 |
-| | | | `Sources/Core/Services/TypeAliases/XPCServiceProtocolAlias.swift` | 23 |
-| | | | `Sources/Core/Services/Types/ServiceState.swift` | 22 |
-| | | | `Sources/Core/Services/Types/ValidationResult.swift` | 13 |
-| | | | `Sources/Core/Services/Types/StorageLocation.swift` | 11 |
-| | | | `Sources/Core/Services/Types/XPCServiceProtocol.swift` | 5 |
-| | | | `Sources/Core/Services/TypeAliases/CoreTypes.swift` | 2 |
-| | | | | |
-| `//Sources/Resources:Resources` | swift_library | 260 | `Sources/Resources/Protocols/ResourceProtocol.swift` | 172 |
-| | | | `Sources/Resources/Types/ResourceError.swift` | 34 |
-| | | | `Sources/Resources/Protocols/ManagedResource.swift` | 29 |
-| | | | `Sources/Resources/Types/ResourceState.swift` | 25 |
-| | | | | |
-| `//Sources/SecurityInterfaces:SecurityInterfaces` | swift_library | 226 | `Sources/SecurityInterfaces/Tests/SecurityProviderTests.swift` | 152 |
-| | | | `Sources/SecurityInterfaces/Models/SecurityModels.swift` | 74 |
-| | | | | |
-| `//Sources/UmbraCoreTypes/CoreErrors:UmbraCoreTypesCoreErrors` | swift_library | 216 | `Sources/UmbraCoreTypes/CoreErrors/Sources/ErrorMapping.swift` | 121 |
-| | | | `Sources/UmbraCoreTypes/CoreErrors/Sources/ResourceLocatorError.swift` | 70 |
-| | | | `Sources/UmbraCoreTypes/CoreErrors/Sources/CEPackage.swift` | 25 |
-| | | | | |
-| `//Sources/SecurityTypeConverters:SecurityTypeConverters` | swift_library | 201 | `Sources/SecurityTypeConverters/Sources/DTOExtensions.swift` | 89 |
-| | | | `Sources/SecurityTypeConverters/Sources/BinaryDataConverters.swift` | 81 |
-| | | | `Sources/SecurityTypeConverters/Sources/ErrorMappers.swift` | 31 |
-| | | | | |
-| `//Sources/SecurityBridgeProtocolAdapters:SecurityBridgeProtocolAdapters` | swift_library | 180 | `Sources/SecurityBridgeProtocolAdapters/Sources/SecurityProviderProtocolAdapter.swift` | 146 |
-| | | | `Sources/SecurityBridgeProtocolAdapters/Sources/SecurityBridgeErrorMapper.swift` | 34 |
-| | | | | |
-| `//Sources/SecurityTypes:SecurityTypes` | swift_library | 178 | `Sources/SecurityTypes/Protocols/SecurityProvider.swift` | 49 |
-| | | | `Sources/SecurityTypes/Protocols/SecureStorageProvider.swift` | 37 |
-| | | | `Sources/SecurityTypes/Types/SecurityError.swift` | 34 |
-| | | | `Sources/SecurityTypes/Types/HashAlgorithm.swift` | 30 |
-| | | | `Sources/SecurityTypes/Types/SecurityError+Extended.swift` | 28 |
-| | | | | |
-| `//Sources/Services:Services` | swift_library | 176 | `Sources/Services/CredentialManager/CredentialManager.swift` | 98 |
-| | | | `Sources/Services/CryptoService/CryptoService.swift` | 72 |
-| | | | `Sources/Services/SecurityUtils/SecurityUtils.swift` | 6 |
-| | | | | |
-| `//Sources/SecurityProtocolsCore:SecurityProtocolsCore` | swift_library | 116 | `Sources/SecurityProtocolsCore/Tests/SecurityProtocolsCoreTests.swift` | 95 |
-| | | | `Sources/SecurityProtocolsCore/Sources/SecurityProtocolsCore.swift` | 21 |
-| | | | | |
-| `//Sources/SecurityUtils:SecurityUtils` | swift_library | 79 | `Sources/SecurityUtils/Protocols/URLProvider.swift` | 33 |
-| | | | `Sources/SecurityUtils/Protocols/SecurityBookmarkServiceProtocol.swift` | 24 |
-| | | | `Sources/SecurityUtils/Protocols/CredentialManager.swift` | 22 |
-| | | | | |
-| `//Sources/UmbraLoggingAdapters:UmbraLoggingAdapters` | swift_library | 30 | `Sources/UmbraLoggingAdapters/Sources/UmbraLoggingAdapters.swift` | 30 |
-| | | | | |
-| `//Sources/SecurityCoreAdapters:SecurityCoreAdapters` | swift_library | 27 | `Sources/SecurityCoreAdapters/Sources/SecurityCoreAdapters.swift` | 27 |
-| | | | | |
-| `//Sources/Snapshots:Snapshots` | swift_library | 5 | `Sources/Snapshots/Protocols/SnapshotProtocol.swift` | 5 |
-| | | | | |
-| `//Sources/Autocomplete:Autocomplete` | swift_library | 5 | `Sources/Autocomplete/Protocols/AutocompleteProtocol.swift` | 5 |
-| | | | | |
+### High Nesting Depth
+
+These files contain deeply nested code blocks (more than 4 levels deep) which can be difficult to follow and maintain:
+
+- **JSONEncoderTests.swift** in module **.build** (max nesting: 27)
+- **TreeDictionary Tests.swift** in module **.build** (max nesting: 9)
+- **SyntaxRewriter.swift** in module **.build** (max nesting: 5)
+- **Calendar_ICU.swift** in module **.build** (max nesting: 6)
+- **Data.swift** in module **.build** (max nesting: 8)
+
+**Recommendation**: Consider extracting nested blocks into separate functions with descriptive names. Use early returns or guard clauses to reduce nesting.
+
+### Excessively Long Functions
+
+These files contain very long functions (over 100 lines) which can be difficult to understand and test:
+
+- **SyntaxVisitor.swift** in module **.build** (max function length: 7058 lines)
+- **TreeDictionary Tests.swift** in module **.build** (max function length: 2599 lines)
+- **SyntaxRewriter.swift** in module **.build** (max function length: 4861 lines)
+- **Calendar_ICU.swift** in module **.build** (max function length: 1970 lines)
+- **Data.swift** in module **.build** (max function length: 2099 lines)
+
+**Recommendation**: Break down long functions into smaller, more focused functions that each do one thing well.
+
+### General Refactoring Strategies
+
+1. **Extract Method**: Identify blocks of code that work together and move them into their own functions with descriptive names.
+
+2. **Replace Conditionals with Polymorphism**: If there are large switch statements or if-else chains, consider using polymorphism instead.
+
+3. **Introduce Parameter Object**: For functions with many parameters, group related parameters into a single object.
+
+4. **Extract Class**: If a class has too many responsibilities, split it into multiple classes each with a single responsibility.
+
+5. **Replace Temporary with Query**: Instead of using temporary variables, extract the expression into a function.
+
+## Conclusion
+
+This analysis identifies the most complex parts of the UmbraCore codebase that may benefit from refactoring. Focus on the top files and modules for the highest potential improvement in code maintainability.
+
+Refactoring should be done incrementally with thorough testing to ensure no functionality is broken.

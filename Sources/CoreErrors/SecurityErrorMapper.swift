@@ -38,33 +38,19 @@ public enum SecurityErrorMapper {
     if let protocolError=error as? UmbraErrors.Security.Protocols {
       switch protocolError {
         case let .invalidFormat(reason):
-          return .invalidInput(reason: "Invalid format: \(reason)")
+          return .internalError(reason: "Invalid format: \(reason)")
         case let .unsupportedOperation(name):
-          return .notImplemented(feature: name)
+          return .internalError(reason: "Unsupported operation: \(name)")
         case let .incompatibleVersion(version):
-          return .internalError("Incompatible version: \(version)")
+          return .internalError(reason: "Incompatible version: \(version)")
         case let .missingProtocolImplementation(protocolName):
-          return .internalError("Missing protocol implementation: \(protocolName)")
+          return .internalError(reason: "Missing protocol implementation: \(protocolName)")
         case let .invalidState(state, expectedState):
-          return .internalError("Invalid state: current '\(state)', expected '\(expectedState)'")
+          return .internalError(reason: "Invalid state: current '\(state)', expected '\(expectedState)'")
         case let .internalError(reason):
-          return .internalError(reason)
-        case let .invalidInput(reason):
-          return .invalidInput(reason: reason)
-        case let .encryptionFailed(reason):
-          return .encryptionFailed(reason: reason)
-        case let .decryptionFailed(reason):
-          return .decryptionFailed(reason: reason)
-        case let .randomGenerationFailed(reason):
-          return .randomGenerationFailed(reason: reason)
-        case let .storageOperationFailed(reason):
-          return .storageOperationFailed(reason: reason)
-        case let .serviceError(code, reason):
-          return .serviceError(code: code, reason: reason)
-        case .notImplemented:
-          return .notImplemented(feature: "Security operation")
+          return .internalError(reason: reason)
         @unknown default:
-          return .internalError("Unknown protocol error")
+          return .internalError(reason: "Unknown protocol error")
       }
     }
 
@@ -72,24 +58,23 @@ public enum SecurityErrorMapper {
     if let xpcError=error as? UmbraErrors.Security.XPC {
       switch xpcError {
         case let .connectionFailed(reason):
-          return .serviceError(code: -1000, reason: "Connection failed: \(reason)")
-        case .serviceUnavailable:
-          return .serviceError(code: -1001, reason: "Service unavailable")
-        case let .invalidResponse(reason):
-          return .serviceError(code: -1002, reason: "Invalid response: \(reason)")
-        case let .unexpectedSelector(name):
-          return .serviceError(code: -1003, reason: "Unexpected selector: \(name)")
-        case let .versionMismatch(expected, found):
-          return .serviceError(
-            code: -1004,
-            reason: "Version mismatch (expected: \(expected), found: \(found))"
-          )
-        case .invalidServiceIdentifier:
-          return .serviceError(code: -1005, reason: "Invalid service identifier")
+          return .secureConnectionFailed(reason: "Connection failed: \(reason)")
+        case let .serviceUnavailable(serviceName):
+          return .internalError(reason: "Service unavailable: \(serviceName)")
+        case let .invalidMessageFormat(reason):
+          return .internalError(reason: "Invalid message format: \(reason)")
+        case let .serviceError(code, reason):
+          return .internalError(reason: "Service error (\(code)): \(reason)")
+        case let .timeout(operation, timeoutMs):
+          return .internalError(reason: "Operation timed out: \(operation) after \(timeoutMs)ms")
+        case let .operationCancelled(operation):
+          return .internalError(reason: "Operation cancelled: \(operation)")
+        case let .insufficientPrivileges(service, requiredPrivilege):
+          return .insufficientPermissions(resource: service, requiredPermission: requiredPrivilege)
         case let .internalError(message):
-          return .internalError(message)
+          return .internalError(reason: message)
         @unknown default:
-          return .internalError("Unknown XPC error")
+          return .internalError(reason: "Unknown XPC error")
       }
     }
 
@@ -101,24 +86,32 @@ public enum SecurityErrorMapper {
       return .encryptionFailed(reason: description)
     } else if description.contains("decryption") || description.contains("decrypt") {
       return .decryptionFailed(reason: description)
-    } else if description.contains("key generation") {
-      return .keyGenerationFailed(reason: description)
-    } else if description.contains("invalid key") {
-      return .invalidKey(reason: description)
-    } else if description.contains("hash") || description.contains("verification") {
-      return .hashVerificationFailed(reason: description)
-    } else if description.contains("random") {
-      return .randomGenerationFailed(reason: description)
-    } else if description.contains("invalid input") || description.contains("invalid data") {
-      return .invalidInput(reason: description)
+    } else if description.contains("authentication") || description.contains("login") {
+      return .authenticationFailed(reason: description)
+    } else if description.contains("authorization") || description.contains("permission") {
+      return .authorizationFailed(reason: description)
+    } else if description.contains("certificate") {
+      if description.contains("expired") {
+        return .certificateExpired(reason: description)
+      } else {
+        return .certificateInvalid(reason: description)
+      }
+    } else if description.contains("signature") {
+      return .signatureInvalid(reason: description)
+    } else if description.contains("connection") {
+      return .secureConnectionFailed(reason: description)
     } else if description.contains("storage") {
-      return .storageOperationFailed(reason: description)
-    } else if description.contains("timeout") || description.contains("timed out") {
-      return .timeout(operation: description)
+      return .secureStorageFailed(operation: "unknown", reason: description)
+    } else if description.contains("hash") {
+      return .hashingFailed(reason: description)
+    } else if description.contains("integrity") {
+      return .dataIntegrityViolation(reason: description)
+    } else if description.contains("policy") {
+      return .policyViolation(policy: "security", reason: description)
     }
 
-    // Default case for unrecognized errors
-    return .internalError("Unmapped error: \(error)")
+    // Default fallback for unknown errors
+    return .internalError(reason: description)
   }
 
   /// Maps from UmbraErrors.Security.Core to an appropriate domain-specific error.
@@ -154,30 +147,30 @@ public enum SecurityErrorMapper {
           return .internalError("Encryption failed: \(reason)")
         case let .decryptionFailed(reason):
           return .internalError("Decryption failed: \(reason)")
-        case let .keyGenerationFailed(reason):
-          return .internalError("Key generation failed: \(reason)")
-        case let .invalidKey(reason):
-          return .internalError("Invalid key: \(reason)")
-        case let .hashVerificationFailed(reason):
-          return .internalError("Hash verification failed: \(reason)")
-        case let .randomGenerationFailed(reason):
-          return .internalError("Random generation failed: \(reason)")
-        case let .invalidInput(reason):
-          return .invalidResponse(reason: reason)
-        case let .storageOperationFailed(reason):
-          return .internalError("Storage operation failed: \(reason)")
-        case let .timeout(operation):
-          return .internalError("Operation timed out: \(operation)")
-        case let .serviceError(code, reason):
-          if reason.contains("unavailable") {
-            return .serviceUnavailable
-          } else {
-            return .internalError("Service error (\(code)): \(reason)")
-          }
+        case let .hashingFailed(reason):
+          return .internalError("Hashing failed: \(reason)")
+        case let .signatureInvalid(reason):
+          return .internalError("Signature invalid: \(reason)")
+        case let .certificateInvalid(reason):
+          return .internalError("Certificate invalid: \(reason)")
+        case let .certificateExpired(reason):
+          return .internalError("Certificate expired: \(reason)")
+        case let .authenticationFailed(reason):
+          return .internalError("Authentication failed: \(reason)")
+        case let .authorizationFailed(reason):
+          return .internalError("Authorization failed: \(reason)")
+        case let .insufficientPermissions(resource, requiredPermission):
+          return .insufficientPrivileges(service: resource, requiredPrivilege: requiredPermission)
+        case let .secureConnectionFailed(reason):
+          return .connectionFailed(reason: reason)
+        case let .secureStorageFailed(operation, reason):
+          return .internalError("Secure storage failed: \(operation) - \(reason)")
+        case let .dataIntegrityViolation(reason):
+          return .internalError("Data integrity violation: \(reason)")
+        case let .policyViolation(policy, reason):
+          return .internalError("Policy violation: \(policy) - \(reason)")
         case let .internalError(message):
           return .internalError(message)
-        case let .notImplemented(feature):
-          return .unexpectedSelector(name: feature)
         @unknown default:
           return .internalError("Unknown core error")
       }
@@ -187,9 +180,9 @@ public enum SecurityErrorMapper {
     if let protocolError=error as? UmbraErrors.Security.Protocols {
       switch protocolError {
         case let .invalidFormat(reason):
-          return .invalidResponse(reason: "Invalid format: \(reason)")
+          return .invalidMessageFormat(reason: "Invalid format: \(reason)")
         case let .unsupportedOperation(name):
-          return .unexpectedSelector(name: name)
+          return .internalError("Unsupported operation: \(name)")
         case let .incompatibleVersion(version):
           return .internalError("Incompatible version: \(version)")
         case let .missingProtocolImplementation(protocolName):
@@ -198,20 +191,6 @@ public enum SecurityErrorMapper {
           return .internalError("Invalid state: current '\(state)', expected '\(expectedState)'")
         case let .internalError(reason):
           return .internalError(reason)
-        case let .invalidInput(reason):
-          return .invalidResponse(reason: "Invalid input: \(reason)")
-        case let .encryptionFailed(reason):
-          return .internalError("Encryption failed: \(reason)")
-        case let .decryptionFailed(reason):
-          return .internalError("Decryption failed: \(reason)")
-        case let .randomGenerationFailed(reason):
-          return .internalError("Random generation failed: \(reason)")
-        case let .storageOperationFailed(reason):
-          return .internalError("Storage operation failed: \(reason)")
-        case let .serviceError(code, reason):
-          return .internalError("Service error (\(code)): \(reason)")
-        case .notImplemented:
-          return .unexpectedSelector(name: "Security operation")
         @unknown default:
           return .internalError("Unknown protocol error")
       }
@@ -220,21 +199,18 @@ public enum SecurityErrorMapper {
     // Handle other errors by extracting information from description
     let description="\(error)"
 
-    if description.contains("connection") {
+    if description.contains("connection") || description.contains("connect") {
       return .connectionFailed(reason: description)
     } else if description.contains("unavailable") || description.contains("not available") {
-      return .serviceUnavailable
+      return .serviceUnavailable(serviceName: "Unknown Service")
     } else if description.contains("response") {
-      return .invalidResponse(reason: description)
+      return .invalidMessageFormat(reason: description)
     } else if description.contains("selector") {
-      return .unexpectedSelector(name: extractErrorParam(from: description, param: "selector"))
+      return .internalError("Selector error: \(description)")
     } else if description.contains("version") {
-      return .versionMismatch(
-        expected: extractErrorParam(from: description, param: "expected"),
-        found: extractErrorParam(from: description, param: "found")
-      )
+      return .internalError("Version error: \(description)")
     } else if description.contains("identifier") {
-      return .invalidServiceIdentifier
+      return .internalError("Identifier error: \(description)")
     }
 
     // Default case for unrecognized errors
@@ -258,26 +234,30 @@ public enum SecurityErrorMapper {
           return .invalidFormat(reason: "Encryption failed: \(reason)")
         case let .decryptionFailed(reason):
           return .invalidFormat(reason: "Decryption failed: \(reason)")
-        case let .keyGenerationFailed(reason):
-          return .internalError("Key generation failed: \(reason)")
-        case let .invalidKey(reason):
-          return .invalidFormat(reason: "Invalid key: \(reason)")
-        case let .hashVerificationFailed(reason):
-          return .internalError("Hash verification failed: \(reason)")
-        case let .randomGenerationFailed(reason):
-          return .internalError("Random generation failed: \(reason)")
-        case let .invalidInput(reason):
-          return .invalidFormat(reason: reason)
-        case let .storageOperationFailed(reason):
-          return .internalError("Storage operation failed: \(reason)")
-        case let .timeout(operation):
-          return .internalError("Operation timed out: \(operation)")
-        case let .serviceError(code, reason):
-          return .internalError("Service error (\(code)): \(reason)")
+        case let .hashingFailed(reason):
+          return .internalError("Hashing failed: \(reason)")
+        case let .signatureInvalid(reason):
+          return .internalError("Signature invalid: \(reason)")
+        case let .certificateInvalid(reason):
+          return .internalError("Certificate invalid: \(reason)")
+        case let .certificateExpired(reason):
+          return .internalError("Certificate expired: \(reason)")
+        case let .authenticationFailed(reason):
+          return .internalError("Authentication failed: \(reason)")
+        case let .authorizationFailed(reason):
+          return .internalError("Authorization failed: \(reason)")
+        case let .insufficientPermissions(resource, requiredPermission):
+          return .internalError("Insufficient permissions: \(resource) - \(requiredPermission)")
+        case let .secureConnectionFailed(reason):
+          return .internalError("Secure connection failed: \(reason)")
+        case let .secureStorageFailed(operation, reason):
+          return .internalError("Secure storage failed: \(operation) - \(reason)")
+        case let .dataIntegrityViolation(reason):
+          return .internalError("Data integrity violation: \(reason)")
+        case let .policyViolation(policy, reason):
+          return .internalError("Policy violation: \(policy) - \(reason)")
         case let .internalError(message):
           return .internalError(message)
-        case let .notImplemented(feature):
-          return .unsupportedOperation(name: feature)
         @unknown default:
           return .internalError("Unknown core error")
       }
@@ -288,16 +268,18 @@ public enum SecurityErrorMapper {
       switch xpcError {
         case let .connectionFailed(reason):
           return .internalError("Connection failed: \(reason)")
-        case .serviceUnavailable:
-          return .internalError("Service unavailable")
-        case let .invalidResponse(reason):
+        case let .serviceUnavailable(serviceName):
+          return .internalError("Service unavailable: \(serviceName)")
+        case let .invalidMessageFormat(reason):
           return .invalidFormat(reason: reason)
-        case let .unexpectedSelector(name):
-          return .unsupportedOperation(name: name)
-        case let .versionMismatch(expected, found):
-          return .incompatibleVersion(version: "Expected \(expected), found \(found)")
-        case .invalidServiceIdentifier:
-          return .internalError("Invalid service identifier")
+        case let .serviceError(code, reason):
+          return .internalError("Service error (\(code)): \(reason)")
+        case let .timeout(operation, timeoutMs):
+          return .internalError("Operation timed out: \(operation) after \(timeoutMs)ms")
+        case let .operationCancelled(operation):
+          return .internalError("Operation cancelled: \(operation)")
+        case let .insufficientPrivileges(service, requiredPrivilege):
+          return .internalError("Insufficient privileges: \(service) - \(requiredPrivilege)")
         case let .internalError(message):
           return .internalError(message)
         @unknown default:

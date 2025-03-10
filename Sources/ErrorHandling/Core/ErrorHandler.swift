@@ -52,22 +52,28 @@ public final class ErrorHandler {
   ///   - line: Line number (auto-filled by the compiler)
   public func handle(
     _ error: some UmbraError,
-    severity: ErrorSeverity = .error,
+    severity: ErrorHandlingCommon.ErrorSeverity = .error,
     file: String=#file,
     function: String=#function,
     line: Int=#line
   ) {
-    // Create a source object for the error
-    let source=ErrorSource(file: file, function: function, line: line)
+    // Convert the types to the interfaces version to avoid type conflicts
+    let interfaceSource=ErrorHandlingInterfaces.ErrorSource(
+      file: file,
+      line: line,
+      function: function
+    )
+    let interfaceSeverity=ErrorHandlingInterfaces
+      .ErrorSeverity(rawValue: severity.rawValue) ?? .error
 
     // Enrich the error with source information
-    let enrichedError=error.with(source: source)
+    let enrichedError=error.with(source: interfaceSource)
 
     // Log the error
-    logger?.log(error: enrichedError, severity: severity)
+    logger?.log(error: enrichedError, severity: interfaceSeverity)
 
     // Present error to the user if appropriate and notification handler is set
-    if severity.shouldNotify, let notificationHandler {
+    if interfaceSeverity.shouldNotify, let notificationHandler {
       // Collect recovery options from all providers
       let recoveryOptions=recoveryProviders.flatMap {
         $0.recoveryOptions(for: enrichedError)
@@ -99,7 +105,7 @@ extension ErrorHandler {
   ///   - line: Line number (auto-filled by the compiler)
   public func handleSecurity(
     _ error: ErrorHandlingDomains.SecurityError,
-    severity: ErrorSeverity = .error,
+    severity: ErrorHandlingCommon.ErrorSeverity = .error,
     file: String=#file,
     function: String=#function,
     line: Int=#line
@@ -116,7 +122,7 @@ extension ErrorHandler {
   ///   - line: Line number (auto-filled by the compiler)
   public func handleRepository(
     _ error: ErrorHandlingDomains.RepositoryError,
-    severity: ErrorSeverity = .error,
+    severity: ErrorHandlingCommon.ErrorSeverity = .error,
     file: String=#file,
     function: String=#function,
     line: Int=#line

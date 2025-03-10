@@ -5,7 +5,7 @@ import UmbraLogging
 /// A thread-safe logging service implementation that wraps LoggingWrapper
 public actor LoggerImplementation: LoggingProtocol {
   /// The shared logger instance
-  public static let shared = LoggerImplementation()
+  public static let shared=LoggerImplementation()
 
   /// Initialise the logger with default configuration
   public init() {
@@ -15,7 +15,7 @@ public actor LoggerImplementation: LoggingProtocol {
 
   /// Initialise the logger with specific destinations
   /// - Parameter destinations: Array of log destinations
-  private init(destinations: [Any]) {
+  private init(destinations _: [Any]) {
     // LoggingWrapper handles destinations internally
     Logger.configure()
   }
@@ -23,47 +23,47 @@ public actor LoggerImplementation: LoggingProtocol {
   /// Swift 6-compatible factory method to create a logger with specific destinations
   /// - Parameter destinations: Array of Sendable-compliant destinations
   /// - Returns: A new LoggerImplementation instance
-  public static func withDestinations(_ destinations: [some Sendable]) -> LoggerImplementation {
+  public static func withDestinations(_: [some Sendable]) -> LoggerImplementation {
     // Create a new logger instance with default configuration
     // LoggingWrapper doesn't expose destination configuration in the same way as SwiftyBeaver
-    let logger = LoggerImplementation()
-    
+    let logger=LoggerImplementation()
+
     // Configure the logger
     Logger.configure()
-    
+
     return logger
   }
 
   /// Log a message at the specified level
   /// - Parameter entry: The log entry to record
   private func log(_ entry: LogEntry) {
-    let logLevel = mapToLogLevel(entry.level)
-    
-    if let metadata = entry.metadata {
+    let logLevel=mapToLogLevel(entry.level)
+
+    if let metadata=entry.metadata {
       // If we have metadata, include it in the message
       Logger.log(logLevel, "\(entry.message) | \(metadata)")
     } else {
       Logger.log(logLevel, entry.message)
     }
   }
-  
+
   /// Maps UmbraLogLevel to LoggingWrapper's LogLevel
   /// - Parameter umbraLevel: The UmbraLogLevel to map
   /// - Returns: The corresponding LogLevel
   private func mapToLogLevel(_ umbraLevel: UmbraLogLevel) -> LogLevel {
     switch umbraLevel {
       case .verbose:
-        return .trace
+        .trace
       case .debug:
-        return .debug
+        .debug
       case .info:
-        return .info
+        .info
       case .warning:
-        return .warning
+        .warning
       case .error:
-        return .error
+        .error
       case .critical, .fault:
-        return .critical
+        .critical
     }
   }
 

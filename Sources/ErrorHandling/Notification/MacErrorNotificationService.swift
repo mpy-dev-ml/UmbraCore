@@ -62,13 +62,13 @@ public final class MacErrorNotificationService: ErrorNotificationService {
       // Configure alert style based on level
       switch level {
         case .debug, .info:
-          alert.alertStyle = .informational
+        alert.alertStyle = .informational
         case .warning:
-          alert.alertStyle = .warning
+        alert.alertStyle = .warning
         case .error, .critical:
-          alert.alertStyle = .critical
+        alert.alertStyle = .critical
         @unknown default:
-          alert.alertStyle = .critical
+        alert.alertStyle = .critical
       }
 
       // Add recovery options to alert
@@ -81,7 +81,8 @@ public final class MacErrorNotificationService: ErrorNotificationService {
       let response=alert.runModal()
 
       // Determine which button was clicked (first button is NSAlertFirstButtonReturn)
-      let buttonIndex=Int(response.rawValue) - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
+      let buttonIndex=Int(response.rawValue) - NSApplication.ModalResponse.alertFirstButtonReturn
+        .rawValue
 
       // Return ID of selected recovery option if valid
       if buttonIndex >= 0 && buttonIndex < recoveryOptions.count {
@@ -139,11 +140,11 @@ public final class MacErrorNotificationService: ErrorNotificationService {
   /// - Returns: The error domain
   private func getDomain(for error: Error) -> String {
     if let umbraError=error as? UmbraError {
-      return umbraError.domain
+      umbraError.domain
     } else if let nsError=error as? NSError {
-      return nsError.domain
+      nsError.domain
     } else {
-      return "Unknown"
+      "Unknown"
     }
   }
 
@@ -154,9 +155,9 @@ public final class MacErrorNotificationService: ErrorNotificationService {
   /// - Returns: A user-friendly title
   private func getTitle(for error: Error, domain: String) -> String {
     if let umbraError=error as? UmbraError {
-      return "Error in \(domain): \(umbraError.code)"
+      "Error in \(domain): \(umbraError.code)"
     } else {
-      return "Error in \(domain)"
+      "Error in \(domain)"
     }
   }
 
@@ -165,9 +166,9 @@ public final class MacErrorNotificationService: ErrorNotificationService {
   /// - Returns: A user-friendly message
   private func getMessage(for error: Error) -> String {
     if let umbraError=error as? UmbraError {
-      return umbraError.errorDescription
+      umbraError.errorDescription
     } else {
-      return error.localizedDescription
+      error.localizedDescription
     }
   }
 }

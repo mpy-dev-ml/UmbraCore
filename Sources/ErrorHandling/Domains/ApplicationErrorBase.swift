@@ -1,8 +1,8 @@
 import ErrorHandlingInterfaces
 import Foundation
 
-/// Namespace for application-specific errors
-public enum UmbraErrors {
+/// Application-specific errors extension
+extension UmbraErrors {
   /// Application error domain
   public enum Application {
     // This namespace contains the various application error types

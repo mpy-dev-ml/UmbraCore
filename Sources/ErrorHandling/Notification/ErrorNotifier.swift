@@ -7,16 +7,16 @@ import UmbraLogging
 @MainActor
 public final class ErrorNotifier: @preconcurrency ErrorNotificationProtocol {
   /// The shared instance
-  public static let shared = ErrorNotifier()
+  public static let shared=ErrorNotifier()
 
   /// Registered notification services
-  private var notificationServices: [ErrorNotificationService] = []
+  private var notificationServices: [ErrorNotificationService]=[]
 
   /// The minimum level for notifications
   public var minimumNotificationLevel: ErrorNotificationLevel = .warning
 
   /// Whether automatic notification is enabled
-  public var automaticNotificationEnabled: Bool = true
+  public var automaticNotificationEnabled: Bool=true
 
   /// Private initialiser to enforce singleton pattern
   private init() {}
@@ -30,13 +30,13 @@ public final class ErrorNotifier: @preconcurrency ErrorNotificationProtocol {
   /// Set the minimum notification level
   /// - Parameter level: The minimum level
   public func setMinimumLevel(_ level: ErrorNotificationLevel) {
-    minimumNotificationLevel = level
+    minimumNotificationLevel=level
   }
 
   /// Set whether automatic notification is enabled
   /// - Parameter enabled: Whether to enable automatic notification
   public func setAutomaticNotification(_ enabled: Bool) {
-    automaticNotificationEnabled = enabled
+    automaticNotificationEnabled=enabled
   }
 
   /// Process an error automatically if automatic notification is enabled
@@ -49,16 +49,16 @@ public final class ErrorNotifier: @preconcurrency ErrorNotificationProtocol {
   public func processError(
     _ error: ErrorHandlingInterfaces.UmbraError,
     severity: ErrorHandlingCommon.ErrorSeverity,
-    file: String,
-    function: String,
-    line: Int
+    file _: String,
+    function _: String,
+    line _: Int
   ) {
     guard automaticNotificationEnabled else {
       return
     }
 
     // Map severity to notification level
-    let level = severity.toNotificationLevel()
+    let level=severity.toNotificationLevel()
 
     // Only notify if level is sufficient
     guard level >= minimumNotificationLevel else {
@@ -75,7 +75,10 @@ public final class ErrorNotifier: @preconcurrency ErrorNotificationProtocol {
   /// - Parameters:
   ///   - error: The error to present
   ///   - recoveryOptions: Optional recovery options
-  public nonisolated func presentError<E: UmbraError>(_ error: E, recoveryOptions: [any RecoveryOption]) {
+  public nonisolated func presentError(
+    _ error: some UmbraError,
+    recoveryOptions: [any RecoveryOption]
+  ) {
     Task { @MainActor in
       // Default to error notification level if not specified
       await notifyUser(about: error, level: .error, recoveryOptions: recoveryOptions)
@@ -91,7 +94,7 @@ public final class ErrorNotifier: @preconcurrency ErrorNotificationProtocol {
   public func notifyUser(
     about error: ErrorHandlingInterfaces.UmbraError,
     level: ErrorNotificationLevel,
-    recoveryOptions: [any RecoveryOption]? = nil
+    recoveryOptions: [any RecoveryOption]?=nil
   ) async -> UUID? {
     // Skip if level is below minimum
     guard level >= minimumNotificationLevel else {
@@ -99,18 +102,18 @@ public final class ErrorNotifier: @preconcurrency ErrorNotificationProtocol {
     }
 
     // Find appropriate notification services for this error's domain
-    let applicableServices = notificationServices.filter { service in
+    let applicableServices=notificationServices.filter { service in
       service.supportedErrorDomains.contains(error.domain) &&
         service.supportedLevels.contains(level)
     }
 
     // Get recovery options if not provided
-    let options = recoveryOptions ?? ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
+    let options=recoveryOptions ?? ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
 
     // Try each service until one handles the notification
     for service in applicableServices {
       if
-        let chosenOptionID = await service.notifyUser(
+        let chosenOptionID=await service.notifyUser(
           about: error,
           level: level,
           recoveryOptions: options
@@ -134,18 +137,18 @@ public final class ErrorNotifier: @preconcurrency ErrorNotificationProtocol {
     level: ErrorNotificationLevel
   ) async -> Bool {
     // Get recovery options
-    let options = ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
+    let options=ErrorRecoveryRegistry.shared.recoveryOptions(for: error)
 
     // Skip if no options available
     guard !options.isEmpty else {
       // Just notify without recovery options
-      _ = await notifyUser(about: error, level: level)
+      _=await notifyUser(about: error, level: level)
       return false
     }
 
     // Notify and get selected option
     if
-      let selectedOptionID = await notifyUser(
+      let selectedOptionID=await notifyUser(
         about: error,
         level: level,
         recoveryOptions: options
@@ -172,7 +175,7 @@ extension ErrorHandlingInterfaces.UmbraError {
   ///   - logError: Whether to also log the error
   public func notify(
     level: ErrorNotificationLevel = .error,
-    logError: Bool = true
+    logError _: Bool=true
   ) {
     Task {
       await ErrorNotifier.shared.notifyUser(about: self, level: level)
@@ -186,7 +189,7 @@ extension ErrorHandlingInterfaces.UmbraError {
   /// - Returns: Whether recovery was successful
   public func notifyAndRecover(
     level: ErrorNotificationLevel = .error,
-    logError: Bool = true
+    logError _: Bool=true
   ) async -> Bool {
     await ErrorNotifier.shared.notifyAndRecover(from: self, level: level)
   }

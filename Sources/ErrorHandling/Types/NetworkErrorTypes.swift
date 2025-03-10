@@ -1,5 +1,5 @@
-import Foundation
 import ErrorHandlingDomains
+import Foundation
 
 /// Core network error types used throughout the UmbraCore framework
 ///

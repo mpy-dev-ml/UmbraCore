@@ -76,32 +76,36 @@ private func mapFromCoreResourceError(_ error: CoreErrors.ResourceError) -> Erro
 /// - Returns: Equivalent UmbraCoreTypes error
 private func mapFromCoreSecurityError(_ error: CoreErrors.SecurityError) -> Error {
   switch error {
+    case let .authenticationFailed(reason):
+      return ResourceLocatorError.generalError("Authentication failed: \(reason)")
+    case let .authorizationFailed(reason):
+      return ResourceLocatorError.generalError("Authorisation failed: \(reason)")
+    case let .insufficientPermissions(resource, requiredPermission):
+      return ResourceLocatorError.generalError("Insufficient permissions for \(resource): \(requiredPermission) required")
     case let .encryptionFailed(reason):
       return ResourceLocatorError.generalError("Encryption failed: \(reason)")
     case let .decryptionFailed(reason):
       return ResourceLocatorError.generalError("Decryption failed: \(reason)")
-    case let .keyGenerationFailed(reason):
-      return ResourceLocatorError.generalError("Key generation failed: \(reason)")
-    case let .invalidKey(reason):
-      return ResourceLocatorError.generalError("Invalid key: \(reason)")
-    case let .hashVerificationFailed(reason):
-      return ResourceLocatorError.generalError("Hash verification failed: \(reason)")
-    case let .randomGenerationFailed(reason):
-      return ResourceLocatorError.generalError("Random generation failed: \(reason)")
-    case let .invalidInput(reason):
-      return ResourceLocatorError.generalError("Invalid input: \(reason)")
-    case let .storageOperationFailed(reason):
-      return ResourceLocatorError.generalError("Storage operation failed: \(reason)")
-    case let .timeout(operation):
-      return ResourceLocatorError.generalError("Security operation timed out: \(operation)")
-    case let .serviceError(code, reason):
-      return ResourceLocatorError.generalError("Security service error (\(code)): \(reason)")
-    case let .internalError(message):
-      return ResourceLocatorError.generalError("Internal security error: \(message)")
-    case let .notImplemented(feature):
-      return ResourceLocatorError.generalError("Not implemented: \(feature)")
+    case let .hashingFailed(reason):
+      return ResourceLocatorError.generalError("Hashing failed: \(reason)")
+    case let .signatureInvalid(reason):
+      return ResourceLocatorError.generalError("Invalid signature: \(reason)")
+    case let .certificateInvalid(reason):
+      return ResourceLocatorError.generalError("Invalid certificate: \(reason)")
+    case let .certificateExpired(reason): 
+      return ResourceLocatorError.generalError("Certificate expired: \(reason)")
+    case let .policyViolation(policy, reason):
+      return ResourceLocatorError.generalError("Policy violation (\(policy)): \(reason)")
+    case let .secureConnectionFailed(reason):
+      return ResourceLocatorError.generalError("Secure connection failed: \(reason)")
+    case let .secureStorageFailed(operation, reason):
+      return ResourceLocatorError.generalError("Secure storage operation \(operation) failed: \(reason)")
+    case let .dataIntegrityViolation(reason):
+      return ResourceLocatorError.generalError("Data integrity violation: \(reason)")
+    case let .internalError(reason):
+      return ResourceLocatorError.generalError("Internal security error: \(reason)")
     @unknown default:
-      return ResourceLocatorError.generalError("Security operation failed with unknown error")
+      return ResourceLocatorError.generalError("Unknown security error")
   }
 }
 

@@ -11,11 +11,11 @@ import Foundation
 public struct SecurityCoreErrorWrapper: Error, Sendable {
   /// The wrapped error
   public let wrappedError: UmbraErrors.Security.Core
-  
+
   /// Initialise with a security error
   /// - Parameter error: The error to wrap
   public init(_ error: UmbraErrors.Security.Core) {
-    self.wrappedError = error
+    wrappedError=error
   }
 }
 
@@ -23,10 +23,10 @@ public struct SecurityCoreErrorWrapper: Error, Sendable {
 /// This class separates recovery functionality from error handling
 public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsProvider {
   /// The shared instance for the recovery service
-  public static let shared = SecurityErrorRecovery()
+  public static let shared=SecurityErrorRecovery()
 
   /// The error mapper used to transform errors
-  private let errorMapper = SecurityErrorMapper()
+  private let errorMapper=SecurityErrorMapper()
 
   /// Private initialiser to enforce singleton pattern
   private init() {}
@@ -46,182 +46,228 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
       return nil
     }
   }
-  
+
   /// Creates recovery options for a security error
   /// - Parameter error: The security error to create options for
   /// - Returns: Recovery options suitable for the error
   private func createRecoveryOptions(for error: SecurityCoreErrorWrapper) -> RecoveryOptions {
     // Create appropriate actions based on the error type
-    var actions: [RecoveryAction] = []
-    
+    var actions: [RecoveryAction]=[]
+
     switch error.wrappedError {
-      case .authenticationFailed(let reason):
+      case .authenticationFailed(_):
         actions.append(
           RecoveryAction(
-            id: "retry_auth",
-            title: "Try Again",
+            id: "retry-auth",
+            title: "Try Authentication Again",
             description: "Retry with different credentials",
-            isDisruptive: false,
             isDefault: true,
             handler: { /* Implementation to retry authentication */ }
           )
         )
-        
+
+      case .encryptionFailed(_):
         actions.append(
           RecoveryAction(
-            id: "reset_credentials",
-            title: "Reset Credentials",
-            description: "Reset your security credentials",
-            isDisruptive: true,
-            isDefault: false,
-            handler: { /* Implementation to reset credentials */ }
-          )
-        )
-        
-      case .encryptionFailed(let reason):
-        actions.append(
-          RecoveryAction(
-            id: "alt_algorithm",
-            title: "Try Alternate Algorithm",
-            description: "Attempt the operation with a different cryptographic algorithm",
-            isDisruptive: false,
+            id: "retry-encryption",
+            title: "Retry Encryption",
+            description: "Try encryption operation again",
             isDefault: true,
-            handler: { /* Implementation to use alternate algorithm */ }
+            handler: { /* Implementation to retry encryption */ }
           )
         )
-        
-      case .decryptionFailed(let reason):
+
+      case .decryptionFailed(_):
         actions.append(
           RecoveryAction(
-            id: "verify_key",
-            title: "Verify Encryption Key",
-            description: "Check if you're using the correct encryption key",
-            isDisruptive: false,
+            id: "retry-decryption",
+            title: "Retry Decryption",
+            description: "Try decryption operation again",
             isDefault: true,
-            handler: { /* Implementation to verify key */ }
+            handler: { /* Implementation to retry decryption */ }
           )
         )
-        
-      case .tamperedData:
+
+      case .hashingFailed(_):
         actions.append(
           RecoveryAction(
-            id: "restore_backup",
-            title: "Restore from Backup",
-            description: "Restore data from a secure backup",
-            isDisruptive: true,
+            id: "retry-hash",
+            title: "Retry Hashing",
+            description: "Try hashing operation again",
             isDefault: true,
-            handler: { /* Implementation to restore from backup */ }
+            handler: { /* Implementation to retry hashing */ }
           )
         )
-        
+
+      case .signatureInvalid(_):
+        actions.append(
+          RecoveryAction(
+            id: "retry-signature",
+            title: "Retry Signature Verification",
+            description: "Try again with a different signature",
+            isDefault: true,
+            handler: { /* Implementation to retry signature verification */ }
+          )
+        )
+
+      case .certificateInvalid(_):
+        actions.append(
+          RecoveryAction(
+            id: "trust-cert",
+            title: "Trust Certificate",
+            description: "Trust this certificate for the current session",
+            isDefault: true,
+            handler: { /* Implementation to trust certificate */ }
+          )
+        )
+
+      case .certificateExpired(_):
+        actions.append(
+          RecoveryAction(
+            id: "ignore-expiry",
+            title: "Ignore Expiry",
+            description: "Continue despite the expired certificate",
+            isDefault: true,
+            handler: { /* Implementation to ignore certificate expiry */ }
+          )
+        )
+
+      case .policyViolation(let policy, _):
+        actions.append(
+          RecoveryAction(
+            id: "override-policy",
+            title: "Override Policy",
+            description: "Override policy '\(policy)' for this operation",
+            isDefault: true,
+            handler: { /* Implementation to override policy */ }
+          )
+        )
+
+      case .authorizationFailed(_):
+        actions.append(
+          RecoveryAction(
+            id: "retry-auth",
+            title: "Try Again",
+            description: "Retry with different authorisation",
+            isDefault: true,
+            handler: { /* Implementation to retry authorisation */ }
+          )
+        )
+
+      case .insufficientPermissions(let resource, let requiredPermission):
+        actions.append(
+          RecoveryAction(
+            id: "request_permission",
+            title: "Request Permission",
+            description: "Request the required permission '\(requiredPermission)' for '\(resource)'",
+            isDefault: true,
+            handler: { /* Implementation to request permission */ }
+          )
+        )
+
+      // Handle any additional cases that might be added in the future
       default:
-        // Add general retry option for other cases
         actions.append(
           RecoveryAction(
-            id: "retry",
-            title: "Retry",
-            description: "Try the operation again",
-            isDisruptive: false,
+            id: "report_security_error",
+            title: "Report Error",
+            description: "Report this security issue to support",
             isDefault: true,
-            handler: { /* Generic retry implementation */ }
+            handler: { /* Implementation to report error */ }
           )
         )
     }
-    
+
     // Always add a cancel option
     actions.append(
       RecoveryAction(
         id: "cancel",
         title: "Cancel",
         description: "Cancel the operation",
-        isDisruptive: false,
         isDefault: false,
         handler: { /* Cancel implementation */ }
       )
     )
-    
+
     // Create appropriate title and message
-    let title = "Security Error"
-    let message = "A security error occurred: \(error.wrappedError)"
-    
+    let (title, message)=getTitleAndMessage(for: error.wrappedError)
+
     return RecoveryOptions(
       actions: actions,
       title: title,
       message: message
     )
   }
-  
+
   /// Helper to get user-friendly title and message for security errors
   private func getTitleAndMessage(for error: UmbraErrors.Security.Core) -> (String, String) {
     switch error {
-      case let .encryptionFailed(reason):
-        ("Encryption Failed", "Could not encrypt data: \(reason)")
-      case let .decryptionFailed(reason):
-        ("Decryption Failed", "Could not decrypt data: \(reason)")
-      case let .keyGenerationFailed(reason):
-        ("Key Generation Failed", "Could not generate cryptographic key: \(reason)")
-      case let .invalidKey(reason):
-        ("Invalid Key", "The cryptographic key is invalid: \(reason)")
-      case let .hashVerificationFailed(reason):
-        ("Verification Failed", "Data integrity check failed: \(reason)")
-      case let .randomGenerationFailed(reason):
-        ("Random Generation Failed", "Could not generate secure random data: \(reason)")
-      case let .invalidInput(reason):
-        ("Invalid Input", "The input data is invalid: \(reason)")
-      case let .storageOperationFailed(reason):
-        ("Storage Failed", "Could not complete secure storage operation: \(reason)")
-      case let .timeout(operation):
-        ("Operation Timeout", "The security operation '\(operation)' timed out")
-      case let .serviceError(code, reason):
-        ("Security Service Error", "Error \(code): \(reason)")
-      case let .internalError(reason):
-        ("Internal Error", "An internal security error occurred: \(reason)")
-      case let .notImplemented(feature):
-        ("Not Implemented", "The security feature '\(feature)' is not implemented")
+      case .encryptionFailed(_):
+        ("Encryption Failed", "Could not encrypt data")
+      case .decryptionFailed(_):
+        ("Decryption Failed", "Could not decrypt data")
+      case .hashingFailed(_):
+        ("Hashing Failed", "Could not hash data")
+      case .signatureInvalid(_):
+        ("Invalid Signature", "The cryptographic signature is invalid")
+      case .certificateInvalid(_):
+        ("Invalid Certificate", "The certificate is invalid")
+      case .certificateExpired(_):
+        ("Certificate Expired", "The certificate has expired")
+      case .policyViolation(let policy, _):
+        ("Security Policy Violation", "Operation violates security policy '\(policy)'")
+      case .authenticationFailed(_):
+        ("Authentication Failed", "Authentication failed")
+      case .authorizationFailed(_):
+        ("Authorisation Failed", "Authorisation failed")
+      case .insufficientPermissions(let resource, let requiredPermission):
+        ("Insufficient Permissions", "You don't have permission to access '\(resource)': \(requiredPermission) required")
+      default:
+        ("Security Error", "A security error occurred")
     }
   }
-  
+
   /// Additional recovery options implementations
   private func createKeyGenerationRecoveryOptions(
     _ retryAction: @escaping @Sendable () -> Void,
     _ cancelAction: @escaping @Sendable () -> Void
   ) -> [any RecoveryOption] {
     // Implementation similar to other methods
-    return createGenericSecurityRecoveryOptions(retryAction, cancelAction)
+    createGenericSecurityRecoveryOptions(retryAction, cancelAction)
   }
-  
+
   private func createIntegrityRecoveryOptions(
     _ retryAction: @escaping @Sendable () -> Void,
     _ cancelAction: @escaping @Sendable () -> Void
   ) -> [any RecoveryOption] {
-    return createGenericSecurityRecoveryOptions(retryAction, cancelAction)
+    createGenericSecurityRecoveryOptions(retryAction, cancelAction)
   }
-  
+
   private func createStorageRecoveryOptions(
     _ retryAction: @escaping @Sendable () -> Void,
     _ cancelAction: @escaping @Sendable () -> Void
   ) -> [any RecoveryOption] {
-    return createGenericSecurityRecoveryOptions(retryAction, cancelAction)
+    createGenericSecurityRecoveryOptions(retryAction, cancelAction)
   }
-  
+
   private func createTimeoutRecoveryOptions(
     _ retryAction: @escaping @Sendable () -> Void,
     _ cancelAction: @escaping @Sendable () -> Void
   ) -> [any RecoveryOption] {
-    return createGenericSecurityRecoveryOptions(retryAction, cancelAction)
+    createGenericSecurityRecoveryOptions(retryAction, cancelAction)
   }
-  
+
   private func createServiceRecoveryOptions(
     _ retryAction: @escaping @Sendable () -> Void,
     _ cancelAction: @escaping @Sendable () -> Void
   ) -> [any RecoveryOption] {
-    return createGenericSecurityRecoveryOptions(retryAction, cancelAction)
+    createGenericSecurityRecoveryOptions(retryAction, cancelAction)
   }
-  
+
   private func createNotImplementedRecoveryOptions(
     _ cancelAction: @escaping @Sendable () -> Void
   ) -> [any RecoveryOption] {
-    return [
+    [
       ErrorRecoveryOption(
         title: "OK",
         description: "Acknowledge this feature is not available",
@@ -229,12 +275,12 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
       )
     ]
   }
-  
+
   private func createGenericSecurityRecoveryOptions(
     _ retryAction: @escaping @Sendable () -> Void,
     _ cancelAction: @escaping @Sendable () -> Void
   ) -> [any RecoveryOption] {
-    return [
+    [
       ErrorRecoveryOption(
         title: "Try Again",
         description: "Retry the operation",
@@ -254,13 +300,13 @@ extension SecurityErrorRecovery {
   /// Example usage of the security error recovery
   public func exampleUsage() {
     // Create a security error
-    let securityError = UmbraErrors.Security.Core.invalidInput(reason: "Incorrect password format")
-    
+    let securityError = UmbraErrors.Security.Core.authenticationFailed(reason: "Incorrect password")
+
     // Get recovery options
-    let options = recoveryOptions(for: securityError)
-    
+    let options=recoveryOptions(for: securityError)
+
     // Process the options (just for example)
-    if let options = options {
+    if let options {
       print("Recovery options for \(securityError):")
       for action in options.actions {
         print("  \(action.title): \(action.description ?? "")")

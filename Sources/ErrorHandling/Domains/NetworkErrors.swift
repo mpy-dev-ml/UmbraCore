@@ -1,9 +1,15 @@
 import Foundation
 
+/// Network error domain general definitions
+/// These are supplementary to the more specialised definitions in dedicated files
 extension UmbraErrors {
-  /// Network-related error domains
-  public enum Network {
-    /// Core network errors spanning all network operations
+  /// Network-related general error domains
+  /// For specialised error types, see:
+  /// - NetworkCoreErrors.swift
+  /// - NetworkHTTPErrors.swift
+  /// - NetworkSocketErrors.swift
+  public enum GeneralNetwork {
+    /// Common network errors spanning all network operations
     public enum Core: Error, Sendable, Equatable {
       /// Failed to establish connection
       case connectionFailed(reason: String)
