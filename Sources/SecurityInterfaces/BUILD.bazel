@@ -30,6 +30,7 @@ umbracore_swift_test_library(
         "//Sources/SecurityProtocolsCore",
         "//Sources/XPCProtocolsCore",
     ],
+    module_name = "SecurityInterfaces",
     visibility = ["//visibility:public"],
 )
 

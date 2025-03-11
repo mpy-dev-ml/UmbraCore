@@ -63,7 +63,8 @@ final class SecurityBridgeMigrationTests: XCTestCase {
 
     // Create test data using SecureBytes instead of legacy BinaryData
     let testData=SecureBytes(bytes: [1, 2, 3, 4, 5])
-    let testKey=SecureBytes(bytes: [10, 20, 30, 40, 50])
+    // Not used directly in its SecureBytes form - only binaryKey is used
+    _ = SecureBytes(bytes: [10, 20, 30, 40, 50])
 
     // Convert SecureBytes to BinaryData for the adapter
     let binaryData=CoreTypesInterfaces.BinaryData(bytes: [1, 2, 3, 4, 5])

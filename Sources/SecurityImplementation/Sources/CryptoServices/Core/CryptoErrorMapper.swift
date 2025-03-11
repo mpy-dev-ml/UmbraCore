@@ -1,4 +1,5 @@
 import ErrorHandling
+import ErrorHandlingDomains
 import Foundation
 
 /// Provides mapping functions between SecurityImplementation's CryptoError and UmbraErrors.Crypto.Core
@@ -124,8 +125,10 @@ public enum CryptoErrorMapper {
         return .keyGenerationError("Key not found")
         
       case let .signatureFailed(algorithm, reason),
-           let .signatureVerificationFailed(algorithm, reason),
-           let .invalidSignature(reason):
+           let .signatureVerificationFailed(algorithm, reason):
+        return .asymmetricEncryptionError("Signature operation failed: \(reason)")
+        
+      case let .invalidSignature(reason):
         return .asymmetricEncryptionError("Signature operation failed: \(reason)")
         
       case let .hashingFailed(algorithm, reason):
@@ -155,6 +158,9 @@ public enum CryptoErrorMapper {
         
       case let .internalError(message):
         return .encryptionError("Internal error: \(message)")
+        
+      @unknown default:
+        return .encryptionError("Unmapped crypto error: \(error)")
     }
   }
 }

@@ -134,20 +134,14 @@ public final class SecurityProviderAdapter: SecurityProvider {
   // MARK: - SecurityProvider implementation
 
   public func getHostIdentifier() async -> Result<String, SecurityError> {
-    // Use the performSecureOperation method with a specific operation
-    let config=bridge.createSecureConfig(options: ["operation": "getDeviceIdentifier"])
-
-    // Use a standard operation type since there's no .custom case
-    let result=await bridge.performSecureOperation(
-      operation: .keyRetrieval,
-      config: config
-    )
-
-    // Parse the result
-    if result.success, let hostId=result.data?.withUnsafeBytes({ Data($0) }) {
-      return .success(String(data: hostId, encoding: .utf8) ?? "unknown")
-    } else {
-      return .failure(SecurityInterfacesError.operationFailed("Failed to get host identifier"))
+    // Use the XPC service directly to get hardware identifier
+    let result = await service.getHardwareIdentifier()
+    
+    switch result {
+      case .success(let identifier):
+        return .success(identifier)
+      case .failure(let error):
+        return .failure(mapXPCError(error))
     }
   }
 
@@ -325,37 +319,31 @@ public final class SecurityProviderAdapter: SecurityProvider {
   }
 
   public func getSecurityConfiguration() async -> Result<SecurityConfiguration, SecurityError> {
-    do {
-      // Get service status
-      let result=await service.status()
-      switch result {
-        case let .success(statusDict):
-          // Extract the configuration data from the status dictionary
-          guard let configData=statusDict["configData"] as? Data else {
-            return .failure(
-              SecurityInterfacesError
-                .operationFailed("Configuration data not found in service status")
-            )
-          }
+    // Get service status
+    let result = await service.status()
+    
+    switch result {
+      case let .success(statusDict):
+        // Extract the configuration data from the status dictionary
+        guard let configData = statusDict["configData"] as? Data else {
+          return .failure(
+            SecurityInterfacesError
+              .operationFailed("Configuration data not found in service status")
+          )
+        }
 
-          // Decode the configuration
-          do {
-            let config=try JSONDecoder().decode(SecurityConfiguration.self, from: configData)
-            return .success(config)
-          } catch {
-            return .failure(
-              SecurityInterfacesError
-                .operationFailed("Invalid configuration format: \(error.localizedDescription)")
-            )
-          }
-        case let .failure(error):
-          return .failure(mapXPCError(error))
-      }
-    } catch {
-      return .failure(
-        SecurityInterfacesError
-          .operationFailed("Error getting security configuration: \(error.localizedDescription)")
-      )
+        // Decode the configuration with proper error handling
+        do {
+          let config = try JSONDecoder().decode(SecurityConfiguration.self, from: configData)
+          return .success(config)
+        } catch {
+          return .failure(
+            SecurityInterfacesError
+              .operationFailed("Invalid configuration format: \(error.localizedDescription)")
+          )
+        }
+      case let .failure(error):
+        return .failure(mapXPCError(error))
     }
   }
 
@@ -467,6 +455,15 @@ public final class SecurityProviderAdapter: SecurityProvider {
           .operationFailed("Failed to register for notifications")
       )
     }
+  }
+
+  // MARK: - Public Error Mapping
+
+  /// Maps a security protocol error to a security interface error
+  /// - Parameter error: The security protocol error to map
+  /// - Returns: A mapped security interface error
+  public func mapError(_ error: UmbraErrors.Security.Protocols) -> SecurityError {
+    return mapSPCError(error)
   }
 
   // Helper function to map string operation names to SecurityOperation cases

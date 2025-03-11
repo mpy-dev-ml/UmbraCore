@@ -2,90 +2,90 @@ import Foundation
 import UmbraXPC
 
 /// Service for managing security-scoped bookmarks
-@MainActor
 public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCListenerDelegate {
   /// Set of URLs currently being accessed
-  private var activeAccessURLs: Set<URL>=[]
-
-  /// Thread-safe access for connections outside the MainActor
-  /// Uses an actor to provide isolation without imposing MainActor requirements
-  private actor ConnectionsRegistry {
-    private var connections: [UUID: NSXPCConnection]=[:]
-
-    func store(_ id: UUID, connection: NSXPCConnection) {
-      connections[id]=connection
-    }
-
-    func retrieve(_ id: UUID) -> NSXPCConnection? {
-      let connection=connections[id]
-      connections.removeValue(forKey: id)
-      return connection
-    }
-
-    /// Process a connection with a handler while keeping it isolated within the actor
-    /// This avoids passing NSXPCConnection across actor boundaries
-    func processConnection(_ id: UUID, with handler: @Sendable (NSXPCConnection) -> Void) {
-      guard let connection=connections[id] else { return }
-      handler(connection)
-      connections.removeValue(forKey: id)
-    }
-  }
-
-  // The connections registry provides thread-safe access outside MainActor
-  private let connectionsRegistry=ConnectionsRegistry()
-
+  @MainActor
+  private var activeAccessURLs: Set<URL> = []
+  
+  // Thread-safe storage for connections
+  private let connectionLock = NSLock()
+  private var connections: [UUID: NSXPCConnection] = [:]
+  
   public override init() {
     super.init()
   }
-
+  
+  // Thread-safe methods for connection management
+  private func storeConnection(_ connection: NSXPCConnection, forId id: UUID) {
+    connectionLock.lock()
+    defer { connectionLock.unlock() }
+    connections[id] = connection
+  }
+  
+  private func getConnection(forId id: UUID) -> NSXPCConnection? {
+    connectionLock.lock()
+    defer { connectionLock.unlock() }
+    return connections[id]
+  }
+  
+  private func removeConnection(forId id: UUID) {
+    connectionLock.lock()
+    defer { connectionLock.unlock() }
+    connections.removeValue(forKey: id)
+  }
+  
+  // MARK: - Bookmark Management Methods
+  
+  @MainActor
   public func createBookmark(
     for url: URL,
-    options: URL.BookmarkCreationOptions=[.withSecurityScope]
+    options: URL.BookmarkCreationOptions = [.withSecurityScope]
   ) async throws -> Data {
-    guard url.isFileURL else {
-      throw BookmarkError.invalidBookmarkData
-    }
-
-    guard FileManager.default.fileExists(atPath: url.path) else {
-      throw BookmarkError.fileNotFound(url: url)
-    }
-
     do {
-      let bookmarkData=try url.bookmarkData(
+      // Create a security-scoped bookmark
+      let bookmarkData = try url.bookmarkData(
         options: options,
         includingResourceValuesForKeys: nil,
         relativeTo: nil
       )
       return bookmarkData
     } catch {
-      throw BookmarkError.bookmarkCreationFailed(url: url)
+      throw error
     }
   }
-
+  
+  @MainActor
   public func resolveBookmark(
     _ bookmarkData: Data,
-    options: URL.BookmarkResolutionOptions=[.withSecurityScope]
+    options: URL.BookmarkResolutionOptions = [.withSecurityScope]
   ) async throws -> (URL, Bool) {
+    var isStale = false
     do {
-      var isStale=false
-      let url=try URL(
+      // Resolve a security-scoped bookmark
+      let url = try URL(
         resolvingBookmarkData: bookmarkData,
         options: options,
         relativeTo: nil,
         bookmarkDataIsStale: &isStale
       )
-
-      // Ensure it's a file URL
-      guard url.isFileURL else {
-        throw BookmarkError.invalidBookmarkData
+      
+      // If the bookmark is stale, it should be recreated
+      if isStale {
+        // This would ideally recreate the bookmark, but for now we'll just throw
+        throw NSError(
+          domain: NSCocoaErrorDomain,
+          code: NSFileReadCorruptFileError,
+          userInfo: [NSLocalizedDescriptionKey: "Bookmark is stale and needs to be recreated"]
+        )
       }
-
+      
       return (url, isStale)
-    } catch let error as NSError {
-      throw BookmarkError.bookmarkResolutionFailed(error)
+    } catch {
+      throw error
     }
   }
-
+  
+  @MainActor
   public func startAccessing(_ url: URL) async throws {
     guard url.isFileURL else {
       throw BookmarkError.invalidBookmarkData
@@ -100,6 +100,7 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCList
     activeAccessURLs.insert(url)
   }
 
+  @MainActor
   public func stopAccessing(_ url: URL) async {
     guard url.isFileURL else { return }
 
@@ -109,56 +110,47 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCList
     }
   }
 
+  @MainActor
   public func isAccessing(_ url: URL) async -> Bool {
     activeAccessURLs.contains(url)
   }
-
+  
+  // MARK: - NSXPCListenerDelegate
+  
+  // This method must be nonisolated due to NSXPCListenerDelegate protocol requirements
   public nonisolated func listener(
     _: NSXPCListener,
     shouldAcceptNewConnection newConnection: NSXPCConnection
   ) -> Bool {
-    // Create a unique ID to track this connection
-    let connectionId=UUID()
-
-    // Configure the connection interface before storing it
-    // This can be done outside the MainActor
-    let exportedInterface=NSXPCInterface(with: BookmarkServiceProtocol.self)
-    newConnection.exportedInterface=exportedInterface
-
-    // Create a detached task to handle the connection safely
-    Task.detached {
-      // First store the connection in our thread-safe registry
-      await self.connectionsRegistry.store(connectionId, connection: newConnection)
-
-      // Then notify the MainActor that a connection is ready to be set up
-      // Using a separate method call avoids sending the NSXPCConnection directly
-      await MainActor.run {
-        // This is a synchronous call on the MainActor
-        self.prepareToSetupConnection(withId: connectionId)
+    // Configure the connection immediately
+    let exportedInterface = NSXPCInterface(with: BookmarkServiceProtocol.self)
+    newConnection.exportedInterface = exportedInterface
+    
+    // Generate a UUID to track this connection
+    let connectionId = UUID()
+    
+    // Set up connection handler for invalidation
+    newConnection.invalidationHandler = { [weak self] in
+      self?.removeConnection(forId: connectionId)
+    }
+    
+    // Store the connection safely
+    storeConnection(newConnection, forId: connectionId)
+    
+    // Schedule final setup on the main queue
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      
+      // Now we're on the main thread
+      Task { @MainActor in
+        if let connection = self.getConnection(forId: connectionId) {
+          // Configure the connection object
+          connection.exportedObject = self
+          connection.resume()
+        }
       }
     }
-
+    
     return true
-  }
-
-  // Initial setup method that runs on the MainActor but doesn't await anything
-  @MainActor
-  private func prepareToSetupConnection(withId id: UUID) {
-    // Create a task to handle the async part
-    Task {
-      await finaliseConnectionSetup(withId: id)
-    }
-  }
-
-  // Final setup method that can use async/await
-  @MainActor
-  private func finaliseConnectionSetup(withId id: UUID) async {
-    // Use the actor to process the connection directly without crossing actor boundaries
-    await connectionsRegistry.processConnection(id) { connection in
-      // These operations happen within the actor's context via the closure
-      // The NSXPCConnection doesn't cross actor boundaries
-      connection.exportedObject=self
-      connection.resume()
-    }
   }
 }

@@ -29,6 +29,8 @@ public enum SecurityInterfacesError: Error, Sendable {
   case accessError(String)
   /// Serialization or deserialization failed
   case serializationFailed(reason: String)
+  /// Encryption failed with reason
+  case encryptionFailed(reason: String)
   /// Wrapped UmbraErrors.Security.Core
   case wrapped(UmbraErrors.Security.Core)
 
@@ -58,6 +60,8 @@ public enum SecurityInterfacesError: Error, Sendable {
         "Security access error: \(message)"
       case let .serializationFailed(reason):
         "Serialization or deserialization failed: \(reason)"
+      case let .encryptionFailed(reason):
+        "Encryption failed: \(reason)"
       case let .wrapped(error):
         "Wrapped security error: \(error.localizedDescription)"
     }
@@ -74,7 +78,7 @@ public enum SecurityInterfacesError: Error, Sendable {
       case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
            .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
            .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError,
-           .serializationFailed:
+           .serializationFailed, .encryptionFailed:
         nil
     }
   }
@@ -90,3 +94,53 @@ extension SecurityInterfacesError {
 
 // For backward compatibility
 public typealias SecurityError=SecurityInterfacesError
+
+/// Map a SecurityProtocolsCore.SecurityError to a SecurityInterfacesError
+/// This function is used by tests to verify error mapping functionality
+/// - Parameter error: The original error from SecurityProtocolsCore
+/// - Returns: A mapped SecurityInterfacesError
+@available(*, deprecated, message: "Use SecurityProviderAdapter.mapError instead")
+public func mapSPCError(_ error: Error) -> Error {
+  if let protocolError = error as? UmbraErrors.Security.Protocols {
+    return mapFromProtocolError(protocolError)
+  }
+  
+  // Return a generic error if type doesn't match
+  return SecurityInterfacesError.operationFailed("Unknown error: \(error)")
+}
+
+/// Map a UmbraErrors.Security.Protocols error to a SecurityInterfacesError
+/// - Parameter error: The protocol error to map
+/// - Returns: A mapped SecurityInterfacesError
+private func mapFromProtocolError(_ error: UmbraErrors.Security.Protocols) -> SecurityInterfacesError {
+  switch error {
+    case let .invalidFormat(reason):
+      return .operationFailed("Invalid format: \(reason)")
+    case let .missingProtocolImplementation(name):
+      return .operationFailed("Missing protocol implementation: \(name)")
+    case let .unsupportedOperation(name):
+      return .operationFailed("Unsupported operation: \(name)")
+    case let .incompatibleVersion(version):
+      return .operationFailed("Incompatible version: \(version)")
+    case let .invalidState(current, expected):
+      return .operationFailed("Invalid state: current=\(current), expected=\(expected)")
+    case let .internalError(message):
+      return .operationFailed("Internal error: \(message)")
+    case let .invalidInput(reason):
+      return .operationFailed("Invalid input: \(reason)")
+    case let .encryptionFailed(reason):
+      return .encryptionFailed(reason: reason)
+    case let .decryptionFailed(reason):
+      return .operationFailed("Decryption failed: \(reason)")
+    case let .randomGenerationFailed(reason):
+      return .operationFailed("Random generation failed: \(reason)")
+    case let .storageOperationFailed(reason):
+      return .operationFailed("Storage operation failed: \(reason)")
+    case let .serviceError(reason):
+      return .operationFailed("Service error: \(reason)")
+    case let .notImplemented(feature):
+      return .operationFailed("Not implemented: \(feature)")
+    @unknown default:
+      return .operationFailed("Unknown security protocol error")
+  }
+}

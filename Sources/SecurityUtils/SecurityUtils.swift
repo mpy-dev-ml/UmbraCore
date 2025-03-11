@@ -2,7 +2,9 @@ import CommonCrypto
 import Foundation
 import Security
 import SecurityBridge
-import SecurityInterfaces
+// Comment out the regular import and use the @_exported import
+// import SecurityInterfaces
+@_exported import SecurityInterfaces
 import SecurityProtocolsCore
 import SecurityTypesTypes
 import UmbraCoreTypes

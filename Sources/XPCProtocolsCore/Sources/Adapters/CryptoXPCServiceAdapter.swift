@@ -22,7 +22,7 @@ import UmbraCoreTypes
 
 // Protocol that defines the minimum required functionality for a crypto service
 // This avoids direct dependency on SecurityProtocolsCore
-public protocol CryptoXPCServiceProtocol: AnyObject {
+public protocol CryptoXPCServiceProtocol: AnyObject, Sendable {
   /// Generate a cryptographic key with the specified number of bits
   func generateKey(bits: Int) async throws -> Data
 

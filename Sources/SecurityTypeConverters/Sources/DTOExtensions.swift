@@ -56,7 +56,7 @@ extension SecurityResultDTO {
 
   /// Create error-mapped CoreResult
   /// - Returns: Result type with error mapping
-  public func toCoreResult() -> Result<CoreTypesInterfaces.BinaryData?, CoreErrors.SecurityError> {
+  public func toCoreResult() -> Result<CoreTypesInterfaces.BinaryData?, UmbraErrors.Security.Core> {
     // Handle error case
     if let error {
       let mappedError=SecurityErrorMapper.toCoreError(error)
@@ -71,7 +71,7 @@ extension SecurityResultDTO {
   /// - Parameter transform: Transformation function for the result value
   /// - Returns: Result with mapped error and transformed value
   public func toCoreResult<T>(_ transform: (SecurityResultDTO) -> T?)
-  -> Result<T, CoreErrors.SecurityError> {
+  -> Result<T, UmbraErrors.Security.Core> {
     // Handle error case
     if let error {
       let mappedError=SecurityErrorMapper.toCoreError(error)
@@ -84,6 +84,6 @@ extension SecurityResultDTO {
     }
 
     // Default error case if transformation fails
-    return .failure(CoreErrors.SecurityError.internalError(reason: "Invalid data format"))
+    return .failure(UmbraErrors.Security.Core.internalError(reason: "Invalid data format"))
   }
 }

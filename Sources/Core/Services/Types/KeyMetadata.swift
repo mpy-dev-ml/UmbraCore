@@ -167,8 +167,8 @@ public struct KeyMetadata: Sendable, Codable {
 extension KeyMetadata {
     /// Raw representation that matches the canonical type's raw metadata
     public struct RawRepresentation: Sendable {
-        public var status: KeyStatus.RawRepresentation
-        public let storageLocation: StorageLocation.RawRepresentation
+        public var status: KeyManagementTypes.KeyStatus.RawRepresentation
+        public let storageLocation: KeyManagementTypes.StorageLocation.RawRepresentation
         public let accessControls: AccessControls
         public let createdAt: Date
         public var lastModified: Date
@@ -183,8 +183,8 @@ extension KeyMetadata {
         public var customMetadata: [String: String]?
         
         public init(
-            status: KeyStatus.RawRepresentation = .active,
-            storageLocation: StorageLocation.RawRepresentation,
+            status: KeyManagementTypes.KeyStatus.RawRepresentation = .active,
+            storageLocation: KeyManagementTypes.StorageLocation.RawRepresentation,
             accessControls: AccessControls = .none,
             createdAt: Date = Date(),
             lastModified: Date = Date(),
@@ -215,8 +215,8 @@ extension KeyMetadata {
         }
         
         public init(
-            status: KeyStatus.RawRepresentation = .active,
-            storageLocation: StorageLocation.RawRepresentation,
+            status: KeyManagementTypes.KeyStatus.RawRepresentation = .active,
+            storageLocation: KeyManagementTypes.StorageLocation.RawRepresentation,
             accessControls: AccessControls = .none,
             createdAtTimestamp: Int64,
             lastModifiedTimestamp: Int64,
@@ -277,8 +277,8 @@ extension KeyMetadata {
     /// - Returns: The equivalent legacy KeyMetadata
     public static func from(rawRepresentation: RawRepresentation) -> KeyMetadata {
         return KeyMetadata(
-            status: KeyStatus.from(rawRepresentation: rawRepresentation.status),
-            storageLocation: StorageLocation.from(rawRepresentation: rawRepresentation.storageLocation),
+            status: KeyManagementTypes.KeyStatus.from(rawRepresentation: rawRepresentation.status),
+            storageLocation: KeyManagementTypes.StorageLocation.from(rawRepresentation: rawRepresentation.storageLocation),
             accessControls: rawRepresentation.accessControls,
             createdAt: rawRepresentation.createdAt,
             lastModified: rawRepresentation.lastModified,

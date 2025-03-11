@@ -35,14 +35,14 @@ public struct ExternalError: Error, Equatable {
 ///
 /// - Parameter error: Any error from an external domain
 /// - Returns: The equivalent UmbraErrors.Security.Core
-public func mapExternalToCoreError(_ error: Error) -> UmbraErrors.Security.Core {
+public func mapExternalToCoreError(_ error: Error) -> CESecurityError {
   // If already the correct type, return as is
-  if let securityError=error as? UmbraErrors.Security.Core {
+  if let securityError=error as? CESecurityError {
     return securityError
   }
 
   // Otherwise map to an appropriate security error
-  return UmbraErrors.Security.Core.internalError(reason: "Mapped from \(String(describing: error))")
+  return CESecurityError.internalError(reason: "Mapped from \(String(describing: error))")
 }
 
 /// Maps from CoreErrors.SecurityError to an appropriate external error type
@@ -53,7 +53,7 @@ public func mapExternalToCoreError(_ error: Error) -> UmbraErrors.Security.Core 
 ///
 /// - Parameter error: A CoreErrors.SecurityError to convert
 /// - Returns: An appropriate error in the external domain
-public func mapCoreToExternalError(_ error: CoreErrors.SecurityError) -> Error {
+public func mapCoreToExternalError(_ error: CESecurityError) -> Error {
   CoreErrors.SecurityErrorMapper.mapFromCoreError(error)
 }
 
@@ -64,7 +64,7 @@ public func mapCoreToExternalError(_ error: CoreErrors.SecurityError) -> Error {
 ///
 /// - Parameter error: The SecureBytesError to convert
 /// - Returns: An equivalent CoreErrors.SecurityError
-public func mapSecureBytesToCoreError(_ error: SecureBytesError) -> CoreErrors.SecurityError {
+public func mapSecureBytesToCoreError(_ error: SecureBytesError) -> CESecurityError {
   CoreErrors.SecurityErrorMapper.mapToCoreError(error)
 }
 
@@ -76,7 +76,7 @@ public func mapSecureBytesToCoreError(_ error: SecureBytesError) -> CoreErrors.S
 /// - Parameter result: A Result with any Error type
 /// - Returns: A Result with CoreErrors.SecurityError
 public func mapToSecurityResult<T>(_ result: Result<T, Error>)
--> Result<T, CoreErrors.SecurityError> {
+-> Result<T, CESecurityError> {
   switch result {
     case let .success(value):
       .success(value)
@@ -88,16 +88,16 @@ public func mapToSecurityResult<T>(_ result: Result<T, Error>)
 /// Maps an external error to a CoreErrors.SecurityError
 /// - Parameter error: The external error to map
 /// - Returns: A CoreErrors.SecurityError
-public func externalErrorToCoreError(_ error: Error) -> CoreErrors.SecurityError {
-  if let securityError=error as? CoreErrors.SecurityError {
+public func externalErrorToCoreError(_ error: Error) -> CESecurityError {
+  if let securityError=error as? CESecurityError {
     return securityError
   }
 
   // Map based on error type
   if let externalError=error as? ExternalError {
-    return CoreErrors.SecurityError.internalError(reason: externalError.reason)
+    return CESecurityError.internalError(reason: externalError.reason)
   }
 
   // Default fallback
-  return CoreErrors.SecurityError.internalError(reason: error.localizedDescription)
+  return CESecurityError.internalError(reason: error.localizedDescription)
 }

@@ -204,7 +204,8 @@ public final class ComprehensiveErrorHandlingExample {
     // Simulate user selecting the first option
     if let firstOption=options.first {
       print("Selected: \(firstOption.title)")
-      firstOption.perform()
+      let recoverySuccessful = firstOption.perform()
+      print("Recovery action \(recoverySuccessful ? "succeeded" : "failed")")
     } else {
       print("No recovery options available")
     }

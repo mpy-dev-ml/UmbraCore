@@ -117,8 +117,8 @@ final class SecurityProviderAdapterTests: XCTestCase {
   /// Tests a basic encryption-decryption flow using the adapter
   func testPerformSecureOperation() async throws {
     // Arrange
-    let testData=SecureBytes(bytes: [1, 2, 3, 4, 5])
-    let testKey=SecureBytes(bytes: [10, 20, 30, 40, 50])
+    _ = SecureBytes(bytes: [1, 2, 3, 4, 5]) // Not used in this test
+    _ = SecureBytes(bytes: [10, 20, 30, 40, 50]) // Not used in this test
     let config=SecurityConfigDTO(
       algorithm: "AES-GCM",
       keySizeInBits: 256,

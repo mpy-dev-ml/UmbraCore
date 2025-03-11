@@ -27,8 +27,8 @@ public enum SecurityBridgeErrorMapper {
 
   /// Maps a security error to an XPC error type for transmission over XPC
   /// - Parameter error: The error to map
-  /// - Returns: An CoreErrors.XPCErrors.SecurityError representation of the error
-  public static func mapToXPCError(_ error: Error) -> CoreErrors.XPCErrors.SecurityError {
+  /// - Returns: An UmbraErrors.Security.XPC representation of the error
+  public static func mapToXPCError(_ error: Error) -> UmbraErrors.Security.XPC {
     // Use our canonical error mapper from CoreErrors
     CoreErrors.SecurityErrorMapper.mapToXPCError(error)
   }

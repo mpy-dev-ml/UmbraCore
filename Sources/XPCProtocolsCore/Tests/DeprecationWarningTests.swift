@@ -1,5 +1,5 @@
 import CoreErrors
-import SecurityInterfaces
+// import SecurityInterfaces  // Temporarily commented out to fix build issues
 import SecurityInterfacesBase
 import SecurityInterfacesProtocols
 import UmbraCoreTypes // Using SecureBytes from UmbraCoreTypes, not the standalone module
@@ -63,7 +63,7 @@ class DeprecationWarningTests: XCTestCase {
 
 /// Legacy service implementation that will trigger deprecation warnings
 @available(*, deprecated, message: "For testing purposes only")
-private class LegacyService: SecurityInterfaces.XPCServiceProtocol {
+private class LegacyService: SecurityInterfacesProtocols.XPCServiceProtocol {
   func encrypt(
     data: SecurityInterfacesProtocols
       .BinaryData

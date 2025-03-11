@@ -21,6 +21,23 @@ public protocol SecurityProviderFactory {
   /// Create a security provider using the default configuration
   /// - Returns: A new security provider instance
   func createDefaultSecurityProvider() -> any SecurityProtocolsCore.SecurityProviderProtocol
+
+  /// Static factory method to create a security provider
+  /// - Parameter type: The type of provider to create
+  /// - Returns: A new security provider
+  /// - Throws: Error if provider creation fails
+  static func createProvider(ofType type: String) throws -> any SecurityProvider
+}
+
+/// Static extension to allow using the protocol type directly
+extension SecurityProviderFactory where Self == StandardSecurityProviderFactory {
+  /// Static factory function for backward compatibility with tests
+  /// - Parameter type: The provider type to create
+  /// - Returns: A configured security provider
+  /// - Throws: Error if creation fails
+  public static func createProvider(ofType type: String) throws -> any SecurityProvider {
+    try StandardSecurityProviderFactory.createProvider(ofType: type)
+  }
 }
 
 /// Default implementation of the security provider factory
@@ -31,6 +48,26 @@ public protocol SecurityProviderFactory {
 )
 public class StandardSecurityProviderFactory: SecurityProviderFactory {
   public init() {}
+
+  /// Static factory method to create a security provider
+  /// - Parameter type: The type of provider to create
+  /// - Returns: A new security provider
+  /// - Throws: Error if provider creation fails
+  public static func createProvider(ofType type: String) throws -> any SecurityProvider {
+    let factory = StandardSecurityProviderFactory()
+    let defaultConfig = SecurityConfiguration(
+      securityLevel: .standard,
+      encryptionAlgorithm: "AES-256",
+      hashAlgorithm: "SHA-256",
+      options: nil
+    )
+    
+    let bridge = factory.createSecurityProvider(config: defaultConfig)
+    return SecurityProviderAdapter(
+      bridge: bridge,
+      service: DummyXPCService()
+    )
+  }
 
   public func createSecurityProvider(config: SecurityConfiguration) -> any SecurityProtocolsCore
   .SecurityProviderProtocol {

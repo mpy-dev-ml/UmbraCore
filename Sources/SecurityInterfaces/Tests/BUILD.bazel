@@ -5,9 +5,12 @@ swift_test(
     name = "SecurityProviderTests",
     srcs = ["SecurityProviderTests.swift"],
     deps = [
-        "//Sources/SecurityInterfaces",
+        "//Sources/SecurityInterfaces:SecurityInterfacesForTesting",
         "//Sources/SecurityInterfacesBase",
         "//Sources/SecurityProtocolsCore", 
         "//Sources/CoreErrors",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/XPCProtocolsCore",
     ],
 )
