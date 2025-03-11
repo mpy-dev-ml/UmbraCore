@@ -142,12 +142,15 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
     _ error: Error,
     recoveryOptions: [any RecoveryOption]
   ) async {
-    let domain: String=if let nsError=error as? NSError {
-      nsError.domain
-    } else if let customError=error as? any CustomStringConvertible {
-      String(describing: type(of: customError))
+    // Extract domain from error - Error objects are already bridged to NSError
+    // so casting is redundant in Swift
+    let domain: String
+    if let umbraError = error as? UmbraError {
+      domain = umbraError.domain
     } else {
-      "Unknown"
+      // Access NSError properties directly through the bridged Error
+      let nsError = error as NSError
+      domain = nsError.domain
     }
 
     let notification=ErrorNotification(

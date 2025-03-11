@@ -5,7 +5,7 @@ import UmbraLogging
 
 /// Central coordinating service for error notifications
 @MainActor
-public final class ErrorNotifier: @preconcurrency ErrorNotificationProtocol {
+public final class ErrorNotifier: ErrorNotificationProtocol {
   /// The shared instance
   public static let shared=ErrorNotifier()
 

@@ -1,7 +1,6 @@
 import CoreErrors
 import ErrorHandlingDomains
 import Foundation
-import SecurityInterfaces
 import UmbraCoreTypes
 import UmbraSecurity
 import XPCProtocolsCore
