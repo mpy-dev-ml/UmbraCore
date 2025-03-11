@@ -1,5 +1,4 @@
 import Foundation
-import LoggingWrapper
 import Security
 import UmbraLogging
 
@@ -21,12 +20,11 @@ import UmbraLogging
 /// ```
 public actor KeychainService {
   /// Logger instance for tracking operations.
-  private let logger=Logger.self
+  private let logger: LoggingProtocol
 
   /// Creates a new keychain service instance.
-  public init() {
-    // Ensure logger is configured
-    Logger.configure()
+  public init(logger: LoggingProtocol) {
+    self.logger = logger
   }
 
   /// Adds a new item to the keychain.
@@ -57,7 +55,7 @@ public actor KeychainService {
     let status=SecItemAdd(query as CFDictionary, nil)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      logger.error("Failed to add keychain item", metadata: [
+      let metadata = LogMetadata([
         "error": String(describing: error),
         "status": String(status),
         "operation": "addItem",
@@ -65,15 +63,17 @@ public actor KeychainService {
         "service": service,
         "accessGroup": accessGroup ?? "none"
       ])
+      await logger.error("Failed to add keychain item", metadata: metadata)
       throw error
     }
 
-    logger.info("Successfully added keychain item", metadata: [
+    let metadata = LogMetadata([
       "operation": "addItem",
       "account": account,
       "service": service,
       "accessGroup": accessGroup ?? "none"
     ])
+    await logger.info("Successfully added keychain item", metadata: metadata)
   }
 
   /// Updates an existing item in the keychain.
@@ -107,7 +107,7 @@ public actor KeychainService {
     let status=SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      logger.error("Failed to update keychain item", metadata: [
+      let metadata = LogMetadata([
         "error": String(describing: error),
         "status": String(status),
         "operation": "updateItem",
@@ -115,15 +115,17 @@ public actor KeychainService {
         "service": service,
         "accessGroup": accessGroup ?? "none"
       ])
+      await logger.error("Failed to update keychain item", metadata: metadata)
       throw error
     }
 
-    logger.info("Successfully updated keychain item", metadata: [
+    let metadata = LogMetadata([
       "operation": "updateItem",
       "account": account,
       "service": service,
       "accessGroup": accessGroup ?? "none"
     ])
+    await logger.info("Successfully updated keychain item", metadata: metadata)
   }
 
   /// Removes an item from the keychain.
@@ -151,7 +153,7 @@ public actor KeychainService {
     let status=SecItemDelete(query as CFDictionary)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      logger.error("Failed to remove keychain item", metadata: [
+      let metadata = LogMetadata([
         "error": String(describing: error),
         "status": String(status),
         "operation": "removeItem",
@@ -159,15 +161,17 @@ public actor KeychainService {
         "service": service,
         "accessGroup": accessGroup ?? "none"
       ])
+      await logger.error("Failed to remove keychain item", metadata: metadata)
       throw error
     }
 
-    logger.info("Successfully removed keychain item", metadata: [
+    let metadata = LogMetadata([
       "operation": "removeItem",
       "account": account,
       "service": service,
       "accessGroup": accessGroup ?? "none"
     ])
+    await logger.info("Successfully removed keychain item", metadata: metadata)
   }
 
   /// Checks if an item exists in the keychain.
@@ -196,13 +200,12 @@ public actor KeychainService {
 
     let status=SecItemCopyMatching(query as CFDictionary, nil)
     switch status {
-      case errSecSuccess:
-        return true
-      case errSecItemNotFound:
-        return false
+      case errSecSuccess, errSecItemNotFound:
+        // Item exists if errSecSuccess, doesn't exist if errSecItemNotFound
+        return status == errSecSuccess
       default:
         let error=convertError(status)
-        logger.error("Failed to check keychain item existence", metadata: [
+        let metadata = LogMetadata([
           "error": String(describing: error),
           "status": String(status),
           "operation": "containsItem",
@@ -210,6 +213,7 @@ public actor KeychainService {
           "service": service,
           "accessGroup": accessGroup ?? "none"
         ])
+        await logger.error("Failed to check keychain item existence", metadata: metadata)
         throw error
     }
   }
@@ -242,7 +246,7 @@ public actor KeychainService {
     let status=SecItemCopyMatching(query as CFDictionary, &result)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      logger.error("Failed to retrieve keychain item", metadata: [
+      let metadata = LogMetadata([
         "error": String(describing: error),
         "status": String(status),
         "operation": "retrieveItem",
@@ -250,27 +254,29 @@ public actor KeychainService {
         "service": service,
         "accessGroup": accessGroup ?? "none"
       ])
+      await logger.error("Failed to retrieve keychain item", metadata: metadata)
       throw error
     }
 
     guard let data=result as? Data else {
-      logger.error("Retrieved keychain item is not Data", metadata: [
+      let metadata = LogMetadata([
         "operation": "retrieveItem",
         "account": account,
         "service": service,
         "accessGroup": accessGroup ?? "none",
         "resultType": String(describing: type(of: result))
       ])
+      await logger.error("Retrieved keychain item is not Data", metadata: metadata)
       throw KeychainError.unexpectedData
     }
 
-    logger.info("Successfully retrieved keychain item", metadata: [
+    let metadata = LogMetadata([
       "operation": "retrieveItem",
       "account": account,
       "service": service,
       "accessGroup": accessGroup ?? "none"
     ])
-
+    await logger.info("Successfully retrieved keychain item", metadata: metadata)
     return data
   }
 

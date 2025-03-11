@@ -129,7 +129,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
   private let accessGroup: String?
 
   /// Logger instance for keychain operations
-  private let logger: Logger
+  private let logger: LoggingProtocol
 
   /// Initialize a new keychain service instance
   /// - Parameters:
@@ -139,7 +139,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
   public init(
     identifier: String,
     accessGroup: String?=nil,
-    logger: Logger=Logger.shared
+    logger: LoggingProtocol
   ) {
     self.identifier=identifier
     self.accessGroup=accessGroup

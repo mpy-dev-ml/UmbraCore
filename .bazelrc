@@ -80,3 +80,16 @@ build:debug --swiftcopt=-DDEBUG
 
 build:release -c opt
 build:release --workspace_status_command=tools/workspace_status.sh
+
+# Production-only build configuration (skips tests)
+build:prodonly --compilation_mode=opt
+build:prodonly --build_tests_only=false
+# Add manual tag to tests by default so we can control when they're built
+build:prodonly --build_tag_filters=-test,-tests
+
+# Test-focused configuration for targeted test runs
+build:withtests --compilation_mode=dbg
+build:withtests --build_tests_only=true
+build:withtests --test_output=errors
+build:withtests --flaky_test_attempts=3
+build:withtests --keep_going
