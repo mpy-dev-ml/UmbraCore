@@ -12,3 +12,4 @@ import UmbraCoreTypes
 import XPCProtocolsCore
 @_exported import SecurityInterfacesProtocols
 @_exported import ErrorHandlingDomains
+@_exported import ErrorHandling

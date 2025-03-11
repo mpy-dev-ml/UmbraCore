@@ -1,42 +1,6 @@
 import CoreTypesInterfaces
 import Foundation
 
-/// Represents various security operations that can be performed
-public enum SecurityOperation {
-  case encrypt
-  case decrypt
-  case sign
-  case verify
-  case hash
-  case keyGeneration
-  case keyRotation
-  case keyDeletion
-  case custom(String)
-
-  public var rawValue: String {
-    switch self {
-      case .encrypt:
-        "encrypt"
-      case .decrypt:
-        "decrypt"
-      case .sign:
-        "sign"
-      case .verify:
-        "verify"
-      case .hash:
-        "hash"
-      case .keyGeneration:
-        "keyGeneration"
-      case .keyRotation:
-        "keyRotation"
-      case .keyDeletion:
-        "keyDeletion"
-      case let .custom(value):
-        value
-    }
-  }
-}
-
 /// Result of a security operation
 public struct SecurityResult {
   /// Whether the operation was successful

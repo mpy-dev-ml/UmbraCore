@@ -1,3 +1,4 @@
+import ErrorHandling
 import ErrorHandlingDomains
 import SecurityInterfacesBase
 import UmbraCoreTypes /// Errors that can occur during security operations
@@ -28,8 +29,8 @@ public enum SecurityInterfacesError: Error, Sendable {
   case accessError(String)
   /// Serialization or deserialization failed
   case serializationFailed(reason: String)
-  /// Wrapped SecurityInterfacesBase.SecurityError
-  case wrapped(SecurityInterfacesBase.SecurityError)
+  /// Wrapped UmbraErrors.Security.Core
+  case wrapped(UmbraErrors.Security.Core)
 
   public var errorDescription: String? {
     switch self {
@@ -62,14 +63,14 @@ public enum SecurityInterfacesError: Error, Sendable {
     }
   }
 
-  public init(from baseError: SecurityInterfacesBase.SecurityError) {
-    self = .wrapped(baseError)
+  public init(from coreError: UmbraErrors.Security.Core) {
+    self = .wrapped(coreError)
   }
 
-  public func toBaseError() -> SecurityInterfacesBase.SecurityError? {
+  public func toCoreError() -> UmbraErrors.Security.Core? {
     switch self {
-      case let .wrapped(baseError):
-        baseError
+      case let .wrapped(coreError):
+        coreError
       case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
            .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
            .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError, .serializationFailed:
