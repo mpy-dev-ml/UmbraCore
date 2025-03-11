@@ -30,7 +30,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock encryption failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock encryption failed"]
         )
       )
     } else {
@@ -57,7 +58,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock decryption failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock decryption failed"]
         )
       )
     } else {
@@ -84,7 +86,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock key generation failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock key generation failed"]
         )
       )
     } else {
@@ -113,7 +116,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock random data generation failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock random data generation failed"]
         )
       )
     } else {
@@ -123,7 +127,10 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
     }
   }
 
-  func generateRandomDataXPC(_ length: Int, completion: @escaping (Data?, NSNumber?, String?) -> Void) {
+  func generateRandomDataXPC(
+    _ length: Int,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  ) {
     methodCalls.append("generateRandomDataXPC")
 
     if shouldFail {
@@ -134,17 +141,22 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(randomDataToReturn ?? defaultRandomData, nil, nil)
     }
   }
-  
+
   // MARK: - Hash functions
 
-  func calculateHash(data: Data, algorithm: String, completion: @escaping (Data?, Error?) -> Void) {
+  func calculateHash(
+    data _: Data,
+    algorithm: String,
+    completion: @escaping (Data?, Error?) -> Void
+  ) {
     methodCalls.append("calculateHash(\(algorithm))")
 
     if shouldFail {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock hash calculation failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock hash calculation failed"]
         )
       )
     } else {
@@ -155,9 +167,9 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
   }
 
   func calculateHashXPC(
-    _ data: Data,
+    _: Data,
     algorithm: String,
-    optionsJson: String,
+    optionsJson _: String,
     completion: @escaping (Data?, NSNumber?, String?) -> Void
   ) {
     methodCalls.append("calculateHashXPC(\(algorithm))")
@@ -170,11 +182,11 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(hashDataToReturn ?? defaultHashData, nil, nil)
     }
   }
-  
+
   // MARK: - Key management methods
 
   func storeSecurely(
-    _ credential: Data,
+    _: Data,
     identifier: String,
     completion: @escaping (Error?) -> Void
   ) {
@@ -183,7 +195,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
     if shouldFail {
       completion(
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock credential storage failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock credential storage failed"]
         )
       )
     } else {
@@ -192,7 +205,7 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
   }
 
   func storeSecurelyXPC(
-    _ credential: Data,
+    _: Data,
     identifier: String,
     completion: @escaping (NSNumber?, String?) -> Void
   ) {
@@ -212,7 +225,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock credential retrieval failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock credential retrieval failed"]
         )
       )
     } else {
@@ -244,7 +258,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock key listing failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock key listing failed"]
         )
       )
     } else {
@@ -265,11 +280,11 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(keyListResponse ?? defaultKeys, nil, nil)
     }
   }
-  
+
   // MARK: - Digital signature methods
 
   func signData(
-    _ data: Data,
+    _: Data,
     algorithm: String,
     completion: @escaping (Data?, Error?) -> Void
   ) {
@@ -279,7 +294,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(
         nil,
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock signing failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock signing failed"]
         )
       )
     } else {
@@ -290,7 +306,7 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
   }
 
   func signDataXPC(
-    _ data: Data,
+    _: Data,
     algorithm: String,
     completion: @escaping (Data?, NSNumber?, String?) -> Void
   ) {
@@ -306,8 +322,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
   }
 
   func verifySignature(
-    _ signature: Data,
-    forData data: Data,
+    _: Data,
+    forData _: Data,
     algorithm: String,
     completion: @escaping (Bool, Error?) -> Void
   ) {
@@ -317,7 +333,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(
         false,
         errorToThrow ?? NSError(
-          domain: "MockSecurityError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Mock verification failed"]
+          domain: "MockSecurityError", code: 500,
+          userInfo: [NSLocalizedDescriptionKey: "Mock verification failed"]
         )
       )
     } else {
@@ -327,8 +344,8 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
   }
 
   func verifySignatureXPC(
-    _ signature: Data,
-    forData data: Data,
+    _: Data,
+    forData _: Data,
     algorithm: String,
     completion: @escaping (NSNumber?, NSNumber?, String?) -> Void
   ) {
@@ -341,17 +358,17 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(NSNumber(value: verificationResult ? 1 : 0), nil, nil)
     }
   }
-  
+
   // MARK: - XPC-specific methods
-  
+
   func hashDataXPC(
-    data: Data,
+    data _: Data,
     algorithm: String,
-    optionsJson: String,
+    optionsJson _: String,
     completion: @escaping (Data?, NSNumber?, String?) -> Void
   ) {
     methodCalls.append("hashDataXPC(\(algorithm))")
-    
+
     if shouldFail {
       completion(nil, NSNumber(value: 500), "Mock hashing failed")
     } else {
@@ -359,19 +376,19 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(hashDataToReturn ?? Data([0xA1, 0xB2, 0xC3]), nil, nil)
     }
   }
-  
+
   func encryptSymmetricXPC(
     data: Data,
-    key: Data,
+    key _: Data,
     algorithm: String,
-    keySizeInBits: Int,
-    iv: Data?,
-    aad: Data?,
-    optionsJson: String,
+    keySizeInBits _: Int,
+    iv _: Data?,
+    aad _: Data?,
+    optionsJson _: String,
     completion: @escaping (Data?, NSNumber?, String?) -> Void
   ) {
     methodCalls.append("encryptSymmetricXPC(\(algorithm))")
-    
+
     if shouldFail {
       completion(nil, NSNumber(value: 500), "Mock encryption failed")
     } else {
@@ -379,19 +396,19 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(encryptedDataToReturn ?? data, nil, nil)
     }
   }
-  
+
   func decryptSymmetricXPC(
     data: Data,
-    key: Data,
+    key _: Data,
     algorithm: String,
-    keySizeInBits: Int,
-    iv: Data?,
-    aad: Data?,
-    optionsJson: String,
+    keySizeInBits _: Int,
+    iv _: Data?,
+    aad _: Data?,
+    optionsJson _: String,
     completion: @escaping (Data?, NSNumber?, String?) -> Void
   ) {
     methodCalls.append("decryptSymmetricXPC(\(algorithm))")
-    
+
     if shouldFail {
       completion(nil, NSNumber(value: 500), "Mock decryption failed")
     } else {
@@ -399,17 +416,17 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(decryptedDataToReturn ?? data, nil, nil)
     }
   }
-  
+
   func encryptAsymmetricXPC(
     data: Data,
-    publicKey: Data,
+    publicKey _: Data,
     algorithm: String,
-    keySizeInBits: Int,
-    optionsJson: String,
+    keySizeInBits _: Int,
+    optionsJson _: String,
     completion: @escaping (Data?, NSNumber?, String?) -> Void
   ) {
     methodCalls.append("encryptAsymmetricXPC(\(algorithm))")
-    
+
     if shouldFail {
       completion(nil, NSNumber(value: 500), "Mock asymmetric encryption failed")
     } else {
@@ -417,17 +434,17 @@ final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {
       completion(encryptedDataToReturn ?? data, nil, nil)
     }
   }
-  
+
   func decryptAsymmetricXPC(
     data: Data,
-    privateKey: Data,
+    privateKey _: Data,
     algorithm: String,
-    keySizeInBits: Int,
-    optionsJson: String,
+    keySizeInBits _: Int,
+    optionsJson _: String,
     completion: @escaping (Data?, NSNumber?, String?) -> Void
   ) {
     methodCalls.append("decryptAsymmetricXPC(\(algorithm))")
-    
+
     if shouldFail {
       completion(nil, NSNumber(value: 500), "Mock asymmetric decryption failed")
     } else {

@@ -114,31 +114,31 @@ public final class RecoveryManager: RecoveryOptionsProvider, Sendable {
   /// The shared instance
   @MainActor
   public static let shared=RecoveryManager()
-  
+
   /// Debug mode flag
-  private let verbose = false
-  
+  private let verbose=false
+
   /// Dictionary of domain-specific recovery providers
   /// Using actor isolation to ensure thread safety
   @MainActor
-  private var domainProviders: [String: DomainRecoveryProvider] = [:]
-  
+  private var domainProviders: [String: DomainRecoveryProvider]=[:]
+
   /// Create a new recovery manager
   @MainActor
   public init() {
     // Initialize the recovery manager
     registerDefaultProviders()
   }
-  
+
   /// Register a recovery provider for a specific error domain
   /// - Parameters:
   ///   - provider: The provider to register
   ///   - domain: The error domain to register for
   @MainActor
   public func register(provider: DomainRecoveryProvider, for domain: String) {
-    domainProviders[domain] = provider
+    domainProviders[domain]=provider
   }
-  
+
   /// Register the default providers
   @MainActor
   private func registerDefaultProviders() {
@@ -146,44 +146,44 @@ public final class RecoveryManager: RecoveryOptionsProvider, Sendable {
     register(provider: SecurityDomainProvider(), for: "Security")
     register(provider: NetworkDomainProvider(), for: "Network")
     register(provider: FilesystemDomainProvider(), for: "Filesystem")
-    register(provider: UserDomainProvider(), for: "User") 
+    register(provider: UserDomainProvider(), for: "User")
   }
-  
+
   /// Provides recovery options for the specified error
   /// - Parameter error: The error to get recovery options for
   /// - Returns: Array of recovery options
   @MainActor
   public func recoveryOptions(for error: Error) async -> [RecoveryOption] {
     // Get the error domain
-    let domain = String(describing: type(of: error))
-    
+    let domain=String(describing: type(of: error))
+
     // Print debug information if enabled
     if verbose {
       print("Finding recovery options for error: \(error) in domain: \(domain)")
     }
-    
+
     // Look for a provider for this error domain
-    if let provider = domainProviders[domain] {
+    if let provider=domainProviders[domain] {
       if verbose {
         print("Using provider: \(type(of: provider)) for domain: \(domain)")
       }
-      
+
       // Get options from the provider
       return provider.recoveryOptions(for: error)
     }
-    
+
     // Fallback to default options if no provider handled it
     return createDefaultRecoveryOptions(for: error)
   }
-  
+
   /// Provides default recovery options for common error types
   /// - Parameter error: The error to get recovery options for
   /// - Returns: Array of default recovery options
   @MainActor
-  private func createDefaultRecoveryOptions(for error: Error) -> [RecoveryOption] {
+  private func createDefaultRecoveryOptions(for _: Error) -> [RecoveryOption] {
     // Create default options based on the error type
-    var options: [RecoveryOption] = []
-    
+    var options: [RecoveryOption]=[]
+
     // Add retry option
     options.append(
       ErrorRecoveryOption(
@@ -191,12 +191,12 @@ public final class RecoveryManager: RecoveryOptionsProvider, Sendable {
         description: "Attempt the operation again",
         successLikelihood: .medium,
         isDisruptive: false,
-        recoveryAction: { 
+        recoveryAction: {
           // No-op for default option, would be overridden by caller
         }
       )
     )
-    
+
     // Add cancel option
     options.append(
       ErrorRecoveryOption(
@@ -209,7 +209,7 @@ public final class RecoveryManager: RecoveryOptionsProvider, Sendable {
         }
       )
     )
-    
+
     return options
   }
 }
@@ -220,7 +220,7 @@ public protocol DomainRecoveryProvider {
   /// - Parameter domain: The error domain
   /// - Returns: True if this provider can handle errors in this domain
   func canHandle(domain: String) -> Bool
-  
+
   /// Gets recovery options for an error
   /// - Parameter error: The error to get recovery options for
   /// - Returns: Array of recovery options
@@ -230,47 +230,47 @@ public protocol DomainRecoveryProvider {
 /// Basic implementation of domain recovery provider
 public struct SecurityDomainProvider: DomainRecoveryProvider {
   public func canHandle(domain: String) -> Bool {
-    return domain.contains("Security")
+    domain.contains("Security")
   }
-  
-  public func recoveryOptions(for error: Error) -> [RecoveryOption] {
+
+  public func recoveryOptions(for _: Error) -> [RecoveryOption] {
     // Security-specific recovery options
-    return []
+    []
   }
 }
 
 /// Network domain recovery provider
 public struct NetworkDomainProvider: DomainRecoveryProvider {
   public func canHandle(domain: String) -> Bool {
-    return domain.contains("Network")
+    domain.contains("Network")
   }
-  
-  public func recoveryOptions(for error: Error) -> [RecoveryOption] {
+
+  public func recoveryOptions(for _: Error) -> [RecoveryOption] {
     // Network-specific recovery options
-    return []
+    []
   }
 }
 
 /// Filesystem domain recovery provider
 public struct FilesystemDomainProvider: DomainRecoveryProvider {
   public func canHandle(domain: String) -> Bool {
-    return domain.contains("File") || domain.contains("Directory")
+    domain.contains("File") || domain.contains("Directory")
   }
-  
-  public func recoveryOptions(for error: Error) -> [RecoveryOption] {
+
+  public func recoveryOptions(for _: Error) -> [RecoveryOption] {
     // Filesystem-specific recovery options
-    return []
+    []
   }
 }
 
 /// User interaction domain recovery provider
 public struct UserDomainProvider: DomainRecoveryProvider {
   public func canHandle(domain: String) -> Bool {
-    return domain.contains("User") || domain.contains("Input")
+    domain.contains("User") || domain.contains("Input")
   }
-  
-  public func recoveryOptions(for error: Error) -> [RecoveryOption] {
+
+  public func recoveryOptions(for _: Error) -> [RecoveryOption] {
     // User-specific recovery options
-    return []
+    []
   }
 }

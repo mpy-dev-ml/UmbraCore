@@ -144,22 +144,22 @@ final class SecurityProviderTests: XCTestCase {
 
     // Verify hashing was successful
     switch result {
-    case .success(let hash):
-      // Verify hash has correct length for SHA-256 (32 bytes)
-      XCTAssertEqual(hash.count, 32, "SHA-256 hash should be 32 bytes")
+      case let .success(hash):
+        // Verify hash has correct length for SHA-256 (32 bytes)
+        XCTAssertEqual(hash.count, 32, "SHA-256 hash should be 32 bytes")
 
-      // Verify same data produces same hash
-      let repeatResult=await cryptoService.hash(data: data, config: config)
+        // Verify same data produces same hash
+        let repeatResult=await cryptoService.hash(data: data, config: config)
 
-      switch repeatResult {
-      case .success(let repeatHash):
-        // Verify hash consistency
-        XCTAssertEqual(hash, repeatHash, "Hash should be consistent for the same input")
-      case .failure(let error):
-        XCTFail("Repeat hashing failed with error: \(error)")
-      }
-    case .failure(let error):
-      XCTFail("Hashing failed with error: \(error)")
+        switch repeatResult {
+          case let .success(repeatHash):
+            // Verify hash consistency
+            XCTAssertEqual(hash, repeatHash, "Hash should be consistent for the same input")
+          case let .failure(error):
+            XCTFail("Repeat hashing failed with error: \(error)")
+        }
+      case let .failure(error):
+        XCTFail("Hashing failed with error: \(error)")
     }
   }
 
@@ -188,7 +188,10 @@ final class SecurityProviderTests: XCTestCase {
       )
 
       XCTAssertFalse(result.success, "Operation \(operation) should report as unsupported")
-      XCTAssertNotNil(result.errorMessage, "Error message should be provided for unsupported operation \(operation)")
+      XCTAssertNotNil(
+        result.errorMessage,
+        "Error message should be provided for unsupported operation \(operation)"
+      )
     }
   }
 }

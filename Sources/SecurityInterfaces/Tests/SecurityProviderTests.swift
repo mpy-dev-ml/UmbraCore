@@ -29,8 +29,9 @@ class SecurityProviderTests: XCTestCase {
 
     // Test encrypt operation
     let result=try await provider.performSecurityOperation(
-      operation: .encrypt,
-      parameters: parameters
+      operation: SecurityProtocolsCore.SecurityOperation.symmetricEncryption,
+      data: Data("Test data".utf8),
+      parameters: ["key": "test-key", "algorithm": "AES-256"]
     )
 
     // Verify result
@@ -87,11 +88,9 @@ class SecurityProviderTests: XCTestCase {
 
     // Test passing complex operation to ensure cross-module types work
     let result=try await adapter.performSecurityOperation(
-      operation: .encrypt,
-      parameters: [
-        "data": Data("Test".utf8),
-        "key": "test-key"
-      ]
+      operation: SecurityProtocolsCore.SecurityOperation.symmetricEncryption,
+      data: Data("Test data".utf8),
+      parameters: ["key": "test-key", "algorithm": "AES-256"]
     )
 
     XCTAssertTrue(result.success)
@@ -122,8 +121,9 @@ class SecurityProviderTests: XCTestCase {
 
     // Call the security operation with the renamed method
     let result=try await provider.performSecurityOperation(
-      operation: .encrypt,
-      parameters: parameters
+      operation: SecurityProtocolsCore.SecurityOperation.symmetricEncryption,
+      data: Data("Test data".utf8),
+      parameters: ["key": "test-key", "algorithm": "AES-256"]
     )
 
     XCTAssertTrue(result.success)

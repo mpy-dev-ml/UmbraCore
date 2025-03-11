@@ -9,9 +9,9 @@ typealias SPCSecurityError=UmbraErrors.Security.Protocols
 
 // Key Management Error enum for internal error handling
 private enum KMError: Error {
-    case keyNotFound
-    case keyStorageFailed(reason: String)
-    case keyRotationFailed(reason: String)
+  case keyNotFound
+  case keyStorageFailed(reason: String)
+  case keyRotationFailed(reason: String)
 }
 
 /// KeyManagementAdapter provides a bridge between Foundation-based key management implementations
@@ -58,8 +58,8 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
       case .success:
         return .success(())
       case let .failure(error):
-        let message = error.localizedDescription
-        let kmError = KMError.keyStorageFailed(reason: message)
+        let message=error.localizedDescription
+        let kmError=KMError.keyStorageFailed(reason: message)
         return .failure(mapError(kmError))
     }
   }

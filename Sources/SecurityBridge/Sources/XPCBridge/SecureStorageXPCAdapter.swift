@@ -14,72 +14,72 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
 
   /// The NSXPCConnection used to communicate with the XPC service
   public let connection: NSXPCConnection
-  
+
   /// The proxy for making XPC calls
   private let serviceProxy: any SecureStorageServiceProtocol
-  
+
   // MARK: - Initialisation
 
   /// Initialise with an XPC connection and service interface protocol type
   ///
   /// - Parameter connection: The NSXPCConnection to use for communicating with the XPC service
   public init(connection: NSXPCConnection) {
-    self.connection = connection
-    let protocolObj = SecureStorageServiceProtocol.self as Any as! Protocol
-    connection.remoteObjectInterface = NSXPCInterface(with: protocolObj)
-    
+    self.connection=connection
+    let protocolObj=SecureStorageServiceProtocol.self as Any as! Protocol
+    connection.remoteObjectInterface=NSXPCInterface(with: protocolObj)
+
     // Set the exported interface
-    let exportedProtocolObj = XPCServiceProtocolBasic.self as Any as! Protocol
-    let exportedInterface = NSXPCInterface(with: exportedProtocolObj)
-    connection.exportedInterface = exportedInterface
-    
+    let exportedProtocolObj=XPCServiceProtocolBasic.self as Any as! Protocol
+    let exportedInterface=NSXPCInterface(with: exportedProtocolObj)
+    connection.exportedInterface=exportedInterface
+
     // Resume the connection
     connection.resume()
-    
+
     // Get the remote object proxy
-    self.serviceProxy = connection.remoteObjectProxy as! any SecureStorageServiceProtocol
-    
+    serviceProxy=connection.remoteObjectProxy as! any SecureStorageServiceProtocol
+
     super.init()
-    
+
     // Set up invalidation handler
     setupInvalidationHandler()
   }
-  
+
   /// Convert NSData to SecureBytes
   public func convertNSDataToSecureBytes(_ data: NSData) -> SecureBytes {
-    let length = data.length
-    var bytes = [UInt8](repeating: 0, count: length)
+    let length=data.length
+    var bytes=[UInt8](repeating: 0, count: length)
     data.getBytes(&bytes, length: length)
     return SecureBytes(bytes: bytes)
   }
-  
+
   /// Convert SecureBytes to NSData
   public func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
-    let bytes = Array(secureBytes)
+    let bytes=Array(secureBytes)
     return NSData(bytes: bytes, length: bytes.count)
   }
-  
+
   /// Convert NSData to SecureBytes
   public func convertToSecureBytes(_ data: NSData) -> SecureBytes {
-    return convertNSDataToSecureBytes(data)
+    convertNSDataToSecureBytes(data)
   }
-  
+
   /// Check if the service is available
   public func isServiceAvailable() async -> Bool {
-    let result = await listDataIdentifiers()
+    let result=await listDataIdentifiers()
     switch result {
-    case .success:
-      return true
-    case .failure:
-      return false
+      case .success:
+        return true
+      case .failure:
+        return false
     }
   }
-  
+
   // MARK: - Invalidation Handling
-  
+
   /// Handler called when the XPC connection is invalidated
   public var invalidationHandler: (() -> Void)?
-  
+
   // MARK: - Helpers
 
   /// Handle a continuation with a standard success/failure pattern
@@ -105,7 +105,7 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
         ))
     }
   }
-  
+
   /// Map security errors to UmbraErrors
   public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
     // Check for known error domains and codes
@@ -114,35 +114,38 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
     } else if error.domain == "SecureStorageErrorDomain" {
       // Map specific storage error codes to appropriate UmbraErrors
       switch error.code {
-      case 1001:
-        return .insufficientPrivileges(service: "SecureStorage", requiredPrivilege: "read")
-      case 1002:
-        return .serviceError(code: error.code, reason: error.userInfo["identifier"] as? String ?? "unknown")
-      case 1003:
-        return .serviceError(code: error.code, reason: error.localizedDescription)
-      case 1004:
-        return .serviceError(code: error.code, reason: error.localizedDescription)
-      case 1005:
-        return .serviceError(code: error.code, reason: error.localizedDescription)
-      default:
-        return .internalError(error.localizedDescription)
+        case 1001:
+          return .insufficientPrivileges(service: "SecureStorage", requiredPrivilege: "read")
+        case 1002:
+          return .serviceError(
+            code: error.code,
+            reason: error.userInfo["identifier"] as? String ?? "unknown"
+          )
+        case 1003:
+          return .serviceError(code: error.code, reason: error.localizedDescription)
+        case 1004:
+          return .serviceError(code: error.code, reason: error.localizedDescription)
+        case 1005:
+          return .serviceError(code: error.code, reason: error.localizedDescription)
+        default:
+          return .internalError(error.localizedDescription)
       }
     }
-    
+
     // Default error mapping
     return .internalError(error.localizedDescription)
   }
-  
+
   /// Setup invalidation handler for the XPC connection
   public func setupInvalidationHandler() {
-    connection.invalidationHandler = { [weak self] in
-      guard let self = self else { return }
-      
+    connection.invalidationHandler={ [weak self] in
+      guard let self else { return }
+
       // Log the invalidation
       print("XPC connection invalidated for SecureStorageXPCAdapter")
-      
+
       // Call the custom invalidation handler if set
-      self.invalidationHandler?()
+      invalidationHandler?()
     }
   }
 }
@@ -150,17 +153,21 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
 // MARK: - SecureStorageServiceProtocol Conformance
 
 extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
-  public func storeData(_ data: UmbraCoreTypes.SecureBytes, identifier: String, metadata: [String: String]?) async -> Result<Void, XPCSecurityError> {
+  public func storeData(
+    _ data: UmbraCoreTypes.SecureBytes,
+    identifier: String,
+    metadata: [String: String]?
+  ) async -> Result<Void, XPCSecurityError> {
     // First check if service is available
-    let serviceAvailable = await isServiceAvailable()
+    let serviceAvailable=await isServiceAvailable()
     if !serviceAvailable {
       return .failure(.serviceUnavailable)
     }
-    
+
     return await withCheckedContinuation { continuation in
       Task {
-        let nsData = convertSecureBytesToNSData(data)
-        let result = await serviceProxy.storeData(
+        let nsData=convertSecureBytesToNSData(data)
+        let result=await serviceProxy.storeData(
           convertToSecureBytes(nsData),
           identifier: identifier,
           metadata: metadata
@@ -169,61 +176,63 @@ extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
       }
     }
   }
-  
-  public func retrieveData(identifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+
+  public func retrieveData(identifier: String) async
+  -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
     // First check if service is available
-    let serviceAvailable = await isServiceAvailable()
+    let serviceAvailable=await isServiceAvailable()
     if !serviceAvailable {
       return .failure(.serviceUnavailable)
     }
-    
+
     return await withCheckedContinuation { continuation in
       Task {
-        let result = await serviceProxy.retrieveData(identifier: identifier)
+        let result=await serviceProxy.retrieveData(identifier: identifier)
         switch result {
-        case .success(let data):
-          continuation.resume(returning: .success(data))
-        case .failure(let error):
-          continuation.resume(returning: .failure(error))
+          case let .success(data):
+            continuation.resume(returning: .success(data))
+          case let .failure(error):
+            continuation.resume(returning: .failure(error))
         }
       }
     }
   }
-  
+
   public func deleteData(identifier: String) async -> Result<Void, XPCSecurityError> {
     // First check if service is available
-    let serviceAvailable = await isServiceAvailable()
+    let serviceAvailable=await isServiceAvailable()
     if !serviceAvailable {
       return .failure(.serviceUnavailable)
     }
-    
+
     return await withCheckedContinuation { continuation in
       Task {
-        let result = await serviceProxy.deleteData(identifier: identifier)
+        let result=await serviceProxy.deleteData(identifier: identifier)
         continuation.resume(returning: result)
       }
     }
   }
-  
+
   public func listDataIdentifiers() async -> Result<[String], XPCSecurityError> {
-    return await withCheckedContinuation { continuation in
+    await withCheckedContinuation { continuation in
       Task {
-        let result = await serviceProxy.listDataIdentifiers()
+        let result=await serviceProxy.listDataIdentifiers()
         continuation.resume(returning: result)
       }
     }
   }
-  
-  public func getDataMetadata(for identifier: String) async -> Result<[String: String]?, XPCSecurityError> {
+
+  public func getDataMetadata(for identifier: String) async
+  -> Result<[String: String]?, XPCSecurityError> {
     // First check if service is available
-    let serviceAvailable = await isServiceAvailable()
+    let serviceAvailable=await isServiceAvailable()
     if !serviceAvailable {
       return .failure(.serviceUnavailable)
     }
-    
+
     return await withCheckedContinuation { continuation in
       Task {
-        let result = await serviceProxy.getDataMetadata(for: identifier)
+        let result=await serviceProxy.getDataMetadata(for: identifier)
         continuation.resume(returning: result)
       }
     }

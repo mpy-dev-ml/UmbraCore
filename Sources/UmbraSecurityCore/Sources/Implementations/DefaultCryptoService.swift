@@ -36,11 +36,17 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     // In a real implementation, this would use a proper encryption algorithm
 
     guard !data.isEmpty else {
-      return .failure(UmbraErrors.Security.Protocols.invalidInput("Empty data provided for encryption"))
+      return .failure(
+        UmbraErrors.Security.Protocols
+          .invalidInput("Empty data provided for encryption")
+      )
     }
 
     guard !key.isEmpty else {
-      return .failure(UmbraErrors.Security.Protocols.invalidInput("Empty key provided for encryption"))
+      return .failure(
+        UmbraErrors.Security.Protocols
+          .invalidInput("Empty key provided for encryption")
+      )
     }
 
     // Create a mock header for the encrypted data (16 bytes)
@@ -50,7 +56,10 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
       if case let .failure(error)=randomDataResult {
         return .failure(error)
       }
-      return .failure(UmbraErrors.Security.Protocols.encryptionFailed("Failed to generate secure header"))
+      return .failure(
+        UmbraErrors.Security.Protocols
+          .encryptionFailed("Failed to generate secure header")
+      )
     }
 
     var header=[UInt8]()
@@ -89,11 +98,17 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     // In a real implementation, this would use a proper decryption algorithm
 
     guard !data.isEmpty else {
-      return .failure(UmbraErrors.Security.Protocols.invalidInput("Empty data provided for decryption"))
+      return .failure(
+        UmbraErrors.Security.Protocols
+          .invalidInput("Empty data provided for decryption")
+      )
     }
 
     guard !key.isEmpty else {
-      return .failure(UmbraErrors.Security.Protocols.invalidInput("Empty key provided for decryption"))
+      return .failure(
+        UmbraErrors.Security.Protocols
+          .invalidInput("Empty key provided for decryption")
+      )
     }
 
     guard data.count > Self.headerSize else {
@@ -129,7 +144,10 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     // In a real implementation, this would use SHA-256 or similar
 
     guard !data.isEmpty else {
-      return .failure(UmbraErrors.Security.Protocols.invalidInput("Empty data provided for hashing"))
+      return .failure(
+        UmbraErrors.Security.Protocols
+          .invalidInput("Empty data provided for hashing")
+      )
     }
 
     var hashResult=[UInt8](repeating: 0, count: Self.standardHashSize)
@@ -161,7 +179,10 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     await generateRandomData(length: Self.standardKeySize)
   }
 
-  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+  public func verify(
+    data: SecureBytes,
+    against hash: SecureBytes
+  ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
     // Compute the hash of the data
     let computedHashResult=await self.hash(data: data)
 
@@ -169,19 +190,26 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
       if case let .failure(error)=computedHashResult {
         return .failure(error)
       }
-      return .failure(UmbraErrors.Security.Protocols.internalError("Failed to compute hash for verification"))
+      return .failure(
+        UmbraErrors.Security.Protocols
+          .internalError("Failed to compute hash for verification")
+      )
     }
 
     // Compare with the provided hash
     return .success(computedHash == hash)
   }
 
-  public func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  public func generateRandomData(length: Int) async
+  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Placeholder implementation
     // In a real implementation, would use a secure random number generator
 
     guard length > 0 else {
-      return .failure(UmbraErrors.Security.Protocols.invalidInput("Random data length must be greater than zero"))
+      return .failure(
+        UmbraErrors.Security.Protocols
+          .invalidInput("Random data length must be greater than zero")
+      )
     }
 
     var result=[UInt8](repeating: 0, count: length)
@@ -202,8 +230,8 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
 
   public func encryptSymmetric(
     data: SecureBytes,
-    key: SecureBytes,
-    config: SecurityConfigDTO
+    key _: SecureBytes,
+    config _: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Generate a random IV
     let randomDataResult=await generateRandomData(length: 16)
@@ -225,11 +253,11 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
 
   public func decryptSymmetric(
     data: SecureBytes,
-    key: SecureBytes,
-    config: SecurityConfigDTO
+    key _: SecureBytes,
+    config _: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // For now, just return placeholder "decrypted" data
-    return .success(SecureBytes(bytes: [UInt8](
+    .success(SecureBytes(bytes: [UInt8](
       repeating: 0,
       count: max(0, data.count - 16)
     )))
@@ -239,29 +267,29 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
 
   public func encryptAsymmetric(
     data: SecureBytes,
-    publicKey: SecureBytes,
-    config: SecurityConfigDTO
+    publicKey _: SecureBytes,
+    config _: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // For now, just return placeholder "encrypted" data
-    return .success(SecureBytes(bytes: [UInt8](repeating: 0, count: data.count)))
+    .success(SecureBytes(bytes: [UInt8](repeating: 0, count: data.count)))
   }
 
   public func decryptAsymmetric(
     data: SecureBytes,
-    privateKey: SecureBytes,
-    config: SecurityConfigDTO
+    privateKey _: SecureBytes,
+    config _: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // For now, just return placeholder "decrypted" data
-    return .success(SecureBytes(bytes: [UInt8](repeating: 0, count: data.count)))
+    .success(SecureBytes(bytes: [UInt8](repeating: 0, count: data.count)))
   }
 
   // MARK: - Hashing
 
   public func hash(
     data: SecureBytes,
-    config: SecurityConfigDTO
+    config _: SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Generate a fixed-size hash (SHA-256 size = 32 bytes)
-    return await hash(data: data)
+    await hash(data: data)
   }
 }

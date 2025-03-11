@@ -19,19 +19,19 @@ public typealias SecureBytes=UmbraCoreTypes.SecureBytes
 public protocol XPCServiceProtocol: Sendable {
   /// Get the protocol identifier for this service
   static var protocolIdentifier: String { get }
-  
+
   /// Ping the service to check if it's responsive
   func ping() async -> Bool
-  
+
   /// Get the service version
   func getServiceVersion() async -> String?
-  
+
   /// Get the service status dictionary
   func getServiceStatus() async -> [String: Any]?
-  
+
   /// Get the device identifier
   func getDeviceIdentifier() async -> String?
-  
+
   /// Basic key synchronization mechanism
   func synchronizeKeys(_ data: SecureBytes) async -> Bool
 }
@@ -39,19 +39,19 @@ public protocol XPCServiceProtocol: Sendable {
 // Extension to provide backward compatibility
 extension XPCServiceProtocol {
   func getServiceStatus() async -> [String: Any]? {
-    return nil
+    nil
   }
-  
+
   func getServiceVersion() async -> String? {
-    return nil
+    nil
   }
-  
+
   func getDeviceIdentifier() async -> String? {
-    return nil
+    nil
   }
-  
-  func synchronizeKeys(_ data: SecureBytes) async -> Bool {
-    return false
+
+  func synchronizeKeys(_: SecureBytes) async -> Bool {
+    false
   }
 }
 
@@ -79,7 +79,7 @@ private final class XPCBasicAdapter: XPCServiceProtocolBasic {
   private let service: any XPCServiceProtocol
 
   init(wrapping service: any XPCServiceProtocol) {
-    self.service = service
+    self.service=service
   }
 
   // Static protocol identifier
@@ -94,9 +94,9 @@ private final class XPCBasicAdapter: XPCServiceProtocolBasic {
 
   func synchroniseKeys(_ syncData: SecureBytes) async throws {
     // Convert SecureBytes correctly
-    let bytes = syncData.withUnsafeBytes { Array($0) }
+    let bytes=syncData.withUnsafeBytes { Array($0) }
     // Remove the BinaryData reference since it doesn't exist and handle the result
-    let _ = await service.synchronizeKeys(SecureBytes(bytes: bytes))
+    _=await service.synchronizeKeys(SecureBytes(bytes: bytes))
   }
 }
 
@@ -104,41 +104,47 @@ private final class XPCBasicAdapter: XPCServiceProtocolBasic {
 public protocol XPCServiceProtocolStandard: Sendable {
   /// Protocol type identifier
   static var protocolIdentifier: String { get }
-    
+
   /// Get the current service status
   /// - Returns: Dictionary containing status information
   func status() async -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError>
-    
+
   /// Get the device hardware identifier
   /// - Returns: Device hardware identifier
   func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError>
-    
+
   /// Reset all security data on the device
   /// - Returns: Success or failure
   func resetSecurityData() async -> Result<Void, XPCProtocolsCore.SecurityError>
-    
+
   /// Generate random bytes
   /// - Parameter count: Number of bytes to generate
   /// - Returns: Random bytes as Data
   func generateRandomBytes(count: Int) async -> Result<Data, XPCProtocolsCore.SecurityError>
-    
+
   /// Import a key
   /// - Parameters:
   ///   - keyData: Data for the key
   ///   - keyType: Type of key to generate
   ///   - keyIdentifier: Optional identifier for the key
   ///   - metadata: Optional metadata to associate with the key
-  func importKey(keyData: SecureBytes, keyType: XPCProtocolTypeDefs.KeyType, keyIdentifier: String?, metadata: [String: String]?) async -> Result<String, XPCProtocolsCore.SecurityError>
-    
+  func importKey(
+    keyData: SecureBytes,
+    keyType: XPCProtocolTypeDefs.KeyType,
+    keyIdentifier: String?,
+    metadata: [String: String]?
+  ) async -> Result<String, XPCProtocolsCore.SecurityError>
+
   /// List all key identifiers
   /// - Returns: Array of key identifiers
   func listKeys() async -> Result<[String], XPCProtocolsCore.SecurityError>
-    
+
   /// Get information about a key
   /// - Parameter keyId: Key identifier
   /// - Returns: Dictionary containing key information
-  func getKeyInfo(keyId: String) async -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError>
-    
+  func getKeyInfo(keyId: String) async
+    -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError>
+
   /// Delete a key
   /// - Parameter keyId: Key identifier
   /// - Returns: Success or failure
@@ -148,113 +154,119 @@ public protocol XPCServiceProtocolStandard: Sendable {
 /// Adapter to implement XPCServiceProtocolStandard from XPCServiceProtocol
 private final class XPCStandardAdapter: XPCServiceProtocolStandard {
   private let service: any XPCServiceProtocol
-  
+
   init(_ service: any XPCServiceProtocol) {
-    self.service = service
+    self.service=service
   }
-  
+
   static var protocolIdentifier: String {
-    return "legacy.xpc.service"
+    "legacy.xpc.service"
   }
-  
+
   func status() async -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError> {
-    guard let status = await service.getServiceStatus() else {
+    guard let status=await service.getServiceStatus() else {
       return .failure(.internalError(reason: "Failed to get service status"))
     }
-    
+
     // Convert to AnyObject dictionary
-    let result = status.compactMapValues { $0 as AnyObject }
+    let result=status.compactMapValues { $0 as AnyObject }
     return .success(result as [String: AnyObject])
   }
-  
+
   func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
-    guard let identifier = await service.getDeviceIdentifier() else {
+    guard let identifier=await service.getDeviceIdentifier() else {
       return .failure(.internalError(reason: "Failed to get device identifier"))
     }
     return .success(identifier)
   }
-  
+
   func resetSecurityData() async -> Result<Void, XPCProtocolsCore.SecurityError> {
     // Legacy services don't support this directly
-    return .failure(.serviceUnavailable)
+    .failure(.serviceUnavailable)
   }
-  
-  func generateRandomBytes(count: Int) async -> Result<Data, XPCProtocolsCore.SecurityError> {
+
+  func generateRandomBytes(count _: Int) async -> Result<Data, XPCProtocolsCore.SecurityError> {
     // Legacy services don't fully support this
-    return .failure(.serviceUnavailable)
+    .failure(.serviceUnavailable)
   }
-  
-  func importKey(keyData: SecureBytes, keyType: XPCProtocolTypeDefs.KeyType, keyIdentifier: String?, metadata: [String: String]?) async -> Result<String, XPCProtocolsCore.SecurityError> {
+
+  func importKey(
+    keyData _: SecureBytes,
+    keyType _: XPCProtocolTypeDefs.KeyType,
+    keyIdentifier _: String?,
+    metadata _: [String: String]?
+  ) async -> Result<String, XPCProtocolsCore.SecurityError> {
     // Legacy services don't support this
-    return .failure(.serviceUnavailable)
+    .failure(.serviceUnavailable)
   }
-  
+
   func listKeys() async -> Result<[String], XPCProtocolsCore.SecurityError> {
     // Legacy services don't support this
-    return .failure(.serviceUnavailable)
+    .failure(.serviceUnavailable)
   }
-  
-  func getKeyInfo(keyId: String) async -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError> {
+
+  func getKeyInfo(keyId _: String) async
+  -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError> {
     // Legacy services don't support this
-    return .failure(.serviceUnavailable)
+    .failure(.serviceUnavailable)
   }
-  
-  func deleteKey(keyId: String) async -> Result<Void, XPCProtocolsCore.SecurityError> {
+
+  func deleteKey(keyId _: String) async -> Result<Void, XPCProtocolsCore.SecurityError> {
     // Legacy services don't support this
-    return .failure(.serviceUnavailable)
+    .failure(.serviceUnavailable)
   }
 }
 
 /// Adapter to implement XPCServiceProtocol from XPCServiceProtocolStandard
 private final class LegacyAdapter: XPCServiceProtocol {
   private let service: any XPCServiceProtocolStandard
-  
+
   static var protocolIdentifier: String {
-    return "standard.xpc.service"
+    "standard.xpc.service"
   }
-  
+
   init(_ service: any XPCServiceProtocolStandard) {
-    self.service = service
+    self.service=service
   }
-  
+
   func ping() async -> Bool {
     // Fix the result.success issue - check if status returns successfully
-    let result = await service.status()
+    let result=await service.status()
     switch result {
-    case .success:
-      return true
-    case .failure:
-      return false
+      case .success:
+        return true
+      case .failure:
+        return false
     }
   }
-  
+
   func getServiceVersion() async -> String? {
-    let result = await service.status()
-    if case .success(let status) = result, let version = status["version"] as? String {
+    let result=await service.status()
+    if case let .success(status)=result, let version=status["version"] as? String {
       return version
     }
     return nil
   }
-  
+
   func getServiceStatus() async -> [String: Any]? {
-    let result = await service.status()
-    if case .success(let status) = result {
+    let result=await service.status()
+    if case let .success(status)=result {
       return status as [String: Any]
     }
     return nil
   }
-  
+
   func getDeviceIdentifier() async -> String? {
-    let result = await service.getHardwareIdentifier()
-    if case .success(let identifier) = result {
+    let result=await service.getHardwareIdentifier()
+    if case let .success(identifier)=result {
       return identifier
     }
     return nil
   }
-  
-  func synchronizeKeys(_ data: SecureBytes) async -> Bool {
+
+  func synchronizeKeys(_: SecureBytes) async -> Bool {
     // Modern services don't have an exact equivalent
-    return false
+    false
   }
 }
 

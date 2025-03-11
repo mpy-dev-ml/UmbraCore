@@ -149,7 +149,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     }
 
     do {
-      let result = await implementation.encryptSymmetric(
+      let result=await implementation.encryptSymmetric(
         data: dataToEncrypt,
         key: keyData,
         algorithm: config.algorithm,
@@ -158,7 +158,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         aad: aadData,
         options: config.options
       )
-      if let resultData = result.data {
+      if let resultData=result.data {
         return .success(DataAdapter.secureBytes(from: resultData))
       } else {
         return .failure(.internalError("Encryption succeeded but returned nil data"))
@@ -194,7 +194,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     }
 
     do {
-      let result = await implementation.decryptSymmetric(
+      let result=await implementation.decryptSymmetric(
         data: encryptedData,
         key: keyData,
         algorithm: config.algorithm,
@@ -203,7 +203,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         aad: aadData,
         options: config.options
       )
-      if let resultData = result.data {
+      if let resultData=result.data {
         return .success(DataAdapter.secureBytes(from: resultData))
       } else {
         return .failure(.internalError("Decryption succeeded but returned nil data"))
@@ -228,14 +228,14 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     }
 
     do {
-      let result = await implementation.encryptAsymmetric(
+      let result=await implementation.encryptAsymmetric(
         data: dataToEncrypt,
         publicKey: publicKeyData,
         algorithm: config.algorithm,
         keySizeInBits: config.keySizeInBits,
         options: config.options
       )
-      if let resultData = result.data {
+      if let resultData=result.data {
         return .success(DataAdapter.secureBytes(from: resultData))
       } else {
         return .failure(.internalError("Asymmetric encryption succeeded but returned nil data"))
@@ -260,14 +260,14 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     }
 
     do {
-      let result = await implementation.decryptAsymmetric(
+      let result=await implementation.decryptAsymmetric(
         data: encryptedData,
         privateKey: privateKeyData,
         algorithm: config.algorithm,
         keySizeInBits: config.keySizeInBits,
         options: config.options
       )
-      if let resultData = result.data {
+      if let resultData=result.data {
         return .success(DataAdapter.secureBytes(from: resultData))
       } else {
         return .failure(.internalError("Asymmetric decryption succeeded but returned nil data"))
@@ -293,12 +293,12 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     }
 
     do {
-      let result = await implementation.hash(
+      let result=await implementation.hash(
         data: dataToHash,
         algorithm: config.algorithm,
         options: config.options
       )
-      if let resultData = result.data {
+      if let resultData=result.data {
         return .success(DataAdapter.secureBytes(from: resultData))
       } else {
         return .failure(.internalError("Hashing succeeded but returned nil data"))
@@ -314,7 +314,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
   /// - Parameter config: Security configuration
   /// - Returns: Algorithm string or nil if not specified
   private func cryptoAlgorithmFrom(_ config: SecurityConfigDTO) -> String? {
-    return config.algorithm.isEmpty ? nil : config.algorithm
+    config.algorithm.isEmpty ? nil : config.algorithm
   }
 
   /// Map any error to a Security.Protocols error

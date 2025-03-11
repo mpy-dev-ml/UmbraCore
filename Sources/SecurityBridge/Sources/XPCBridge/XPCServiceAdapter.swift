@@ -66,10 +66,10 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
   deinit {
     connection.invalidate()
   }
-  
+
   /// Sets up the invalidation handler for the XPC connection
   public func setupInvalidationHandler() {
-    connection.invalidationHandler = {
+    connection.invalidationHandler={
       // Log the invalidation
       print("XPC connection to service was invalidated")
       // Optional: Notify observers of service unavailability
@@ -83,17 +83,17 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
 
 extension XPCServiceAdapter: XPCServiceProtocolBasic {
   public func convertNSDataToSecureBytes(_ nsData: NSData) -> UmbraCoreTypes.SecureBytes {
-    let bytes = [UInt8](Data(referencing: nsData))
+    let bytes=[UInt8](Data(referencing: nsData))
     return SecureBytes(bytes: bytes)
   }
-  
+
   public func convertSecureBytesToNSData(_ secureBytes: UmbraCoreTypes.SecureBytes) -> NSData {
-    let data = Data(Array(secureBytes))
+    let data=Data(Array(secureBytes))
     return data as NSData
   }
-  
+
   public func convertDataToNSData(_ data: Data) -> NSData {
-    return data as NSData
+    data as NSData
   }
 }
 
@@ -128,9 +128,17 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
   }
 
   @objc
-  public func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) async -> NSNumber? {
+  public func verifySignature(
+    _ signature: NSData,
+    for data: NSData,
+    keyIdentifier: String
+  ) async -> NSNumber? {
     // Convert to NSNumber since we need to return NSNumber?
-    return await serviceStandardAdapter.verifySignature(signature, for: data, keyIdentifier: keyIdentifier) as NSNumber?
+    await serviceStandardAdapter.verifySignature(
+      signature,
+      for: data,
+      keyIdentifier: keyIdentifier
+    ) as NSNumber?
   }
 
   @objc
@@ -139,7 +147,7 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
   }
 
   @objc
-  public func synchroniseKeys(_ bytes: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
+  public func synchroniseKeys(_: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
     // This method doesn't have a matching implementation in serviceStandardAdapter
     // Implementing it with a more appropriate error handling approach
     Task {
@@ -151,7 +159,7 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
 
   public func listKeys() async -> Result<[String], XPCSecurityError> {
     // Use the keyManagementAdapter implementation to ensure consistent return type
-    return await keyManagementAdapter.listKeyIdentifiers()
+    await keyManagementAdapter.listKeyIdentifiers()
   }
 
   @objc
@@ -191,39 +199,45 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     await cryptoAdapter.hash(data: data)
   }
 
-  public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+  public func verify(
+    data: SecureBytes,
+    against hash: SecureBytes
+  ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
     // Calculate the hash of the provided data
-    let hashResult = await cryptoAdapter.hash(data: data)
-    
+    let hashResult=await cryptoAdapter.hash(data: data)
+
     // Compare the calculated hash with the provided hash
     switch hashResult {
-    case .success(let calculatedHash):
-      // Compare the byte arrays
-      let sameLength = calculatedHash.count == hash.count
-      var allBytesMatch = true
-      
-      if sameLength {
-        for (idx, element) in calculatedHash.enumerated() {
-          if element != hash[idx] {
-            allBytesMatch = false
-            break
+      case let .success(calculatedHash):
+        // Compare the byte arrays
+        let sameLength=calculatedHash.count == hash.count
+        var allBytesMatch=true
+
+        if sameLength {
+          for (idx, element) in calculatedHash.enumerated() {
+            if element != hash[idx] {
+              allBytesMatch=false
+              break
+            }
           }
+        } else {
+          allBytesMatch=false
         }
-      } else {
-        allBytesMatch = false
-      }
-      
-      return .success(sameLength && allBytesMatch)
-      
-    case .failure(let error):
-      return .failure(error)
+
+        return .success(sameLength && allBytesMatch)
+
+      case let .failure(error):
+        return .failure(error)
     }
   }
 
-  public func hashWithConfig(data: SecureBytes, config: [String: String]) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  public func hashWithConfig(
+    data: SecureBytes,
+    config _: [String: String]
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Convert the config to a proper configuration
-    let result = await cryptoAdapter.hash(data: data)
-    
+    let result=await cryptoAdapter.hash(data: data)
+
     // Just return the standard hash result since we don't support custom config
     return result
   }
@@ -235,7 +249,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     await cryptoAdapter.encryptSymmetric(data: data, key: key, config: config)
   }
-  
+
   public func decryptSymmetric(
     data: SecureBytes,
     key: SecureBytes,
@@ -243,7 +257,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     await cryptoAdapter.decryptSymmetric(data: data, key: key, config: config)
   }
-  
+
   public func encryptAsymmetric(
     data: SecureBytes,
     publicKey: SecureBytes,
@@ -251,7 +265,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     await cryptoAdapter.encryptAsymmetric(data: data, publicKey: publicKey, config: config)
   }
-  
+
   public func decryptAsymmetric(
     data: SecureBytes,
     privateKey: SecureBytes,
@@ -259,55 +273,60 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     await cryptoAdapter.decryptAsymmetric(data: data, privateKey: privateKey, config: config)
   }
-  
+
   public func sign(
-    data: SecureBytes,
-    privateKey: SecureBytes,
-    config: SecurityProtocolsCore.SecurityConfigDTO
+    data _: SecureBytes,
+    privateKey _: SecureBytes,
+    config _: SecurityProtocolsCore.SecurityConfigDTO
   ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // For now, return unsupported operation since this needs to be implemented
-    return .failure(.unsupportedOperation(name: "sign"))
+    .failure(.unsupportedOperation(name: "sign"))
   }
-  
+
   public func verifySignature(
     signature: SecureBytes,
     data: SecureBytes,
     publicKey: SecureBytes,
-    config: SecurityProtocolsCore.SecurityConfigDTO
+    config _: SecurityProtocolsCore.SecurityConfigDTO
   ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
     // Since CryptoXPCAdapter doesn't directly have verifySignature, implement it here
     // This is a simple implementation that could be improved with actual verification logic
-    
+
     // First verify that we have all the data we need
-    if signature.count == 0 || data.count == 0 || publicKey.count == 0 {
+    if signature.isEmpty || data.isEmpty || publicKey.isEmpty {
       return .failure(.invalidFormat(reason: "Signature, data, or public key is empty"))
     }
-    
+
     // We could call different adapter methods here or implement the verification directly
     // For now, we'll implement a simple placeholder that assumes valid signatures
     // In a real implementation, you'd use cryptographic functions to verify
-    
+
     // Convert to NSData for compatibility with XPC
-    let signatureData = nsData(from: signature)
-    let messageData = nsData(from: data)
-    
+    let signatureData=nsData(from: signature)
+    let messageData=nsData(from: data)
+
     // Call the standard adapter methods for verification
-    let result = await serviceStandardAdapter.verifySignature(signatureData, for: messageData, keyIdentifier: UUID().uuidString)
-    
+    let result=await serviceStandardAdapter.verifySignature(
+      signatureData,
+      for: messageData,
+      keyIdentifier: UUID().uuidString
+    )
+
     // Return success if the adapter returned a truthy value
-    if let boolResult = result as NSNumber?, boolResult.boolValue {
+    if let boolResult=result as NSNumber?, boolResult.boolValue {
       return .success(true)
     }
-    
+
     // Otherwise return failure
     return .failure(.internalError("Signature verification failed"))
   }
 
-  public func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  public func generateRandomData(length: Int) async
+  -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Convert from NSObject to SecureBytes
-    let randomDataResult = await serviceStandardAdapter.generateRandomBytes(length: length)
-    if let randomData = randomDataResult as? NSData {
-      let bytes = [UInt8](Data(referencing: randomData))
+    let randomDataResult=await serviceStandardAdapter.generateRandomBytes(length: length)
+    if let randomData=randomDataResult as? NSData {
+      let bytes=[UInt8](Data(referencing: randomData))
       return .success(SecureBytes(bytes: bytes))
     } else {
       return .failure(.internalError("Failed to generate random data"))
@@ -315,9 +334,13 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
   }
 
   // Required for CryptoServiceProtocol conformance
-  public func hash(data: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+  public func hash(
+    data: SecureBytes,
+    config _: SecurityProtocolsCore
+      .SecurityConfigDTO
+  ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
     // Pass the request to the crypto adapter, ignoring the config for now
-    return await cryptoAdapter.hash(data: data)
+    await cryptoAdapter.hash(data: data)
   }
 }
 
@@ -329,84 +352,93 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
   @objc
   public func storeData(_ data: NSData, withKey key: String) async -> NSObject? {
     // Convert NSData to SecureBytes and call the adapter
-    let secureBytes = secureBytes(from: Data(referencing: data))
-    let result = await secureStorageAdapter.storeData(secureBytes, identifier: key, metadata: nil)
-    
+    let secureBytes=secureBytes(from: Data(referencing: data))
+    let result=await secureStorageAdapter.storeData(secureBytes, identifier: key, metadata: nil)
+
     // Return a success/failure indicator
     switch result {
-    case .success:
-      return NSNumber(value: true)
-    case .failure:
-      return nil
+      case .success:
+        return NSNumber(value: true)
+      case .failure:
+        return nil
     }
   }
 
   @objc
   public func retrieveData(withKey key: String) async -> NSObject? {
     // Call the adapter with the correct parameter name
-    let result = await secureStorageAdapter.retrieveData(identifier: key)
-    
+    let result=await secureStorageAdapter.retrieveData(identifier: key)
+
     // Convert SecureBytes to NSData if successful
     switch result {
-    case .success(let secureBytes):
-      return nsData(from: secureBytes)
-    case .failure:
-      return nil
+      case let .success(secureBytes):
+        return nsData(from: secureBytes)
+      case .failure:
+        return nil
     }
   }
 
   @objc
   public func deleteData(withKey key: String) async -> NSObject? {
     // Call the adapter with the correct parameter name
-    let result = await secureStorageAdapter.deleteData(identifier: key)
-    
+    let result=await secureStorageAdapter.deleteData(identifier: key)
+
     // Return a success/failure indicator
     switch result {
-    case .success:
-      return NSNumber(value: true)
-    case .failure:
-      return nil
+      case .success:
+        return NSNumber(value: true)
+      case .failure:
+        return nil
     }
   }
-  
+
   // Protocol conformance methods
-  
-  public func storeData(_ data: SecureBytes, identifier: String, metadata: [String: String]?) async -> Result<Void, XPCSecurityError> {
+
+  public func storeData(
+    _ data: SecureBytes,
+    identifier: String,
+    metadata: [String: String]?
+  ) async -> Result<Void, XPCSecurityError> {
     // Convert SecureBytes to NSData
-    let _ = nsData(from: data)
-    
+    _=nsData(from: data)
+
     // Call the standard adapter store method
-    let result = await secureStorageAdapter.storeData(data, identifier: identifier, metadata: metadata)
-    
+    let result=await secureStorageAdapter.storeData(
+      data,
+      identifier: identifier,
+      metadata: metadata
+    )
+
     return result
   }
-  
+
   public func retrieveData(identifier: String) async -> Result<SecureBytes, XPCSecurityError> {
-    let result = await secureStorageAdapter.retrieveData(identifier: identifier)
-    
+    let result=await secureStorageAdapter.retrieveData(identifier: identifier)
+
     return result
   }
-  
+
   public func deleteData(identifier: String) async -> Result<Void, XPCSecurityError> {
-    let result = await secureStorageAdapter.deleteData(identifier: identifier)
-    
+    let result=await secureStorageAdapter.deleteData(identifier: identifier)
+
     return result
   }
-  
+
   public func listStoredItems() async -> Result<[String], XPCSecurityError> {
-    // Since the adapter may not implement this method directly, we may need to use a different approach
+    // Since the adapter may not implement this method directly, we may need to use a different
+    // approach
     // For now, return a reasonable error
-    return .failure(.operationNotSupported(name: "listStoredItems"))
+    .failure(.operationNotSupported(name: "listStoredItems"))
   }
-  
+
   public func listDataIdentifiers() async -> Result<[String], XPCSecurityError> {
     // Reuse the implementation of listStoredItems
-    return await listStoredItems()
+    await listStoredItems()
   }
-  
-  public func getDataMetadata(for identifier: String) async -> Result<[String: String]?, XPCSecurityError> {
+
+  public func getDataMetadata(for _: String) async -> Result<[String: String]?, XPCSecurityError> {
     // If there's no specific metadata implementation, return empty metadata
-    return .success([:])
+    .success([:])
   }
 }
 
@@ -414,20 +446,20 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
 
 extension XPCServiceAdapter: KeyManagementServiceProtocol {
   // Forward all methods to keyManagementAdapter
-  
+
   public func generateKey(
     keyType: XPCProtocolTypeDefs.KeyType,
     keyIdentifier: String?,
     metadata: [String: String]?
   ) async -> Result<String, XPCSecurityError> {
     // Call the key management adapter to generate the key
-    return await keyManagementAdapter.generateKey(
+    await keyManagementAdapter.generateKey(
       keyType: keyType,
       keyIdentifier: keyIdentifier,
       metadata: metadata
     )
   }
-  
+
   public func importKey(
     keyData: SecureBytes,
     keyType: XPCProtocolTypeDefs.KeyType,
@@ -435,30 +467,31 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
     metadata: [String: String]?
   ) async -> Result<String, XPCSecurityError> {
     // Call the key management adapter to import the key
-    return await keyManagementAdapter.importKey(
+    await keyManagementAdapter.importKey(
       keyData: keyData,
       keyType: keyType,
       keyIdentifier: keyIdentifier,
       metadata: metadata
     )
   }
-  
+
   public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
     // Call the key management adapter to export the key
-    return await keyManagementAdapter.exportKey(keyIdentifier: keyIdentifier)
+    await keyManagementAdapter.exportKey(keyIdentifier: keyIdentifier)
   }
-  
+
   public func deleteKey(keyIdentifier: String) async -> Result<Void, XPCSecurityError> {
-    return await keyManagementAdapter.deleteKey(keyIdentifier: keyIdentifier)
+    await keyManagementAdapter.deleteKey(keyIdentifier: keyIdentifier)
   }
-  
+
   public func listKeyIdentifiers() async -> Result<[String], XPCSecurityError> {
-    return await keyManagementAdapter.listKeyIdentifiers()
+    await keyManagementAdapter.listKeyIdentifiers()
   }
-  
-  public func getKeyMetadata(for keyIdentifier: String) async -> Result<[String: String]?, XPCSecurityError> {
+
+  public func getKeyMetadata(for keyIdentifier: String) async
+  -> Result<[String: String]?, XPCSecurityError> {
     // If there's no specific metadata implementation, return from the adapter
-    return await keyManagementAdapter.getKeyMetadata(for: keyIdentifier)
+    await keyManagementAdapter.getKeyMetadata(for: keyIdentifier)
   }
 }
 
@@ -466,89 +499,89 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
 
 extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
   // Protocol conformance implementations - changed to match the required types
-  
+
   public func getServiceVersion() async -> String {
     // Return a simple version string directly
-    return "1.0.0"
+    "1.0.0"
   }
-  
+
   public func isFeatureSupported(featureIdentifier: String) async -> Bool {
     // For now, just report basic features as supported
-    let supportedFeatures = ["encryption", "decryption", "hashing", "verification"]
+    let supportedFeatures=["encryption", "decryption", "hashing", "verification"]
     return supportedFeatures.contains(featureIdentifier.lowercased())
   }
-  
+
   public func encryptData(
     data: Data,
     key: Data
   ) async -> Result<Data, XPCSecurityError> {
     // Convert the result from UmbraErrors.Security.XPC to XPCSecurityError
-    let result = await comprehensiveSecurityAdapter.encryptData(data: data, key: key)
-    
+    let result=await comprehensiveSecurityAdapter.encryptData(data: data, key: key)
+
     switch result {
-    case .success(let encryptedData):
-      return .success(encryptedData)
-    case .failure(let error):
-      // Map error to XPCSecurityError
-      return .failure(XPCSecurityError.internalError(reason: "Encryption failed: \(error)"))
+      case let .success(encryptedData):
+        return .success(encryptedData)
+      case let .failure(error):
+        // Map error to XPCSecurityError
+        return .failure(XPCSecurityError.internalError(reason: "Encryption failed: \(error)"))
     }
   }
-  
+
   public func decryptData(
     data: Data,
     key: Data
   ) async -> Result<Data, XPCSecurityError> {
     // Convert the result from UmbraErrors.Security.XPC to XPCSecurityError
-    let result = await comprehensiveSecurityAdapter.decryptData(data: data, key: key)
-    
+    let result=await comprehensiveSecurityAdapter.decryptData(data: data, key: key)
+
     switch result {
-    case .success(let decryptedData):
-      return .success(decryptedData)
-    case .failure(let error):
-      // Map error to XPCSecurityError
-      return .failure(XPCSecurityError.internalError(reason: "Decryption failed: \(error)"))
+      case let .success(decryptedData):
+        return .success(decryptedData)
+      case let .failure(error):
+        // Map error to XPCSecurityError
+        return .failure(XPCSecurityError.internalError(reason: "Decryption failed: \(error)"))
     }
   }
-  
+
   public func hashData(data: Data) async -> Result<Data, XPCSecurityError> {
     // Convert the result from UmbraErrors.Security.XPC to XPCSecurityError
-    let result = await comprehensiveSecurityAdapter.hashData(data: data)
-    
+    let result=await comprehensiveSecurityAdapter.hashData(data: data)
+
     switch result {
-    case .success(let hashedData):
-      return .success(hashedData)
-    case .failure(let error):
-      // Map error to XPCSecurityError
-      return .failure(XPCSecurityError.internalError(reason: "Hashing failed: \(error)"))
+      case let .success(hashedData):
+        return .success(hashedData)
+      case let .failure(error):
+        // Map error to XPCSecurityError
+        return .failure(XPCSecurityError.internalError(reason: "Hashing failed: \(error)"))
     }
   }
-  
+
   public func verify(
     data: Data,
     signature: Data
   ) async -> Result<Bool, XPCSecurityError> {
     // Convert the result from UmbraErrors.Security.XPC to XPCSecurityError
-    let result = await comprehensiveSecurityAdapter.verify(data: data, signature: signature)
-    
+    let result=await comprehensiveSecurityAdapter.verify(data: data, signature: signature)
+
     switch result {
-    case .success(let verified):
-      return .success(verified)
-    case .failure(let error):
-      // Map error to XPCSecurityError
-      return .failure(XPCSecurityError.internalError(reason: "Verification failed: \(error)"))
+      case let .success(verified):
+        return .success(verified)
+      case let .failure(error):
+        // Map error to XPCSecurityError
+        return .failure(XPCSecurityError.internalError(reason: "Verification failed: \(error)"))
     }
   }
-  
+
   public func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
     // Convert the result from UmbraErrors.Security.XPC to XPCSecurityError
-    let result = await comprehensiveSecurityAdapter.generateKey()
-    
+    let result=await comprehensiveSecurityAdapter.generateKey()
+
     switch result {
-    case .success(let key):
-      return .success(key)
-    case .failure(let error):
-      // Map error to XPCSecurityError
-      return .failure(XPCSecurityError.internalError(reason: "Key generation failed: \(error)"))
+      case let .success(key):
+        return .success(key)
+      case let .failure(error):
+        // Map error to XPCSecurityError
+        return .failure(XPCSecurityError.internalError(reason: "Key generation failed: \(error)"))
     }
   }
 }
@@ -560,27 +593,27 @@ extension XPCServiceAdapter {
   private func mapNSErrorToSecurityError(_ error: NSError) -> XPCSecurityError {
     // Check for standard error domains
     if error.domain == NSURLErrorDomain {
-      return .invalidInput(details: "Network error: \(error.localizedDescription)")
+      .invalidInput(details: "Network error: \(error.localizedDescription)")
     } else if error.domain.contains("security") {
-      return .internalError(reason: "Security error: \(error.localizedDescription)")
+      .internalError(reason: "Security error: \(error.localizedDescription)")
     } else {
-      return .internalError(reason: error.localizedDescription)
+      .internalError(reason: error.localizedDescription)
     }
   }
-  
+
   /// Process result from NSObject to Result<T, XPCSecurityError>
   private func processXPCResult<T>(
     _ result: NSObject?,
     transform: (NSObject) -> T
   ) -> Result<T, XPCSecurityError> {
-    if let error = result as? NSError {
-      return .failure(mapNSErrorToSecurityError(error))
-    } else if let nsData = result as? NSData {
-      return .success(transform(nsData))
-    } else if let nsObject = result {
-      return .success(transform(nsObject))
+    if let error=result as? NSError {
+      .failure(mapNSErrorToSecurityError(error))
+    } else if let nsData=result as? NSData {
+      .success(transform(nsData))
+    } else if let nsObject=result {
+      .success(transform(nsObject))
     } else {
-      return .failure(.internalError(reason: "Invalid result from XPC service"))
+      .failure(.internalError(reason: "Invalid result from XPC service"))
     }
   }
 }
@@ -594,30 +627,30 @@ extension XPCServiceAdapter {
 
   // Helper method to convert SecureBytes to NSData
   private func nsData(from secureBytes: SecureBytes) -> NSData {
-    let count = secureBytes.count
-    var byteArray = [UInt8](repeating: 0, count: count)
+    let count=secureBytes.count
+    var byteArray=[UInt8](repeating: 0, count: count)
     for i in 0..<count {
       byteArray[i]=secureBytes[i]
     }
     let data=Data(byteArray)
     return data as NSData
   }
-  
+
   /// Helper to compare two SecureBytes instances for equality
   private func compareSecureBytes(_ left: SecureBytes, _ right: SecureBytes) -> Bool {
-    let leftBytes = Array(left)
-    let rightBytes = Array(right)
-    
+    let leftBytes=Array(left)
+    let rightBytes=Array(right)
+
     guard leftBytes.count == rightBytes.count else {
       return false
     }
-    
+
     for i in 0..<leftBytes.count {
       if leftBytes[i] != rightBytes[i] {
         return false
       }
     }
-    
+
     return true
   }
 }

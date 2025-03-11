@@ -18,14 +18,14 @@ final class ErrorHandlingSystemTests: XCTestCase {
   private enum RecoveryOption: ErrorHandlingProtocols.RecoveryOption {
     case retry
     case cancel
-    
+
     var title: String {
       switch self {
-      case .retry: return "Retry"
-      case .cancel: return "Cancel"
+        case .retry: "Retry"
+        case .cancel: "Cancel"
       }
     }
-    
+
     func perform() async {
       // No-op for testing
     }
@@ -50,14 +50,17 @@ final class ErrorHandlingSystemTests: XCTestCase {
   }
 
   private class MockRecoveryProvider: RecoveryOptionsProvider {
-    var shouldProvideOptions = true
-    var optionsToReturn: [ErrorHandlingProtocols.RecoveryOption] = [RecoveryOption.retry, RecoveryOption.cancel]
-    
-    func recoveryOptions(for error: Error) async -> [ErrorHandlingProtocols.RecoveryOption] {
+    var shouldProvideOptions=true
+    var optionsToReturn: [ErrorHandlingProtocols.RecoveryOption]=[
+      RecoveryOption.retry,
+      RecoveryOption.cancel
+    ]
+
+    func recoveryOptions(for _: Error) async -> [ErrorHandlingProtocols.RecoveryOption] {
       if shouldProvideOptions {
-        return optionsToReturn
+        optionsToReturn
       } else {
-        return []
+        []
       }
     }
   }
@@ -132,7 +135,7 @@ final class ErrorHandlingSystemTests: XCTestCase {
   func testErrorWithRecoveryOptions() {
     // Given
     let error=SecurityError.authenticationFailed("Invalid credentials")
-    let recoveryOptions: [RecoveryOption] = [.retry, .cancel]
+    let recoveryOptions: [RecoveryOption]=[.retry, .cancel]
     mockRecoveryProvider.optionsToReturn=recoveryOptions
 
     // When

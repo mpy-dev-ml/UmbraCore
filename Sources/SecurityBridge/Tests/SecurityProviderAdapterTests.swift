@@ -99,7 +99,7 @@ final class SecurityProviderAdapterTests: XCTestCase {
     XCTAssertEqual(emptyConvertedBack.count, 0)
 
     // Test large data
-    let largeSecureBytes = try SecureBytes(count: 1024) // 1KB of zeros (smaller for performance)
+    let largeSecureBytes=try SecureBytes(count: 1024) // 1KB of zeros (smaller for performance)
     let largeData=DataAdapter.data(from: largeSecureBytes)
     XCTAssertEqual(largeData.count, 1024)
 

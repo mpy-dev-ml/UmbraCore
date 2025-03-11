@@ -98,13 +98,13 @@ extension DomainError {
 }
 
 /// Error severity levels for classification and logging
-public typealias ErrorSeverity = ErrorHandlingCommon.ErrorSeverity
+public typealias ErrorSeverity=ErrorHandlingCommon.ErrorSeverity
 
 /// Protocol for recovery options that can be presented to the user
 public protocol RecoveryOption: Sendable {
   /// Descriptive title for the recovery option
   var title: String { get }
-  
+
   /// Action to perform when the recovery option is selected
   func perform() async
 }

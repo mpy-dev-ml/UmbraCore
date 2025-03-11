@@ -372,9 +372,9 @@ final class CryptoServiceAdapterTests: XCTestCase {
     // Assert
     XCTAssertTrue(result.isSuccess)
     if case let .success(encrypted)=result {
-      var encryptedBytes = [UInt8]()
+      var encryptedBytes=[UInt8]()
       encrypted.withUnsafeBytes { buffer in
-        encryptedBytes = Array(buffer)
+        encryptedBytes=Array(buffer)
       }
       XCTAssertEqual(encryptedBytes, [100, 110, 120, 130, 140])
     } else {
@@ -423,9 +423,9 @@ final class CryptoServiceAdapterTests: XCTestCase {
     // Assert
     XCTAssertTrue(result.isSuccess)
     if case let .success(decrypted)=result {
-      var decryptedBytes = [UInt8]()
+      var decryptedBytes=[UInt8]()
       decrypted.withUnsafeBytes { buffer in
-        decryptedBytes = Array(buffer)
+        decryptedBytes=Array(buffer)
       }
       XCTAssertEqual(decryptedBytes, [1, 2, 3, 4, 5])
     } else {
@@ -473,9 +473,9 @@ final class CryptoServiceAdapterTests: XCTestCase {
     // Assert
     XCTAssertTrue(result.isSuccess)
     if case let .success(key)=result {
-      var keyBytes = [UInt8]()
+      var keyBytes=[UInt8]()
       key.withUnsafeBytes { buffer in
-        keyBytes = Array(buffer)
+        keyBytes=Array(buffer)
       }
       XCTAssertEqual(keyBytes, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
     } else {
@@ -683,9 +683,9 @@ final class CryptoServiceAdapterTests: XCTestCase {
     XCTAssertTrue(result.isSuccess)
     if case let .success(randomData)=result {
       XCTAssertEqual(randomData.count, expectedLength)
-      var dataBytes = [UInt8]()
+      var dataBytes=[UInt8]()
       randomData.withUnsafeBytes { buffer in
-        dataBytes = Array(buffer)
+        dataBytes=Array(buffer)
       }
       XCTAssertEqual(dataBytes, [UInt8](repeating: 42, count: expectedLength))
     } else {
@@ -731,9 +731,9 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
       // Default generation should produce sequential bytes
       let expectedBytes=(0..<requestedLength).map { UInt8($0 % 256) }
-      var dataBytes = [UInt8]()
+      var dataBytes=[UInt8]()
       randomData.withUnsafeBytes { buffer in
-        dataBytes = Array(buffer)
+        dataBytes=Array(buffer)
       }
       XCTAssertEqual(dataBytes, expectedBytes)
     } else {

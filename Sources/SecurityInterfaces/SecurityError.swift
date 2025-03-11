@@ -73,7 +73,8 @@ public enum SecurityInterfacesError: Error, Sendable {
         coreError
       case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
            .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
-           .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError, .serializationFailed:
+           .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError,
+           .serializationFailed:
         nil
     }
   }

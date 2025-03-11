@@ -11,61 +11,80 @@ import XPCProtocolsCore
 @objc
 public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
   // MARK: - Crypto Operations
-  
+
   /// Encrypt data using XPC
   /// - Parameters:
   ///   - data: The data to encrypt
   ///   - completion: Completion handler called with encrypted data or error
   func encryptDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void)
-  
+
   /// Decrypt data using XPC
   /// - Parameters:
   ///   - data: The data to decrypt
   ///   - completion: Completion handler called with decrypted data or error
   func decryptDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void)
-  
+
   /// Generate random data using XPC
   /// - Parameters:
   ///   - length: Length of random data to generate
   ///   - completion: Completion handler called with generated data or error
-  func generateRandomDataXPC(_ length: Int, completion: @escaping (Data?, NSNumber?, String?) -> Void)
-  
+  func generateRandomDataXPC(
+    _ length: Int,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  )
+
   /// Hash data using XPC
   /// - Parameters:
   ///   - data: The data to hash
   ///   - completion: Completion handler called with hash data or error
   func hashDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void)
-  
+
   /// Sign data using XPC
   /// - Parameters:
   ///   - data: The data to sign
   ///   - algorithm: The algorithm to use for signing
   ///   - completion: Completion handler called with signature or error
-  func signDataXPC(_ data: Data, algorithm: String, completion: @escaping (Data?, NSNumber?, String?) -> Void)
-  
+  func signDataXPC(
+    _ data: Data,
+    algorithm: String,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  )
+
   /// Verify data against signature using XPC
   /// - Parameters:
   ///   - data: The data to verify
   ///   - signature: The signature to verify against
   ///   - algorithm: The algorithm used for signing
   ///   - completion: Completion handler called with verification result
-  func verifyDataXPC(_ data: Data, signature: Data, algorithm: String, completion: @escaping (NSNumber?, NSNumber?, String?) -> Void)
-  
+  func verifyDataXPC(
+    _ data: Data,
+    signature: Data,
+    algorithm: String,
+    completion: @escaping (NSNumber?, NSNumber?, String?) -> Void
+  )
+
   // MARK: - Key Management
-  
+
   /// Retrieve a key by ID using XPC
   /// - Parameters:
   ///   - identifier: The key identifier
   ///   - completion: Completion handler called with key data or error
-  func retrieveKeyXPC(withIdentifier identifier: String, completion: @escaping (Data?, NSNumber?, String?) -> Void)
-  
+  func retrieveKeyXPC(
+    withIdentifier identifier: String,
+    completion: @escaping (Data?, NSNumber?, String?) -> Void
+  )
+
   /// Store a key with ID using XPC
   /// - Parameters:
   ///   - key: The key data to store
   ///   - identifier: The key identifier
   ///   - completion: Completion handler called with result
-  func storeKeyXPC(_ key: Data, withIdentifier identifier: String, completion: @escaping (NSNumber?, String?) -> Void)
-  
+  func storeKeyXPC(
+    _ key: Data,
+    withIdentifier identifier: String,
+    completion: @escaping (NSNumber?, String?) -> Void
+  )
+
   /// List all key identifiers using XPC
   /// - Parameter completion: Completion handler called with list of identifiers or error
   func listKeyIdentifiers(completion: @escaping ([String]?, Error?) -> Void)
@@ -140,7 +159,7 @@ XPCServiceProtocolFoundationBridge, @unchecked Sendable {
   public func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void) {
     Task {
       // Check if the service is available by requesting a version
-      let _ = await coreService.getServiceVersion()
+      _=await coreService.getServiceVersion()
       // If we got here without crashing, the service is available
       reply(true, nil)
     }
@@ -153,18 +172,18 @@ XPCServiceProtocolFoundationBridge, @unchecked Sendable {
     Task {
       // Convert Data to NSData for processing
       let nsData=syncData as NSData
-      
+
       // Extract bytes from NSData to conform to protocol
-      let length = nsData.length
-      var bytes = [UInt8](repeating: 0, count: length)
+      let length=nsData.length
+      var bytes=[UInt8](repeating: 0, count: length)
       nsData.getBytes(&bytes, length: length)
 
       // Use the @objc compatible version that takes NSData
-      var errorToReturn: NSError? = nil
+      var errorToReturn: NSError?
       coreService.synchroniseKeys(bytes) { error in
-        errorToReturn = error
+        errorToReturn=error
       }
-      
+
       // Process the result
       reply(errorToReturn)
     }
@@ -240,17 +259,17 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
   @objc
   public func ping() async -> Bool {
     await withCheckedContinuation { continuation in
-      foundation.pingFoundation { success, error in
+      foundation.pingFoundation { success, _ in
         continuation.resume(returning: success)
       }
     }
   }
-  
+
   @objc
   public func synchroniseKeys(_ bytes: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
     // Convert [UInt8] to Data
-    let data = Data(bytes)
-    
+    let data=Data(bytes)
+
     foundation.synchroniseKeysFoundation(data) { error in
       completionHandler(error as NSError?)
     }
@@ -258,18 +277,19 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
 
   // Swift-friendly ping that returns Result
   public func pingWithResult() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
-    let success = await ping()
+    let success=await ping()
     return .success(success)
   }
 
   // Swift-friendly SecureBytes version
-  public func synchroniseKeys(_ syncData: SecureBytes) async -> Result<Void, XPCProtocolsCore.SecurityError> {
-    return await withCheckedContinuation { continuation in
+  public func synchroniseKeys(_ syncData: SecureBytes) async
+  -> Result<Void, XPCProtocolsCore.SecurityError> {
+    await withCheckedContinuation { continuation in
       // Convert SecureBytes to [UInt8]
-      let bytes = [UInt8](syncData)
-      
+      let bytes=[UInt8](syncData)
+
       synchroniseKeys(bytes) { error in
-        if let error = error {
+        if let error {
           continuation.resume(returning: .failure(self.mapXPCError(error)))
         } else {
           continuation.resume(returning: .success(()))
@@ -319,7 +339,10 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     } else if let nsString=result as? NSString {
       return .success(nsString as String)
     } else {
-      return .failure(XPCProtocolsCore.SecurityError.internalError(reason: "Invalid version format"))
+      return .failure(
+        XPCProtocolsCore.SecurityError
+          .internalError(reason: "Invalid version format")
+      )
     }
   }
 
@@ -343,7 +366,8 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     }
   }
 
-  public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+  public func generateRandomData(length: Int) async
+  -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
     await withCheckedContinuation { continuation in
       self.foundation.generateRandomDataFoundation(length) { data, error in
         if let error {
@@ -354,7 +378,8 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
           continuation
             .resume(
               returning: .failure(
-                XPCProtocolsCore.SecurityError.internalError(reason: "Random data generation failed")
+                XPCProtocolsCore.SecurityError
+                  .internalError(reason: "Random data generation failed")
               )
             )
         }
@@ -372,55 +397,62 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
   /// - Parameter error: The error to map
   /// - Returns: A properly mapped XPCProtocolsCore.SecurityError
   private func mapXPCError(_ error: Error) -> XPCProtocolsCore.SecurityError {
-    if let securityError = error as? XPCProtocolsCore.SecurityError {
+    if let securityError=error as? XPCProtocolsCore.SecurityError {
       return securityError
-    } else if let securityError = error as? UmbraErrors.Security.Protocols {
+    } else if let securityError=error as? UmbraErrors.Security.Protocols {
       // Convert from UmbraErrors.Security.Protocols to XPCProtocolsCore.SecurityError
       switch securityError {
         case .encryptionFailed:
-          return .cryptographicError(operation: "encryption", details: "Encryption operation failed")
+          return .cryptographicError(
+            operation: "encryption",
+            details: "Encryption operation failed"
+          )
         case .decryptionFailed:
-          return .cryptographicError(operation: "decryption", details: "Decryption operation failed")
-        case .internalError(let message):
+          return .cryptographicError(
+            operation: "decryption",
+            details: "Decryption operation failed"
+          )
+        case let .internalError(message):
           return .internalError(reason: message)
         case .invalidFormat, .invalidInput:
           return .invalidInput(details: "Invalid data format or input")
         case .missingProtocolImplementation, .unsupportedOperation, .notImplemented:
           return .operationNotSupported(name: "The requested operation")
-        case .incompatibleVersion, .invalidState, .randomGenerationFailed, .serviceError, .storageOperationFailed:
+        case .incompatibleVersion, .invalidState, .randomGenerationFailed, .serviceError,
+             .storageOperationFailed:
           return .serviceNotReady(reason: "Service is not in correct state")
         @unknown default:
           return .internalError(reason: error.localizedDescription)
       }
-    } else if let xpcSecurityError = error as? XPCSecurityError {
+    } else if let xpcSecurityError=error as? XPCSecurityError {
       switch xpcSecurityError {
         case .serviceUnavailable:
           return .serviceUnavailable
         case .connectionInterrupted:
           return .serviceNotReady(reason: "Connection interrupted")
-        case .connectionInvalidated(let reason):
+        case let .connectionInvalidated(reason):
           return .serviceNotReady(reason: "Connection invalidated: \(reason)")
-        case .invalidState(let details):
+        case let .invalidState(details):
           return .serviceNotReady(reason: "Invalid state: \(details)")
-        case .invalidKeyType(let expected, let received):
+        case let .invalidKeyType(expected, received):
           return .invalidInput(details: "Expected key type \(expected), received \(received)")
-        case .keyNotFound(let identifier):
+        case let .keyNotFound(identifier):
           return .invalidInput(details: "Key not found: \(identifier)")
-        case .cryptographicError(let operation, let details):
+        case let .cryptographicError(operation, details):
           return .invalidInput(details: "Cryptographic operation failed: \(operation) - \(details)")
-        case .internalError(let reason):
+        case let .internalError(reason):
           return .internalError(reason: reason)
-        case .operationNotSupported(let name):
+        case let .operationNotSupported(name):
           return .operationNotSupported(name: name)
-        case .invalidInput(let details):
+        case let .invalidInput(details):
           return .invalidInput(details: details)
-        case .serviceNotReady(let reason):
+        case let .serviceNotReady(reason):
           return .serviceNotReady(reason: reason)
-        case .timeout(let after):
+        case let .timeout(after):
           return .timeout(after: after)
-        case .authenticationFailed(let reason):
+        case let .authenticationFailed(reason):
           return .authenticationFailed(reason: reason)
-        case .authorizationDenied(let operation):
+        case let .authorizationDenied(operation):
           return .authorizationDenied(operation: operation)
         @unknown default:
           return .internalError(reason: "Unknown XPC security error")
@@ -440,10 +472,10 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
   /// - Returns: A properly mapped XPCProtocolsCore.SecurityError
   private func mapSecurityProtocolError(_ error: Error) -> XPCProtocolsCore.SecurityError {
     // If SecurityProtocolError is unavailable, we use a general mapping approach
-    if let xpcError = error as? XPCProtocolsCore.SecurityError {
-      return xpcError
+    if let xpcError=error as? XPCProtocolsCore.SecurityError {
+      xpcError
     } else {
-      return .internalError(reason: error.localizedDescription)
+      .internalError(reason: error.localizedDescription)
     }
   }
 }

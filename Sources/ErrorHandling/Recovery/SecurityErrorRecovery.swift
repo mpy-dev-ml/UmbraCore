@@ -54,25 +54,25 @@ public struct SecurityCoreErrorWrapper: Error, Sendable {
 public struct SecurityRecoveryOption: RecoveryOption, Sendable {
   /// A unique identifier for this recovery option
   public let id: UUID
-  
+
   /// User-facing title for this recovery option
   public let title: String
-  
+
   /// Additional description of what this recovery will do
   public let description: String?
-  
+
   /// Whether this recovery option can disrupt the user's workflow
   public let isDisruptive: Bool
-  
+
   /// Optional message providing more context
   public let message: String?
-  
+
   /// Whether this is the default option
   public let isDefault: Bool
-  
+
   /// Handler function to execute when this option is selected
   private let handler: @Sendable () -> Void
-  
+
   /// Initialise a new recovery option
   /// - Parameters:
   ///   - id: Unique identifier for the option
@@ -83,23 +83,23 @@ public struct SecurityRecoveryOption: RecoveryOption, Sendable {
   ///   - message: Optional context message
   ///   - handler: Action to perform when selected
   public init(
-    id: String, 
-    title: String, 
-    description: String? = nil,
-    isDisruptive: Bool = false,
-    isDefault: Bool = false, 
-    message: String? = nil,
+    id _: String,
+    title: String,
+    description: String?=nil,
+    isDisruptive: Bool=false,
+    isDefault: Bool=false,
+    message: String?=nil,
     handler: @escaping @Sendable () -> Void
   ) {
-    self.id = UUID()
-    self.title = title
-    self.description = description
-    self.isDisruptive = isDisruptive
-    self.isDefault = isDefault
-    self.message = message
-    self.handler = handler
+    id=UUID()
+    self.title=title
+    self.description=description
+    self.isDisruptive=isDisruptive
+    self.isDefault=isDefault
+    self.message=message
+    self.handler=handler
   }
-  
+
   /// Perform the recovery action
   public func perform() async {
     handler()
@@ -111,10 +111,10 @@ public struct SecurityRecoveryOption: RecoveryOption, Sendable {
 public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsProvider {
   /// Singleton shared instance
   public static let shared=SecurityErrorRecovery()
-  
+
   /// Debug mode flag
-  private let isDebug = false
-  
+  private let isDebug=false
+
   /// Private constructor ensures singleton pattern
   private init() {}
 
@@ -125,10 +125,10 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
     }
 
     // Check for our specific security error types
-    if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
+    if let securityError=error as? UmbraErrors.GeneralSecurity.Core {
       return createRecoveryOptions(for: SecurityCoreErrorWrapper(securityError))
     }
-    
+
     // No matching security error type
     return []
   }
@@ -136,10 +136,10 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
   /// Creates recovery options for a security error
   private func createRecoveryOptions(for error: SecurityCoreErrorWrapper) -> [RecoveryOption] {
     // Create appropriate actions based on the error type
-    var options: [RecoveryOption] = []
-    
+    var options: [RecoveryOption]=[]
+
     // Get the title and message for the error
-    let (title, message) = getTitleAndMessage(for: error.wrappedError)
+    let (title, message)=getTitleAndMessage(for: error.wrappedError)
 
     switch error.wrappedError {
       case .encryptionFailed, .decryptionFailed:
@@ -471,13 +471,13 @@ public final class SecurityErrorRecovery: @unchecked Sendable, RecoveryOptionsPr
   /// Print an example of recovery options for a security error
   /// - Parameter sampleError: A sample error to get recovery options for
   public func exampleUsage(sampleError: UmbraErrors.GeneralSecurity.Core) async {
-    let options = await recoveryOptions(for: sampleError)
-    
+    let options=await recoveryOptions(for: sampleError)
+
     if !options.isEmpty {
       print("Recovery options for \(sampleError):")
       print("Actions:")
       for option in options {
-        if let secOption = option as? SecurityRecoveryOption {
+        if let secOption=option as? SecurityRecoveryOption {
           print("- \(option.title)\(secOption.isDefault ? " (Default)" : "")")
         } else {
           print("- \(option.title)")

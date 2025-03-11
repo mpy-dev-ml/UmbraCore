@@ -13,7 +13,8 @@ import ErrorHandlingDomains
 import UmbraCoreTypes
 import XPCProtocolsCore
 
-// NOTE: This typealias has been deprecated in favour of using XPCProtocolsCore.SecurityError directly.
+// NOTE: This typealias has been deprecated in favour of using XPCProtocolsCore.SecurityError
+// directly.
 // It is kept temporarily for backward compatibility but will be removed in a future release.
 // For new code, please use XPCProtocolsCore.SecurityError instead.
 // @deprecated Use XPCProtocolsCore.SecurityError instead.
