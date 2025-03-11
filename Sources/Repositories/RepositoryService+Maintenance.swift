@@ -66,14 +66,14 @@ extension RepositoryService {
     let metadata=LogMetadata([
       "repository_id": identifier
     ])
-    
+
     await logger.info("Compacting repository", metadata: metadata)
-    
+
     guard let repository=repositories[identifier] else {
       await logger.error("Repository not found", metadata: metadata)
       throw UmbraErrors.Repository.Core.repositoryNotFound(resource: identifier)
     }
-    
+
     do {
       // Call maintenance instead of compact which doesn't exist on Repository
       try await repository.prune()
@@ -88,7 +88,7 @@ extension RepositoryService {
       )
     }
   }
-  
+
   /// Repairs a repository if it's in an inconsistent state.
   ///
   /// - Parameter identifier: The repository identifier
@@ -98,17 +98,17 @@ extension RepositoryService {
     let metadata=LogMetadata([
       "repository_id": identifier
     ])
-    
+
     await logger.info("Repairing repository", metadata: metadata)
-    
+
     guard let repository=repositories[identifier] else {
       await logger.error("Repository not found", metadata: metadata)
       throw UmbraErrors.Repository.Core.repositoryNotFound(resource: identifier)
     }
-    
+
     do {
       // Store the result to avoid the warning
-      let repairResult = try await repository.repair()
+      let repairResult=try await repository.repair()
       await logger.info("Repository repaired successfully: \(repairResult)", metadata: metadata)
     } catch {
       await logger.error(
@@ -120,7 +120,7 @@ extension RepositoryService {
       )
     }
   }
-  
+
   /// Optimizes a repository for better performance.
   ///
   /// - Parameter identifier: The repository identifier
@@ -130,14 +130,14 @@ extension RepositoryService {
     let metadata=LogMetadata([
       "repository_id": identifier
     ])
-    
+
     await logger.info("Optimizing repository", metadata: metadata)
-    
+
     guard let repository=repositories[identifier] else {
       await logger.error("Repository not found", metadata: metadata)
       throw UmbraErrors.Repository.Core.repositoryNotFound(resource: identifier)
     }
-    
+
     do {
       // Call maintenance instead of optimize which doesn't exist on Repository
       try await repository.rebuildIndex()
@@ -152,26 +152,27 @@ extension RepositoryService {
       )
     }
   }
-  
+
   /// Performs full maintenance on all repositories.
   ///
   /// - Parameter force: Whether to continue after failures (default: false)
-  /// - Throws: `UmbraErrors.Repository.Core.internalError` if any maintain operation fails and force is false
-  public func maintainAllRepositories(force: Bool = false) async throws {
-    let metadata = LogMetadata([
+  /// - Throws: `UmbraErrors.Repository.Core.internalError` if any maintain operation fails and
+  /// force is false
+  public func maintainAllRepositories(force: Bool=false) async throws {
+    let metadata=LogMetadata([
       "force": String(force),
       "repository_count": String(repositories.count)
     ])
-    
+
     await logger.info("Maintaining all repositories", metadata: metadata)
-    
-    var failedRepositories: [String] = []
-    
+
+    var failedRepositories: [String]=[]
+
     for (identifier, repository) in repositories {
-      let repoMetadata = LogMetadata([
+      let repoMetadata=LogMetadata([
         "repository_id": identifier
       ])
-      
+
       do {
         try await repository.prune()
         try await repository.rebuildIndex()
@@ -181,42 +182,43 @@ extension RepositoryService {
           "Repository maintenance failed: \(error.localizedDescription)",
           metadata: repoMetadata
         )
-        
+
         if !force {
           throw UmbraErrors.Repository.Core.internalError(
             reason: "Maintenance failed for repository '\(identifier)': \(error.localizedDescription)"
           )
         }
-        
+
         failedRepositories.append(identifier)
       }
     }
-    
+
     if !failedRepositories.isEmpty {
-      let failedList = failedRepositories.joined(separator: ", ")
+      let failedList=failedRepositories.joined(separator: ", ")
       await logger.warning("Failed to maintain repositories: \(failedList)", metadata: metadata)
     }
   }
-  
+
   /// Compacts all repositories to reduce their size.
   ///
   /// - Parameter force: Whether to continue after failures (default: false)
-  /// - Throws: `UmbraErrors.Repository.Core.internalError` if any compact operation fails and force is false
-  public func compactAllRepositories(force: Bool = false) async throws {
-    let metadata = LogMetadata([
+  /// - Throws: `UmbraErrors.Repository.Core.internalError` if any compact operation fails and force
+  /// is false
+  public func compactAllRepositories(force: Bool=false) async throws {
+    let metadata=LogMetadata([
       "force": String(force),
       "repository_count": String(repositories.count)
     ])
-    
+
     await logger.info("Compacting all repositories", metadata: metadata)
-    
-    var failedRepositories: [String] = []
-    
+
+    var failedRepositories: [String]=[]
+
     for (identifier, repository) in repositories {
-      let repoMetadata = LogMetadata([
+      let repoMetadata=LogMetadata([
         "repository_id": identifier
       ])
-      
+
       do {
         // Call maintenance instead of compact which doesn't exist on Repository
         try await repository.prune()
@@ -226,42 +228,43 @@ extension RepositoryService {
           "Repository compact operation failed: \(error.localizedDescription)",
           metadata: repoMetadata
         )
-        
+
         if !force {
           throw UmbraErrors.Repository.Core.internalError(
             reason: "Compact operation failed for repository '\(identifier)': \(error.localizedDescription)"
           )
         }
-        
+
         failedRepositories.append(identifier)
       }
     }
-    
+
     if !failedRepositories.isEmpty {
-      let failedList = failedRepositories.joined(separator: ", ")
+      let failedList=failedRepositories.joined(separator: ", ")
       await logger.warning("Failed to compact repositories: \(failedList)", metadata: metadata)
     }
   }
-  
+
   /// Optimizes all repositories for better performance.
   ///
   /// - Parameter force: Whether to continue after failures (default: false)
-  /// - Throws: `UmbraErrors.Repository.Core.internalError` if any optimize operation fails and force is false
-  public func optimizeAllRepositories(force: Bool = false) async throws {
-    let metadata = LogMetadata([
+  /// - Throws: `UmbraErrors.Repository.Core.internalError` if any optimize operation fails and
+  /// force is false
+  public func optimizeAllRepositories(force: Bool=false) async throws {
+    let metadata=LogMetadata([
       "force": String(force),
       "repository_count": String(repositories.count)
     ])
-    
+
     await logger.info("Optimizing all repositories", metadata: metadata)
-    
-    var failedRepositories: [String] = []
-    
+
+    var failedRepositories: [String]=[]
+
     for (identifier, repository) in repositories {
-      let repoMetadata = LogMetadata([
+      let repoMetadata=LogMetadata([
         "repository_id": identifier
       ])
-      
+
       do {
         // Call maintenance instead of optimize which doesn't exist on Repository
         try await repository.rebuildIndex()
@@ -271,23 +274,23 @@ extension RepositoryService {
           "Repository optimization failed: \(error.localizedDescription)",
           metadata: repoMetadata
         )
-        
+
         if !force {
           throw UmbraErrors.Repository.Core.internalError(
             reason: "Optimization failed for repository '\(identifier)': \(error.localizedDescription)"
           )
         }
-        
+
         failedRepositories.append(identifier)
       }
     }
-    
+
     if !failedRepositories.isEmpty {
-      let failedList = failedRepositories.joined(separator: ", ")
+      let failedList=failedRepositories.joined(separator: ", ")
       await logger.warning("Failed to optimize repositories: \(failedList)", metadata: metadata)
     }
   }
-  
+
   /// Repairs a repository at a given URL.
   ///
   /// - Parameter url: The URL of the repository to repair
@@ -328,7 +331,7 @@ extension RepositoryService {
       )
     }
   }
-  
+
   /// Compacts a repository at a given URL.
   ///
   /// - Parameter url: The URL of the repository to compact
@@ -338,14 +341,14 @@ extension RepositoryService {
     let metadata=LogMetadata([
       "path": url.path
     ])
-    
+
     await logger.info("Compacting repository", metadata: metadata)
-    
+
     guard let repository=await getRepository(at: url) else {
       await logger.error("Repository not found", metadata: metadata)
       throw UmbraErrors.Repository.Core.repositoryNotFound(resource: url.path)
     }
-    
+
     do {
       // Repository doesn't have compact method, use prune instead
       try await repository.prune()
@@ -360,7 +363,7 @@ extension RepositoryService {
       )
     }
   }
-  
+
   /// Optimizes a repository at a given URL.
   ///
   /// - Parameter url: The URL of the repository to optimize
@@ -370,14 +373,14 @@ extension RepositoryService {
     let metadata=LogMetadata([
       "path": url.path
     ])
-    
+
     await logger.info("Optimizing repository", metadata: metadata)
-    
+
     guard let repository=await getRepository(at: url) else {
       await logger.error("Repository not found", metadata: metadata)
       throw UmbraErrors.Repository.Core.repositoryNotFound(resource: url.path)
     }
-    
+
     do {
       // Repository doesn't have optimize method, use rebuildIndex instead
       try await repository.rebuildIndex()

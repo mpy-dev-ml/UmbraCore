@@ -35,8 +35,8 @@ public actor CredentialManager {
     let key=try await getMasterKey()
 
     // Make a nonisolated copy of the service before using it in async context
-    nonisolated let service = self.xpcService
-    
+    nonisolated let service=xpcService
+
     // Generate random IV using the XPC service
     let ivResult=await service.generateSecureRandomData(length: config.ivLength)
     guard case let .success(iv)=ivResult else {
@@ -85,15 +85,15 @@ public actor CredentialManager {
     let storageData=try JSONDecoder().decode(SecureStorageData.self, from: encodedData)
 
     // Make a nonisolated copy of the service before using it in async context
-    nonisolated let service = self.xpcService
+    nonisolated let service=xpcService
 
     let keyBytes=SecureBytes(bytes: [UInt8](key))
     let encryptedBytes=SecureBytes(bytes: [UInt8](storageData.encryptedData))
     let ivBytes=SecureBytes(bytes: [UInt8](storageData.iv))
 
     let decryptResult=await decrypt(
-      data: encryptedBytes, 
-      using: keyBytes, 
+      data: encryptedBytes,
+      using: keyBytes,
       iv: ivBytes,
       service: service // Pass the nonisolated service reference
     )
@@ -152,10 +152,10 @@ public actor CredentialManager {
 
     // Generate a secure random key using the XPC service
     let keyLength=config.keyLength / 8
-    
+
     // Make a nonisolated copy of the service before using it in async context
-    nonisolated let service = self.xpcService
-    
+    nonisolated let service=xpcService
+
     let randomDataResult=await service.generateSecureRandomData(length: keyLength)
     guard case let .success(key)=randomDataResult else {
       if case let .failure(error)=randomDataResult {
@@ -173,7 +173,7 @@ public actor CredentialManager {
   private func encrypt(
     data: SecureBytes,
     using key: SecureBytes,
-    iv: SecureBytes,
+    iv _: SecureBytes,
     service: ModernCryptoXPCServiceProtocol // Accept service parameter
   ) async -> Result<SecureBytes, XPCSecurityError> {
     // Convert SecureBytes to Data for XPC interface
@@ -201,7 +201,7 @@ public actor CredentialManager {
   private func decrypt(
     data: SecureBytes,
     using key: SecureBytes,
-    iv: SecureBytes,
+    iv _: SecureBytes,
     service: ModernCryptoXPCServiceProtocol // Accept service parameter
   ) async -> Result<SecureBytes, XPCSecurityError> {
     // Convert SecureBytes to Data for XPC interface

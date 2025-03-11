@@ -84,14 +84,13 @@ public struct KeyMetadata: Sendable, Codable {
   /// - Returns: The equivalent canonical KeyMetadata
   public func toCanonical() -> KeyManagementTypes.KeyMetadata {
     // Map AccessControls to canonical enum
-    let canonicalControls: KeyManagementTypes.KeyMetadata.AccessControls
-    switch accessControls {
-    case .none: canonicalControls = .none
-    case .requiresAuthentication: canonicalControls = .requiresAuthentication
-    case .requiresBiometric: canonicalControls = .requiresBiometric
-    case .requiresBoth: canonicalControls = .requiresBoth
+    let canonicalControls: KeyManagementTypes.KeyMetadata.AccessControls=switch accessControls {
+      case .none: .none
+      case .requiresAuthentication: .requiresAuthentication
+      case .requiresBiometric: .requiresBiometric
+      case .requiresBoth: .requiresBoth
     }
-    
+
     return KeyManagementTypes.KeyMetadata.withTimestamps(
       status: status,
       storageLocation: storageLocation,
@@ -113,17 +112,16 @@ public struct KeyMetadata: Sendable, Codable {
   /// - Returns: The equivalent legacy KeyMetadata
   public static func from(canonical: KeyManagementTypes.KeyMetadata) -> KeyMetadata {
     // Map AccessControls from canonical enum
-    let legacyControls: AccessControls
-    switch canonical.accessControls {
-    case .none: legacyControls = .none
-    case .requiresAuthentication: legacyControls = .requiresAuthentication
-    case .requiresBiometric: legacyControls = .requiresBiometric
-    case .requiresBoth: legacyControls = .requiresBoth
-    @unknown default:
-      // Default to the most restrictive option for any new unknown enum values
-      legacyControls = .requiresBoth
+    let legacyControls: AccessControls=switch canonical.accessControls {
+      case .none: .none
+      case .requiresAuthentication: .requiresAuthentication
+      case .requiresBiometric: .requiresBiometric
+      case .requiresBoth: .requiresBoth
+      @unknown default:
+        // Default to the most restrictive option for any new unknown enum values
+        .requiresBoth
     }
-    
+
     return KeyMetadata(
       status: canonical.status,
       storageLocation: canonical.storageLocation,
@@ -140,7 +138,8 @@ public struct KeyMetadata: Sendable, Codable {
   }
 
   // Helper to convert AccessControls to the canonical type
-  private static func convertAccessControls(_ controls: AccessControls) -> KeyManagementTypes.KeyMetadata.AccessControls {
+  private static func convertAccessControls(_ controls: AccessControls) -> KeyManagementTypes
+  .KeyMetadata.AccessControls {
     switch controls {
       case .none:
         .none
@@ -154,7 +153,10 @@ public struct KeyMetadata: Sendable, Codable {
   }
 
   // Helper to convert canonical AccessControls to the legacy type
-  private static func convertAccessControls(_ canonicalControls: KeyManagementTypes.KeyMetadata.AccessControls) -> AccessControls {
+  private static func convertAccessControls(
+    _ canonicalControls: KeyManagementTypes.KeyMetadata
+      .AccessControls
+  ) -> AccessControls {
     switch canonicalControls {
       case .none:
         return .none

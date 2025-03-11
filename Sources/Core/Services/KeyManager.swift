@@ -3,16 +3,16 @@ import CoreServicesTypes
 import KeyManagementTypes
 import UmbraCoreTypes
 #if USE_FOUNDATION_CRYPTO
-import Foundation
-// Use Foundation crypto when available
-@preconcurrency import ObjCBridgingTypesFoundation
+  import Foundation
+
+  // Use Foundation crypto when available
+  @preconcurrency import ObjCBridgingTypesFoundation
 #else
-// Use CryptoSwift for cross-platform support
-import CryptoSwift
-import Foundation
-@preconcurrency import ObjCBridgingTypesFoundation
+  // Use CryptoSwift for cross-platform support
+  import CryptoSwift
+  import Foundation
+  @preconcurrency import ObjCBridgingTypesFoundation
 #endif
-import UmbraCoreTypes
 import UmbraXPC
 import XPCProtocolsCore
 
@@ -120,8 +120,8 @@ public struct KeyValidationResult: Sendable {
 /// Manages cryptographic keys for the application
 public actor KeyManager {
   /// Current state of the key manager
-  private var _state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
-  public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
+  private var _state: CoreServicesTypes.ServiceState = .uninitialized
+  public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = .uninitialized
 
   /// Key storage location
   private let keyStorage: URL
@@ -159,8 +159,8 @@ public actor KeyManager {
   /// - Throws: KeyManagerError if initialization fails
   public func initialize() async throws {
     if _state == CoreServicesTypes.ServiceState.uninitialized {
-      _state = CoreServicesTypes.ServiceState.initializing
-      state = CoreServicesTypes.ServiceState.initializing
+      _state=CoreServicesTypes.ServiceState.initializing
+      state=CoreServicesTypes.ServiceState.initializing
 
       // Create storage directory if it doesn't exist
       try FileManager.default.createDirectory(
@@ -172,15 +172,15 @@ public actor KeyManager {
       // Load existing keys from storage
       keyMetadata=try await loadKeyMetadata()
 
-      _state = CoreServicesTypes.ServiceState.ready
-      state = CoreServicesTypes.ServiceState.ready
+      _state=CoreServicesTypes.ServiceState.ready
+      state=CoreServicesTypes.ServiceState.ready
     }
   }
 
   /// Shutdown the key manager
   public func shutdown() async {
-    _state = CoreServicesTypes.ServiceState.shuttingDown
-    state = CoreServicesTypes.ServiceState.shuttingDown
+    _state=CoreServicesTypes.ServiceState.shuttingDown
+    state=CoreServicesTypes.ServiceState.shuttingDown
 
     // Save keys to disk
     do {
@@ -189,8 +189,8 @@ public actor KeyManager {
       print("Failed to save keys during shutdown: \(error.localizedDescription)")
     }
 
-    _state = CoreServicesTypes.ServiceState.shutdown
-    state = CoreServicesTypes.ServiceState.shutdown
+    _state=CoreServicesTypes.ServiceState.shutdown
+    state=CoreServicesTypes.ServiceState.shutdown
   }
 
   /// Generate a new key with the specified parameters
@@ -266,13 +266,17 @@ public actor KeyManager {
     // Send synchronisation request through XPC using the modern Result-based approach
     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
       // Convert SecureBytes to [UInt8] using Array initializer
-      let syncBytes = Array(syncData)
+      let syncBytes=Array(syncData)
       xpcService.synchroniseKeys(syncBytes) { [weak self] error in
-        if let error = error {
-          continuation.resume(throwing: KeyManagerError.synchronisationError("XPC synchronization failed: \(error.localizedDescription)"))
+        if let error {
+          continuation
+            .resume(
+              throwing: KeyManagerError
+                .synchronisationError("XPC synchronization failed: \(error.localizedDescription)")
+            )
         } else {
           // Update last sync timestamp on success
-          if let self = self {
+          if let self {
             Task {
               await self.updateSyncTimestamp()
             }
@@ -304,7 +308,7 @@ public actor KeyManager {
   /// - Returns: Dictionary of key ID to metadata
   /// - Throws: KeyManagerError if loading fails
   private func loadKeyMetadata() async throws -> [String: KeyMetadata] {
-    var metadata: [String: KeyMetadata] = [:]
+    var metadata: [String: KeyMetadata]=[:]
 
     let fileManager=FileManager.default
     let files: [URL]
@@ -366,8 +370,8 @@ public actor KeyManager {
   /// Save key metadata to storage
   /// - Throws: KeyManagerError if saving fails
   private func saveKeyMetadata() async throws {
-    let fileManager = FileManager.default
-    
+    let fileManager=FileManager.default
+
     // Ensure storage directory exists
     if !fileManager.fileExists(atPath: keyStorage.path) {
       try fileManager.createDirectory(
@@ -375,34 +379,35 @@ public actor KeyManager {
         withIntermediateDirectories: true
       )
     }
-    
+
     // Save each key's metadata to a separate file
     for (id, metadata) in keyMetadata {
-      let metadataFile = keyStorage.appendingPathComponent("\(id).meta")
-      
+      let metadataFile=keyStorage.appendingPathComponent("\(id).meta")
+
       // Create JSON representation
-      var json: [String: Any] = [
+      var json: [String: Any]=[
         "id": id,
         "purpose": metadata.purpose,
         "algorithm": metadata.algorithm,
         "strength": metadata.strength,
         "creationDate": metadata.creationDate.timeIntervalSince1970
       ]
-      
+
       // Add optional expiration date if available
-      if let expirationDate = metadata.expirationDate {
-        json["expirationDate"] = expirationDate.timeIntervalSince1970
+      if let expirationDate=metadata.expirationDate {
+        json["expirationDate"]=expirationDate.timeIntervalSince1970
       }
-      
+
       do {
-        let data = try JSONSerialization.data(withJSONObject: json)
+        let data=try JSONSerialization.data(withJSONObject: json)
         try data.write(to: metadataFile, options: .atomicWrite)
       } catch {
-        throw KeyManagerError.metadataError("Failed to save metadata for key \(id): \(error.localizedDescription)")
+        throw KeyManagerError
+          .metadataError("Failed to save metadata for key \(id): \(error.localizedDescription)")
       }
     }
   }
-  
+
   /// Create sync data for key synchronisation
   /// - Returns: Data to synchronise
   /// - Throws: KeyManagerError if data creation fails
@@ -464,7 +469,7 @@ public actor KeyManager {
 
   /// Update the last sync timestamp
   private func updateSyncTimestamp() {
-    self.lastSyncTime = Date()
+    lastSyncTime=Date()
   }
 }
 

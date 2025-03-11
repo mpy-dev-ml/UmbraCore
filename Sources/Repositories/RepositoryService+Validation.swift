@@ -19,14 +19,14 @@ extension RepositoryService {
     let metadata=LogMetadata([
       "path": url.path
     ])
-    
+
     await logger.info("Validating repository", metadata: metadata)
-    
+
     guard let repository=await getRepository(at: url) else {
       await logger.error("Repository not found", metadata: metadata)
       throw UmbraErrors.Repository.Core.repositoryNotFound(resource: url.path)
     }
-    
+
     do {
       let result=try await repository.validate()
       if result {
@@ -66,9 +66,9 @@ extension RepositoryService {
     let metadata=LogMetadata([
       "path": url.path
     ])
-    
+
     await logger.info("Creating repository", metadata: metadata)
-    
+
     if await repositoryExists(at: url) {
       await logger.error(
         "Repository already exists at location",
@@ -78,9 +78,9 @@ extension RepositoryService {
         reason: "Repository already exists at \(url.path)"
       )
     }
-    
+
     await logger.info("Creating directory at \(url.path)", metadata: metadata)
-    
+
     do {
       try FileManager.default.createDirectory(
         at: url,
@@ -96,11 +96,11 @@ extension RepositoryService {
         reason: "Failed to create directory: \(error.localizedDescription)"
       )
     }
-    
+
     // Create repository
     let repository: any Repository
     do {
-      repository = try await createRepository(at: url)
+      repository=try await createRepository(at: url)
     } catch {
       await logger.error(
         "Failed to create repository: \(error.localizedDescription)",
@@ -110,9 +110,9 @@ extension RepositoryService {
         reason: "Failed to create repository: \(error.localizedDescription)"
       )
     }
-    
+
     await logger.info("Repository created successfully", metadata: metadata)
-    
+
     return repository
   }
 
@@ -124,21 +124,21 @@ extension RepositoryService {
     let metadata=LogMetadata([
       "path": url.path
     ])
-    
+
     await logger.info("Removing repository", metadata: metadata)
-    
+
     guard let repository=await getRepository(at: url) else {
       await logger.error("Repository not found", metadata: metadata)
       throw UmbraErrors.Repository.Core.repositoryNotFound(resource: url.path)
     }
-    
+
     // Unregister from the service
-    try await deregister(identifier: await repository.identifier)
-    
+    try await deregister(identifier: repository.identifier)
+
     // Remove the repository files
     let fileManager=FileManager.default
     try fileManager.removeItem(at: url)
-    
+
     await logger.info("Repository removed successfully", metadata: metadata)
   }
 
@@ -168,7 +168,7 @@ extension RepositoryService {
       // Create a concrete repository instance based on the URL
       let repository: any Repository
       do {
-        repository = try await createRepository(at: url)
+        repository=try await createRepository(at: url)
       } catch {
         await logger.error(
           "Failed to create repository: \(error.localizedDescription)",
@@ -178,8 +178,8 @@ extension RepositoryService {
           reason: "Failed to create repository: \(error.localizedDescription)"
         )
       }
-      
-      repositories[url.path] = repository
+
+      repositories[url.path]=repository
       await logger.info(
         "Repository initialised successfully",
         metadata: metadata

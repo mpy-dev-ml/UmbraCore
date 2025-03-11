@@ -1,9 +1,9 @@
 import CoreErrors
 import CoreServicesTypes
-import KeyManagementTypes
 import CoreTypesInterfaces
 import ErrorHandlingDomains
 import Foundation
+import KeyManagementTypes
 import SecurityProtocolsCore
 import SecurityTypes
 import SecurityTypesProtocols
@@ -18,8 +18,8 @@ typealias SPCSecurityError=UmbraErrors.Security.Protocols
 public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProviderProtocol {
   public static let serviceIdentifier="com.umbracore.security"
 
-  private var _state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
-  public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
+  private var _state: CoreServicesTypes.ServiceState = .uninitialized
+  public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = .uninitialized
 
   private let container: ServiceContainer
   private var _cryptoService: CryptoService?
@@ -28,11 +28,11 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   private var keyManagerService: KeyManager?
 
   // MARK: - SecurityProviderProtocol Properties
-  
+
   public nonisolated var cryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
     fatalError("Implementation pending - this is a placeholder to satisfy protocol requirements")
   }
-  
+
   public nonisolated var keyManager: SecurityProtocolsCore.KeyManagementProtocol {
     fatalError("Implementation pending - this is a placeholder to satisfy protocol requirements")
   }
@@ -51,28 +51,28 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
       throw ServiceError.configurationError("Service already initialized")
     }
 
-    state = CoreServicesTypes.ServiceState.initializing
-    _state = CoreServicesTypes.ServiceState.initializing
+    state=CoreServicesTypes.ServiceState.initializing
+    _state=CoreServicesTypes.ServiceState.initializing
 
     // Resolve dependencies
     _cryptoService=try await container.resolve(CryptoService.self)
 
-    _state = CoreServicesTypes.ServiceState.ready
-    state = CoreServicesTypes.ServiceState.ready
+    _state=CoreServicesTypes.ServiceState.ready
+    state=CoreServicesTypes.ServiceState.ready
   }
 
   /// Gracefully shut down the service
   public func shutdown() async {
     if _state == CoreServicesTypes.ServiceState.ready {
-      state = CoreServicesTypes.ServiceState.shuttingDown
-      _state = CoreServicesTypes.ServiceState.shuttingDown
+      state=CoreServicesTypes.ServiceState.shuttingDown
+      _state=CoreServicesTypes.ServiceState.shuttingDown
 
       // Clean up resources
       accessedPaths.removeAll()
       bookmarks.removeAll()
 
-      _state = CoreServicesTypes.ServiceState.uninitialized
-      state = CoreServicesTypes.ServiceState.uninitialized
+      _state=CoreServicesTypes.ServiceState.uninitialized
+      state=CoreServicesTypes.ServiceState.uninitialized
     }
   }
 
@@ -142,12 +142,15 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
       throw CoreErrors.ServiceError.invalidState
     }
 
-    guard let cryptoService = _cryptoService else {
-      throw CoreErrors.SecurityError.operationFailed(operation: "generateRandomBytes", reason: "Crypto service unavailable")
+    guard let cryptoService=_cryptoService else {
+      throw CoreErrors.SecurityError.operationFailed(
+        operation: "generateRandomBytes",
+        reason: "Crypto service unavailable"
+      )
     }
 
     // Use crypto service to generate random bytes
-    let randomBytes = try await cryptoService.generateRandomBytes(count: count)
+    let randomBytes=try await cryptoService.generateRandomBytes(count: count)
     return SecureBytes(bytes: randomBytes)
   }
 
@@ -257,7 +260,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
       throw CoreErrors.ServiceError.invalidState
     }
 
-    guard let cryptoService = _cryptoService else {
+    guard let cryptoService=_cryptoService else {
       throw CoreErrors.SecurityError.operationFailed(
         operation: "encryption",
         reason: "Service unavailable"
@@ -280,7 +283,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
       throw CoreErrors.ServiceError.invalidState
     }
 
-    guard let cryptoService = _cryptoService else {
+    guard let cryptoService=_cryptoService else {
       throw CoreErrors.SecurityError.operationFailed(
         operation: "decryption",
         reason: "Service unavailable"
@@ -306,11 +309,14 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     guard state == CoreServicesTypes.ServiceState.ready else {
       throw CoreErrors.ServiceError.invalidState
     }
-    
-    guard let cryptoService = _cryptoService else {
-      throw CoreErrors.SecurityError.operationFailed(operation: "hash", reason: "Crypto service unavailable")
+
+    guard let cryptoService=_cryptoService else {
+      throw CoreErrors.SecurityError.operationFailed(
+        operation: "hash",
+        reason: "Crypto service unavailable"
+      )
     }
-    
+
     // Use crypto service to perform hashing
     return try await cryptoService.hash(data)
   }
@@ -321,23 +327,24 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   ///   - config: Configuration options
   /// - Returns: Result of the operation
   public func performSecureOperation(
-    operation: SecurityProtocolsCore.SecurityOperation,
-    config: SecurityProtocolsCore.SecurityConfigDTO
+    operation _: SecurityProtocolsCore.SecurityOperation,
+    config _: SecurityProtocolsCore.SecurityConfigDTO
   ) async -> SecurityProtocolsCore.SecurityResultDTO {
     // This is a placeholder implementation to satisfy protocol requirements
-    return SecurityProtocolsCore.SecurityResultDTO(
+    SecurityProtocolsCore.SecurityResultDTO(
       success: false,
       error: .internalError("Method not implemented"),
       errorDetails: "Not implemented"
     )
   }
-  
+
   /// Create a secure configuration with appropriate defaults
   /// - Parameter options: Optional dictionary of configuration options
   /// - Returns: A properly configured SecurityConfigDTO
-  public nonisolated func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore.SecurityConfigDTO {
+  public nonisolated func createSecureConfig(options _: [String: Any]?) -> SecurityProtocolsCore
+  .SecurityConfigDTO {
     // This is a placeholder implementation to satisfy protocol requirements
-    return SecurityProtocolsCore.SecurityConfigDTO(
+    SecurityProtocolsCore.SecurityConfigDTO(
       algorithm: "AES-GCM",
       keySizeInBits: 256
     )

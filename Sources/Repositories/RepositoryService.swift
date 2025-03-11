@@ -67,7 +67,10 @@ public actor RepositoryService {
     // Ensure repository is accessible
     guard await repository.isAccessible() else {
       await logger.error("Repository not accessible", metadata: metadata)
-      throw UmbraErrors.Repository.Core.permissionDenied(operation: "register", reason: "Repository is not accessible")
+      throw UmbraErrors.Repository.Core.permissionDenied(
+        operation: "register",
+        reason: "Repository is not accessible"
+      )
     }
 
     // Check for duplicate
@@ -76,7 +79,8 @@ public actor RepositoryService {
         "Duplicate repository identifier",
         metadata: metadata
       )
-      throw UmbraErrors.Repository.Core.internalError(reason: "Repository with identifier '\(identifier)' already exists")
+      throw UmbraErrors.Repository.Core
+        .internalError(reason: "Repository with identifier '\(identifier)' already exists")
     }
 
     // Initialize repository if needed
@@ -108,7 +112,8 @@ public actor RepositoryService {
   /// Deregisters a repository from the service.
   ///
   /// - Parameter identifier: The identifier of the repository to deregister.
-  /// - Throws: `UmbraErrors.Repository.Core.repositoryNotFound` if no repository exists with the given
+  /// - Throws: `UmbraErrors.Repository.Core.repositoryNotFound` if no repository exists with the
+  /// given
   /// identifier.
   public func deregister(identifier: String) async throws {
     let metadata=LogMetadata([

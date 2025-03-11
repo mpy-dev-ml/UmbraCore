@@ -2,9 +2,9 @@ import CoreErrors
 import CoreServicesSecurityTypeAliases
 import CoreServicesTypeAliases
 import CoreServicesTypes
-import KeyManagementTypes
 import CoreTypesInterfaces
 import Foundation
+import KeyManagementTypes
 import ObjCBridgingTypesFoundation
 import UmbraCoreTypes
 import XPCProtocolsCore
@@ -122,7 +122,10 @@ public actor ServiceContainer {
 
       let initializer: () async throws -> Void={ [weak self] in
         do {
-          await self?.updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.initializing)
+          await self?.updateServiceState(
+            serviceId,
+            newState: CoreServicesTypes.ServiceState.initializing
+          )
           try await service.initialize()
           await self?.updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.ready)
         } catch {

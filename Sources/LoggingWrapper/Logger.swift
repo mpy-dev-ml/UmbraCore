@@ -13,13 +13,13 @@ public class Logger: LoggerProtocol {
   @MainActor
   private final class ConfigurationManager {
     /// Whether the logger has been configured
-    private var isConfigured = false
+    private var isConfigured=false
 
     /// Configure the logger if it hasn't been configured yet
     /// - Returns: True if this is the first configuration, false if already configured
     func configure() -> Bool {
       if !isConfigured {
-        isConfigured = true
+        isConfigured=true
         return true
       }
       return false
@@ -27,7 +27,7 @@ public class Logger: LoggerProtocol {
   }
 
   /// Shared configuration manager
-  private static let configManager = ConfigurationManager()
+  private static let configManager=ConfigurationManager()
 
   /// Configure the logger with a default console destination
   ///
@@ -35,9 +35,9 @@ public class Logger: LoggerProtocol {
   /// It is safe to call this method multiple times; only the first call will have an effect.
   public static func configure() {
     // Create a default console destination
-    let console = ConsoleDestination()
-    console.format = "$DHH:mm:ss.SSS$d $L $M"
-    
+    let console=ConsoleDestination()
+    console.format="$DHH:mm:ss.SSS$d $L $M"
+
     // Configure with the console destination
     configure(with: console)
   }
@@ -52,42 +52,42 @@ public class Logger: LoggerProtocol {
   ///   - includeFunctionName: Whether to include function names, defaults to false
   public static func configureWithConsole(
     minimumLevel: LogLevel = .info,
-    includeTimestamp: Bool = true,
-    includeFileInfo: Bool = false,
-    includeLineNumber: Bool = false,
-    includeFunctionName: Bool = false
+    includeTimestamp: Bool=true,
+    includeFileInfo: Bool=false,
+    includeLineNumber: Bool=false,
+    includeFunctionName: Bool=false
   ) {
     // Create a console destination with the specified configuration
-    let console = ConsoleDestination()
-    
+    let console=ConsoleDestination()
+
     // Apply minimum level
-    console.minLevel = toSwiftyBeaverLevel(minimumLevel)
-    
+    console.minLevel=toSwiftyBeaverLevel(minimumLevel)
+
     // Configure format options
-    console.format = ""
-    
+    console.format=""
+
     if includeTimestamp {
       console.format += "$DHH:mm:ss.SSS$d "
     }
-    
+
     if includeFileInfo {
       console.format += "$N"
-      
+
       if includeLineNumber {
         console.format += ":$L"
       }
-      
+
       console.format += " "
     } else if includeLineNumber {
       console.format += "line $L "
     }
-    
+
     if includeFunctionName {
       console.format += "$C "
     }
-    
+
     console.format += "$M"
-    
+
     // Configure with thread safety
     configure(with: console)
   }
@@ -102,40 +102,38 @@ public class Logger: LoggerProtocol {
     // Important: We need to capture the destination in a way that won't cause
     // Swift 6 Sendable warnings. Since BaseDestination isn't Sendable, we have
     // to isolate its use to a specific thread/context.
-    
+
     // First, capture any configuration properties needed from the destination
-    let format = destination.format
-    let minLevel = destination.minLevel
-    
+    let format=destination.format
+    let minLevel=destination.minLevel
+
     // Also capture the destination type
-    let isConsoleDestination = destination is ConsoleDestination
-    let isFileDestination = destination is FileDestination
-    
+    let isConsoleDestination=destination is ConsoleDestination
+    let isFileDestination=destination is FileDestination
+
     // This task will properly isolate the destination handling
-    Task { @MainActor in 
+    Task { @MainActor in
       // ConfigurationManager is already MainActor-isolated, but this task runs on MainActor
       // so we can access it directly
-      let shouldConfigure = await configManager.configure()
-      
+      let shouldConfigure=await configManager.configure()
+
       // Create a new destination instance on the main actor
       // This avoids sending non-Sendable types across task boundaries
-      let mainActorDestination: BaseDestination
-      
-      if isConsoleDestination {
-        mainActorDestination = ConsoleDestination()
+      let mainActorDestination: BaseDestination=if isConsoleDestination {
+        ConsoleDestination()
       } else if isFileDestination {
-        mainActorDestination = FileDestination()
+        FileDestination()
       } else {
         // Default to console if unknown type
-        mainActorDestination = ConsoleDestination()
+        ConsoleDestination()
       }
-      
+
       // Apply captured configuration
-      mainActorDestination.format = format
-      mainActorDestination.minLevel = minLevel
-      
+      mainActorDestination.format=format
+      mainActorDestination.minLevel=minLevel
+
       // Now add the destination to the logger
-      if shouldConfigure || true {  // Always add the destination
+      if shouldConfigure || true { // Always add the destination
         logger.addDestination(mainActorDestination)
       }
     }

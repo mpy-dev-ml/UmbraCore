@@ -139,11 +139,11 @@ public final class MacErrorNotificationService: ErrorNotificationService {
   /// - Parameter error: The error to get the domain for
   /// - Returns: The error domain
   private func getDomain(for error: Error) -> String {
-    if let umbraError = error as? UmbraError {
+    if let umbraError=error as? UmbraError {
       return umbraError.domain
     } else {
       // Access NSError properties directly through the bridged Error
-      let nsError = error as NSError
+      let nsError=error as NSError
       return nsError.domain
     }
   }
@@ -154,7 +154,7 @@ public final class MacErrorNotificationService: ErrorNotificationService {
   ///   - domain: The error domain
   /// - Returns: A user-friendly title
   private func getTitle(for error: Error, domain: String) -> String {
-    if let umbraError = error as? UmbraError {
+    if let umbraError=error as? UmbraError {
       "Error in \(domain): \(umbraError.code)"
     } else {
       "Error in \(domain)"
@@ -165,7 +165,7 @@ public final class MacErrorNotificationService: ErrorNotificationService {
   /// - Parameter error: The error
   /// - Returns: A user-friendly message
   private func getMessage(for error: Error) -> String {
-    if let umbraError = error as? UmbraError {
+    if let umbraError=error as? UmbraError {
       umbraError.errorDescription
     } else {
       error.localizedDescription

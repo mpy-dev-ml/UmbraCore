@@ -35,12 +35,12 @@ public struct SecurityPolicy: Sendable, Equatable {
   ///   - requiredKeyStatus: Required key status
   public init(
     requiredAuthentication: AuthenticationLevel = .none,
-    requiredStorageLocation: KeyManagementTypes.StorageLocation? = nil,
+    requiredStorageLocation: KeyManagementTypes.StorageLocation?=nil,
     requiredKeyStatus: KeyManagementTypes.KeyStatus = .active
   ) {
-    self.requiredAuthentication = requiredAuthentication
-    self.requiredStorageLocation = requiredStorageLocation
-    self.requiredKeyStatus = requiredKeyStatus
+    self.requiredAuthentication=requiredAuthentication
+    self.requiredStorageLocation=requiredStorageLocation
+    self.requiredKeyStatus=requiredKeyStatus
   }
 
   public static func == (lhs: SecurityPolicy, rhs: SecurityPolicy) -> Bool {

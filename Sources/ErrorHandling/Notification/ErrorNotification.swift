@@ -145,12 +145,12 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
     // Extract domain from error - Error objects are already bridged to NSError
     // so casting is redundant in Swift
     let domain: String
-    if let umbraError = error as? UmbraError {
-      domain = umbraError.domain
+    if let umbraError=error as? UmbraError {
+      domain=umbraError.domain
     } else {
       // Access NSError properties directly through the bridged Error
-      let nsError = error as NSError
-      domain = nsError.domain
+      let nsError=error as NSError
+      domain=nsError.domain
     }
 
     let notification=ErrorNotification(
