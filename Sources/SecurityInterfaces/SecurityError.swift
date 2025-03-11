@@ -26,6 +26,8 @@ public enum SecurityInterfacesError: Error, Sendable {
   case bookmarkError(String)
   /// Custom access error with message
   case accessError(String)
+  /// Serialization or deserialization failed
+  case serializationFailed(reason: String)
   /// Wrapped SecurityInterfacesBase.SecurityError
   case wrapped(SecurityInterfacesBase.SecurityError)
 
@@ -53,6 +55,8 @@ public enum SecurityInterfacesError: Error, Sendable {
         "Security bookmark error: \(message)"
       case let .accessError(message):
         "Security access error: \(message)"
+      case let .serializationFailed(reason):
+        "Serialization or deserialization failed: \(reason)"
       case let .wrapped(error):
         "Wrapped security error: \(error.localizedDescription)"
     }
@@ -68,7 +72,7 @@ public enum SecurityInterfacesError: Error, Sendable {
         baseError
       case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
            .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
-           .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError:
+           .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError, .serializationFailed:
         nil
     }
   }

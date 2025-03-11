@@ -11,8 +11,8 @@ swift_library(
     module_name = "SecurityBridge",
     copts = [
         "-target", "arm64-apple-macos15.4",
-        # Library evolution disabled due to UmbraCoreTypes not supporting it
-        # "-Xfrontend", "-enable-library-evolution",
+        # Library evolution enabled to support binary compatibility in dependent modules
+        "-Xfrontend", "-enable-library-evolution",
         "-g",
         "-swift-version", "5",
     ],

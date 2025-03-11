@@ -3,7 +3,7 @@ import SecurityProtocolsCore
 
 /// Security level options for the security provider
 @frozen
-public enum SecurityLevel: Int, Sendable {
+public enum SecurityLevel: Int, Sendable, Codable {
   case basic=0
   case standard=1
   case advanced=2
@@ -11,7 +11,7 @@ public enum SecurityLevel: Int, Sendable {
 }
 
 /// Configuration for security operations
-public struct SecurityConfiguration: Sendable {
+public struct SecurityConfiguration: Sendable, Codable {
   /// The security level to use
   public let securityLevel: SecurityLevel
 
