@@ -1,10 +1,10 @@
-import KeyManagementTypes
 import Foundation
+import KeyManagementTypes
 
 /// Represents the current status of a cryptographic key
-/// 
+///
 /// - Important: This type is deprecated. Please use `KeyManagementTypes.KeyStatus` instead.
-/// 
+///
 /// The canonical implementation is available in the KeyManagementTypes module and provides
 /// a standardised representation used across the UmbraCore framework.
 @frozen
@@ -66,39 +66,39 @@ public enum KeyStatus: Sendable, Equatable, Codable {
         try container.encode(timestamp, forKey: .deletionTimestamp)
     }
   }
-  
+
   /// Convert to the canonical KeyStatus type
   /// - Returns: The equivalent canonical KeyStatus
   public func toCanonical() -> KeyManagementTypes.KeyStatus {
     switch self {
       case .active:
-        return .active
+        .active
       case .compromised:
-        return .compromised
+        .compromised
       case .retired:
-        return .retired
+        .retired
       case let .pendingDeletion(timestamp):
-        return KeyManagementTypes.KeyStatus.pendingDeletionWithTimestamp(timestamp)
+        KeyManagementTypes.KeyStatus.pendingDeletionWithTimestamp(timestamp)
     }
   }
-  
+
   /// Create from the canonical KeyStatus type
   /// - Parameter canonical: The canonical KeyStatus to convert from
   /// - Returns: The equivalent legacy KeyStatus
   public static func from(canonical: KeyManagementTypes.KeyStatus) -> KeyStatus {
     switch canonical {
       case .active:
-        return .active
+        .active
       case .compromised:
-        return .compromised
+        .compromised
       case .retired:
-        return .retired
+        .retired
       case .pendingDeletion:
-        if let timestamp = canonical.getDeletionTimestamp() {
-          return .pendingDeletion(timestamp)
+        if let timestamp=canonical.getDeletionTimestamp() {
+          .pendingDeletion(timestamp)
         } else {
           // This shouldn't happen with valid data, but as a fallback we use current time
-          return .pendingDeletion(Int64(Date().timeIntervalSince1970))
+          .pendingDeletion(Int64(Date().timeIntervalSince1970))
         }
     }
   }

@@ -24,7 +24,7 @@ public actor KeychainService {
 
   /// Creates a new keychain service instance.
   public init(logger: LoggingProtocol) {
-    self.logger = logger
+    self.logger=logger
   }
 
   /// Adds a new item to the keychain.
@@ -55,7 +55,7 @@ public actor KeychainService {
     let status=SecItemAdd(query as CFDictionary, nil)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      let metadata = LogMetadata([
+      let metadata=LogMetadata([
         "error": String(describing: error),
         "status": String(status),
         "operation": "addItem",
@@ -67,7 +67,7 @@ public actor KeychainService {
       throw error
     }
 
-    let metadata = LogMetadata([
+    let metadata=LogMetadata([
       "operation": "addItem",
       "account": account,
       "service": service,
@@ -107,7 +107,7 @@ public actor KeychainService {
     let status=SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      let metadata = LogMetadata([
+      let metadata=LogMetadata([
         "error": String(describing: error),
         "status": String(status),
         "operation": "updateItem",
@@ -119,7 +119,7 @@ public actor KeychainService {
       throw error
     }
 
-    let metadata = LogMetadata([
+    let metadata=LogMetadata([
       "operation": "updateItem",
       "account": account,
       "service": service,
@@ -153,7 +153,7 @@ public actor KeychainService {
     let status=SecItemDelete(query as CFDictionary)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      let metadata = LogMetadata([
+      let metadata=LogMetadata([
         "error": String(describing: error),
         "status": String(status),
         "operation": "removeItem",
@@ -165,7 +165,7 @@ public actor KeychainService {
       throw error
     }
 
-    let metadata = LogMetadata([
+    let metadata=LogMetadata([
       "operation": "removeItem",
       "account": account,
       "service": service,
@@ -205,7 +205,7 @@ public actor KeychainService {
         return status == errSecSuccess
       default:
         let error=convertError(status)
-        let metadata = LogMetadata([
+        let metadata=LogMetadata([
           "error": String(describing: error),
           "status": String(status),
           "operation": "containsItem",
@@ -246,7 +246,7 @@ public actor KeychainService {
     let status=SecItemCopyMatching(query as CFDictionary, &result)
     guard status == errSecSuccess else {
       let error=convertError(status)
-      let metadata = LogMetadata([
+      let metadata=LogMetadata([
         "error": String(describing: error),
         "status": String(status),
         "operation": "retrieveItem",
@@ -259,7 +259,7 @@ public actor KeychainService {
     }
 
     guard let data=result as? Data else {
-      let metadata = LogMetadata([
+      let metadata=LogMetadata([
         "operation": "retrieveItem",
         "account": account,
         "service": service,
@@ -270,7 +270,7 @@ public actor KeychainService {
       throw KeychainError.unexpectedData
     }
 
-    let metadata = LogMetadata([
+    let metadata=LogMetadata([
       "operation": "retrieveItem",
       "account": account,
       "service": service,

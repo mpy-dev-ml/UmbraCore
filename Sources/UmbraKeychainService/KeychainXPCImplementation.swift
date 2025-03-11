@@ -9,26 +9,26 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
     func debug(_ message: String, metadata: LogMetadata?) async {
       NSLog("DEBUG: \(message) \(metadata?.asDictionary ?? [:])")
     }
-    
+
     func info(_ message: String, metadata: LogMetadata?) async {
       NSLog("INFO: \(message) \(metadata?.asDictionary ?? [:])")
     }
-    
+
     func warning(_ message: String, metadata: LogMetadata?) async {
       NSLog("WARNING: \(message) \(metadata?.asDictionary ?? [:])")
     }
-    
+
     func error(_ message: String, metadata: LogMetadata?) async {
       NSLog("ERROR: \(message) \(metadata?.asDictionary ?? [:])")
     }
   }
-  
+
   private let keychain: KeychainService
   private let queue=DispatchQueue(label: "com.umbracore.keychain.xpc", qos: .userInitiated)
 
   override init() {
     // Create keychain service with XPC logger
-    self.keychain = KeychainService(logger: XPCLogger())
+    keychain=KeychainService(logger: XPCLogger())
     super.init()
   }
 

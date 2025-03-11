@@ -53,16 +53,16 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
   /// - Parameter type: The type of provider to create
   /// - Returns: A new security provider
   /// - Throws: Error if provider creation fails
-  public static func createProvider(ofType type: String) throws -> any SecurityProvider {
-    let factory = StandardSecurityProviderFactory()
-    let defaultConfig = SecurityConfiguration(
+  public static func createProvider(ofType _: String) throws -> any SecurityProvider {
+    let factory=StandardSecurityProviderFactory()
+    let defaultConfig=SecurityConfiguration(
       securityLevel: .standard,
       encryptionAlgorithm: "AES-256",
       hashAlgorithm: "SHA-256",
       options: nil
     )
-    
-    let bridge = factory.createSecurityProvider(config: defaultConfig)
+
+    let bridge=factory.createSecurityProvider(config: defaultConfig)
     return SecurityProviderAdapter(
       bridge: bridge,
       service: DummyXPCService()

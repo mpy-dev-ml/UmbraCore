@@ -135,12 +135,12 @@ public final class SecurityProviderAdapter: SecurityProvider {
 
   public func getHostIdentifier() async -> Result<String, SecurityError> {
     // Use the XPC service directly to get hardware identifier
-    let result = await service.getHardwareIdentifier()
-    
+    let result=await service.getHardwareIdentifier()
+
     switch result {
-      case .success(let identifier):
+      case let .success(identifier):
         return .success(identifier)
-      case .failure(let error):
+      case let .failure(error):
         return .failure(mapXPCError(error))
     }
   }
@@ -320,12 +320,12 @@ public final class SecurityProviderAdapter: SecurityProvider {
 
   public func getSecurityConfiguration() async -> Result<SecurityConfiguration, SecurityError> {
     // Get service status
-    let result = await service.status()
-    
+    let result=await service.status()
+
     switch result {
       case let .success(statusDict):
         // Extract the configuration data from the status dictionary
-        guard let configData = statusDict["configData"] as? Data else {
+        guard let configData=statusDict["configData"] as? Data else {
           return .failure(
             SecurityInterfacesError
               .operationFailed("Configuration data not found in service status")
@@ -334,7 +334,7 @@ public final class SecurityProviderAdapter: SecurityProvider {
 
         // Decode the configuration with proper error handling
         do {
-          let config = try JSONDecoder().decode(SecurityConfiguration.self, from: configData)
+          let config=try JSONDecoder().decode(SecurityConfiguration.self, from: configData)
           return .success(config)
         } catch {
           return .failure(
@@ -463,7 +463,7 @@ public final class SecurityProviderAdapter: SecurityProvider {
   /// - Parameter error: The security protocol error to map
   /// - Returns: A mapped security interface error
   public func mapError(_ error: UmbraErrors.Security.Protocols) -> SecurityError {
-    return mapSPCError(error)
+    mapSPCError(error)
   }
 
   // Helper function to map string operation names to SecurityOperation cases

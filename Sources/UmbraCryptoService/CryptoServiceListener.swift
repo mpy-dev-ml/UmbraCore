@@ -17,15 +17,16 @@ import XPCProtocolsCore
 public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
   /// The XPC listener
   private let listener: NSXPCListener
-  
+
   /// Dependencies required by the cryptographic service
   private let dependencies: CryptoXPCServiceDependencies
-  
+
   /// Shared instance
-  public static let shared = CryptoServiceListener()
-  
+  public static let shared=CryptoServiceListener()
+
   /// Machservice name for the XPC service
-  @objc public static var serviceType: NSObjectProtocol.Type? {
+  @objc
+  public static var serviceType: NSObjectProtocol.Type? {
     // Use NSProtocolFromString to get the protocol at runtime
     if NSProtocolFromString("ModernCryptoXPCServiceProtocol") == nil {
       return nil
@@ -33,67 +34,70 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
     // This is just to satisfy the API requirement, actual protocol is used differently
     return CryptoXPCService.self as NSObjectProtocol.Type
   }
-  
+
   /// Initialize a new crypto service listener
   /// - Parameter dependencies: Dependencies required by the service
   private override init() {
     // Create a simple implementation of LoggingProtocol
-    let keychainLogger: LoggingProtocol = SimpleLogger()
-    
-    let keychain = UmbraKeychainService(
+    let keychainLogger: LoggingProtocol=SimpleLogger()
+
+    let keychain=UmbraKeychainService(
       identifier: "com.umbracore.xpc.crypto",
       logger: keychainLogger
     )
-    
-    self.dependencies = DefaultCryptoXPCServiceDependencies(
+
+    dependencies=DefaultCryptoXPCServiceDependencies(
       securityUtils: SecurityUtils.shared,
       keychain: keychain
     )
-    
+
     // Use string literal instead of accessing MainActor isolated property
-    listener = NSXPCListener(machServiceName: "com.umbracore.xpc.crypto")
+    listener=NSXPCListener(machServiceName: "com.umbracore.xpc.crypto")
     super.init()
-    listener.delegate = self
+    listener.delegate=self
   }
-  
+
   /// Start the XPC listener
   public func start() {
     Logger.info("Starting CryptoServiceListener")
     listener.resume()
   }
-  
+
   /// Decide whether to accept a new connection
   /// - Parameter listener: The XPC listener
   /// - Returns: Whether the connection was accepted
-  public func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
+  public func listener(
+    _: NSXPCListener,
+    shouldAcceptNewConnection newConnection: NSXPCConnection
+  ) -> Bool {
     Logger.info("Received connection request")
-    
+
     // Configure the connection
-    let interfaceName = "ModernCryptoXPCServiceProtocol"
-    guard let proto = NSProtocolFromString(interfaceName) else {
+    let interfaceName="ModernCryptoXPCServiceProtocol"
+    guard let proto=NSProtocolFromString(interfaceName) else {
       Logger.error("Failed to find protocol: \(interfaceName)")
       return false
     }
-    
+
     // Create the interface with the protocol
-    newConnection.exportedInterface = NSXPCInterface(with: proto)
-    
+    newConnection.exportedInterface=NSXPCInterface(with: proto)
+
     // Set the exported object
-    let service = CryptoXPCService(dependencies: dependencies)
-    newConnection.exportedObject = service
-    
+    let service=CryptoXPCService(dependencies: dependencies)
+    newConnection.exportedObject=service
+
     // Save the connection reference in the service
-    service.connection = newConnection
-    
+    service.connection=newConnection
+
     // Handle invalidation
-    newConnection.invalidationHandler = { [weak service] in
-      service?.connection = nil
+    newConnection.invalidationHandler={ [weak service] in
+      service?.connection=nil
       Logger.info("Connection invalidated")
     }
-    
+
     // Resume the connection
     newConnection.resume()
-    
+
     Logger.info("Connection accepted")
     return true
   }
@@ -101,19 +105,19 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
 
 /// Simple implementation of LoggingProtocol that forwards to LoggingWrapper.Logger
 private final class SimpleLogger: LoggingProtocol, Sendable {
-  func debug(_ message: String, metadata: LogMetadata?) async {
+  func debug(_ message: String, metadata _: LogMetadata?) async {
     Logger.debug(message)
   }
-  
-  func info(_ message: String, metadata: LogMetadata?) async {
+
+  func info(_ message: String, metadata _: LogMetadata?) async {
     Logger.info(message)
   }
-  
-  func warning(_ message: String, metadata: LogMetadata?) async {
+
+  func warning(_ message: String, metadata _: LogMetadata?) async {
     Logger.warning(message)
   }
-  
-  func error(_ message: String, metadata: LogMetadata?) async {
+
+  func error(_ message: String, metadata _: LogMetadata?) async {
     Logger.error(message)
   }
 }
@@ -123,13 +127,13 @@ private final class SimpleLogger: LoggingProtocol, Sendable {
 public func startService() {
   // Configure the logger
   Logger.configure()
-  
+
   // Create and start the listener
-  let listener = CryptoServiceListener.shared
+  let listener=CryptoServiceListener.shared
   listener.start()
-  
+
   Logger.info("Crypto XPC Service started")
-  
+
   // Keep the service running
   RunLoop.current.run()
 }

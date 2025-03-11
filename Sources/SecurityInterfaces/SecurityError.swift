@@ -101,10 +101,10 @@ public typealias SecurityError=SecurityInterfacesError
 /// - Returns: A mapped SecurityInterfacesError
 @available(*, deprecated, message: "Use SecurityProviderAdapter.mapError instead")
 public func mapSPCError(_ error: Error) -> Error {
-  if let protocolError = error as? UmbraErrors.Security.Protocols {
+  if let protocolError=error as? UmbraErrors.Security.Protocols {
     return mapFromProtocolError(protocolError)
   }
-  
+
   // Return a generic error if type doesn't match
   return SecurityInterfacesError.operationFailed("Unknown error: \(error)")
 }
@@ -112,7 +112,10 @@ public func mapSPCError(_ error: Error) -> Error {
 /// Map a UmbraErrors.Security.Protocols error to a SecurityInterfacesError
 /// - Parameter error: The protocol error to map
 /// - Returns: A mapped SecurityInterfacesError
-private func mapFromProtocolError(_ error: UmbraErrors.Security.Protocols) -> SecurityInterfacesError {
+private func mapFromProtocolError(
+  _ error: UmbraErrors.Security
+    .Protocols
+) -> SecurityInterfacesError {
   switch error {
     case let .invalidFormat(reason):
       return .operationFailed("Invalid format: \(reason)")

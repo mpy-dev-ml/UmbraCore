@@ -21,17 +21,17 @@ extension Data {
 
 /// Custom GCM format for CryptoXPCService
 /// Format: <iv (12 bytes)><ciphertext>
-struct CryptoFormat {
-  static let ivSize = 12
-  
+enum CryptoFormat {
+  static let ivSize=12
+
   static func packEncryptedData(iv: [UInt8], ciphertext: [UInt8]) -> [UInt8] {
-    return iv + ciphertext
+    iv + ciphertext
   }
-  
+
   static func unpackEncryptedData(data: [UInt8]) -> (iv: [UInt8], ciphertext: [UInt8])? {
     guard data.count > ivSize else { return nil }
-    let iv = Array(data[0..<ivSize])
-    let ciphertext = Array(data[ivSize...])
+    let iv=Array(data[0..<ivSize])
+    let ciphertext=Array(data[ivSize...])
     return (iv, ciphertext)
   }
 }
@@ -54,7 +54,7 @@ public final class CryptoXPCService: NSObject {
   private let dependencies: CryptoXPCServiceDependencies
 
   /// Queue for cryptographic operations
-  private let cryptoQueue = DispatchQueue(label: "com.umbracore.crypto", qos: .userInitiated)
+  private let cryptoQueue=DispatchQueue(label: "com.umbracore.crypto", qos: .userInitiated)
 
   /// XPC connection for the service
   var connection: NSXPCConnection?
@@ -67,51 +67,61 @@ public final class CryptoXPCService: NSObject {
   /// Initialize the crypto service with dependencies
   /// - Parameter dependencies: Dependencies required by the service
   public init(dependencies: CryptoXPCServiceDependencies) {
-    self.dependencies = dependencies
+    self.dependencies=dependencies
     super.init()
   }
-  
+
   /// Validate the XPC connection
   /// - Parameter reply: Completion handler with validation result
-  @objc public func validateConnection(withReply reply: @escaping (Bool, Error?) -> Void) {
+  @objc
+  public func validateConnection(withReply reply: @escaping (Bool, Error?) -> Void) {
     reply(true, nil)
   }
-  
+
   /// Gets the service version
   /// - Parameter reply: Completion handler with version string
-  @objc public func getServiceVersion(withReply reply: @escaping (String) -> Void) {
+  @objc
+  public func getServiceVersion(withReply reply: @escaping (String) -> Void) {
     reply("1.0.0")
   }
-  
+
   /// Encrypt data using the specified key
   /// - Parameters:
   ///   - data: Data to encrypt
   ///   - key: Encryption key
   ///   - completion: Completion handler with encrypted data or error
-  @objc public func encrypt(_ data: Data, key: Data, completion: @escaping (Data?, Error?) -> Void) {
+  @objc
+  public func encrypt(
+    _ data: Data,
+    key: Data,
+    completion: @escaping (Data?, Error?) -> Void
+  ) {
     cryptoQueue.async { [weak self] in
       guard self != nil else {
         completion(nil, XPCSecurityError.invalidInput(details: "Service is no longer available"))
         return
       }
-      
+
       do {
         // Generate a random IV for AES-GCM
-        let iv = CryptoWrapper.generateRandomIV(size: CryptoFormat.ivSize)
-        
+        let iv=CryptoWrapper.generateRandomIV(size: CryptoFormat.ivSize)
+
         // Use AES-GCM encryption from CryptoSwiftFoundationIndependent
-        let ciphertext = try CryptoWrapper.encryptAES_GCM(
+        let ciphertext=try CryptoWrapper.encryptAES_GCM(
           data: [UInt8](data),
           key: [UInt8](key),
           iv: iv
         )
-        
+
         // Pack the IV and ciphertext together
-        let packedData = CryptoFormat.packEncryptedData(iv: iv, ciphertext: ciphertext)
-        
+        let packedData=CryptoFormat.packEncryptedData(iv: iv, ciphertext: ciphertext)
+
         completion(Data(packedData), nil)
       } catch {
-        completion(nil, XPCSecurityError.invalidInput(details: "Encryption failed: \(error.localizedDescription)"))
+        completion(
+          nil,
+          XPCSecurityError.invalidInput(details: "Encryption failed: \(error.localizedDescription)")
+        )
       }
     }
   }
@@ -121,32 +131,40 @@ public final class CryptoXPCService: NSObject {
   ///   - data: Data to decrypt
   ///   - key: Decryption key
   ///   - completion: Completion handler with decrypted data or error
-  @objc public func decrypt(_ data: Data, key: Data, completion: @escaping (Data?, Error?) -> Void) {
+  @objc
+  public func decrypt(
+    _ data: Data,
+    key: Data,
+    completion: @escaping (Data?, Error?) -> Void
+  ) {
     cryptoQueue.async { [weak self] in
       guard self != nil else {
         completion(nil, XPCSecurityError.invalidInput(details: "Service is no longer available"))
         return
       }
-      
+
       do {
-        let dataBytes = [UInt8](data)
-        
+        let dataBytes=[UInt8](data)
+
         // Unpack the IV and ciphertext
-        guard let (iv, ciphertext) = CryptoFormat.unpackEncryptedData(data: dataBytes) else {
+        guard let (iv, ciphertext)=CryptoFormat.unpackEncryptedData(data: dataBytes) else {
           completion(nil, XPCSecurityError.invalidInput(details: "Invalid encrypted data format"))
           return
         }
-        
+
         // Use AES-GCM decryption with the extracted IV
-        let decrypted = try CryptoWrapper.decryptAES_GCM(
+        let decrypted=try CryptoWrapper.decryptAES_GCM(
           data: ciphertext,
           key: [UInt8](key),
           iv: iv
         )
-        
+
         completion(Data(decrypted), nil)
       } catch {
-        completion(nil, XPCSecurityError.invalidInput(details: "Decryption failed: \(error.localizedDescription)"))
+        completion(
+          nil,
+          XPCSecurityError.invalidInput(details: "Decryption failed: \(error.localizedDescription)")
+        )
       }
     }
   }
@@ -155,9 +173,10 @@ public final class CryptoXPCService: NSObject {
   /// - Parameters:
   ///   - bits: Key length in bits (typically 128, 256)
   ///   - completion: Completion handler with generated key data or error
-  @objc public func generateKey(bits: Int, completion: @escaping (Data?, Error?) -> Void) {
-    let bytes = bits / 8
-    let key = Data.random(count: bytes)
+  @objc
+  public func generateKey(bits: Int, completion: @escaping (Data?, Error?) -> Void) {
+    let bytes=bits / 8
+    let key=Data.random(count: bytes)
     completion(key, nil)
   }
 
@@ -165,8 +184,9 @@ public final class CryptoXPCService: NSObject {
   /// - Parameters:
   ///   - length: Length of random data in bytes
   ///   - completion: Completion handler with random data or error
-  @objc public func generateRandomData(length: Int, completion: @escaping (Data?, Error?) -> Void) {
-    let data = Data.random(count: length)
+  @objc
+  public func generateRandomData(length: Int, completion: @escaping (Data?, Error?) -> Void) {
+    let data=Data.random(count: length)
     completion(data, nil)
   }
 
@@ -175,20 +195,29 @@ public final class CryptoXPCService: NSObject {
   ///   - key: Key data to store
   ///   - identifier: Key identifier
   ///   - completion: Completion handler with status or error
-  @objc public func storeKey(_ key: Data, identifier: String, completion: @escaping (Bool, Error?) -> Void) {
+  @objc
+  public func storeKey(
+    _ key: Data,
+    identifier: String,
+    completion: @escaping (Bool, Error?) -> Void
+  ) {
     guard !identifier.isEmpty else {
       completion(false, XPCSecurityError.invalidInput(details: "Empty identifier"))
       return
     }
 
     // Convert Data to base64 string for storage
-    let keyString = key.base64EncodedString()
-    
+    let keyString=key.base64EncodedString()
+
     do {
       try dependencies.keychain.store(password: keyString, for: identifier)
       completion(true, nil)
     } catch {
-      completion(false, XPCSecurityError.invalidInput(details: "Keychain storage failed: \(error.localizedDescription)"))
+      completion(
+        false,
+        XPCSecurityError
+          .invalidInput(details: "Keychain storage failed: \(error.localizedDescription)")
+      )
     }
   }
 
@@ -196,21 +225,26 @@ public final class CryptoXPCService: NSObject {
   /// - Parameters:
   ///   - identifier: Key identifier
   ///   - completion: Completion handler with key data or error
-  @objc public func retrieveKey(identifier: String, completion: @escaping (Data?, Error?) -> Void) {
+  @objc
+  public func retrieveKey(identifier: String, completion: @escaping (Data?, Error?) -> Void) {
     guard !identifier.isEmpty else {
       completion(nil, XPCSecurityError.invalidInput(details: "Empty identifier"))
       return
     }
 
     do {
-      let keyString = try dependencies.keychain.retrievePassword(for: identifier)
-      if let keyData = Data(base64Encoded: keyString) {
+      let keyString=try dependencies.keychain.retrievePassword(for: identifier)
+      if let keyData=Data(base64Encoded: keyString) {
         completion(keyData, nil)
       } else {
         completion(nil, XPCSecurityError.invalidInput(details: "Invalid key data format"))
       }
     } catch {
-      completion(nil, XPCSecurityError.invalidInput(details: "Keychain retrieval failed: \(error.localizedDescription)"))
+      completion(
+        nil,
+        XPCSecurityError
+          .invalidInput(details: "Keychain retrieval failed: \(error.localizedDescription)")
+      )
     }
   }
 
@@ -218,7 +252,8 @@ public final class CryptoXPCService: NSObject {
   /// - Parameters:
   ///   - identifier: Key identifier
   ///   - completion: Completion handler with status or error
-  @objc public func deleteKey(identifier: String, completion: @escaping (Bool, Error?) -> Void) {
+  @objc
+  public func deleteKey(identifier: String, completion: @escaping (Bool, Error?) -> Void) {
     guard !identifier.isEmpty else {
       completion(false, XPCSecurityError.invalidInput(details: "Empty identifier"))
       return
@@ -228,7 +263,11 @@ public final class CryptoXPCService: NSObject {
       try dependencies.keychain.deletePassword(for: identifier)
       completion(true, nil)
     } catch {
-      completion(false, XPCSecurityError.invalidInput(details: "Keychain deletion failed: \(error.localizedDescription)"))
+      completion(
+        false,
+        XPCSecurityError
+          .invalidInput(details: "Keychain deletion failed: \(error.localizedDescription)")
+      )
     }
   }
 }

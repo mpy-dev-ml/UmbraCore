@@ -79,14 +79,14 @@ public struct KeyMetadata: Sendable, Codable {
     self.exportable=exportable
     self.isSystemKey=isSystemKey
   }
-  
+
   /// Convert to the canonical KeyMetadata type
   /// - Returns: The equivalent canonical KeyMetadata
   public func toCanonical() -> KeyManagementTypes.KeyMetadata {
-    return KeyManagementTypes.KeyMetadata.withTimestamps(
+    KeyManagementTypes.KeyMetadata.withTimestamps(
       status: status.toCanonical(),
       storageLocation: storageLocation.toCanonical(),
-      accessControls: KeyMetadata.convertAccessControls(self.accessControls),
+      accessControls: KeyMetadata.convertAccessControls(accessControls),
       createdAtTimestamp: createdAtTimestamp,
       lastModifiedTimestamp: lastModifiedTimestamp,
       algorithm: algorithm,
@@ -98,12 +98,12 @@ public struct KeyMetadata: Sendable, Codable {
       isProcessIsolated: false // Not supported in legacy type
     )
   }
-  
+
   /// Create from the canonical KeyMetadata type
   /// - Parameter canonical: The canonical KeyMetadata to convert from
   /// - Returns: The equivalent legacy KeyMetadata
   public static func from(canonical: KeyManagementTypes.KeyMetadata) -> KeyMetadata {
-    return KeyMetadata(
+    KeyMetadata(
       status: KeyStatus.from(canonical: canonical.status),
       storageLocation: StorageLocation.from(canonical: canonical.storageLocation),
       accessControls: convertAccessControls(canonical.accessControls),
@@ -117,23 +117,27 @@ public struct KeyMetadata: Sendable, Codable {
       isSystemKey: canonical.isSystemKey
     )
   }
-  
+
   // Helper to convert AccessControls to the canonical type
-  private static func convertAccessControls(_ controls: AccessControls) -> KeyManagementTypes.KeyMetadata.AccessControls {
+  private static func convertAccessControls(_ controls: AccessControls) -> KeyManagementTypes
+  .KeyMetadata.AccessControls {
     switch controls {
       case .none:
-        return .none
+        .none
       case .requiresAuthentication:
-        return .requiresAuthentication
+        .requiresAuthentication
       case .requiresBiometric:
-        return .requiresBiometric
+        .requiresBiometric
       case .requiresBoth:
-        return .requiresBoth
+        .requiresBoth
     }
   }
-  
+
   // Helper to convert canonical AccessControls to the legacy type
-  private static func convertAccessControls(_ canonicalControls: KeyManagementTypes.KeyMetadata.AccessControls) -> AccessControls {
+  private static func convertAccessControls(
+    _ canonicalControls: KeyManagementTypes.KeyMetadata
+      .AccessControls
+  ) -> AccessControls {
     switch canonicalControls {
       case .none:
         return .none
