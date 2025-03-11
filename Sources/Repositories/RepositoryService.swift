@@ -2,6 +2,8 @@
 import Foundation
 
 // Internal modules
+import CoreErrors
+import ErrorHandlingDomains
 import RepositoriesTypes
 import SecurityTypes
 import SecurityTypesProtocols
@@ -45,9 +47,9 @@ public actor RepositoryService {
   /// Registers a repository with the service.
   ///
   /// - Parameter repository: The repository to register. Must conform to the `Repository` protocol.
-  /// - Throws: `RepositoriesTypes.RepositoryError.notAccessible` if the repository cannot be
+  /// - Throws: `UmbraErrors.Repository.Core.permissionDenied` if the repository cannot be
   /// accessed,
-  ///           `RepositoriesTypes.RepositoryError.alreadyRegistered` if a repository with the same
+  ///           `UmbraErrors.Repository.Core.internalError` if a repository with the same
   /// identifier exists.
   public func register(_ repository: some Repository) async throws {
     let identifier=await repository.identifier
@@ -65,9 +67,7 @@ public actor RepositoryService {
     // Ensure repository is accessible
     guard await repository.isAccessible() else {
       await logger.error("Repository not accessible", metadata: metadata)
-      throw RepositoriesTypes.RepositoryError.notAccessible(
-        reason: "Repository is not accessible"
-      )
+      throw UmbraErrors.Repository.Core.permissionDenied(operation: "register", reason: "Repository is not accessible")
     }
 
     // Check for duplicate
@@ -76,9 +76,7 @@ public actor RepositoryService {
         "Duplicate repository identifier",
         metadata: metadata
       )
-      throw RepositoriesTypes.RepositoryError.invalidConfiguration(
-        reason: "Repository with identifier '\(identifier)' already exists"
-      )
+      throw UmbraErrors.Repository.Core.internalError(reason: "Repository with identifier '\(identifier)' already exists")
     }
 
     // Initialize repository if needed
@@ -91,7 +89,7 @@ public actor RepositoryService {
     do {
       guard try await repository.validate() else {
         await logger.error("Repository validation failed", metadata: metadata)
-        throw RepositoriesTypes.RepositoryError.validationFailed(
+        throw UmbraErrors.Repository.Core.internalError(
           reason: "Repository validation failed"
         )
       }
@@ -110,7 +108,7 @@ public actor RepositoryService {
   /// Deregisters a repository from the service.
   ///
   /// - Parameter identifier: The identifier of the repository to deregister.
-  /// - Throws: `RepositoriesTypes.RepositoryError.notFound` if no repository exists with the given
+  /// - Throws: `UmbraErrors.Repository.Core.repositoryNotFound` if no repository exists with the given
   /// identifier.
   public func deregister(identifier: String) async throws {
     let metadata=LogMetadata([
@@ -120,7 +118,7 @@ public actor RepositoryService {
 
     guard repositories.removeValue(forKey: identifier) != nil else {
       await logger.error("Repository not found", metadata: metadata)
-      throw RepositoriesTypes.RepositoryError.notFound(identifier: identifier)
+      throw UmbraErrors.Repository.Core.repositoryNotFound(resource: identifier)
     }
 
     await logger.info("Repository deregistered successfully", metadata: metadata)
@@ -181,7 +179,7 @@ public actor RepositoryService {
   ///
   /// - Parameter url: The URL where the repository should be created
   /// - Returns: A new repository instance
-  /// - Throws: `RepositoriesTypes.RepositoryError` if creation fails
+  /// - Throws: `UmbraErrors.Repository.Core` if creation fails
   func createRepository(at url: URL) async throws -> any Repository {
     let repository=FileSystemRepository(
       identifier: url.path,

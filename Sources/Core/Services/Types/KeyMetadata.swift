@@ -10,10 +10,10 @@ import KeyManagementTypes
 @available(*, deprecated, message: "Please use the canonical KeyMetadata instead")
 public struct KeyMetadata: Sendable, Codable {
   /// Current status of the key
-  public var status: KeyStatus
+  public var status: KeyManagementTypes.KeyStatus
 
   /// Storage location of the key
-  public let storageLocation: StorageLocation
+  public let storageLocation: KeyManagementTypes.StorageLocation
 
   /// Access control settings for the key
   public enum AccessControls: String, Sendable, Codable {
@@ -80,35 +80,35 @@ public struct KeyMetadata: Sendable, Codable {
   ///   - isProcessIsolated: Whether this key is process isolated
   ///   - customMetadata: Custom metadata for the key
   public init(
-    status: KeyStatus = .active,
-    storageLocation: StorageLocation,
+    status: KeyManagementTypes.KeyStatus = .active,
+    storageLocation: KeyManagementTypes.StorageLocation,
     accessControls: AccessControls = .none,
-    createdAt: Date=Date(),
-    lastModified: Date=Date(),
-    expiryDate: Date?=nil,
+    createdAt: Date = Date(),
+    lastModified: Date = Date(),
+    expiryDate: Date? = nil,
     algorithm: String,
     keySize: Int,
     identifier: String,
-    version: Int=1,
-    exportable: Bool=false,
-    isSystemKey: Bool=false,
-    isProcessIsolated: Bool=false,
-    customMetadata: [String: String]?=nil
+    version: Int = 1,
+    exportable: Bool = false,
+    isSystemKey: Bool = false,
+    isProcessIsolated: Bool = false,
+    customMetadata: [String: String]? = nil
   ) {
-    self.status=status
-    self.storageLocation=storageLocation
-    self.accessControls=accessControls
-    self.createdAt=createdAt
-    self.lastModified=lastModified
-    self.expiryDate=expiryDate
-    self.algorithm=algorithm
-    self.keySize=keySize
-    self.identifier=identifier
-    self.version=version
-    self.exportable=exportable
-    self.isSystemKey=isSystemKey
-    self.isProcessIsolated=isProcessIsolated
-    self.customMetadata=customMetadata
+    self.status = status
+    self.storageLocation = storageLocation
+    self.accessControls = accessControls
+    self.createdAt = createdAt
+    self.lastModified = lastModified
+    self.expiryDate = expiryDate
+    self.algorithm = algorithm
+    self.keySize = keySize
+    self.identifier = identifier
+    self.version = version
+    self.exportable = exportable
+    self.isSystemKey = isSystemKey
+    self.isProcessIsolated = isProcessIsolated
+    self.customMetadata = customMetadata
   }
 
   /// Create new key metadata with basic parameters
@@ -119,26 +119,26 @@ public struct KeyMetadata: Sendable, Codable {
   ///   - keySize: Key size in bits
   ///   - expiryDate: Optional expiry date for the key
   public init(
-    storageLocation: StorageLocation,
+    storageLocation: KeyManagementTypes.StorageLocation,
     accessControls: AccessControls = .none,
     algorithm: String,
     keySize: Int,
-    expiryDate: Date?=nil
+    expiryDate: Date? = nil
   ) {
-    status=KeyStatus.active
-    self.storageLocation=storageLocation
-    self.accessControls=accessControls
-    self.algorithm=algorithm
-    self.keySize=keySize
-    createdAt=Date()
-    lastModified=Date()
-    self.expiryDate=expiryDate
-    identifier=UUID().uuidString
-    version=1
-    exportable=false
-    isSystemKey=false
-    isProcessIsolated=false
-    customMetadata=nil
+    status = KeyManagementTypes.KeyStatus.active
+    self.storageLocation = storageLocation
+    self.accessControls = accessControls
+    self.algorithm = algorithm
+    self.keySize = keySize
+    createdAt = Date()
+    lastModified = Date()
+    self.expiryDate = expiryDate
+    identifier = UUID().uuidString
+    version = 1
+    exportable = false
+    isSystemKey = false
+    isProcessIsolated = false
+    customMetadata = nil
   }
 
   /// Check if the key is expired
@@ -153,10 +153,10 @@ public struct KeyMetadata: Sendable, Codable {
   /// Create a new metadata with updated status
   /// - Parameter newStatus: The new status
   /// - Returns: Updated metadata
-  public func withStatus(_ newStatus: KeyStatus) -> KeyMetadata {
-    var updated=self
-    updated.status=newStatus
-    updated.lastModified=Date()
+  public func withStatus(_ newStatus: KeyManagementTypes.KeyStatus) -> KeyMetadata {
+    var updated = self
+    updated.status = newStatus
+    updated.lastModified = Date()
     return updated
   }
 }
@@ -199,32 +199,32 @@ extension KeyMetadata {
       status: KeyManagementTypes.KeyStatus = .active,
       storageLocation: KeyManagementTypes.StorageLocation,
       accessControls: KeyManagementTypes.KeyMetadata.AccessControls = .none,
-      createdAt: Date=Date(),
-      lastModified: Date=Date(),
-      expiryDate: Date?=nil,
-      algorithm: String="AES-GCM",
-      keySize: Int=256,
-      identifier: String=UUID().uuidString,
-      version: Int=1,
-      exportable: Bool=false,
-      isSystemKey: Bool=false,
-      isProcessIsolated: Bool=false,
-      customMetadata: [String: String]?=nil
+      createdAt: Date = Date(),
+      lastModified: Date = Date(),
+      expiryDate: Date? = nil,
+      algorithm: String = "AES-GCM",
+      keySize: Int = 256,
+      identifier: String = UUID().uuidString,
+      version: Int = 1,
+      exportable: Bool = false,
+      isSystemKey: Bool = false,
+      isProcessIsolated: Bool = false,
+      customMetadata: [String: String]? = nil
     ) {
-      self.status=status
-      self.storageLocation=storageLocation
-      self.accessControls=accessControls
-      self.createdAt=createdAt
-      self.lastModified=lastModified
-      self.expiryDate=expiryDate
-      self.algorithm=algorithm
-      self.keySize=keySize
-      self.identifier=identifier
-      self.version=version
-      self.exportable=exportable
-      self.isSystemKey=isSystemKey
-      self.isProcessIsolated=isProcessIsolated
-      self.customMetadata=customMetadata
+      self.status = status
+      self.storageLocation = storageLocation
+      self.accessControls = accessControls
+      self.createdAt = createdAt
+      self.lastModified = lastModified
+      self.expiryDate = expiryDate
+      self.algorithm = algorithm
+      self.keySize = keySize
+      self.identifier = identifier
+      self.version = version
+      self.exportable = exportable
+      self.isSystemKey = isSystemKey
+      self.isProcessIsolated = isProcessIsolated
+      self.customMetadata = customMetadata
     }
 
     public init(
@@ -233,34 +233,34 @@ extension KeyMetadata {
       accessControls: KeyManagementTypes.KeyMetadata.AccessControls = .none,
       createdAtTimestamp: Int64,
       lastModifiedTimestamp: Int64,
-      expiryTimestamp: Int64?=nil,
+      expiryTimestamp: Int64? = nil,
       algorithm: String,
       keySize: Int,
       identifier: String,
-      version: Int=1,
-      exportable: Bool=false,
-      isSystemKey: Bool=false,
-      isProcessIsolated: Bool=false,
-      customMetadata: [String: String]?=nil
+      version: Int = 1,
+      exportable: Bool = false,
+      isSystemKey: Bool = false,
+      isProcessIsolated: Bool = false,
+      customMetadata: [String: String]? = nil
     ) {
-      self.status=status
-      self.storageLocation=storageLocation
-      self.accessControls=accessControls
-      createdAt=Date(timeIntervalSince1970: TimeInterval(createdAtTimestamp))
-      lastModified=Date(timeIntervalSince1970: TimeInterval(lastModifiedTimestamp))
+      self.status = status
+      self.storageLocation = storageLocation
+      self.accessControls = accessControls
+      createdAt = Date(timeIntervalSince1970: TimeInterval(createdAtTimestamp))
+      lastModified = Date(timeIntervalSince1970: TimeInterval(lastModifiedTimestamp))
       if let expiryTimestamp {
-        expiryDate=Date(timeIntervalSince1970: TimeInterval(expiryTimestamp))
+        expiryDate = Date(timeIntervalSince1970: TimeInterval(expiryTimestamp))
       } else {
-        expiryDate=nil
+        expiryDate = nil
       }
-      self.algorithm=algorithm
-      self.keySize=keySize
-      self.identifier=identifier
-      self.version=version
-      self.exportable=exportable
-      self.isSystemKey=isSystemKey
-      self.isProcessIsolated=isProcessIsolated
-      self.customMetadata=customMetadata
+      self.algorithm = algorithm
+      self.keySize = keySize
+      self.identifier = identifier
+      self.version = version
+      self.exportable = exportable
+      self.isSystemKey = isSystemKey
+      self.isProcessIsolated = isProcessIsolated
+      self.customMetadata = customMetadata
     }
   }
 
@@ -268,8 +268,8 @@ extension KeyMetadata {
   /// - Returns: RawRepresentation that can be used with KeyManagementTypes
   public func toRawRepresentation() -> RawRepresentation {
     RawRepresentation(
-      status: status.toRawRepresentation(),
-      storageLocation: storageLocation.toRawRepresentation(),
+      status: status,
+      storageLocation: storageLocation,
       accessControls: KeyManagementTypes.KeyMetadata
         .AccessControls(rawValue: accessControls.rawValue)!,
       createdAt: createdAt,
@@ -291,8 +291,8 @@ extension KeyMetadata {
   /// - Returns: Legacy KeyMetadata
   public static func from(rawRepresentation: RawRepresentation) -> KeyMetadata {
     KeyMetadata(
-      status: KeyStatus.from(rawRepresentation: rawRepresentation.status),
-      storageLocation: StorageLocation.from(rawRepresentation: rawRepresentation.storageLocation),
+      status: rawRepresentation.status,
+      storageLocation: rawRepresentation.storageLocation,
       accessControls: AccessControls(rawValue: rawRepresentation.accessControls.rawValue)!,
       createdAt: rawRepresentation.createdAt,
       lastModified: rawRepresentation.lastModified,

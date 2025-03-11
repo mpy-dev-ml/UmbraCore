@@ -2,78 +2,36 @@
 import Foundation
 
 // Internal modules
+import ErrorHandlingDomains
 import RepositoriesTypes
 import UmbraLogging
 
 /// Extension for repository locking functionality
 extension RepositoryService {
-  /// Unlocks all repositories.
+  // MARK: - Locking Operations
+
+  /// Unlocks a repository.
   ///
-  /// - Parameter force: If true, attempts to unlock even if errors occur
-  /// - Throws: `RepositoriesTypes.RepositoryError.operationFailed` if any repository fails to
-  /// unlock
-  public func unlockAll(force: Bool=false) async throws {
-    let metadata=LogMetadata([
-      "repository_count": String(repositories.count),
+  /// - Parameters:
+  ///   - identifier: The identifier of the repository to unlock
+  ///   - force: Whether to continue on errors (default: false)
+  /// - Throws: `UmbraErrors.Repository.Core.internalError` if the unlock operation fails and force is false
+  public func unlockRepository(
+    _ identifier: String,
+    force: Bool = false
+  ) async throws {
+    let metadata = LogMetadata([
+      "repository_id": identifier,
       "force": String(force)
     ])
-
-    await logger.info("Unlocking all repositories", metadata: metadata)
-
-    var errors: [String: Error]=[:]
-
-    for (identifier, repository) in repositories {
-      let repoMetadata=LogMetadata([
-        "repository_id": identifier
-      ])
-
-      do {
-        try await repository.unlock()
-        await logger.debug("Repository unlocked successfully", metadata: repoMetadata)
-      } catch {
-        await logger.error(
-          "Failed to unlock repository: \(error.localizedDescription)",
-          metadata: repoMetadata
-        )
-        errors[identifier]=error
-
-        if !force {
-          throw RepositoriesTypes.RepositoryError.operationFailed(
-            reason: "Failed to unlock repository \(identifier): \(error.localizedDescription)"
-          )
-        }
-      }
-    }
-
-    if !errors.isEmpty {
-      await logger.warning(
-        "Some repositories failed to unlock",
-        metadata: LogMetadata([
-          "error_count": String(errors.count),
-          "force": String(force)
-        ])
-      )
-    }
-
-    await logger.info("Repository unlock operation completed", metadata: metadata)
-  }
-
-  /// Unlocks a specific repository.
-  ///
-  /// - Parameter identifier: The repository identifier
-  /// - Throws: `RepositoriesTypes.RepositoryError.notFound` if the repository does not exist,
-  ///           `RepositoriesTypes.RepositoryError.operationFailed` if the unlock operation fails
-  public func unlock(_ identifier: String) async throws {
-    let metadata=LogMetadata([
-      "repository_id": identifier
-    ])
-
+    
     await logger.info("Unlocking repository", metadata: metadata)
-
-    guard let repository=repositories[identifier] else {
-      throw RepositoriesTypes.RepositoryError.notFound(identifier: identifier)
+    
+    guard let repository = repositories[identifier] else {
+      await logger.error("Repository not found", metadata: metadata)
+      throw UmbraErrors.Repository.Core.repositoryNotFound(resource: identifier)
     }
-
+    
     do {
       try await repository.unlock()
       await logger.info("Repository unlocked successfully", metadata: metadata)
@@ -82,9 +40,56 @@ extension RepositoryService {
         "Failed to unlock repository: \(error.localizedDescription)",
         metadata: metadata
       )
-      throw RepositoriesTypes.RepositoryError.operationFailed(
-        reason: "Failed to unlock repository: \(error.localizedDescription)"
-      )
+      
+      if !force {
+        throw UmbraErrors.Repository.Core.internalError(
+          reason: "Failed to unlock repository \(identifier): \(error.localizedDescription)"
+        )
+      }
+    }
+  }
+
+  /// Unlocks all registered repositories.
+  ///
+  /// - Parameter force: Whether to continue on errors (default: false)
+  /// - Throws: `UmbraErrors.Repository.Core.internalError` if any unlock operation fails and force is false
+  public func unlockAllRepositories(force: Bool = false) async throws {
+    let metadata = LogMetadata([
+      "force": String(force)
+    ])
+    
+    await logger.info("Unlocking all repositories", metadata: metadata)
+    
+    var failedRepositories: [String] = []
+    
+    for (identifier, repository) in repositories {
+      let repositoryMetadata = LogMetadata([
+        "repository_id": identifier,
+        "force": String(force)
+      ])
+      
+      do {
+        try await repository.unlock()
+        await logger.info("Repository unlocked successfully", metadata: repositoryMetadata)
+      } catch {
+        await logger.error(
+          "Failed to unlock repository: \(error.localizedDescription)",
+          metadata: repositoryMetadata
+        )
+        
+        if !force {
+          throw UmbraErrors.Repository.Core.internalError(
+            reason: "Failed to unlock repository \(identifier): \(error.localizedDescription)"
+          )
+        }
+        
+        failedRepositories.append(identifier)
+      }
+    }
+    
+    if !failedRepositories.isEmpty {
+      let failedList = failedRepositories.joined(separator: ", ")
+      await logger.warning("Failed to unlock repositories: \(failedList)", metadata: metadata)
     }
   }
 }

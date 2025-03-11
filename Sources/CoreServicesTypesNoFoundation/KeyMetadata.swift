@@ -9,10 +9,10 @@ import KeyManagementTypes
 @available(*, deprecated, message: "Please use KeyManagementTypes.KeyMetadata instead")
 public struct KeyMetadata: Sendable, Codable {
   /// Current status of the key
-  public var status: KeyStatus
+  public var status: KeyManagementTypes.KeyStatus
 
   /// Storage location of the key
-  public let storageLocation: StorageLocation
+  public let storageLocation: KeyManagementTypes.StorageLocation
 
   /// Access control settings for the key
   public enum AccessControls: String, Sendable, Codable {
@@ -55,8 +55,8 @@ public struct KeyMetadata: Sendable, Codable {
 
   /// Create a new key metadata
   public init(
-    status: KeyStatus,
-    storageLocation: StorageLocation,
+    status: KeyManagementTypes.KeyStatus,
+    storageLocation: KeyManagementTypes.StorageLocation,
     accessControls: AccessControls,
     createdAtTimestamp: Int64,
     lastModifiedTimestamp: Int64,
@@ -83,10 +83,19 @@ public struct KeyMetadata: Sendable, Codable {
   /// Convert to the canonical KeyMetadata type
   /// - Returns: The equivalent canonical KeyMetadata
   public func toCanonical() -> KeyManagementTypes.KeyMetadata {
-    KeyManagementTypes.KeyMetadata.withTimestamps(
-      status: status.toCanonical(),
-      storageLocation: storageLocation.toCanonical(),
-      accessControls: KeyMetadata.convertAccessControls(accessControls),
+    // Map AccessControls to canonical enum
+    let canonicalControls: KeyManagementTypes.KeyMetadata.AccessControls
+    switch accessControls {
+    case .none: canonicalControls = .none
+    case .requiresAuthentication: canonicalControls = .requiresAuthentication
+    case .requiresBiometric: canonicalControls = .requiresBiometric
+    case .requiresBoth: canonicalControls = .requiresBoth
+    }
+    
+    return KeyManagementTypes.KeyMetadata.withTimestamps(
+      status: status,
+      storageLocation: storageLocation,
+      accessControls: canonicalControls,
       createdAtTimestamp: createdAtTimestamp,
       lastModifiedTimestamp: lastModifiedTimestamp,
       algorithm: algorithm,
@@ -103,10 +112,22 @@ public struct KeyMetadata: Sendable, Codable {
   /// - Parameter canonical: The canonical KeyMetadata to convert from
   /// - Returns: The equivalent legacy KeyMetadata
   public static func from(canonical: KeyManagementTypes.KeyMetadata) -> KeyMetadata {
-    KeyMetadata(
-      status: KeyStatus.from(canonical: canonical.status),
-      storageLocation: StorageLocation.from(canonical: canonical.storageLocation),
-      accessControls: convertAccessControls(canonical.accessControls),
+    // Map AccessControls from canonical enum
+    let legacyControls: AccessControls
+    switch canonical.accessControls {
+    case .none: legacyControls = .none
+    case .requiresAuthentication: legacyControls = .requiresAuthentication
+    case .requiresBiometric: legacyControls = .requiresBiometric
+    case .requiresBoth: legacyControls = .requiresBoth
+    @unknown default:
+      // Default to the most restrictive option for any new unknown enum values
+      legacyControls = .requiresBoth
+    }
+    
+    return KeyMetadata(
+      status: canonical.status,
+      storageLocation: canonical.storageLocation,
+      accessControls: legacyControls,
       createdAtTimestamp: canonical.createdAtTimestamp,
       lastModifiedTimestamp: canonical.lastModifiedTimestamp,
       identifier: canonical.identifier,
@@ -119,8 +140,7 @@ public struct KeyMetadata: Sendable, Codable {
   }
 
   // Helper to convert AccessControls to the canonical type
-  private static func convertAccessControls(_ controls: AccessControls) -> KeyManagementTypes
-  .KeyMetadata.AccessControls {
+  private static func convertAccessControls(_ controls: AccessControls) -> KeyManagementTypes.KeyMetadata.AccessControls {
     switch controls {
       case .none:
         .none
@@ -134,10 +154,7 @@ public struct KeyMetadata: Sendable, Codable {
   }
 
   // Helper to convert canonical AccessControls to the legacy type
-  private static func convertAccessControls(
-    _ canonicalControls: KeyManagementTypes.KeyMetadata
-      .AccessControls
-  ) -> AccessControls {
+  private static func convertAccessControls(_ canonicalControls: KeyManagementTypes.KeyMetadata.AccessControls) -> AccessControls {
     switch canonicalControls {
       case .none:
         return .none

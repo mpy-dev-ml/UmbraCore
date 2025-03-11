@@ -1,5 +1,6 @@
 import CoreErrors
 import CoreServicesTypes
+import KeyManagementTypes
 import CoreTypesInterfaces
 import ErrorHandlingDomains
 import Foundation
@@ -17,8 +18,8 @@ typealias SPCSecurityError=UmbraErrors.Security.Protocols
 public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProviderProtocol {
   public static let serviceIdentifier="com.umbracore.security"
 
-  private var _state: ServiceState = .uninitialized
-  public private(set) nonisolated(unsafe) var state: ServiceState = .uninitialized
+  private var _state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
+  public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
 
   private let container: ServiceContainer
   private var _cryptoService: CryptoService?
@@ -46,38 +47,38 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
 
   /// Initialize the service
   public func initialize() async throws {
-    guard _state == .uninitialized else {
+    guard _state == CoreServicesTypes.ServiceState.uninitialized else {
       throw ServiceError.configurationError("Service already initialized")
     }
 
-    state = .initializing
-    _state = .initializing
+    state = CoreServicesTypes.ServiceState.initializing
+    _state = CoreServicesTypes.ServiceState.initializing
 
     // Resolve dependencies
     _cryptoService=try await container.resolve(CryptoService.self)
 
-    _state = .ready
-    state = .ready
+    _state = CoreServicesTypes.ServiceState.ready
+    state = CoreServicesTypes.ServiceState.ready
   }
 
   /// Gracefully shut down the service
   public func shutdown() async {
-    if _state == .ready {
-      state = .shuttingDown
-      _state = .shuttingDown
+    if _state == CoreServicesTypes.ServiceState.ready {
+      state = CoreServicesTypes.ServiceState.shuttingDown
+      _state = CoreServicesTypes.ServiceState.shuttingDown
 
       // Clean up resources
       accessedPaths.removeAll()
       bookmarks.removeAll()
 
-      _state = .uninitialized
-      state = .uninitialized
+      _state = CoreServicesTypes.ServiceState.uninitialized
+      state = CoreServicesTypes.ServiceState.uninitialized
     }
   }
 
   /// Check if the service is in a usable state
   public func isUsable() async -> Bool {
-    _state == .ready
+    _state == CoreServicesTypes.ServiceState.ready
   }
 
   // MARK: - Security Provider Implementation
@@ -87,7 +88,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   /// - Returns: true if token is valid
   /// - Throws: SecurityError if verification fails
   public func verifySecurityToken(_ token: SecureBytes) async throws -> Bool {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
@@ -105,7 +106,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   /// - Returns: Generated security token
   /// - Throws: SecurityError if token generation fails
   public func generateSecurityToken(options: [String: Any]) async throws -> SecureBytes {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
@@ -137,7 +138,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   /// - Returns: Random bytes
   /// - Throws: SecurityError if generation fails
   public func generateRandomBytes(count: Int) async throws -> SecureBytes {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw CoreErrors.ServiceError.invalidState
     }
 
@@ -155,7 +156,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   /// - Returns: true if access was granted
   /// - Throws: SecurityError if access failed
   public func startAccessing(path: String) async throws -> Bool {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
@@ -197,7 +198,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   /// - Returns: true if bookmark was created
   /// - Throws: SecurityError if bookmark creation failed
   public func createBookmark(for path: String) async throws -> Bool {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
@@ -222,7 +223,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     to path: String,
     perform operation: () async throws -> T
   ) async throws -> T {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw ServiceError.invalidState("Security service not initialized")
     }
 
@@ -252,7 +253,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   /// - Returns: Encrypted data
   /// - Throws: SecurityError if encryption fails
   public func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw CoreErrors.ServiceError.invalidState
     }
 
@@ -275,7 +276,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   /// - Returns: Decrypted data
   /// - Throws: SecurityError if decryption fails
   public func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw CoreErrors.ServiceError.invalidState
     }
 
@@ -302,7 +303,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   /// - Returns: Hash result
   /// - Throws: SecurityError if hashing fails
   public func hash(_ data: [UInt8]) async throws -> [UInt8] {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw CoreErrors.ServiceError.invalidState
     }
     

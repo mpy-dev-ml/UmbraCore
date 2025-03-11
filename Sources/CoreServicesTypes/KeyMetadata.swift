@@ -1,12 +1,16 @@
 import Foundation
+import KeyManagementTypes
 
 /// Metadata about a cryptographic key
+///
+/// - Important: This type is deprecated. Please use the canonical `KeyMetadata` instead.
+@available(*, deprecated, message: "Please use KeyManagementTypes.KeyMetadata instead")
 public struct KeyMetadata: Sendable, Codable {
   /// Current status of the key
-  public var status: KeyStatus
+  public var status: KeyManagementTypes.KeyStatus
 
   /// Storage location of the key
-  public let storageLocation: StorageLocation
+  public let storageLocation: KeyManagementTypes.StorageLocation
 
   /// Access control settings for the key
   public enum AccessControls: String, Sendable, Codable {
@@ -54,7 +58,7 @@ public struct KeyMetadata: Sendable, Codable {
   ///   - isProcessIsolated: Whether the key is isolated to the current process
   ///   - customMetadata: Additional metadata
   public init(
-    storageLocation: StorageLocation,
+    storageLocation: KeyManagementTypes.StorageLocation,
     accessControls: AccessControls = .none,
     algorithm: String,
     keySize: Int,
@@ -62,7 +66,7 @@ public struct KeyMetadata: Sendable, Codable {
     isProcessIsolated: Bool=false,
     customMetadata: [String: String]?=nil
   ) {
-    status=KeyStatus.active
+    status=KeyManagementTypes.KeyStatus.active
     self.storageLocation=storageLocation
     self.accessControls=accessControls
     self.algorithm=algorithm

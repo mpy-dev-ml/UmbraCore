@@ -1,5 +1,7 @@
 import CoreErrors
 import CoreServicesTypes
+import KeyManagementTypes
+import UmbraCoreTypes
 #if USE_FOUNDATION_CRYPTO
 import Foundation
 // Use Foundation crypto when available
@@ -118,8 +120,8 @@ public struct KeyValidationResult: Sendable {
 /// Manages cryptographic keys for the application
 public actor KeyManager {
   /// Current state of the key manager
-  private var _state: CoreServicesTypes.ServiceState = .uninitialized
-  public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = .uninitialized
+  private var _state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
+  public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
 
   /// Key storage location
   private let keyStorage: URL
@@ -156,9 +158,9 @@ public actor KeyManager {
   /// Initialize the key manager
   /// - Throws: KeyManagerError if initialization fails
   public func initialize() async throws {
-    if _state == .uninitialized {
-      _state = .initializing
-      state = .initializing
+    if _state == CoreServicesTypes.ServiceState.uninitialized {
+      _state = CoreServicesTypes.ServiceState.initializing
+      state = CoreServicesTypes.ServiceState.initializing
 
       // Create storage directory if it doesn't exist
       try FileManager.default.createDirectory(
@@ -170,9 +172,25 @@ public actor KeyManager {
       // Load existing keys from storage
       keyMetadata=try await loadKeyMetadata()
 
-      _state = .ready
-      state = .ready
+      _state = CoreServicesTypes.ServiceState.ready
+      state = CoreServicesTypes.ServiceState.ready
     }
+  }
+
+  /// Shutdown the key manager
+  public func shutdown() async {
+    _state = CoreServicesTypes.ServiceState.shuttingDown
+    state = CoreServicesTypes.ServiceState.shuttingDown
+
+    // Save keys to disk
+    do {
+      try await saveKeyMetadata()
+    } catch {
+      print("Failed to save keys during shutdown: \(error.localizedDescription)")
+    }
+
+    _state = CoreServicesTypes.ServiceState.shutdown
+    state = CoreServicesTypes.ServiceState.shutdown
   }
 
   /// Generate a new key with the specified parameters
@@ -187,7 +205,7 @@ public actor KeyManager {
     algorithm: String="AES-GCM",
     strength: Int=256
   ) async throws -> KeyIdentifier {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw KeyManagerError.notInitialized
     }
 
@@ -220,7 +238,7 @@ public actor KeyManager {
   /// - Returns: Validation result
   /// - Throws: KeyManagerError if validation fails
   public func validateKey(id: KeyIdentifier) async throws -> KeyValidationResult {
-    guard state == .ready else {
+    guard state == CoreServicesTypes.ServiceState.ready else {
       throw KeyManagerError.notInitialized
     }
 
@@ -345,6 +363,46 @@ public actor KeyManager {
     return metadata
   }
 
+  /// Save key metadata to storage
+  /// - Throws: KeyManagerError if saving fails
+  private func saveKeyMetadata() async throws {
+    let fileManager = FileManager.default
+    
+    // Ensure storage directory exists
+    if !fileManager.fileExists(atPath: keyStorage.path) {
+      try fileManager.createDirectory(
+        at: keyStorage,
+        withIntermediateDirectories: true
+      )
+    }
+    
+    // Save each key's metadata to a separate file
+    for (id, metadata) in keyMetadata {
+      let metadataFile = keyStorage.appendingPathComponent("\(id).meta")
+      
+      // Create JSON representation
+      var json: [String: Any] = [
+        "id": id,
+        "purpose": metadata.purpose,
+        "algorithm": metadata.algorithm,
+        "strength": metadata.strength,
+        "creationDate": metadata.creationDate.timeIntervalSince1970
+      ]
+      
+      // Add optional expiration date if available
+      if let expirationDate = metadata.expirationDate {
+        json["expirationDate"] = expirationDate.timeIntervalSince1970
+      }
+      
+      do {
+        let data = try JSONSerialization.data(withJSONObject: json)
+        try data.write(to: metadataFile, options: .atomicWrite)
+      } catch {
+        throw KeyManagerError.metadataError("Failed to save metadata for key \(id): \(error.localizedDescription)")
+      }
+    }
+  }
+  
   /// Create sync data for key synchronisation
   /// - Returns: Data to synchronise
   /// - Throws: KeyManagerError if data creation fails

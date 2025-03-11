@@ -1,4 +1,5 @@
 import Foundation
+import KeyManagementTypes
 
 /// Represents a security policy that defines access control requirements
 public struct SecurityPolicy: Sendable, Equatable {
@@ -6,10 +7,10 @@ public struct SecurityPolicy: Sendable, Equatable {
   public let requiredAuthentication: AuthenticationLevel
 
   /// Required storage location
-  public let requiredStorageLocation: StorageLocation?
+  public let requiredStorageLocation: KeyManagementTypes.StorageLocation?
 
   /// Required key status
-  public let requiredKeyStatus: KeyStatus
+  public let requiredKeyStatus: KeyManagementTypes.KeyStatus
 
   /// Authentication levels supported by the policy
   public enum AuthenticationLevel: Int, Sendable, Equatable, Comparable {
@@ -34,12 +35,12 @@ public struct SecurityPolicy: Sendable, Equatable {
   ///   - requiredKeyStatus: Required key status
   public init(
     requiredAuthentication: AuthenticationLevel = .none,
-    requiredStorageLocation: StorageLocation?=nil,
-    requiredKeyStatus: KeyStatus=KeyStatus.active
+    requiredStorageLocation: KeyManagementTypes.StorageLocation? = nil,
+    requiredKeyStatus: KeyManagementTypes.KeyStatus = .active
   ) {
-    self.requiredAuthentication=requiredAuthentication
-    self.requiredStorageLocation=requiredStorageLocation
-    self.requiredKeyStatus=requiredKeyStatus
+    self.requiredAuthentication = requiredAuthentication
+    self.requiredStorageLocation = requiredStorageLocation
+    self.requiredKeyStatus = requiredKeyStatus
   }
 
   public static func == (lhs: SecurityPolicy, rhs: SecurityPolicy) -> Bool {

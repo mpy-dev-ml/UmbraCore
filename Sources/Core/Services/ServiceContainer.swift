@@ -2,6 +2,7 @@ import CoreErrors
 import CoreServicesSecurityTypeAliases
 import CoreServicesTypeAliases
 import CoreServicesTypes
+import KeyManagementTypes
 import CoreTypesInterfaces
 import Foundation
 import ObjCBridgingTypesFoundation
@@ -34,7 +35,7 @@ public actor ServiceContainer {
   private var dependencyGraph: [String: Set<String>]
 
   /// Map of service identifiers to their states
-  private var serviceStates: [String: ServiceState]
+  private var serviceStates: [String: CoreServicesTypes.ServiceState]
 
   /// Initialise a new service container
   public init() {
@@ -68,7 +69,7 @@ public actor ServiceContainer {
     dependencyGraph[identifier]=Set(dependencies)
 
     // Set initial state
-    updateServiceState(identifier, newState: .uninitialized)
+    updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.uninitialized)
   }
 
   /// Resolve a service by type
@@ -117,15 +118,15 @@ public actor ServiceContainer {
     // Initialise services in order
     for serviceId in serviceIds {
       guard let service=services[serviceId] else { continue }
-      guard await service.state == .uninitialized else { continue }
+      guard await service.state == CoreServicesTypes.ServiceState.uninitialized else { continue }
 
       let initializer: () async throws -> Void={ [weak self] in
         do {
-          await self?.updateServiceState(serviceId, newState: .initializing)
+          await self?.updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.initializing)
           try await service.initialize()
-          await self?.updateServiceState(serviceId, newState: .ready)
+          await self?.updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.ready)
         } catch {
-          await self?.updateServiceState(serviceId, newState: .error)
+          await self?.updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.error)
           throw ServiceError
             .initialisationFailed(
               "Failed to initialize \(serviceId): \(error.localizedDescription)"
@@ -146,7 +147,7 @@ public actor ServiceContainer {
     }
 
     // Don't initialise if already initialised
-    guard await service.state == .uninitialized else {
+    guard await service.state == CoreServicesTypes.ServiceState.uninitialized else {
       return
     }
 
@@ -157,12 +158,12 @@ public actor ServiceContainer {
     }
 
     // Initialise the service
-    await updateServiceState(identifier, newState: .initializing)
+    await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.initializing)
     do {
       try await service.initialize()
-      await updateServiceState(identifier, newState: .ready)
+      await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.ready)
     } catch {
-      await updateServiceState(identifier, newState: .error)
+      await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.error)
       throw ServiceError
         .initialisationFailed("Failed to initialize \(identifier): \(error.localizedDescription)")
     }
@@ -177,9 +178,9 @@ public actor ServiceContainer {
     for serviceId in serviceIds {
       guard let service=services[serviceId] else { continue }
 
-      updateServiceState(serviceId, newState: .shuttingDown)
+      updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.shuttingDown)
       await service.shutdown()
-      updateServiceState(serviceId, newState: .shutdown)
+      updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.shutdown)
     }
   }
 
@@ -240,7 +241,7 @@ public actor ServiceContainer {
   /// - Parameters:
   ///   - serviceId: Identifier of the service to update.
   ///   - newState: New state to set.
-  private func updateServiceState(_ serviceId: String, newState: ServiceState) {
+  private func updateServiceState(_ serviceId: String, newState: CoreServicesTypes.ServiceState) {
     serviceStates[serviceId]=newState
   }
 }

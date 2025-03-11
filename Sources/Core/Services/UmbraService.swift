@@ -1,5 +1,5 @@
-import CoreServicesTypes
 import Foundation
+import CoreServicesTypes
 
 /// Protocol defining the base requirements for all UmbraCore services
 public protocol UmbraService: Actor {
@@ -24,7 +24,7 @@ public protocol UmbraService: Actor {
 /// Extension providing default implementations for UmbraService
 extension UmbraService {
   public func isUsable() async -> Bool {
-    state == .ready || state == .running
+    state == CoreServicesTypes.ServiceState.ready || state == CoreServicesTypes.ServiceState.running
   }
 }
 
