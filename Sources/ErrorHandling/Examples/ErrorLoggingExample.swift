@@ -8,13 +8,13 @@ enum ErrorLoggingExample {
   /// Configures logging for different environments
   static func configureLogging(environment: Environment) async {
     // Get the shared logger instance
-    let logger=ErrorLogger.shared
+    let logger = ErrorLogger.shared
 
     // Configure based on environment
     switch environment {
       case .development:
         // Development configuration with detailed logging
-        let config=ErrorLoggerConfiguration(
+        let config = ErrorLoggerConfiguration(
           minimumSeverity: .debug, // Show all but trace logs
           useOSLog: true, // Use OSLog for better console integration
           includeFileInfo: true, // Include source file information
@@ -29,7 +29,7 @@ enum ErrorLoggingExample {
 
       case .testing:
         // Testing configuration with focused logging
-        let config=ErrorLoggerConfiguration(
+        let config = ErrorLoggerConfiguration(
           minimumSeverity: .warning, // Only show warnings and errors
           useOSLog: false, // Direct console output
           includeFileInfo: true, // Include source file information
@@ -44,7 +44,7 @@ enum ErrorLoggingExample {
 
       case .production:
         // Production configuration with minimal console output
-        let config=ErrorLoggerConfiguration(
+        let config = ErrorLoggerConfiguration(
           minimumSeverity: .error, // Only show errors
           useOSLog: true, // Use OSLog for better integration
           includeFileInfo: false, // Omit source file for security
@@ -57,7 +57,7 @@ enum ErrorLoggingExample {
             // Filter out errors with sensitive data
             { error in
               if
-                let umbraError=error as? UmbraError,
+                let umbraError = error as? UmbraError,
                 umbraError.domain == "Security"
               {
                 // Check if error contains PII or credentials
@@ -75,10 +75,10 @@ enum ErrorLoggingExample {
 
   /// Example of logging errors with different severity levels
   static func logExampleErrors() async {
-    let logger=ErrorLogger.shared
+    let logger = ErrorLogger.shared
 
     // Create example errors
-    let criticalError=UmbraErrors.Crypto.Core.encryptionFailed(
+    let criticalError = UmbraErrors.Crypto.Core.encryptionFailed(
       algorithm: "AES-256",
       reason: "Invalid key size"
     ).with(context: ErrorContext(
@@ -86,13 +86,13 @@ enum ErrorLoggingExample {
       metadata: ["operation": "encrypt", "userInitiated": true]
     ))
 
-    let warningError=UmbraErrors.Resource.File.fileAlreadyExists(
+    let warningError = UmbraErrors.Resource.File.fileAlreadyExists(
       path: "/Users/documents/report.pdf"
     ).with(context: ErrorContext(
       source: ErrorSource(file: #file, function: #function, line: #line)
     ))
 
-    let infoError=UmbraErrors.Application.Core.configurationMismatch(
+    let infoError = UmbraErrors.Application.Core.configurationMismatch(
       setting: "theme",
       expected: "dark",
       actual: "light"
@@ -113,28 +113,28 @@ enum ErrorLoggingExample {
   /// Example of how LoggingWrapper levels map to ErrorSeverity
   static func demonstrateSeverityMapping() {
     // Convert LoggingWrapper levels to ErrorSeverity
-    let errorLevel=ErrorSeverity.from(loggingWrapperLevel: .error)
-    let warningLevel=ErrorSeverity.from(loggingWrapperLevel: .warning)
-    let infoLevel=ErrorSeverity.from(loggingWrapperLevel: .info)
-    let debugLevel=ErrorSeverity.from(loggingWrapperLevel: .debug)
+    let errorLevel = ErrorSeverity.from(loggingWrapperLevel: .error)
+    let warningLevel = ErrorSeverity.from(loggingWrapperLevel: .warning)
+    let infoLevel = ErrorSeverity.from(loggingWrapperLevel: .info)
+    let debugLevel = ErrorSeverity.from(loggingWrapperLevel: .debug)
 
     // The trace level doesn't exist in ErrorNotificationLevel
     // Using debug instead as fallback
-    let traceLevel=ErrorSeverity.from(loggingWrapperLevel: .debug)
+    let traceLevel = ErrorSeverity.from(loggingWrapperLevel: .debug)
 
     // For demonstration purposes only - manually convert to appropriate LoggingWrapper levels
     // without using the non-existent toLoggingWrapperLevel method
-    let criticalToLW=LoggingWrapper.LogLevel.error // Equivalent to ErrorSeverity.critical
-    let errorToLW=LoggingWrapper.LogLevel.error // Equivalent to ErrorSeverity.error
-    let warningToLW=LoggingWrapper.LogLevel.warning // Equivalent to ErrorSeverity.warning
-    let infoToLW=LoggingWrapper.LogLevel.info // Equivalent to ErrorSeverity.info
-    let debugToLW=LoggingWrapper.LogLevel.debug // Equivalent to ErrorSeverity.debug
-    let traceToLW=LoggingWrapper.LogLevel.debug // No exact equivalent for ErrorSeverity.trace
+    let criticalToLW = LoggingWrapper.LogLevel.error // Equivalent to ErrorSeverity.critical
+    let errorToLW = LoggingWrapper.LogLevel.error // Equivalent to ErrorSeverity.error
+    let warningToLW = LoggingWrapper.LogLevel.warning // Equivalent to ErrorSeverity.warning
+    let infoToLW = LoggingWrapper.LogLevel.info // Equivalent to ErrorSeverity.info
+    let debugToLW = LoggingWrapper.LogLevel.debug // Equivalent to ErrorSeverity.debug
+    let traceToLW = LoggingWrapper.LogLevel.debug // No exact equivalent for ErrorSeverity.trace
 
     // Convert ErrorSeverity to notification levels
-    let criticalNotification=ErrorSeverity.critical.toNotificationLevel()
-    let errorNotification=ErrorSeverity.error.toNotificationLevel()
-    let warningNotification=ErrorSeverity.warning.toNotificationLevel()
+    let criticalNotification = ErrorSeverity.critical.toNotificationLevel()
+    let errorNotification = ErrorSeverity.error.toNotificationLevel()
+    let warningNotification = ErrorSeverity.warning.toNotificationLevel()
 
     print("LoggingWrapper to ErrorSeverity mappings:")
     print("LoggingWrapper.error -> \(errorLevel)")

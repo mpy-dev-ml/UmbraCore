@@ -1,121 +1,116 @@
 import CoreErrors
+import ErrorHandling 
 import ErrorHandlingDomains
+import FeaturesLoggingErrors
+import FeaturesLoggingModels
+import FeaturesLoggingProtocols
 import Foundation
-import SecurityInterfaces
 import UmbraCoreTypes
 import XPCProtocolsCore
 import SecurityTypesProtocols
-import SecurityInterfacesFoundation
 
-/// Service for managing log files with security-scoped bookmarks
+/// Service responsible for managing log files with security-scoped bookmarks
 @available(macOS 14.0, *)
 public actor LoggingService {
-  /// Shared instance with default security service
-  public static let shared=LoggingService(securityProvider: DefaultSecurityProvider())
-
-  /// The security service to use for file operations
-  private let securityProvider: any SecurityInterfaces.SecurityProviderFoundation
-
-  /// Initialize a new logging service
-  /// - Parameter securityProvider: The security provider to use for file operations
-  public init(securityProvider: any SecurityInterfaces.SecurityProviderFoundation) {
-    self.securityProvider=securityProvider
+  /// Security provider for creating and resolving bookmarks
+  private let securityProvider: DefaultSecurityProvider
+  
+  /// Path to the log file
+  private var logFilePath: String?
+  
+  /// Initialises the logging service with a security provider
+  /// - Parameter securityProvider: The security provider to use for bookmark operations
+  public init(securityProvider: DefaultSecurityProvider) {
+    self.securityProvider = securityProvider
   }
-
-  /// Create a bookmark for a log file
-  /// - Parameter path: Path to the log file
-  /// - Returns: The bookmark data
-  /// - Throws: SecurityError if bookmark creation fails
-  public func createLogBookmark(path: String) async -> Result<[UInt8], XPCSecurityError> {
-    let url=URL(fileURLWithPath: path)
-    let data=try await securityProvider.createBookmark(for: url)
-    return Array(data)
-  }
-
-  /// Resolve a bookmark to a log file
-  /// - Parameter bookmarkData: The bookmark data
-  /// - Returns: The path to the log file and whether the bookmark is stale
-  /// - Throws: SecurityError if bookmark resolution fails
-  public func resolveLogBookmark(_ bookmarkData: [UInt8]) async throws
-  -> (path: String, isStale: Bool) {
-    let result=try await securityProvider.resolveBookmark(Data(bookmarkData))
-    return (result.url.path, result.isStale)
-  }
-
-  /// Start accessing a log file
-  /// - Parameter path: Path to the log file
-  /// - Returns: True if access was granted
-  public func startAccessingLog(path: String) async -> Result<Bool, XPCSecurityError> {
-    try await securityProvider.startAccessing(url: URL(fileURLWithPath: path))
-  }
-
-  /// Stop accessing a log file
-  /// - Parameter path: Path to the log file
-  public func stopAccessingLog(path: String) async {
-    // Using isolated call to avoid data race
-    let provider=securityProvider
-    await provider.stopAccessing(url: URL(fileURLWithPath: path))
-  }
-
-  /// Stop accessing all log files
-  public func stopAccessingAllLogs() async {
-    // Using isolated call to avoid data race
-    let provider=securityProvider
-    await provider.stopAccessingAllResources()
-  }
-
-  /// Check if a log file is being accessed
-  /// - Parameter path: Path to the log file
-  /// - Returns: True if the log file is being accessed
-  public func isAccessingLog(path: String) async -> Bool {
-    // Using isolated call to avoid data race
-    let provider=securityProvider
-    return await provider.isAccessing(url: URL(fileURLWithPath: path))
-  }
-
-  /// Get all log files being accessed
-  /// - Returns: Set of paths to log files being accessed
-  public func getAccessedLogPaths() async -> Set<String> {
-    // Using isolated call to avoid data race
-    let provider=securityProvider
-    let urls=await provider.getAccessedUrls()
-    return Set(urls.map(\.path))
-  }
-
-  /// Perform an operation with security-scoped access to a log file
-  /// - Parameters:
-  ///   - path: Path to the log file
-  ///   - operation: Operation to perform
-  /// - Returns: The result of the operation
-  /// - Throws: Any error that occurs during the operation
-  public func withLogAccess<T: Sendable>(
-    to path: String,
-    perform operation: @Sendable () async throws -> T
-  ) async throws -> T {
-    // Check if we're already accessing the path
-    let wasAlreadyAccessing=await isAccessingLog(path: path)
-
-    // Start accessing if needed
-    if !wasAlreadyAccessing {
-      _=try await startAccessingLog(path: path)
+  
+  /// Creates a log file bookmark for the provided path
+  /// - Parameter path: Path to create a bookmark for
+  /// - Returns: Result with bookmark data or error
+  public func createLogBookmark(path: String) async -> Result<[UInt8], XPCProtocolsCore.XPCSecurityError> {
+    let result = await securityProvider.createBookmark(for: path)
+    
+    switch result {
+    case .success(let bookmark):
+      return .success(bookmark.toArray())
+    case .failure(let error):
+      return .failure(mapError(error))
     }
-
-    // Perform the operation
-    do {
-      let result=try await operation()
-
-      // Stop accessing if we weren't already accessing
-      if !wasAlreadyAccessing {
-        await stopAccessingLog(path: path)
+  }
+  
+  /// Resolves a log file bookmark to a path
+  /// - Parameter bookmarkData: The bookmark data to resolve
+  /// - Returns: Result with resolved path or error
+  public func resolveLogBookmark(_ bookmarkData: [UInt8]) async -> Result<String, XPCProtocolsCore.XPCSecurityError> {
+    let secureBytes = SecureBytes(bytes: bookmarkData)
+    let result = await securityProvider.resolveBookmark(secureBytes)
+    
+    switch result {
+    case .success(let resolve):
+      let (identifier, isStale) = resolve
+      if isStale {
+        // TODO: Handle stale bookmarks properly
+        print("Warning: Bookmark is stale and may need to be recreated")
       }
-
-      return result
-    } catch {
-      // Stop accessing if we weren't already accessing
-      if !wasAlreadyAccessing {
-        await stopAccessingLog(path: path)
-      }
-      throw error
+      return .success(identifier)
+    case .failure(let error):
+      return .failure(mapError(error))
+    }
+  }
+  
+  /// Validates a log file bookmark
+  /// - Parameter bookmarkData: The bookmark data to validate
+  /// - Returns: Result with validation status or error
+  public func validateLogBookmark(_ bookmarkData: [UInt8]) async -> Result<Bool, XPCProtocolsCore.XPCSecurityError> {
+    let secureBytes = SecureBytes(bytes: bookmarkData)
+    let result = await securityProvider.validateBookmark(secureBytes)
+    
+    switch result {
+    case .success(let isValid):
+      return .success(isValid)
+    case .failure(let error):
+      return .failure(mapError(error))
+    }
+  }
+  
+  /// Starts accessing a log file as a security-scoped resource
+  /// - Parameter path: Path to the resource
+  /// - Returns: Result with access status or error
+  public func startAccessingLogResource(_ path: String) async -> Result<Bool, XPCProtocolsCore.XPCSecurityError> {
+    let result = await securityProvider.startAccessingResource(identifier: path)
+    
+    switch result {
+    case .success(let success):
+      return .success(success)
+    case .failure(let error):
+      return .failure(mapError(error))
+    }
+  }
+  
+  /// Stops accessing a log file as a security-scoped resource
+  /// - Parameter path: Path to the resource
+  public func stopAccessingLogResource(_ path: String) async {
+    await securityProvider.stopAccessingResource(identifier: path)
+  }
+  
+  /// Stops accessing all security-scoped resources
+  public func stopAccessingAllResources() async {
+    await securityProvider.stopAccessingAllResources()
+  }
+  
+  /// Maps security errors to XPC security errors
+  /// - Parameter error: The security error to map
+  /// - Returns: The mapped XPC security error
+  private func mapError(_ error: ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core) -> XPCProtocolsCore.XPCSecurityError {
+    switch error {
+    case .storageOperationFailed(let reason):
+      return .invalidInput(details: "Bookmark error: \(reason)")
+    case .internalError(let reason):
+      return .internalError(reason: reason)
+    case .notImplemented(let feature):
+      return .internalError(reason: "Feature not implemented: \(feature)")
+    default:
+      return .internalError(reason: "Security error: \(error)")
     }
   }
 }

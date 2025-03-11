@@ -1,32 +1,98 @@
+import CoreErrors
+import ErrorHandling 
 import ErrorHandlingDomains
 import Foundation
 import UmbraCoreTypes
 import XPCProtocolsCore
+import SecurityTypesProtocols
 
-/// Default implementation of SecurityProvider for production use
+/// Default implementation of security provider for logging service
 @available(macOS 14.0, *)
-public class DefaultSecurityProvider: SecurityProviderProtocol {
+public class DefaultSecurityProvider {
+
   /// Dictionary to track accessed URLs and their bookmark data
-  private var accessedURLs: [String: (URL, Data)]=[:]
+  private var accessedURLs: [String: (URL, Data)] = [:]
 
   /// Keeping track of security-scoped resources
-  private var securityScopedResources: Set<URL>=[]
+  private var securityScopedResources: Set<URL> = []
 
   public init() {}
 
   // MARK: - URL-based Security Methods
 
-  public func startAccessing(url: URL) async throws -> Bool {
-    let success=url.startAccessingSecurityScopedResource()
+  public func startAccessingResource(identifier: String) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+    let url = URL(fileURLWithPath: identifier)
+    let success = url.startAccessingSecurityScopedResource()
     if success {
       securityScopedResources.insert(url)
     }
-    return success
+    return .success(success)
   }
 
-  public func stopAccessing(url: URL) async {
+  public func stopAccessingResource(identifier: String) async {
+    let url = URL(fileURLWithPath: identifier)
     url.stopAccessingSecurityScopedResource()
     securityScopedResources.remove(url)
+  }
+
+  public func getAccessedResourceIdentifiers() async -> Set<String> {
+    return Set(accessedURLs.keys)
+  }
+
+  // MARK: - Bookmark Methods
+
+  public func createBookmark(for identifier: String) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+    let url = URL(fileURLWithPath: identifier)
+    do {
+      let bookmarkData = try url.bookmarkData(
+        options: .withSecurityScope,
+        includingResourceValuesForKeys: nil,
+        relativeTo: nil
+      )
+      
+      // Remember this URL and its bookmark data
+      accessedURLs[url.path] = (url, bookmarkData)
+      
+      return .success(SecureBytes(bytes: Array(bookmarkData)))
+    } catch {
+      return .failure(ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core.storageOperationFailed(
+        reason: "Bookmark creation failed: \(error.localizedDescription)"))
+    }
+  }
+
+  public func resolveBookmark(_ bookmarkData: SecureBytes) async -> Result<(identifier: String, isStale: Bool), ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+    do {
+      var isStale = false
+      let data = Data(bookmarkData.toArray())
+      let url = try URL(
+        resolvingBookmarkData: data,
+        options: .withSecurityScope,
+        relativeTo: nil,
+        bookmarkDataIsStale: &isStale
+      )
+
+      return .success((identifier: url.path, isStale: isStale))
+    } catch {
+      return .failure(ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core.storageOperationFailed(
+        reason: "Bookmark resolution failed: \(error.localizedDescription)"))
+    }
+  }
+
+  public func validateBookmark(_ bookmarkData: SecureBytes) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+    let result = await resolveBookmark(bookmarkData)
+    switch result {
+    case .success:
+      return .success(true)
+    case .failure:
+      return .success(false)
+    }
+  }
+
+  // MARK: - Resource Access Control
+
+  public func isAccessingResource(identifier: String) async -> Bool {
+    let url = URL(fileURLWithPath: identifier)
+    return securityScopedResources.contains(url)
   }
 
   public func stopAccessingAllResources() async {
@@ -36,206 +102,20 @@ public class DefaultSecurityProvider: SecurityProviderProtocol {
     securityScopedResources.removeAll()
   }
 
-  public func isAccessing(url: URL) async -> Bool {
-    securityScopedResources.contains(url)
-  }
-
-  public func getAccessedUrls() async -> Set<URL> {
-    securityScopedResources
-  }
-
-  // MARK: - Path-based Security Methods (previously implemented)
-
-  public func createBookmark(forPath path: String) async throws -> SecureBytes {
-    let url=URL(fileURLWithPath: path)
-    do {
-      let bookmarkData=try url.bookmarkData(options: .withSecurityScope)
-      return SecureBytes(data: bookmarkData)
-    } catch {
-      throw CoreErrors.SecurityError.bookmarkError
-    }
-  }
-
-  public func resolveBookmark(_ bookmarkData: SecureBytes) async throws
-  -> (path: String, isStale: Bool) {
-    do {
-      var isStale=false
-      let url=try URL(
-        resolvingBookmarkData: bookmarkData.asData(),
-        options: .withSecurityScope,
-        relativeTo: nil,
-        bookmarkDataIsStale: &isStale
-      )
-      return (url.path, isStale)
-    } catch {
-      throw CoreErrors.SecurityError.bookmarkError
-    }
-  }
-
-  public func startAccessing(path: String) async throws -> Bool {
-    try await startAccessing(url: URL(fileURLWithPath: path))
-  }
-
-  public func stopAccessing(path: String) {
-    Task {
-      await stopAccessing(url: URL(fileURLWithPath: path))
-    }
-  }
-
-  // MARK: - Foundation Methods for SecurityProviderFoundation
-
-  public func createBookmark(for url: URL) async throws -> Data {
-    do {
-      return try url.bookmarkData(options: .withSecurityScope)
-    } catch {
-      throw CoreErrors.SecurityError.bookmarkError
-    }
-  }
-
-  public func resolveBookmark(_ bookmarkData: Data) async throws -> (url: URL, isStale: Bool) {
-    do {
-      var isStale=false
-      let url=try URL(
-        resolvingBookmarkData: bookmarkData,
-        options: .withSecurityScope,
-        relativeTo: nil,
-        bookmarkDataIsStale: &isStale
-      )
-      return (url, isStale)
-    } catch {
-      throw CoreErrors.SecurityError.bookmarkError
-    }
-  }
-
-  public func validateBookmark(_ bookmarkData: Data) async throws -> Bool {
-    do {
-      var isStale=false
-      _=try URL(
-        resolvingBookmarkData: bookmarkData,
-        options: .withSecurityScope,
-        relativeTo: nil,
-        bookmarkDataIsStale: &isStale
-      )
-      return !isStale
-    } catch {
-      return false
-    }
-  }
-
   // MARK: - Keychain Methods
 
-  public func storeInKeychain(data _: Data, service _: String, account _: String) async throws {
-    // Implementation would use Keychain API to store data
-    throw CoreErrors.SecurityError.operationFailed
+  public func storeInKeychain(data: SecureBytes, service: String, account: String) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+    // This is a stub implementation as we're focusing on bookmark functionality
+    return .failure(ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core.notImplemented(feature: "storeInKeychain"))
   }
 
-  public func retrieveFromKeychain(service _: String, account _: String) async throws -> Data {
-    // Implementation would use Keychain API to retrieve data
-    throw CoreErrors.SecurityError.operationFailed
+  public func retrieveFromKeychain(service: String, account: String) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+    // This is a stub implementation as we're focusing on bookmark functionality
+    return .failure(ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core.notImplemented(feature: "retrieveFromKeychain"))
   }
 
-  public func deleteFromKeychain(service _: String, account _: String) async throws {
-    // Implementation would use Keychain API to delete data
-    throw CoreErrors.SecurityError.operationFailed
-  }
-
-  // MARK: - Foundation Data Methods
-
-  public func encryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation
-  .Data {
-    let encryptedBytes=try await encrypt(SecureBytes(data: data), key: SecureBytes(data: key))
-    return encryptedBytes.asData()
-  }
-
-  public func decryptData(_ data: Foundation.Data, key: Foundation.Data) async throws -> Foundation
-  .Data {
-    let decryptedBytes=try await decrypt(SecureBytes(data: data), key: SecureBytes(data: key))
-    return decryptedBytes.asData()
-  }
-
-  public func generateDataKey(length: Int) async throws -> Foundation.Data {
-    let keyBytes=try await generateRandomData(length: length)
-    return keyBytes.asData()
-  }
-
-  public func hashData(_ data: Foundation.Data) async throws -> Foundation.Data {
-    let hashBytes=try await hash(SecureBytes(data: data))
-    return hashBytes.asData()
-  }
-
-  // MARK: - SecureBytes Methods
-
-  public func encrypt(_ data: SecureBytes, key _: SecureBytes) async throws -> SecureBytes {
-    // Implementation of encryption
-    data // Placeholder: actual implementation would encrypt the data
-  }
-
-  public func decrypt(_ data: SecureBytes, key _: SecureBytes) async throws -> SecureBytes {
-    // Implementation of decryption
-    data // Placeholder: actual implementation would decrypt the data
-  }
-
-  public func generateRandomData(length: Int) async throws -> SecureBytes {
-    // Generate a random key of specified length
-    var keyData=[UInt8](repeating: 0, count: length)
-    let result=SecRandomCopyBytes(kSecRandomDefault, keyData.count, &keyData)
-    if result == errSecSuccess {
-      return SecureBytes(bytes: keyData)
-    } else {
-      throw CoreErrors.SecurityError.randomGenerationFailed
-    }
-  }
-
-  public func hash(_ data: SecureBytes) async throws -> SecureBytes {
-    // Simple implementation for hashing
-    data // Placeholder: actual implementation would hash the data
-  }
-
-  // MARK: - XPCServiceProtocolStandard implementation
-
-  public func ping() async throws -> Bool {
-    true
-  }
-
-  public func synchroniseKeys(_: SecureBytes) async throws {
-    // No-op for this implementation
-  }
-
-  public func encryptData(_ data: SecureBytes, keyIdentifier: String?) async throws -> SecureBytes {
-    if let keyId=keyIdentifier {
-      // Retrieve key from keychain by ID and use it
-      let keyData=try await retrieveFromKeychain(service: "umbra.security", account: keyId)
-      return try await encrypt(data, key: SecureBytes(data: keyData))
-    } else {
-      throw CoreErrors.SecurityError.invalidParameter
-    }
-  }
-
-  public func decryptData(_ data: SecureBytes, keyIdentifier: String?) async throws -> SecureBytes {
-    if let keyId=keyIdentifier {
-      // Retrieve key from keychain by ID and use it
-      let keyData=try await retrieveFromKeychain(service: "umbra.security", account: keyId)
-      return try await decrypt(data, key: SecureBytes(data: keyData))
-    } else {
-      throw CoreErrors.SecurityError.invalidParameter
-    }
-  }
-
-  public func hashData(_ data: SecureBytes) async throws -> SecureBytes {
-    try await hash(data)
-  }
-
-  public func signData(_: SecureBytes, keyIdentifier _: String) async throws -> SecureBytes {
-    // Not implemented
-    throw CoreErrors.SecurityError.operationFailed
-  }
-
-  public func verifySignature(
-    _: SecureBytes,
-    for _: SecureBytes,
-    keyIdentifier _: String
-  ) async throws -> Bool {
-    // Not implemented
-    throw CoreErrors.SecurityError.operationFailed
+  public func deleteFromKeychain(service: String, account: String) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+    // This is a stub implementation as we're focusing on bookmark functionality
+    return .failure(ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core.notImplemented(feature: "deleteFromKeychain"))
   }
 }

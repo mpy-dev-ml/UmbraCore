@@ -1,7 +1,7 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-umbra_swift_library(
+swift_library(
     name = "FeaturesLoggingServices",
     srcs = glob(
         ["**/*.swift"],
@@ -9,13 +9,16 @@ umbra_swift_library(
     ),
     deps = [
         "//Sources/ErrorHandling",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",  # Add this direct dependency for UmbraErrors
         "//Sources/Features/Logging/Errors:FeaturesLoggingErrors",
         "//Sources/Features/Logging/Models:FeaturesLoggingModels",
         "//Sources/Features/Logging/Protocols:FeaturesLoggingProtocols",
-        "//Sources/SecurityInterfaces",
-        "//Sources/SecurityInterfacesFoundation",
+        "//Sources/SecurityInterfaces:SecurityInterfaces",
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/CoreErrors",
+        "//Sources/XPCProtocolsCore",
         "@swiftpkg_swiftybeaver//:SwiftyBeaver",
     ],
 )
