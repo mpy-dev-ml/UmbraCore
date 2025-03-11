@@ -1,5 +1,20 @@
-load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
 load("//:bazel/macros/swift.bzl", "umbra_test_library")
+
+# Test helpers library containing isolated module interactions
+swift_library(
+    name = "SecurityTestHelpers",
+    srcs = glob(["TestHelpers/*.swift"]),
+    module_name = "SecurityTestHelpers",  # Explicitly set the module name
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+        "//Sources/CoreErrors",
+        "//Sources/SecurityInterfaces",
+        "//Sources/UmbraCoreTypes",  # Added for SecureBytes
+    ],
+)
 
 swift_test(
     name = "SecurityProviderTests",
@@ -7,7 +22,7 @@ swift_test(
     deps = [
         "//Sources/SecurityInterfaces:SecurityInterfacesForTesting",
         "//Sources/SecurityInterfacesBase",
-        "//Sources/SecurityProtocolsCore", 
+        ":SecurityTestHelpers",  # Use our test helpers instead of direct dependencies
         "//Sources/CoreErrors",
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
         "//Sources/UmbraCoreTypes",

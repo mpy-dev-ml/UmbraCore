@@ -112,10 +112,10 @@ public class Logger: LoggerProtocol {
     let isFileDestination=destination is FileDestination
 
     // This task will properly isolate the destination handling
-    Task { @MainActor in
+    Task { @MainActor [self] in
       // ConfigurationManager is already MainActor-isolated, but this task runs on MainActor
       // so we can access it directly
-      let shouldConfigure=await configManager.configure()
+      let shouldConfigure=configManager.configure()
 
       // Create a new destination instance on the main actor
       // This avoids sending non-Sendable types across task boundaries

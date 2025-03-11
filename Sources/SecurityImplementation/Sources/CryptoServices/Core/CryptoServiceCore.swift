@@ -101,19 +101,15 @@ final class CryptoServiceCore: CryptoServiceProtocol, Sendable {
   /// Generate a cryptographic key suitable for encryption/decryption operations.
   /// - Returns: A new cryptographic key as `SecureBytes` or an error.
   public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-    do {
-      // Generate a 256-bit AES key
-      var keyBytes=[UInt8](repeating: 0, count: 32)
-      let status=SecRandomCopyBytes(kSecRandomDefault, keyBytes.count, &keyBytes)
+    // Generate a 256-bit AES key
+    var keyBytes=[UInt8](repeating: 0, count: 32)
+    let status=SecRandomCopyBytes(kSecRandomDefault, keyBytes.count, &keyBytes)
 
-      guard status == errSecSuccess else {
-        return .failure(.internalError("Failed to generate random bytes: \(status)"))
-      }
-
-      return .success(SecureBytes(bytes: keyBytes))
-    } catch {
-      return .failure(.internalError("Failed to generate key: \(error.localizedDescription)"))
+    guard status == errSecSuccess else {
+      return .failure(.internalError("Failed to generate random bytes: \(status)"))
     }
+
+    return .success(SecureBytes(bytes: keyBytes))
   }
 
   /// Hashes the provided data using a cryptographically strong algorithm.

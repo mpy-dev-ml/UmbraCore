@@ -98,12 +98,9 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     let dataToVerify=DataAdapter.data(from: data)
     let hashData=DataAdapter.data(from: hash)
 
-    do {
-      let isValid=try await implementation.verify(data: dataToVerify, against: hashData)
-      return .success(isValid)
-    } catch {
-      return .failure(mapError(error))
-    }
+    // The implementation.verify method doesn't throw errors, so we don't need a try-catch block
+    let isValid=await implementation.verify(data: dataToVerify, against: hashData)
+    return .success(isValid)
   }
 
   /// Generate cryptographically secure random data
@@ -148,23 +145,25 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
       options["aad"]=aadData
     }
 
-    do {
-      let result=await implementation.encryptSymmetric(
-        data: dataToEncrypt,
-        key: keyData,
-        algorithm: config.algorithm,
-        keySizeInBits: config.keySizeInBits,
-        iv: ivData,
-        aad: aadData,
-        options: config.options
-      )
-      if let resultData=result.data {
-        return .success(DataAdapter.secureBytes(from: resultData))
-      } else {
-        return .failure(.internalError("Encryption succeeded but returned nil data"))
-      }
-    } catch {
-      return .failure(mapError(error))
+    let encryptResult=await implementation.encryptSymmetric(
+      data: dataToEncrypt,
+      key: keyData,
+      algorithm: config.algorithm,
+      keySizeInBits: config.keySizeInBits,
+      iv: ivData,
+      aad: aadData,
+      options: config.options
+    )
+
+    // Process the result without unnecessary try-catch
+    switch encryptResult {
+      case let .success(encryptedData):
+        guard let encryptedData else {
+          return .failure(.internalError("Encryption succeeded but returned nil data"))
+        }
+        return .success(DataAdapter.secureBytes(from: encryptedData))
+      case let .failure(error):
+        return .failure(mapError(error))
     }
   }
 
@@ -193,23 +192,25 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
       options["aad"]=aadData
     }
 
-    do {
-      let result=await implementation.decryptSymmetric(
-        data: encryptedData,
-        key: keyData,
-        algorithm: config.algorithm,
-        keySizeInBits: config.keySizeInBits,
-        iv: ivData,
-        aad: aadData,
-        options: config.options
-      )
-      if let resultData=result.data {
-        return .success(DataAdapter.secureBytes(from: resultData))
-      } else {
-        return .failure(.internalError("Decryption succeeded but returned nil data"))
-      }
-    } catch {
-      return .failure(mapError(error))
+    let decryptResult=await implementation.decryptSymmetric(
+      data: encryptedData,
+      key: keyData,
+      algorithm: config.algorithm,
+      keySizeInBits: config.keySizeInBits,
+      iv: ivData,
+      aad: aadData,
+      options: config.options
+    )
+
+    // Process the result without unnecessary try-catch
+    switch decryptResult {
+      case let .success(decryptedData):
+        guard let decryptedData else {
+          return .failure(.internalError("Decryption succeeded but returned nil data"))
+        }
+        return .success(DataAdapter.secureBytes(from: decryptedData))
+      case let .failure(error):
+        return .failure(mapError(error))
     }
   }
 
@@ -227,21 +228,23 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
       options["algorithm"]=algorithm
     }
 
-    do {
-      let result=await implementation.encryptAsymmetric(
-        data: dataToEncrypt,
-        publicKey: publicKeyData,
-        algorithm: config.algorithm,
-        keySizeInBits: config.keySizeInBits,
-        options: config.options
-      )
-      if let resultData=result.data {
-        return .success(DataAdapter.secureBytes(from: resultData))
-      } else {
-        return .failure(.internalError("Asymmetric encryption succeeded but returned nil data"))
-      }
-    } catch {
-      return .failure(mapError(error))
+    let encryptResult=await implementation.encryptAsymmetric(
+      data: dataToEncrypt,
+      publicKey: publicKeyData,
+      algorithm: config.algorithm,
+      keySizeInBits: config.keySizeInBits,
+      options: config.options
+    )
+
+    // Process the result without unnecessary try-catch
+    switch encryptResult {
+      case let .success(encryptedData):
+        guard let encryptedData else {
+          return .failure(.internalError("Asymmetric encryption succeeded but returned nil data"))
+        }
+        return .success(DataAdapter.secureBytes(from: encryptedData))
+      case let .failure(error):
+        return .failure(mapError(error))
     }
   }
 
@@ -259,21 +262,23 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
       options["algorithm"]=algorithm
     }
 
-    do {
-      let result=await implementation.decryptAsymmetric(
-        data: encryptedData,
-        privateKey: privateKeyData,
-        algorithm: config.algorithm,
-        keySizeInBits: config.keySizeInBits,
-        options: config.options
-      )
-      if let resultData=result.data {
-        return .success(DataAdapter.secureBytes(from: resultData))
-      } else {
-        return .failure(.internalError("Asymmetric decryption succeeded but returned nil data"))
-      }
-    } catch {
-      return .failure(mapError(error))
+    let decryptResult=await implementation.decryptAsymmetric(
+      data: encryptedData,
+      privateKey: privateKeyData,
+      algorithm: config.algorithm,
+      keySizeInBits: config.keySizeInBits,
+      options: config.options
+    )
+
+    // Process the result without unnecessary try-catch
+    switch decryptResult {
+      case let .success(decryptedData):
+        guard let decryptedData else {
+          return .failure(.internalError("Asymmetric decryption succeeded but returned nil data"))
+        }
+        return .success(DataAdapter.secureBytes(from: decryptedData))
+      case let .failure(error):
+        return .failure(mapError(error))
     }
   }
 
@@ -292,19 +297,21 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
       options["algorithm"]=algorithm
     }
 
-    do {
-      let result=await implementation.hash(
-        data: dataToHash,
-        algorithm: config.algorithm,
-        options: config.options
-      )
-      if let resultData=result.data {
-        return .success(DataAdapter.secureBytes(from: resultData))
-      } else {
-        return .failure(.internalError("Hashing succeeded but returned nil data"))
-      }
-    } catch {
-      return .failure(mapError(error))
+    let hashResult=await implementation.hash(
+      data: dataToHash,
+      algorithm: config.algorithm,
+      options: config.options
+    )
+
+    // Process the result without unnecessary try-catch
+    switch hashResult {
+      case let .success(hashData):
+        guard let hashData else {
+          return .failure(.internalError("Hashing succeeded but returned nil data"))
+        }
+        return .success(DataAdapter.secureBytes(from: hashData))
+      case let .failure(error):
+        return .failure(mapError(error))
     }
   }
 

@@ -222,7 +222,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
   ///   - operation: Operation to perform with access
   /// - Returns: Result of the operation
   /// - Throws: SecurityError if access failed
-  public func withSecureAccess<T>(
+  public func withSecureAccess<T: Sendable>(
     to path: String,
     perform operation: () async throws -> T
   ) async throws -> T {

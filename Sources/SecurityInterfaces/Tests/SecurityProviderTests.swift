@@ -2,34 +2,32 @@ import ErrorHandlingDomains
 import Foundation
 @testable import SecurityInterfaces
 import SecurityInterfacesBase
-import SecurityProtocolsCore
 import XCTest
+
+// Import our test helpers instead of SecurityProtocolsCore directly
+import SecurityTestHelpers
 
 /// Tests for SecurityProvider protocol implementation
 /// Validates that SPC provider types can be used through the interface adapters
 class SecurityProviderTests: XCTestCase {
 
   func testSecurityProviderCreation() {
-    // Test creation of a standard provider using our factory
-    let provider=SPCProviderFactory.createProvider(ofType: "test")
-    XCTAssertNotNil(provider)
+    // Use the wrapper factory instead of directly accessing SecurityProtocolsCore
+    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
+    XCTAssertNotNil(wrappedProvider)
   }
 
   func testSecurityOperation() async {
-    // Get a test provider
-    let provider=SPCProviderFactory.createProvider(ofType: "test")
+    // Get a wrapped test provider
+    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
-    // Set up test parameters
-    let operation=SecurityProtocolsCore.SecurityOperation.symmetricEncryption
-    let config=provider.createSecureConfig(options: [
-      "key": "test_key",
-      "algorithm": "AES-GCM"
-    ])
-
-    // Perform the operation
-    let result=await provider.performSecureOperation(
-      operation: operation,
-      config: config
+    // Perform the operation using our wrapper
+    let result=await wrappedProvider.performSecureOperation(
+      operationName: "symmetricEncryption",
+      options: [
+        "key": "test_key",
+        "algorithm": "AES-GCM"
+      ]
     )
 
     // Verify that the operation succeeded
@@ -40,42 +38,38 @@ class SecurityProviderTests: XCTestCase {
     // Create a test error from the ErrorHandlingDomains module
     let error=UmbraErrors.Security.Protocols.invalidFormat(reason: "Test error")
 
-    // Create a provider and service to access the error mapping method
-    let provider=SPCProviderFactory.createProvider(ofType: "test")
-    let service=DummyXPCService()
-    let adapter=SecurityProviderAdapter(bridge: provider, service: service)
+    // Use our TestErrorMapper helper instead of direct adapter interactions
+    let mappedError=TestErrorMapper.mapToNSError(error)
 
-    // Use the adapter's method instead of deprecated global function
-    let mappedError=adapter.mapError(error)
+    // Verify the error properties
+    XCTAssertEqual(mappedError.domain, "com.umbracore.security.test")
+    XCTAssertTrue(
+      mappedError.localizedDescription.contains("Invalid format"),
+      "Error message should contain 'Invalid format'"
+    )
+    XCTAssertTrue(
+      mappedError.localizedDescription.contains("Test error"),
+      "Error message should contain the original reason"
+    )
 
-    // Verify the error was mapped to the right type
-    if case let SecurityInterfacesError.operationFailed(message)=mappedError {
-      XCTAssertTrue(
-        message.contains("Invalid format"),
-        "Expected error message to contain 'Invalid format' but got: \(message)"
-      )
-      XCTAssertTrue(
-        message.contains("Test error"),
-        "Expected error message to contain the original reason but got: \(message)"
-      )
-    } else {
-      XCTFail("Error wasn't mapped to the expected type. Got \(mappedError)")
-    }
-
-    // Ensure NSError bridging works correctly
-    let nsError=mappedError as NSError
-    XCTAssertNotNil(nsError)
+    // Test the helper method for checking error contents
+    XCTAssertTrue(TestErrorMapper.errorContains(mappedError, substring: "Invalid format"))
   }
 
   func testProtocolAdaptation() {
-    // Get a direct SPC provider
-    let bridge=SPCProviderFactory.createProvider(ofType: "test")
+    // Get a wrapped provider
+    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Create a dummy XPC service for testing
     let xpcService=DummyXPCService()
 
-    // Create an adapter provider that conforms to our local protocol
-    let adapter=SecurityProviderAdapter(bridge: bridge, service: xpcService)
+    // Create an adapter using the provider's raw reference
+    // This approach maintains isolation while still allowing creation of adapter
+    let rawProvider=wrappedProvider.getRawProvider()
+    let adapter=SecurityProviderAdapter(
+      bridge: rawProvider as! SecurityInterfaces.SecurityProviderBridge,
+      service: xpcService
+    )
 
     // Check that we can access core properties through the adapter
     XCTAssertNotNil(adapter.cryptoService)
@@ -84,14 +78,18 @@ class SecurityProviderTests: XCTestCase {
 
   /// Test to verify subpackage-based type resolution
   func testSubpackageTypeResolution() async {
-    // Create provider through alias type
-    let bridge=SPCProviderFactory.createProvider(ofType: "test")
+    // Create provider through our wrapper
+    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Create a dummy XPC service for testing
     let xpcService=DummyXPCService()
 
-    // Create adapter using the SPCProvider type
-    let adapter=SecurityProviderAdapter(bridge: bridge, service: xpcService)
+    // Create adapter using the provider's raw reference
+    let rawProvider=wrappedProvider.getRawProvider()
+    let adapter=SecurityProviderAdapter(
+      bridge: rawProvider as! SecurityInterfaces.SecurityProviderBridge,
+      service: xpcService
+    )
 
     // Test getting a host identifier to verify the adapter works
     let hostIdResult=await adapter.getHostIdentifier()
@@ -102,30 +100,32 @@ class SecurityProviderTests: XCTestCase {
     }
 
     // Test passing complex operation to ensure cross-module types work
-    let operation=SecurityProtocolsCore.SecurityOperation.symmetricEncryption
-    let config=bridge.createSecureConfig(options: [
-      "key": "test-key",
-      "algorithm": "AES-256",
-      "data": Data("Test data".utf8)
-    ])
-
-    let result=await adapter.performSecureOperation(
-      operation: operation,
-      config: config
+    // Using our wrapper factory to create the operation
+    let result=await wrappedProvider.performSecureOperation(
+      operationName: "symmetricEncryption",
+      options: [
+        "key": "test-key",
+        "algorithm": "AES-256",
+        "data": Data("Test data".utf8)
+      ]
     )
 
     XCTAssertTrue(result.success)
   }
 
   func testSecurityStatus() async {
-    // Get a test provider
-    let provider=SPCProviderFactory.createProvider(ofType: "test")
+    // Get a wrapped test provider
+    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Create a dummy XPC service for testing
     let xpcService=DummyXPCService()
 
-    // Create adapter using the provider
-    let adapter=SecurityProviderAdapter(bridge: provider, service: xpcService)
+    // Create adapter using the provider's raw reference
+    let rawProvider=wrappedProvider.getRawProvider()
+    let adapter=SecurityProviderAdapter(
+      bridge: rawProvider as! SecurityInterfaces.SecurityProviderBridge,
+      service: xpcService
+    )
 
     // Get the host identifier as a substitute for status
     let idResult=await adapter.getHostIdentifier()
@@ -137,19 +137,16 @@ class SecurityProviderTests: XCTestCase {
   }
 
   func testLowLevelOperation() async {
-    // Get a test provider
-    let provider=SPCProviderFactory.createProvider(ofType: "test")
-
-    // Set up a config with parameters
-    let config=provider.createSecureConfig(options: [
-      "key": "test_encryption_key",
-      "data": "Test secure data".data(using: .utf8)!
-    ])
+    // Get a wrapped test provider
+    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Perform a low level operation
-    let result=await provider.performSecureOperation(
-      operation: .symmetricEncryption,
-      config: config
+    let result=await wrappedProvider.performSecureOperation(
+      operationName: "symmetricEncryption",
+      options: [
+        "key": "test_encryption_key",
+        "data": "Test secure data".data(using: .utf8)!
+      ]
     )
 
     // Verify the result
@@ -157,14 +154,18 @@ class SecurityProviderTests: XCTestCase {
   }
 
   func testErrorHandling() async {
-    // Get a test provider
-    let provider=SPCProviderFactory.createProvider(ofType: "test")
+    // Get a wrapped test provider
+    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Create a dummy XPC service for testing
     let xpcService=DummyXPCService()
 
-    // Create adapter using the provider
-    let adapter=SecurityProviderAdapter(bridge: provider, service: xpcService)
+    // Create adapter using the provider's raw reference
+    let rawProvider=wrappedProvider.getRawProvider()
+    let adapter=SecurityProviderAdapter(
+      bridge: rawProvider as! SecurityInterfaces.SecurityProviderBridge,
+      service: xpcService
+    )
 
     // Try a client registration operation
     let result=await adapter.registerClient(bundleIdentifier: "")

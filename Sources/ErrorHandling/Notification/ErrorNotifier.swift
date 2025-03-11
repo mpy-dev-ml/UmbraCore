@@ -79,7 +79,7 @@ public final class ErrorNotifier: ErrorNotificationProtocol {
     _ error: some UmbraError,
     recoveryOptions: [any RecoveryOption]
   ) {
-    Task { @MainActor in
+    Task { @MainActor [self] in
       // Default to error notification level if not specified
       await notifyUser(about: error, level: .error, recoveryOptions: recoveryOptions)
     }

@@ -102,6 +102,47 @@ public actor ResourcePool<Resource: BasicManagedResource> {
     }
   }
 
+  /// Releases all resources in the pool.
+  ///
+  /// This method attempts to release all resources in the pool, regardless
+  /// of their current state. Any errors during release are logged but
+  /// do not interrupt the release of other resources.
+  public func releaseAll() async {
+    for resource in resources {
+      do {
+        try await resource.release()
+      } catch {
+        // Log the error but continue with other resources
+        print("Error releasing resource \(resource.id): \(error)")
+      }
+    }
+  }
+
+  /// Performs maintenance on the pool.
+  ///
+  /// This method can be called periodically to ensure all resources
+  /// are in a valid state. It will attempt to repair any resources
+  /// that are in an invalid state.
+  public func performMaintenance() async {
+    // Implementation details will depend on specific resource type
+    for resource in resources {
+      if resource.state == .error {
+        do {
+          try await resource.release()
+          try await resource.initialize()
+        } catch {
+          // Log the error but continue with other resources
+          print("Error repairing resource \(resource.id): \(error)")
+
+          // Use explicit capture list for the Task to prevent Swift 6 data race warnings
+          Task { [resourceId=resource.id] in
+            print("Scheduling cleanup for resource \(resourceId)")
+          }
+        }
+      }
+    }
+  }
+
   /// Cleans up all resources in the pool.
   ///
   /// This method should be called when the pool is no longer needed.

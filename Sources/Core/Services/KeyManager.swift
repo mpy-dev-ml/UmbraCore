@@ -2,6 +2,7 @@ import CoreErrors
 import CoreServicesTypes
 import KeyManagementTypes
 import UmbraCoreTypes
+import DeprecatedTypeAliases
 #if USE_FOUNDATION_CRYPTO
   import Foundation
 
@@ -255,8 +256,8 @@ public actor KeyManager {
     // Use XPC to broadcast key updates to other processes
     let serviceContainer=ServiceContainer.shared
 
-    // Need to await when accessing actor property
-    guard let xpcService=await serviceContainer.xpcService else {
+    // Access the property without await since it's marked as nonisolated(unsafe)
+    guard let xpcService=serviceContainer.xpcService else {
       throw KeyManagerError.synchronisationError("XPC service not available")
     }
 

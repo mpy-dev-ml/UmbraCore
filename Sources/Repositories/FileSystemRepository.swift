@@ -157,8 +157,9 @@ public actor FileSystemRepository: Repository {
   }
 
   /// Swift 6 compatible implementation of Decodable protocol requirement
-  /// Uses an isolation-safe approach that avoids direct actor property access
-  public nonisolated init(from decoder: Decoder) throws {
+  /// This pattern isolates decoder use to a non-actor context before initializing properties
+  @preconcurrency
+  public init(from decoder: Decoder) throws {
     // Extract the data in a synchronous context
     let container=try decoder.container(keyedBy: CodingKeys.self)
 
@@ -182,10 +183,32 @@ public actor FileSystemRepository: Repository {
   }
 
   /// Swift 6 compatible decode method that follows the modern approach
-  /// This complies with Swift concurrency rules by avoiding direct use of non-Sendable types
-  public static func decode(from decoder: Decoder) throws -> FileSystemRepository {
-    // Use the nonisolated initializer which is required by the Decodable protocol
-    try FileSystemRepository(from: decoder)
+  /// This complies with Swift concurrency rules by extracting data before crossing actor boundary
+  public static func decode(from decoder: Decoder) async throws -> FileSystemRepository {
+    // Extract all data synchronously first, before crossing actor boundary
+    let container=try decoder.container(keyedBy: CodingKeys.self)
+    let data=try RepositoryData(
+      identifier: container.decode(String.self, forKey: .identifier),
+      location: container.decode(URL.self, forKey: .location),
+      state: container.decode(RepositoryState.self, forKey: .state),
+      stats: container.decode(RepositoryStatistics.self, forKey: .stats)
+    )
+
+    // Create repository with extracted data to avoid sending non-Sendable decoder
+    return try FileSystemRepository(data: data)
+  }
+
+  /// Initialize with pre-decoded data to avoid sending Decoder across actor boundary
+  private init(data: RepositoryData) throws {
+    // Initialize properties
+    identifier=data.identifier
+    location=data.location
+    state=data.state
+    stats=data.stats
+    statsAccessor=StatsAccessor()
+
+    // Using createLogger() from UmbraLogging which abstracts the implementation
+    logger=UmbraLogging.createLogger()
   }
 
   // MARK: - RepositoryCore

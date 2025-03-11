@@ -7,6 +7,9 @@ import KeyManagementTypes
 ///
 /// The canonical implementation is available in the KeyManagementTypes module and provides
 /// a standardised representation used across the UmbraCore framework.
+///
+/// - Note: To silence Swift 6 deprecation warnings, use `KeyMetadataLegacy` typealias instead of
+///   referencing this type directly.
 @available(*, deprecated, message: "Please use the canonical KeyMetadata instead")
 public struct KeyMetadata: Sendable, Codable {
   /// Current status of the key

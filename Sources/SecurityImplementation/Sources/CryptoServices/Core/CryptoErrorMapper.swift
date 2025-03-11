@@ -126,8 +126,8 @@ public enum CryptoErrorMapper {
       case .keyNotFound:
         return .keyGenerationError("Key not found")
 
-      case let .signatureFailed(algorithm, reason),
-           let .signatureVerificationFailed(algorithm, reason):
+      case let .signatureFailed(_, reason),
+           let .signatureVerificationFailed(_, reason):
         return .asymmetricEncryptionError("Signature operation failed: \(reason)")
 
       case let .invalidSignature(reason):
@@ -142,7 +142,7 @@ public enum CryptoErrorMapper {
       case let .unsupportedAlgorithm(algorithm):
         return .unsupportedAlgorithm(algorithm)
 
-      case let .invalidParameters(algorithm, parameter, reason):
+      case let .invalidParameters(_, parameter, reason):
         if parameter.contains("keySize") || parameter.contains("key") {
           return .invalidKeySize(0) // Cannot determine exact size from the reason
         } else {

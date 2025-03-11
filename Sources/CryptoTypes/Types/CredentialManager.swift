@@ -112,6 +112,8 @@ public actor CredentialManager {
           operation: name,
           reason: "Operation not supported"
         )
+      default:
+        UmbraErrors.Security.Core.internalError(reason: "Unexpected XPC error: \(error)")
     }
   }
 }

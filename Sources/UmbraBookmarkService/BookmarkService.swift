@@ -2,7 +2,8 @@ import Foundation
 import UmbraXPC
 
 /// Service for managing security-scoped bookmarks
-public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCListenerDelegate {
+public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCListenerDelegate,
+@unchecked Sendable {
   /// Set of URLs currently being accessed
   @MainActor
   private var activeAccessURLs: Set<URL>=[]
@@ -142,7 +143,7 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCList
       guard let self else { return }
 
       // Now we're on the main thread
-      Task { @MainActor in
+      Task { @MainActor [self] in
         if let connection=self.getConnection(forId: connectionId) {
           // Configure the connection object
           connection.exportedObject=self

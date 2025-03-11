@@ -13,7 +13,7 @@ import XPCProtocolsCore
 /// Manages secure storage and retrieval of credentials
 public actor CredentialManager {
   private let keychain: any SecureStorageProvider
-  private let xpcService: ModernCryptoXPCServiceProtocol
+  private let xpcService: any (ModernCryptoXPCServiceProtocol & Sendable)
   private let config: CryptoConfig
 
   /// Initialize a new CredentialManager
@@ -21,7 +21,11 @@ public actor CredentialManager {
   ///   - service: Service name for the keychain
   ///   - xpcService: XPC service for cryptographic operations
   ///   - config: Cryptographic configuration
-  public init(service: String, xpcService: ModernCryptoXPCServiceProtocol, config: CryptoConfig) {
+  public init(
+    service: String,
+    xpcService: any(ModernCryptoXPCServiceProtocol & Sendable),
+    config: CryptoConfig
+  ) {
     keychain=KeychainAccess(service: service)
     self.xpcService=xpcService
     self.config=config
@@ -34,11 +38,8 @@ public actor CredentialManager {
   public func store(credential: Data, withIdentifier identifier: String) async throws {
     let key=try await getMasterKey()
 
-    // Make a nonisolated copy of the service before using it in async context
-    nonisolated let service=xpcService
-
     // Generate random IV using the XPC service
-    let ivResult=await service.generateSecureRandomData(length: config.ivLength)
+    let ivResult=await xpcService.generateSecureRandomData(length: config.ivLength)
     guard case let .success(iv)=ivResult else {
       if case let .failure(error)=ivResult {
         throw error
@@ -57,7 +58,7 @@ public actor CredentialManager {
       data: credentialBytes,
       using: keyBytes,
       iv: ivBytes,
-      service: service // Pass the nonisolated service reference
+      service: xpcService
     )
 
     switch encryptResult {
@@ -84,9 +85,6 @@ public actor CredentialManager {
     let (encodedData, _)=try await keychain.loadWithMetadata(forKey: identifier)
     let storageData=try JSONDecoder().decode(SecureStorageData.self, from: encodedData)
 
-    // Make a nonisolated copy of the service before using it in async context
-    nonisolated let service=xpcService
-
     let keyBytes=SecureBytes(bytes: [UInt8](key))
     let encryptedBytes=SecureBytes(bytes: [UInt8](storageData.encryptedData))
     let ivBytes=SecureBytes(bytes: [UInt8](storageData.iv))
@@ -95,7 +93,7 @@ public actor CredentialManager {
       data: encryptedBytes,
       using: keyBytes,
       iv: ivBytes,
-      service: service // Pass the nonisolated service reference
+      service: xpcService
     )
 
     switch decryptResult {
@@ -153,10 +151,7 @@ public actor CredentialManager {
     // Generate a secure random key using the XPC service
     let keyLength=config.keyLength / 8
 
-    // Make a nonisolated copy of the service before using it in async context
-    nonisolated let service=xpcService
-
-    let randomDataResult=await service.generateSecureRandomData(length: keyLength)
+    let randomDataResult=await xpcService.generateSecureRandomData(length: keyLength)
     guard case let .success(key)=randomDataResult else {
       if case let .failure(error)=randomDataResult {
         throw error
@@ -174,7 +169,7 @@ public actor CredentialManager {
     data: SecureBytes,
     using key: SecureBytes,
     iv _: SecureBytes,
-    service: ModernCryptoXPCServiceProtocol // Accept service parameter
+    service: any (ModernCryptoXPCServiceProtocol & Sendable)
   ) async -> Result<SecureBytes, XPCSecurityError> {
     // Convert SecureBytes to Data for XPC interface
     var dataBytes=Data()
@@ -202,7 +197,7 @@ public actor CredentialManager {
     data: SecureBytes,
     using key: SecureBytes,
     iv _: SecureBytes,
-    service: ModernCryptoXPCServiceProtocol // Accept service parameter
+    service: any (ModernCryptoXPCServiceProtocol & Sendable)
   ) async -> Result<SecureBytes, XPCSecurityError> {
     // Convert SecureBytes to Data for XPC interface
     var dataBytes=Data()

@@ -128,8 +128,8 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
   ) {
     // Create a detached task to handle the async call
     // TODO: Swift 6 compatibility - refactor actor isolation
-    Task { @MainActor in
-      await self.presentErrorOnMainActor(error, recoveryOptions: recoveryOptions)
+    Task { @MainActor [self] in
+      await presentErrorOnMainActor(error, recoveryOptions: recoveryOptions)
     }
   }
 
@@ -212,7 +212,7 @@ public final class DefaultErrorNotificationManager: ErrorNotificationManager {
   /// Dismisses an error notification
   /// - Parameter notificationId: ID of the notification to dismiss
   public func dismissError(notificationId: UUID) {
-    Task { @MainActor in
+    Task { @MainActor [self] in
       activeNotifications[notificationId]=nil
     }
   }

@@ -153,7 +153,8 @@ public class ErrorHandlingExample {
 
     // Report the error
     Task {
-      await errorHandler.handle(wrappedError)
+      // Remove unnecessary await since the method is not actually performing async operations
+      errorHandler.handle(wrappedError)
       print("Security error handled.")
 
       // Demonstrate error mapping
