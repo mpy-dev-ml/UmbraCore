@@ -18,7 +18,7 @@ extension URL {
   ///   - Invalid file path
   ///   - Insufficient permissions
   ///   - File system errors
-  public func createSecurityScopedBookmark() async -> Result<Data, XPCSecurityError> {
+  public func createSecurityScopedBookmark() async -> Result<Data, UmbraErrors.Security.Protocols> {
     let path=path
     do {
       return try .success(bookmarkData(
@@ -27,7 +27,7 @@ extension URL {
         relativeTo: nil
       ))
     } catch {
-      return .failure(.custom(message: "Failed to create bookmark for: \(path)"))
+      return .failure(.internalError("Failed to create bookmark for: \(path)"))
     }
   }
 
@@ -35,9 +35,14 @@ extension URL {
   /// - Returns: SecureBytes containing the security-scoped bookmark
   /// - Throws: SecurityError.bookmarkError if bookmark creation fails
   public func createSecurityScopedBookmarkData() async
-  -> Result<CoreTypes.SecureBytes, XPCSecurityError> {
-    let data=try await createSecurityScopedBookmark()
-    return .success(CoreTypes.SecureBytes([UInt8](data)))
+  -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+    let result = await createSecurityScopedBookmark()
+    switch result {
+    case .success(let data):
+      return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](data)))
+    case .failure(let error):
+      return .failure(error)
+    }
   }
 
   /// Resolves a security-scoped bookmark to its URL.
@@ -84,7 +89,7 @@ extension URL {
     _ operation: @Sendable () throws -> T
   ) throws -> T {
     guard startSecurityScopedAccess() else {
-      throw XPCSecurityError.custom(message: "Failed to access: \(path)")
+      throw UmbraErrors.Security.Protocols.internalError("Failed to access: \(path)")
     }
     defer { stopSecurityScopedAccess() }
     return try operation()
@@ -99,7 +104,7 @@ extension URL {
     _ operation: @Sendable () async throws -> T
   ) async throws -> T {
     guard startSecurityScopedAccess() else {
-      throw XPCSecurityError.custom(message: "Failed to access: \(path)")
+      throw UmbraErrors.Security.Protocols.internalError("Failed to access: \(path)")
     }
     defer { stopSecurityScopedAccess() }
     return try await operation()

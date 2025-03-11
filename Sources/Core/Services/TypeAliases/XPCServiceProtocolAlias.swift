@@ -9,33 +9,33 @@
  */
 
 import CoreErrors
+import ErrorHandling
 import ErrorHandlingDomains
 import UmbraCoreTypes
 import XPCProtocolsCore
 
-// NOTE: This typealias has been deprecated in favour of using XPCProtocolsCore.SecurityError
-// directly.
+// NOTE: This typealias has been deprecated in favour of using error types from the 
+// ErrorHandling module directly.
 // It is kept temporarily for backward compatibility but will be removed in a future release.
-// For new code, please use XPCProtocolsCore.SecurityError instead.
-// @deprecated Use XPCProtocolsCore.SecurityError instead.
-// public typealias XPCSecurityError=UmbraCoreTypes.CoreErrors.SecurityError
+// For new code, please use UmbraErrors.Security.Protocols instead.
 
-// Import XPCProtocolsCore.SecurityError directly
-@_exported import enum XPCProtocolsCore.SecurityError
+// Security error type - using UmbraErrors namespace from ErrorHandling module
+// We're using the standard protocols error type in the Security domain
 
 /// Alias to the modern XPC service protocol from XPCProtocolsCore
-public typealias XPCServiceProtocol=XPCProtocolsCore.ServiceProtocolStandard
+public typealias XPCServiceProtocol = XPCServiceProtocolStandard
 
 /// Alias to the basic XPC service protocol
-public typealias XPCServiceProtocolBase=XPCProtocolsCore.ServiceProtocolBasic
+public typealias XPCServiceProtocolBase = XPCServiceProtocolBasic
 
-/// Alias to the complete XPC service protocol
-public typealias XPCServiceProtocolComplete=XPCProtocolsCore.ServiceProtocolComplete
+/// Alias to the complete XPC service protocol - directly imported from XPCProtocolsCore 
+// This protocol provides the most comprehensive set of operations
+public typealias XPCServiceProtocolComplete = XPCServiceProtocolStandard
 
 /// Legacy XPC service protocol (deprecated)
 @available(
   *,
   deprecated,
-  message: "Use XPCServiceProtocol instead which points to XPCProtocolsCore.ServiceProtocolStandard"
+  message: "Use XPCServiceProtocol instead which points to XPCServiceProtocolStandard"
 )
-public typealias LegacyXPCServiceProtocol=XPCServiceProtocol
+public typealias LegacyXPCServiceProtocol = XPCServiceProtocol

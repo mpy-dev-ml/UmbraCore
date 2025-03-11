@@ -1,6 +1,7 @@
 import CoreErrors
 import CoreServicesTypes
 import Foundation
+import CommonCrypto
 
 // CryptoKit removed - cryptography will be handled in ResticBar
 
@@ -95,7 +96,7 @@ public actor CryptoService: UmbraService {
   ///           initialized or if the configuration is invalid.
   public func initialize() async throws {
     guard _state == .uninitialized else {
-      throw ServiceError.configurationError("Service already initialized")
+      throw CoreErrors.ServiceError.configurationError("Service already initialized")
     }
 
     state = .initializing
@@ -105,7 +106,7 @@ public actor CryptoService: UmbraService {
     guard config.keySize > 0, config.ivSize > 0, config.iterations > 0 else {
       state = .error
       _state = .error
-      throw ServiceError.configurationError("Invalid crypto configuration")
+      throw CoreErrors.ServiceError.configurationError("Invalid crypto configuration")
     }
 
     state = .ready
@@ -131,7 +132,7 @@ public actor CryptoService: UmbraService {
   /// - Throws: `CryptoError` if key generation fails.
   public func generateKey() throws -> [UInt8] {
     guard _state == .ready else {
-      throw ServiceError.invalidState("Service not ready")
+      throw CoreErrors.ServiceError.invalidState("Service not ready")
     }
 
     var key=[UInt8](repeating: 0, count: config.keySize / 8)
@@ -148,7 +149,7 @@ public actor CryptoService: UmbraService {
   /// - Throws: `CryptoError` if IV generation fails.
   public func generateIV() throws -> [UInt8] {
     guard _state == .ready else {
-      throw ServiceError.invalidState("Service not ready")
+      throw CoreErrors.ServiceError.invalidState("Service not ready")
     }
 
     var iv=[UInt8](repeating: 0, count: config.ivSize / 8)
@@ -171,7 +172,7 @@ public actor CryptoService: UmbraService {
     using key: [UInt8]
   ) throws -> EncryptionResult {
     guard _state == .ready else {
-      throw ServiceError.invalidState("Service not ready")
+      throw CoreErrors.ServiceError.invalidState("Service not ready")
     }
 
     let initializationVector=try generateIV()
@@ -206,7 +207,7 @@ public actor CryptoService: UmbraService {
     using key: [UInt8]
   ) throws -> [UInt8] {
     guard _state == .ready else {
-      throw ServiceError.invalidState("Service not ready")
+      throw CoreErrors.ServiceError.invalidState("Service not ready")
     }
 
     return try decrypt(
@@ -236,7 +237,7 @@ public actor CryptoService: UmbraService {
   /// - Throws: `CryptoError` on failure.
   public func deriveKey(from _: String, salt _: [UInt8]) async throws -> [UInt8] {
     guard _state == .ready else {
-      throw ServiceError.invalidState("Service not ready")
+      throw CoreErrors.ServiceError.invalidState("Service not ready")
     }
 
     // Placeholder implementation - will be replaced by ResticBar
@@ -250,7 +251,7 @@ public actor CryptoService: UmbraService {
   /// - Throws: `CryptoError` on failure.
   public func generateSecureRandomBytes(length: Int) async throws -> Data {
     guard _state == .ready else {
-      throw ServiceError.invalidState("Service not ready")
+      throw CoreErrors.ServiceError.invalidState("Service not ready")
     }
 
     var bytes=[UInt8](repeating: 0, count: length)
@@ -270,7 +271,7 @@ public actor CryptoService: UmbraService {
   /// - Throws: `CryptoError` if random generation fails.
   public func generateRandomBytes(count: Int) throws -> [UInt8] {
     guard _state == .ready else {
-      throw ServiceError.invalidState("Service not ready")
+      throw CoreErrors.ServiceError.invalidState("Service not ready")
     }
 
     var bytes=[UInt8](repeating: 0, count: count)
@@ -279,6 +280,28 @@ public actor CryptoService: UmbraService {
       throw CoreErrors.CryptoError.randomGenerationFailed
     }
     return bytes
+  }
+
+  /// Calculate a hash of the provided data
+  ///
+  /// - Parameter data: The data to hash
+  /// - Returns: The resulting hash value as a byte array
+  /// - Throws: ServiceError if the service is not ready
+  public func hash(_ data: [UInt8]) async throws -> [UInt8] {
+    guard _state == .ready else {
+      throw CoreErrors.ServiceError.invalidState("Service not ready")
+    }
+    
+    // Use CommonCrypto for SHA-256 hash
+    // This is a simple implementation that should be enhanced in production
+    var hashData = Data(data)
+    var hashBytes = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+    
+    hashData.withUnsafeBytes { dataBuffer in
+      _ = CC_SHA256(dataBuffer.baseAddress, CC_LONG(data.count), &hashBytes)
+    }
+    
+    return hashBytes
   }
 
   /// Check if the service is in a usable state

@@ -8,5 +8,6 @@ umbra_swift_library(
     deps = [
         "//Sources/ErrorHandling",
         "//Sources/Core/Services/TypeAliases:CoreServicesTypeAliases",
+        "//Sources/KeyManagementTypes",
     ],
 )

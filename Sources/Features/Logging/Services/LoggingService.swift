@@ -3,8 +3,9 @@ import ErrorHandlingDomains
 import Foundation
 import SecurityInterfaces
 import UmbraCoreTypes
-import UmbraCoreTypesimport XPCProtocolsCoreimport SecurityTypesProtocols
-import XPCProtocolsCoreimport SecurityInterfacesFoundation
+import XPCProtocolsCore
+import SecurityTypesProtocols
+import SecurityInterfacesFoundation
 
 /// Service for managing log files with security-scoped bookmarks
 @available(macOS 14.0, *)
