@@ -1,4 +1,12 @@
+import KeyManagementTypes
+
 /// Metadata about a cryptographic key
+///
+/// - Important: This type is deprecated. Please use `KeyManagementTypes.KeyMetadata` instead.
+///
+/// The canonical implementation is available in the KeyManagementTypes module and provides
+/// a standardised representation used across the UmbraCore framework.
+@available(*, deprecated, message: "Please use KeyManagementTypes.KeyMetadata instead")
 public struct KeyMetadata: Sendable, Codable {
   /// Current status of the key
   public var status: KeyStatus
@@ -70,5 +78,74 @@ public struct KeyMetadata: Sendable, Codable {
     self.keyLengthBits=keyLengthBits
     self.exportable=exportable
     self.isSystemKey=isSystemKey
+  }
+  
+  /// Convert to the canonical KeyMetadata type
+  /// - Returns: The equivalent canonical KeyMetadata
+  public func toCanonical() -> KeyManagementTypes.KeyMetadata {
+    return KeyManagementTypes.KeyMetadata.withTimestamps(
+      status: status.toCanonical(),
+      storageLocation: storageLocation.toCanonical(),
+      accessControls: KeyMetadata.convertAccessControls(self.accessControls),
+      createdAtTimestamp: createdAtTimestamp,
+      lastModifiedTimestamp: lastModifiedTimestamp,
+      algorithm: algorithm,
+      keySize: keyLengthBits,
+      identifier: identifier,
+      version: version,
+      exportable: exportable,
+      isSystemKey: isSystemKey,
+      isProcessIsolated: false // Not supported in legacy type
+    )
+  }
+  
+  /// Create from the canonical KeyMetadata type
+  /// - Parameter canonical: The canonical KeyMetadata to convert from
+  /// - Returns: The equivalent legacy KeyMetadata
+  public static func from(canonical: KeyManagementTypes.KeyMetadata) -> KeyMetadata {
+    return KeyMetadata(
+      status: KeyStatus.from(canonical: canonical.status),
+      storageLocation: StorageLocation.from(canonical: canonical.storageLocation),
+      accessControls: convertAccessControls(canonical.accessControls),
+      createdAtTimestamp: canonical.createdAtTimestamp,
+      lastModifiedTimestamp: canonical.lastModifiedTimestamp,
+      identifier: canonical.identifier,
+      version: canonical.version,
+      algorithm: canonical.algorithm,
+      keyLengthBits: canonical.keySize,
+      exportable: canonical.exportable,
+      isSystemKey: canonical.isSystemKey
+    )
+  }
+  
+  // Helper to convert AccessControls to the canonical type
+  private static func convertAccessControls(_ controls: AccessControls) -> KeyManagementTypes.KeyMetadata.AccessControls {
+    switch controls {
+      case .none:
+        return .none
+      case .requiresAuthentication:
+        return .requiresAuthentication
+      case .requiresBiometric:
+        return .requiresBiometric
+      case .requiresBoth:
+        return .requiresBoth
+    }
+  }
+  
+  // Helper to convert canonical AccessControls to the legacy type
+  private static func convertAccessControls(_ canonicalControls: KeyManagementTypes.KeyMetadata.AccessControls) -> AccessControls {
+    switch canonicalControls {
+      case .none:
+        return .none
+      case .requiresAuthentication:
+        return .requiresAuthentication
+      case .requiresBiometric:
+        return .requiresBiometric
+      case .requiresBoth:
+        return .requiresBoth
+      @unknown default:
+        // Default to 'none' for any future cases
+        return .none
+    }
   }
 }

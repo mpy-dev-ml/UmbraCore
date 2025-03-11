@@ -5,91 +5,156 @@
 
 import ErrorHandling
 import ErrorHandlingDomains
+import Foundation
 
 /// Namespace for XPC-specific error types
-/// @available(*, deprecated, message: "Use UmbraErrors.Security.XPC directly")
 public enum XPCErrors {
-  /// XPC Security Error type alias
+  /// XPC Security Error type
   /// This provides a clear namespace for XPC security errors
-  /// @available(*, deprecated, message: "Use UmbraErrors.Security.XPC directly")
-  public typealias SecurityError=UmbraErrors.Security.XPC
+  public enum SecurityError: Error, Codable {
+    /// Communication-related errors
+    case connectionFailed(reason: String)
+    case messagingError(description: String)
+    case serverUnavailable(serviceName: String)
+    
+    /// Authentication and permission issues
+    case authenticationFailed(reason: String)
+    case permissionDenied(operation: String)
+    
+    /// Protocol compatibility and validation
+    case invalidRequest(reason: String)
+    case incompatibleProtocolVersion(clientVersion: String, serverVersion: String)
+    case internalError(description: String)
+    
+    /// Maps between XPC security errors and canonical errors
+    enum Mapper {
+      /// Maps an error to its canonical form
+      /// - Parameter error: The XPC security error
+      /// - Returns: The canonical error as an opaque Any type
+      static func mapToCanonical(_ error: SecurityError) -> Any {
+        let canonicalError: UmbraErrors.GeneralSecurity.XPC
+        
+        switch error {
+        case let .connectionFailed(reason):
+          canonicalError = .connectionFailed(reason: reason)
+        case .messagingError(let description):
+          canonicalError = .invalidResponse(reason: description)
+        case .serverUnavailable:
+          canonicalError = .serviceUnavailable
+        case .authenticationFailed(let reason):
+          // Map to a general internal error since there's no direct equivalent
+          canonicalError = .internalError("Authentication failed: \(reason)")
+        case .permissionDenied(let operation):
+          // Map to a general internal error since there's no direct equivalent
+          canonicalError = .internalError("Permission denied for operation: \(operation)")
+        case .invalidRequest(let reason):
+          canonicalError = .invalidResponse(reason: reason)
+        case .incompatibleProtocolVersion(let clientVersion, let serverVersion):
+          canonicalError = .versionMismatch(expected: serverVersion, found: clientVersion)
+        case .internalError(let description):
+          canonicalError = .internalError(description)
+        @unknown default:
+          canonicalError = .internalError("Unknown XPC error")
+        }
+        
+        return canonicalError
+      }
+      
+      /// Maps a canonical error to an XPC security error
+      /// - Parameter error: The canonical error as Any
+      /// - Returns: An XPC security error if conversion is possible, nil otherwise
+      static func mapFromCanonical(_ error: Any) -> SecurityError? {
+        guard let canonicalError = error as? UmbraErrors.GeneralSecurity.XPC else {
+          return nil
+        }
+        
+        switch canonicalError {
+        case let .connectionFailed(reason):
+          return .connectionFailed(reason: reason)
+        case .serviceUnavailable:
+          return .serverUnavailable(serviceName: "Unknown service")
+        case let .invalidResponse(reason):
+          return .invalidRequest(reason: reason)
+        case let .unexpectedSelector(name):
+          return .invalidRequest(reason: "Unexpected selector: \(name)")
+        case let .versionMismatch(expected, found):
+          return .incompatibleProtocolVersion(clientVersion: found, serverVersion: expected)
+        case .invalidServiceIdentifier:
+          return .serverUnavailable(serviceName: "Invalid service identifier")
+        case let .internalError(description):
+          return .internalError(description: description)
+        @unknown default:
+          return .internalError(description: "Unknown XPC error")
+        }
+      }
+    }
+    
+    /// Converts this error to its canonical form
+    /// - Returns: The canonical error as an opaque Any type
+    public func toCanonical() -> Any {
+      Mapper.mapToCanonical(self)
+    }
+    
+    /// Creates a SecurityError from a canonical error
+    /// - Parameter canonicalError: The canonical error as Any
+    /// - Returns: A SecurityError if conversion is possible, nil otherwise
+    public static func fromCanonical(_ canonicalError: Any) -> SecurityError? {
+      Mapper.mapFromCanonical(canonicalError)
+    }
+  }
 
   /// XPC Service Error type alias
-  /// @available(*, deprecated, message: "Use UmbraErrors.Service directly")
-  public typealias ServiceError=CoreErrors.ServiceError
+  /// @available(*, deprecated, message: "Use ServiceError directly")
+  public typealias ServiceError = CoreErrors.ServiceError
 
   /// XPC Crypto Error type alias
-  /// @available(*, deprecated, message: "Use UmbraErrors.Crypto directly")
-  public typealias CryptoError=CoreErrors.CryptoError
+  /// @available(*, deprecated, message: "Use CryptoError directly")
+  public typealias CryptoError = CoreErrors.CryptoError
 }
 
-/// Extension for UmbraErrors.Security.Core with XPC-specific functionality
-extension UmbraErrors.Security.Core {
-  /// Convert to XPC error representation
-  /// - Returns: XPC representation of this error
-  public func toXPC() -> UmbraErrors.Security.XPC {
-    SecurityErrorMapper.mapToXPCError(self)
+/// A collection of utility methods for converting between error types
+public enum SecurityErrorConversion {
+  /// Converts a Security Core error to an XPC-specific representation
+  /// - Parameter error: The core error as Any
+  /// - Returns: The XPC error as Any or nil if conversion is not possible
+  public static func coreToXPC(_ error: Any) -> Any? {
+    guard let coreError = error as? UmbraErrors.GeneralSecurity.Core else {
+      return nil
+    }
+    
+    return SecurityErrorMapper.mapToXPCError(coreError)
   }
-}
-
-/// Extension for UmbraErrors.Security.XPC with conversion functionality
-extension UmbraErrors.Security.XPC {
-  /// Convert to Core error representation
-  /// - Returns: Core representation of this error
-  public func toCore() -> UmbraErrors.Security.Core {
-    SecurityErrorMapper.mapToCoreError(self)
+  
+  /// Converts an XPC-specific error to a Core representation
+  /// - Parameter error: The XPC error as Any
+  /// - Returns: The Core error as Any or nil if conversion is not possible
+  public static func xpcToCore(_ error: Any) -> Any? {
+    guard let xpcError = error as? UmbraErrors.GeneralSecurity.XPC else {
+      return nil
+    }
+    
+    return SecurityErrorMapper.mapToCoreError(xpcError)
   }
-
-  /// Convert to Protocol error representation
-  /// - Returns: Protocol representation of this error
-  public func toProtocol() -> UmbraErrors.Security.Protocols {
-    SecurityErrorMapper.mapToProtocolError(self)
+  
+  /// Converts a Protocol error to an XPC-specific representation
+  /// - Parameter error: The protocol error as Any
+  /// - Returns: The XPC error as Any or nil if conversion is not possible
+  public static func protocolToXPC(_ error: Any) -> Any? {
+    guard let protocolError = error as? UmbraErrors.GeneralSecurity.Protocols else {
+      return nil
+    }
+    
+    return SecurityErrorMapper.mapToXPCError(protocolError)
   }
-}
-
-/// Extension for UmbraErrors.Security.Protocols with conversion functionality
-extension UmbraErrors.Security.Protocols {
-  /// Convert to XPC error representation
-  /// - Returns: XPC representation of this error
-  public func toXPC() -> UmbraErrors.Security.XPC {
-    SecurityErrorMapper.mapToXPCError(self)
-  }
-
-  /// Convert to Core error representation
-  /// - Returns: Core representation of this error
-  public func toCore() -> UmbraErrors.Security.Core {
-    SecurityErrorMapper.mapToCoreError(self)
-  }
-}
-
-/// Extension for ServiceError with XPC-specific functionality
-extension ServiceError {
-  /// Convert from XPC error representation
-  /// - Parameter error: The XPC representation of the error
-  /// - Returns: Corresponding ServiceError
-  public static func fromXPC(_ error: XPCErrors.ServiceError) -> ServiceError {
-    error as ServiceError
-  }
-
-  /// Convert to XPC error representation
-  /// - Returns: XPC representation of this error
-  public func toXPC() -> XPCErrors.ServiceError {
-    self as XPCErrors.ServiceError
-  }
-}
-
-/// Extension for CryptoError with XPC-specific functionality
-extension CryptoError {
-  /// Convert from XPC error representation
-  /// - Parameter error: The XPC representation of the error
-  /// - Returns: Corresponding CryptoError
-  public static func fromXPC(_ error: XPCErrors.CryptoError) -> CryptoError {
-    error as CryptoError
-  }
-
-  /// Convert to XPC error representation
-  /// - Returns: XPC representation of this error
-  public func toXPC() -> XPCErrors.CryptoError {
-    self as XPCErrors.CryptoError
+  
+  /// Converts an XPC-specific error to a Protocol representation
+  /// - Parameter error: The XPC error as Any
+  /// - Returns: The Protocol error as Any or nil if conversion is not possible
+  public static func xpcToProtocol(_ error: Any) -> Any? {
+    guard let xpcError = error as? UmbraErrors.GeneralSecurity.XPC else {
+      return nil
+    }
+    
+    return SecurityErrorMapper.mapToProtocolError(xpcError)
   }
 }

@@ -1,6 +1,12 @@
 import Foundation
 
 /// Represents the current status of a cryptographic key
+///
+/// - Important: This type is deprecated. Please use the canonical `KeyStatus` instead.
+/// 
+/// The canonical implementation is available in the KeyManagementTypes module and provides 
+/// a standardised representation used across the UmbraCore framework.
+@available(*, deprecated, message: "Please use the canonical KeyStatus instead")
 public enum KeyStatus: Sendable, Equatable {
   /// Key is active and can be used
   case active
@@ -74,4 +80,75 @@ extension KeyStatus: Codable {
         self = .pendingDeletion(date)
     }
   }
+}
+
+// MARK: - Raw Conversion Extension (for KeyManagementTypes)
+
+/// Extension to provide conversion to/from the raw representation
+/// This will be used by KeyManagementTypes module through type extension
+extension KeyStatus {
+    /// The raw representation that matches the canonical type's raw status
+    public enum RawRepresentation: Equatable {
+        case active
+        case compromised
+        case retired
+        case pendingDeletion(Date)
+        case pendingDeletionWithTimestamp(Int64)
+        
+        public static func == (lhs: RawRepresentation, rhs: RawRepresentation) -> Bool {
+            switch (lhs, rhs) {
+                case (.active, .active),
+                     (.compromised, .compromised),
+                     (.retired, .retired):
+                    return true
+                case let (.pendingDeletion(lhsDate), .pendingDeletion(rhsDate)):
+                    return lhsDate == rhsDate
+                case let (.pendingDeletionWithTimestamp(lhsTimestamp), .pendingDeletionWithTimestamp(rhsTimestamp)):
+                    return lhsTimestamp == rhsTimestamp
+                case let (.pendingDeletion(lhsDate), .pendingDeletionWithTimestamp(rhsTimestamp)):
+                    return Int64(lhsDate.timeIntervalSince1970) == rhsTimestamp
+                case let (.pendingDeletionWithTimestamp(lhsTimestamp), .pendingDeletion(rhsDate)):
+                    return lhsTimestamp == Int64(rhsDate.timeIntervalSince1970)
+                default:
+                    return false
+            }
+        }
+    }
+    
+    /// Convert to a raw representation that can be used by KeyManagementTypes
+    /// - Returns: The raw representation
+    public func toRawRepresentation() -> RawRepresentation {
+        switch self {
+            case .active: return .active
+            case .compromised: return .compromised
+            case .retired: return .retired
+            case let .pendingDeletion(date): return .pendingDeletion(date)
+        }
+    }
+    
+    /// Convert to a raw representation with timestamp that can be used by KeyManagementTypes
+    /// - Returns: The raw representation with timestamp for date values
+    public func toRawRepresentationWithTimestamp() -> RawRepresentation {
+        switch self {
+            case .active: return .active
+            case .compromised: return .compromised
+            case .retired: return .retired
+            case let .pendingDeletion(date):
+                return .pendingDeletionWithTimestamp(Int64(date.timeIntervalSince1970))
+        }
+    }
+    
+    /// Create from a raw representation coming from KeyManagementTypes
+    /// - Parameter rawRepresentation: The raw representation to convert from
+    /// - Returns: The equivalent legacy KeyStatus
+    public static func from(rawRepresentation: RawRepresentation) -> KeyStatus {
+        switch rawRepresentation {
+            case .active: return .active
+            case .compromised: return .compromised
+            case .retired: return .retired
+            case let .pendingDeletion(date): return .pendingDeletion(date)
+            case let .pendingDeletionWithTimestamp(timestamp):
+                return .pendingDeletion(Date(timeIntervalSince1970: TimeInterval(timestamp)))
+        }
+    }
 }

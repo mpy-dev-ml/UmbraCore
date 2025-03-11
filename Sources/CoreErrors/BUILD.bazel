@@ -13,6 +13,7 @@ swift_library(
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/ErrorHandling",
+        "//Sources/KeyManagementTypes",
     ],
 )
 

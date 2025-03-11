@@ -1,0 +1,13 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_test")
+
+swift_test(
+    name = "KeyManagementTypesTests",
+    srcs = glob(["**/*.swift"]),
+    deps = [
+        "//Sources/KeyManagementTypes",
+        "//Sources/CoreErrors",
+        "//Sources/CoreServicesTypes",
+        "//Sources/CoreServicesTypesNoFoundation",
+        # Removed duplicate dependency: "//Sources/Core/Services/Types:CoreServicesTypes"
+    ],
+)

@@ -5,5 +5,6 @@ umbra_swift_library(
     name = "CoreServicesTypes",
     srcs = glob(["**/*.swift"]),
     deps = [
+        "//Sources/KeyManagementTypes",
     ],
 )
