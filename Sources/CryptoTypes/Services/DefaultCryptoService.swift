@@ -5,6 +5,8 @@ import CryptoTypesProtocols
 import CryptoTypesTypes
 import Foundation
 import SecurityTypes
+import CoreErrors
+import ErrorHandlingDomains
 
 /// Default implementation of CryptoService
 /// This implementation will be replaced by functionality in ResticBar
@@ -17,7 +19,7 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
     var bytes=[UInt8](repeating: 0, count: length)
     let status=SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
     guard status == errSecSuccess else {
-      throw CryptoError.randomGenerationFailed(status: status)
+      throw UmbraErrors.GeneralSecurity.Core.randomGenerationFailed(reason: "Random generation failed with status: \(status)")
     }
     return Data(bytes)
   }
@@ -26,24 +28,24 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
     var bytes=[UInt8](repeating: 0, count: length)
     let status=SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
     guard status == errSecSuccess else {
-      throw CryptoError.randomGenerationFailed(status: status)
+      throw UmbraErrors.GeneralSecurity.Core.randomGenerationFailed(reason: "Random generation failed with status: \(status)")
     }
     return Data(bytes)
   }
 
   public func encrypt(_: Data, using _: Data, iv _: Data) async throws -> Data {
     // Placeholder implementation - will be replaced by ResticBar
-    throw CryptoError.encryptionFailed(reason: "Encryption functionality moved to ResticBar")
+    throw UmbraErrors.GeneralSecurity.Core.encryptionFailed(reason: "Encryption functionality moved to ResticBar")
   }
 
   public func decrypt(_: Data, using _: Data, iv _: Data) async throws -> Data {
     // Placeholder implementation - will be replaced by ResticBar
-    throw CryptoError.decryptionFailed(reason: "Decryption functionality moved to ResticBar")
+    throw UmbraErrors.GeneralSecurity.Core.decryptionFailed(reason: "Decryption functionality moved to ResticBar")
   }
 
   public func deriveKey(from password: String, salt: Data, iterations: Int) async throws -> Data {
     guard let passwordData=password.data(using: .utf8) else {
-      throw CryptoError.encryptionFailed(reason: "Invalid password encoding")
+      throw UmbraErrors.GeneralSecurity.Core.encryptionFailed(reason: "Invalid password encoding")
     }
 
     let keyLength=32 // 256 bits
@@ -71,7 +73,7 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
     }
 
     guard result == kCCSuccess else {
-      throw CryptoError.encryptionFailed(reason: "Key derivation failed")
+      throw UmbraErrors.GeneralSecurity.Core.encryptionFailed(reason: "Key derivation failed")
     }
 
     return derivedKeyData
@@ -79,6 +81,6 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
 
   public func generateHMAC(for _: Data, using _: Data) async throws -> Data {
     // Placeholder implementation - will be replaced by ResticBar
-    throw CryptoError.authenticationFailed(reason: "HMAC functionality moved to ResticBar")
+    throw UmbraErrors.GeneralSecurity.Core.hashVerificationFailed(reason: "HMAC functionality moved to ResticBar")
   }
 }

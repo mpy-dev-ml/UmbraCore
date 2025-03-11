@@ -2,12 +2,14 @@ import CommonCrypto
 import Foundation
 import Security
 import SecurityBridge
-// Comment out the regular import and use the @_exported import
+// Import specific modules instead of SecurityInterfaces
+import SecurityInterfacesBase
+import SecurityInterfacesProtocols
 // import SecurityInterfaces
-@_exported import SecurityInterfaces
 import SecurityProtocolsCore
 import SecurityTypesTypes
 import UmbraCoreTypes
+import ErrorHandlingDomains
 import XPCProtocolsCore
 
 /// SecurityUtils Module
@@ -32,7 +34,7 @@ public final class SecurityUtils: @unchecked Sendable {
     }
 
     guard result == errSecSuccess else {
-      throw UmbraErrors.Security.Protocols.randomGenerationFailed
+      throw UmbraErrors.Security.Protocols.randomGenerationFailed("SecRandomCopyBytes failed with status: \(result)")
     }
 
     return data
@@ -71,6 +73,9 @@ public final class SecurityUtils: @unchecked Sendable {
           }
         }
         return hashData
+
+      @unknown default:
+        throw UmbraErrors.Security.Protocols.unsupportedOperation(name: "Hash algorithm not supported: \(algorithm)")
     }
   }
 }

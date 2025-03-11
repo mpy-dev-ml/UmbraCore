@@ -10,8 +10,13 @@ umbra_swift_library(
     deps = [
         "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
         "//Sources/CryptoTypes/Types:CryptoTypesTypes",
+        "//Sources/CoreErrors",
         "//Sources/ErrorHandling",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
         "//Sources/SecurityInterfaces",
+        "//Sources/SecurityTypes",
+        "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
         "//Sources/UmbraLogging",
+        "//Sources/XPC/Core:XPCCore",
     ],
 )
