@@ -36,12 +36,12 @@ extension URL {
   /// - Throws: SecurityError.bookmarkError if bookmark creation fails
   public func createSecurityScopedBookmarkData() async
   -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
-    let result = await createSecurityScopedBookmark()
+    let result=await createSecurityScopedBookmark()
     switch result {
-    case .success(let data):
-      return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](data)))
-    case .failure(let error):
-      return .failure(error)
+      case let .success(data):
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](data)))
+      case let .failure(error):
+        return .failure(error)
     }
   }
 

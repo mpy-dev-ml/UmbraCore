@@ -7,6 +7,10 @@ swift_library(
         ["**/*.swift"],
         allow_empty = True,
     ),
+    visibility = [
+        "//Sources/Features:__pkg__",
+        "//visibility:public",
+    ],
     deps = [
         "//Sources/ErrorHandling",
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",  # Add this direct dependency for UmbraErrors

@@ -1,8 +1,15 @@
 import CoreErrors
 import CoreServicesTypes
+#if USE_FOUNDATION_CRYPTO
+import Foundation
+// Use Foundation crypto when available
+@preconcurrency import ObjCBridgingTypesFoundation
+#else
+// Use CryptoSwift for cross-platform support
 import CryptoSwift
 import Foundation
 @preconcurrency import ObjCBridgingTypesFoundation
+#endif
 import UmbraCoreTypes
 import UmbraXPC
 import XPCProtocolsCore
@@ -239,14 +246,22 @@ public actor KeyManager {
     let syncData=try await createKeySyncData()
 
     // Send synchronisation request through XPC using the modern Result-based approach
-    let result=try await xpcService.synchroniseKeys(syncData)
-    switch result {
-      case .success:
-        // Update last sync timestamp
-        lastSyncTime=Date()
-      case let .failure(error):
-        throw KeyManagerError
-          .synchronisationError("XPC synchronization failed: \(error.localizedDescription)")
+    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+      // Convert SecureBytes to [UInt8] using Array initializer
+      let syncBytes = Array(syncData)
+      xpcService.synchroniseKeys(syncBytes) { [weak self] error in
+        if let error = error {
+          continuation.resume(throwing: KeyManagerError.synchronisationError("XPC synchronization failed: \(error.localizedDescription)"))
+        } else {
+          // Update last sync timestamp on success
+          if let self = self {
+            Task {
+              await self.updateSyncTimestamp()
+            }
+          }
+          continuation.resume()
+        }
+      }
     }
   }
 
@@ -271,7 +286,7 @@ public actor KeyManager {
   /// - Returns: Dictionary of key ID to metadata
   /// - Throws: KeyManagerError if loading fails
   private func loadKeyMetadata() async throws -> [String: KeyMetadata] {
-    var metadata: [String: KeyMetadata]=[]
+    var metadata: [String: KeyMetadata] = [:]
 
     let fileManager=FileManager.default
     let files: [URL]
@@ -360,7 +375,7 @@ public actor KeyManager {
         .synchronisationError("Failed to create sync data: \(error.localizedDescription)")
     }
 
-    return SecureBytes(data: jsonData)
+    return SecureBytes(bytes: Array(jsonData))
   }
 
   /// Check if a key is stored in the secure enclave
@@ -387,6 +402,11 @@ public actor KeyManager {
       throw KeyManagerError.keyNotFound(id.id)
     }
     return metadata
+  }
+
+  /// Update the last sync timestamp
+  private func updateSyncTimestamp() {
+    self.lastSyncTime = Date()
   }
 }
 

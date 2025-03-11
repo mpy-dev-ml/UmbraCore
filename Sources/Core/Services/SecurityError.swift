@@ -42,7 +42,7 @@ extension UmbraErrors.Security.Core {
 
   /// Create a core security error for bookmark not found
   public static func fromBookmarkNotFound(path: String) -> Self {
-    .itemNotFound(reason: "Bookmark not found for \(path)")
+    .internalError(reason: "Bookmark not found for \(path)")
   }
 
   /// Create a core security error for resource access failure
@@ -62,7 +62,7 @@ extension UmbraErrors.Security.Core {
 
   /// Create a core security error for item not found
   public static func itemNotFoundError() -> Self {
-    .itemNotFound(reason: "Credential or secure item not found")
+    .internalError(reason: "Credential or secure item not found")
   }
 
   /// Create a core security error for operation failure

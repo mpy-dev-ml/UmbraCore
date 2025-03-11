@@ -20,7 +20,10 @@ extension URL {
         relativeTo: nil
       ))
     } catch {
-      return .failure(XPCSecurityError.internalError(reason: "Failed to create bookmark for: \(path)"))
+      return .failure(
+        XPCSecurityError
+          .internalError(reason: "Failed to create bookmark for: \(path)")
+      )
     }
   }
 
@@ -40,7 +43,10 @@ extension URL {
       )
       return (url, isStale)
     } catch {
-      throw CoreErrors.SecurityError.operationFailed(operation: "bookmark resolution", reason: "Failed to resolve bookmark")
+      throw CoreErrors.SecurityError.operationFailed(
+        operation: "bookmark resolution",
+        reason: "Failed to resolve bookmark"
+      )
     }
   }
 
@@ -56,19 +62,22 @@ extension URL {
   /// - Throws: SecurityError if access fails, or any error thrown by the operation
   public func us_withSecurityScopedAccess<T>(_ operation: () async throws -> T) async throws -> T {
     guard us_startAccessingSecurityScopedResource() else {
-      throw CoreErrors.SecurityError.operationFailed(operation: "access security-scoped resource", reason: "Failed to access: \(path)")
+      throw CoreErrors.SecurityError.operationFailed(
+        operation: "access security-scoped resource",
+        reason: "Failed to access: \(path)"
+      )
     }
     defer { us_stopAccessingSecurityScopedResource() }
-    
+
     return try await operation()
   }
-  
+
   /// Start accessing a security-scoped resource
   /// - Returns: True if successful
   public func us_startAccessingSecurityScopedResource() -> Bool {
     startAccessingSecurityScopedResource()
   }
-  
+
   /// Stop accessing a security-scoped resource
   public func us_stopAccessingSecurityScopedResource() {
     stopAccessingSecurityScopedResource()

@@ -46,7 +46,8 @@ public protocol URLProvider: Sendable {
 
 /// Default implementation of URLProvider using Foundation
 extension URLProvider {
-  public func createBookmark(forPath path: String) async -> Result<Data, UmbraErrors.Security.Protocols> {
+  public func createBookmark(forPath path: String) async
+  -> Result<Data, UmbraErrors.Security.Protocols> {
     guard let url=URL(string: path) else {
       return .failure(.internalError("Invalid URL path: \(path)"))
     }

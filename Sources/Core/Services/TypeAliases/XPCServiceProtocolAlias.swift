@@ -14,7 +14,7 @@ import ErrorHandlingDomains
 import UmbraCoreTypes
 import XPCProtocolsCore
 
-// NOTE: This typealias has been deprecated in favour of using error types from the 
+// NOTE: This typealias has been deprecated in favour of using error types from the
 // ErrorHandling module directly.
 // It is kept temporarily for backward compatibility but will be removed in a future release.
 // For new code, please use UmbraErrors.Security.Protocols instead.
@@ -23,14 +23,14 @@ import XPCProtocolsCore
 // We're using the standard protocols error type in the Security domain
 
 /// Alias to the modern XPC service protocol from XPCProtocolsCore
-public typealias XPCServiceProtocol = XPCServiceProtocolStandard
+public typealias XPCServiceProtocol=XPCServiceProtocolStandard
 
 /// Alias to the basic XPC service protocol
-public typealias XPCServiceProtocolBase = XPCServiceProtocolBasic
+public typealias XPCServiceProtocolBase=XPCServiceProtocolBasic
 
-/// Alias to the complete XPC service protocol - directly imported from XPCProtocolsCore 
+/// Alias to the complete XPC service protocol - directly imported from XPCProtocolsCore
 // This protocol provides the most comprehensive set of operations
-public typealias XPCServiceProtocolComplete = XPCServiceProtocolStandard
+public typealias XPCServiceProtocolComplete=XPCServiceProtocolStandard
 
 /// Legacy XPC service protocol (deprecated)
 @available(
@@ -38,4 +38,4 @@ public typealias XPCServiceProtocolComplete = XPCServiceProtocolStandard
   deprecated,
   message: "Use XPCServiceProtocol instead which points to XPCServiceProtocolStandard"
 )
-public typealias LegacyXPCServiceProtocol = XPCServiceProtocol
+public typealias LegacyXPCServiceProtocol=XPCServiceProtocol

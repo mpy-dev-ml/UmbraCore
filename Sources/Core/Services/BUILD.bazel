@@ -7,6 +7,9 @@ umbra_swift_library(
         ["*.swift"],
         exclude = ["Types/**/*.swift"],
     ),
+    additional_copts = [
+        "-DUSE_FOUNDATION_CRYPTO",  # Define flag to use Foundation crypto instead of CryptoSwift where possible
+    ],
     deps = [
         "//Sources/Core/Services/TypeAliases:CoreServicesTypeAliases",
         "//Sources/Core/Services/TypeAliases:CoreServicesSecurityTypeAliases",

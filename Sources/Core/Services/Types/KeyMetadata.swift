@@ -83,32 +83,32 @@ public struct KeyMetadata: Sendable, Codable {
     status: KeyStatus = .active,
     storageLocation: StorageLocation,
     accessControls: AccessControls = .none,
-    createdAt: Date = Date(),
-    lastModified: Date = Date(),
-    expiryDate: Date? = nil,
+    createdAt: Date=Date(),
+    lastModified: Date=Date(),
+    expiryDate: Date?=nil,
     algorithm: String,
     keySize: Int,
     identifier: String,
-    version: Int = 1,
-    exportable: Bool = false,
-    isSystemKey: Bool = false,
-    isProcessIsolated: Bool = false,
-    customMetadata: [String: String]? = nil
+    version: Int=1,
+    exportable: Bool=false,
+    isSystemKey: Bool=false,
+    isProcessIsolated: Bool=false,
+    customMetadata: [String: String]?=nil
   ) {
-    self.status = status
-    self.storageLocation = storageLocation
-    self.accessControls = accessControls
-    self.createdAt = createdAt
-    self.lastModified = lastModified
-    self.expiryDate = expiryDate
-    self.algorithm = algorithm
-    self.keySize = keySize
-    self.identifier = identifier
-    self.version = version
-    self.exportable = exportable
-    self.isSystemKey = isSystemKey
-    self.isProcessIsolated = isProcessIsolated
-    self.customMetadata = customMetadata
+    self.status=status
+    self.storageLocation=storageLocation
+    self.accessControls=accessControls
+    self.createdAt=createdAt
+    self.lastModified=lastModified
+    self.expiryDate=expiryDate
+    self.algorithm=algorithm
+    self.keySize=keySize
+    self.identifier=identifier
+    self.version=version
+    self.exportable=exportable
+    self.isSystemKey=isSystemKey
+    self.isProcessIsolated=isProcessIsolated
+    self.customMetadata=customMetadata
   }
 
   /// Create new key metadata with basic parameters
@@ -123,22 +123,22 @@ public struct KeyMetadata: Sendable, Codable {
     accessControls: AccessControls = .none,
     algorithm: String,
     keySize: Int,
-    expiryDate: Date? = nil
+    expiryDate: Date?=nil
   ) {
-    status = KeyStatus.active
-    self.storageLocation = storageLocation
-    self.accessControls = accessControls
-    self.algorithm = algorithm
-    self.keySize = keySize
-    createdAt = Date()
-    lastModified = Date()
-    self.expiryDate = expiryDate
-    identifier = UUID().uuidString
-    version = 1
-    exportable = false
-    isSystemKey = false
-    isProcessIsolated = false
-    customMetadata = nil
+    status=KeyStatus.active
+    self.storageLocation=storageLocation
+    self.accessControls=accessControls
+    self.algorithm=algorithm
+    self.keySize=keySize
+    createdAt=Date()
+    lastModified=Date()
+    self.expiryDate=expiryDate
+    identifier=UUID().uuidString
+    version=1
+    exportable=false
+    isSystemKey=false
+    isProcessIsolated=false
+    customMetadata=nil
   }
 
   /// Check if the key is expired
@@ -154,9 +154,9 @@ public struct KeyMetadata: Sendable, Codable {
   /// - Parameter newStatus: The new status
   /// - Returns: Updated metadata
   public func withStatus(_ newStatus: KeyStatus) -> KeyMetadata {
-    var updated = self
-    updated.status = newStatus
-    updated.lastModified = Date()
+    var updated=self
+    updated.status=newStatus
+    updated.lastModified=Date()
     return updated
   }
 }
@@ -199,32 +199,32 @@ extension KeyMetadata {
       status: KeyManagementTypes.KeyStatus = .active,
       storageLocation: KeyManagementTypes.StorageLocation,
       accessControls: KeyManagementTypes.KeyMetadata.AccessControls = .none,
-      createdAt: Date = Date(),
-      lastModified: Date = Date(),
-      expiryDate: Date? = nil,
-      algorithm: String = "AES-GCM",
-      keySize: Int = 256,
-      identifier: String = UUID().uuidString,
-      version: Int = 1,
-      exportable: Bool = false,
-      isSystemKey: Bool = false,
-      isProcessIsolated: Bool = false,
-      customMetadata: [String: String]? = nil
+      createdAt: Date=Date(),
+      lastModified: Date=Date(),
+      expiryDate: Date?=nil,
+      algorithm: String="AES-GCM",
+      keySize: Int=256,
+      identifier: String=UUID().uuidString,
+      version: Int=1,
+      exportable: Bool=false,
+      isSystemKey: Bool=false,
+      isProcessIsolated: Bool=false,
+      customMetadata: [String: String]?=nil
     ) {
-      self.status = status
-      self.storageLocation = storageLocation
-      self.accessControls = accessControls
-      self.createdAt = createdAt
-      self.lastModified = lastModified
-      self.expiryDate = expiryDate
-      self.algorithm = algorithm
-      self.keySize = keySize
-      self.identifier = identifier
-      self.version = version
-      self.exportable = exportable
-      self.isSystemKey = isSystemKey
-      self.isProcessIsolated = isProcessIsolated
-      self.customMetadata = customMetadata
+      self.status=status
+      self.storageLocation=storageLocation
+      self.accessControls=accessControls
+      self.createdAt=createdAt
+      self.lastModified=lastModified
+      self.expiryDate=expiryDate
+      self.algorithm=algorithm
+      self.keySize=keySize
+      self.identifier=identifier
+      self.version=version
+      self.exportable=exportable
+      self.isSystemKey=isSystemKey
+      self.isProcessIsolated=isProcessIsolated
+      self.customMetadata=customMetadata
     }
 
     public init(
@@ -233,34 +233,34 @@ extension KeyMetadata {
       accessControls: KeyManagementTypes.KeyMetadata.AccessControls = .none,
       createdAtTimestamp: Int64,
       lastModifiedTimestamp: Int64,
-      expiryTimestamp: Int64? = nil,
+      expiryTimestamp: Int64?=nil,
       algorithm: String,
       keySize: Int,
       identifier: String,
-      version: Int = 1,
-      exportable: Bool = false,
-      isSystemKey: Bool = false,
-      isProcessIsolated: Bool = false,
-      customMetadata: [String: String]? = nil
+      version: Int=1,
+      exportable: Bool=false,
+      isSystemKey: Bool=false,
+      isProcessIsolated: Bool=false,
+      customMetadata: [String: String]?=nil
     ) {
-      self.status = status
-      self.storageLocation = storageLocation
-      self.accessControls = accessControls
-      createdAt = Date(timeIntervalSince1970: TimeInterval(createdAtTimestamp))
-      lastModified = Date(timeIntervalSince1970: TimeInterval(lastModifiedTimestamp))
+      self.status=status
+      self.storageLocation=storageLocation
+      self.accessControls=accessControls
+      createdAt=Date(timeIntervalSince1970: TimeInterval(createdAtTimestamp))
+      lastModified=Date(timeIntervalSince1970: TimeInterval(lastModifiedTimestamp))
       if let expiryTimestamp {
-        expiryDate = Date(timeIntervalSince1970: TimeInterval(expiryTimestamp))
+        expiryDate=Date(timeIntervalSince1970: TimeInterval(expiryTimestamp))
       } else {
-        expiryDate = nil
+        expiryDate=nil
       }
-      self.algorithm = algorithm
-      self.keySize = keySize
-      self.identifier = identifier
-      self.version = version
-      self.exportable = exportable
-      self.isSystemKey = isSystemKey
-      self.isProcessIsolated = isProcessIsolated
-      self.customMetadata = customMetadata
+      self.algorithm=algorithm
+      self.keySize=keySize
+      self.identifier=identifier
+      self.version=version
+      self.exportable=exportable
+      self.isSystemKey=isSystemKey
+      self.isProcessIsolated=isProcessIsolated
+      self.customMetadata=customMetadata
     }
   }
 
@@ -270,7 +270,8 @@ extension KeyMetadata {
     RawRepresentation(
       status: status.toRawRepresentation(),
       storageLocation: storageLocation.toRawRepresentation(),
-      accessControls: KeyManagementTypes.KeyMetadata.AccessControls(rawValue: accessControls.rawValue)!,
+      accessControls: KeyManagementTypes.KeyMetadata
+        .AccessControls(rawValue: accessControls.rawValue)!,
       createdAt: createdAt,
       lastModified: lastModified,
       expiryDate: expiryDate,
@@ -314,10 +315,10 @@ extension KeyStatus {
   /// The raw representation that matches the canonical type's raw status
   public func toRawRepresentation() -> KeyManagementTypes.KeyStatus {
     switch self {
-      case .active: return .active
-      case .compromised: return .compromised
-      case .retired: return .retired
-      case let .pendingDeletion(date): return .pendingDeletion(date)
+      case .active: .active
+      case .compromised: .compromised
+      case .retired: .retired
+      case let .pendingDeletion(date): .pendingDeletion(date)
     }
   }
 
@@ -326,10 +327,10 @@ extension KeyStatus {
   /// - Returns: Legacy KeyStatus
   public static func from(rawRepresentation: KeyManagementTypes.KeyStatus) -> KeyStatus {
     switch rawRepresentation {
-      case .active: return .active
-      case .compromised: return .compromised
-      case .retired: return .retired
-      case let .pendingDeletion(date): return .pendingDeletion(date)
+      case .active: .active
+      case .compromised: .compromised
+      case .retired: .retired
+      case let .pendingDeletion(date): .pendingDeletion(date)
     }
   }
 }
@@ -340,20 +341,23 @@ extension StorageLocation {
   /// The raw representation that matches the canonical type's raw locations
   public func toRawRepresentation() -> KeyManagementTypes.StorageLocation {
     switch self {
-      case .secureEnclave: return .secureEnclave
-      case .keychain: return .keychain
-      case .memory: return .memory
+      case .secureEnclave: .secureEnclave
+      case .keychain: .keychain
+      case .memory: .memory
     }
   }
 
   /// Create from the canonical raw representation
   /// - Parameter rawRepresentation: Raw representation from KeyManagementTypes
   /// - Returns: Legacy StorageLocation
-  public static func from(rawRepresentation: KeyManagementTypes.StorageLocation) -> StorageLocation {
+  public static func from(
+    rawRepresentation: KeyManagementTypes
+      .StorageLocation
+  ) -> StorageLocation {
     switch rawRepresentation {
-      case .secureEnclave: return .secureEnclave
-      case .keychain: return .keychain
-      case .memory: return .memory
+      case .secureEnclave: .secureEnclave
+      case .keychain: .keychain
+      case .memory: .memory
     }
   }
 }
