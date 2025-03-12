@@ -1,0 +1,3736 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for UmbraCore - Secure Backup Management System">
+      
+      
+        <meta name="author" content="MPY Development">
+      
+      
+        <link rel="canonical" href="https://umbracore.dev/UmbraCore_Refactoring_Plan/">
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+    
+    
+      
+        <title>UmbraCore Foundation Decoupling and Architecture Refactoring Plan - UmbraCore Documentation</title>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    <style>
+        body {
+            background-color: #000084;
+            color: #ffffff;
+        }
+        
+        .navbar {
+            background-color: #000084;
+            border-bottom: 1px solid #ffffff;
+        }
+        
+        .navbar-default .navbar-nav > li > a {
+            color: #ffffff;
+        }
+        
+        .navbar-default .navbar-brand {
+            color: #ffffff;
+        }
+        
+        .well {
+            background-color: #000084;
+            border: 1px solid #ffffff;
+        }
+        
+        code, pre {
+            font-family: 'Monoid', monospace !important;
+            background-color: #000084;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+        }
+        
+        a {
+            color: #00ffff;
+        }
+        
+        a:hover {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: #ffffff;
+        }
+        
+        .bs-sidebar .nav > li > a {
+            color: #ffffff;
+        }
+        
+        .bs-sidebar .nav > li > a:hover {
+            color: #00ffff;
+            background-color: transparent;
+        }
+        
+        .form-control {
+            background-color: #000084;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+        }
+        
+        table {
+            border: 1px solid #ffffff;
+        }
+        
+        th, td {
+            border: 1px solid #ffffff;
+            padding: 8px;
+        }
+        
+        blockquote {
+            border-left: 5px solid #ffffff;
+            background-color: #000084;
+        }
+        
+        .alert {
+            background-color: #000084;
+            border: 1px solid #ffffff;
+            color: #ffffff;
+        }
+        
+        footer {
+            border-top: 1px solid #ffffff;
+            color: #ffffff;
+        }
+    </style>
+
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto Mono";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#umbracore-foundation-decoupling-and-architecture-refactoring-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="UmbraCore Documentation" class="md-header__button md-logo" aria-label="UmbraCore Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            UmbraCore Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              UmbraCore Foundation Decoupling and Architecture Refactoring Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mpy-dev-ml/UmbraCore" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="UmbraCore Documentation" class="md-nav__button md-logo" aria-label="UmbraCore Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    UmbraCore Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mpy-dev-ml/UmbraCore" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../getting-started/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../user-guide/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/advanced-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Advanced Features
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/security/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Security
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../modules/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Modules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbracore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraCore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/xpcprotocolscore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    XPCProtocolsCore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/securityprotocolscore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SecurityProtocolsCore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbraxpc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraXPC
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbrakeychainservice/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraKeychainService
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/securitytypes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SecurityTypes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbracryptoservice/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraCryptoService
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/resticlihelper/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ResticCLIHelper
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/errortypes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ErrorTypes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/repositorymanager/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RepositoryManager
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/backupcoordinator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BackupCoordinator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../development/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/bazel_spm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Bazel & SPM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architecture
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/project_structure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Structure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/xpc_implementation_plan/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    XPC Implementation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Support
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Support
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Roadmap
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LICENSE/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    License
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ACKNOWLEDGMENTS/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table of Contents
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-consolidation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module Consolidation Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module Consolidation Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-current-module-fragmentation-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Current Module Fragmentation Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-consolidation-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Consolidation Approach
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Consolidation Approach">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#foundation-free-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foundation-Free Core
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-bridge-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      Single Bridge Module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Module(s)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-consolidation-targets-and-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Consolidation Targets and Plan
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Consolidation Targets and Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-security-interfaces-highest-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1 Security Interfaces (Highest Priority)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-umbra-security-services-medium-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2 Umbra Security Services (Medium Priority)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-core-services-types-medium-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3 Core Services Types (Medium Priority)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-objc-bridging-types-medium-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4 ObjC Bridging Types (Medium Priority)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-cryptoswift-integration-lower-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.5 CryptoSwift Integration (Lower Priority)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-implementation-approach-for-securityinterfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Implementation Approach for SecurityInterfaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-benefits-of-consolidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Benefits of Consolidation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-integration-with-priority-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Integration with Priority Matrix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-structure-and-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module Structure and Organization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module Structure and Organization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-overall-project-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Overall Project Structure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-detailed-module-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Detailed Module Structure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Detailed Module Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-umbracoretypes" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 UmbraCoreTypes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-securityprotocolscore" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 SecurityProtocolsCore
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-securitybridge" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 SecurityBridge
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-implementation-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4 Implementation Modules
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-module-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Module Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-foundation-dependency-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Foundation Dependency Boundary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-module-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Module Naming Conventions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-implementation-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Implementation Guidelines
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Implementation Guidelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-umbracoretypes" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 UmbraCoreTypes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-protocol-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 Protocol Modules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-bridge-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 Bridge Modules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-implementation-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4 Implementation Modules
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-interaction-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Interaction Flows
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Interaction Flows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-data-encryption-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 Data Encryption Flow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-xpc-service-call-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 XPC Service Call Flow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-example-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Example Implementation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-system-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build System Integration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build System Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-starlark-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Starlark Rules
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom Starlark Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#foundation-free-module-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foundation-Free Module Rule
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-aware-module-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layer-Aware Module Rule
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-and-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      Validation and Enforcement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Examples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#domain-specific-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Domain-Specific Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#foundation-free-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foundation-Free Protocol
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bridge-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bridge Implementation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xpc-protocol-with-sendable" class="md-nav__link">
+    <span class="md-ellipsis">
+      XPC Protocol with @Sendable
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Workflow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#branching-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Branching Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Branching Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-long-running-integration-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Long-running Integration Branch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-feature-branches-for-each-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Feature Branches for Each Module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-integration-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Integration Process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-final-integration-to-main" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Final Integration to Main
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-strategy-for-existing-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migration Strategy for Existing Code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commit-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commit Guidelines
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-decisions-and-rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design Decisions and Rationale
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Decisions and Rationale">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#domain-specific-type-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      Domain-Specific Type Names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layered-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Layered Architecture
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-erasure-vs-protocol-inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Erasure vs. Protocol Inheritance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-bridge-module-vs-multiple-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Single Bridge Module vs. Multiple Adapters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swift-evolution-watch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Swift Evolution Watch
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Considerations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-conversion-overhead" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Conversion Overhead
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module-boundary-overhead" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module Boundary Overhead
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Memory Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build Performance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#versioning-and-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Versioning and Compatibility
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Versioning and Compatibility">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#semantic-versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Semantic Versioning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-path-for-dependents" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migration Path for Dependents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-stability" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Stability
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#binary-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Binary Compatibility
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Handling Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#domain-specific-error-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Domain-Specific Error Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-translation-in-bridge-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Translation in Bridge Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-propagation-across-module-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Propagation Across Module Boundaries
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-documentation-and-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Documentation and Recovery
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xpc-error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      XPC Error Handling
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-to-objc-for-xpc-protocols" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternatives to @objc for XPC Protocols
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Alternatives to @objc for XPC Protocols">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      Current State
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#potential-alternatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Potential Alternatives
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#short-term-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Short-term Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swift-evolution-watch_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Swift Evolution Watch
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#swift-library-evolution-compatibility-in-dependency-chains" class="md-nav__link">
+    <span class="md-ellipsis">
+      Swift Library Evolution Compatibility in Dependency Chains
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Swift Library Evolution Compatibility in Dependency Chains">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Findings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution-approaches" class="md-nav__link">
+    <span class="md-ellipsis">
+      Solution Approaches
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Guidance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bazelisk-and-build-system-integration-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bazelisk and Build System Integration Lessons
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bazelisk and Build System Integration Lessons">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-aes-gcm-implementation-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. AES-GCM Implementation Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. AES-GCM Implementation Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resolution:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-bazelisk-environment-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Bazelisk Environment Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Bazelisk Environment Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-bazelrc-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example .bazelrc Configuration:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-lessons-for-cross-platform-security-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Lessons for Cross-Platform Security Implementation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-build-system-integration-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Build System Integration Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-implementation-status-updated-1-march-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. Implementation Status (Updated 1 March 2025)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Implementation Status (Updated 1 March 2025)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#security-interfaces-consolidation-priority-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      Security Interfaces Consolidation (Priority 3.1)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#umbra-security-services-priority-32" class="md-nav__link">
+    <span class="md-ellipsis">
+      Umbra Security Services (Priority 3.2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-services-types-priority-33" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Services Types (Priority 3.3)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#objc-bridging-types-priority-34" class="md-nav__link">
+    <span class="md-ellipsis">
+      ObjC Bridging Types (Priority 3.4)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cryptoswift-integration-priority-35" class="md-nav__link">
+    <span class="md-ellipsis">
+      CryptoSwift Integration (Priority 3.5)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommended-focus-areas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recommended Focus Areas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-and-test-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build and Test Status
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeline-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timeline Update
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+    <div class="content">
+        
+                  
+
+  
+  
+
+
+<h1 id="umbracore-foundation-decoupling-and-architecture-refactoring-plan">UmbraCore Foundation Decoupling and Architecture Refactoring Plan<a class="headerlink" href="#umbracore-foundation-decoupling-and-architecture-refactoring-plan" title="Permanent link">&para;</a></h1>
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#current-state-analysis">Current State Analysis</a></li>
+<li><a href="#core-issues-identified">Core Issues Identified</a></li>
+<li><a href="#refactoring-strategy">Refactoring Strategy</a></li>
+<li><a href="#proposed-architecture">Proposed Architecture</a></li>
+<li><a href="#implementation-plan">Implementation Plan</a></li>
+<li><a href="#refactoring-priority-matrix">Refactoring Priority Matrix</a></li>
+<li><a href="#module-consolidation-strategy">Module Consolidation Strategy</a></li>
+<li><a href="#module-structure-and-organization">Module Structure and Organization</a></li>
+<li><a href="#build-system-integration">Build System Integration</a></li>
+<li><a href="#code-examples">Code Examples</a></li>
+<li><a href="#implementation-workflow">Implementation Workflow</a></li>
+<li><a href="#design-decisions-and-rationale">Design Decisions and Rationale</a></li>
+<li><a href="#performance-considerations">Performance Considerations</a></li>
+<li><a href="#versioning-and-compatibility">Versioning and Compatibility</a></li>
+<li><a href="#error-handling-strategy">Error Handling Strategy</a></li>
+<li><a href="#alternatives-to-objc-for-xpc-protocols">Alternatives to @objc for XPC Protocols</a></li>
+<li><a href="#swift-library-evolution-compatibility-in-dependency-chains">Swift Library Evolution Compatibility in Dependency Chains</a></li>
+<li><a href="#bazelisk-and-build-system-integration-lessons">Bazelisk and Build System Integration Lessons</a></li>
+<li><a href="#implementation-status-updated-1-march-2025">Implementation Status (Updated 1 March 2025)</a></li>
+</ol>
+<p>{{ ... }}</p>
+<p>We have updated our priority matrix to include these consolidation tasks, with SecureBytes implementation and SecurityInterfaces consolidation as our highest priorities.</p>
+<h2 id="module-consolidation-strategy">Module Consolidation Strategy<a class="headerlink" href="#module-consolidation-strategy" title="Permanent link">&para;</a></h2>
+<p>After analyzing the codebase, we've identified several areas where multiple bridging modules have been created in attempts to break circular dependencies. This section outlines a consolidation strategy to simplify the architecture while achieving our dependency-breaking goals.</p>
+<h3 id="1-current-module-fragmentation-analysis">1. Current Module Fragmentation Analysis<a class="headerlink" href="#1-current-module-fragmentation-analysis" title="Permanent link">&para;</a></h3>
+<p>We've identified three main areas with significant module fragmentation:</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Fragmented Modules</th>
+<th>Severity</th>
+<th>Root Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security Interfaces</td>
+<td>8+ modules including SecurityInterfaces, SecurityInterfacesBase, SecurityInterfacesFoundation, etc.</td>
+<td>High</td>
+<td>Multiple iterations of attempting to break Foundation dependencies</td>
+</tr>
+<tr>
+<td>Umbra Security Services</td>
+<td>4 modules including UmbraSecurity, UmbraSecurityFoundation, UmbraSecurityNoFoundation, etc.</td>
+<td>Medium</td>
+<td>Segregating Foundation dependencies</td>
+</tr>
+<tr>
+<td>Core Services Types</td>
+<td>CoreServicesTypes, CoreServicesTypesNoFoundation</td>
+<td>Low</td>
+<td>Early stage fragmentation</td>
+</tr>
+</tbody>
+</table>
+<p>This fragmentation has led to:
+- Complex dependency graphs
+- Unclear ownership of functionality
+- Redundant code across modules
+- Higher maintenance burden
+- Difficult onboarding for new developers</p>
+<h3 id="2-consolidation-approach">2. Consolidation Approach<a class="headerlink" href="#2-consolidation-approach" title="Permanent link">&para;</a></h3>
+<p>For each fragmented area, we will apply the following consolidation pattern:</p>
+<h4 id="foundation-free-core">Foundation-Free Core<a class="headerlink" href="#foundation-free-core" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Create/consolidate into a single core module (e.g., <code>SecurityProtocolsCore</code>)</li>
+<li>Use only domain-specific types (SecureBytes, ResourceLocator, etc.)</li>
+<li>No Foundation imports whatsoever</li>
+<li>Clear, focused protocols with minimal surface area</li>
+</ul>
+<h4 id="single-bridge-module">Single Bridge Module<a class="headerlink" href="#single-bridge-module" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Create one consolidated bridge module per functional area</li>
+<li>This module handles all Foundation conversions</li>
+<li>Acts as the only module with both Foundation and core module imports</li>
+<li>Contains adapter classes and conversion utilities</li>
+</ul>
+<h4 id="implementation-modules">Implementation Module(s)<a class="headerlink" href="#implementation-modules" title="Permanent link">&para;</a></h4>
+<ul>
+<li>May have one or more implementation modules</li>
+<li>Each implementation has a clear purpose (e.g., Foundation-based, XPC-based)</li>
+<li>Dependencies flow in one direction through the bridge</li>
+</ul>
+<h3 id="3-consolidation-targets-and-plan">3. Consolidation Targets and Plan<a class="headerlink" href="#3-consolidation-targets-and-plan" title="Permanent link">&para;</a></h3>
+<h4 id="31-security-interfaces-highest-priority">3.1 Security Interfaces (Highest Priority)<a class="headerlink" href="#31-security-interfaces-highest-priority" title="Permanent link">&para;</a></h4>
+<p><strong>Current State:</strong>
+- 8+ fragmented modules
+- Circular dependencies between Foundation and security protocols
+- Overlapping responsibilities</p>
+<p><strong>Consolidation Plan:</strong>
+1. Create <code>SecurityProtocolsCore</code> with foundation-free types and protocols
+2. Implement <code>SecurityBridge</code> for all Foundation conversions
+3. Remove redundant modules:
+   - SecurityInterfacesFoundationBase
+   - SecurityInterfacesFoundationBridge
+   - SecurityInterfacesFoundationCore
+   - SecurityInterfacesFoundationMinimal
+   - SecurityInterfacesFoundationNoFoundation</p>
+<p><strong>Module Reduction:</strong> 8+ → 2-3 modules</p>
+<h4 id="32-umbra-security-services-medium-priority">3.2 Umbra Security Services (Medium Priority)<a class="headerlink" href="#32-umbra-security-services-medium-priority" title="Permanent link">&para;</a></h4>
+<p><strong>Current State:</strong>
+- 4 fragmented modules
+- Similar pattern to Security Interfaces
+- Implementation-specific fragmentation</p>
+<p><strong>Consolidation Plan:</strong>
+1. Create <code>UmbraSecurityCore</code> with foundation-free implementation
+2. Implement <code>UmbraSecurityBridge</code> for Foundation interop
+3. Remove redundant modules:
+   - UmbraSecurityNoFoundation
+   - UmbraSecurityServicesNoFoundation
+   - UmbraSecurityFoundation</p>
+<p><strong>Module Reduction:</strong> 4 → 2 modules</p>
+<h4 id="33-core-services-types-medium-priority">3.3 Core Services Types (Medium Priority)<a class="headerlink" href="#33-core-services-types-medium-priority" title="Permanent link">&para;</a></h4>
+<p><strong>Current State:</strong>
+- Beginning signs of fragmentation
+- Foundation dependencies creeping in</p>
+<p><strong>Consolidation Plan:</strong>
+1. Create <code>CoreTypesProtocols</code> for foundation-free definitions
+2. Implement <code>CoreTypesBridge</code> for Foundation interop
+3. Migrate and consolidate existing types</p>
+<p><strong>Module Reduction:</strong> 2+ → 2 focused modules</p>
+<h4 id="34-objc-bridging-types-medium-priority">3.4 ObjC Bridging Types (Medium Priority)<a class="headerlink" href="#34-objc-bridging-types-medium-priority" title="Permanent link">&para;</a></h4>
+<p><strong>Current State:</strong>
+- ObjCBridgingTypes and ObjCBridgingTypesFoundation
+- Foundation dependencies causing cycles</p>
+<p><strong>Consolidation Plan:</strong>
+1. Create foundation-free base interfaces
+2. Implement single bridge module for Foundation
+3. Clear separation of ObjC and Foundation concerns</p>
+<p><strong>Module Reduction:</strong> 2+ → 2 focused modules</p>
+<h4 id="35-cryptoswift-integration-lower-priority">3.5 CryptoSwift Integration (Lower Priority)<a class="headerlink" href="#35-cryptoswift-integration-lower-priority" title="Permanent link">&para;</a></h4>
+<p><strong>Current State:</strong>
+- CryptoSwiftNoFoundation attempts to remove Foundation
+- Not fully integrated with domain types</p>
+<p><strong>Consolidation Plan:</strong>
+1. Integrate with domain-specific types
+2. Provide clean crypto interfaces</p>
+<p><strong>Module Reduction:</strong> 2 → 1-2 focused modules</p>
+<h3 id="4-implementation-approach-for-securityinterfaces">4. Implementation Approach for SecurityInterfaces<a class="headerlink" href="#4-implementation-approach-for-securityinterfaces" title="Permanent link">&para;</a></h3>
+<p>As a prototype for our consolidation approach, we will tackle SecurityInterfaces first with the following steps:</p>
+<ol>
+<li><strong>Initial scaffolding</strong> (1-2 days):</li>
+<li>Create the new SecurityProtocolsCore module</li>
+<li>Define basic domain types and protocols</li>
+<li>
+<p>Set up the bridge module structure</p>
+</li>
+<li>
+<p><strong>Migration</strong> (3-5 days):</p>
+</li>
+<li>Port essential functionality from existing modules to the new structure</li>
+<li>Update imports and type usage</li>
+<li>
+<p>Create necessary bridging functions</p>
+</li>
+<li>
+<p><strong>Integration testing</strong> (2-3 days):</p>
+</li>
+<li>Ensure all functionality works with the new structure</li>
+<li>Test boundary cases and error conditions</li>
+<li>
+<p>Validate no circular dependencies exist</p>
+</li>
+<li>
+<p><strong>Cleanup</strong> (1-2 days):</p>
+</li>
+<li>Once the new structure is proven, remove the redundant modules</li>
+<li>Update all references to use the new modules</li>
+<li>Document the new architecture</li>
+</ol>
+<h3 id="5-benefits-of-consolidation">5. Benefits of Consolidation<a class="headerlink" href="#5-benefits-of-consolidation" title="Permanent link">&para;</a></h3>
+<p>This consolidation approach will deliver several key benefits:</p>
+<ol>
+<li><strong>Architectural Clarity</strong></li>
+<li>Clear module boundaries and responsibilities</li>
+<li>One-way dependency flow</li>
+<li>
+<p>Simplified mental model</p>
+</li>
+<li>
+<p><strong>Reduced Codebase Size</strong></p>
+</li>
+<li>Elimination of redundant code</li>
+<li>Fewer files to maintain</li>
+<li>
+<p>Consolidated build artifacts</p>
+</li>
+<li>
+<p><strong>Improved Build Performance</strong></p>
+</li>
+<li>Fewer module boundaries to cross</li>
+<li>Reduced compile-time dependencies</li>
+<li>
+<p>More efficient incremental builds</p>
+</li>
+<li>
+<p><strong>Better Developer Experience</strong></p>
+</li>
+<li>Easier navigation of the codebase</li>
+<li>Clear patterns to follow for new development</li>
+<li>
+<p>More intuitive organization</p>
+</li>
+<li>
+<p><strong>Foundation Independence</strong></p>
+</li>
+<li>Core functionality isolated from Foundation</li>
+<li>Easier to port to other platforms</li>
+<li>Better testing without Foundation dependencies</li>
+</ol>
+<h3 id="6-integration-with-priority-matrix">6. Integration with Priority Matrix<a class="headerlink" href="#6-integration-with-priority-matrix" title="Permanent link">&para;</a></h3>
+<p>This consolidation strategy aligns with our priority matrix by:</p>
+<ol>
+<li>Focusing first on high-impact, high-dependency areas</li>
+<li>Breaking circular dependencies as a primary goal</li>
+<li>Starting with clear architectural boundaries</li>
+<li>Providing quick wins through module simplification</li>
+</ol>
+<p>We have updated our priority matrix to include these consolidation tasks, with SecureBytes implementation and SecurityInterfaces consolidation as our highest priorities.</p>
+<h2 id="module-structure-and-organization">Module Structure and Organization<a class="headerlink" href="#module-structure-and-organization" title="Permanent link">&para;</a></h2>
+<p>This section details the specific structure and organization of the consolidated modules. The architecture follows a clean, modular design with clear boundaries between Foundation-dependent and Foundation-free code.</p>
+<h3 id="1-overall-project-structure">1. Overall Project Structure<a class="headerlink" href="#1-overall-project-structure" title="Permanent link">&para;</a></h3>
+<p>The consolidated project structure will organize modules by their primary responsibility and Foundation dependency status:</p>
+<div class="highlight"><pre><span></span><code>UmbraCore/
+├── UmbraCoreTypes/                          # Domain-specific foundation-free types
+├── SecurityProtocolsCore/                   # Foundation-free protocol definitions
+├── SecurityBridge/                          # Bridge between core types and Foundation
+├── SecurityImplementation/                  # Concrete implementation (Foundation-free)
+├── SecurityImplementationFoundation/        # Foundation-dependent implementation
+├── XPCProtocolsCore/                        # Foundation-free XPC protocol definitions
+├── XPCBridge/                               # XPC bridge for Foundation interoperability
+└── [other domain-specific modules]          # Following the same pattern
+</code></pre></div>
+<h3 id="2-detailed-module-structure">2. Detailed Module Structure<a class="headerlink" href="#2-detailed-module-structure" title="Permanent link">&para;</a></h3>
+<h4 id="21-umbracoretypes">2.1 UmbraCoreTypes<a class="headerlink" href="#21-umbracoretypes" title="Permanent link">&para;</a></h4>
+<p>This module contains foundational, domain-specific types that replace Foundation dependencies:</p>
+<div class="highlight"><pre><span></span><code>UmbraCoreTypes/
+├── BUILD.bazel
+├── Sources/
+│   ├── SecureBytes.swift                # Replacement for Data
+│   ├── ResourceLocator.swift            # Replacement for URL
+│   ├── TimePoint.swift                  # Replacement for Date
+│   ├── Result.swift                     # Domain-specific result type
+│   └── Errors/
+│       ├── ErrorProtocol.swift          # Base error protocol
+│       └── CommonErrors.swift           # Common error definitions
+└── Tests/
+    └── [unit tests]
+</code></pre></div>
+<p>Key characteristics:
+- Zero Foundation imports
+- All types conform to <code>Sendable</code>
+- Comprehensive value semantics
+- Full Swift concurrency support</p>
+<h4 id="22-securityprotocolscore">2.2 SecurityProtocolsCore<a class="headerlink" href="#22-securityprotocolscore" title="Permanent link">&para;</a></h4>
+<p>This module defines security interfaces using only core types with no Foundation dependencies:</p>
+<div class="highlight"><pre><span></span><code>SecurityProtocolsCore/
+├── BUILD.bazel
+├── Sources/
+│   ├── Protocols/
+│   │   ├── CryptoServiceProtocol.swift
+│   │   ├── KeyManagementProtocol.swift
+│   │   └── SecurityProviderProtocol.swift
+│   ├── Types/
+│   │   ├── SecurityOperation.swift
+│   │   └── SecurityErrors.swift
+│   └── DTOs/
+│       ├── SecurityConfigDTO.swift
+│       └── SecurityResultDTO.swift
+└── Tests/
+    └── [unit tests]
+</code></pre></div>
+<p>Key characteristics:
+- Depends only on UmbraCoreTypes
+- Zero Foundation imports
+- Protocol-based design
+- Clear, focused interfaces</p>
+<h4 id="23-securitybridge">2.3 SecurityBridge<a class="headerlink" href="#23-securitybridge" title="Permanent link">&para;</a></h4>
+<p>This module bridges between Foundation types and domain-specific types:</p>
+<div class="highlight"><pre><span></span><code>SecurityBridge/
+├── BUILD.bazel
+├── Sources/
+│   ├── Adapters/
+│   │   ├── DataAdapter.swift            # SecureBytes &lt;-&gt; Data conversion
+│   │   ├── URLAdapter.swift             # ResourceLocator &lt;-&gt; URL conversion
+│   │   └── DateAdapter.swift            # TimePoint &lt;-&gt; Date conversion
+│   ├── ProtocolAdapters/
+│   │   ├── CryptoServiceAdapter.swift   # Adapts Foundation implementation to core protocol
+│   │   └── KeyManagementAdapter.swift   # Adapts Foundation implementation to core protocol
+│   └── XPCBridge/
+│       ├── XPCServiceAdapter.swift      # Adapts XPC protocols for Foundation
+│       └── FoundationConversions.swift  # Utility conversions
+└── Tests/
+    └── [unit tests]
+</code></pre></div>
+<p>Key characteristics:
+- Only module with both Foundation and Core imports
+- Clear boundary between type systems
+- Comprehensive conversion utilities
+- Adapter pattern implementation</p>
+<h4 id="24-implementation-modules">2.4 Implementation Modules<a class="headerlink" href="#24-implementation-modules" title="Permanent link">&para;</a></h4>
+<p>Concrete implementations are divided by their Foundation dependency:</p>
+<div class="highlight"><pre><span></span><code>SecurityImplementation/                  # Foundation-free implementation
+├── BUILD.bazel
+├── Sources/
+│   ├── Services/
+│   │   ├── CryptoServiceImpl.swift      # Implementation using only core types
+│   │   └── KeyManagementImpl.swift      # Implementation using only core types
+│   ├── Utilities/
+│   │   └── SecurityHelpers.swift        # Utility functions
+│   └── Factory/
+│       └── SecurityFactory.swift        # Creates service instances
+└── Tests/
+    └── [unit tests]
+
+SecurityImplementationFoundation/        # Foundation-dependent implementation
+├── BUILD.bazel
+├── Sources/
+│   ├── Services/
+│   │   ├── CryptoKitService.swift       # Implementation using CryptoKit/Foundation
+│   │   └── KeychainService.swift        # Implementation using Keychain/Foundation
+│   ├── Extensions/
+│   │   └── FoundationExtensions.swift   # Extensions on Foundation types
+│   └── Factory/
+│       └── FoundationSecurityFactory.swift  # Creates Foundation-based services
+└── Tests/
+    └── [unit tests]
+</code></pre></div>
+<p>Key characteristics:
+- Clear separation of Foundation and non-Foundation implementations
+- Dependency injection design pattern
+- Factory-based instantiation
+- Comprehensive unit tests</p>
+<h3 id="3-module-dependencies">3. Module Dependencies<a class="headerlink" href="#3-module-dependencies" title="Permanent link">&para;</a></h3>
+<p>The dependency relationships between modules follow a strict pattern to eliminate circular dependencies:</p>
+<div class="highlight"><pre><span></span><code>┌──────────────────┐
+│  UmbraCoreTypes  │◄────────────────────────────┐
+└──────────────────┘                             │
+         ▲                                       │
+         │                                       │
+         │                                       │
+┌──────────────────┐                    ┌──────────────────┐
+│ SecurityProtocols│◄───────────────────│    XPCProtocols  │
+│      Core        │                    │       Core       │
+└──────────────────┘                    └──────────────────┘
+         ▲                                       ▲
+         │                                       │
+         │                                       │
+┌──────────────────┐                    ┌──────────────────┐
+│    Security      │                    │       XPC        │
+│  Implementation  │                    │  Implementation   │
+└──────────────────┘                    └──────────────────┘
+         ▲                                       ▲
+         │                                       │
+         │                                       │
+┌──────────────────┐                    ┌──────────────────┐
+│ SecurityBridge   │◄───────────────────│    XPCBridge     │
+└──────────────────┘                    └──────────────────┘
+         ▲                                       ▲
+         │                                       │
+         │                                       │
+┌──────────────────┐                    ┌──────────────────┐
+│ SecurityImplFdn  │◄───────────────────│  XPCImplFdn      │
+└──────────────────┘                    └──────────────────┘
+</code></pre></div>
+<h3 id="4-foundation-dependency-boundary">4. Foundation Dependency Boundary<a class="headerlink" href="#4-foundation-dependency-boundary" title="Permanent link">&para;</a></h3>
+<p>A critical aspect of this architecture is the clear boundary between Foundation-dependent and Foundation-free code:</p>
+<div class="highlight"><pre><span></span><code>                        │             │
+ Foundation-Free        │  BOUNDARY   │  Foundation-Dependent
+                        │             │
+                        V             V
+┌────────────────────┐  │  ┌────────────────────────────┐
+│ UmbraCoreTypes     │  │  │                            │
+├────────────────────┤  │  │                            │
+│ ProtocolsCore      │  │  │       Bridge Modules       │
+├────────────────────┤  │  │                            │
+│ Implementation     │  │  │                            │
+└────────────────────┘  │  └────────────────────────────┘
+                        │             │
+                        │             V
+                        │  ┌────────────────────────────┐
+                        │  │ Implementation             │
+                        │  │ Foundation                 │
+                        │  └────────────────────────────┘
+</code></pre></div>
+<h3 id="5-module-naming-conventions">5. Module Naming Conventions<a class="headerlink" href="#5-module-naming-conventions" title="Permanent link">&para;</a></h3>
+<p>For consistency across the project, we adopt these naming conventions:</p>
+<table>
+<thead>
+<tr>
+<th>Module Type</th>
+<th>Naming Pattern</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core Types</td>
+<td>UmbraCoreTypes</td>
+<td>UmbraCoreTypes</td>
+</tr>
+<tr>
+<td>Protocol Definitions</td>
+<td>[Domain]ProtocolsCore</td>
+<td>SecurityProtocolsCore</td>
+</tr>
+<tr>
+<td>Foundation Bridge</td>
+<td>[Domain]Bridge</td>
+<td>SecurityBridge</td>
+</tr>
+<tr>
+<td>Foundation-Free Implementation</td>
+<td>[Domain]Implementation</td>
+<td>SecurityImplementation</td>
+</tr>
+<tr>
+<td>Foundation-Dependent Implementation</td>
+<td>[Domain]ImplementationFoundation</td>
+<td>SecurityImplementationFoundation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-implementation-guidelines">6. Implementation Guidelines<a class="headerlink" href="#6-implementation-guidelines" title="Permanent link">&para;</a></h3>
+<p>When implementing code within these modules, follow these guidelines:</p>
+<h4 id="61-umbracoretypes">6.1 UmbraCoreTypes<a class="headerlink" href="#61-umbracoretypes" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Use only Swift standard library types</li>
+<li>Ensure all types conform to <code>Sendable</code></li>
+<li>Implement value semantics (struct-based design)</li>
+<li>Provide comprehensive initializers and conversion methods</li>
+<li>Include clear documentation and examples</li>
+</ul>
+<h4 id="62-protocol-modules">6.2 Protocol Modules<a class="headerlink" href="#62-protocol-modules" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Define protocols using only UmbraCoreTypes and Swift standard library</li>
+<li>Keep protocols focused and cohesive</li>
+<li>Use Swift concurrency patterns (async/await)</li>
+<li>Define clear error types</li>
+<li>Include documentation comments</li>
+</ul>
+<h4 id="63-bridge-modules">6.3 Bridge Modules<a class="headerlink" href="#63-bridge-modules" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Provide bidirectional conversion between type systems</li>
+<li>Implement the Adapter pattern</li>
+<li>Handle all edge cases and error conditions</li>
+<li>Document conversion limitations</li>
+<li>Implement type erasure where needed</li>
+</ul>
+<h4 id="64-implementation-modules">6.4 Implementation Modules<a class="headerlink" href="#64-implementation-modules" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Implement protocols from core modules</li>
+<li>Use dependency injection for extensibility</li>
+<li>Provide factory methods for object creation</li>
+<li>Implement comprehensive error handling</li>
+<li>Include detailed logging</li>
+</ul>
+<h3 id="7-interaction-flows">7. Interaction Flows<a class="headerlink" href="#7-interaction-flows" title="Permanent link">&para;</a></h3>
+<p>This section illustrates how common operations flow through this module structure:</p>
+<h4 id="71-data-encryption-flow">7.1 Data Encryption Flow<a class="headerlink" href="#71-data-encryption-flow" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>┌─────────────┐    ┌────────────────┐    ┌─────────────────┐
+│ Client Code │───►│ CryptoProtocol │───►│ CryptoService   │
+└─────────────┘    └────────────────┘    │ Implementation  │
+                                         └─────────────────┘
+                                                  │
+                   ┌────────────────┐             │
+                   │ SecureBytes    │◄────────────┘
+                   └────────────────┘
+</code></pre></div>
+<p>For Foundation interoperability:</p>
+<div class="highlight"><pre><span></span><code>┌─────────────┐    ┌────────────────┐    ┌─────────────────┐
+│ Client with │───►│ SecurityBridge │───►│ Data            │
+│ SecureBytes │    └────────────────┘    └─────────────────┘
+└─────────────┘
+</code></pre></div>
+<h4 id="72-xpc-service-call-flow">7.2 XPC Service Call Flow<a class="headerlink" href="#72-xpc-service-call-flow" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>┌─────────────┐    ┌────────────────┐    ┌─────────────────┐
+│ Client Code │───►│ XPCProtocolCore│───►│ XPCService      │
+└─────────────┘    └────────────────┘    │ Implementation  │
+                                         └─────────────────┘
+                                                  │
+                   ┌────────────────┐             │
+                   │ Bridge Module  │◄────────────┘
+                   └────────────────┘
+                           │
+                           ▼
+                   ┌────────────────┐
+                   │ Foundation API │
+                   └────────────────┘
+</code></pre></div>
+<h3 id="8-example-implementation">8. Example Implementation<a class="headerlink" href="#8-example-implementation" title="Permanent link">&para;</a></h3>
+<p>Below is an example of how a protocol would be defined in the new structure:</p>
+<p><strong>Before (SecurityInterfaces with Foundation dependency):</strong></p>
+<div class="highlight"><pre><span></span><code><span class="kd">import</span> <span class="nc">Foundation</span>
+
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="nc">CryptoServiceProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">encrypt</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="n">Data</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Data</span><span class="p">)</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">Data</span>
+    <span class="kd">func</span> <span class="nf">decrypt</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="n">Data</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Data</span><span class="p">)</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">Data</span>
+    <span class="kd">func</span> <span class="nf">generateKey</span><span class="p">(</span><span class="n">size</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Data</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>After (SecurityProtocolsCore with no Foundation):</strong></p>
+<div class="highlight"><pre><span></span><code><span class="kd">import</span> <span class="nc">UmbraCoreTypes</span>
+
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="nc">CryptoServiceProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">encrypt</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="n">SecureBytes</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">SecureBytes</span><span class="p">)</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">SecureBytes</span>
+    <span class="kd">func</span> <span class="nf">decrypt</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="n">SecureBytes</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">SecureBytes</span><span class="p">)</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">SecureBytes</span>
+    <span class="kd">func</span> <span class="nf">generateKey</span><span class="p">(</span><span class="n">size</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">SecureBytes</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Bridge Implementation:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="kd">import</span> <span class="nc">Foundation</span>
+<span class="kd">import</span> <span class="nc">UmbraCoreTypes</span>
+<span class="kd">import</span> <span class="nc">SecurityProtocolsCore</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CryptoServiceBridge</span><span class="p">:</span> <span class="n">CryptoServiceProtocol</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">foundationService</span><span class="p">:</span> <span class="n">FoundationCryptoService</span>
+
+    <span class="kd">public</span> <span class="kd">init</span><span class="p">(</span><span class="n">foundationService</span><span class="p">:</span> <span class="n">FoundationCryptoService</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kc">self</span><span class="p">.</span><span class="n">foundationService</span> <span class="p">=</span> <span class="n">foundationService</span>
+    <span class="p">}</span>
+
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">encrypt</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="n">SecureBytes</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">SecureBytes</span><span class="p">)</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">SecureBytes</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nv">foundationData</span> <span class="p">=</span> <span class="n">Data</span><span class="p">(</span><span class="n">secureBytes</span><span class="p">:</span> <span class="n">data</span><span class="p">)</span>
+        <span class="kd">let</span> <span class="nv">foundationKey</span> <span class="p">=</span> <span class="n">Data</span><span class="p">(</span><span class="n">secureBytes</span><span class="p">:</span> <span class="n">key</span><span class="p">)</span>
+        <span class="kd">let</span> <span class="nv">result</span> <span class="p">=</span> <span class="k">try</span> <span class="n">foundationService</span><span class="p">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">foundationData</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">foundationKey</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SecureBytes</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">result</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Other methods follow similar pattern</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This example demonstrates how the architecture cleanly separates Foundation dependencies while maintaining type safety and clear interfaces.</p>
+<h2 id="build-system-integration">Build System Integration<a class="headerlink" href="#build-system-integration" title="Permanent link">&para;</a></h2>
+<h3 id="custom-starlark-rules">Custom Starlark Rules<a class="headerlink" href="#custom-starlark-rules" title="Permanent link">&para;</a></h3>
+<p>These rules enforce architectural boundaries and validate module dependencies:</p>
+<h4 id="foundation-free-module-rule">Foundation-Free Module Rule<a class="headerlink" href="#foundation-free-module-rule" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># In //:bazel/macros/swift.bzl</span>
+<span class="k">def</span> <span class="nf">foundation_free_swift_library</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">srcs</span><span class="p">,</span> <span class="n">deps</span> <span class="o">=</span> <span class="p">[],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A swift_library that enforces no Foundation dependencies.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Validation aspects</span>
+    <span class="n">_validate_no_foundation_imports</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_validation&quot;</span><span class="p">,</span> <span class="n">srcs</span> <span class="o">=</span> <span class="n">srcs</span><span class="p">)</span>
+
+    <span class="c1"># Standard swift_library with constraints</span>
+    <span class="n">swift_library</span><span class="p">(</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">,</span>
+        <span class="n">srcs</span> <span class="o">=</span> <span class="n">srcs</span><span class="p">,</span>
+        <span class="n">deps</span> <span class="o">=</span> <span class="n">deps</span><span class="p">,</span>
+        <span class="n">copts</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;-strict-concurrency=complete&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-warn-concurrency&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-enable-actor-data-race-checks&quot;</span><span class="p">,</span>
+        <span class="p">]</span> <span class="o">+</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;copts&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+        <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;copts&quot;</span><span class="p">}</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h4 id="layer-aware-module-rule">Layer-Aware Module Rule<a class="headerlink" href="#layer-aware-module-rule" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">umbra_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">srcs</span><span class="p">,</span> <span class="n">deps</span> <span class="o">=</span> <span class="p">[],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defines a module with explicit layer membership that enforces</span>
+<span class="sd">    architectural boundaries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">layer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_MODULE_LAYERS</span><span class="p">:</span>
+        <span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Unknown layer: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">layer</span><span class="p">)</span>
+
+    <span class="c1"># Validate dependencies against layer rules</span>
+    <span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">deps</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dep</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;//Sources/&quot;</span><span class="p">):</span>
+            <span class="n">module_name</span> <span class="o">=</span> <span class="n">dep</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dep_layer</span> <span class="o">=</span> <span class="n">_get_module_layer</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">dep_layer</span> <span class="ow">in</span> <span class="n">_MODULE_LAYERS</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s2">&quot;forbidden_deps&quot;</span><span class="p">]:</span>
+                <span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Module </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">) cannot depend on </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">dep_layer</span>
+                <span class="p">))</span>
+
+    <span class="c1"># Select appropriate library rule</span>
+    <span class="k">if</span> <span class="n">layer</span> <span class="o">==</span> <span class="s2">&quot;core&quot;</span><span class="p">:</span>
+        <span class="n">foundation_free_swift_library</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">,</span> <span class="n">srcs</span> <span class="o">=</span> <span class="n">srcs</span><span class="p">,</span> <span class="n">deps</span> <span class="o">=</span> <span class="n">deps</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">layer</span> <span class="o">==</span> <span class="s2">&quot;foundation_bridge&quot;</span><span class="p">:</span>
+        <span class="n">foundation_bridge_swift_library</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">,</span> <span class="n">srcs</span> <span class="o">=</span> <span class="n">srcs</span><span class="p">,</span> <span class="n">deps</span> <span class="o">=</span> <span class="n">deps</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">swift_library</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">,</span> <span class="n">srcs</span> <span class="o">=</span> <span class="n">srcs</span><span class="p">,</span> <span class="n">deps</span> <span class="o">=</span> <span class="n">deps</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="validation-and-enforcement">Validation and Enforcement<a class="headerlink" href="#validation-and-enforcement" title="Permanent link">&para;</a></h3>
+<p>Build-time validation to ensure compliance:</p>
+<ol>
+<li><strong>Dependency Validation</strong>: Ensures modules only depend on appropriate layers</li>
+<li><strong>Import Validation</strong>: Scans source files for forbidden imports</li>
+<li><strong>Type Usage Validation</strong>: Validates no Foundation types are used in core modules</li>
+<li><strong>XPC Interface Validation</strong>: Ensures XPC interfaces follow proper patterns</li>
+</ol>
+<p>For detailed lessons learned from our Bazelisk implementation on macOS 15.4 with arm64 architecture, including AES-GCM IV size standardization and architecture-specific configuration, see the <a href="#bazelisk-and-build-system-integration-lessons">Bazelisk and Build System Integration Lessons</a> section.</p>
+<h3 id="code-examples">Code Examples<a class="headerlink" href="#code-examples" title="Permanent link">&para;</a></h3>
+<h3 id="domain-specific-types">Domain-Specific Types<a class="headerlink" href="#domain-specific-types" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Sources/UmbraCoreTypes/SecureBytes.swift</span>
+<span class="c1">// NO import Foundation!</span>
+
+<span class="kd">public</span> <span class="kd">struct</span> <span class="nc">SecureBytes</span><span class="p">:</span> <span class="nb">Hashable</span><span class="p">,</span> <span class="n">Sendable</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">bytes</span><span class="p">:</span> <span class="p">[</span><span class="nb">UInt8</span><span class="p">]</span>
+
+    <span class="kd">public</span> <span class="kd">init</span><span class="p">(</span><span class="kc">_</span> <span class="n">bytes</span><span class="p">:</span> <span class="p">[</span><span class="nb">UInt8</span><span class="p">])</span> <span class="p">{</span>
+        <span class="kc">self</span><span class="p">.</span><span class="n">bytes</span> <span class="p">=</span> <span class="n">bytes</span>
+    <span class="p">}</span>
+
+    <span class="kd">public</span> <span class="kd">var</span> <span class="nv">isEmpty</span><span class="p">:</span> <span class="nb">Bool</span> <span class="p">{</span> <span class="n">bytes</span><span class="p">.</span><span class="bp">isEmpty</span> <span class="p">}</span>
+    <span class="kd">public</span> <span class="kd">var</span> <span class="nv">count</span><span class="p">:</span> <span class="nb">Int</span> <span class="p">{</span> <span class="n">bytes</span><span class="p">.</span><span class="bp">count</span> <span class="p">}</span>
+
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">subdata</span><span class="p">(</span><span class="k">in</span> <span class="n">range</span><span class="p">:</span> <span class="nb">Range</span><span class="p">&lt;</span><span class="nb">Int</span><span class="p">&gt;)</span> <span class="p">-&gt;</span> <span class="n">SecureBytes</span> <span class="p">{</span>
+        <span class="n">SecureBytes</span><span class="p">(</span><span class="nb">Array</span><span class="p">(</span><span class="n">bytes</span><span class="p">[</span><span class="n">range</span><span class="p">]))</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Method to securely clear contents when no longer needed</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">secureClear</span><span class="p">()</span> <span class="p">-&gt;</span> <span class="n">SecureBytes</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nv">mutableBytes</span> <span class="p">=</span> <span class="nb">Array</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="k">in</span> <span class="mf">0.</span><span class="p">.&lt;</span><span class="n">mutableBytes</span><span class="p">.</span><span class="bp">count</span> <span class="p">{</span>
+            <span class="n">mutableBytes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">SecureBytes</span><span class="p">([])</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="foundation-free-protocol">Foundation-Free Protocol<a class="headerlink" href="#foundation-free-protocol" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Sources/SecurityProtocolsCore/SecurityProvider.swift</span>
+<span class="c1">// NO import Foundation!</span>
+<span class="kd">import</span> <span class="nc">UmbraCoreTypes</span>
+
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="nc">SecurityProvider</span><span class="p">:</span> <span class="n">Sendable</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">encrypt</span><span class="p">(</span><span class="kc">_</span> <span class="n">content</span><span class="p">:</span> <span class="n">SecureBytes</span><span class="p">,</span> <span class="n">using</span> <span class="n">key</span><span class="p">:</span> <span class="n">EncryptionKey</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">SecureBytes</span>
+    <span class="kd">func</span> <span class="nf">decrypt</span><span class="p">(</span><span class="kc">_</span> <span class="n">content</span><span class="p">:</span> <span class="n">SecureBytes</span><span class="p">,</span> <span class="n">using</span> <span class="n">key</span><span class="p">:</span> <span class="n">EncryptionKey</span><span class="p">)</span> <span class="k">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">SecureBytes</span>
+    <span class="kd">func</span> <span class="nf">generateKey</span><span class="p">()</span> <span class="k">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">EncryptionKey</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="bridge-implementation">Bridge Implementation<a class="headerlink" href="#bridge-implementation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Sources/FoundationBridge/SecureBytesBridge.swift</span>
+<span class="kd">import</span> <span class="nc">Foundation</span>
+<span class="kd">import</span> <span class="nc">UmbraCoreTypes</span>
+
+<span class="kd">public</span> <span class="kd">extension</span> <span class="nc">SecureBytes</span> <span class="p">{</span>
+    <span class="kd">init</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="n">Foundation</span><span class="p">.</span><span class="n">Data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kc">self</span><span class="p">.</span><span class="kd">init</span><span class="p">([</span><span class="nb">UInt8</span><span class="p">](</span><span class="n">data</span><span class="p">))</span>
+    <span class="p">}</span>
+
+    <span class="kd">func</span> <span class="nf">asData</span><span class="p">()</span> <span class="p">-&gt;</span> <span class="n">Foundation</span><span class="p">.</span><span class="n">Data</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">Foundation</span><span class="p">.</span><span class="n">Data</span><span class="p">(</span><span class="kc">self</span><span class="p">.</span><span class="n">bytes</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">extension</span> <span class="nc">Foundation</span><span class="p">.</span><span class="n">Data</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">asSecureBytes</span><span class="p">()</span> <span class="p">-&gt;</span> <span class="n">SecureBytes</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">SecureBytes</span><span class="p">([</span><span class="nb">UInt8</span><span class="p">](</span><span class="kc">self</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="xpc-protocol-with-sendable">XPC Protocol with @Sendable<a class="headerlink" href="#xpc-protocol-with-sendable" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Sources/XPCProtocolsBridge/XPCCryptoServiceProtocol.swift</span>
+<span class="kd">import</span> <span class="nc">Foundation</span>
+
+<span class="kr">@objc</span> <span class="kd">public</span> <span class="kd">protocol</span> <span class="nc">XPCCryptoServiceProtocol</span><span class="p">:</span> <span class="nb">NSObjectProtocol</span> <span class="p">{</span>
+    <span class="kr">@objc</span> <span class="kd">func</span> <span class="nf">encryptData</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="bp">NSData</span><span class="p">,</span> 
+                        <span class="n">withReply</span> <span class="n">reply</span><span class="p">:</span> <span class="p">@</span><span class="n">escaping</span> <span class="p">@</span><span class="n">Sendable</span> <span class="p">(</span><span class="bp">NSData</span><span class="p">?,</span> <span class="bp">NSError</span><span class="p">?)</span> <span class="p">-&gt;</span> <span class="nb">Void</span><span class="p">)</span>
+
+    <span class="kr">@objc</span> <span class="kd">func</span> <span class="nf">decryptData</span><span class="p">(</span><span class="kc">_</span> <span class="n">data</span><span class="p">:</span> <span class="bp">NSData</span><span class="p">,</span> 
+                        <span class="n">withReply</span> <span class="n">reply</span><span class="p">:</span> <span class="p">@</span><span class="n">escaping</span> <span class="p">@</span><span class="n">Sendable</span> <span class="p">(</span><span class="bp">NSData</span><span class="p">?,</span> <span class="bp">NSError</span><span class="p">?)</span> <span class="p">-&gt;</span> <span class="nb">Void</span><span class="p">)</span>
+
+    <span class="kr">@objc</span> <span class="kd">func</span> <span class="nf">generateKey</span><span class="p">(</span><span class="n">withReply</span> <span class="n">reply</span><span class="p">:</span> <span class="p">@</span><span class="n">escaping</span> <span class="p">@</span><span class="n">Sendable</span> <span class="p">(</span><span class="bp">NSData</span><span class="p">?,</span> <span class="bp">NSError</span><span class="p">?)</span> <span class="p">-&gt;</span> <span class="nb">Void</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="implementation-workflow">Implementation Workflow<a class="headerlink" href="#implementation-workflow" title="Permanent link">&para;</a></h2>
+<h3 id="branching-strategy">Branching Strategy<a class="headerlink" href="#branching-strategy" title="Permanent link">&para;</a></h3>
+<p>To facilitate our refactoring effort while minimizing risk and ensuring proper testing, we will implement a structured branching strategy:</p>
+<h4 id="1-long-running-integration-branch">1. Long-running Integration Branch<a class="headerlink" href="#1-long-running-integration-branch" title="Permanent link">&para;</a></h4>
+<p>We will create a long-running integration branch called <code>umbracore-alpha</code> from <code>main</code>:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>main
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>umbracore-alpha
+</code></pre></div>
+<p>This branch serves as:
+- An integration branch for all refactoring changes
+- A safe testing ground without affecting production code
+- A complete implementation of the new architecture before merging to main</p>
+<h4 id="2-feature-branches-for-each-module">2. Feature Branches for Each Module<a class="headerlink" href="#2-feature-branches-for-each-module" title="Permanent link">&para;</a></h4>
+<p>For each module identified in our consolidation strategy, we will create focused feature branches from <code>umbracore-alpha</code>:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>umbracore-alpha
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/UmbraCoreTypes
+git<span class="w"> </span>checkout<span class="w"> </span>umbracore-alpha
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/SecurityProtocolsCore
+git<span class="w"> </span>checkout<span class="w"> </span>umbracore-alpha
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/SecurityBridge
+<span class="c1"># And so on for each module</span>
+</code></pre></div>
+<p>The primary feature branches will include:
+- <code>feature/UmbraCoreTypes</code> - Foundation-free domain types
+- <code>feature/SecurityProtocolsCore</code> - Core security protocols
+- <code>feature/SecurityBridge</code> - Foundation bridging layer
+- <code>feature/SecurityImplementation</code> - Foundation-free implementation
+- <code>feature/SecurityImplementationFoundation</code> - Foundation-dependent implementation
+- <code>feature/XPCProtocolsCore</code> - XPC protocol definitions</p>
+<h4 id="3-integration-process">3. Integration Process<a class="headerlink" href="#3-integration-process" title="Permanent link">&para;</a></h4>
+<p>Our workflow for integrating changes follows these steps:</p>
+<ol>
+<li><strong>Develop in Feature Branch</strong></li>
+<li>Complete implementation of a specific module</li>
+<li>Add unit tests and documentation</li>
+<li>
+<p>Ensure code compiles and tests pass</p>
+</li>
+<li>
+<p><strong>Create Pull Request to umbracore-alpha</strong></p>
+</li>
+<li>Submit PR for code review</li>
+<li>Address review feedback</li>
+<li>
+<p>Verify that integration tests still pass</p>
+</li>
+<li>
+<p><strong>Merge to Integration Branch</strong></p>
+</li>
+<li>Once approved, merge feature branch to <code>umbracore-alpha</code></li>
+<li>Run integration tests on <code>umbracore-alpha</code></li>
+<li>
+<p>Verify no regressions occur</p>
+</li>
+<li>
+<p><strong>Update Dependent Feature Branches</strong></p>
+</li>
+<li>
+<p>For in-progress feature branches that depend on the merged changes:
+   <div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>feature/DependentFeature
+git<span class="w"> </span>fetch<span class="w"> </span>origin
+git<span class="w"> </span>merge<span class="w"> </span>origin/umbracore-alpha
+<span class="c1"># Resolve any conflicts</span>
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>feature/DependentFeature
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Repeat Process</strong></p>
+</li>
+<li>Continue with remaining feature branches</li>
+<li>Follow priority order from our refactoring matrix</li>
+</ol>
+<h4 id="4-final-integration-to-main">4. Final Integration to Main<a class="headerlink" href="#4-final-integration-to-main" title="Permanent link">&para;</a></h4>
+<p>Once all modules have been merged and thoroughly tested in <code>umbracore-alpha</code>:</p>
+<ol>
+<li><strong>Complete Integration Testing</strong></li>
+<li>Run comprehensive test suite on <code>umbracore-alpha</code></li>
+<li>Verify all functionality across the system</li>
+<li>
+<p>Perform performance benchmarking</p>
+</li>
+<li>
+<p><strong>Create Final PR</strong></p>
+</li>
+<li>Create a PR to merge <code>umbracore-alpha</code> into <code>main</code></li>
+<li>
+<p>Request thorough review of the complete architecture</p>
+</li>
+<li>
+<p><strong>Deploy to Production</strong></p>
+</li>
+<li>Once approved, merge to <code>main</code></li>
+<li>Tag with appropriate version</li>
+<li>Deploy through normal CI/CD process</li>
+</ol>
+<h3 id="migration-strategy-for-existing-code">Migration Strategy for Existing Code<a class="headerlink" href="#migration-strategy-for-existing-code" title="Permanent link">&para;</a></h3>
+<p>When refactoring existing functionality, follow these guidelines:</p>
+<ol>
+<li><strong>Parallel Implementation</strong></li>
+<li>Begin by implementing the new structure alongside existing code</li>
+<li>
+<p>Don't remove old code until the new implementation is proven</p>
+</li>
+<li>
+<p><strong>Feature Flagging</strong></p>
+</li>
+<li>Use feature flags to toggle between old and new implementations</li>
+<li>
+<p>This enables gradual migration and easy rollback if needed</p>
+</li>
+<li>
+<p><strong>Incremental Migration</strong></p>
+</li>
+<li>Move functionality one module at a time</li>
+<li>Maintain backward compatibility where possible</li>
+<li>
+<p>Update clients to use new APIs incrementally</p>
+</li>
+<li>
+<p><strong>Comprehensive Testing</strong></p>
+</li>
+<li>Write tests that verify equivalent functionality between old and new implementations</li>
+<li>Test both implementations with the same input data</li>
+<li>Verify outputs match or any differences are expected and documented</li>
+</ol>
+<h3 id="commit-guidelines">Commit Guidelines<a class="headerlink" href="#commit-guidelines" title="Permanent link">&para;</a></h3>
+<p>For all work within this refactoring project, adhere to these commit guidelines:</p>
+<ol>
+<li><strong>Atomic Commits</strong></li>
+<li>Each commit should represent a single logical change</li>
+<li>Group related changes within a single commit</li>
+<li>
+<p>Keep unrelated changes in separate commits</p>
+</li>
+<li>
+<p><strong>Descriptive Commit Messages</strong></p>
+</li>
+<li>Format: <code>[Module] Brief description of change</code></li>
+<li>Example: <code>[UmbraCoreTypes] Implement SecureBytes with Sendable conformance</code></li>
+<li>
+<p>Include detailed description in commit body when necessary</p>
+</li>
+<li>
+<p><strong>Reference Plan in Commits</strong></p>
+</li>
+<li>Link commits to the relevant section of this refactoring plan</li>
+<li>
+<p>Example: <code>Implements Section 2.1 of refactoring plan</code></p>
+</li>
+<li>
+<p><strong>Code Quality</strong></p>
+</li>
+<li>Run linters and formatters before committing</li>
+<li>Ensure tests pass for all commits</li>
+<li>Follow the style guidelines established for the project</li>
+</ol>
+<p>By following this structured branching and implementation strategy, we can manage the complexity of this large refactoring project, maintain code quality, and minimize disruption to ongoing development.</p>
+<h2 id="design-decisions-and-rationale">Design Decisions and Rationale<a class="headerlink" href="#design-decisions-and-rationale" title="Permanent link">&para;</a></h2>
+<p>This section documents the reasoning behind key architectural decisions to aid future maintainers and developers.</p>
+<h3 id="domain-specific-type-names">Domain-Specific Type Names<a class="headerlink" href="#domain-specific-type-names" title="Permanent link">&para;</a></h3>
+<p>We've chosen more specific type names to better reflect their security-focused purpose:</p>
+<ul>
+<li>
+<p><strong>SecureBytes</strong> (vs. BinaryContent): This name clearly indicates the security-sensitive nature of the data and that it contains binary information requiring secure handling.</p>
+</li>
+<li>
+<p><strong>ResourceLocator</strong> (vs. ResourceIdentifier): This emphasizes the purpose of locating resources rather than just identifying them, aligning better with URL's primary function.</p>
+</li>
+<li>
+<p><strong>TimePoint</strong> (vs. Timestamp): This better represents a moment in time rather than just a marker, making it conceptually closer to Date's purpose.</p>
+</li>
+</ul>
+<p><strong>Rationale</strong>: More precise naming helps developers understand the purpose and proper usage of these types, reduces confusion when mapping between Foundation and domain types, and makes security-sensitive operations more explicit.</p>
+<h3 id="layered-architecture">Layered Architecture<a class="headerlink" href="#layered-architecture" title="Permanent link">&para;</a></h3>
+<p>The decision to use a strict layered architecture with Foundation bridge modules serves multiple purposes:</p>
+<p><strong>Rationale</strong>:
+1. <strong>Maintainability</strong>: Clear separation makes the codebase easier to understand and maintain
+2. <strong>Testability</strong>: Foundation-free core is easier to test without complex mocking
+3. <strong>Evolution</strong>: Foundation and Swift evolution can be accommodated by updating only bridge modules
+4. <strong>Security</strong>: Security-critical code can be isolated from Foundation dependencies
+5. <strong>Performance</strong>: Foundation-dependent code can be optimized separately from core business logic</p>
+<h3 id="type-erasure-vs-protocol-inheritance">Type Erasure vs. Protocol Inheritance<a class="headerlink" href="#type-erasure-vs-protocol-inheritance" title="Permanent link">&para;</a></h3>
+<p>We've chosen type erasure patterns over protocol inheritance to break dependencies:</p>
+<p><strong>Rationale</strong>:
+1. <strong>Avoids Circular Dependencies</strong>: Type erasure allows bridging between type systems without circular imports
+2. <strong>Static Typing</strong>: Maintains Swift's static type safety while allowing flexibility
+3. <strong>Performance</strong>: Compared to protocol witnesses, type erasure has better performance characteristics
+4. <strong>Evolution</strong>: Easier to evolve individual components without breaking compatibility</p>
+<h3 id="single-bridge-module-vs-multiple-adapters">Single Bridge Module vs. Multiple Adapters<a class="headerlink" href="#single-bridge-module-vs-multiple-adapters" title="Permanent link">&para;</a></h3>
+<p>We've consolidated all bridging in a single module rather than distributed adapters:</p>
+<p><strong>Rationale</strong>:
+1. <strong>Centralized Maintenance</strong>: Easier to update when Foundation changes
+2. <strong>Consistent Conversion</strong>: Single source of truth for type conversion
+3. <strong>Dependency Control</strong>: Clear, single point of dependency on Foundation
+4. <strong>Build Performance</strong>: Fewer module boundaries to cross during compilation</p>
+<h3 id="swift-evolution-watch">Swift Evolution Watch<a class="headerlink" href="#swift-evolution-watch" title="Permanent link">&para;</a></h3>
+<p>We'll monitor these Swift Evolution proposals:</p>
+<ul>
+<li><a href="https://github.com/apple/swift-evolution/blob/main/proposals/0302-concurrent-value-and-concurrent-closures.md">SE-0302: Sendable and @Sendable closures</a></li>
+<li><a href="https://github.com/apple/swift-evolution/blob/main/proposals/0336-distributed-actor-runtime.md">SE-0336: Distributed Actor Runtime</a></li>
+</ul>
+<p>As Swift evolves, we'll adapt our strategy to take advantage of new capabilities that reduce or eliminate the need for @objc in XPC communication.</p>
+<h2 id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Permanent link">&para;</a></h2>
+<p>The refactoring introduces several changes that may impact performance. This section analyzes these impacts and proposes mitigations.</p>
+<h3 id="type-conversion-overhead">Type Conversion Overhead<a class="headerlink" href="#type-conversion-overhead" title="Permanent link">&para;</a></h3>
+<p>The bridge layer introduces type conversion overhead when crossing module boundaries:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Foundation type → Domain type → Foundation type conversion</span>
+<span class="kd">let</span> <span class="nv">originalData</span><span class="p">:</span> <span class="n">Data</span> <span class="p">=</span> <span class="n">getData</span><span class="p">()</span>
+<span class="kd">let</span> <span class="nv">secureBytes</span> <span class="p">=</span> <span class="n">SecureBytes</span><span class="p">(</span><span class="n">originalData</span><span class="p">)</span>  <span class="c1">// Conversion 1</span>
+<span class="kd">let</span> <span class="nv">processedData</span> <span class="p">=</span> <span class="n">process</span><span class="p">(</span><span class="n">secureBytes</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">resultData</span> <span class="p">=</span> <span class="n">processedData</span><span class="p">.</span><span class="n">asData</span><span class="p">()</span>  <span class="c1">// Conversion 2</span>
+</code></pre></div>
+<p><strong>Mitigation Strategies</strong>:
+1. <strong>Lazy Conversion</strong>: Convert types only when necessary
+2. <strong>Bulk Operations</strong>: Batch conversions where possible
+3. <strong>Compiler Optimizations</strong>: Use whole-module optimization to potentially eliminate conversions
+4. <strong>Benchmarking</strong>: Establish baseline performance metrics before and after refactoring</p>
+<h3 id="module-boundary-overhead">Module Boundary Overhead<a class="headerlink" href="#module-boundary-overhead" title="Permanent link">&para;</a></h3>
+<p>Additional module boundaries can affect performance:</p>
+<p><strong>Mitigation Strategies</strong>:
+1. <strong>Whole-Module Optimization</strong>: Enable for production builds
+2. <strong>Strategic Inlining</strong>: Mark key conversion functions as @inlinable
+3. <strong>Reduce Cross-Module Calls</strong>: Design APIs to minimize boundary crossings</p>
+<h3 id="memory-usage">Memory Usage<a class="headerlink" href="#memory-usage" title="Permanent link">&para;</a></h3>
+<p>The refactoring may introduce additional memory usage due to type conversion:</p>
+<p><strong>Mitigation Strategies</strong>:
+1. <strong>Copy-on-Write Semantics</strong>: Implement for large data structures
+2. <strong>Secure Memory Management</strong>: Implement secure clearing for sensitive data
+3. <strong>Memory Profiling</strong>: Monitor memory usage before and after changes</p>
+<h3 id="build-performance">Build Performance<a class="headerlink" href="#build-performance" title="Permanent link">&para;</a></h3>
+<p>The new architecture may impact build times:</p>
+<p><strong>Mitigation Strategies</strong>:
+1. <strong>Module Size Optimization</strong>: Right-size modules for compile time
+2. <strong>Dependency Graph Optimization</strong>: Minimize cross-module dependencies
+3. <strong>Parallel Compilation</strong>: Ensure modules can be compiled in parallel</p>
+<h2 id="versioning-and-compatibility">Versioning and Compatibility<a class="headerlink" href="#versioning-and-compatibility" title="Permanent link">&para;</a></h2>
+<p>This section addresses how the refactoring impacts versioning and compatibility with dependent projects.</p>
+<h3 id="semantic-versioning">Semantic Versioning<a class="headerlink" href="#semantic-versioning" title="Permanent link">&para;</a></h3>
+<p>The refactoring constitutes a major version change:</p>
+<div class="highlight"><pre><span></span><code>UmbraCore 2.0.0 → UmbraCore 3.0.0
+</code></pre></div>
+<p><strong>Rationale</strong>: The architectural changes break backward compatibility and require client code changes.</p>
+<h3 id="migration-path-for-dependents">Migration Path for Dependents<a class="headerlink" href="#migration-path-for-dependents" title="Permanent link">&para;</a></h3>
+<p>For projects depending on UmbraCore:</p>
+<ol>
+<li><strong>Compatibility Layer</strong>: Provide temporary adapters to ease migration</li>
+<li><strong>Migration Guide</strong>: Document required changes for dependent code</li>
+<li><strong>Deprecation Period</strong>: Support previous architecture for 6-12 months with deprecation warnings</li>
+</ol>
+<h3 id="api-stability">API Stability<a class="headerlink" href="#api-stability" title="Permanent link">&para;</a></h3>
+<p>Ensure API stability for the new architecture:</p>
+<ol>
+<li><strong>API Documentation</strong>: Thorough documentation of new interfaces</li>
+<li><strong>Backward Compatibility Tests</strong>: Validate against common usage patterns</li>
+<li><strong>API Evolution</strong>: Plan for future evolution without breaking changes</li>
+</ol>
+<h3 id="binary-compatibility">Binary Compatibility<a class="headerlink" href="#binary-compatibility" title="Permanent link">&para;</a></h3>
+<p>Address binary compatibility concerns:</p>
+<ol>
+<li><strong>Module Stability</strong>: Use @frozen for key types where appropriate</li>
+<li><strong>ABI Stability</strong>: Consider ABI implications for public interfaces</li>
+<li><strong>Library Evolution</strong>: Enable library evolution mode for framework targets</li>
+</ol>
+<h2 id="error-handling-strategy">Error Handling Strategy<a class="headerlink" href="#error-handling-strategy" title="Permanent link">&para;</a></h2>
+<p>A consistent error handling approach is essential for the new architecture. This section outlines the error management strategy.</p>
+<h3 id="domain-specific-error-types">Domain-Specific Error Types<a class="headerlink" href="#domain-specific-error-types" title="Permanent link">&para;</a></h3>
+<p>Create a hierarchy of error types without Foundation dependencies:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Sources/UmbraCoreTypes/Errors.swift</span>
+<span class="c1">// NO import Foundation!</span>
+
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">SecurityError</span><span class="p">:</span> <span class="n">Error</span><span class="p">,</span> <span class="n">Sendable</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">encryptionFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">decryptionFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">keyGenerationFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">invalidKey</span>
+    <span class="k">case</span> <span class="n">dataCorrupted</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">StorageError</span><span class="p">:</span> <span class="n">Error</span><span class="p">,</span> <span class="n">Sendable</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">resourceNotFound</span><span class="p">(</span><span class="n">identifier</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">accessDenied</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">storageFailure</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">NetworkError</span><span class="p">:</span> <span class="n">Error</span><span class="p">,</span> <span class="n">Sendable</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">connectionFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">requestTimedOut</span><span class="p">(</span><span class="n">afterSeconds</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">invalidResponse</span><span class="p">(</span><span class="n">description</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="error-translation-in-bridge-layer">Error Translation in Bridge Layer<a class="headerlink" href="#error-translation-in-bridge-layer" title="Permanent link">&para;</a></h3>
+<p>The bridge layer will translate between domain errors and Foundation/Cocoa errors:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Sources/FoundationBridge/ErrorBridge.swift</span>
+<span class="kd">import</span> <span class="nc">Foundation</span>
+<span class="kd">import</span> <span class="nc">UmbraCoreTypes</span>
+
+<span class="kd">public</span> <span class="kd">extension</span> <span class="nc">SecurityError</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">asNSError</span><span class="p">()</span> <span class="p">-&gt;</span> <span class="bp">NSError</span> <span class="p">{</span>
+        <span class="k">switch</span> <span class="kc">self</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="p">.</span><span class="n">encryptionFailed</span><span class="p">(</span><span class="kd">let</span> <span class="nv">reason</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">NSError</span><span class="p">(</span><span class="n">domain</span><span class="p">:</span> <span class="s">&quot;UmbraSecurityErrorDomain&quot;</span><span class="p">,</span> 
+                           <span class="n">code</span><span class="p">:</span> <span class="mi">1001</span><span class="p">,</span> 
+                           <span class="n">userInfo</span><span class="p">:</span> <span class="p">[</span><span class="n">NSLocalizedDescriptionKey</span><span class="p">:</span> <span class="s">&quot;Encryption failed: </span><span class="si">\(</span><span class="n">reason</span><span class="si">)</span><span class="s">&quot;</span><span class="p">])</span>
+        <span class="c1">// Other cases...</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">static</span> <span class="kd">func</span> <span class="nf">fromNSError</span><span class="p">(</span><span class="kc">_</span> <span class="n">error</span><span class="p">:</span> <span class="bp">NSError</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">SecurityError</span><span class="p">?</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">error</span><span class="p">.</span><span class="n">domain</span> <span class="p">==</span> <span class="s">&quot;UmbraSecurityErrorDomain&quot;</span> <span class="p">{</span>
+            <span class="k">switch</span> <span class="n">error</span><span class="p">.</span><span class="n">code</span> <span class="p">{</span>
+            <span class="k">case</span> <span class="mi">1001</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">.</span><span class="n">encryptionFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="n">error</span><span class="p">.</span><span class="n">localizedDescription</span><span class="p">)</span>
+            <span class="c1">// Other cases...</span>
+            <span class="k">default</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">nil</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="kc">nil</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="error-propagation-across-module-boundaries">Error Propagation Across Module Boundaries<a class="headerlink" href="#error-propagation-across-module-boundaries" title="Permanent link">&para;</a></h3>
+<p>Guidelines for error propagation:</p>
+<ol>
+<li><strong>Domain Errors in Core Modules</strong>: Use only domain-specific error types</li>
+<li><strong>Error Translation at Boundaries</strong>: Convert between error types only at module boundaries</li>
+<li><strong>Context Preservation</strong>: Ensure error context is preserved during translation</li>
+<li><strong>Async/Await Error Handling</strong>: Leverage Swift's built-in error handling with try/catch</li>
+</ol>
+<h3 id="error-documentation-and-recovery">Error Documentation and Recovery<a class="headerlink" href="#error-documentation-and-recovery" title="Permanent link">&para;</a></h3>
+<p>For each error type:</p>
+<ol>
+<li><strong>Document Causes</strong>: Clearly document what can cause each error</li>
+<li><strong>Recovery Strategies</strong>: Provide recommended recovery strategies</li>
+<li><strong>Error Codes</strong>: Maintain consistent error codes across versions</li>
+</ol>
+<h3 id="xpc-error-handling">XPC Error Handling<a class="headerlink" href="#xpc-error-handling" title="Permanent link">&para;</a></h3>
+<p>Special considerations for XPC services:</p>
+<ol>
+<li><strong>NSError Bridging</strong>: Converting domain errors to NSError for Objective-C compatibility</li>
+<li><strong>Error Serialization</strong>: Ensuring errors can be properly serialized across XPC boundaries</li>
+<li><strong>Consistent Error Domains</strong>: Establishing consistent error domains for XPC services</li>
+</ol>
+<h2 id="alternatives-to-objc-for-xpc-protocols">Alternatives to @objc for XPC Protocols<a class="headerlink" href="#alternatives-to-objc-for-xpc-protocols" title="Permanent link">&para;</a></h2>
+<p>While @objc is currently required for XPC protocols, we've investigated alternatives and future possibilities:</p>
+<h3 id="current-state">Current State<a class="headerlink" href="#current-state" title="Permanent link">&para;</a></h3>
+<p>XPC services in macOS/iOS require NSXPCConnection and @objc protocols. This creates an inherent dependency on Foundation and Objective-C runtime.</p>
+<h3 id="potential-alternatives">Potential Alternatives<a class="headerlink" href="#potential-alternatives" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Swift-native XPC (Hypothetical)</strong></li>
+<li>Not currently available but being discussed in the Swift community</li>
+<li>
+<p>Would allow pure Swift protocols without @objc requirements</p>
+</li>
+<li>
+<p><strong>gRPC or Protocol Buffers</strong></p>
+</li>
+<li>Could be used for some inter-process communication needs</li>
+<li>Provides strongly-typed interfaces without @objc</li>
+<li>
+<p>Not a direct replacement for XPC's security model</p>
+</li>
+<li>
+<p><strong>Swift Distributed Actors</strong></p>
+</li>
+<li>Part of Swift's distributed actors proposal</li>
+<li>Could potentially replace some XPC use cases in the future</li>
+<li>Currently experimental</li>
+</ol>
+<h3 id="short-term-strategy">Short-term Strategy<a class="headerlink" href="#short-term-strategy" title="Permanent link">&para;</a></h3>
+<p>Until Swift-native XPC becomes available:</p>
+<ol>
+<li><strong>Minimize @objc Surface Area</strong></li>
+<li>Keep @objc protocols as thin as possible</li>
+<li>Implement minimal interfaces at the boundary</li>
+<li>
+<p>Use Swift-native protocols for all internal communication</p>
+</li>
+<li>
+<p><strong>Foundation-Free Protocol Definitions</strong></p>
+</li>
+<li>Define protocols without Foundation, then bridge to @objc implementations</li>
+<li>Use type erasure to break dependency cycles</li>
+</ol>
+<h3 id="swift-evolution-watch_1">Swift Evolution Watch<a class="headerlink" href="#swift-evolution-watch_1" title="Permanent link">&para;</a></h3>
+<p>We'll monitor these Swift Evolution proposals:</p>
+<ul>
+<li><a href="https://github.com/apple/swift-evolution/blob/main/proposals/0302-concurrent-value-and-concurrent-closures.md">SE-0302: Sendable and @Sendable closures</a></li>
+<li><a href="https://github.com/apple/swift-evolution/blob/main/proposals/0336-distributed-actor-runtime.md">SE-0336: Distributed Actor Runtime</a></li>
+</ul>
+<p>As Swift evolves, we'll adapt our strategy to take advantage of new capabilities that reduce or eliminate the need for @objc in XPC communication.</p>
+<h2 id="swift-library-evolution-compatibility-in-dependency-chains">Swift Library Evolution Compatibility in Dependency Chains<a class="headerlink" href="#swift-library-evolution-compatibility-in-dependency-chains" title="Permanent link">&para;</a></h2>
+<p>During our refactoring work, we discovered critical constraints when working with Swift library evolution in module dependency chains.</p>
+<h3 id="key-findings">Key Findings<a class="headerlink" href="#key-findings" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Dependency Chain Constraints</strong></li>
+<li>All modules in a dependency chain must be compiled with consistent library evolution settings</li>
+<li>If any module in a chain doesn't support library evolution, none of the modules in that chain can use it</li>
+<li>
+<p>External dependencies (especially via SPM) may not be compiled with library evolution support</p>
+</li>
+<li>
+<p><strong>Specific Example: CryptoSwift Dependency Chain</strong>
+   We encountered this issue specifically with:</p>
+</li>
+<li>CryptoSwift (SPM dependency lacking library evolution)</li>
+<li>CryptoSwiftFoundationIndependent (our wrapper)</li>
+<li>SecureBytes (depends on the wrapper)</li>
+<li>
+<p>SecurityProtocolsCore and SecurityImplementation (depend on SecureBytes)</p>
+</li>
+<li>
+<p><strong>Error Signature</strong>
+   Attempting to force library evolution in a module that depends on a non-library-evolution module causes:
+   <div class="highlight"><pre><span></span><code>error: module &#39;CryptoSwift&#39; was not compiled with library evolution support; 
+using it means binary compatibility for &#39;CryptoSwiftFoundationIndependent&#39; can&#39;t be guaranteed
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="solution-approaches">Solution Approaches<a class="headerlink" href="#solution-approaches" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Dependency Chain Alignment</strong></li>
+<li>
+<p>For dependency chains that include modules without library evolution support:</p>
+<ul>
+<li>Remove <code>-Xfrontend -enable-library-evolution</code> compiler flags from all BUILD.bazel files in the chain</li>
+<li>Ensure consistent compilation settings across the entire dependency graph</li>
+<li>Make sure target triples are consistent (arm64-apple-macos15.4)</li>
+</ul>
+</li>
+<li>
+<p><strong>Module Isolation Strategy</strong></p>
+</li>
+<li>
+<p>When library evolution is required for certain modules:</p>
+<ul>
+<li>Create separate dependency chains that don't cross module boundaries</li>
+<li>Isolate evolution-required modules from non-supporting dependencies</li>
+<li>Consider using protocol boundaries and dependency injection for isolation</li>
+</ul>
+</li>
+<li>
+<p><strong>Build System Configuration</strong></p>
+</li>
+<li>Cannot override external SPM dependency build settings using standard MODULE.bazel configurations</li>
+<li>May need to consider creating custom SPM package resolution that adds library evolution support</li>
+<li>Always test the entire dependency chain with consistent build settings</li>
+</ol>
+<h3 id="implementation-guidance">Implementation Guidance<a class="headerlink" href="#implementation-guidance" title="Permanent link">&para;</a></h3>
+<p>For UmbraCore modules, we've adopted the following practice:</p>
+<ol>
+<li><strong>Identify Dependency Chains</strong></li>
+<li>Map out complete dependency chains before setting library evolution flags</li>
+<li>
+<p>Check all external dependencies for their library evolution support status</p>
+</li>
+<li>
+<p><strong>Consistent Flag Application</strong></p>
+</li>
+<li>Either all modules in a chain have library evolution enabled, or none do</li>
+<li>
+<p>Document dependency chains and their evolution status in module metadata</p>
+</li>
+<li>
+<p><strong>Testing Protocol</strong></p>
+</li>
+<li>Test binary compatibility across module versions when library evolution is enabled</li>
+<li>Verify binary compatibility guarantees are maintained</li>
+</ol>
+<p>This finding has significant implications for our architecture design, particularly around module boundaries and dependency management. We must carefully consider library evolution requirements when planning module dependencies.</p>
+<h2 id="bazelisk-and-build-system-integration-lessons">Bazelisk and Build System Integration Lessons<a class="headerlink" href="#bazelisk-and-build-system-integration-lessons" title="Permanent link">&para;</a></h2>
+<p>During our refactoring work on the UmbraCore Security module, we uncovered several important lessons about build system integration with Bazelisk and cryptographic implementation details that impact cross-platform compatibility.</p>
+<h3 id="1-aes-gcm-implementation-details">1. AES-GCM Implementation Details<a class="headerlink" href="#1-aes-gcm-implementation-details" title="Permanent link">&para;</a></h3>
+<p>We discovered a critical inconsistency in the IV (Initialization Vector) size assumptions across our codebase:</p>
+<ul>
+<li><strong>Correct IV Size for AES-GCM</strong>: 12 bytes (96 bits) is the recommended size for AES-GCM mode</li>
+<li><strong>Inconsistent Assumptions</strong>: Different parts of our codebase were making different assumptions:</li>
+<li>CryptoWrapper correctly used 12 bytes</li>
+<li>KeyManagementImpl incorrectly assumed 16 bytes</li>
+<li>CryptoService was configured to use 128 bits (16 bytes)</li>
+</ul>
+<p>This inconsistency caused failures in key rotation operations, as combined data was being incorrectly parsed.</p>
+<h4 id="resolution">Resolution:<a class="headerlink" href="#resolution" title="Permanent link">&para;</a></h4>
+<ol>
+<li>Standardized on 12-byte IVs across the entire codebase</li>
+<li>Updated all related documentation to clearly indicate the expected IV size</li>
+<li>Added explicit parameter documentation to prevent future confusion</li>
+<li>Modified CryptoService configuration defaults to use 96 bits instead of 128 bits</li>
+</ol>
+<h3 id="2-bazelisk-environment-configuration">2. Bazelisk Environment Configuration<a class="headerlink" href="#2-bazelisk-environment-configuration" title="Permanent link">&para;</a></h3>
+<p>Working with Bazelisk 8.1.0 on macOS 15.4 (Apple Silicon) required precise configuration:</p>
+<ul>
+<li><strong>Architecture Specifics</strong>: </li>
+<li>Target triples must consistently specify arm64-apple-macos15.4</li>
+<li>Native arm64 build tools perform significantly better than Rosetta-translated x86_64 tools</li>
+<li>
+<p>.bazelrc modifications were necessary to ensure architecture consistency</p>
+</li>
+<li>
+<p><strong>Testing Configuration</strong>:</p>
+</li>
+<li><code>bazel test --test_output=all</code> provides full test output including debug logs</li>
+<li>Test filters require precise formatting that matches Objective-C/Swift test naming conventions</li>
+<li>Cached test results may hide recent changes; use <code>--nocache_test_results</code> when needed</li>
+</ul>
+<h4 id="example-bazelrc-configuration">Example .bazelrc Configuration:<a class="headerlink" href="#example-bazelrc-configuration" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code># Architecture-specific settings
+build --cpu=darwin_arm64
+build --apple_platform_type=macos
+build --macos_cpus=arm64
+
+# Swift compiler settings for Apple Silicon
+build:swift --swiftcopt=&quot;-target arm64-apple-macos15.4&quot;
+
+# Test caching controls
+test --test_env=APPLE_TEST_RUNNER_DEBUG=1
+</code></pre></div>
+<h3 id="3-lessons-for-cross-platform-security-implementation">3. Lessons for Cross-Platform Security Implementation<a class="headerlink" href="#3-lessons-for-cross-platform-security-implementation" title="Permanent link">&para;</a></h3>
+<p>Our refactoring efforts revealed several principles for maintaining secure, cross-platform cryptographic implementations:</p>
+<ol>
+<li><strong>Explicit Parameterization</strong>: Never rely on defaults for cryptographic parameters; explicitly specify key sizes, IV sizes, and other critical values</li>
+<li><strong>Consistent Documentation</strong>: Document expected parameter sizes and formats in all related functions</li>
+<li><strong>Platform-Independent Base Layer</strong>: Ensure core cryptographic operations work identically across all supported platforms</li>
+<li><strong>Thorough Test Cases</strong>: Include test cases that verify proper handling of combined data formats (IV+ciphertext)</li>
+<li><strong>Defensive Parameter Checks</strong>: Add guard statements to verify parameter sizes before cryptographic operations</li>
+</ol>
+<h3 id="4-build-system-integration-best-practices">4. Build System Integration Best Practices<a class="headerlink" href="#4-build-system-integration-best-practices" title="Permanent link">&para;</a></h3>
+<p>Based on our experiences, we've established the following best practices for build system integration:</p>
+<ol>
+<li><strong>Consistent Toolchain</strong>: Use the same Bazelisk version across all development environments</li>
+<li><strong>Architecture-Specific Configuration</strong>: Maintain separate configuration blocks for different architectures</li>
+<li><strong>Compile-Time Flag Consistency</strong>: Ensure compiler flags like library evolution support are consistent across dependency chains</li>
+<li><strong>Testing Workflow</strong>: Standardize on test commands that reveal all necessary information for debugging</li>
+<li><strong>CI/CD Integration</strong>: Configure CI systems with the same Bazelisk version and configuration as development environments</li>
+</ol>
+<p>These lessons have been incorporated into our development workflows and will guide future security implementation work across the UmbraCore project.</p>
+<h2 id="19-implementation-status-updated-1-march-2025">19. Implementation Status (Updated 1 March 2025)<a class="headerlink" href="#19-implementation-status-updated-1-march-2025" title="Permanent link">&para;</a></h2>
+<p>This section tracks the implementation progress of the refactoring plan and identifies what should be prioritised next.</p>
+<h3 id="security-interfaces-consolidation-priority-31">Security Interfaces Consolidation (Priority 3.1)<a class="headerlink" href="#security-interfaces-consolidation-priority-31" title="Permanent link">&para;</a></h3>
+<p><strong>Completed:</strong>
+- ✅ Created <code>SecurityProtocolsCore</code> with foundation-free types and protocols
+- ✅ Implemented <code>SecurityBridge</code> for Foundation conversions
+- ✅ Added tests for both modules to validate functionality
+- ✅ Established correct dependency structure (SecurityBridge depends on SecurityProtocolsCore)</p>
+<p><strong>In Progress:</strong>
+- 🔄 Migrating client code to use the new modules
+- 🔄 Comprehensive test coverage for all functionality</p>
+<p><strong>Pending:</strong>
+- ❌ Remove redundant modules:
+  - SecurityInterfacesFoundationBase
+  - SecurityInterfacesFoundationBridge
+  - SecurityInterfacesFoundationCore
+  - SecurityInterfacesFoundationMinimal
+  - SecurityInterfacesFoundationNoFoundation</p>
+<p><strong>Next Steps:</strong>
+1. Complete comprehensive testing of the new modules
+2. Create a migration guide for client code
+3. Begin phased removal of redundant modules
+4. Update all import statements across the codebase</p>
+<h3 id="umbra-security-services-priority-32">Umbra Security Services (Priority 3.2)<a class="headerlink" href="#umbra-security-services-priority-32" title="Permanent link">&para;</a></h3>
+<p><strong>Completed:</strong>
+- ✅ Initial structure for consolidated UmbraSecurity module</p>
+<p><strong>In Progress:</strong>
+- 🔄 Refactoring implementation to be foundation-free where possible</p>
+<p><strong>Pending:</strong>
+- ❌ Create dedicated <code>UmbraSecurityBridge</code> for Foundation interop
+- ❌ Remove redundant modules:
+  - UmbraSecurityNoFoundation
+  - UmbraSecurityServicesNoFoundation
+  - UmbraSecurityFoundation</p>
+<p><strong>Next Steps:</strong>
+1. Define clear interfaces in UmbraSecurity that don't depend on Foundation
+2. Create UmbraSecurityBridge module following the same pattern as SecurityBridge
+3. Implement tests that validate the new structure</p>
+<h3 id="core-services-types-priority-33">Core Services Types (Priority 3.3)<a class="headerlink" href="#core-services-types-priority-33" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> Not started</p>
+<p><strong>Next Steps:</strong>
+1. Analyse current usage patterns
+2. Define foundation-free interfaces
+3. Create CoreTypesBridge module</p>
+<h3 id="objc-bridging-types-priority-34">ObjC Bridging Types (Priority 3.4)<a class="headerlink" href="#objc-bridging-types-priority-34" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> Not started</p>
+<p><strong>Next Steps:</strong>
+1. Evaluate current implementation and identify Foundation dependencies
+2. Create foundation-free base interfaces
+3. Implement bridge module for Foundation interoperability</p>
+<h3 id="cryptoswift-integration-priority-35">CryptoSwift Integration (Priority 3.5)<a class="headerlink" href="#cryptoswift-integration-priority-35" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> Not started</p>
+<p><strong>Next Steps:</strong>
+1. Assess current usage and dependencies
+2. Define integration strategy with domain-specific types</p>
+<h3 id="recommended-focus-areas">Recommended Focus Areas<a class="headerlink" href="#recommended-focus-areas" title="Permanent link">&para;</a></h3>
+<p>Based on current progress and priorities:</p>
+<ol>
+<li><strong>High Priority:</strong></li>
+<li>Complete security interfaces migration (3.1)</li>
+<li>
+<p>Begin UmbraSecurityBridge implementation (3.2)</p>
+</li>
+<li>
+<p><strong>Medium Priority:</strong></p>
+</li>
+<li>Create test plan for validating module refactoring</li>
+<li>
+<p>Document migration patterns for client code</p>
+</li>
+<li>
+<p><strong>Low Priority:</strong></p>
+</li>
+<li>Start planning for Core Services Types refactoring (3.3)</li>
+<li>Update build system to better support the new architecture</li>
+</ol>
+<h3 id="build-and-test-status">Build and Test Status<a class="headerlink" href="#build-and-test-status" title="Permanent link">&para;</a></h3>
+<p>Current build status with new modules:
+- Security modules building successfully with correct target triple (arm64-apple-macos15.4)
+- All tests passing for SecurityProtocolsCore and SecurityBridge
+- Library evolution disabled on SecurityProtocolsCore for compatibility with CryptoSwift</p>
+<h3 id="timeline-update">Timeline Update<a class="headerlink" href="#timeline-update" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>March 2025:</strong> Complete Security Interfaces consolidation</li>
+<li><strong>April 2025:</strong> Complete Umbra Security Services consolidation</li>
+<li><strong>May 2025:</strong> Address Core Services Types and ObjC Bridging Types</li>
+<li><strong>June 2025:</strong> Complete CryptoSwift integration and final cleanup</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+    </div>
+
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "toc.follow", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      
+    
+  </body>
+</html>

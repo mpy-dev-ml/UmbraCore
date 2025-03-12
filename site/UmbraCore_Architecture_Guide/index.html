@@ -1,0 +1,2127 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for UmbraCore - Secure Backup Management System">
+      
+      
+        <meta name="author" content="MPY Development">
+      
+      
+        <link rel="canonical" href="https://umbracore.dev/UmbraCore_Architecture_Guide/">
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+    
+    
+      
+        <title>UmbraCore Architecture Guide - UmbraCore Documentation</title>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    <style>
+        body {
+            background-color: #000084;
+            color: #ffffff;
+        }
+        
+        .navbar {
+            background-color: #000084;
+            border-bottom: 1px solid #ffffff;
+        }
+        
+        .navbar-default .navbar-nav > li > a {
+            color: #ffffff;
+        }
+        
+        .navbar-default .navbar-brand {
+            color: #ffffff;
+        }
+        
+        .well {
+            background-color: #000084;
+            border: 1px solid #ffffff;
+        }
+        
+        code, pre {
+            font-family: 'Monoid', monospace !important;
+            background-color: #000084;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+        }
+        
+        a {
+            color: #00ffff;
+        }
+        
+        a:hover {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: #ffffff;
+        }
+        
+        .bs-sidebar .nav > li > a {
+            color: #ffffff;
+        }
+        
+        .bs-sidebar .nav > li > a:hover {
+            color: #00ffff;
+            background-color: transparent;
+        }
+        
+        .form-control {
+            background-color: #000084;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+        }
+        
+        table {
+            border: 1px solid #ffffff;
+        }
+        
+        th, td {
+            border: 1px solid #ffffff;
+            padding: 8px;
+        }
+        
+        blockquote {
+            border-left: 5px solid #ffffff;
+            background-color: #000084;
+        }
+        
+        .alert {
+            background-color: #000084;
+            border: 1px solid #ffffff;
+            color: #ffffff;
+        }
+        
+        footer {
+            border-top: 1px solid #ffffff;
+            color: #ffffff;
+        }
+    </style>
+
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto Mono";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#umbracore-architecture-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="UmbraCore Documentation" class="md-header__button md-logo" aria-label="UmbraCore Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            UmbraCore Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              UmbraCore Architecture Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mpy-dev-ml/UmbraCore" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="UmbraCore Documentation" class="md-nav__button md-logo" aria-label="UmbraCore Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    UmbraCore Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mpy-dev-ml/UmbraCore" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../getting-started/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../user-guide/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/advanced-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Advanced Features
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/security/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Security
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../modules/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Modules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbracore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraCore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/xpcprotocolscore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    XPCProtocolsCore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/securityprotocolscore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SecurityProtocolsCore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbraxpc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraXPC
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbrakeychainservice/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraKeychainService
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/securitytypes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SecurityTypes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbracryptoservice/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraCryptoService
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/resticlihelper/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ResticCLIHelper
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/errortypes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ErrorTypes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/repositorymanager/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RepositoryManager
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/backupcoordinator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BackupCoordinator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../development/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/bazel_spm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Bazel & SPM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architecture
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/project_structure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Structure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/xpc_implementation_plan/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    XPC Implementation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Support
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Support
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Roadmap
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LICENSE/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    License
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ACKNOWLEDGMENTS/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table of Contents
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architectural-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architectural Principles
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architectural Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-design-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Design Goals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#architectural-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architectural Constraints
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Module Structure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Layers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-module-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Module Categories
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foundation-free-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foundation-Free Architecture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Foundation-Free Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Principles
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Strategy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namespace-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Namespace Resolution
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Namespace Resolution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#namespace-conflict-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Namespace Conflict Patterns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resolution-techniques" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resolution Techniques
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Handling Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Hierarchy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Mapping
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build System
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-module-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cross-Module Compatibility
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-platform-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cross-Platform Support
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cross-Platform Support">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform-abstraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Platform Abstraction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conditional-compilation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional Compilation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Categories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Patterns
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-common-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Appendix: Common Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix: Common Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-conversion-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Conversion Patterns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#namespace-resolution-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Namespace Resolution Patterns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conditional-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional Implementation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+    <div class="content">
+        
+                  
+
+  
+  
+
+
+<h1 id="umbracore-architecture-guide">UmbraCore Architecture Guide<a class="headerlink" href="#umbracore-architecture-guide" title="Permanent link">&para;</a></h1>
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#architectural-principles">Architectural Principles</a></li>
+<li><a href="#module-structure">Module Structure</a></li>
+<li><a href="#foundation-free-architecture">Foundation-Free Architecture</a></li>
+<li><a href="#namespace-resolution">Namespace Resolution</a></li>
+<li><a href="#error-handling-strategy">Error Handling Strategy</a></li>
+<li><a href="#build-system">Build System</a></li>
+<li><a href="#cross-platform-support">Cross-Platform Support</a></li>
+<li><a href="#testing-strategy">Testing Strategy</a></li>
+<li><a href="#appendix-common-patterns">Appendix: Common Patterns</a></li>
+</ol>
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
+<p>UmbraCore is a modular Swift framework designed to provide secure, cross-platform functionality with a focus on maintainability, type safety, and clear API boundaries. This document consolidates the architectural principles, patterns, and guidelines established across multiple implementation guides into a single, comprehensive reference.</p>
+<h2 id="architectural-principles">Architectural Principles<a class="headerlink" href="#architectural-principles" title="Permanent link">&para;</a></h2>
+<h3 id="core-design-goals">Core Design Goals<a class="headerlink" href="#core-design-goals" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Modular Architecture</strong>: Clear separation of concerns with well-defined interfaces</li>
+<li><strong>Foundation Independence</strong>: Core modules remain Foundation-free to support cross-platform usage</li>
+<li><strong>Type Safety</strong>: Leverage Swift's type system to catch errors at compile time</li>
+<li><strong>Clear API Boundaries</strong>: Explicit interfaces between modules with controlled visibility</li>
+<li><strong>Testability</strong>: Design for comprehensive testing at all levels</li>
+</ol>
+<h3 id="architectural-constraints">Architectural Constraints<a class="headerlink" href="#architectural-constraints" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Cross-Platform Compatibility</strong>: Core functionality must work on all supported platforms</li>
+<li><strong>Security as a First-Class Concern</strong>: Security protocols and implementations follow rigorous separation</li>
+<li><strong>Minimal Dependencies</strong>: External dependencies limited to essential functionality</li>
+</ol>
+<h2 id="module-structure">Module Structure<a class="headerlink" href="#module-structure" title="Permanent link">&para;</a></h2>
+<p>UmbraCore follows a layered architecture with clear separation between:</p>
+<h3 id="core-layers">Core Layers<a class="headerlink" href="#core-layers" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Interfaces Layer</strong>: Protocol definitions without implementation details</li>
+<li>Foundation-free APIs</li>
+<li>Type definitions</li>
+<li>
+<p>Minimal dependencies</p>
+</li>
+<li>
+<p><strong>Implementation Layer</strong>: Concrete implementations of interfaces</p>
+</li>
+<li>May be platform-specific</li>
+<li>Contains business logic</li>
+<li>
+<p>May depend on specific frameworks</p>
+</li>
+<li>
+<p><strong>Adapters Layer</strong>: Bridges between different module implementations</p>
+</li>
+<li>Handles type conversion</li>
+<li>Maps between error domains</li>
+<li>Provides compatibility between different module versions</li>
+</ol>
+<h3 id="key-module-categories">Key Module Categories<a class="headerlink" href="#key-module-categories" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Core Types</strong>: Base types used throughout the system</li>
+<li><code>UmbraCoreTypes</code>: Foundation-free type definitions</li>
+<li>
+<p><code>CoreTypesInterfaces</code>: Interface definitions for core types</p>
+</li>
+<li>
+<p><strong>Security Modules</strong>:</p>
+</li>
+<li><code>SecurityInterfaces</code>: Foundation-free security protocol definitions</li>
+<li><code>SecurityProtocolsCore</code>: Core security protocol implementations</li>
+<li>
+<p><code>SecurityBridgeProtocolAdapters</code>: Connects security providers to Foundation-free interfaces</p>
+</li>
+<li>
+<p><strong>Service Modules</strong>:</p>
+</li>
+<li><code>CoreServices</code>: Foundation-dependent service implementations</li>
+<li>
+<p><code>CoreServicesTypes</code>: Foundation-free service type definitions</p>
+</li>
+<li>
+<p><strong>Error Handling</strong>:</p>
+</li>
+<li><code>ErrorHandling</code>: Central error definition and handling</li>
+<li><code>ErrorHandlingDomains</code>: Domain-specific error types</li>
+</ol>
+<h2 id="foundation-free-architecture">Foundation-Free Architecture<a class="headerlink" href="#foundation-free-architecture" title="Permanent link">&para;</a></h2>
+<p>The Foundation-free architecture is a core design principle that enables cross-platform compatibility and clear separation of concerns.</p>
+<h3 id="principles">Principles<a class="headerlink" href="#principles" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Interface/Implementation Separation</strong>:</li>
+<li>Interfaces (protocols, type definitions) remain Foundation-free</li>
+<li>
+<p>Implementations may use Foundation when necessary</p>
+</li>
+<li>
+<p><strong>Type Isolation</strong>:</p>
+</li>
+<li>Core types defined without Foundation dependencies</li>
+<li>
+<p>Bridge types provided for conversion when necessary</p>
+</li>
+<li>
+<p><strong>Error Domain Isolation</strong>:</p>
+</li>
+<li>Error types defined without Foundation dependencies</li>
+<li>Error mapping functions provided for cross-domain conversion</li>
+</ol>
+<h3 id="implementation-strategy">Implementation Strategy<a class="headerlink" href="#implementation-strategy" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Foundation-Free Interfaces</strong>:</li>
+<li>Use Swift's native types (<code>UInt8</code>, arrays, etc.) instead of Foundation types</li>
+<li>Define protocols without Foundation dependencies</li>
+<li>
+<p>Isolate Foundation-dependent code in dedicated modules</p>
+</li>
+<li>
+<p><strong>Platform-Specific Implementations</strong>:</p>
+</li>
+<li>Implement interfaces with platform-specific code when necessary</li>
+<li>Use conditional compilation for platform differences</li>
+<li>
+<p>Provide adapter layers for Foundation-dependent implementations</p>
+</li>
+<li>
+<p><strong>Type Conversion</strong>:</p>
+</li>
+<li>Provide explicit conversion between Foundation and non-Foundation types</li>
+<li>Use extension methods for seamless conversion</li>
+<li>Document conversion paths clearly</li>
+</ol>
+<h2 id="namespace-resolution">Namespace Resolution<a class="headerlink" href="#namespace-resolution" title="Permanent link">&para;</a></h2>
+<p>Swift's namespace handling presents unique challenges when working with modules with similar type names. UmbraCore employs specific patterns to resolve these conflicts.</p>
+<h3 id="namespace-conflict-patterns">Namespace Conflict Patterns<a class="headerlink" href="#namespace-conflict-patterns" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Module Name vs. Type Name Conflicts</strong>:</li>
+<li>Example: <code>SecurityProtocolsCore</code> module containing a <code>SecurityProtocolsCore</code> enum</li>
+<li>
+<p>Resolution: Use explicit module qualification for references</p>
+</li>
+<li>
+<p><strong>Similar Type Names Across Modules</strong>:</p>
+</li>
+<li>Example: Multiple modules defining <code>SecurityError</code> types</li>
+<li>Resolution: Use type aliases with consistent prefixes</li>
+</ol>
+<h3 id="resolution-techniques">Resolution Techniques<a class="headerlink" href="#resolution-techniques" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Enhanced Isolation Pattern</strong>:</li>
+<li>Create dedicated files that only import one conflicting module at a time</li>
+<li>Use subpackages with distinct module names for complete isolation</li>
+<li>
+<p>Add private type aliases to clarify which type is being used</p>
+</li>
+<li>
+<p><strong>Type Qualification</strong>:</p>
+</li>
+<li>Use fully qualified names (<code>ModuleName.TypeName</code>)</li>
+<li>Add consistent type aliases with prefixes (e.g., <code>SPCProvider</code>)</li>
+<li>
+<p>Document expected type paths in comments</p>
+</li>
+<li>
+<p><strong>Subpackage Approach</strong>:</p>
+</li>
+<li>Main module depends on isolated subpackage</li>
+<li>Subpackage handles all direct interactions with potentially conflicting module</li>
+<li>
+<p>Public re-exports provide a clean API</p>
+</li>
+<li>
+<p><strong>Build System Configuration</strong>:</p>
+</li>
+<li>Use <code>-enable-implicit-module-import-name-qualification</code> when available</li>
+<li>Document module import constraints</li>
+</ol>
+<h2 id="error-handling-strategy">Error Handling Strategy<a class="headerlink" href="#error-handling-strategy" title="Permanent link">&para;</a></h2>
+<p>UmbraCore employs a structured approach to error handling, focusing on clarity, domain separation, and type safety.</p>
+<h3 id="error-hierarchy">Error Hierarchy<a class="headerlink" href="#error-hierarchy" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Root Error Namespace</strong>: <code>UmbraErrors</code></li>
+<li>Domain-specific subnamespaces (e.g., <code>UmbraErrors.Security</code>)</li>
+<li>
+<p>Feature-specific error types (e.g., <code>UmbraErrors.Security.Protocols</code>)</p>
+</li>
+<li>
+<p><strong>Error Categories</strong>:</p>
+</li>
+<li>Interface errors: Defined in interface modules, Foundation-free</li>
+<li>Implementation errors: May include platform-specific details</li>
+<li>Cross-cutting errors: Defined in central error module</li>
+</ol>
+<h3 id="error-mapping">Error Mapping<a class="headerlink" href="#error-mapping" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Cross-Module Error Conversion</strong>:</li>
+<li>Explicit mapping functions between error domains</li>
+<li>Consistent error property mapping</li>
+<li>
+<p>Preservation of error context</p>
+</li>
+<li>
+<p><strong>Error Propagation</strong>:</p>
+</li>
+<li>Define clear error boundaries</li>
+<li>Document expected error types in function signatures</li>
+<li>Use Swift's <code>throws</code> consistently</li>
+</ol>
+<h2 id="build-system">Build System<a class="headerlink" href="#build-system" title="Permanent link">&para;</a></h2>
+<p>UmbraCore uses Bazel as its build system, with specific configurations to ensure consistent builds across environments.</p>
+<h3 id="build-configuration">Build Configuration<a class="headerlink" href="#build-configuration" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Standard Targets</strong>:</li>
+<li>Library targets with clear dependencies</li>
+<li>Test targets for each module</li>
+<li>
+<p>Conditional compilation for platform-specific code</p>
+</li>
+<li>
+<p><strong>Build Flags</strong>:</p>
+</li>
+<li>Foundation-free compilation flags</li>
+<li>Library evolution support where needed</li>
+<li>
+<p>Conditional dependencies based on target platform</p>
+</li>
+<li>
+<p><strong>Dependency Management</strong>:</p>
+</li>
+<li>External dependencies defined in WORKSPACE</li>
+<li>Version pinning for reproducible builds</li>
+<li>Conditional inclusion of platform-specific dependencies</li>
+</ol>
+<h3 id="cross-module-compatibility">Cross-Module Compatibility<a class="headerlink" href="#cross-module-compatibility" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Library Evolution</strong>:</li>
+<li>Enable library evolution for stable APIs</li>
+<li>Conditional compilation for non-compliant dependencies (e.g., CryptoSwift)</li>
+<li>
+<p>Document evolution constraints</p>
+</li>
+<li>
+<p><strong>Module Structure</strong>:</p>
+</li>
+<li>Consistent naming pattern for modules</li>
+<li>Clear dependency graph</li>
+<li>Minimal cyclic dependencies</li>
+</ol>
+<h2 id="cross-platform-support">Cross-Platform Support<a class="headerlink" href="#cross-platform-support" title="Permanent link">&para;</a></h2>
+<p>UmbraCore supports multiple platforms through careful API design and conditional implementation.</p>
+<h3 id="platform-abstraction">Platform Abstraction<a class="headerlink" href="#platform-abstraction" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Platform-Agnostic Interfaces</strong>:</li>
+<li>Foundation-free API definitions</li>
+<li>Platform capability detection</li>
+<li>
+<p>Feature availability flags</p>
+</li>
+<li>
+<p><strong>Platform-Specific Implementations</strong>:</p>
+</li>
+<li>Dedicated implementation modules for each platform</li>
+<li>Common patterns across platforms</li>
+<li>Clear separation of platform-specific code</li>
+</ol>
+<h3 id="conditional-compilation">Conditional Compilation<a class="headerlink" href="#conditional-compilation" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Feature Flags</strong>:</li>
+<li><code>USE_FOUNDATION_CRYPTO</code> for cryptographic implementations</li>
+<li>
+<p>Platform-specific compilation flags</p>
+</li>
+<li>
+<p><strong>Implementation Selection</strong>:</p>
+</li>
+<li>Runtime feature detection where possible</li>
+<li>Compile-time platform selection</li>
+<li>Dependency injection for platform-specific components</li>
+</ol>
+<h2 id="testing-strategy">Testing Strategy<a class="headerlink" href="#testing-strategy" title="Permanent link">&para;</a></h2>
+<p>UmbraCore employs a comprehensive testing strategy to ensure quality and maintainability.</p>
+<h3 id="test-categories">Test Categories<a class="headerlink" href="#test-categories" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Unit Tests</strong>:</li>
+<li>Module-level functionality testing</li>
+<li>Mock dependencies for isolation</li>
+<li>
+<p>High coverage targets for core modules</p>
+</li>
+<li>
+<p><strong>Integration Tests</strong>:</p>
+</li>
+<li>Cross-module interaction testing</li>
+<li>Focused on API boundaries</li>
+<li>
+<p>Validation of error propagation</p>
+</li>
+<li>
+<p><strong>Cross-Platform Tests</strong>:</p>
+</li>
+<li>Validation of platform-agnostic behaviour</li>
+<li>Platform-specific feature testing</li>
+<li>Compatibility verification</li>
+</ol>
+<h3 id="testing-patterns">Testing Patterns<a class="headerlink" href="#testing-patterns" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Mock Objects</strong>:</li>
+<li>Protocol-based mock implementations</li>
+<li>Testable injection points</li>
+<li>
+<p>Consistent approach to verification</p>
+</li>
+<li>
+<p><strong>Test Helpers</strong>:</p>
+</li>
+<li>Shared test utilities</li>
+<li>Test data generators</li>
+<li>Error validation helpers</li>
+</ol>
+<h2 id="appendix-common-patterns">Appendix: Common Patterns<a class="headerlink" href="#appendix-common-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="type-conversion-patterns">Type Conversion Patterns<a class="headerlink" href="#type-conversion-patterns" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>SecureBytes Conversion</strong>:
+   <div class="highlight"><pre><span></span><code><span class="c1">// Converting SecureBytes to raw bytes</span>
+<span class="kd">let</span> <span class="nv">rawBytes</span> <span class="p">=</span> <span class="nb">Array</span><span class="p">(</span><span class="n">secureBytes</span><span class="p">)</span>
+
+<span class="c1">// Converting raw bytes to SecureBytes</span>
+<span class="kd">let</span> <span class="nv">secureBytes</span> <span class="p">=</span> <span class="n">SecureBytes</span><span class="p">(</span><span class="n">bytes</span><span class="p">:</span> <span class="n">rawBytes</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Error Domain Conversion</strong>:
+   <div class="highlight"><pre><span></span><code><span class="c1">// Converting from one error domain to another</span>
+<span class="kd">func</span> <span class="nf">convert</span><span class="p">(</span><span class="kc">_</span> <span class="n">error</span><span class="p">:</span> <span class="n">SecurityProtocolsCore</span><span class="p">.</span><span class="n">SecurityError</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">CoreErrors</span><span class="p">.</span><span class="n">SecurityError</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="n">error</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="p">.</span><span class="n">encryptionFailed</span><span class="p">(</span><span class="kd">let</span> <span class="nv">reason</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">.</span><span class="n">encryptionFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="n">reason</span><span class="p">)</span>
+    <span class="c1">// Other cases...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="namespace-resolution-patterns">Namespace Resolution Patterns<a class="headerlink" href="#namespace-resolution-patterns" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Type Alias Approach</strong>:
+   <div class="highlight"><pre><span></span><code><span class="c1">// In a file that needs both types</span>
+<span class="kd">import</span> <span class="nc">SecurityProtocolsCore</span>
+<span class="kd">import</span> <span class="nc">CoreErrors</span>
+
+<span class="c1">// Create clear aliases</span>
+<span class="kd">typealias</span> <span class="n">SPCSecurityError</span> <span class="p">=</span> <span class="n">SecurityProtocolsCore</span><span class="p">.</span><span class="n">SecurityError</span>
+<span class="kd">typealias</span> <span class="n">CESecurityError</span> <span class="p">=</span> <span class="n">CoreErrors</span><span class="p">.</span><span class="n">SecurityError</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Module Isolation</strong>:
+   <div class="highlight"><pre><span></span><code><span class="c1">// SecurityInterfaces_SecurityProtocolsCore.swift</span>
+<span class="kd">import</span> <span class="nc">SecurityProtocolsCore</span>
+
+<span class="c1">// Export types with clear naming</span>
+<span class="kd">public</span> <span class="kd">typealias</span> <span class="n">SPCProvider</span> <span class="p">=</span> <span class="n">SecurityProtocolsCore</span><span class="p">.</span><span class="n">SecurityProviderProtocol</span>
+
+<span class="c1">// Main module only imports the isolation layer</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="conditional-implementation">Conditional Implementation<a class="headerlink" href="#conditional-implementation" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Platform-Specific Code</strong>:
+   <div class="highlight"><pre><span></span><code><span class="cp">#if</span> <span class="cp">USE_FOUNDATION_CRYPTO</span>
+<span class="kd">import</span> <span class="nc">Foundation</span>
+<span class="c1">// Foundation-based implementation</span>
+<span class="cp">#else</span>
+<span class="kd">import</span> <span class="nc">CryptoSwift</span>
+<span class="c1">// CryptoSwift-based implementation</span>
+<span class="cp">#endif</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Feature Detection</strong>:
+   <div class="highlight"><pre><span></span><code><span class="kd">func</span> <span class="nf">createHasher</span><span class="p">()</span> <span class="p">-&gt;</span> <span class="n">any</span> <span class="n">Hasher</span> <span class="p">{</span>
+    <span class="cp">#if</span> <span class="cp">canImport</span><span class="p">(</span><span class="cp">CryptoKit</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="cp">DISABLE_CRYPTOKIT</span>
+    <span class="k">return</span> <span class="n">CryptoKitHasher</span><span class="p">()</span>
+    <span class="cp">#else</span>
+    <span class="k">return</span> <span class="n">StandardHasher</span><span class="p">()</span>
+    <span class="cp">#endif</span>
+<span class="p">}</span>
+</code></pre></div></p>
+</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+    </div>
+
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "toc.follow", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      
+    
+  </body>
+</html>

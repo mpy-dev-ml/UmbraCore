@@ -20,6 +20,7 @@ theme:
     - navigation.tracking
     - navigation.sections
     - navigation.expand
+    - navigation.indexes
     - navigation.top
     - toc.follow
     - search.suggest
@@ -56,14 +57,31 @@ nav:
       - Configuration: user-guide/configuration.md
       - Advanced Features: user-guide/advanced-features.md
       - Security: user-guide/security.md
+  - Modules:
+      - modules/index.md
+      - UmbraCore: modules/umbracore.md
+      - XPCProtocolsCore: modules/xpcprotocolscore.md
+      - SecurityProtocolsCore: modules/securityprotocolscore.md
+      - UmbraXPC: modules/umbraxpc.md
+      - UmbraKeychainService: modules/umbrakeychainservice.md 
+      - SecurityTypes: modules/securitytypes.md
+      - UmbraCryptoService: modules/umbracryptoservice.md
+      - ResticCLIHelper: modules/resticlihelper.md
+      - ErrorTypes: modules/errortypes.md
+      - Configuration: modules/configuration.md
+      - RepositoryManager: modules/repositorymanager.md
+      - BackupCoordinator: modules/backupcoordinator.md
   - Development:
       - Overview: development/index.md
       - Bazel & SPM: development/bazel_spm.md
       - Architecture: development/architecture.md
       - Contributing: development/contributing.md
+      - Project Structure: development/project_structure.md
+      - XPC Implementation: development/xpc_implementation_plan.md
   - API Reference:
       - Overview: api/reference.md
   - Support:
       - Troubleshooting: support/troubleshooting.md
+  - Roadmap: roadmap.md
   - License: LICENSE.md
   - Acknowledgments: ACKNOWLEDGMENTS.md

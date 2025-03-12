@@ -60,51 +60,46 @@ UmbraCore powers several macOS backup management tools:
 
 ## Project Status
 
-UmbraCore is currently in active development with the following milestones:
+UmbraCore is currently in active development with the following features:
 
-### Q1 2025 (Current)
-- ✓ Repository Management
-  - Secure repository initialisation
-  - Repository health monitoring
-  - Multi-repository support
-- ✓ Core Restic Integration
-  - Command execution system
-  - Output parsing
-  - Error handling
-  - Process management
-- ✓ Testing Infrastructure
-  - Unit testing framework
-  - Integration test suite
-  - Performance benchmarks
-  - Mock services
+### Tested & Operable
+- **Repository Management**
+    - Secure repository initialisation
+    - Repository health monitoring
+    - Multi-repository support
+- **Core Restic Integration**
+    - Command execution system
+    - Output parsing
+    - Error handling
+    - Process management
+- **Security Layer**
+    - XPC protocol consolidation
+    - Keychain integration
+    - Secure error handling
+- **Testing Infrastructure**
+    - Unit testing framework
+    - Integration test suite
+    - Performance benchmarks
+    - Mock services
 
-### Q2 2025 (Planned)
-- Security Layer
-  - SSH key management
-  - Cloud provider credentials
-  - Repository password handling
-- Configuration System
-  - Configuration file format
-  - Validation system
-  - Migration support
-- Progress Monitoring
-  - Progress reporting protocol
-  - Status updates system
-  - Metrics collection
-
-### Q3 2025 (Planned)
-- Statistics & Analytics
-  - Performance metrics
-  - Usage statistics
-  - Trend analysis
-- Health Monitoring
-  - System diagnostics
-  - Performance monitoring
-  - Resource tracking
-- Event System
-  - Event dispatching
-  - Notification management
-  - Webhook support
+### Future Development
+- **Advanced Security Features**
+    - SSH key management
+    - Cloud provider credentials
+    - Enhanced repository password handling
+- **Configuration System**
+    - Configuration file format
+    - Validation system
+    - Migration support
+- **Analytics & Monitoring**
+    - Progress reporting protocol
+    - Performance metrics
+    - Usage statistics
+    - System diagnostics
+- **Event System**
+    - Event dispatching
+    - Notification management
+    - Webhook support
 
 ## Getting Started
 

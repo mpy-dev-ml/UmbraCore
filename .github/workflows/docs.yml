@@ -18,6 +18,8 @@ on:
       - 'mkdocs.yml'
       - '.github/workflows/docs.yml'
       - 'requirements.txt'
+  # Allow manual triggering
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -50,6 +52,15 @@ jobs:
 
       - name: Build documentation
         run: mkdocs build
+        
+      - name: Verify CNAME in site directory
+        run: |
+          if [ ! -f "./site/CNAME" ]; then
+            echo "CNAME file not found in site directory. Copying from docs directory."
+            cp ./docs/CNAME ./site/
+          fi
+          echo "CNAME contents:"
+          cat ./site/CNAME
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -58,7 +69,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

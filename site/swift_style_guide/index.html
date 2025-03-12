@@ -1,0 +1,2236 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for UmbraCore - Secure Backup Management System">
+      
+      
+        <meta name="author" content="MPY Development">
+      
+      
+        <link rel="canonical" href="https://umbracore.dev/swift_style_guide/">
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+    
+    
+      
+        <title>UmbraCore Swift Style Guide - UmbraCore Documentation</title>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    <style>
+        body {
+            background-color: #000084;
+            color: #ffffff;
+        }
+        
+        .navbar {
+            background-color: #000084;
+            border-bottom: 1px solid #ffffff;
+        }
+        
+        .navbar-default .navbar-nav > li > a {
+            color: #ffffff;
+        }
+        
+        .navbar-default .navbar-brand {
+            color: #ffffff;
+        }
+        
+        .well {
+            background-color: #000084;
+            border: 1px solid #ffffff;
+        }
+        
+        code, pre {
+            font-family: 'Monoid', monospace !important;
+            background-color: #000084;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+        }
+        
+        a {
+            color: #00ffff;
+        }
+        
+        a:hover {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: #ffffff;
+        }
+        
+        .bs-sidebar .nav > li > a {
+            color: #ffffff;
+        }
+        
+        .bs-sidebar .nav > li > a:hover {
+            color: #00ffff;
+            background-color: transparent;
+        }
+        
+        .form-control {
+            background-color: #000084;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+        }
+        
+        table {
+            border: 1px solid #ffffff;
+        }
+        
+        th, td {
+            border: 1px solid #ffffff;
+            padding: 8px;
+        }
+        
+        blockquote {
+            border-left: 5px solid #ffffff;
+            background-color: #000084;
+        }
+        
+        .alert {
+            background-color: #000084;
+            border: 1px solid #ffffff;
+            color: #ffffff;
+        }
+        
+        footer {
+            border-top: 1px solid #ffffff;
+            color: #ffffff;
+        }
+    </style>
+
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto Mono";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#umbracore-swift-style-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="UmbraCore Documentation" class="md-header__button md-logo" aria-label="UmbraCore Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            UmbraCore Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              UmbraCore Swift Style Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mpy-dev-ml/UmbraCore" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="UmbraCore Documentation" class="md-nav__button md-logo" aria-label="UmbraCore Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    UmbraCore Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mpy-dev-ml/UmbraCore" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../getting-started/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quick-start/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../user-guide/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/advanced-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Advanced Features
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/security/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Security
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../modules/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Modules
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbracore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraCore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/xpcprotocolscore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    XPCProtocolsCore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/securityprotocolscore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SecurityProtocolsCore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbraxpc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraXPC
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbrakeychainservice/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraKeychainService
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/securitytypes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SecurityTypes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/umbracryptoservice/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    UmbraCryptoService
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/resticlihelper/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ResticCLIHelper
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/errortypes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ErrorTypes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/repositorymanager/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RepositoryManager
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/backupcoordinator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BackupCoordinator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../development/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/bazel_spm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Bazel & SPM
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architecture
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/project_structure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Structure
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/xpc_implementation_plan/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    XPC Implementation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Support
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Support
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Roadmap
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LICENSE/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    License
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ACKNOWLEDGMENTS/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#file-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Basics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File Basics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Organization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import Statements
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      Naming
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Naming">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general-naming-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      General Naming Rules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-and-constant-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variable and Constant Names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-and-method-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      Function and Method Names
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formatting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Formatting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formatting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#indentation-and-line-wrapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Indentation and Line Wrapping
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#braces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Braces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spacing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Spacing
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types-and-declarations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Types and Declarations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Types and Declarations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#value-vs-reference-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Value vs. Reference Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      Access Control
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions-and-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions and Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions and Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameter-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameter Lists
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in-out-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      In-Out Parameters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#control-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Control Flow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Control Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#guard-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guard Statements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optionals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Optionals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentation-comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation Comments
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Comments
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#swift-specific-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Swift Specific Features
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Swift Specific Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Handling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extensions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      Concurrency
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bazel-and-build-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bazel and Build System
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bazel and Build System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-file-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      BUILD File Organization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Memory Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Memory Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#capturing-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Capturing Variables
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Structure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automated-formatting-with-swiftformat" class="md-nav__link">
+    <span class="md-ellipsis">
+      Automated Formatting with SwiftFormat
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Automated Formatting with SwiftFormat">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-formatting-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Formatting Rules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-build-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integration with Build System
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conflicts-with-existing-style-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conflicts with Existing Style Guide
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+    <div class="content">
+        
+                  
+
+  
+  
+
+
+<h1 id="umbracore-swift-style-guide">UmbraCore Swift Style Guide<a class="headerlink" href="#umbracore-swift-style-guide" title="Permanent link">&para;</a></h1>
+<p>This style guide is adapted from the <a href="https://google.github.io/swift/">Google Swift Style Guide</a> and customized for UmbraCore development. It's designed to ensure consistency and maintainability as our codebase grows.</p>
+<h2 id="file-basics">File Basics<a class="headerlink" href="#file-basics" title="Permanent link">&para;</a></h2>
+<h3 id="file-names">File Names<a class="headerlink" href="#file-names" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Match the name of the primary type declared in the file</li>
+<li>Use <code>.swift</code> extension</li>
+<li>Use UpperCamelCase (PascalCase)</li>
+<li>Be descriptive and avoid abbreviations</li>
+</ul>
+<div class="highlight"><pre><span></span><code>// Good
+NetworkManager.swift
+UserAuthentication.swift
+
+// Bad
+NetMgr.swift
+UserAuth.swift
+</code></pre></div>
+<h3 id="file-organization">File Organization<a class="headerlink" href="#file-organization" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Copyright notice and license information</li>
+<li>Import statements</li>
+<li>Type and extension declarations</li>
+</ol>
+<h3 id="import-statements">Import Statements<a class="headerlink" href="#import-statements" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Sort imports alphabetically</li>
+<li>Foundation and system imports first, then other imports</li>
+<li>No duplicate imports</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kd">import</span> <span class="nc">Foundation</span>
+<span class="kd">import</span> <span class="nc">OSLog</span>
+<span class="kd">import</span> <span class="nc">SwiftUI</span>
+
+<span class="kd">import</span> <span class="nc">CoreServices</span>
+<span class="kd">import</span> <span class="nc">SecurityTypes</span>
+<span class="kd">import</span> <span class="nc">UmbraLogging</span>
+</code></pre></div>
+<h2 id="naming">Naming<a class="headerlink" href="#naming" title="Permanent link">&para;</a></h2>
+<h3 id="general-naming-rules">General Naming Rules<a class="headerlink" href="#general-naming-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Names should be self-explanatory and descriptive</li>
+<li>Avoid abbreviations except for widely accepted ones (URL, ID)</li>
+<li>Use British English for user-facing strings</li>
+<li>Use American English for code identifiers to match Swift standard library</li>
+</ul>
+<h3 id="type-names">Type Names<a class="headerlink" href="#type-names" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use UpperCamelCase (PascalCase) for all types</li>
+<li>Use nouns for types that represent things</li>
+<li>Prefix protocols that describe what something is with a noun</li>
+<li>Suffix protocols that describe a capability with <code>-able</code>, <code>-ible</code>, or <code>-ing</code></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// Types</span>
+<span class="kd">struct</span> <span class="nc">DatabaseConnection</span>
+<span class="kd">class</span> <span class="nc">SecurityManager</span>
+
+<span class="c1">// Protocols</span>
+<span class="kd">protocol</span> <span class="nc">Document</span>  <span class="c1">// describes what something is</span>
+<span class="kd">protocol</span> <span class="nc">Searchable</span>  <span class="c1">// describes a capability</span>
+<span class="kd">protocol</span> <span class="nc">Encrypting</span>  <span class="c1">// describes a capability</span>
+</code></pre></div>
+<h3 id="variable-and-constant-names">Variable and Constant Names<a class="headerlink" href="#variable-and-constant-names" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use lowerCamelCase</li>
+<li>Be descriptive but concise</li>
+<li>Avoid single-letter names except in mathematical contexts</li>
+<li>Include type information in the name only when it adds clarity</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// Good</span>
+<span class="kd">let</span> <span class="nv">maxRetryCount</span> <span class="p">=</span> <span class="mi">3</span>
+<span class="kd">var</span> <span class="nv">currentUserProfile</span><span class="p">:</span> <span class="n">UserProfile</span>
+
+<span class="c1">// Bad</span>
+<span class="kd">let</span> <span class="nv">max</span> <span class="p">=</span> <span class="mi">3</span>
+<span class="kd">var</span> <span class="nv">profile</span> <span class="p">=</span> <span class="n">UserProfile</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="function-and-method-names">Function and Method Names<a class="headerlink" href="#function-and-method-names" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use lowerCamelCase</li>
+<li>Use verb phrases to describe what the function does</li>
+<li>Use descriptive parameter labels</li>
+<li>When the first parameter is part of the natural phrase, omit its label</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// Good</span>
+<span class="kd">func</span> <span class="nf">remove</span><span class="p">(</span><span class="n">at</span> <span class="n">index</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">convertToMeters</span><span class="p">(</span><span class="n">from</span> <span class="n">length</span><span class="p">:</span> <span class="nb">Double</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">LengthUnit</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">Double</span>
+
+<span class="c1">// Bad</span>
+<span class="kd">func</span> <span class="nf">remove</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">convertToMeters</span><span class="p">(</span><span class="n">length</span><span class="p">:</span> <span class="nb">Double</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">LengthUnit</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">Double</span>
+</code></pre></div>
+<h2 id="formatting">Formatting<a class="headerlink" href="#formatting" title="Permanent link">&para;</a></h2>
+<h3 id="indentation-and-line-wrapping">Indentation and Line Wrapping<a class="headerlink" href="#indentation-and-line-wrapping" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use 4 spaces for indentation (not tabs)</li>
+<li>Limit line length to 100 characters where possible</li>
+<li>When wrapping lines, indent continuation lines by 4 spaces</li>
+</ul>
+<h3 id="braces">Braces<a class="headerlink" href="#braces" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Opening braces on the same line as the statement</li>
+<li>Closing braces on a new line</li>
+<li>Always include braces for control flow statements, even for single-line bodies</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">condition</span> <span class="p">{</span>
+    <span class="n">doSomething</span><span class="p">()</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">doSomethingElse</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="spacing">Spacing<a class="headerlink" href="#spacing" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Single space after keywords (if, guard, for, etc.)</li>
+<li>No space between function name and opening parenthesis</li>
+<li>No spaces inside parentheses</li>
+<li>Single space around binary operators</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kd">let</span> <span class="nv">result</span> <span class="p">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">c</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">condition</span> <span class="p">{</span>
+    <span class="kd">func</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="types-and-declarations">Types and Declarations<a class="headerlink" href="#types-and-declarations" title="Permanent link">&para;</a></h2>
+<h3 id="value-vs-reference-types">Value vs. Reference Types<a class="headerlink" href="#value-vs-reference-types" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Prefer structs over classes when:</li>
+<li>The primary purpose is to encapsulate data</li>
+<li>Copying behavior is desired</li>
+<li>
+<p>There's no need for inheritance</p>
+</li>
+<li>
+<p>Use classes when:</p>
+</li>
+<li>Identity is important</li>
+<li>Inheritance is needed</li>
+<li>The lifetime of instances needs to be controlled</li>
+</ul>
+<h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use computed properties rather than methods when the operation:</li>
+<li>Does not modify self</li>
+<li>Is cheap to compute</li>
+<li>Returns the same value each time it's called with the same inputs</li>
+<li>Does not have side effects</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// Good</span>
+<span class="kd">var</span> <span class="nv">diameter</span><span class="p">:</span> <span class="nb">Double</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">radius</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="p">}</span>
+
+<span class="c1">// Instead of</span>
+<span class="kd">func</span> <span class="nf">calculateDiameter</span><span class="p">()</span> <span class="p">-&gt;</span> <span class="nb">Double</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">radius</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="access-control">Access Control<a class="headerlink" href="#access-control" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Be explicit about access control modifiers</li>
+<li>Use the most restrictive level that makes sense</li>
+<li>Order from most restrictive to least restrictive: <code>private</code>, <code>fileprivate</code>, <code>internal</code>, <code>public</code>, <code>open</code></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NetworkManager</span> <span class="p">{</span>
+    <span class="kd">private</span> <span class="kd">let</span> <span class="nv">apiKey</span><span class="p">:</span> <span class="nb">String</span>
+    <span class="kd">internal</span> <span class="kd">var</span> <span class="nv">session</span><span class="p">:</span> <span class="n">URLSession</span>
+
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="n">URL</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Data</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="functions-and-methods">Functions and Methods<a class="headerlink" href="#functions-and-methods" title="Permanent link">&para;</a></h2>
+<h3 id="parameter-lists">Parameter Lists<a class="headerlink" href="#parameter-lists" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Keep parameter lists short when possible</li>
+<li>Consider grouping related parameters into structures</li>
+<li>Use default parameter values when appropriate</li>
+</ul>
+<h3 id="in-out-parameters">In-Out Parameters<a class="headerlink" href="#in-out-parameters" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use sparingly and only when the behavior would be otherwise surprising</li>
+<li>Place in-out parameters at the end of the parameter list when possible</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kd">func</span> <span class="nf">swap</span><span class="p">(</span><span class="kc">_</span> <span class="n">a</span><span class="p">:</span> <span class="kr">inout</span> <span class="nb">Int</span><span class="p">,</span> <span class="kc">_</span> <span class="n">b</span><span class="p">:</span> <span class="kr">inout</span> <span class="nb">Int</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="control-flow">Control Flow<a class="headerlink" href="#control-flow" title="Permanent link">&para;</a></h2>
+<h3 id="guard-statements">Guard Statements<a class="headerlink" href="#guard-statements" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use <code>guard</code> statements for early returns</li>
+<li>Handle the "failure" case immediately after the guard</li>
+<li>Keep the guarded code at the same indentation level as the guard</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">guard</span> <span class="kd">let</span> <span class="nv">value</span> <span class="p">=</span> <span class="n">optionalValue</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="k">return</span>
+<span class="p">}</span>
+<span class="c1">// Use value...</span>
+</code></pre></div>
+<h3 id="optionals">Optionals<a class="headerlink" href="#optionals" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Avoid force unwrapping (<code>!</code>) except in tests or when you're certain</li>
+<li>Prefer optional binding and nil coalescing over force unwrapping</li>
+<li>Use implicitly unwrapped optionals (<code>!</code> in type) only when appropriate</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// Good</span>
+<span class="k">if</span> <span class="kd">let</span> <span class="nv">value</span> <span class="p">=</span> <span class="n">optionalValue</span> <span class="p">{</span>
+    <span class="n">use</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">let</span> <span class="nv">value</span> <span class="p">=</span> <span class="n">optionalValue</span> <span class="p">??</span> <span class="n">defaultValue</span>
+
+<span class="c1">// Avoid when possible</span>
+<span class="kd">let</span> <span class="nv">value</span> <span class="p">=</span> <span class="n">optionalValue</span><span class="p">!</span>
+</code></pre></div>
+<h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
+<h3 id="documentation-comments">Documentation Comments<a class="headerlink" href="#documentation-comments" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Document all public declarations</li>
+<li>Use Swift's standard documentation format (triple-slash <code>///</code> comments)</li>
+<li>Include parameter, returns, and throws descriptions</li>
+<li>Document edge cases and preconditions</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">/// Retrieves the user profile from the server.</span>
+<span class="c1">///</span>
+<span class="c1">/// - Parameters:</span>
+<span class="c1">///   - userId: The ID of the user to fetch</span>
+<span class="c1">///   - includeDetails: Whether to include detailed information</span>
+<span class="c1">/// - Returns: The user profile</span>
+<span class="c1">/// - Throws: `NetworkError` if the request fails</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">fetchUserProfile</span><span class="p">(</span><span class="n">userId</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span> <span class="n">includeDetails</span><span class="p">:</span> <span class="nb">Bool</span> <span class="p">=</span> <span class="kc">false</span><span class="p">)</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">UserProfile</span>
+</code></pre></div>
+<h3 id="code-comments">Code Comments<a class="headerlink" href="#code-comments" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use comments to explain "why", not "what"</li>
+<li>Keep comments up to date when code changes</li>
+<li>Use <code>// MARK: - Section Name</code> to organize code into logical sections</li>
+</ul>
+<h2 id="swift-specific-features">Swift Specific Features<a class="headerlink" href="#swift-specific-features" title="Permanent link">&para;</a></h2>
+<h3 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use Swift's <code>throw</code>/<code>catch</code> system for error handling</li>
+<li>Define dedicated error types with clear case names</li>
+<li>Provide descriptive error messages</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kd">enum</span> <span class="nc">NetworkError</span><span class="p">:</span> <span class="n">Error</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">invalidURL</span>
+    <span class="k">case</span> <span class="n">connectionFailed</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">serverError</span><span class="p">(</span><span class="n">statusCode</span><span class="p">:</span> <span class="nb">Int</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="extensions">Extensions<a class="headerlink" href="#extensions" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use extensions to organize code by functionality</li>
+<li>Put protocol conformances in separate extensions</li>
+<li>Name extensions for clarity when extending external types</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// Protocol conformance in extension</span>
+<span class="kd">extension</span> <span class="nc">User</span><span class="p">:</span> <span class="nb">Equatable</span> <span class="p">{</span>
+    <span class="kd">static</span> <span class="kd">func</span> <span class="p">==</span> <span class="p">(</span><span class="n">lhs</span><span class="p">:</span> <span class="n">User</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">User</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">Bool</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">lhs</span><span class="p">.</span><span class="n">id</span> <span class="p">==</span> <span class="n">rhs</span><span class="p">.</span><span class="n">id</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Functionality extension</span>
+<span class="kd">extension</span> <span class="nc">User</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">promoteToAdmin</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">role</span> <span class="p">=</span> <span class="p">.</span><span class="n">admin</span>
+        <span class="n">permissionLevel</span> <span class="p">=</span> <span class="p">.</span><span class="n">full</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="concurrency">Concurrency<a class="headerlink" href="#concurrency" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Prefer modern Swift concurrency (async/await) over completion handlers</li>
+<li>Mark functions that can throw or suspend with appropriate keywords</li>
+<li>Use task groups for concurrent operations</li>
+<li>Avoid explicit use of <code>DispatchQueue</code> when Swift concurrency can be used</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// Modern concurrency</span>
+<span class="kd">func</span> <span class="nf">fetchData</span><span class="p">()</span> <span class="k">async</span> <span class="kr">throws</span> <span class="p">-&gt;</span> <span class="n">Data</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span> <span class="p">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">URLSession</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">data</span><span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="n">url</span><span class="p">)</span>
+    <span class="k">guard</span> <span class="kd">let</span> <span class="nv">httpResponse</span> <span class="p">=</span> <span class="n">response</span> <span class="k">as</span><span class="p">?</span> <span class="n">HTTPURLResponse</span><span class="p">,</span>
+          <span class="n">httpResponse</span><span class="p">.</span><span class="n">statusCode</span> <span class="p">==</span> <span class="mi">200</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="n">NetworkError</span><span class="p">.</span><span class="n">invalidResponse</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">data</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="bazel-and-build-system">Bazel and Build System<a class="headerlink" href="#bazel-and-build-system" title="Permanent link">&para;</a></h2>
+<h3 id="build-file-organization">BUILD File Organization<a class="headerlink" href="#build-file-organization" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Sort dependencies alphabetically</li>
+<li>Group dependencies by type (internal, external)</li>
+<li>Keep BUILD files minimal and focused</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">umbra_swift_library</span><span class="p">(</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;NetworkService&quot;</span><span class="p">,</span>
+    <span class="n">srcs</span> <span class="o">=</span> <span class="n">glob</span><span class="p">([</span><span class="s2">&quot;*.swift&quot;</span><span class="p">]),</span>
+    <span class="n">deps</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># Internal dependencies</span>
+        <span class="s2">&quot;//Sources/CoreTypes&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;//Sources/LoggingService&quot;</span><span class="p">,</span>
+
+        <span class="c1"># External dependencies</span>
+        <span class="s2">&quot;@swift_protobuf//:SwiftProtobuf&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="memory-management">Memory Management<a class="headerlink" href="#memory-management" title="Permanent link">&para;</a></h2>
+<h3 id="capturing-variables">Capturing Variables<a class="headerlink" href="#capturing-variables" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Be explicit about capturing variables in closures to avoid retain cycles</li>
+<li>Use <code>[weak self]</code> or <code>[unowned self]</code> when appropriate</li>
+<li>Always check if <code>[weak self]</code> is nil before using it</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">networkManager</span><span class="p">.</span><span class="n">fetchData</span> <span class="p">{</span> <span class="p">[</span><span class="kr">weak</span> <span class="kc">self</span><span class="p">]</span> <span class="n">result</span> <span class="k">in</span>
+    <span class="k">guard</span> <span class="kd">let</span> <span class="nv">self</span> <span class="p">=</span> <span class="kc">self</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+    <span class="kc">self</span><span class="p">.</span><span class="n">handleResult</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<h3 id="test-structure">Test Structure<a class="headerlink" href="#test-structure" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use descriptive names for test methods</li>
+<li>Structure tests as "given-when-then" or "arrange-act-assert"</li>
+<li>Test edge cases and error conditions</li>
+<li>One assertion per test when possible</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kd">func</span> <span class="nf">testUserAuthentication_WithValidCredentials_ReturnsSuccess</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Given</span>
+    <span class="kd">let</span> <span class="nv">validCredentials</span> <span class="p">=</span> <span class="n">Credentials</span><span class="p">(</span><span class="n">username</span><span class="p">:</span> <span class="s">&quot;test&quot;</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="s">&quot;password&quot;</span><span class="p">)</span>
+
+    <span class="c1">// When</span>
+    <span class="kd">let</span> <span class="nv">result</span> <span class="p">=</span> <span class="n">authenticator</span><span class="p">.</span><span class="n">authenticate</span><span class="p">(</span><span class="n">credentials</span><span class="p">:</span> <span class="n">validCredentials</span><span class="p">)</span>
+
+    <span class="c1">// Then</span>
+    <span class="n">XCTAssertEqual</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="p">.</span><span class="n">success</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://google.github.io/swift/">Google Swift Style Guide</a></li>
+<li><a href="https://swift.org/documentation/api-design-guidelines/">Swift API Design Guidelines</a></li>
+<li><a href="https://swift.org/documentation/">Swift.org Documentation</a></li>
+</ul>
+<h2 id="automated-formatting-with-swiftformat">Automated Formatting with SwiftFormat<a class="headerlink" href="#automated-formatting-with-swiftformat" title="Permanent link">&para;</a></h2>
+<p>UmbraCore uses <a href="https://github.com/nicklockwood/SwiftFormat">SwiftFormat</a> version 0.55.5 to automatically enforce many style rules in this guide. The configuration is defined in the <code>.swiftformat</code> file at the project root.</p>
+<h3 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h3>
+<p>Run the formatting script to format all Swift files in the project:</p>
+<div class="highlight"><pre><span></span><code>./scripts/format_code.sh
+</code></pre></div>
+<p>To only check if files are formatted without modifying them:</p>
+<div class="highlight"><pre><span></span><code>./scripts/format_code.sh<span class="w"> </span>--check
+</code></pre></div>
+<p>To format only staged files:</p>
+<div class="highlight"><pre><span></span><code>./scripts/format_code.sh<span class="w"> </span>--staged-only
+</code></pre></div>
+<h3 id="key-formatting-rules">Key Formatting Rules<a class="headerlink" href="#key-formatting-rules" title="Permanent link">&para;</a></h3>
+<p>The SwiftFormat configuration enforces the following key style elements:</p>
+<ul>
+<li>2-space indentation</li>
+<li>100 character line length</li>
+<li>Consistent brace styles (same-line opening braces)</li>
+<li>Trailing commas in multi-line arrays and dictionaries</li>
+<li>Consistent spacing around operators and parentheses</li>
+<li>Alphabetized imports</li>
+<li>Standard modifier ordering (<code>public</code>, <code>open</code>, <code>package</code>, <code>internal</code>, <code>private</code>, <code>fileprivate</code>, etc.)</li>
+<li>Hoisted pattern let bindings</li>
+<li>No trailing whitespace</li>
+<li>And many other rules...</li>
+</ul>
+<p>For a complete list of rules, refer to the <a href="https://github.com/nicklockwood/SwiftFormat#rules">SwiftFormat documentation</a> and the <code>.swiftformat</code> file in the project root.</p>
+<h3 id="integration-with-build-system">Integration with Build System<a class="headerlink" href="#integration-with-build-system" title="Permanent link">&para;</a></h3>
+<p>To ensure consistent code style across the project, consider adding the SwiftFormat check to your pre-commit hook or CI pipeline.</p>
+<h3 id="conflicts-with-existing-style-guide">Conflicts with Existing Style Guide<a class="headerlink" href="#conflicts-with-existing-style-guide" title="Permanent link">&para;</a></h3>
+<p>In cases where the automated formatting conflicts with this style guide, the SwiftFormat configuration takes precedence. If you believe the configuration should be adjusted, please open a discussion with the team.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+    </div>
+
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "toc.follow", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      
+    
+  </body>
+</html>
