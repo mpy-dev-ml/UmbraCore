@@ -1,22 +1,54 @@
-# ResticCLIHelper Module
+# ResticCLIHelper
 
-Core interaction with the Restic command-line interface.
+The ResticCLIHelper module provides a Swift interface for interacting with the Restic command-line tool.
 
-## Directory Structure
+## Overview
 
-- `Models/` - Command and process models
-- `Services/` - Command execution and management
-- `Errors/` - CLI-specific error types
-- `Extensions/` - Swift extensions for CLI operations
-- `Protocols/` - Public interfaces
+ResticCLIHelper enables UmbraCore applications to execute Restic commands, parse output, and handle errors in a type-safe manner. It serves as the bridge between Swift code and the powerful Restic backup system.
 
-## Migration Status
+## Features
 
-Files to be migrated from legacy codebase:
-- [ ] ResticCommand.swift
-- [ ] PreparedCommand.swift
-- [ ] ProcessResult.swift
-- [ ] ProcessError.swift
+- Type-safe command generation
+- Structured output parsing
+- Error handling and recovery
+- Progress tracking for long-running operations
+- Environment variable management
+- Secure credential handling
 
-New files to be created:
-- [ ] CommandExecutor.swift
+## Architecture
+
+ResticCLIHelper is designed to work in different execution contexts:
+
+1. **Direct Execution**: For non-sandboxed applications
+2. **XPC Service Execution**: For sandboxed applications requiring privileged operations
+
+## Usage
+
+```swift
+import ResticCLIHelper
+
+// Create a Restic CLI helper
+let resticHelper = ResticCLIHelper(
+    repositoryPath: "~/backups/my-repo",
+    environmentProvider: MyCredentialProvider()
+)
+
+// Execute a backup command
+let result = try await resticHelper.backup(
+    paths: ["/Users/Documents", "/Users/Pictures"],
+    tags: ["daily"],
+    excludePatterns: ["*.tmp", "node_modules"]
+)
+
+// Handle the result
+switch result {
+case .success(let backupInfo):
+    print("Backup successful: \(backupInfo.snapshotId)")
+case .failure(let error):
+    print("Backup failed: \(error.localizedDescription)")
+}
+```
+
+## Integration
+
+ResticCLIHelper is designed to be used alongside UmbraXPC for sandboxed applications, ensuring that all Restic operations comply with macOS security requirements.
