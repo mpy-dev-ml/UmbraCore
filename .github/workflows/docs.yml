@@ -52,15 +52,6 @@ jobs:
       - name: Build documentation
         run: |
           python3 -m mkdocs build
-        
-      - name: Verify CNAME in site directory
-        run: |
-          if [ ! -f "./site/CNAME" ]; then
-            echo "CNAME file not found in site directory. Copying from docs directory."
-            cp ./docs/CNAME ./site/
-          fi
-          echo "CNAME contents:"
-          cat ./site/CNAME
 
       - name: Deploy to GitHub Pages
         run: |
