@@ -144,3 +144,4 @@ UmbraCore_archive/
 
 # MkDocs build output
 /site/
+docs-venv/
