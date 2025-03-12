@@ -294,7 +294,7 @@ public actor CryptoService: UmbraService {
 
     // Use CommonCrypto for SHA-256 hash
     // This is a simple implementation that should be enhanced in production
-    var hashData=Data(data)
+    let hashData=Data(data)
     var hashBytes=[UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
 
     hashData.withUnsafeBytes { dataBuffer in

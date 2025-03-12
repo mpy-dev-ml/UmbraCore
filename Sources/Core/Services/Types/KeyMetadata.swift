@@ -168,7 +168,7 @@ public struct KeyMetadata: Sendable, Codable {
 
 /// Extension to provide conversion to/from the raw representation
 /// This will be used by the KeyManagementTypes module through type extension
-extension KeyMetadata {
+extension KeyManagementTypes.KeyMetadata {
   /// Raw representation that matches the canonical type's raw metadata
   public struct RawRepresentation: Sendable {
     public var status: KeyManagementTypes.KeyStatus
@@ -273,8 +273,7 @@ extension KeyMetadata {
     RawRepresentation(
       status: status,
       storageLocation: storageLocation,
-      accessControls: KeyManagementTypes.KeyMetadata
-        .AccessControls(rawValue: accessControls.rawValue)!,
+      accessControls: accessControls,
       createdAt: createdAt,
       lastModified: lastModified,
       expiryDate: expiryDate,
@@ -291,12 +290,12 @@ extension KeyMetadata {
 
   /// Create from the canonical raw representation
   /// - Parameter rawRepresentation: Raw representation from KeyManagementTypes
-  /// - Returns: Legacy KeyMetadata
-  public static func from(rawRepresentation: RawRepresentation) -> KeyMetadata {
-    KeyMetadata(
+  /// - Returns: Canonical KeyMetadata
+  public static func from(rawRepresentation: RawRepresentation) -> KeyManagementTypes.KeyMetadata {
+    KeyManagementTypes.KeyMetadata(
       status: rawRepresentation.status,
       storageLocation: rawRepresentation.storageLocation,
-      accessControls: AccessControls(rawValue: rawRepresentation.accessControls.rawValue)!,
+      accessControls: rawRepresentation.accessControls,
       createdAt: rawRepresentation.createdAt,
       lastModified: rawRepresentation.lastModified,
       expiryDate: rawRepresentation.expiryDate,
@@ -314,53 +313,32 @@ extension KeyMetadata {
 
 /// Extension to provide conversion to/from the raw representation
 /// This will be used by KeyManagementTypes module through type extension
-extension KeyStatus {
+extension KeyManagementTypes.KeyStatus {
   /// The raw representation that matches the canonical type's raw status
   public func toRawRepresentation() -> KeyManagementTypes.KeyStatus {
-    switch self {
-      case .active: .active
-      case .compromised: .compromised
-      case .retired: .retired
-      case let .pendingDeletion(date): .pendingDeletion(date)
-    }
+    self
   }
 
   /// Create from the canonical raw representation
   /// - Parameter rawRepresentation: Raw representation from KeyManagementTypes
-  /// - Returns: Legacy KeyStatus
-  public static func from(rawRepresentation: KeyManagementTypes.KeyStatus) -> KeyStatus {
-    switch rawRepresentation {
-      case .active: .active
-      case .compromised: .compromised
-      case .retired: .retired
-      case let .pendingDeletion(date): .pendingDeletion(date)
-    }
+  /// - Returns: Canonical KeyStatus
+  public static func from(rawRepresentation: KeyManagementTypes.KeyStatus) -> KeyManagementTypes
+  .KeyStatus {
+    rawRepresentation
   }
 }
 
 /// Extension to provide conversion to/from the raw representation
 /// This will be used by KeyManagementTypes module through type extension
-extension StorageLocation {
-  /// The raw representation that matches the canonical type's raw locations
-  public func toRawRepresentation() -> KeyManagementTypes.StorageLocation {
-    switch self {
-      case .secureEnclave: .secureEnclave
-      case .keychain: .keychain
-      case .memory: .memory
-    }
-  }
+extension KeyManagementTypes.StorageLocation {
 
   /// Create from the canonical raw representation
   /// - Parameter rawRepresentation: Raw representation from KeyManagementTypes
-  /// - Returns: Legacy StorageLocation
+  /// - Returns: Canonical StorageLocation
   public static func from(
     rawRepresentation: KeyManagementTypes
       .StorageLocation
-  ) -> StorageLocation {
-    switch rawRepresentation {
-      case .secureEnclave: .secureEnclave
-      case .keychain: .keychain
-      case .memory: .memory
-    }
+  ) -> KeyManagementTypes.StorageLocation {
+    rawRepresentation
   }
 }

@@ -169,7 +169,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     }
 
     // Check if we have a bookmark for this path
-    if let bookmark=bookmarks[path] {
+    if bookmarks[path] != nil {
       // Use the bookmark to gain access (simplified implementation)
       accessedPaths.insert(path)
       return true

@@ -1,4 +1,5 @@
 import Foundation
+import KeyManagementTypes
 
 /// Represents the current status of a cryptographic key
 ///
@@ -143,15 +144,16 @@ extension KeyStatus {
 
   /// Create from a raw representation coming from KeyManagementTypes
   /// - Parameter rawRepresentation: The raw representation to convert from
-  /// - Returns: The equivalent legacy KeyStatus
-  public static func from(rawRepresentation: RawRepresentation) -> KeyStatus {
+  /// - Returns: The equivalent canonical KeyStatus
+  public static func from(rawRepresentation: RawRepresentation) -> KeyManagementTypes.KeyStatus {
     switch rawRepresentation {
-      case .active: .active
-      case .compromised: .compromised
-      case .retired: .retired
-      case let .pendingDeletion(date): .pendingDeletion(date)
+      case .active: KeyManagementTypes.KeyStatus.active
+      case .compromised: KeyManagementTypes.KeyStatus.compromised
+      case .retired: KeyManagementTypes.KeyStatus.retired
+      case let .pendingDeletion(date): KeyManagementTypes.KeyStatus.pendingDeletion(date)
       case let .pendingDeletionWithTimestamp(timestamp):
-        .pendingDeletion(Date(timeIntervalSince1970: TimeInterval(timestamp)))
+        KeyManagementTypes.KeyStatus
+          .pendingDeletion(Date(timeIntervalSince1970: TimeInterval(timestamp)))
     }
   }
 }
