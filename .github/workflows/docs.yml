@@ -46,13 +46,20 @@ jobs:
           echo "Looking for mkdocs.yml:"
           find . -name "mkdocs.yml" -type f
 
-      - name: Install Dependencies
+      - name: Set up Python virtual environment
         run: |
-          python3 -m pip install --user -r requirements.txt
+          python3 -m venv docs-venv
+          source docs-venv/bin/activate
+          # Upgrade pip in the virtual environment
+          python -m pip install --upgrade pip
+          # Install dependencies within the virtual environment
+          pip install -r requirements.txt
+          echo "Virtual environment created and dependencies installed"
 
       - name: Build Documentation
         run: |
-          python3 -m mkdocs build --verbose
+          source docs-venv/bin/activate
+          python -m mkdocs build --verbose
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
