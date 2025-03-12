@@ -5,51 +5,54 @@
 ### UmbraKeychainService
 Secure credential storage service.
 - [API Reference](https://mpy-dev-ml.github.io/UmbraCore/UmbraKeychainService)
-- [Usage Guide](../guides/keychain.md)
+- Usage Guide: See modules/umbrakeychainservice.md
 
 ### UmbraCryptoService
 Cryptographic operations service.
 - [API Reference](https://mpy-dev-ml.github.io/UmbraCore/UmbraCryptoService)
-- [Usage Guide](../guides/crypto.md)
+- Usage Guide: See modules/umbracryptoservice.md
 
 ### UmbraBookmarkService
 File system bookmark management.
 - [API Reference](https://mpy-dev-ml.github.io/UmbraCore/UmbraBookmarkService)
-- [Usage Guide](../guides/bookmarks.md)
+- Usage Guide: Coming soon
 
 ## Security Types
 
 ### SecurityTypes
 Base security primitives.
 - [API Reference](https://mpy-dev-ml.github.io/UmbraCore/SecurityTypes)
-- [Usage Guide](../guides/security.md)
+- Usage Guide: See modules/securitytypes.md
 
 ### CryptoTypes
 Cryptographic types and operations.
 - [API Reference](https://mpy-dev-ml.github.io/UmbraCore/CryptoTypes)
-- [Usage Guide](../guides/crypto-types.md)
+- Usage Guide: Coming soon
 
 ## Utilities
 
 ### UmbraLogging
 Logging infrastructure.
 - [API Reference](https://mpy-dev-ml.github.io/UmbraCore/UmbraLogging)
-- [Usage Guide](../guides/logging.md)
+- Usage Guide: Coming soon
 
 ### UmbraXPC
 XPC communication layer.
 - [API Reference](https://mpy-dev-ml.github.io/UmbraCore/UmbraXPC)
-- [Usage Guide](../guides/xpc.md)
+- Usage Guide: See modules/umbraxpc.md
 
 ## Error Types
 
 ### CommonError
 Shared error types.
 - [API Reference](https://mpy-dev-ml.github.io/UmbraCore/CommonError)
-- [Usage Guide](../guides/error-handling.md)
+- Usage Guide: See modules/errortypes.md
 
 ## Best Practices
-- [Thread Safety](../guides/thread-safety.md)
-- [Error Handling](../guides/error-handling.md)
-- [Performance](../guides/performance.md)
-- [Security](../security/SECURITY_GUIDELINES.md)
+
+- **Thread Safety**: Ensure all service calls are thread-safe in your implementation
+- **Error Handling**: Always handle errors appropriately
+- **Logging**: Use the provided logging infrastructure for consistent logs
+- **Performance**: Consider using async/await for operations that might take time
+
+For more detailed information, please refer to the documentation in the development section.

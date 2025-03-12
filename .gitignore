@@ -106,7 +106,7 @@ user.bazelrc
 /.jazzy.yaml
 /.ruby-version
 /.swiftlint.yml
-/mkdocs.yml
+# /mkdocs.yml - Removed exclusion to fix documentation build
 /requirements.txt
 /update_build_files.sh
 /generate_deps.swift

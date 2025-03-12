@@ -103,20 +103,20 @@ UmbraCore is currently in active development with the following features:
 
 ## Getting Started
 
-Please refer to our [Quick Start Guide](getting-started/quick-start.md) for installation and basic usage instructions.
+Please refer to our development documentation for installation and usage instructions.
 
 ## Security
 
-UmbraCore prioritises security in all aspects of its implementation. For details, see our [Security Guide](user-guide/security.md).
+UmbraCore prioritises security in all aspects of its implementation. For details, see our development documentation on security practices.
 
 ## Documentation
 
 Key documentation sections:
 
-- Configuration: [Configuration Guide](user-guide/configuration.md)
-- Features: [Advanced Features](user-guide/advanced-features.md)
-- Development: [API Reference](api/reference.md)
-- Support: [Troubleshooting Guide](support/troubleshooting.md)
+- Configuration: See modules/configuration.md
+- Features: Explore the modules section
+- Development: See the development section
+- Support: Contact us via GitHub issues
 
 ## Support
 
