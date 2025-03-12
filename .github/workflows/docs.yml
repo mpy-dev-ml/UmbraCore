@@ -75,6 +75,26 @@ jobs:
             sudo ln -sf /opt/homebrew/bin/gtar /usr/local/bin/gtar
           fi
 
+      - name: Build Production Targets
+        if: ${{ matrix.task == 'build' }}
+        shell: /bin/bash -e {0}
+        env:
+          DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+          SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+        run: |
+          echo "Building production targets with verbose failure reporting..."
+          # Run build with detailed logging
+          cat ./production_targets.txt | xargs bazelisk build --verbose_failures --show_progress_rate_limit=5 --subcommands > build_output.log 2>&1
+          BUILD_STATUS=$?
+          
+          # Display the log file content regardless of build status
+          echo "=== BUILD OUTPUT DETAILS ==="
+          cat build_output.log
+          echo "=== END BUILD OUTPUT DETAILS ==="
+          
+          # Exit with the original status code
+          exit $BUILD_STATUS
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
