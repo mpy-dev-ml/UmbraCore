@@ -79,13 +79,17 @@ jobs:
         # Create a directory for storing target lists
         mkdir -p .build_targets
         
-        # Find test targets
+        # Find all test targets
         echo "Finding test targets..."
         bazelisk query 'kind("swift_test rule", //...)' --output=label > .build_targets/test_targets.txt
         
-        # Split into core and security tests using tags
+        # Find security-tagged tests
+        echo "Finding security tests..."
         bazelisk query 'attr(tags, "security", kind("swift_test rule", //...))' --output=label > .build_targets/security_test_targets.txt
-        bazelisk query 'except(kind("swift_test rule", //...), attr(tags, "security", kind("swift_test rule", //...)))' --output=label > .build_targets/core_test_targets.txt
+        
+        # Find core tests by filtering out security tests
+        echo "Finding core tests..."
+        grep -v -f .build_targets/security_test_targets.txt .build_targets/test_targets.txt > .build_targets/core_test_targets.txt || echo "No core tests found"
         
         # Count targets
         TEST_COUNT=$(wc -l < .build_targets/test_targets.txt | xargs)
@@ -96,10 +100,10 @@ jobs:
         
         # Output sample of targets
         echo "Sample core test targets:"
-        head -n 3 .build_targets/core_test_targets.txt
+        head -n 3 .build_targets/core_test_targets.txt || echo "No core test targets found"
         
         echo "Sample security test targets:"
-        head -n 3 .build_targets/security_test_targets.txt
+        head -n 3 .build_targets/security_test_targets.txt || echo "No security test targets found"
         
         # Enable additional debugging if requested
         if [[ "${{ github.event.inputs.debug_enabled }}" == "true" ]]; then
