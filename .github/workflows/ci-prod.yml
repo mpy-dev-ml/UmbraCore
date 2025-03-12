@@ -84,8 +84,18 @@ jobs:
 
     - name: Build Production Targets
       run: |
-        echo "Building production targets..."
-        cat .build_targets/prod_targets.txt | xargs bazelisk build --show_progress_rate_limit=5
+        echo "Building production targets with verbose failure reporting..."
+        # Run build with detailed logging
+        cat .build_targets/prod_targets.txt | xargs bazelisk build --verbose_failures --show_progress_rate_limit=5 --subcommands > build_output.log 2>&1
+        BUILD_STATUS=$?
+        
+        # Display the log file content regardless of build status
+        echo "=== BUILD OUTPUT DETAILS ==="
+        cat build_output.log
+        echo "=== END BUILD OUTPUT DETAILS ==="
+        
+        # Exit with the original status code
+        exit $BUILD_STATUS
 
     - name: Cleanup
       if: always()
