@@ -93,3 +93,15 @@ build:withtests --build_tests_only=true
 build:withtests --test_output=errors
 build:withtests --flaky_test_attempts=3
 build:withtests --keep_going
+
+# Production build configuration using targets from production_targets.txt
+build:prod --compilation_mode=opt
+build:prod --build_tests_only=false
+build:prod --build_tag_filters=-test,-tests
+# Use targets from production_targets.txt file
+build:prod --target_pattern_file=production_targets.txt
+
+# Production build configuration
+build:prod --compilation_mode=opt
+build:prod --build_tests_only=false
+build:prod --build_tag_filters=-test,-tests

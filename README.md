@@ -193,9 +193,28 @@ bazel run //:update_build_files
 # Build all targets
 bazel build //...
 
+# Build only production modules
+./build_production.sh
+
 # Run tests
 bazel test //...
 ```
+
+### Repository Management
+UmbraCore uses a clean Git repository approach with:
+- Development scripts and utilities kept locally but excluded from Git
+- Production code focused on the main branch
+- Clear separation between build outputs and source code
+
+If you're contributing, please note that certain file types are excluded from Git tracking:
+- Python scripts (.py)
+- Shell scripts (.sh)
+- Dot files (.dot)
+- Most .md files (except README.md files)
+- .txt files (except test_targets.txt and production_targets.txt)
+- Various analyser and utility files
+
+This approach keeps the repository clean while maintaining the necessary tools for development locally.
 
 ### Documentation
 The complete documentation is available at [https://mpy-dev-ml.github.io/UmbraCore](https://mpy-dev-ml.github.io/UmbraCore).
