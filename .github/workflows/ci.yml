@@ -19,7 +19,7 @@ permissions:
 jobs:
   core-build:
     name: Core Build
-    runs-on: [self-hosted, macOS, X64]
+    runs-on: [self-hosted, macOS, ARM64]
     
     steps:
     - uses: actions/checkout@v4
