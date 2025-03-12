@@ -45,6 +45,13 @@ jobs:
       - name: Build Documentation
         run: |
           python3 -m mkdocs build --verbose
+          # Ensure the CNAME file is copied to the site directory
+          if [ -f docs/CNAME ]; then
+            cp docs/CNAME site/
+            echo "Copied CNAME file to the site directory"
+          else
+            echo "Warning: CNAME file not found in docs directory"
+          fi
 
       - name: Deploy to GitHub Pages
         run: |
