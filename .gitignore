@@ -139,3 +139,4 @@ UmbraCore_archive/
 *.txt
 !test_targets.txt
 !production_targets.txt
+!requirements.txt
