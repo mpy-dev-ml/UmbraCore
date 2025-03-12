@@ -108,11 +108,16 @@ if __name__ == "__main__":
     
     # Create a wrapper script that executes the Python script
     executable = ctx.actions.declare_file(ctx.label.name)
+    
+    # Get the short path to the script file
+    script_path = script_file.short_path
+    
+    # Create the wrapper script with explicit string concatenation to avoid format issues
+    wrapper_content = "#!/bin/bash\npython3 $RUNFILES/" + script_path + " $@"
+    
     ctx.actions.write(
         output = executable,
-        content = "#!/bin/bash\npython3 $RUNFILES/{path} $@".format(
-            path = script_file.short_path,
-        ),
+        content = wrapper_content,
         is_executable = True,
     )
     

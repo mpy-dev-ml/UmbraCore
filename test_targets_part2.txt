@@ -1,0 +1,14 @@
+//Sources/CoreTypesInterfaces:CoreTypesInterfacesTests
+//Sources/FoundationBridgeTypes:FoundationBridgeTypesForTesting
+//Sources/ObjCBridgingTypes:ObjCBridgingTypesForTesting
+//Sources/ObjCBridgingTypesFoundation:ObjCBridgingTypesFoundationForTesting
+//Sources/SecurityImplementation:SecurityImplementationTests
+//Sources/SecurityInterfaces:SecurityInterfacesForTesting
+//Sources/SecurityInterfaces:SecurityInterfacesTests
+//Sources/SecurityInterfaces/Tests:SecurityTestHelpers
+//Sources/SecurityInterfacesBase:SecurityInterfacesBaseForTesting
+//Sources/SecurityInterfacesFoundation:SecurityInterfacesFoundationForTesting
+//Sources/SecurityInterfacesProtocols:SecurityInterfacesProtocolsForTesting
+//Sources/SecurityInterfacesXPC:SecurityInterfacesXPCForTesting
+//Sources/TestUtils:TestUtils
+//Sources/Testing:Testing
