@@ -24,16 +24,15 @@ jobs:
         clean: true
         fetch-depth: 0
 
-    - name: Install Xcode Command Line Tools
+    - name: Setup Xcode
       run: |
-        xcode-select --install || true
-        sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-        sudo xcodebuild -license accept
+        xcode-select --print-path
+        xcrun --show-sdk-path
+        swift --version
 
     - name: System Info
       run: |
         uname -a
-        swift --version
         bazelisk --version || echo "Bazelisk not installed yet"
 
     - name: Install Bazelisk
