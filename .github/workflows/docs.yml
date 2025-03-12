@@ -46,10 +46,16 @@ jobs:
         run: |
           python3 -m mkdocs build --verbose
 
-      - name: Deploy to GitHub Pages
+      - name: Clean gh-pages Branch
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          # Try to delete the branch locally and remotely (ignoring errors if it doesn't exist)
+          git branch -D gh-pages || true
+          git push origin --delete gh-pages || true
+
+      - name: Deploy to GitHub Pages
+        run: |
           cd site
           git init
           git add .
