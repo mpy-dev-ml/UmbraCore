@@ -34,12 +34,12 @@ jobs:
       run: |
         uname -a
         swift --version
-        bazel --version
+        bazelisk --version || echo "Bazelisk not installed yet"
 
-    - name: Install Bazel
+    - name: Install Bazelisk
       run: |
-        brew install bazel
-        bazel --version
+        brew install bazelisk
+        bazelisk --version
 
     - name: Configure Bazel
       run: |
@@ -61,13 +61,13 @@ jobs:
 
     - name: Build
       run: |
-        bazel build //... --show_progress_rate_limit=5
+        bazelisk build //... --show_progress_rate_limit=5
 
     - name: Core Tests
       env:
         UMBRA_TEST_ROOT: ~/UmbraTest/Core
       run: |
-        bazel test //... \
+        bazelisk test //... \
           --test_tag_filters=-security,-requires_keychain \
           --test_env=UMBRA_TEST_ROOT
 
@@ -75,7 +75,7 @@ jobs:
       env:
         UMBRA_TEST_ROOT: ~/UmbraTest/Security
       run: |
-        bazel test //... \
+        bazelisk test //... \
           --test_tag_filters=security \
           --test_env=UMBRA_TEST_ROOT
 
@@ -84,7 +84,7 @@ jobs:
         UMBRA_TEST_ROOT: ~/UmbraTest/Coverage
       run: |
         # Generate coverage data
-        bazel coverage //... \
+        bazelisk coverage //... \
           --collect_code_coverage \
           --instrument_test_targets \
           --experimental_generate_llvm_lcov \
@@ -116,11 +116,11 @@ jobs:
       with:
         files: coverage/lcov.info
         fail_ci_if_error: true
-        token: ${{ secrets.CODECOV_TOKEN }}
+        token: \${{ secrets.CODECOV_TOKEN }}
         slug: mpy-dev-ml/UmbraCore
 
     - name: Cleanup
       if: always()
       run: |
         rm -rf ~/UmbraTest
-        bazel clean --expunge
+        bazelisk clean --expunge
