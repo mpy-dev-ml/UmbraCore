@@ -11,11 +11,13 @@ on:
       - 'requirements.txt'
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
+# Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -23,11 +25,18 @@ concurrency:
 jobs:
   build:
     runs-on: [self-hosted, macos]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
       - name: Debug - Check Files
         run: |
@@ -37,7 +46,6 @@ jobs:
           echo "Looking for mkdocs.yml:"
           find . -name "mkdocs.yml" -type f
 
-      # Use requirements.txt to ensure consistent dependency versions
       - name: Install Dependencies
         run: |
           python3 -m pip install --user -r requirements.txt
@@ -46,21 +54,11 @@ jobs:
         run: |
           python3 -m mkdocs build --verbose
 
-      - name: Clean gh-pages Branch
-        run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          # Try to delete the branch locally and remotely (ignoring errors if it doesn't exist)
-          git branch -D gh-pages || true
-          git push origin --delete gh-pages || true
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
 
       - name: Deploy to GitHub Pages
-        run: |
-          cd site
-          git init
-          git add .
-          git commit -m "Deploy documentation update"
-          git branch -M gh-pages
-          # Handle case where remote already exists
-          git remote -v | grep -q origin && git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git || git remote add origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          git push -f origin gh-pages
+        id: deployment
+        uses: actions/deploy-pages@v4
