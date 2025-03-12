@@ -69,7 +69,7 @@ public actor ServiceContainer {
     dependencyGraph[identifier]=Set(dependencies)
 
     // Set initial state
-    updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.uninitialized)
+    await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.uninitialized)
   }
 
   /// Resolve a service by type
@@ -118,7 +118,7 @@ public actor ServiceContainer {
     // Initialise services in order
     for serviceId in serviceIds {
       guard let service=services[serviceId] else { continue }
-      guard await service.state == CoreServicesTypes.ServiceState.uninitialized else { continue }
+      guard service.state == CoreServicesTypes.ServiceState.uninitialized else { continue }
 
       let initializer: () async throws -> Void={ [weak self] in
         do {
@@ -150,7 +150,7 @@ public actor ServiceContainer {
     }
 
     // Don't initialise if already initialised
-    guard await service.state == CoreServicesTypes.ServiceState.uninitialized else {
+    guard service.state == CoreServicesTypes.ServiceState.uninitialized else {
       return
     }
 
@@ -181,9 +181,9 @@ public actor ServiceContainer {
     for serviceId in serviceIds {
       guard let service=services[serviceId] else { continue }
 
-      updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.shuttingDown)
+      await updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.shuttingDown)
       await service.shutdown()
-      updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.shutdown)
+      await updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.shutdown)
     }
   }
 
@@ -244,7 +244,10 @@ public actor ServiceContainer {
   /// - Parameters:
   ///   - serviceId: Identifier of the service to update.
   ///   - newState: New state to set.
-  private func updateServiceState(_ serviceId: String, newState: CoreServicesTypes.ServiceState) {
+  private func updateServiceState(
+    _ serviceId: String,
+    newState: CoreServicesTypes.ServiceState
+  ) async {
     serviceStates[serviceId]=newState
   }
 }
