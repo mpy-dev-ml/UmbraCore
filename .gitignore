@@ -129,3 +129,13 @@ UmbraCore_archive/
 # Exclude markdown files except READMEs
 *.md
 !README*.md
+# Exclude additional file types
+*.csv
+*.go
+*.swift_analyzer
+*.protocol_analyzer
+*.bazel_analyzer
+# Exclude txt files except specific ones
+*.txt
+!test_targets.txt
+!production_targets.txt
