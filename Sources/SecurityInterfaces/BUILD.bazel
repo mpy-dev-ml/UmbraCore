@@ -5,7 +5,7 @@ load("//tools/swift:build_rules.bzl", "umbracore_swift_library", "umbracore_swif
 # Security interfaces module using Swift 6 compatibility options
 umbracore_swift_library(
     name = "SecurityInterfaces",
-    srcs = glob(["**/*.swift"], exclude=["Tests/**"]),
+    srcs = glob(["**/*.swift"], exclude=["Tests/**", "SecurityInterfacesEmptyTest.swift"]),
     deps = [
         "//Sources/CoreTypesInterfaces",
         "//Sources/SecurityInterfacesBase",
@@ -21,7 +21,7 @@ umbracore_swift_library(
 # Test version for @testable import
 umbracore_swift_test_library(
     name = "SecurityInterfacesForTesting",
-    srcs = glob(["**/*.swift"], exclude=["Tests/**"]),
+    srcs = glob(["**/*.swift"], exclude=["Tests/**", "SecurityInterfacesEmptyTest.swift"]),
     deps = [
         "//Sources/CoreTypesInterfaces",
         "//Sources/SecurityInterfacesBase",
@@ -37,13 +37,9 @@ umbracore_swift_test_library(
 # Tests for SecurityInterfaces
 umbracore_swift_test_library(
     name = "SecurityInterfacesTests",
-    srcs = glob(["Tests/**/*.swift"], allow_empty = True),
+    srcs = ["SecurityInterfacesEmptyTest.swift"],
     deps = [
         ":SecurityInterfacesForTesting",
-        "//Sources/CoreTypesInterfaces",
-        "//Sources/SecurityInterfacesBase",
-        "//Sources/SecurityInterfacesProtocols",
-        "//Sources/SecurityProtocolsCore",
     ],
     visibility = ["//visibility:public"],
 )

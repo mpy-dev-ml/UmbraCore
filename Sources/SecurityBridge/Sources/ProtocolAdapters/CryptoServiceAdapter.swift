@@ -156,14 +156,13 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     )
 
     // Process the result without unnecessary try-catch
-    switch encryptResult {
-      case let .success(encryptedData):
-        guard let encryptedData else {
-          return .failure(.internalError("Encryption succeeded but returned nil data"))
-        }
-        return .success(DataAdapter.secureBytes(from: encryptedData))
-      case let .failure(error):
-        return .failure(mapError(error))
+    if encryptResult.success {
+      guard let encryptedData = encryptResult.data else {
+        return .failure(.internalError("Encryption succeeded but returned nil data"))
+      }
+      return .success(DataAdapter.secureBytes(from: encryptedData))
+    } else {
+      return .failure(mapFoundationSecurityResult(encryptResult))
     }
   }
 
@@ -203,14 +202,13 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     )
 
     // Process the result without unnecessary try-catch
-    switch decryptResult {
-      case let .success(decryptedData):
-        guard let decryptedData else {
-          return .failure(.internalError("Decryption succeeded but returned nil data"))
-        }
-        return .success(DataAdapter.secureBytes(from: decryptedData))
-      case let .failure(error):
-        return .failure(mapError(error))
+    if decryptResult.success {
+      guard let decryptedData = decryptResult.data else {
+        return .failure(.internalError("Decryption succeeded but returned nil data"))
+      }
+      return .success(DataAdapter.secureBytes(from: decryptedData))
+    } else {
+      return .failure(mapFoundationSecurityResult(decryptResult))
     }
   }
 
@@ -237,14 +235,13 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     )
 
     // Process the result without unnecessary try-catch
-    switch encryptResult {
-      case let .success(encryptedData):
-        guard let encryptedData else {
-          return .failure(.internalError("Asymmetric encryption succeeded but returned nil data"))
-        }
-        return .success(DataAdapter.secureBytes(from: encryptedData))
-      case let .failure(error):
-        return .failure(mapError(error))
+    if encryptResult.success {
+      guard let encryptedData = encryptResult.data else {
+        return .failure(.internalError("Asymmetric encryption succeeded but returned nil data"))
+      }
+      return .success(DataAdapter.secureBytes(from: encryptedData))
+    } else {
+      return .failure(mapFoundationSecurityResult(encryptResult))
     }
   }
 
@@ -271,14 +268,13 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     )
 
     // Process the result without unnecessary try-catch
-    switch decryptResult {
-      case let .success(decryptedData):
-        guard let decryptedData else {
-          return .failure(.internalError("Asymmetric decryption succeeded but returned nil data"))
-        }
-        return .success(DataAdapter.secureBytes(from: decryptedData))
-      case let .failure(error):
-        return .failure(mapError(error))
+    if decryptResult.success {
+      guard let decryptedData = decryptResult.data else {
+        return .failure(.internalError("Asymmetric decryption succeeded but returned nil data"))
+      }
+      return .success(DataAdapter.secureBytes(from: decryptedData))
+    } else {
+      return .failure(mapFoundationSecurityResult(decryptResult))
     }
   }
 
@@ -304,14 +300,13 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     )
 
     // Process the result without unnecessary try-catch
-    switch hashResult {
-      case let .success(hashData):
-        guard let hashData else {
-          return .failure(.internalError("Hashing succeeded but returned nil data"))
-        }
-        return .success(DataAdapter.secureBytes(from: hashData))
-      case let .failure(error):
-        return .failure(mapError(error))
+    if hashResult.success {
+      guard let hashData = hashResult.data else {
+        return .failure(.internalError("Hashing succeeded but returned nil data"))
+      }
+      return .success(DataAdapter.secureBytes(from: hashData))
+    } else {
+      return .failure(mapFoundationSecurityResult(hashResult))
     }
   }
 
@@ -332,6 +327,16 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
       return securityError
     }
     return CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
+  }
+
+  /// Map a FoundationSecurityResult to a Security.Protocols error
+  /// - Parameter result: The failed result
+  /// - Returns: A Security.Protocols error
+  private func mapFoundationSecurityResult(_ result: FoundationSecurityResult) -> UmbraErrors.Security.Protocols {
+    let errorMessage = result.errorMessage ?? "Unknown error"
+    let errorCode = result.errorCode ?? -1
+    
+    return .internalError("\(errorMessage) (Code: \(errorCode))")
   }
 }
 

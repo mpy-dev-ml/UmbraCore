@@ -49,7 +49,7 @@ def _impl(ctx):
         "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks",
     ]
 
-    # Return the toolchain configuration
+    # Return the toolchain configuration with only supported parameters
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = "macos-arm64-toolchain",
@@ -62,6 +62,7 @@ def _impl(ctx):
         abi_libc_version = "darwin_arm64",
         tool_paths = tool_paths,
         cxx_builtin_include_directories = cxx_builtin_include_directories,
+        # NOTE: Removed cxx_flags and link_flags which are not supported in this Bazel version
     )
 
 macos_arm64_toolchain_config = rule(
