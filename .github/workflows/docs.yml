@@ -4,21 +4,11 @@ on:
   push:
     branches:
       - main
-      - feature/mkdocs-migration
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yml'
       - 'requirements.txt'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '.github/workflows/docs.yml'
-      - 'requirements.txt'
-  # Allow manual triggering
   workflow_dispatch:
 
 permissions:
@@ -39,26 +29,22 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
-      - name: Debug - Show working directory and list files
+      - name: Debug - Check Files
         run: |
-          pwd
+          echo "Current directory: $(pwd)"
+          echo "Listing directory contents:"
           ls -la
-          echo "Checking for mkdocs.yml:"
-          ls -la mkdocs.yml || echo "mkdocs.yml not found!"
+          echo "Looking for mkdocs.yml:"
+          find . -name "mkdocs.yml" -type f
 
-      - name: Setup Python Virtual Environment
+      # Use a simpler Python installation approach
+      - name: Install Dependencies
         run: |
-          echo "Using Python virtual environment"
-          python3 --version
-          python3 -m venv venv
-          source venv/bin/activate
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
+          python3 -m pip install --user mkdocs mkdocs-material
 
-      - name: Build documentation
+      - name: Build Documentation
         run: |
-          source venv/bin/activate
-          python3 -m mkdocs build --config-file "$(pwd)/mkdocs.yml"
+          python3 -m mkdocs build --verbose
 
       - name: Deploy to GitHub Pages
         run: |
@@ -71,8 +57,3 @@ jobs:
           git branch -M gh-pages
           git remote add origin https://\${{ github.actor }}:\${{ secrets.GITHUB_TOKEN }}@github.com/\${{ github.repository }}.git
           git push -f origin gh-pages
-
-      - name: Cleanup
-        if: always()
-        run: |
-          rm -rf venv
