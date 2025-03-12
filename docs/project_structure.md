@@ -1,1 +1,0 @@
-team-utils/project_structure.md

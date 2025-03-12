@@ -122,3 +122,10 @@ user.bazelrc
 *NOTES*
 *INTERNAL*
 *PRIVATE*
+UmbraCore_archive/
+*.py
+*.sh
+*.dot
+# Exclude markdown files except READMEs
+*.md
+!README*.md
