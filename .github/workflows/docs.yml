@@ -55,5 +55,6 @@ jobs:
           git add .
           git commit -m "Deploy documentation update"
           git branch -M gh-pages
-          git remote add origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          # Handle case where remote already exists
+          git remote -v | grep -q origin && git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git || git remote add origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git push -f origin gh-pages
