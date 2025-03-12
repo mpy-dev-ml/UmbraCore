@@ -61,6 +61,20 @@ jobs:
           source docs-venv/bin/activate
           python -m mkdocs build --verbose
 
+      - name: Setup GNU tools
+        run: |
+          echo "Installing necessary GNU tools..."
+          brew install gnu-tar || true
+          echo "Adding GNU tools to PATH"
+          echo "/opt/homebrew/opt/gnu-tar/libexec/gnubin" >> $GITHUB_PATH
+          echo "Verifying gtar is available"
+          which gtar || echo "gtar not found, attempting fallback"
+          # Create a symbolic link if needed
+          if ! which gtar; then
+            echo "Creating symbolic link for gtar"
+            sudo ln -sf /opt/homebrew/bin/gtar /usr/local/bin/gtar
+          fi
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
