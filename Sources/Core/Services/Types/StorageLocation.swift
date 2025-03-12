@@ -1,4 +1,5 @@
 import Foundation
+import KeyManagementTypes
 
 /// Represents where a cryptographic key is stored
 ///
@@ -40,12 +41,13 @@ extension StorageLocation {
 
   /// Create from a raw representation coming from KeyManagementTypes
   /// - Parameter rawRepresentation: The raw representation to convert from
-  /// - Returns: The equivalent legacy StorageLocation
-  public static func from(rawRepresentation: RawRepresentation) -> StorageLocation {
+  /// - Returns: The equivalent canonical StorageLocation
+  public static func from(rawRepresentation: RawRepresentation) -> KeyManagementTypes
+  .StorageLocation {
     switch rawRepresentation {
-      case .secureEnclave: .secureEnclave
-      case .keychain: .keychain
-      case .memory: .memory
+      case .secureEnclave: KeyManagementTypes.StorageLocation.secureEnclave
+      case .keychain: KeyManagementTypes.StorageLocation.keychain
+      case .memory: KeyManagementTypes.StorageLocation.memory
     }
   }
 }

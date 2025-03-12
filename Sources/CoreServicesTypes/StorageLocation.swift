@@ -21,9 +21,9 @@ public enum StorageLocation: String, Sendable, Codable {
   /// - Returns: The equivalent canonical StorageLocation
   public func toCanonical() -> KeyManagementTypes.StorageLocation {
     switch self {
-      case .secureEnclave: .secureEnclave
-      case .keychain: .keychain
-      case .memory: .memory
+      case .secureEnclave: KeyManagementTypes.StorageLocation.secureEnclave
+      case .keychain: KeyManagementTypes.StorageLocation.keychain
+      case .memory: KeyManagementTypes.StorageLocation.memory
     }
   }
 

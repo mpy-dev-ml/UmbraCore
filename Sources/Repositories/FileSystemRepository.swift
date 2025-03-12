@@ -159,6 +159,7 @@ public actor FileSystemRepository: Repository {
   /// Swift 6 compatible implementation of Decodable protocol requirement
   /// This pattern isolates decoder use to a non-actor context before initializing properties
   @preconcurrency
+  @available(*, deprecated, message: "Use FileSystemRepository.create(from:) instead")
   public init(from decoder: Decoder) throws {
     // Extract the data in a synchronous context
     let container=try decoder.container(keyedBy: CodingKeys.self)
@@ -171,15 +172,37 @@ public actor FileSystemRepository: Repository {
       stats: container.decode(RepositoryStatistics.self, forKey: .stats)
     )
 
-    // Initialize properties
-    identifier=data.identifier
-    location=data.location
-    state=data.state
-    stats=data.stats
-    statsAccessor=StatsAccessor()
+    // Initialize properties with extracted data
+    self.identifier=data.identifier
+    self.location=data.location
+    self.state=data.state
+    self.stats=data.stats
+    self.logger=UmbraLogging.createLogger()
+    self.statsAccessor=StatsAccessor()
+    self.statsAccessor.updateStats(data.stats)
+  }
+  
+  /// Swift 6 compatible alternative to Decodable initializer
+  /// This static factory method avoids crossing actor boundaries with non-Sendable types
+  public static func create(from decoder: Decoder) throws -> FileSystemRepository {
+    // Extract the data in a synchronous context
+    let container=try decoder.container(keyedBy: CodingKeys.self)
 
-    // Using createLogger() from UmbraLogging which abstracts the implementation
-    logger=UmbraLogging.createLogger()
+    // Create a RepositoryData struct with the decoded values
+    let data=try RepositoryData(
+      identifier: container.decode(String.self, forKey: .identifier),
+      location: container.decode(URL.self, forKey: .location),
+      state: container.decode(RepositoryState.self, forKey: .state),
+      stats: container.decode(RepositoryStatistics.self, forKey: .stats)
+    )
+    
+    // Create repository with the extracted data
+    return FileSystemRepository(
+      identifier: data.identifier,
+      location: data.location,
+      state: data.state,
+      logger: UmbraLogging.createLogger()
+    )
   }
 
   /// Swift 6 compatible decode method that follows the modern approach
@@ -205,7 +228,7 @@ public actor FileSystemRepository: Repository {
     location=data.location
     state=data.state
     stats=data.stats
-    statsAccessor=StatsAccessor()
+    statsAccessor=StatsAccessor(initialStats: data.stats)
 
     // Using createLogger() from UmbraLogging which abstracts the implementation
     logger=UmbraLogging.createLogger()
@@ -370,7 +393,7 @@ public actor FileSystemRepository: Repository {
     // Update stats
     let updatedStats=try await RepositoryStatistics(
       totalSize: totalSize,
-      snapshotCount: snapshotCount, // Fix the type mismatch
+      snapshotCount: snapshotCount,
       lastCheck: Date(),
       totalFileCount: calculateTotalFileCount()
     )
@@ -397,14 +420,17 @@ public actor FileSystemRepository: Repository {
 private final class StatsAccessor: @unchecked Sendable {
   private let lock=NSLock()
   private var _stats: RepositoryStatistics
-
+  
   init() {
     _stats=RepositoryStatistics(
       totalSize: 0,
       snapshotCount: 0,
-      lastCheck: Date(),
-      totalFileCount: 0
+      lastCheck: Date()
     )
+  }
+
+  init(initialStats: RepositoryStatistics) {
+    _stats=initialStats
   }
 
   var totalSize: Int64 {

@@ -72,11 +72,11 @@ public enum KeyStatus: Sendable, Equatable, Codable {
   public func toCanonical() -> KeyManagementTypes.KeyStatus {
     switch self {
       case .active:
-        .active
+        KeyManagementTypes.KeyStatus.active
       case .compromised:
-        .compromised
+        KeyManagementTypes.KeyStatus.compromised
       case .retired:
-        .retired
+        KeyManagementTypes.KeyStatus.retired
       case let .pendingDeletion(timestamp):
         KeyManagementTypes.KeyStatus.pendingDeletionWithTimestamp(timestamp)
     }

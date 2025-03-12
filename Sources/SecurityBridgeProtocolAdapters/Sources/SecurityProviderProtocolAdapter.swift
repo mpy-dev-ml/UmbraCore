@@ -79,7 +79,7 @@ public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols
   ///   - data: Data to encrypt
   ///   - key: Encryption key
   /// - Returns: Encrypted data
-  /// - Throws: SecurityProtocolError if encryption fails
+  /// - Throws: UmbraErrors.Security.Protocols if encryption fails
   public func encrypt(
     _ data: CoreTypesInterfaces.BinaryData,
     key: CoreTypesInterfaces.BinaryData
@@ -101,7 +101,7 @@ public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols
   ///   - data: Data to decrypt
   ///   - key: Decryption key
   /// - Returns: Decrypted data
-  /// - Throws: SecurityProtocolError if decryption fails
+  /// - Throws: UmbraErrors.Security.Protocols if decryption fails
   public func decrypt(
     _ data: CoreTypesInterfaces.BinaryData,
     key: CoreTypesInterfaces.BinaryData
@@ -121,7 +121,7 @@ public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols
   /// Generate a cryptographically secure random key
   /// - Parameter length: Size of the key to generate in bytes
   /// - Returns: Generated key
-  /// - Throws: SecurityProtocolError if key generation fails
+  /// - Throws: UmbraErrors.Security.Protocols if key generation fails
   public func generateKey(length: Int) async throws -> CoreTypesInterfaces.BinaryData {
     do {
       let result=try await adapter.generateKey(sizeInBytes: length)
@@ -134,7 +134,7 @@ public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols
   /// Hash data using the provider's hashing mechanism
   /// - Parameter data: Data to hash
   /// - Returns: Hash of the data
-  /// - Throws: SecurityProtocolError if hashing fails
+  /// - Throws: UmbraErrors.Security.Protocols if hashing fails
   public func hash(_ data: CoreTypesInterfaces.BinaryData) async throws -> CoreTypesInterfaces
   .BinaryData {
     do {
