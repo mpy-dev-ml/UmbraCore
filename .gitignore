@@ -107,7 +107,7 @@ user.bazelrc
 /.ruby-version
 /.swiftlint.yml
 # /mkdocs.yml - Removed exclusion to fix documentation build
-/requirements.txt
+# /requirements.txt - Needed for documentation builds
 /update_build_files.sh
 /generate_deps.swift
 /issues.txt
@@ -126,9 +126,10 @@ UmbraCore_archive/
 *.py
 *.sh
 *.dot
-# Exclude markdown files except READMEs
+# Exclude markdown files except READMEs and documentation
 *.md
 !README*.md
+!docs/**/*.md
 # Exclude additional file types
 *.csv
 *.go
@@ -140,3 +141,6 @@ UmbraCore_archive/
 !test_targets.txt
 !production_targets.txt
 !requirements.txt
+
+# MkDocs build output
+/site/
