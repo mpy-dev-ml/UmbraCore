@@ -2,7 +2,7 @@
 
 [![Stable Production Build](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/stable-build.yml/badge.svg)](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/stable-build.yml) [![Documentation](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/docs.yml/badge.svg)](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/docs.yml) [![codecov](https://codecov.io/gh/mpy-dev-ml/UmbraCore/branch/main/graph/badge.svg)](https://codecov.io/gh/mpy-dev-ml/UmbraCore)
 
-[![Platform](https://img.shields.io/badge/Platform-macOS%2014%2B-lightgrey.svg)](https://github.com/mpy-dev-ml/UmbraCore) [![Swift](https://img.shields.io/badge/Swift-5.9.2-orange.svg)](https://swift.org) [![Build](https://img.shields.io/badge/Build-Bazel%208.1.0-43A047.svg)](https://bazel.build)
+[![Platform](https://img.shields.io/badge/Platform-macOS%2014%2B-lightgrey.svg)](https://github.com/mpy-dev-ml/UmbraCore) [![Swift](https://img.shields.io/badge/Swift-5.9.2-orange.svg)](https://swift.org) [![Build](https://img.shields.io/badge/Build-Bazel%208.1.0-43A047.svg)](https://bazel.build) [![Documentation](https://img.shields.io/badge/Documentation-Latest-blue.svg)](https://mpy-dev-ml.github.io/UmbraCore/)
 
 [![Known Vulnerabilities](https://snyk.io/test/github/mpy-dev-ml/UmbraCore/badge.svg)](https://snyk.io/test/github/mpy-dev-ml/UmbraCore) [![Made with ❤️ in London](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20in-London-D40000.svg)](https://github.com/mpy-dev-ml/UmbraCore) [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
