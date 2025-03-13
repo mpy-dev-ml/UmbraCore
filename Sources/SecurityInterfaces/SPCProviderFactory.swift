@@ -12,13 +12,12 @@ public enum SPCProviderFactory {
   /// Create a provider of the specified type
   /// - Parameter type: The type of provider to create
   /// - Returns: A SecurityProtocolsCore provider instance
-  public static func createProvider(ofType type: String) -> any SecurityProtocolsCore
-  .SecurityProviderProtocol {
+  public static func createProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol {
     // Create an instance of the standard factory
-    let factory=StandardSecurityProviderFactory()
+    let factory = StandardSecurityProviderFactory()
 
     // Create a configuration based on the type
-    let config=SecurityConfiguration(
+    let config = SecurityConfiguration(
       securityLevel: .standard,
       encryptionAlgorithm: "AES-256",
       hashAlgorithm: "SHA-256",
@@ -33,7 +32,7 @@ public enum SPCProviderFactory {
   /// - Returns: A SecurityProtocolsCore provider instance
   public static func createDefaultProvider() -> any SecurityProtocolsCore.SecurityProviderProtocol {
     // Create an instance of the standard factory
-    let factory=StandardSecurityProviderFactory()
+    let factory = StandardSecurityProviderFactory()
 
     // Use the factory to create a default provider
     return factory.createDefaultSecurityProvider()
