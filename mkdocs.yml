@@ -2,6 +2,7 @@ site_name: UmbraCore Documentation
 site_description: Documentation for UmbraCore - Secure Backup Management System
 site_author: MPY Development
 repo_url: https://github.com/mpy-dev-ml/UmbraCore
+repo_name: GitHub
 edit_uri: edit/main/docs/
 site_url: https://umbracore.dev
 
@@ -24,6 +25,14 @@ theme:
     - toc.follow
     - search.suggest
     - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/gitlab
+      link: https://gitlab.com/umbracore/UmbraCore
+      name: UmbraCore on GitLab
 
 plugins:
   - search
