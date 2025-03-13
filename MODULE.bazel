@@ -28,6 +28,3 @@ use_repo(
     "swiftpkg_cryptoswift",
     "swiftpkg_swiftybeaver",
 )
-
-# Swift 6 preparation settings will be configured in .bazelrc
-# Additional Swift compiler flags can be set in build settings
