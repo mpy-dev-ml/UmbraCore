@@ -1,3 +1,0 @@
-# Basic configuration with minimal settings
-build --disk_cache=~/.cache/bazel
-build --jobs=4
