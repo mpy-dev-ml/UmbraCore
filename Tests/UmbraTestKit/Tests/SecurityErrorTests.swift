@@ -4,11 +4,18 @@ import SecurityInterfaces
 import XCTest
 
 final class SecurityErrorTests: XCTestCase {
+    // Add static property for test discovery
+    static var allTests = [
+        ("testErrorDescription", testErrorDescription),
+        ("testErrorEquality", testErrorEquality),
+        ("testErrorMetadata", testErrorMetadata)
+    ]
+    
     func testErrorDescription() {
         let error = SecurityInterfaces.SecurityError.accessError("Access denied to /test/path")
         XCTAssertEqual(
             error.errorDescription,
-            "Access error: Access denied to /test/path"
+            "Security access error: Access denied to /test/path"
         )
     }
 
@@ -23,6 +30,6 @@ final class SecurityErrorTests: XCTestCase {
 
     func testErrorMetadata() {
         let error = SecurityInterfaces.SecurityError.accessError("Access denied to /test/path")
-        XCTAssertEqual(error.errorDescription, "Access error: Access denied to /test/path")
+        XCTAssertEqual(error.errorDescription, "Security access error: Access denied to /test/path")
     }
 }

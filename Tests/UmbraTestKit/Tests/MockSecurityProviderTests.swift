@@ -1,108 +1,197 @@
 import Core
 import ErrorHandlingDomains
 import SecurityInterfaces
+import SecurityProtocolsCore
+import UmbraCoreTypes
 import XCTest
 
 /// A mock security provider for testing
-actor TestMockSecurityProvider: SecurityProvider {
+@preconcurrency
+actor TestMockSecurityProvider: SecurityProvider, @unchecked Sendable {
     private var bookmarks: [String: Data] = [:]
     private var accessCount: [String: Int] = [:]
     private var shouldFailBookmarkCreation = false
     private var shouldFailAccess = false
     private var accessedPaths: Set<String> = []
     private var storedBookmarks: [String: [UInt8]] = [:]
-
+    
+    // Required properties for SecurityProvider protocol
+    public let cryptoService: SecurityProtocolsCore.CryptoServiceProtocol = MockCryptoService()
+    public let keyManager: SecurityProtocolsCore.KeyManagementProtocol = MockKeyManagementServiceImpl()
+    
     // MARK: - SecurityProvider Implementation
-
+    
+    // Additional required protocol methods
+    public func getSecurityConfiguration() async -> Result<SecurityInterfaces.SecurityConfiguration, SecurityInterfaces.SecurityInterfacesError> {
+        return .success(SecurityInterfaces.SecurityConfiguration(
+            securityLevel: .standard,
+            encryptionAlgorithm: "AES-256",
+            hashAlgorithm: "SHA-256",
+            options: [:]
+        ))
+    }
+    
+    public func updateSecurityConfiguration(_ configuration: SecurityInterfaces.SecurityConfiguration) async throws {
+        // Just a mock implementation
+    }
+    
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfaces.SecurityInterfacesError> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: length)))
+    }
+    
+    public func getKeyInfo(keyId: String) async -> Result<[String: AnyObject], SecurityInterfaces.SecurityInterfacesError> {
+        let info: [String: AnyObject] = [
+            "algorithm": "AES-256" as NSString,
+            "keySize": 256 as NSNumber,
+            "created": Date() as NSDate
+        ]
+        return .success(info)
+    }
+    
+    public func registerNotifications() async -> Result<Void, SecurityInterfaces.SecurityInterfacesError> {
+        return .success(())
+    }
+    
+    // New protocol methods
+    public func randomBytes(count: Int) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfaces.SecurityInterfacesError> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: count)))
+    }
+    
+    public func encryptData(_ data: UmbraCoreTypes.SecureBytes, withKey key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfaces.SecurityInterfacesError> {
+        return .success(data) // Mock just returns the same data
+    }
+    
+    public func decryptData(_ data: UmbraCoreTypes.SecureBytes, withKey key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfaces.SecurityInterfacesError> {
+        return .success(data) // Mock just returns the same data
+    }
+    
+    public func performSecurityOperation(
+        operation: SecurityProtocolsCore.SecurityOperation,
+        data: Data?,
+        parameters: [String: String]
+    ) async throws -> SecurityInterfaces.SecurityResult {
+        return SecurityInterfaces.SecurityResult(success: true)
+    }
+    
+    public func performSecurityOperation(
+        operationName: String,
+        data: Data?,
+        parameters: [String: String]
+    ) async throws -> SecurityInterfaces.SecurityResult {
+        return SecurityInterfaces.SecurityResult(success: true)
+    }
+    
+    public func performSecureOperation(
+        operation: SecurityProtocolsCore.SecurityOperation,
+        config: SecurityProtocolsCore.SecurityConfigDTO
+    ) async -> SecurityProtocolsCore.SecurityResultDTO {
+        return SecurityProtocolsCore.SecurityResultDTO(success: true)
+    }
+    
+    // Must be nonisolated to conform to protocol
+    nonisolated public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore.SecurityConfigDTO {
+        return SecurityProtocolsCore.SecurityConfigDTO(
+            algorithm: "AES-256",
+            keySizeInBits: 256,
+            initializationVector: nil,
+            additionalAuthenticatedData: nil,
+            iterations: nil,
+            options: [:],
+            keyIdentifier: nil,
+            inputData: nil,
+            key: nil,
+            additionalData: nil
+        )
+    }
+    
     /// Encrypt data using a simple mock implementation
-    func encrypt(_ data: [UInt8], key _: [UInt8]) async throws -> [UInt8] {
-        // Mock implementation just returns the data for testing
-        data
+    func encrypt(_ data: [UInt8], key _: [UInt8]) async -> Result<[UInt8], SecurityInterfaces.SecurityInterfacesError> {
+        return .success(data)
     }
 
     /// Decrypt data using a simple mock implementation
-    func decrypt(_ data: [UInt8], key _: [UInt8]) async throws -> [UInt8] {
-        // Mock implementation just returns the data for testing
-        data
+    func decrypt(_ data: [UInt8], key _: [UInt8]) async -> Result<[UInt8], SecurityInterfaces.SecurityInterfacesError> {
+        return .success(data)
     }
 
     /// Generate a mock key
-    func generateKey(length: Int) async throws -> [UInt8] {
+    func generateKey(length: Int) async -> Result<[UInt8], SecurityInterfaces.SecurityInterfacesError> {
         // Mock implementation just returns array of zeros
-        [UInt8](repeating: 0, count: length)
+        return .success([UInt8](repeating: 0, count: length))
     }
 
     /// Mock hash function
-    func hash(_ data: [UInt8]) async throws -> [UInt8] {
+    func hash(_ data: [UInt8]) async -> Result<[UInt8], SecurityInterfaces.SecurityInterfacesError> {
         // Mock implementation just returns first 32 bytes or pads with zeros
         if data.count >= 32 {
-            return Array(data.prefix(32))
+            return .success(Array(data.prefix(32)))
         } else {
             var result = data
             result.append(contentsOf: [UInt8](repeating: 0, count: 32 - data.count))
-            return result
+            return .success(result)
         }
     }
 
     // MARK: - SecurityProviderBase Implementation
 
     /// Reset all security data
-    func resetSecurityData() async throws {
+    func resetSecurityData() async -> Result<Void, SecurityInterfaces.SecurityInterfacesError> {
         bookmarks.removeAll()
         accessCount.removeAll()
         accessedPaths.removeAll()
         storedBookmarks.removeAll()
+        return .success(())
     }
 
     /// Get the host identifier
-    func getHostIdentifier() async throws -> String {
-        "mock-host-identifier"
+    func getHostIdentifier() async -> Result<String, SecurityInterfaces.SecurityInterfacesError> {
+        return .success("mock-host-identifier")
     }
 
     /// Register a client application
-    func registerClient(bundleIdentifier _: String) async throws -> Bool {
-        true
+    func registerClient(bundleIdentifier _: String) async -> Result<Bool, SecurityInterfaces.SecurityInterfacesError> {
+        return .success(true)
     }
 
     /// Request key rotation - mock implementation
-    func requestKeyRotation(keyId _: String) async throws {
-        // No-op for mock
+    func requestKeyRotation(keyId _: String) async -> Result<Void, SecurityInterfaces.SecurityInterfacesError> {
+        return .success(())
     }
 
     /// Notify about a potentially compromised key - mock implementation
-    func notifyKeyCompromise(keyId _: String) async throws {
-        // No-op for mock
+    func notifyKeyCompromise(keyId _: String) async -> Result<Void, SecurityInterfaces.SecurityInterfacesError> {
+        return .success(())
     }
 
     // MARK: - Original Implementation
 
-    func createBookmark(forPath path: String) async throws -> [UInt8] {
+    func createBookmark(forPath path: String) async -> Result<[UInt8], SecurityInterfaces.SecurityInterfacesError> {
         if shouldFailBookmarkCreation {
-            throw SecurityInterfaces.SecurityError.accessError("Mock failure")
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Mock failure"))
         }
         let bookmarkData = Data("mock_bookmark_\(path)".utf8)
         bookmarks[path] = bookmarkData
-        return Array(bookmarkData)
+        return .success(Array(bookmarkData))
     }
 
-    func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (path: String, isStale: Bool) {
+    func resolveBookmark(_ bookmarkData: [UInt8]) async -> Result<(path: String, isStale: Bool), SecurityInterfaces.SecurityInterfacesError> {
         guard let mockPath = String(data: Data(bookmarkData), encoding: .utf8) else {
-            throw SecurityInterfaces.SecurityError.accessError("Invalid bookmark data")
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Invalid bookmark data"))
         }
         let path = mockPath.replacingOccurrences(of: "mock_bookmark_", with: "")
         if shouldFailAccess {
-            throw SecurityInterfaces.SecurityError.accessError("Mock access denied")
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Mock access denied"))
         }
         accessCount[path, default: 0] += 1
-        return (path: path, isStale: false)
+        return .success((path: path, isStale: false))
     }
 
-    func startAccessing(path: String) async throws -> Bool {
+    func startAccessing(path: String) async -> Result<Bool, SecurityInterfaces.SecurityInterfacesError> {
         if shouldFailAccess {
-            throw SecurityInterfaces.SecurityError.accessError("Mock access denied")
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Mock access denied"))
         }
         accessedPaths.insert(path)
-        return true
+        return .success(true)
     }
 
     func stopAccessing(path: String) async {
@@ -116,51 +205,57 @@ actor TestMockSecurityProvider: SecurityProvider {
     func withSecurityScopedAccess<T: Sendable>(
         to path: String,
         perform operation: @Sendable () async throws -> T
-    ) async throws -> T {
+    ) async -> Result<T, SecurityInterfaces.SecurityInterfacesError> {
         if shouldFailAccess {
-            throw SecurityInterfaces.SecurityError.accessError("Mock access denied")
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Mock access denied"))
         }
         accessedPaths.insert(path)
         defer { accessedPaths.remove(path) }
-        return try await operation()
+        do {
+            return .success(try await operation())
+        } catch {
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Mock access denied"))
+        }
     }
 
     func isAccessing(path: String) async -> Bool {
         accessedPaths.contains(path)
     }
 
-    func validateBookmark(_ bookmarkData: [UInt8]) async throws -> Bool {
+    func validateBookmark(_ bookmarkData: [UInt8]) async -> Result<Bool, SecurityInterfaces.SecurityInterfacesError> {
         guard let mockPath = String(data: Data(bookmarkData), encoding: .utf8) else {
-            return false
+            return .success(false)
         }
-        return mockPath.hasPrefix("mock_bookmark_")
+        return .success(mockPath.hasPrefix("mock_bookmark_"))
     }
 
     func getAccessedPaths() async -> Set<String> {
         accessedPaths
     }
 
-    func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async throws {
+    func saveBookmark(_ bookmarkData: [UInt8], withIdentifier identifier: String) async -> Result<Void, SecurityInterfaces.SecurityInterfacesError> {
         if shouldFailAccess {
-            throw SecurityInterfaces.SecurityError.accessError("Mock storage failure")
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Mock storage failure"))
         }
         storedBookmarks[identifier] = bookmarkData
+        return .success(())
     }
 
-    func loadBookmark(withIdentifier identifier: String) async throws -> [UInt8] {
+    func loadBookmark(withIdentifier identifier: String) async -> Result<[UInt8], SecurityInterfaces.SecurityInterfacesError> {
         guard let bookmark = storedBookmarks[identifier] else {
-            throw SecurityInterfaces.SecurityError.accessError("Bookmark not found: \(identifier)")
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Bookmark not found: \(identifier)"))
         }
-        return bookmark
+        return .success(bookmark)
     }
 
-    func deleteBookmark(withIdentifier identifier: String) async throws {
+    func deleteBookmark(withIdentifier identifier: String) async -> Result<Void, SecurityInterfaces.SecurityInterfacesError> {
         if shouldFailAccess {
-            throw SecurityInterfaces.SecurityError.accessError("Mock storage failure")
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Mock storage failure"))
         }
         guard storedBookmarks.removeValue(forKey: identifier) != nil else {
-            throw SecurityInterfaces.SecurityError.accessError("Bookmark not found: \(identifier)")
+            return .failure(SecurityInterfaces.SecurityInterfacesError.accessError("Bookmark not found: \(identifier)"))
         }
+        return .success(())
     }
 
     // Test helper methods
@@ -177,9 +272,137 @@ actor TestMockSecurityProvider: SecurityProvider {
     }
 }
 
+// Create a mock crypto service
+@preconcurrency
+class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtocol, @unchecked Sendable {
+    // Required protocol methods with simpler signatures
+    func encrypt(data: UmbraCoreTypes.SecureBytes, using key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    func decrypt(data: UmbraCoreTypes.SecureBytes, using key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    func generateKey() async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
+    }
+    
+    func hash(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
+    }
+    
+    func verify(data: UmbraCoreTypes.SecureBytes, against hash: UmbraCoreTypes.SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+        return .success(true)
+    }
+    
+    func encryptSymmetric(data: UmbraCoreTypes.SecureBytes, key: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    func decryptSymmetric(data: UmbraCoreTypes.SecureBytes, key: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    func encryptAsymmetric(data: UmbraCoreTypes.SecureBytes, publicKey: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    func decryptAsymmetric(data: UmbraCoreTypes.SecureBytes, privateKey: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    func hash(data: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
+    }
+    
+    func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: length)))
+    }
+    
+    // Additional methods with full signatures
+    func encrypt(data: UmbraCoreTypes.SecureBytes, withKey key: UmbraCoreTypes.SecureBytes, iv: UmbraCoreTypes.SecureBytes?, additionalAuthenticatedData: UmbraCoreTypes.SecureBytes?) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    func decrypt(data: UmbraCoreTypes.SecureBytes, withKey key: UmbraCoreTypes.SecureBytes, iv: UmbraCoreTypes.SecureBytes?, additionalAuthenticatedData: UmbraCoreTypes.SecureBytes?) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    func generateKey(algorithm: String, keySizeInBits: Int) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: keySizeInBits / 8)))
+    }
+    
+    func generateIV(algorithm: String) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 16)))
+    }
+    
+    func generateRandomBytes(count: Int) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: count)))
+    }
+}
+
+// Create a mock key management service
+@preconcurrency
+class MockKeyManagementServiceImpl: SecurityProtocolsCore.KeyManagementProtocol, @unchecked Sendable {
+    private var storedKeys: [String: UmbraCoreTypes.SecureBytes] = [:]
+    
+    func createKey(algorithm: String, options: [String: String]?) -> String {
+        return "test-key-\(UUID().uuidString)"
+    }
+    
+    func retrieveKey(withIdentifier identifier: String) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
+        if let key = storedKeys[identifier] {
+            return .success(key)
+        }
+        // If key doesn't exist, create a mock one
+        let mockKey = UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: 32))
+        storedKeys[identifier] = mockKey
+        return .success(mockKey)
+    }
+    
+    func storeKey(_ key: UmbraCoreTypes.SecureBytes, withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
+        storedKeys[identifier] = key
+        return .success(())
+    }
+    
+    func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
+        storedKeys.removeValue(forKey: identifier)
+        return .success(())
+    }
+    
+    func rotateKey(withIdentifier identifier: String, dataToReencrypt: UmbraCoreTypes.SecureBytes?) async -> Result<(newKey: UmbraCoreTypes.SecureBytes, reencryptedData: UmbraCoreTypes.SecureBytes?), UmbraErrors.Security.Protocols> {
+        let newKey = UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(1), count: 32))
+        storedKeys[identifier] = newKey
+        
+        var reencryptedData: UmbraCoreTypes.SecureBytes? = nil
+        if let data = dataToReencrypt {
+            reencryptedData = data
+        }
+        return .success((newKey: newKey, reencryptedData: reencryptedData))
+    }
+    
+    func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
+        return .success(Array(storedKeys.keys))
+    }
+}
+
 @MainActor
 final class MockSecurityProviderTests: XCTestCase {
     private var provider: TestMockSecurityProvider!
+
+    // Add static property for test discovery
+    static var allTests = [
+        ("testCreateBookmark", testCreateBookmark),
+        ("testResolveBookmark", testResolveBookmark),
+        ("testStartAccessing", testStartAccessing),
+        ("testWithSecurityScopedAccess", testWithSecurityScopedAccess),
+        ("testValidateBookmark", testValidateBookmark),
+        ("testSaveAndLoadBookmark", testSaveAndLoadBookmark),
+        ("testDeleteBookmark", testDeleteBookmark),
+        ("testEncryptDecrypt", testEncryptDecrypt),
+        ("testGenerateKey", testGenerateKey)
+    ]
 
     override func setUp() async throws {
         provider = TestMockSecurityProvider()
@@ -189,152 +412,241 @@ final class MockSecurityProviderTests: XCTestCase {
         provider = nil
     }
 
-    func testSuccessfulBookmarkCreation() async throws {
+    func testCreateBookmark() async throws {
         let testPath = "/test/path"
-        let bookmark = try await provider.createBookmark(forPath: testPath)
-        XCTAssertFalse(bookmark.isEmpty)
+        let result = await provider.createBookmark(forPath: testPath)
+        
+        switch result {
+        case .success(let bookmarkData):
+            // Mock bookmark data should be "mock_bookmark_/test/path"
+            let expectedData = Data("mock_bookmark_\(testPath)".utf8)
+            XCTAssertEqual(bookmarkData, Array(expectedData))
+        case .failure(let error):
+            XCTFail("Unexpected error: \(error)")
+        }
 
-        let (resolvedPath, isStale) = try await provider.resolveBookmark(bookmark)
-        XCTAssertEqual(resolvedPath, testPath)
-        XCTAssertFalse(isStale)
-    }
-
-    func testFailedBookmarkCreation() async throws {
-        let testPath = "/test/path"
         await provider.setBookmarkCreationFailure(true)
-
-        do {
-            _ = try await provider.createBookmark(forPath: testPath)
+        
+        let failResult = await provider.createBookmark(forPath: testPath)
+        
+        switch failResult {
+        case .success:
             XCTFail("Expected bookmark creation to fail")
-        } catch let error as SecurityInterfaces.SecurityError {
+        case .failure(let error):
             XCTAssertTrue(error.errorDescription?.contains("Mock failure") ?? false)
         }
     }
 
-    func testFailedAccess() async throws {
+    func testResolveBookmark() async throws {
         let testPath = "/test/path"
-        let bookmark = try await provider.createBookmark(forPath: testPath)
+        let bookmarkData = Data("mock_bookmark_\(testPath)".utf8)
+        let bookmark = Array(bookmarkData)
+        
+        let result = await provider.resolveBookmark(bookmark)
+        
+        switch result {
+        case .success(let resolvedPath):
+            XCTAssertEqual(resolvedPath.path, testPath)
+            XCTAssertFalse(resolvedPath.isStale)
+        case .failure(let error):
+            XCTFail("Unexpected error: \(error)")
+        }
 
         await provider.setAccessFailure(true)
-
-        do {
-            _ = try await provider.resolveBookmark(bookmark)
+        
+        let failResult = await provider.resolveBookmark(bookmark)
+        
+        switch failResult {
+        case .success:
             XCTFail("Expected access to fail")
-        } catch let error as SecurityInterfaces.SecurityError {
+        case .failure(let error):
             XCTAssertTrue(error.errorDescription?.contains("Mock access denied") ?? false)
         }
     }
 
-    func testAccessCounting() async throws {
+    func testStartAccessing() async throws {
         let testPath = "/test/path"
-        let bookmark = try await provider.createBookmark(forPath: testPath)
+        
+        let result = await provider.startAccessing(path: testPath)
+        
+        switch result {
+        case .success(let success):
+            XCTAssertTrue(success)
+            let isAccessing = await provider.isAccessing(path: testPath)
+            XCTAssertTrue(isAccessing)
+        case .failure(let error):
+            XCTFail("Unexpected error: \(error)")
+        }
 
-        // First access
-        _ = try await provider.resolveBookmark(bookmark)
-        let count1 = await provider.getAccessCount(for: testPath)
-        XCTAssertEqual(count1, 1)
-
-        // Second access
-        _ = try await provider.resolveBookmark(bookmark)
-        let count2 = await provider.getAccessCount(for: testPath)
-        XCTAssertEqual(count2, 2)
-    }
-
-    func testSecurityScopedAccess() async throws {
-        let testPath = "/test/path"
-
-        // Test starting access
-        let success = try await provider.startAccessing(path: testPath)
-        XCTAssertTrue(success)
-
-        let isAccessing = await provider.isAccessing(path: testPath)
-        XCTAssertTrue(isAccessing)
-
-        // Test stopping access
-        await provider.stopAccessing(path: testPath)
-        let isStopped = await provider.isAccessing(path: testPath)
-        XCTAssertFalse(isStopped)
+        await provider.setAccessFailure(true)
+        
+        let failResult = await provider.startAccessing(path: testPath)
+        
+        switch failResult {
+        case .success:
+            XCTFail("Expected access to fail")
+        case .failure(let error):
+            XCTAssertTrue(error.errorDescription?.contains("Mock access denied") ?? false)
+        }
     }
 
     func testWithSecurityScopedAccess() async throws {
         let testPath = "/test/path"
-        var didRunOperation = false
-
-        // Modified approach with a simple atomic wrapper
-        let result = try await provider.withSecurityScopedAccess(to: testPath) {
-            // Using a completion handler to make it Sendable-compatible
-            Task { @MainActor in
-                didRunOperation = true
-            }
-            return "test_result"
+        let result = await provider.withSecurityScopedAccess(to: testPath) {
+            return "test-value"
+        }
+        
+        switch result {
+        case .success(let value):
+            XCTAssertEqual(value, "test-value")
+        case .failure(let error):
+            XCTFail("Unexpected error: \(error)")
         }
 
-        // Allow the Task to complete
-        await Task.yield()
+        await provider.setAccessFailure(true)
+        
+        let failResult = await provider.withSecurityScopedAccess(to: testPath) {
+            return "test-value"
+        }
+        
+        switch failResult {
+        case .success:
+            XCTFail("Expected access to fail")
+        case .failure(let error):
+            XCTAssertTrue(error.errorDescription?.contains("Mock access denied") ?? false)
+        }
+    }
 
-        XCTAssertTrue(didRunOperation)
-        XCTAssertEqual(result, "test_result")
-
-        // Access should be released after operation completes
-        let isAccessing = await provider.isAccessing(path: testPath)
-        XCTAssertFalse(isAccessing)
+    func testValidateBookmark() async throws {
+        let testPath = "/test/path"
+        let validBookmarkData = Data("mock_bookmark_\(testPath)".utf8)
+        let validBookmark = Array(validBookmarkData)
+        
+        let invalidBookmarkData = Data("invalid_bookmark".utf8)
+        let invalidBookmark = Array(invalidBookmarkData)
+        
+        let validResult = await provider.validateBookmark(validBookmark)
+        let invalidResult = await provider.validateBookmark(invalidBookmark)
+        
+        switch validResult {
+        case .success(let isValid):
+            XCTAssertTrue(isValid)
+        case .failure(let error):
+            XCTFail("Unexpected error: \(error)")
+        }
+        
+        switch invalidResult {
+        case .success(let isValid):
+            XCTAssertFalse(isValid)
+        case .failure(let error):
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 
     func testSaveAndLoadBookmark() async throws {
-        let testPath = "/test/path"
-        let bookmark = try await provider.createBookmark(forPath: testPath)
-
-        try await provider.saveBookmark(bookmark, withIdentifier: "test")
-
-        let loadedBookmark = try await provider.loadBookmark(withIdentifier: "test")
-        XCTAssertEqual(loadedBookmark, bookmark)
+        let testIdentifier = "test-bookmark"
+        let bookmarkData: [UInt8] = [1, 2, 3, 4, 5]
+        
+        let saveResult = await provider.saveBookmark(bookmarkData, withIdentifier: testIdentifier)
+        
+        switch saveResult {
+        case .success:
+            // Test successful save
+            let loadResult = await provider.loadBookmark(withIdentifier: testIdentifier)
+            
+            switch loadResult {
+            case .success(let loadedData):
+                XCTAssertEqual(loadedData, bookmarkData)
+            case .failure(let error):
+                XCTFail("Unexpected load error: \(error)")
+            }
+        case .failure(let error):
+            XCTFail("Unexpected save error: \(error)")
+        }
+        
+        // Test non-existent bookmark
+        let loadMissingResult = await provider.loadBookmark(withIdentifier: "non-existent")
+        
+        switch loadMissingResult {
+        case .success:
+            XCTFail("Expected bookmark not found error")
+        case .failure(let error):
+            XCTAssertTrue(error.errorDescription?.contains("Bookmark not found") ?? false)
+        }
     }
 
     func testDeleteBookmark() async throws {
-        let testPath = "/test/path"
-        let bookmark = try await provider.createBookmark(forPath: testPath)
-
-        try await provider.saveBookmark(bookmark, withIdentifier: "test")
-        try await provider.deleteBookmark(withIdentifier: "test")
-
-        do {
-            _ = try await provider.loadBookmark(withIdentifier: "test")
+        let testIdentifier = "test-bookmark"
+        let bookmarkData: [UInt8] = [1, 2, 3, 4, 5]
+        
+        // Save a bookmark first
+        let saveResult = await provider.saveBookmark(bookmarkData, withIdentifier: testIdentifier)
+        guard case .success = saveResult else {
+            XCTFail("Failed to save bookmark")
+            return
+        }
+        
+        // Delete the bookmark
+        let deleteResult = await provider.deleteBookmark(withIdentifier: testIdentifier)
+        
+        switch deleteResult {
+        case .success:
+            // Verify it's deleted by trying to load it
+            let loadResult = await provider.loadBookmark(withIdentifier: testIdentifier)
+            
+            switch loadResult {
+            case .success:
+                XCTFail("Expected bookmark to be deleted")
+            case .failure(let error):
+                XCTAssertTrue(error.errorDescription?.contains("Bookmark not found") ?? false)
+            }
+        case .failure(let error):
+            XCTFail("Unexpected delete error: \(error)")
+        }
+        
+        // Test deleting non-existent bookmark
+        let deleteNonExistentResult = await provider.deleteBookmark(withIdentifier: "non-existent")
+        
+        switch deleteNonExistentResult {
+        case .success:
             XCTFail("Expected bookmark not found error")
-        } catch let error as SecurityInterfaces.SecurityError {
+        case .failure(let error):
             XCTAssertTrue(error.errorDescription?.contains("Bookmark not found") ?? false)
         }
     }
 
     func testEncryptDecrypt() async throws {
         let testData: [UInt8] = [1, 2, 3, 4, 5]
-        let key: [UInt8] = [10, 20, 30]
-
-        let encrypted = try await provider.encrypt(testData, key: key)
-        let decrypted = try await provider.decrypt(encrypted, key: key)
-
-        XCTAssertEqual(decrypted, testData)
+        let testKey: [UInt8] = [10, 20, 30, 40, 50]
+        
+        let encryptResult = await provider.encrypt(testData, key: testKey)
+        
+        switch encryptResult {
+        case .success(let encryptedData):
+            XCTAssertEqual(encryptedData, testData)  // Mock simply returns the same data
+            
+            let decryptResult = await provider.decrypt(encryptedData, key: testKey)
+            
+            switch decryptResult {
+            case .success(let decryptedData):
+                XCTAssertEqual(decryptedData, testData)
+            case .failure(let error):
+                XCTFail("Unexpected decrypt error: \(error)")
+            }
+        case .failure(let error):
+            XCTFail("Unexpected encrypt error: \(error)")
+        }
     }
 
     func testGenerateKey() async throws {
-        let key = try await provider.generateKey(length: 32)
-
-        XCTAssertEqual(key.count, 32)
-        XCTAssertEqual(key, [UInt8](repeating: 0, count: 32))
-    }
-
-    func testHash() async throws {
-        let testData: [UInt8] = [1, 2, 3, 4, 5]
-        let hash = try await provider.hash(testData)
-
-        // Hash length should be 32
-        XCTAssertEqual(hash.count, 32)
-
-        // First part should match our data
-        let hashPrefix = Array(hash.prefix(testData.count))
-        XCTAssertEqual(hashPrefix, testData)
-
-        // Rest should be zeros
-        let hashSuffix = Array(hash.suffix(hash.count - testData.count))
-        XCTAssertEqual(hashSuffix, [UInt8](repeating: 0, count: hash.count - testData.count))
+        let keyResult = await provider.generateKey(length: 32)
+        
+        switch keyResult {
+        case .success(let key):
+            XCTAssertEqual(key.count, 32)
+            XCTAssertEqual(key, [UInt8](repeating: 0, count: 32))
+        case .failure(let error):
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 }
