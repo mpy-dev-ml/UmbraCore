@@ -14,29 +14,29 @@ import Foundation
 /// ```
 @frozen
 public enum UmbraLogLevel: Int, Sendable, Comparable {
-  /// Detailed information, typically only useful for debugging.
-  case verbose
+    /// Detailed information, typically only useful for debugging.
+    case verbose
 
-  /// Debug-level messages with more detail than info.
-  case debug
+    /// Debug-level messages with more detail than info.
+    case debug
 
-  /// General information about program execution.
-  case info
+    /// General information about program execution.
+    case info
 
-  /// Potentially harmful situations that might need attention.
-  case warning
+    /// Potentially harmful situations that might need attention.
+    case warning
 
-  /// Error conditions that should be addressed.
-  case error
+    /// Error conditions that should be addressed.
+    case error
 
-  /// Critical errors that may lead to program termination.
-  case critical
+    /// Critical errors that may lead to program termination.
+    case critical
 
-  /// System-level faults requiring immediate attention.
-  case fault
+    /// System-level faults requiring immediate attention.
+    case fault
 
-  /// Compare log levels to determine severity relationships
-  public static func < (lhs: UmbraLogLevel, rhs: UmbraLogLevel) -> Bool {
-    lhs.rawValue < rhs.rawValue
-  }
+    /// Compare log levels to determine severity relationships
+    public static func < (lhs: UmbraLogLevel, rhs: UmbraLogLevel) -> Bool {
+        lhs.rawValue < rhs.rawValue
+    }
 }

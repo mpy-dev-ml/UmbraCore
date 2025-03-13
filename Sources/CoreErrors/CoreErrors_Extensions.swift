@@ -7,13 +7,13 @@ import ErrorHandlingDomains
 /// CoreErrors namespace container
 /// Use this when you need to explicitly reference error types from this module
 public enum CE {
-  // This is a namespace container only
+    // This is a namespace container only
 }
 
 /// Extension for SecurityError type with namespace support
-extension ErrorHandlingDomains.SecurityError {
-  /// Type alias for accessing this type through the namespace
-  public typealias CE=ErrorHandlingDomains.SecurityError
+public extension ErrorHandlingDomains.SecurityError {
+    /// Type alias for accessing this type through the namespace
+    typealias CE = ErrorHandlingDomains.SecurityError
 }
 
 // Note: The following extensions were removed as the types don't exist in ErrorHandlingDomains
@@ -24,19 +24,19 @@ extension ErrorHandlingDomains.SecurityError {
 // - ServiceError
 
 /// Extension for RepositoryError type with namespace support
-extension ErrorHandlingDomains.RepositoryErrorType {
-  /// Type alias for accessing this type through the namespace
-  public typealias CE=ErrorHandlingDomains.RepositoryErrorType
+public extension ErrorHandlingDomains.RepositoryErrorType {
+    /// Type alias for accessing this type through the namespace
+    typealias CE = ErrorHandlingDomains.RepositoryErrorType
 }
 
 /// Extension for ApplicationError type with namespace support
-extension ErrorHandlingDomains.ApplicationError {
-  /// Type alias for accessing this type through the namespace
-  public typealias CE=ErrorHandlingDomains.ApplicationError
+public extension ErrorHandlingDomains.ApplicationError {
+    /// Type alias for accessing this type through the namespace
+    typealias CE = ErrorHandlingDomains.ApplicationError
 }
 
 /// Module initialisation function
 /// This ensures all components are properly registered
 public func initialiseModule() {
-  // Reserved for future registration logic
+    // Reserved for future registration logic
 }

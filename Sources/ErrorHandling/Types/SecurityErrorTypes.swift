@@ -9,176 +9,176 @@ import Foundation
 /// This approach promotes a consistent error taxonomy while maintaining clear
 /// separation between internal and external error representations.
 public enum SecurityError: Error, Equatable, Sendable {
-  // MARK: - Domain Error Wrappers
+    // MARK: - Domain Error Wrappers
 
-  /// Core security error from UmbraErrors.GeneralSecurity.Core
-  case domainCoreError(UmbraErrors.GeneralSecurity.Core)
+    /// Core security error from UmbraErrors.GeneralSecurity.Core
+    case domainCoreError(UmbraErrors.GeneralSecurity.Core)
 
-  /// Protocol-related security error from UmbraErrors.Security.Protocols
-  case domainProtocolError(UmbraErrors.Security.Protocols)
+    /// Protocol-related security error from UmbraErrors.Security.Protocols
+    case domainProtocolError(UmbraErrors.Security.Protocols)
 
-  /// XPC-related security error from UmbraErrors.Security.XPC
-  case domainXPCError(UmbraErrors.Security.XPC)
+    /// XPC-related security error from UmbraErrors.Security.XPC
+    case domainXPCError(UmbraErrors.Security.XPC)
 
-  // MARK: - Authentication Errors
+    // MARK: - Authentication Errors
 
-  /// Authentication process failed
-  case authenticationFailed(reason: String)
+    /// Authentication process failed
+    case authenticationFailed(reason: String)
 
-  /// User attempted to access resource without proper authorisation
-  case unauthorizedAccess(reason: String)
+    /// User attempted to access resource without proper authorisation
+    case unauthorizedAccess(reason: String)
 
-  /// Provided credentials are invalid
-  case invalidCredentials(reason: String)
+    /// Provided credentials are invalid
+    case invalidCredentials(reason: String)
 
-  /// User session has expired
-  case sessionExpired(reason: String)
+    /// User session has expired
+    case sessionExpired(reason: String)
 
-  /// Authentication token has expired
-  case tokenExpired(reason: String)
+    /// Authentication token has expired
+    case tokenExpired(reason: String)
 
-  // MARK: - Cryptographic Errors
+    // MARK: - Cryptographic Errors
 
-  /// Encryption operation failed
-  case encryptionFailed(reason: String)
+    /// Encryption operation failed
+    case encryptionFailed(reason: String)
 
-  /// Decryption operation failed
-  case decryptionFailed(reason: String)
+    /// Decryption operation failed
+    case decryptionFailed(reason: String)
 
-  /// Key generation failed
-  case keyGenerationFailed(reason: String)
+    /// Key generation failed
+    case keyGenerationFailed(reason: String)
 
-  /// Hashing operation failed
-  case hashingFailed(reason: String)
+    /// Hashing operation failed
+    case hashingFailed(reason: String)
 
-  /// Digital signature verification failed
-  case signatureInvalid(reason: String)
+    /// Digital signature verification failed
+    case signatureInvalid(reason: String)
 
-  // MARK: - Access Control Errors
+    // MARK: - Access Control Errors
 
-  /// Permission denied for the requested operation
-  case permissionDenied(reason: String)
+    /// Permission denied for the requested operation
+    case permissionDenied(reason: String)
 
-  /// Certificate validation failed
-  case certificateInvalid(reason: String)
+    /// Certificate validation failed
+    case certificateInvalid(reason: String)
 
-  // MARK: - Communication Errors
+    // MARK: - Communication Errors
 
-  /// Secure communication channel failed
-  case secureChannelFailed(reason: String)
+    /// Secure communication channel failed
+    case secureChannelFailed(reason: String)
 
-  /// Security configuration error
-  case securityConfigurationError(reason: String)
+    /// Security configuration error
+    case securityConfigurationError(reason: String)
 
-  // MARK: - General Errors
+    // MARK: - General Errors
 
-  /// Internal error within the security system
-  case internalError(reason: String)
+    /// Internal error within the security system
+    case internalError(reason: String)
 
-  /// Unknown security error
-  case unknown(reason: String)
+    /// Unknown security error
+    case unknown(reason: String)
 }
 
 // MARK: - CustomStringConvertible
 
 extension SecurityError: CustomStringConvertible {
-  public var description: String {
-    switch self {
-      case let .domainCoreError(error):
-        "Core security error: \(String(describing: error))"
-      case let .domainProtocolError(error):
-        "Protocol security error: \(String(describing: error))"
-      case let .domainXPCError(error):
-        "XPC security error: \(String(describing: error))"
-      case let .authenticationFailed(reason):
-        "Authentication failed: \(reason)"
-      case let .unauthorizedAccess(reason):
-        "Unauthorized access: \(reason)"
-      case let .invalidCredentials(reason):
-        "Invalid credentials: \(reason)"
-      case let .sessionExpired(reason):
-        "Session expired: \(reason)"
-      case let .tokenExpired(reason):
-        "Token expired: \(reason)"
-      case let .encryptionFailed(reason):
-        "Encryption failed: \(reason)"
-      case let .decryptionFailed(reason):
-        "Decryption failed: \(reason)"
-      case let .keyGenerationFailed(reason):
-        "Key generation failed: \(reason)"
-      case let .hashingFailed(reason):
-        "Hashing failed: \(reason)"
-      case let .signatureInvalid(reason):
-        "Signature invalid: \(reason)"
-      case let .permissionDenied(reason):
-        "Permission denied: \(reason)"
-      case let .certificateInvalid(reason):
-        "Certificate invalid: \(reason)"
-      case let .secureChannelFailed(reason):
-        "Secure channel failed: \(reason)"
-      case let .securityConfigurationError(reason):
-        "Security configuration error: \(reason)"
-      case let .internalError(reason):
-        "Internal security error: \(reason)"
-      case let .unknown(reason):
-        "Unknown security error: \(reason)"
+    public var description: String {
+        switch self {
+        case let .domainCoreError(error):
+            "Core security error: \(String(describing: error))"
+        case let .domainProtocolError(error):
+            "Protocol security error: \(String(describing: error))"
+        case let .domainXPCError(error):
+            "XPC security error: \(String(describing: error))"
+        case let .authenticationFailed(reason):
+            "Authentication failed: \(reason)"
+        case let .unauthorizedAccess(reason):
+            "Unauthorized access: \(reason)"
+        case let .invalidCredentials(reason):
+            "Invalid credentials: \(reason)"
+        case let .sessionExpired(reason):
+            "Session expired: \(reason)"
+        case let .tokenExpired(reason):
+            "Token expired: \(reason)"
+        case let .encryptionFailed(reason):
+            "Encryption failed: \(reason)"
+        case let .decryptionFailed(reason):
+            "Decryption failed: \(reason)"
+        case let .keyGenerationFailed(reason):
+            "Key generation failed: \(reason)"
+        case let .hashingFailed(reason):
+            "Hashing failed: \(reason)"
+        case let .signatureInvalid(reason):
+            "Signature invalid: \(reason)"
+        case let .permissionDenied(reason):
+            "Permission denied: \(reason)"
+        case let .certificateInvalid(reason):
+            "Certificate invalid: \(reason)"
+        case let .secureChannelFailed(reason):
+            "Secure channel failed: \(reason)"
+        case let .securityConfigurationError(reason):
+            "Security configuration error: \(reason)"
+        case let .internalError(reason):
+            "Internal security error: \(reason)"
+        case let .unknown(reason):
+            "Unknown security error: \(reason)"
+        }
     }
-  }
 }
 
 // MARK: - LocalizedError
 
 extension SecurityError: LocalizedError {
-  public var errorDescription: String? {
-    description
-  }
+    public var errorDescription: String? {
+        description
+    }
 }
 
 // MARK: - Equatable
 
-extension SecurityError {
-  public static func == (lhs: SecurityError, rhs: SecurityError) -> Bool {
-    switch (lhs, rhs) {
-      case let (.domainCoreError(lhsError), .domainCoreError(rhsError)):
-        String(describing: lhsError) == String(describing: rhsError)
-      case let (.domainProtocolError(lhsError), .domainProtocolError(rhsError)):
-        String(describing: lhsError) == String(describing: rhsError)
-      case let (.domainXPCError(lhsError), .domainXPCError(rhsError)):
-        String(describing: lhsError) == String(describing: rhsError)
-      case let (.authenticationFailed(lhsReason), .authenticationFailed(rhsReason)):
-        lhsReason == rhsReason
-      case let (.unauthorizedAccess(lhsReason), .unauthorizedAccess(rhsReason)):
-        lhsReason == rhsReason
-      case let (.invalidCredentials(lhsReason), .invalidCredentials(rhsReason)):
-        lhsReason == rhsReason
-      case let (.sessionExpired(lhsReason), .sessionExpired(rhsReason)):
-        lhsReason == rhsReason
-      case let (.tokenExpired(lhsReason), .tokenExpired(rhsReason)):
-        lhsReason == rhsReason
-      case let (.encryptionFailed(lhsReason), .encryptionFailed(rhsReason)):
-        lhsReason == rhsReason
-      case let (.decryptionFailed(lhsReason), .decryptionFailed(rhsReason)):
-        lhsReason == rhsReason
-      case let (.keyGenerationFailed(lhsReason), .keyGenerationFailed(rhsReason)):
-        lhsReason == rhsReason
-      case let (.hashingFailed(lhsReason), .hashingFailed(rhsReason)):
-        lhsReason == rhsReason
-      case let (.signatureInvalid(lhsReason), .signatureInvalid(rhsReason)):
-        lhsReason == rhsReason
-      case let (.permissionDenied(lhsReason), .permissionDenied(rhsReason)):
-        lhsReason == rhsReason
-      case let (.certificateInvalid(lhsReason), .certificateInvalid(rhsReason)):
-        lhsReason == rhsReason
-      case let (.secureChannelFailed(lhsReason), .secureChannelFailed(rhsReason)):
-        lhsReason == rhsReason
-      case let (.securityConfigurationError(lhsReason), .securityConfigurationError(rhsReason)):
-        lhsReason == rhsReason
-      case let (.internalError(lhsReason), .internalError(rhsReason)):
-        lhsReason == rhsReason
-      case let (.unknown(lhsReason), .unknown(rhsReason)):
-        lhsReason == rhsReason
-      default:
-        false
+public extension SecurityError {
+    static func == (lhs: SecurityError, rhs: SecurityError) -> Bool {
+        switch (lhs, rhs) {
+        case let (.domainCoreError(lhsError), .domainCoreError(rhsError)):
+            String(describing: lhsError) == String(describing: rhsError)
+        case let (.domainProtocolError(lhsError), .domainProtocolError(rhsError)):
+            String(describing: lhsError) == String(describing: rhsError)
+        case let (.domainXPCError(lhsError), .domainXPCError(rhsError)):
+            String(describing: lhsError) == String(describing: rhsError)
+        case let (.authenticationFailed(lhsReason), .authenticationFailed(rhsReason)):
+            lhsReason == rhsReason
+        case let (.unauthorizedAccess(lhsReason), .unauthorizedAccess(rhsReason)):
+            lhsReason == rhsReason
+        case let (.invalidCredentials(lhsReason), .invalidCredentials(rhsReason)):
+            lhsReason == rhsReason
+        case let (.sessionExpired(lhsReason), .sessionExpired(rhsReason)):
+            lhsReason == rhsReason
+        case let (.tokenExpired(lhsReason), .tokenExpired(rhsReason)):
+            lhsReason == rhsReason
+        case let (.encryptionFailed(lhsReason), .encryptionFailed(rhsReason)):
+            lhsReason == rhsReason
+        case let (.decryptionFailed(lhsReason), .decryptionFailed(rhsReason)):
+            lhsReason == rhsReason
+        case let (.keyGenerationFailed(lhsReason), .keyGenerationFailed(rhsReason)):
+            lhsReason == rhsReason
+        case let (.hashingFailed(lhsReason), .hashingFailed(rhsReason)):
+            lhsReason == rhsReason
+        case let (.signatureInvalid(lhsReason), .signatureInvalid(rhsReason)):
+            lhsReason == rhsReason
+        case let (.permissionDenied(lhsReason), .permissionDenied(rhsReason)):
+            lhsReason == rhsReason
+        case let (.certificateInvalid(lhsReason), .certificateInvalid(rhsReason)):
+            lhsReason == rhsReason
+        case let (.secureChannelFailed(lhsReason), .secureChannelFailed(rhsReason)):
+            lhsReason == rhsReason
+        case let (.securityConfigurationError(lhsReason), .securityConfigurationError(rhsReason)):
+            lhsReason == rhsReason
+        case let (.internalError(lhsReason), .internalError(rhsReason)):
+            lhsReason == rhsReason
+        case let (.unknown(lhsReason), .unknown(rhsReason)):
+            lhsReason == rhsReason
+        default:
+            false
+        }
     }
-  }
 }

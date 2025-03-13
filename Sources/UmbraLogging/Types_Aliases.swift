@@ -2,13 +2,13 @@ import CoreErrors
 import ErrorHandlingDomains
 
 /// Type alias for backward compatibility
-public typealias ResourceError=CoreErrors.ResourceError
+public typealias ResourceError = CoreErrors.ResourceError
 
 /// Type alias for backward compatibility
-public typealias RepositoryError=CoreErrors.RepositoryError
+public typealias RepositoryError = CoreErrors.RepositoryError
 
 /// Type alias for backward compatibility
-public typealias SecurityError=CoreErrors.SecurityError
+public typealias SecurityError = CoreErrors.SecurityError
 
 /// Type alias for backward compatibility
-public typealias CryptoError=CoreErrors.CryptoError
+public typealias CryptoError = CoreErrors.CryptoError

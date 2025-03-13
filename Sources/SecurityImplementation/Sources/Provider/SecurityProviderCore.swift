@@ -36,55 +36,55 @@ import UmbraCoreTypes
 /// coordinating between cryptographic services and key management to handle
 /// security operations.
 final class SecurityProviderCore: @unchecked Sendable {
-  // MARK: - Properties
+    // MARK: - Properties
 
-  /// The crypto service for cryptographic operations
-  private let cryptoService: CryptoServiceProtocol
+    /// The crypto service for cryptographic operations
+    private let cryptoService: CryptoServiceProtocol
 
-  /// The key manager for key operations
-  private let keyManager: KeyManagementProtocol
+    /// The key manager for key operations
+    private let keyManager: KeyManagementProtocol
 
-  /// The operations handler for routing security operations
-  private let operationsHandler: OperationsHandler
+    /// The operations handler for routing security operations
+    private let operationsHandler: OperationsHandler
 
-  /// The configuration builder for creating and validating configurations
-  private let configBuilder: ConfigBuilder
+    /// The configuration builder for creating and validating configurations
+    private let configBuilder: ConfigBuilder
 
-  // MARK: - Initialisation
+    // MARK: - Initialisation
 
-  /// Creates a new SecurityProviderCore with the specified services
-  /// - Parameters:
-  ///   - cryptoService: The crypto service to use
-  ///   - keyManager: The key manager to use
-  init(cryptoService: CryptoServiceProtocol, keyManager: KeyManagementProtocol) {
-    self.cryptoService=cryptoService
-    self.keyManager=keyManager
-    configBuilder=ConfigBuilder()
-    operationsHandler=OperationsHandler(
-      cryptoService: cryptoService,
-      keyManager: keyManager
-    )
-  }
+    /// Creates a new SecurityProviderCore with the specified services
+    /// - Parameters:
+    ///   - cryptoService: The crypto service to use
+    ///   - keyManager: The key manager to use
+    init(cryptoService: CryptoServiceProtocol, keyManager: KeyManagementProtocol) {
+        self.cryptoService = cryptoService
+        self.keyManager = keyManager
+        configBuilder = ConfigBuilder()
+        operationsHandler = OperationsHandler(
+            cryptoService: cryptoService,
+            keyManager: keyManager
+        )
+    }
 
-  // MARK: - Core Provider Operations
+    // MARK: - Core Provider Operations
 
-  /// Perform a secure operation with appropriate error handling
-  /// - Parameters:
-  ///   - operation: The security operation to perform
-  ///   - config: Configuration options
-  /// - Returns: Result of the operation
-  func performSecureOperation(
-    operation: SecurityOperation,
-    config: SecurityConfigDTO
-  ) async -> SecurityResultDTO {
-    // Use the operations handler to route the operation
-    await operationsHandler.handleOperation(operation: operation, config: config)
-  }
+    /// Perform a secure operation with appropriate error handling
+    /// - Parameters:
+    ///   - operation: The security operation to perform
+    ///   - config: Configuration options
+    /// - Returns: Result of the operation
+    func performSecureOperation(
+        operation: SecurityOperation,
+        config: SecurityConfigDTO
+    ) async -> SecurityResultDTO {
+        // Use the operations handler to route the operation
+        await operationsHandler.handleOperation(operation: operation, config: config)
+    }
 
-  /// Create a secure configuration with appropriate defaults
-  /// - Parameter options: Optional dictionary of configuration options
-  /// - Returns: A properly configured SecurityConfigDTO
-  func createSecureConfig(options: [String: Any]?) -> SecurityConfigDTO {
-    configBuilder.createConfig(options: options)
-  }
+    /// Create a secure configuration with appropriate defaults
+    /// - Parameter options: Optional dictionary of configuration options
+    /// - Returns: A properly configured SecurityConfigDTO
+    func createSecureConfig(options: [String: Any]?) -> SecurityConfigDTO {
+        configBuilder.createConfig(options: options)
+    }
 }

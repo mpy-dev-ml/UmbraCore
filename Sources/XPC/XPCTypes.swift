@@ -80,11 +80,11 @@
 /// - Async/await API design
 /// - Safe state management
 public enum XPCTypes {
-  /// Current version of the XPC module
-  public static let version="1.0.0"
+    /// Current version of the XPC module
+    public static let version = "1.0.0"
 
-  /// Initialise XPC services with default configuration
-  public static func initialize() {
-    // Configure XPC services
-  }
+    /// Initialise XPC services with default configuration
+    public static func initialize() {
+        // Configure XPC services
+    }
 }

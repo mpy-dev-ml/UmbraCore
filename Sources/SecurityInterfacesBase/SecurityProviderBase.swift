@@ -9,57 +9,57 @@ import XPCProtocolsCore
 /// provider protocols
 
 public protocol SecurityProviderBase: Sendable {
-  /// Protocol identifier - used for protocol negotiation
-  static var protocolIdentifier: String { get }
+    /// Protocol identifier - used for protocol negotiation
+    static var protocolIdentifier: String { get }
 
-  /// Test if the security provider is available
-  /// - Returns: True if the provider is available, false otherwise
-  /// - Throws: SecurityError if the check fails
-  func isAvailable() async -> Result<Bool, XPCSecurityError>
-  /// Get the provider's version information
-  /// - Returns: Version string
-  func getVersion() async -> String
+    /// Test if the security provider is available
+    /// - Returns: True if the provider is available, false otherwise
+    /// - Throws: SecurityError if the check fails
+    func isAvailable() async -> Result<Bool, XPCSecurityError>
+    /// Get the provider's version information
+    /// - Returns: Version string
+    func getVersion() async -> String
 }
 
 /// Default implementation for SecurityProviderBase
-extension SecurityProviderBase {
-  /// Default protocol identifier
-  public static var protocolIdentifier: String {
-    "com.umbra.security.provider.base"
-  }
+public extension SecurityProviderBase {
+    /// Default protocol identifier
+    static var protocolIdentifier: String {
+        "com.umbra.security.provider.base"
+    }
 
-  /// Default implementation that assumes the provider is available
-  public func isAvailable() async -> Result<Bool, XPCSecurityError> {
-    .success(true)
-  }
+    /// Default implementation that assumes the provider is available
+    func isAvailable() async -> Result<Bool, XPCSecurityError> {
+        .success(true)
+    }
 
-  /// Default version string
-  public func getVersion() async -> String {
-    "1.0.0"
-  }
+    /// Default version string
+    func getVersion() async -> String {
+        "1.0.0"
+    }
 }
 
 /// Adapter class to convert between SecurityProviderProtocol and SecurityProviderBase
 public final class SecurityProviderBaseAdapter: SecurityProviderBase {
-  private let provider: any SecurityProviderProtocol
+    private let provider: any SecurityProviderProtocol
 
-  public init(provider: any SecurityProviderProtocol) {
-    self.provider=provider
-  }
+    public init(provider: any SecurityProviderProtocol) {
+        self.provider = provider
+    }
 
-  public static var protocolIdentifier: String {
-    "com.umbra.security.provider.base.adapter"
-  }
+    public static var protocolIdentifier: String {
+        "com.umbra.security.provider.base.adapter"
+    }
 
-  public func isAvailable() async -> Result<Bool, XPCSecurityError> {
-    // This is a simple implementation that assumes the provider is available
-    // In a real implementation, you might want to perform some checks
-    .success(true)
-  }
+    public func isAvailable() async -> Result<Bool, XPCSecurityError> {
+        // This is a simple implementation that assumes the provider is available
+        // In a real implementation, you might want to perform some checks
+        .success(true)
+    }
 
-  public func getVersion() async -> String {
-    // This is a simple implementation that returns a fixed version
-    // In a real implementation, you might want to get the version from the provider
-    "1.0.0"
-  }
+    public func getVersion() async -> String {
+        // This is a simple implementation that returns a fixed version
+        // In a real implementation, you might want to get the version from the provider
+        "1.0.0"
+    }
 }

@@ -12,8 +12,8 @@ import ErrorHandlingDomains
 /// - Returns: Equivalent CoreErrors error
 @Sendable
 public func mapToCoreErrors(_ error: Error) -> Error {
-  // Let the centralised mapper handle common cases
-  CoreErrors.SecurityErrorMapper.mapToCoreError(error)
+    // Let the centralised mapper handle common cases
+    CoreErrors.SecurityErrorMapper.mapToCoreError(error)
 }
 
 /// Maps from a CoreErrors error to a UmbraCoreTypes error
@@ -26,20 +26,20 @@ public func mapToCoreErrors(_ error: Error) -> Error {
 /// - Returns: Equivalent UmbraCoreTypes error
 @Sendable
 public func mapFromCoreErrors(_ error: Error) -> Error {
-  // For specific error types, we need to handle the translation explicitly
-  // as the default mapper doesn't handle these specialised cases
+    // For specific error types, we need to handle the translation explicitly
+    // as the default mapper doesn't handle these specialised cases
 
-  if let resourceError=error as? CoreErrors.ResourceError {
-    return mapFromCoreResourceError(resourceError)
-  }
+    if let resourceError = error as? CoreErrors.ResourceError {
+        return mapFromCoreResourceError(resourceError)
+    }
 
-  if let securityError=error as? CoreErrors.SecurityError {
-    return mapFromCoreSecurityError(securityError)
-  }
+    if let securityError = error as? CoreErrors.SecurityError {
+        return mapFromCoreSecurityError(securityError)
+    }
 
-  // Let the centralised mapper handle other cases
-  // For now, preserve the original behaviour of returning the error as-is
-  return error
+    // Let the centralised mapper handle other cases
+    // For now, preserve the original behaviour of returning the error as-is
+    return error
 }
 
 /// Maps a CoreErrors.ResourceError to an appropriate UmbraCoreTypes error
@@ -50,20 +50,20 @@ public func mapFromCoreErrors(_ error: Error) -> Error {
 /// - Parameter error: The ResourceError to map
 /// - Returns: Equivalent UmbraCoreTypes error
 private func mapFromCoreResourceError(_ error: CoreErrors.ResourceError) -> Error {
-  switch error {
+    switch error {
     case .invalidState:
-      return ResourceLocatorError.invalidPath
+        return ResourceLocatorError.invalidPath
     case .resourceNotFound:
-      return ResourceLocatorError.resourceNotFound
+        return ResourceLocatorError.resourceNotFound
     case .operationFailed:
-      return ResourceLocatorError.generalError("Operation failed")
+        return ResourceLocatorError.generalError("Operation failed")
     case .acquisitionFailed:
-      return SecureBytesError.allocationFailed
+        return SecureBytesError.allocationFailed
     case .poolExhausted:
-      return ResourceLocatorError.generalError("Resource pool exhausted")
+        return ResourceLocatorError.generalError("Resource pool exhausted")
     @unknown default:
-      return ResourceLocatorError.generalError("Unknown resource error")
-  }
+        return ResourceLocatorError.generalError("Unknown resource error")
+    }
 }
 
 /// Maps a CoreErrors.SecurityError to an appropriate UmbraCoreTypes error
@@ -75,37 +75,37 @@ private func mapFromCoreResourceError(_ error: CoreErrors.ResourceError) -> Erro
 /// - Parameter error: The SecurityError to map
 /// - Returns: Equivalent UmbraCoreTypes error
 private func mapFromCoreSecurityError(_ error: CoreErrors.SecurityError) -> Error {
-  switch error {
+    switch error {
     case let .invalidKey(reason):
-      return ResourceLocatorError.generalError("Invalid key: \(reason)")
+        return ResourceLocatorError.generalError("Invalid key: \(reason)")
     case let .invalidContext(reason):
-      return ResourceLocatorError.generalError("Invalid context: \(reason)")
+        return ResourceLocatorError.generalError("Invalid context: \(reason)")
     case let .invalidParameter(name, reason):
-      return ResourceLocatorError.generalError("Invalid parameter \(name): \(reason)")
+        return ResourceLocatorError.generalError("Invalid parameter \(name): \(reason)")
     case let .operationFailed(operation, reason):
-      return ResourceLocatorError.generalError("Operation failed [\(operation)]: \(reason)")
+        return ResourceLocatorError.generalError("Operation failed [\(operation)]: \(reason)")
     case let .unsupportedAlgorithm(name):
-      return ResourceLocatorError.generalError("Unsupported algorithm: \(name)")
+        return ResourceLocatorError.generalError("Unsupported algorithm: \(name)")
     case let .missingImplementation(component):
-      return ResourceLocatorError.generalError("Missing implementation: \(component)")
+        return ResourceLocatorError.generalError("Missing implementation: \(component)")
     case let .internalError(description):
-      return ResourceLocatorError.generalError("Internal security error: \(description)")
+        return ResourceLocatorError.generalError("Internal security error: \(description)")
     @unknown default:
-      return ResourceLocatorError.generalError("Unknown security error")
-  }
+        return ResourceLocatorError.generalError("Unknown security error")
+    }
 }
 
 // MARK: - Error Container
 
 /// A minimal error container for foundation-free error representation
 public struct ErrorContainer: Error {
-  public let domain: String
-  public let code: Int
-  public let userInfo: [String: Any]
+    public let domain: String
+    public let code: Int
+    public let userInfo: [String: Any]
 
-  public init(domain: String, code: Int, userInfo: [String: Any]) {
-    self.domain=domain
-    self.code=code
-    self.userInfo=userInfo
-  }
+    public init(domain: String, code: Int, userInfo: [String: Any]) {
+        self.domain = domain
+        self.code = code
+        self.userInfo = userInfo
+    }
 }

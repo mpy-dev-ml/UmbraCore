@@ -95,11 +95,11 @@
 /// - Best practices
 /// - Migration guides
 public enum API {
-  /// Current version of the API module
-  public static let version="1.0.0"
+    /// Current version of the API module
+    public static let version = "1.0.0"
 
-  /// Initialise API with default configuration
-  public static func initialize() {
-    // Configure API system
-  }
+    /// Initialise API with default configuration
+    public static func initialize() {
+        // Configure API system
+    }
 }

@@ -2,15 +2,15 @@ import Foundation
 
 /// Type of maintenance operation to perform on a repository
 public enum MaintenanceType: String, Sendable {
-  /// Check repository for errors
-  case check
+    /// Check repository for errors
+    case check
 
-  /// Remove unused data from repository
-  case prune
+    /// Remove unused data from repository
+    case prune
 
-  /// Rebuild repository index
-  case rebuild
+    /// Rebuild repository index
+    case rebuild
 
-  /// Verify repository data integrity
-  case verify
+    /// Verify repository data integrity
+    case verify
 }

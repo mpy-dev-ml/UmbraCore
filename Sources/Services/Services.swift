@@ -90,11 +90,11 @@
 /// - Atomic state changes
 /// - Concurrent service access
 public enum Services {
-  /// Current version of the Services module
-  public static let version="1.0.0"
+    /// Current version of the Services module
+    public static let version = "1.0.0"
 
-  /// Initialise Services with default configuration
-  public static func initialize() {
-    // Configure service system
-  }
+    /// Initialise Services with default configuration
+    public static func initialize() {
+        // Configure service system
+    }
 }

@@ -16,6 +16,6 @@ import UmbraCoreTypes
 /// - Adapting Foundation-dependent implementations to foundation-free protocols
 /// - Providing utilities for XPC service communication
 public enum SecurityBridge {
-  /// Module version
-  public static let version="1.0.0"
+    /// Module version
+    public static let version = "1.0.0"
 }

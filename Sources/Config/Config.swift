@@ -83,11 +83,11 @@
 /// - Read-write locks
 /// - Copy-on-write semantics
 public enum Config {
-  /// Current version of the Config module
-  public static let version="1.0.0"
+    /// Current version of the Config module
+    public static let version = "1.0.0"
 
-  /// Initialise Config with default configuration
-  public static func initialize() {
-    // Configure configuration system
-  }
+    /// Initialise Config with default configuration
+    public static func initialize() {
+        // Configure configuration system
+    }
 }

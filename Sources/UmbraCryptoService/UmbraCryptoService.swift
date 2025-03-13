@@ -104,11 +104,11 @@
 /// - Context isolation
 /// - Resource protection
 public enum UmbraCryptoService {
-  /// Current version of the UmbraCryptoService module
-  public static let version="1.0.0"
+    /// Current version of the UmbraCryptoService module
+    public static let version = "1.0.0"
 
-  /// Initialise UmbraCryptoService with default configuration
-  public static func initialize() {
-    // Configure crypto service
-  }
+    /// Initialise UmbraCryptoService with default configuration
+    public static func initialize() {
+        // Configure crypto service
+    }
 }

@@ -39,171 +39,171 @@ import Foundation
 
 /// Standard error type used throughout the XPC protocol system
 public enum XPCSecurityError: Error, Equatable, Sendable {
-  /// The XPC service is not available
-  case serviceUnavailable
+    /// The XPC service is not available
+    case serviceUnavailable
 
-  /// The XPC service is not ready to handle requests
-  case serviceNotReady(reason: String)
+    /// The XPC service is not ready to handle requests
+    case serviceNotReady(reason: String)
 
-  /// The XPC operation timed out
-  case timeout(after: TimeInterval)
+    /// The XPC operation timed out
+    case timeout(after: TimeInterval)
 
-  /// Authentication with the XPC service failed
-  case authenticationFailed(reason: String)
+    /// Authentication with the XPC service failed
+    case authenticationFailed(reason: String)
 
-  /// Authorization to perform the requested operation was denied
-  case authorizationDenied(operation: String)
+    /// Authorization to perform the requested operation was denied
+    case authorizationDenied(operation: String)
 
-  /// The requested operation is not supported by this implementation
-  case operationNotSupported(name: String)
+    /// The requested operation is not supported by this implementation
+    case operationNotSupported(name: String)
 
-  /// The provided input was invalid for the requested operation
-  case invalidInput(details: String)
+    /// The provided input was invalid for the requested operation
+    case invalidInput(details: String)
 
-  /// The operation failed due to invalid state
-  case invalidState(details: String)
+    /// The operation failed due to invalid state
+    case invalidState(details: String)
 
-  /// The key with the specified identifier could not be found
-  case keyNotFound(identifier: String)
+    /// The key with the specified identifier could not be found
+    case keyNotFound(identifier: String)
 
-  /// The operation required a key of one type but received another
-  case invalidKeyType(expected: String, received: String)
+    /// The operation required a key of one type but received another
+    case invalidKeyType(expected: String, received: String)
 
-  /// A cryptographic operation failed
-  case cryptographicError(operation: String, details: String)
+    /// A cryptographic operation failed
+    case cryptographicError(operation: String, details: String)
 
-  /// An internal error occurred that cannot be exposed for security reasons
-  case internalError(reason: String)
+    /// An internal error occurred that cannot be exposed for security reasons
+    case internalError(reason: String)
 
-  /// The XPC connection was interrupted
-  case connectionInterrupted
+    /// The XPC connection was interrupted
+    case connectionInterrupted
 
-  /// The XPC connection was invalidated
-  case connectionInvalidated(reason: String)
+    /// The XPC connection was invalidated
+    case connectionInvalidated(reason: String)
 
-  /// Equality implementation for XPCSecurityError
-  public static func == (lhs: XPCSecurityError, rhs: XPCSecurityError) -> Bool {
-    switch (lhs, rhs) {
-      case (.serviceUnavailable, .serviceUnavailable):
-        true
-      case let (.serviceNotReady(lhsReason), .serviceNotReady(rhsReason)):
-        lhsReason == rhsReason
-      case let (.timeout(lhsTime), .timeout(rhsTime)):
-        lhsTime == rhsTime
-      case let (.authenticationFailed(lhsReason), .authenticationFailed(rhsReason)):
-        lhsReason == rhsReason
-      case let (.authorizationDenied(lhsOp), .authorizationDenied(rhsOp)):
-        lhsOp == rhsOp
-      case let (.operationNotSupported(lhsName), .operationNotSupported(rhsName)):
-        lhsName == rhsName
-      case let (.invalidInput(lhsDetails), .invalidInput(rhsDetails)):
-        lhsDetails == rhsDetails
-      case let (.invalidState(lhsDetails), .invalidState(rhsDetails)):
-        lhsDetails == rhsDetails
-      case let (.keyNotFound(lhsId), .keyNotFound(rhsId)):
-        lhsId == rhsId
-      case let (.invalidKeyType(lhsExp, lhsRec), .invalidKeyType(rhsExp, rhsRec)):
-        lhsExp == rhsExp && lhsRec == rhsRec
-      case let (.cryptographicError(lhsOp, lhsDetails), .cryptographicError(rhsOp, rhsDetails)):
-        lhsOp == rhsOp && lhsDetails == rhsDetails
-      case let (.internalError(lhsReason), .internalError(rhsReason)):
-        lhsReason == rhsReason
-      case (.connectionInterrupted, .connectionInterrupted):
-        true
-      case let (.connectionInvalidated(lhsReason), .connectionInvalidated(rhsReason)):
-        lhsReason == rhsReason
-      default:
-        false
+    /// Equality implementation for XPCSecurityError
+    public static func == (lhs: XPCSecurityError, rhs: XPCSecurityError) -> Bool {
+        switch (lhs, rhs) {
+        case (.serviceUnavailable, .serviceUnavailable):
+            true
+        case let (.serviceNotReady(lhsReason), .serviceNotReady(rhsReason)):
+            lhsReason == rhsReason
+        case let (.timeout(lhsTime), .timeout(rhsTime)):
+            lhsTime == rhsTime
+        case let (.authenticationFailed(lhsReason), .authenticationFailed(rhsReason)):
+            lhsReason == rhsReason
+        case let (.authorizationDenied(lhsOp), .authorizationDenied(rhsOp)):
+            lhsOp == rhsOp
+        case let (.operationNotSupported(lhsName), .operationNotSupported(rhsName)):
+            lhsName == rhsName
+        case let (.invalidInput(lhsDetails), .invalidInput(rhsDetails)):
+            lhsDetails == rhsDetails
+        case let (.invalidState(lhsDetails), .invalidState(rhsDetails)):
+            lhsDetails == rhsDetails
+        case let (.keyNotFound(lhsId), .keyNotFound(rhsId)):
+            lhsId == rhsId
+        case let (.invalidKeyType(lhsExp, lhsRec), .invalidKeyType(rhsExp, rhsRec)):
+            lhsExp == rhsExp && lhsRec == rhsRec
+        case let (.cryptographicError(lhsOp, lhsDetails), .cryptographicError(rhsOp, rhsDetails)):
+            lhsOp == rhsOp && lhsDetails == rhsDetails
+        case let (.internalError(lhsReason), .internalError(rhsReason)):
+            lhsReason == rhsReason
+        case (.connectionInterrupted, .connectionInterrupted):
+            true
+        case let (.connectionInvalidated(lhsReason), .connectionInvalidated(rhsReason)):
+            lhsReason == rhsReason
+        default:
+            false
+        }
     }
-  }
 }
 
 /// Service status information returned by XPC services
 public enum ServiceStatus: String, Codable, Sendable {
-  /// Service is fully operational
-  case operational
+    /// Service is fully operational
+    case operational
 
-  /// Service is starting up
-  case initializing
+    /// Service is starting up
+    case initializing
 
-  /// Service is in maintenance mode
-  case maintenance
+    /// Service is in maintenance mode
+    case maintenance
 
-  /// Service is shutting down
-  case shuttingDown
+    /// Service is shutting down
+    case shuttingDown
 
-  /// Service has encountered an error but is still responsive
-  case degraded
+    /// Service has encountered an error but is still responsive
+    case degraded
 
-  /// Service has experienced a critical failure
-  case failed
+    /// Service has experienced a critical failure
+    case failed
 }
 
 /// Extension for error locality information
 extension XPCSecurityError: LocalizedError {
-  public var errorDescription: String? {
-    switch self {
-      case .serviceUnavailable:
-        "XPC service is unavailable"
-      case let .serviceNotReady(reason):
-        "XPC service is not ready: \(reason)"
-      case let .timeout(after):
-        "XPC operation timed out after \(after) seconds"
-      case let .authenticationFailed(reason):
-        "Authentication with XPC service failed: \(reason)"
-      case let .authorizationDenied(operation):
-        "Authorization denied for operation: \(operation)"
-      case let .operationNotSupported(name):
-        "Operation not supported: \(name)"
-      case let .invalidInput(details):
-        "Invalid input: \(details)"
-      case let .invalidState(details):
-        "Invalid state: \(details)"
-      case let .keyNotFound(identifier):
-        "Key not found: \(identifier)"
-      case let .invalidKeyType(expected, received):
-        "Invalid key type: expected \(expected), received \(received)"
-      case let .cryptographicError(operation, details):
-        "Cryptographic error in \(operation): \(details)"
-      case let .internalError(reason):
-        "Internal error: \(reason)"
-      case .connectionInterrupted:
-        "XPC connection interrupted"
-      case let .connectionInvalidated(reason):
-        "XPC connection invalidated: \(reason)"
+    public var errorDescription: String? {
+        switch self {
+        case .serviceUnavailable:
+            "XPC service is unavailable"
+        case let .serviceNotReady(reason):
+            "XPC service is not ready: \(reason)"
+        case let .timeout(after):
+            "XPC operation timed out after \(after) seconds"
+        case let .authenticationFailed(reason):
+            "Authentication with XPC service failed: \(reason)"
+        case let .authorizationDenied(operation):
+            "Authorization denied for operation: \(operation)"
+        case let .operationNotSupported(name):
+            "Operation not supported: \(name)"
+        case let .invalidInput(details):
+            "Invalid input: \(details)"
+        case let .invalidState(details):
+            "Invalid state: \(details)"
+        case let .keyNotFound(identifier):
+            "Key not found: \(identifier)"
+        case let .invalidKeyType(expected, received):
+            "Invalid key type: expected \(expected), received \(received)"
+        case let .cryptographicError(operation, details):
+            "Cryptographic error in \(operation): \(details)"
+        case let .internalError(reason):
+            "Internal error: \(reason)"
+        case .connectionInterrupted:
+            "XPC connection interrupted"
+        case let .connectionInvalidated(reason):
+            "XPC connection invalidated: \(reason)"
+        }
     }
-  }
 }
 
 /// Utilities for working with XPC errors
 public enum XPCErrorUtilities {
-  /// Convert a generic Error to an appropriate XPCSecurityError
-  /// - Parameter error: Original error to convert
-  /// - Returns: Equivalent XPCSecurityError
-  public static func convertToXPCError(_ error: Error) -> XPCSecurityError {
-    if let xpcError=error as? XPCSecurityError {
-      return xpcError
-    }
-
-    let nsError=error as NSError
-
-    // Check for common error domains and convert appropriately
-    switch nsError.domain {
-      case NSURLErrorDomain:
-        if nsError.code == NSURLErrorTimedOut {
-          return .timeout(after: 30.0) // Default timeout
-        } else {
-          return .connectionInterrupted
+    /// Convert a generic Error to an appropriate XPCSecurityError
+    /// - Parameter error: Original error to convert
+    /// - Returns: Equivalent XPCSecurityError
+    public static func convertToXPCError(_ error: Error) -> XPCSecurityError {
+        if let xpcError = error as? XPCSecurityError {
+            return xpcError
         }
 
-      case "XPCConnectionErrorDomain":
-        return .connectionInvalidated(reason: nsError.localizedDescription)
+        let nsError = error as NSError
 
-      case "CryptoErrorDomain":
-        return .cryptographicError(operation: "Unspecified", details: nsError.localizedDescription)
+        // Check for common error domains and convert appropriately
+        switch nsError.domain {
+        case NSURLErrorDomain:
+            if nsError.code == NSURLErrorTimedOut {
+                return .timeout(after: 30.0) // Default timeout
+            } else {
+                return .connectionInterrupted
+            }
 
-      default:
-        return .internalError(reason: "Unknown error: \(nsError.localizedDescription)")
+        case "XPCConnectionErrorDomain":
+            return .connectionInvalidated(reason: nsError.localizedDescription)
+
+        case "CryptoErrorDomain":
+            return .cryptographicError(operation: "Unspecified", details: nsError.localizedDescription)
+
+        default:
+            return .internalError(reason: "Unknown error: \(nsError.localizedDescription)")
+        }
     }
-  }
 }

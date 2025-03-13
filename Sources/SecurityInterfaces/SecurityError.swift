@@ -5,95 +5,95 @@ import UmbraCoreTypes /// Errors that can occur during security operations
 import XPCProtocolsCore
 
 public enum SecurityInterfacesError: Error, Sendable {
-  /// Bookmark creation failed
-  case bookmarkCreationFailed(path: String)
-  /// Bookmark resolution failed
-  case bookmarkResolutionFailed
-  /// Bookmark is stale and needs to be recreated
-  case bookmarkStale(path: String)
-  /// Bookmark not found
-  case bookmarkNotFound(path: String)
-  /// Security-scoped resource access failed
-  case resourceAccessFailed(path: String)
-  /// Random data generation failed
-  case randomGenerationFailed
-  /// Hashing operation failed
-  case hashingFailed
-  /// Credential or secure item not found
-  case itemNotFound
-  /// General security operation failed
-  case operationFailed(String)
-  /// Custom bookmark error with message
-  case bookmarkError(String)
-  /// Custom access error with message
-  case accessError(String)
-  /// Serialization or deserialization failed
-  case serializationFailed(reason: String)
-  /// Encryption failed with reason
-  case encryptionFailed(reason: String)
-  /// Wrapped UmbraErrors.Security.Core
-  case wrapped(UmbraErrors.Security.Core)
+    /// Bookmark creation failed
+    case bookmarkCreationFailed(path: String)
+    /// Bookmark resolution failed
+    case bookmarkResolutionFailed
+    /// Bookmark is stale and needs to be recreated
+    case bookmarkStale(path: String)
+    /// Bookmark not found
+    case bookmarkNotFound(path: String)
+    /// Security-scoped resource access failed
+    case resourceAccessFailed(path: String)
+    /// Random data generation failed
+    case randomGenerationFailed
+    /// Hashing operation failed
+    case hashingFailed
+    /// Credential or secure item not found
+    case itemNotFound
+    /// General security operation failed
+    case operationFailed(String)
+    /// Custom bookmark error with message
+    case bookmarkError(String)
+    /// Custom access error with message
+    case accessError(String)
+    /// Serialization or deserialization failed
+    case serializationFailed(reason: String)
+    /// Encryption failed with reason
+    case encryptionFailed(reason: String)
+    /// Wrapped UmbraErrors.Security.Core
+    case wrapped(UmbraErrors.Security.Core)
 
-  public var errorDescription: String? {
-    switch self {
-      case let .bookmarkCreationFailed(path):
-        "Failed to create security bookmark for path: \(path)"
-      case .bookmarkResolutionFailed:
-        "Failed to resolve security bookmark"
-      case let .bookmarkStale(path):
-        "Security bookmark is stale for path: \(path)"
-      case let .bookmarkNotFound(path):
-        "Security bookmark not found for path: \(path)"
-      case let .resourceAccessFailed(path):
-        "Failed to access security-scoped resource: \(path)"
-      case .randomGenerationFailed:
-        "Failed to generate random data"
-      case .hashingFailed:
-        "Failed to perform hashing operation"
-      case .itemNotFound:
-        "Security item not found"
-      case let .operationFailed(message):
-        "Security operation failed: \(message)"
-      case let .bookmarkError(message):
-        "Security bookmark error: \(message)"
-      case let .accessError(message):
-        "Security access error: \(message)"
-      case let .serializationFailed(reason):
-        "Serialization or deserialization failed: \(reason)"
-      case let .encryptionFailed(reason):
-        "Encryption failed: \(reason)"
-      case let .wrapped(error):
-        "Wrapped security error: \(error.localizedDescription)"
+    public var errorDescription: String? {
+        switch self {
+        case let .bookmarkCreationFailed(path):
+            "Failed to create security bookmark for path: \(path)"
+        case .bookmarkResolutionFailed:
+            "Failed to resolve security bookmark"
+        case let .bookmarkStale(path):
+            "Security bookmark is stale for path: \(path)"
+        case let .bookmarkNotFound(path):
+            "Security bookmark not found for path: \(path)"
+        case let .resourceAccessFailed(path):
+            "Failed to access security-scoped resource: \(path)"
+        case .randomGenerationFailed:
+            "Failed to generate random data"
+        case .hashingFailed:
+            "Failed to perform hashing operation"
+        case .itemNotFound:
+            "Security item not found"
+        case let .operationFailed(message):
+            "Security operation failed: \(message)"
+        case let .bookmarkError(message):
+            "Security bookmark error: \(message)"
+        case let .accessError(message):
+            "Security access error: \(message)"
+        case let .serializationFailed(reason):
+            "Serialization or deserialization failed: \(reason)"
+        case let .encryptionFailed(reason):
+            "Encryption failed: \(reason)"
+        case let .wrapped(error):
+            "Wrapped security error: \(error.localizedDescription)"
+        }
     }
-  }
 
-  public init(from coreError: UmbraErrors.Security.Core) {
-    self = .wrapped(coreError)
-  }
-
-  public func toCoreError() -> UmbraErrors.Security.Core? {
-    switch self {
-      case let .wrapped(coreError):
-        coreError
-      case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
-           .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
-           .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError,
-           .serializationFailed, .encryptionFailed:
-        nil
+    public init(from coreError: UmbraErrors.Security.Core) {
+        self = .wrapped(coreError)
     }
-  }
+
+    public func toCoreError() -> UmbraErrors.Security.Core? {
+        switch self {
+        case let .wrapped(coreError):
+            coreError
+        case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
+             .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
+             .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError,
+             .serializationFailed, .encryptionFailed:
+            nil
+        }
+    }
 }
 
 // Add LocalizedError conformance in a separate extension
 // This allows us to maintain compatibility without importing Foundation directly
-extension SecurityInterfacesError {
-  public var localizedDescription: String {
-    errorDescription ?? "Unknown security error"
-  }
+public extension SecurityInterfacesError {
+    var localizedDescription: String {
+        errorDescription ?? "Unknown security error"
+    }
 }
 
 // For backward compatibility
-public typealias SecurityError=SecurityInterfacesError
+public typealias SecurityError = SecurityInterfacesError
 
 /// Map a SecurityProtocolsCore.SecurityError to a SecurityInterfacesError
 /// This function is used by tests to verify error mapping functionality
@@ -101,49 +101,49 @@ public typealias SecurityError=SecurityInterfacesError
 /// - Returns: A mapped SecurityInterfacesError
 @available(*, deprecated, message: "Use SecurityProviderAdapter.mapError instead")
 public func mapSPCError(_ error: Error) -> Error {
-  if let protocolError=error as? UmbraErrors.Security.Protocols {
-    return mapFromProtocolError(protocolError)
-  }
+    if let protocolError = error as? UmbraErrors.Security.Protocols {
+        return mapFromProtocolError(protocolError)
+    }
 
-  // Return a generic error if type doesn't match
-  return SecurityInterfacesError.operationFailed("Unknown error: \(error)")
+    // Return a generic error if type doesn't match
+    return SecurityInterfacesError.operationFailed("Unknown error: \(error)")
 }
 
 /// Map a UmbraErrors.Security.Protocols error to a SecurityInterfacesError
 /// - Parameter error: The protocol error to map
 /// - Returns: A mapped SecurityInterfacesError
 private func mapFromProtocolError(
-  _ error: UmbraErrors.Security
-    .Protocols
+    _ error: UmbraErrors.Security
+        .Protocols
 ) -> SecurityInterfacesError {
-  switch error {
+    switch error {
     case let .invalidFormat(reason):
-      return .operationFailed("Invalid format: \(reason)")
+        return .operationFailed("Invalid format: \(reason)")
     case let .missingProtocolImplementation(name):
-      return .operationFailed("Missing protocol implementation: \(name)")
+        return .operationFailed("Missing protocol implementation: \(name)")
     case let .unsupportedOperation(name):
-      return .operationFailed("Unsupported operation: \(name)")
+        return .operationFailed("Unsupported operation: \(name)")
     case let .incompatibleVersion(version):
-      return .operationFailed("Incompatible version: \(version)")
+        return .operationFailed("Incompatible version: \(version)")
     case let .invalidState(current, expected):
-      return .operationFailed("Invalid state: current=\(current), expected=\(expected)")
+        return .operationFailed("Invalid state: current=\(current), expected=\(expected)")
     case let .internalError(message):
-      return .operationFailed("Internal error: \(message)")
+        return .operationFailed("Internal error: \(message)")
     case let .invalidInput(reason):
-      return .operationFailed("Invalid input: \(reason)")
+        return .operationFailed("Invalid input: \(reason)")
     case let .encryptionFailed(reason):
-      return .encryptionFailed(reason: reason)
+        return .encryptionFailed(reason: reason)
     case let .decryptionFailed(reason):
-      return .operationFailed("Decryption failed: \(reason)")
+        return .operationFailed("Decryption failed: \(reason)")
     case let .randomGenerationFailed(reason):
-      return .operationFailed("Random generation failed: \(reason)")
+        return .operationFailed("Random generation failed: \(reason)")
     case let .storageOperationFailed(reason):
-      return .operationFailed("Storage operation failed: \(reason)")
+        return .operationFailed("Storage operation failed: \(reason)")
     case let .serviceError(reason):
-      return .operationFailed("Service error: \(reason)")
+        return .operationFailed("Service error: \(reason)")
     case let .notImplemented(feature):
-      return .operationFailed("Not implemented: \(feature)")
+        return .operationFailed("Not implemented: \(feature)")
     @unknown default:
-      return .operationFailed("Unknown security protocol error")
-  }
+        return .operationFailed("Unknown security protocol error")
+    }
 }
