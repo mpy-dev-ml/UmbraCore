@@ -203,8 +203,7 @@ private final class DefaultBookmarkService: BookmarkServiceType {
 /// Default implementation of the security provider that conforms to both required protocols
 private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFoundationImpl,
     FoundationSecurityProvider, FoundationCryptoServiceImpl, FoundationKeyManagementImpl,
-    RandomDataGenerating
-{
+    RandomDataGenerating {
     // MARK: - FoundationSecurityProvider Properties
 
     /// Implementation of cryptoService for FoundationSecurityProvider protocol
@@ -219,15 +218,62 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
 
     // MARK: - FoundationSecurityProvider Methods
 
-    /// Perform a security operation with Foundation types
+    /// Perform a security operation with Foundation types (FoundationSecurityProviderObjC protocol)
     /// - Parameters:
     ///   - operation: Operation identifier as a string
     ///   - options: Configuration options dictionary
-    /// - Returns: Result with Foundation types
+    /// - Returns: Result with Foundation types for Objective-C
+    @objc
     public func performOperation(
         operation: String,
         options: [String: Any]
-    ) async -> FoundationSecurityProviderResult {
+    ) async -> FoundationOperationResult {
+        do {
+            switch operation {
+            case "encrypt":
+                if let data = options["data"] as? Data, let key = options["key"] as? Data {
+                    let encrypted = try await encrypt(data, key: key)
+                    return FoundationOperationResultImpl.success(encrypted)
+                } else {
+                    return FoundationOperationResultImpl.failure(NSError(
+                        domain: "com.umbrasecurity.error",
+                        code: 6,
+                        userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for encryption"]
+                    ))
+                }
+            case "decrypt":
+                if let data = options["data"] as? Data, let key = options["key"] as? Data {
+                    let decrypted = try await decrypt(data, key: key)
+                    return FoundationOperationResultImpl.success(decrypted)
+                } else {
+                    return FoundationOperationResultImpl.failure(NSError(
+                        domain: "com.umbrasecurity.error",
+                        code: 7,
+                        userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for decryption"]
+                    ))
+                }
+
+            default:
+                return FoundationOperationResultImpl.failure(NSError(
+                    domain: "com.umbrasecurity.error",
+                    code: 8,
+                    userInfo: [NSLocalizedDescriptionKey: "Unsupported operation: \(operation)"]
+                ))
+            }
+        } catch {
+            return FoundationOperationResultImpl.failure(error)
+        }
+    }
+    
+    /// Perform a security operation with Foundation types (FoundationSecurityProvider protocol)
+    /// - Parameters:
+    ///   - operation: Operation identifier as a string
+    ///   - options: Configuration options dictionary
+    /// - Returns: Result with Foundation types for Swift
+    func performOperationSwift(
+        operation: String,
+        options: [String: Any]
+    ) async -> Result<Data?, Error> {
         do {
             switch operation {
             case "encrypt":
@@ -241,7 +287,6 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
                         userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for encryption"]
                     ))
                 }
-
             case "decrypt":
                 if let data = options["data"] as? Data, let key = options["key"] as? Data {
                     let decrypted = try await decrypt(data, key: key)
@@ -253,11 +298,6 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
                         userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for decryption"]
                     ))
                 }
-
-            case "generateKey":
-                let length = options["length"] as? Int ?? 32
-                let key = try await generateKey(length: length)
-                return .success(key)
 
             default:
                 return .failure(NSError(
@@ -553,7 +593,7 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
     func generateRandomBytes(length: Int) async throws -> Data {
         try await generateKey(length: length)
     }
-
+    
     func generateRandomData(length: Int) async -> Result<Data, Error> {
         do {
             let randomData = try await generateKey(length: length)
@@ -608,46 +648,51 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
         url.stopAccessingSecurityScopedResource()
     }
 
-    @objc
-    public func performOperation(
-        operation: String,
-        options: [String: Any]
-    ) async -> FoundationOperationResult {
+    /// Encrypt data using Foundation types directly
+    /// - Parameters:
+    ///   - data: Data to encrypt
+    ///   - key: Encryption key
+    /// - Returns: Result with encrypted data or error
+    func encryptWithFoundation(
+        _ data: Data,
+        key: Data
+    ) async -> Result<Data, Error> {
         do {
-            switch operation {
-            case "encrypt":
-                if let data = options["data"] as? Data, let key = options["key"] as? Data {
-                    let encrypted = try await encrypt(data, key: key)
-                    return FoundationOperationResultImpl.success(encrypted)
-                } else {
-                    return FoundationOperationResultImpl.failure(NSError(
-                        domain: "com.umbrasecurity.error",
-                        code: 6,
-                        userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for encryption"]
-                    ))
-                }
-
-            case "decrypt":
-                if let data = options["data"] as? Data, let key = options["key"] as? Data {
-                    let decrypted = try await decrypt(data, key: key)
-                    return FoundationOperationResultImpl.success(decrypted)
-                } else {
-                    return FoundationOperationResultImpl.failure(NSError(
-                        domain: "com.umbrasecurity.error",
-                        code: 7,
-                        userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for decryption"]
-                    ))
-                }
-
-            default:
-                return FoundationOperationResultImpl.failure(NSError(
-                    domain: "com.umbrasecurity.error",
-                    code: 8,
-                    userInfo: [NSLocalizedDescriptionKey: "Unsupported operation: \(operation)"]
-                ))
-            }
+            let encrypted = try await encrypt(data, key: key)
+            return .success(encrypted)
         } catch {
-            return FoundationOperationResultImpl.failure(error)
+            return .failure(error)
+        }
+    }
+
+    /// Decrypt data using Foundation types directly
+    /// - Parameters:
+    ///   - data: Data to decrypt
+    ///   - key: Decryption key
+    /// - Returns: Result with decrypted data or error
+    func decryptWithFoundation(
+        _ data: Data,
+        key: Data
+    ) async -> Result<Data, Error> {
+        do {
+            let decrypted = try await decrypt(data, key: key)
+            return .success(decrypted)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    /// Hash data using Foundation types directly
+    /// - Parameter data: Data to hash
+    /// - Returns: Result with hashed data or error
+    func hashWithFoundation(
+        _ data: Data
+    ) async -> Result<Data, Error> {
+        do {
+            let hashed = try await hashData(data)
+            return .success(hashed)
+        } catch {
+            return .failure(error)
         }
     }
 
@@ -657,9 +702,9 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
     func encryptAsymmetric(
         data: Data,
         publicKey: Data,
-        algorithm _: String,
-        keySizeInBits _: Int,
-        options _: [String: String]
+        algorithm: String,
+        keySizeInBits: Int,
+        options: [String: String]
     ) async -> FoundationSecurityResult {
         // Simplified implementation that falls back to symmetric encryption
         do {
@@ -677,9 +722,9 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
     func decryptAsymmetric(
         data: Data,
         privateKey: Data,
-        algorithm _: String,
-        keySizeInBits _: Int,
-        options _: [String: String]
+        algorithm: String,
+        keySizeInBits: Int,
+        options: [String: String]
     ) async -> FoundationSecurityResult {
         // Simplified implementation that falls back to symmetric decryption
         do {
@@ -696,8 +741,8 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
     // Hashing with specific algorithm
     func hash(
         data: Data,
-        algorithm _: String,
-        options _: [String: String]
+        algorithm: String,
+        options: [String: String]
     ) async -> FoundationSecurityResult {
         do {
             let hashed = try await hashData(data)
@@ -708,5 +753,17 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
                 errorMessage: "Hashing operation failed: \(error.localizedDescription)"
             )
         }
+    }
+}
+
+// Implement the FoundationSecurityProvider protocol method separately to avoid confusion
+extension DefaultSecurityProviderImpl {
+    // Implementation of the FoundationSecurityProvider protocol method
+    func performOperation(
+        operation: String,
+        options: [String: Any]
+    ) async -> Result<Data?, Error> {
+        // Reuse the Swift implementation
+        return await performOperationSwift(operation: operation, options: options)
     }
 }
