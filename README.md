@@ -116,65 +116,6 @@ This dual-library strategy enables UmbraCore to provide:
 - Consistent security model across all implementations
 - Flexible deployment options
 
-## XPC Protocol Migration
-
-As part of the UmbraCore refactoring plan, we're consolidating XPC protocols across multiple modules into a single foundation-free module: `XPCProtocolsCore`.
-
-### Migration Progress
-
-Currently, we're in Phase 2 of the migration process (client code migration). Progress is tracked in the `UmbraCore_Refactoring_Plan.md` document.
-
-### Migration Tools
-
-We've created several tools to help with the migration process:
-
-#### 1. XPC Protocol Analyzer
-
-Scans the codebase to identify files that need to be migrated to use the new XPC protocols.
-
-```bash
-./Scripts/run_xpc_analyzer.sh
-```
-
-This generates two reports:
-- `xpc_protocol_analysis.json`: Detailed JSON report
-- `xpc_protocol_migration_report.md`: Human-readable Markdown report
-
-#### 2. XPC Migration Manager
-
-Helps manage and track the migration process for individual files.
-
-```bash
-# Initialize migration status
-./Scripts/xpc_migration_manager.sh init
-
-# View migration status
-./Scripts/xpc_migration_manager.sh status
-
-# Get suggested next file to migrate
-./Scripts/xpc_migration_manager.sh next
-
-# Start migration for a file
-./Scripts/xpc_migration_manager.sh start /path/to/file.swift
-
-# Mark a file as completed
-./Scripts/xpc_migration_manager.sh complete /path/to/file.swift
-```
-
-#### 3. Single File Migration Tool
-
-Performs basic migration transforms on a single file:
-
-```bash
-./Scripts/migrate_xpc_file.sh /path/to/file.swift
-```
-
-### Migration Documentation
-
-For detailed migration guidance, see:
-- `XPC_PROTOCOLS_MIGRATION_GUIDE.md`: Comprehensive guide with examples
-- `UmbraCore_Refactoring_Plan.md`: Overall project refactoring plan
-
 ## Development
 
 ### Building
@@ -209,8 +150,7 @@ If you're contributing, please note that certain file types are excluded from Gi
 This approach keeps the repository clean while maintaining the necessary tools for development locally.
 
 ### Documentation
-The complete documentation is available at [https://mpy-dev-ml.github.io/UmbraCore](https://mpy-dev-ml.github.io/UmbraCore).
-
+The complete documentation is available at [https://umbracore.dev](https://umbracore.dev).
 
 ## Security
 UmbraCore prioritises security through:
