@@ -1,0 +1,33 @@
+module(
+    name = "umbracore",
+    version = "0.1.0",
+    compatibility_level = 1,
+)
+
+# Core Bazel dependencies
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_swift", version = "2.2.0", repo_name = "build_bazel_rules_swift")
+bazel_dep(name = "rules_apple", version = "3.6.0", repo_name = "build_bazel_rules_apple")
+bazel_dep(name = "rules_swift_package_manager", version = "0.45.0")
+bazel_dep(name = "apple_support", version = "1.15.1", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "rules_pkg", version = "1.0.1")  # Updated from 0.10.1 to match resolved dependency
+
+bazel_dep(name = "gazelle", version = "0.41.0", dev_dependency = True, repo_name = "bazel_gazelle")
+bazel_dep(name = "rules_go", version = "0.50.1", dev_dependency = True, repo_name = "io_bazel_rules_go")
+
+# Swift package manager integration
+swift_deps = use_extension("@rules_swift_package_manager//:extensions.bzl", "swift_deps")
+swift_deps.from_package(
+    resolved = "//:Package.resolved",
+    swift = "//:Package.swift",
+)
+use_repo(
+    swift_deps,
+    "swift_package",
+    "swiftpkg_cryptoswift",
+    "swiftpkg_swiftybeaver",
+)
+
+# Swift 6 preparation settings will be configured in .bazelrc
+# Additional Swift compiler flags can be set in build settings
