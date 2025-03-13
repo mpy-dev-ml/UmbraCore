@@ -6,11 +6,15 @@
 
 [![Known Vulnerabilities](https://snyk.io/test/github/mpy-dev-ml/UmbraCore/badge.svg)](https://snyk.io/test/github/mpy-dev-ml/UmbraCore) [![Made with ❤️ in London](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20in-London-D40000.svg)](https://github.com/mpy-dev-ml/UmbraCore) [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
-UmbraCore is built to extend the foundation of [Restic](https://restic.net), a remarkable open-source backup programme that has set the standard for secure, efficient, and reliable backups. We are deeply grateful to the Restic team for their years of dedication in creating and maintaining such an exceptional tool, without whom UmbraCore would not exist.
+UmbraCore is built to extend the foundation of [Restic](https://restic.net), a remarkable open-source backup programme that has set the standard for secure, efficient, and reliable backups. In particular, we have focussed extensively on enabling (Restic)(https://restic.net) to work more fully within Swift sandboxed environments as well as using native macOS security features coupled with Restic for those of us who struggle to remember passwords. 
 
-In particular, we have focussed extensively on enable Restic to work more fully within Swift sandboxed enviornments as well as using native macOS security features coupled with Restic for those of us who struggle to remember passwords. 
+We are deeply grateful to the Restic team for their years of dedication in creating and maintaining such an exceptional tool, without whom UmbraCore would not exist. This bears noting as UmbraCore is not designed in any way to replace Restic but, rather, further extend its capabilities to ever more users who will undoubtedly come to use, admire, and love (Restic)(https://restic.net) as much as we do.
 
-Our mission with UmbraCore is to extend Restic's capabilities specifically for macOS application developers, providing a type-safe, Swift-native interface whilst maintaining complete compatibility with Restic's core functionality. UmbraCore is not an alternative to Restic but, rather, a complementary tool that makes Restic's powerful features more accessible in the macOS development ecosystem.
+Our mission with UmbraCore is to:
+- Extend Restic's capabilities specifically for macOS application development
+- Provide a type-safe, Swift-native interface
+- Maintain complete compatibility with Restic's core functionality
+- Provide a solid development platform for novel Restic apps for devs and users alike
 
 If you find UmbraCore useful, please consider:
 - [Supporting the Restic project](https://github.com/sponsors/fd0)
@@ -18,6 +22,7 @@ If you find UmbraCore useful, please consider:
 - [Joining the Restic community](https://forum.restic.net)
 
 ## Quick Start
+- Complete developer documentation is update frequently and available at [https://umbracore.dev](https://umbracore.dev)
 
 ### Requirements
 - macOS 14.0+
@@ -53,6 +58,7 @@ UmbraCore powers several macOS backup management tools:
 
 ### Implemented
 - Secure keychain operations with XPC service
+- Repository password handling
 - Comprehensive error handling and logging
 - Thread-safe operations
 - SwiftyBeaver logging integration
@@ -62,7 +68,6 @@ UmbraCore powers several macOS backup management tools:
 ### In Development
 - SSH key management
 - Cloud provider credentials
-- Repository password handling
 
 ## Architecture
 
@@ -121,16 +126,13 @@ This dual-library strategy enables UmbraCore to provide:
 ### Building
 ```bash
 # Generate/update BUILD files
-bazel run //:update_build_files
+bazelisk run //:update_build_files
 
 # Build all targets
-bazel build //...
-
-# Build only production modules
-./build_production.sh
+bazelisk build //...
 
 # Run tests
-bazel test //...
+bazelisk test //...
 ```
 
 ### Repository Management
