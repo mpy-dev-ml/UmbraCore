@@ -394,6 +394,8 @@ When extending the error handling system, please follow these guidelines:
 5. Add appropriate documentation for new error types and handlers
 6. Include tests that verify error recovery paths
 
-## License
+## Licence
 
-Copyright 2025 UmbraCorp. All rights reserved.
+Copyright 2025 Umbra Development Ltd. All rights reserved.
+
+This module is part of the UmbraCore platform and is licensed under the GNU General Public License v3.0.

@@ -127,6 +127,6 @@ If you find UmbraCore useful, please consider:
 3. Starring us on [GitHub](https://github.com/mpy-dev-ml/UmbraCore)
 4. Sharing your experience with others
 
-## License
+## Licence
 
-UmbraCore is available under the MIT license. See the [LICENSE](https://github.com/mpy-dev-ml/UmbraCore/blob/main/LICENSE) file for more info.
+UmbraCore is available under the GNU General Public License v3.0. See the [LICENSE](https://github.com/mpy-dev-ml/UmbraCore/blob/main/LICENSE) file for more info.

@@ -125,6 +125,6 @@ bazel test //Sources/SecurityImplementation:tests
 - **SecureBytes**: Secure memory management for sensitive data
 - **SecurityProtocolsCore**: Core interfaces and data types
 
-## License
+## Licence
 
-This module is part of the UmbraCore platform and is licensed under the same terms.
+This module is part of the UmbraCore platform and is licensed under the GNU General Public License v3.0.

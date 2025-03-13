@@ -245,14 +245,14 @@ An outstanding cryptography framework created and maintained by [Marcin Krzyżan
 A sophisticated logging system developed by [Sebastian Kreutzberger](https://github.com/skreutzberger) and contributors. SwiftyBeaver's elegant API design and robust feature set have significantly enhanced UmbraCore's logging capabilities. We deeply appreciate the maintainers' commitment to providing such a reliable and well-documented logging solution.
 
 ## Licence
-This project is licensed under the MIT Licence - see [LICENCE](LICENCE) for details.
+This project is licensed under the GNU General Public License v3.0 - see [LICENSE](LICENSE) for details.
 
 ---
 
 ## Copyright
 
-Copyright 2024-2025 Tzel Agentic Development. All rights reserved.
+Copyright 2024-2025 Umbra Development Ltd. All rights reserved.
 
-UmbraCore is a trademark of Tzel Agentic Development.
+UmbraCore is a trademark of Umbra Development Ltd.
 
 This software includes components from other projects, each under its own licence. See [DEPENDENCIES.md](docs/DEPENDENCIES.md) for details.

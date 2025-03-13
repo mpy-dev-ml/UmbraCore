@@ -175,7 +175,7 @@ An outstanding cryptography framework created and maintained by [Marcin Krzyżan
 A sophisticated logging system developed by [Sebastian Kreutzberger](https://github.com/skreutzberger) and contributors. SwiftyBeaver's elegant API design and robust feature set have significantly enhanced UmbraCore's logging capabilities. We deeply appreciate the maintainers' commitment to providing such a reliable and well-documented logging solution.
 
 ## Licence
-This project is licensed under the MIT Licence - see [LICENCE](LICENCE) for details.
+This project is licensed under the GNU General Public License v3.0 - see [LICENSE](LICENSE) for details.
 
 ---
 
