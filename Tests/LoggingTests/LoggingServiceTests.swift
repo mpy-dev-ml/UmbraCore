@@ -1,6 +1,6 @@
 @testable import SecurityTypes
 @testable import UmbraLogging
-@testable import UmbraLoggingAdapters
+import UmbraLoggingAdapters
 import XCTest
 
 final class LoggingServiceTests: XCTestCase {
@@ -46,8 +46,8 @@ final class LoggingServiceTests: XCTestCase {
         // Test that metadata is properly handled
         var metadata = LogMetadata()
         metadata["key1"] = "value1"
-        metadata["key2"] = 42
-        metadata["key3"] = true
+        metadata["key2"] = "42"
+        metadata["key3"] = "true"
 
         await logger.info("Test with complex metadata", metadata: metadata)
 

@@ -19,5 +19,10 @@ umbra_swift_library(
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
         "//Sources/UmbraLogging",
+        "//Sources/SecurityInterfaces:SecurityInterfacesForTesting",
+        "//Sources/SecurityInterfacesBase:SecurityInterfacesBaseForTesting",
+        "//Sources/SecurityInterfacesProtocols:SecurityInterfacesProtocolsForTesting",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
     ],
 )

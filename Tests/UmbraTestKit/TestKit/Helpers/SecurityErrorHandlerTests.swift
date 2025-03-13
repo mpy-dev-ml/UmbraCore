@@ -10,36 +10,6 @@ public struct ErrorStats {
     public let uniqueContexts: Set<String>
 }
 
-/// Test error type for security error handling tests
-public enum SecTestError: Error, CustomStringConvertible, Equatable {
-    case invalidInput(String)
-    case invalidKey(String)
-    case cryptoError(String)
-    case invalidData(String)
-    case accessDenied(reason: String)
-    case itemNotFound(String)
-    case invalidSecurityState(reason: String)
-    
-    public var description: String {
-        switch self {
-        case .invalidInput(let message):
-            return "Invalid input: \(message)"
-        case .invalidKey(let message):
-            return "Invalid key: \(message)"
-        case .cryptoError(let message):
-            return "Crypto error: \(message)"
-        case .invalidData(let message):
-            return "Invalid data: \(message)"
-        case .accessDenied(let reason):
-            return "Access denied: \(reason)"
-        case .itemNotFound(let message):
-            return "Item not found: \(message)"
-        case .invalidSecurityState(let reason):
-            return "Invalid security state: \(reason)"
-        }
-    }
-}
-
 /// A simple error handler for security errors
 public class SecurityErrorHandler {
     private var errorCounts: [String: Int] = [:]
@@ -59,7 +29,8 @@ public class SecurityErrorHandler {
         switch error {
         case .invalidInput, .invalidKey:
             return currentCount < maxRetries
-        case .cryptoError, .invalidData, .accessDenied, .itemNotFound, .invalidSecurityState:
+        case .cryptoError, .invalidData, .accessDenied, .itemNotFound, .invalidSecurityState,
+             .bookmarkError, .operationFailed, .accessError, .internalError:
             return false
         @unknown default:
             return false

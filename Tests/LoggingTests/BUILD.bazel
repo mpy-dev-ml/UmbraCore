@@ -5,6 +5,9 @@ umbra_swift_test(
     name = "LoggingTests",
     srcs = glob(["*.swift"]),
     module_name = "LoggingTests",
+    copts = [
+        "-enable-testing",  # Enable @testable imports
+    ],
     deps = [
         "//Sources/ErrorHandling",
         "//Sources/UmbraLogging",
