@@ -313,6 +313,9 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
             mockKeyManager.keyDataToReturn = dataToReturn
         }
     }
+    
+    /// Flag to control test behaviour for config creation
+    var configCreationCompleted = true
 
     // MARK: - Initialization
 

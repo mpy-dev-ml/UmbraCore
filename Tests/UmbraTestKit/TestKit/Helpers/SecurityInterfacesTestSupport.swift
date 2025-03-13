@@ -3,36 +3,36 @@ import Foundation
 import SecurityBridge
 import SecurityInterfaces
 import SecurityInterfacesProtocols
+import CoreTypesInterfaces
 
 /// Mock implementation of SecurityProviderProtocol for testing
-public final class MockSecurityProvider: SecurityInterfacesProtocols.SecurityProviderProtocol {
+public final class TestSecurityProviderImplementation: SecurityInterfacesProtocols.SecurityProviderProtocol {
     public init() {}
 
     public func encrypt(
-        _ data: SecurityInterfacesProtocols.BinaryData,
-        key _: SecurityInterfacesProtocols.BinaryData
-    ) async throws -> SecurityInterfacesProtocols.BinaryData {
+        _ data: CoreTypesInterfaces.BinaryData,
+        key _: CoreTypesInterfaces.BinaryData
+    ) async throws -> CoreTypesInterfaces.BinaryData {
         data // Mock implementation returns the original data
     }
 
     public func decrypt(
-        _ data: SecurityInterfacesProtocols.BinaryData,
-        key _: SecurityInterfacesProtocols.BinaryData
-    ) async throws -> SecurityInterfacesProtocols.BinaryData {
+        _ data: CoreTypesInterfaces.BinaryData,
+        key _: CoreTypesInterfaces.BinaryData
+    ) async throws -> CoreTypesInterfaces.BinaryData {
         data // Mock implementation returns the original data
     }
 
     public func hash(
-        _: SecurityInterfacesProtocols
-            .BinaryData
-    ) async throws -> SecurityInterfacesProtocols.BinaryData {
+        _ data: CoreTypesInterfaces.BinaryData
+    ) async throws -> CoreTypesInterfaces.BinaryData {
         // Return a fixed hash value for testing
-        SecurityInterfacesProtocols.BinaryData([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        CoreTypesInterfaces.BinaryData(bytes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     }
 
-    public func generateKey(length: Int) async throws -> SecurityInterfacesProtocols.BinaryData {
+    public func generateKey(length: Int) async throws -> CoreTypesInterfaces.BinaryData {
         // Return a fixed key for testing
-        SecurityInterfacesProtocols.BinaryData(Array(repeating: 0, count: length))
+        CoreTypesInterfaces.BinaryData(bytes: Array(repeating: 0, count: length))
     }
 }
 
@@ -42,17 +42,15 @@ public enum SecurityInterfacesTestSupport {
     public static func createTestSecurityProvider() -> any SecurityInterfacesProtocols
         .SecurityProviderProtocol
     {
-        MockSecurityProvider()
+        TestSecurityProviderImplementation()
     }
 
     /// Creates test binary data for testing
-    public static func createTestBinaryData(length: Int = 32) -> SecurityInterfacesProtocols
-        .BinaryData
-    {
+    public static func createTestBinaryData(length: Int = 32) -> CoreTypesInterfaces.BinaryData {
         var bytes = [UInt8](repeating: 0, count: length)
         for i in 0 ..< length {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
-        return SecurityInterfacesProtocols.BinaryData(bytes)
+        return CoreTypesInterfaces.BinaryData(bytes: bytes)
     }
 }

@@ -1,5 +1,5 @@
 import Core
-import ErrorHandlingDomains
+import ErrorHandling
 import SecurityTypes
 import SecurityTypesProtocols
 import XCTest
@@ -8,6 +8,36 @@ import XCTest
 public struct ErrorStats {
     public let totalErrors: Int
     public let uniqueContexts: Set<String>
+}
+
+/// Test error type for security error handling tests
+public enum SecTestError: Error, CustomStringConvertible, Equatable {
+    case invalidInput(String)
+    case invalidKey(String)
+    case cryptoError(String)
+    case invalidData(String)
+    case accessDenied(reason: String)
+    case itemNotFound(String)
+    case invalidSecurityState(reason: String)
+    
+    public var description: String {
+        switch self {
+        case .invalidInput(let message):
+            return "Invalid input: \(message)"
+        case .invalidKey(let message):
+            return "Invalid key: \(message)"
+        case .cryptoError(let message):
+            return "Crypto error: \(message)"
+        case .invalidData(let message):
+            return "Invalid data: \(message)"
+        case .accessDenied(let reason):
+            return "Access denied: \(reason)"
+        case .itemNotFound(let message):
+            return "Item not found: \(message)"
+        case .invalidSecurityState(let reason):
+            return "Invalid security state: \(reason)"
+        }
+    }
 }
 
 /// A simple error handler for security errors
@@ -19,7 +49,7 @@ public class SecurityErrorHandler {
 
     public init() {}
 
-    public func handleError(_ error: SecurityTypes.SecurityError, context: String) -> Bool {
+    public func handleError(_ error: SecTestError, context: String) -> Bool {
         let key = "\(context):\(error)"
         let currentCount = errorCounts[key] ?? 0
         errorCounts[key] = currentCount + 1
@@ -27,9 +57,9 @@ public class SecurityErrorHandler {
 
         // Allow retries for certain errors
         switch error {
-        case .bookmarkError, .accessError:
+        case .invalidInput, .invalidKey:
             return currentCount < maxRetries
-        case .cryptoError, .invalidData, .accessDenied, .itemNotFound:
+        case .cryptoError, .invalidData, .accessDenied, .itemNotFound, .invalidSecurityState:
             return false
         @unknown default:
             return false
@@ -78,28 +108,28 @@ final class SecurityErrorHandlerTests: XCTestCase {
     func testHandleBookmarkError() async throws {
         // First attempt should allow retry
         let shouldRetry1 = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
+            SecTestError.invalidInput("Test error"),
             context: "test"
         )
         XCTAssertTrue(shouldRetry1)
 
         // Second attempt should allow retry
         let shouldRetry2 = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
+            SecTestError.invalidInput("Test error"),
             context: "test"
         )
         XCTAssertTrue(shouldRetry2)
 
         // Third attempt should allow retry
         let shouldRetry3 = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
+            SecTestError.invalidInput("Test error"),
             context: "test"
         )
         XCTAssertTrue(shouldRetry3)
 
         // Fourth attempt should not allow retry
         let shouldRetry4 = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
+            SecTestError.invalidInput("Test error"),
             context: "test"
         )
         XCTAssertFalse(shouldRetry4)
@@ -107,7 +137,7 @@ final class SecurityErrorHandlerTests: XCTestCase {
 
     func testHandleNonRetryableError() async throws {
         let shouldRetry = handler.handleError(
-            SecurityTypes.SecurityError.accessDenied(reason: "Permission denied"),
+            SecTestError.accessDenied(reason: "Permission denied"),
             context: "test"
         )
         XCTAssertFalse(shouldRetry)
@@ -116,7 +146,7 @@ final class SecurityErrorHandlerTests: XCTestCase {
     func testRapidFailureDetection() async throws {
         // First error
         _ = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
+            SecTestError.invalidInput("Test error"),
             context: "test"
         )
         let isFailingAfterFirst = handler.isRapidlyFailing("test")
@@ -124,21 +154,21 @@ final class SecurityErrorHandlerTests: XCTestCase {
 
         // Second error immediately after
         _ = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
+            SecTestError.invalidInput("Test error"),
             context: "test"
         )
         let isFailingAfterSecond = handler.isRapidlyFailing("test")
         XCTAssertTrue(isFailingAfterSecond)
     }
 
-    func testErrorStats() async throws {
+    func testErrorStatsTracking() async throws {
         // Create two errors of the same type
         _ = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
+            SecTestError.invalidInput("Test error"),
             context: "test1"
         )
         _ = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
+            SecTestError.invalidInput("Test error"),
             context: "test2"
         )
 
@@ -149,18 +179,25 @@ final class SecurityErrorHandlerTests: XCTestCase {
         XCTAssertTrue(stats.uniqueContexts.contains("test2"))
     }
 
-    func testContextReset() async throws {
+    func testReset() async throws {
+        // Add some errors
         _ = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
+            SecTestError.invalidInput("Test error"),
             context: "test"
         )
-        handler.resetErrorCounts()
+        _ = handler.handleError(
+            SecTestError.cryptoError("Test error"),
+            context: "test"
+        )
 
-        // After reset, should be able to retry
-        let shouldRetry = handler.handleError(
-            SecurityTypes.SecurityError.bookmarkError("Test error"),
-            context: "test"
-        )
-        XCTAssertTrue(shouldRetry)
+        // Verify they're there
+        var stats = handler.getErrorStats()
+        XCTAssertEqual(stats.totalErrors, 2)
+
+        // Reset and verify
+        handler.resetErrorCounts()
+        stats = handler.getErrorStats()
+        XCTAssertEqual(stats.totalErrors, 0)
+        XCTAssertEqual(stats.uniqueContexts.count, 0)
     }
 }

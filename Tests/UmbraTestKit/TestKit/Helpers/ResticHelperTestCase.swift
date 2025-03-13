@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 
-open class ResticTestCase: XCTestCase {
+open class ResticHelperTestCase: XCTestCase {
     public var mockRepository: MockResticRepository!
     private var tempDirectoryURL: URL!
 
