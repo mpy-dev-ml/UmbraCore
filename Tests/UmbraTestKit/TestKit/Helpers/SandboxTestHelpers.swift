@@ -1,8 +1,8 @@
 import SecurityTypes
 import XCTest
 
-/// Base class for tests that need to simulate sandbox behavior
-open class SandboxTestCase: XCTestCase {
+/// Base class for tests that need to simulate sandbox behaviour
+open class SandboxHelperTestCase: XCTestCase {
     /// Mock file manager for simulating sandbox operations
     var mockFileManager: MockFileManager!
 
@@ -18,9 +18,10 @@ open class SandboxTestCase: XCTestCase {
 
         // Initialize mock file manager
         mockFileManager = MockFileManager()
-        try mockFileManager.simulateCreateDirectory(
+        _ = try FileManager.default.createDirectory(
             at: tempDirectory,
-            withIntermediateDirectories: true
+            withIntermediateDirectories: true,
+            attributes: nil
         )
     }
 
@@ -63,7 +64,7 @@ open class SandboxTestCase: XCTestCase {
         access: FilePermission = .readWrite
     ) throws -> URL {
         let dirURL = tempDirectory.appendingPathComponent(name)
-        try mockFileManager.simulateCreateDirectory(at: dirURL, withIntermediateDirectories: true)
+        _ = try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true, attributes: nil)
         _ = mockFileManager.simulateSetAccess(access, for: dirURL)
         return dirURL
     }
