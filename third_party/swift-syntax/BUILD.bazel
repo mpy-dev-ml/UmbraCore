@@ -1,4 +1,0 @@
-package(default_visibility = ["//visibility:public"])
-
-# This is a placeholder BUILD file
-# swift-syntax integration is temporarily disabled
