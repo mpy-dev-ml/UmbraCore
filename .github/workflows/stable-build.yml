@@ -61,8 +61,6 @@ jobs:
           grep -v "//Sources/CoreServices" | \
           grep -v "//Sources/Features/Logging" | \
           grep -v "//Sources/ErrorHandling/Examples" | \
-          grep -v "//Sources/ResticCLIHelper" | \
-          grep -v "//Sources/ResticTypes" | \
           grep -v "Tests" > .build_targets/stable_targets.txt
         
         # Count targets
@@ -95,5 +93,4 @@ jobs:
         echo "- Security modules (SecurityInterfaces, SecurityUtils, UmbraSecurity)"
         echo "- Core services modules (CoreServices and related modules)"
         echo "- Logging services modules (Features/Logging, ErrorHandling/Examples)"
-        echo "- Restic-related modules (ResticCLIHelper, ResticTypes)"
         echo "- All test targets"
