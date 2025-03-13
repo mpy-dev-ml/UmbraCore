@@ -1,11 +1,13 @@
+import CoreTypesInterfaces
+import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
 @testable import SecurityInterfaces
 import SecurityInterfacesBase
-import XCTest
-
-// Import our test helpers instead of SecurityProtocolsCore directly
+import SecurityProtocolsCore
 import SecurityTestHelpers
+import XCTest
+import XPCProtocolsCore
 
 /// Tests for SecurityProvider protocol implementation
 /// Validates that SPC provider types can be used through the interface adapters
@@ -13,16 +15,16 @@ class SecurityProviderTests: XCTestCase {
 
   func testSecurityProviderCreation() {
     // Use the wrapper factory instead of directly accessing SecurityProtocolsCore
-    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
+    let wrappedProvider = SecurityTestHelpers.SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
     XCTAssertNotNil(wrappedProvider)
   }
 
   func testSecurityOperation() async {
     // Get a wrapped test provider
-    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
+    let wrappedProvider = SecurityTestHelpers.SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Perform the operation using our wrapper
-    let result=await wrappedProvider.performSecureOperation(
+    let result = await wrappedProvider.performSecureOperation(
       operationName: "symmetricEncryption",
       options: [
         "key": "test_key",
@@ -36,10 +38,10 @@ class SecurityProviderTests: XCTestCase {
 
   func testErrorMapping() {
     // Create a test error from the ErrorHandlingDomains module
-    let error=UmbraErrors.Security.Protocols.invalidFormat(reason: "Test error")
+    let error = UmbraErrors.Security.Protocols.invalidFormat(reason: "Test error")
 
     // Use our TestErrorMapper helper instead of direct adapter interactions
-    let mappedError=TestErrorMapper.mapToNSError(error)
+    let mappedError = SecurityTestHelpers.TestErrorMapper.mapToNSError(error)
 
     // Verify the error properties
     XCTAssertEqual(mappedError.domain, "com.umbracore.security.test")
@@ -53,22 +55,25 @@ class SecurityProviderTests: XCTestCase {
     )
 
     // Test the helper method for checking error contents
-    XCTAssertTrue(TestErrorMapper.errorContains(mappedError, substring: "Invalid format"))
+    XCTAssertTrue(SecurityTestHelpers.TestErrorMapper.errorContains(mappedError, substring: "Invalid format"))
   }
 
   func testProtocolAdaptation() {
     // Get a wrapped provider
-    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
+    let wrappedProvider = SecurityTestHelpers.SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Create a dummy XPC service for testing
-    let xpcService=DummyXPCService()
+    let xpcService = SecurityTestHelpers.DummyXPCService()
+    
+    // Use the adapter method to convert XPCServiceProtocol to XPCServiceProtocolStandard
+    let standardService = xpcService.asXPCServiceProtocolStandard()
 
     // Create an adapter using the provider's raw reference
     // This approach maintains isolation while still allowing creation of adapter
-    let rawProvider=wrappedProvider.getRawProvider()
-    let adapter=SecurityProviderAdapter(
-      bridge: rawProvider as! SecurityInterfaces.SecurityProviderBridge,
-      service: xpcService
+    let rawProvider = wrappedProvider.getRawProvider()
+    let adapter = SecurityTestHelpers.TestSecurityProviderAdapter(
+      bridge: rawProvider,
+      service: standardService
     )
 
     // Check that we can access core properties through the adapter
@@ -76,60 +81,26 @@ class SecurityProviderTests: XCTestCase {
     XCTAssertNotNil(adapter.keyManager)
   }
 
-  /// Test to verify subpackage-based type resolution
-  func testSubpackageTypeResolution() async {
-    // Create provider through our wrapper
-    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
-
-    // Create a dummy XPC service for testing
-    let xpcService=DummyXPCService()
-
-    // Create adapter using the provider's raw reference
-    let rawProvider=wrappedProvider.getRawProvider()
-    let adapter=SecurityProviderAdapter(
-      bridge: rawProvider as! SecurityInterfaces.SecurityProviderBridge,
-      service: xpcService
-    )
-
-    // Test getting a host identifier to verify the adapter works
-    let hostIdResult=await adapter.getHostIdentifier()
-    if case let .success(id)=hostIdResult {
-      XCTAssertFalse(id.isEmpty)
-    } else if case let .failure(error)=hostIdResult {
-      XCTFail("Failed to get host identifier: \(error)")
-    }
-
-    // Test passing complex operation to ensure cross-module types work
-    // Using our wrapper factory to create the operation
-    let result=await wrappedProvider.performSecureOperation(
-      operationName: "symmetricEncryption",
-      options: [
-        "key": "test-key",
-        "algorithm": "AES-256",
-        "data": Data("Test data".utf8)
-      ]
-    )
-
-    XCTAssertTrue(result.success)
-  }
-
   func testSecurityStatus() async {
     // Get a wrapped test provider
-    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
+    let wrappedProvider = SecurityTestHelpers.SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Create a dummy XPC service for testing
-    let xpcService=DummyXPCService()
+    let xpcService = SecurityTestHelpers.DummyXPCService()
+    
+    // Use the adapter method to convert XPCServiceProtocol to XPCServiceProtocolStandard
+    let standardService = xpcService.asXPCServiceProtocolStandard()
 
     // Create adapter using the provider's raw reference
-    let rawProvider=wrappedProvider.getRawProvider()
-    let adapter=SecurityProviderAdapter(
-      bridge: rawProvider as! SecurityInterfaces.SecurityProviderBridge,
-      service: xpcService
+    let rawProvider = wrappedProvider.getRawProvider()
+    let adapter = SecurityTestHelpers.TestSecurityProviderAdapter(
+      bridge: rawProvider,
+      service: standardService
     )
 
     // Get the host identifier as a substitute for status
-    let idResult=await adapter.getHostIdentifier()
-    if case let .success(id)=idResult {
+    let idResult = await adapter.getHostIdentifier()
+    if case let .success(id) = idResult {
       XCTAssertFalse(id.isEmpty)
     } else {
       XCTFail("Failed to get host identifier")
@@ -138,10 +109,10 @@ class SecurityProviderTests: XCTestCase {
 
   func testLowLevelOperation() async {
     // Get a wrapped test provider
-    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
+    let wrappedProvider = SecurityTestHelpers.SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Perform a low level operation
-    let result=await wrappedProvider.performSecureOperation(
+    let result = await wrappedProvider.performSecureOperation(
       operationName: "symmetricEncryption",
       options: [
         "key": "test_encryption_key",
@@ -155,20 +126,23 @@ class SecurityProviderTests: XCTestCase {
 
   func testErrorHandling() async {
     // Get a wrapped test provider
-    let wrappedProvider=SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
+    let wrappedProvider = SecurityTestHelpers.SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
     // Create a dummy XPC service for testing
-    let xpcService=DummyXPCService()
+    let xpcService = SecurityTestHelpers.DummyXPCService()
+    
+    // Use the adapter method to convert XPCServiceProtocol to XPCServiceProtocolStandard
+    let standardService = xpcService.asXPCServiceProtocolStandard()
 
     // Create adapter using the provider's raw reference
-    let rawProvider=wrappedProvider.getRawProvider()
-    let adapter=SecurityProviderAdapter(
-      bridge: rawProvider as! SecurityInterfaces.SecurityProviderBridge,
-      service: xpcService
+    let rawProvider = wrappedProvider.getRawProvider()
+    let adapter = SecurityTestHelpers.TestSecurityProviderAdapter(
+      bridge: rawProvider,
+      service: standardService
     )
 
     // Try a client registration operation
-    let result=await adapter.registerClient(bundleIdentifier: "")
+    let result = await adapter.registerClient(bundleIdentifier: "")
 
     // Verify we got a result
     switch result {

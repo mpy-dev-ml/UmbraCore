@@ -13,7 +13,7 @@ import XPCProtocolsCore
 /// A test-specific adapter that allows the bridge pattern to work in tests
 /// This adapter mimics the real SecurityProviderAdapter but works with our
 /// SecurityProviderBridge type instead of directly with SecurityProtocolsCore.
-public final class TestSecurityProviderAdapter: SecurityProvider {
+public final class TestSecurityProviderAdapter: SecurityInterfaces.SecurityProvider {
   // MARK: - Properties
 
   private let bridge: SecurityProviderBridge
@@ -55,14 +55,14 @@ public final class TestSecurityProviderAdapter: SecurityProvider {
 
   // MARK: - SecurityProvider Implementation
 
-  public func getSecurityLevel() async -> Result<SecurityLevel, SecurityError> {
+  public func getSecurityLevel() async -> Result<SecurityInterfaces.SecurityLevel, SecurityInterfacesError> {
     // For testing, return a standard security level
     .success(.standard)
   }
 
-  public func getSecurityConfiguration() async -> Result<SecurityConfiguration, SecurityError> {
+  public func getSecurityConfiguration() async -> Result<SecurityInterfaces.SecurityConfiguration, SecurityInterfacesError> {
     // Return a default configuration for testing
-    let config=SecurityConfiguration(
+    let config = SecurityInterfaces.SecurityConfiguration(
       securityLevel: .standard,
       encryptionAlgorithm: "AES-256",
       hashAlgorithm: "SHA-256",
@@ -71,31 +71,31 @@ public final class TestSecurityProviderAdapter: SecurityProvider {
     return .success(config)
   }
 
-  public func updateSecurityConfiguration(_: SecurityConfiguration) async throws {
+  public func updateSecurityConfiguration(_ configuration: SecurityInterfaces.SecurityConfiguration) async throws {
     // No-op for testing
   }
 
-  public func getHostIdentifier() async -> Result<String, SecurityError> {
+  public func getHostIdentifier() async -> Result<String, SecurityInterfacesError> {
     // For testing, just return a dummy host ID
     .success("test-host-identifier-123")
   }
 
-  public func registerClient(bundleIdentifier _: String) async -> Result<Bool, SecurityError> {
+  public func registerClient(bundleIdentifier: String) async -> Result<Bool, SecurityInterfacesError> {
     // For testing, always return success
     .success(true)
   }
 
-  public func requestKeyRotation(keyId _: String) async -> Result<Void, SecurityError> {
+  public func requestKeyRotation(keyId: String) async -> Result<Void, SecurityInterfacesError> {
     // For testing, always succeed
     .success(())
   }
 
-  public func notifyKeyCompromise(keyId _: String) async -> Result<Void, SecurityError> {
+  public func notifyKeyCompromise(keyId: String) async -> Result<Void, SecurityInterfacesError> {
     // For testing, always succeed
     .success(())
   }
 
-  public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityError> {
+  public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityInterfacesError> {
     // Generate simple test data
     var bytes=[UInt8](repeating: 0, count: length)
     for i in 0..<length {
@@ -104,7 +104,7 @@ public final class TestSecurityProviderAdapter: SecurityProvider {
     return .success(SecureBytes(bytes: bytes))
   }
 
-  public func getKeyInfo(keyId: String) async -> Result<[String: AnyObject], SecurityError> {
+  public func getKeyInfo(keyId: String) async -> Result<[String: AnyObject], SecurityInterfacesError> {
     // Return some dummy key info
     let info: [String: AnyObject]=[
       "algorithm": "AES-256" as NSString,
@@ -114,12 +114,12 @@ public final class TestSecurityProviderAdapter: SecurityProvider {
     return .success(info)
   }
 
-  public func registerNotifications() async -> Result<Void, SecurityError> {
+  public func registerNotifications() async -> Result<Void, SecurityInterfacesError> {
     // No-op for testing
     .success(())
   }
 
-  public func randomBytes(count: Int) async -> Result<SecureBytes, SecurityError> {
+  public func randomBytes(count: Int) async -> Result<SecureBytes, SecurityInterfacesError> {
     // Reuse the generateRandomData implementation
     await generateRandomData(length: count)
   }
@@ -127,7 +127,7 @@ public final class TestSecurityProviderAdapter: SecurityProvider {
   public func encryptData(
     _ data: SecureBytes,
     withKey key: SecureBytes
-  ) async -> Result<SecureBytes, SecurityError> {
+  ) async -> Result<SecureBytes, SecurityInterfacesError> {
     // Simple mock implementation - in a real system this would use actual encryption
     var bytes=[UInt8](repeating: 0, count: data.count)
     for i in 0..<data.count {
@@ -140,7 +140,7 @@ public final class TestSecurityProviderAdapter: SecurityProvider {
     operation: SecurityProtocolsCore.SecurityOperation,
     data: Data?,
     parameters: [String: String]
-  ) async throws -> SecurityResult {
+  ) async throws -> SecurityInterfaces.SecurityResult {
     // Convert the data to secure bytes if provided
     var secureBytes: SecureBytes?
     if let data {
@@ -162,17 +162,18 @@ public final class TestSecurityProviderAdapter: SecurityProvider {
       let result=await bridge.performSecureOperation(operation: operation, config: config)
 
       // Convert the result
-      return SecurityResult(
+      let metadata: [String: String] = result.error != nil ? ["error": "Operation failed"] : [:]
+      return SecurityInterfaces.SecurityResult(
         success: result.success,
         data: result.data != nil ? Data([UInt8](result.data!)) : nil,
-        error: result.error.map { _ in SecurityError.operationFailed("Operation failed") }
+        metadata: metadata
       )
     } else {
       // No data provided
-      return SecurityResult(
+      return SecurityInterfaces.SecurityResult(
         success: true,
         data: nil,
-        error: nil
+        metadata: [:]
       )
     }
   }
@@ -181,7 +182,7 @@ public final class TestSecurityProviderAdapter: SecurityProvider {
     operationName: String,
     data: Data?,
     parameters: [String: String]
-  ) async throws -> SecurityResult {
+  ) async throws -> SecurityInterfaces.SecurityResult {
     // Map the operation name to an enum case
     let operation: SecurityProtocolsCore.SecurityOperation=switch operationName.lowercased() {
       case "encrypt", "encryption", "symmetricencryption":
@@ -213,54 +214,14 @@ public final class TestSecurityProviderAdapter: SecurityProvider {
       case "random", "randomgeneration":
         .randomGeneration
       default:
-        // Default to encryption for unknown operations
-        .symmetricEncryption
+        throw SecurityInterfacesError.operationFailed("Unknown operation: \(operationName)")
     }
 
-    // Delegate to the typed operation method
+    // Use the enum-based method
     return try await performSecurityOperation(
       operation: operation,
       data: data,
       parameters: parameters
     )
-  }
-}
-
-// MARK: - Security Types
-
-public enum SecurityLevel {
-  case standard
-  case high
-  case custom(String)
-}
-
-public struct SecurityConfiguration {
-  public let securityLevel: SecurityLevel
-  public let encryptionAlgorithm: String
-  public let hashAlgorithm: String
-  public let options: [String: Any]?
-
-  public init(
-    securityLevel: SecurityLevel,
-    encryptionAlgorithm: String,
-    hashAlgorithm: String,
-    options: [String: Any]?
-  ) {
-    self.securityLevel=securityLevel
-    self.encryptionAlgorithm=encryptionAlgorithm
-    self.hashAlgorithm=hashAlgorithm
-    self.options=options
-  }
-}
-
-public struct SecurityResult {
-  public let success: Bool
-  public let data: Data?
-  public let error: SecurityError?
-
-  public init(success: Bool, data: Data?, error: SecurityError?) {
-    self.success=success
-    self.data=data
-    self.error=error
   }
 }
