@@ -197,4 +197,4 @@ Copyright 2024-2025 Umbra Development Ltd. All rights reserved.
 
 UmbraCore is a trademark of Umbra Development Ltd.
 
-This software includes components from other projects, each under its own licence. See [DEPENDENCIES.md](docs/DEPENDENCIES.md) for details.
+This software includes components from other projects, [each under its own licence](docs/DEPENDENCIES.md).
