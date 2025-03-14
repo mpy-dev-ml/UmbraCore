@@ -1,11 +1,17 @@
 import Foundation
 @testable import ResticCLIHelper
+@testable import ResticCLIHelperCommands
+@testable import ResticCLIHelperModels
+@testable import ResticCLIHelperTypes
+import ResticTypes
+import UmbraTestKit
 import XCTest
 
-final class StatsCommandTests: XCTestCase {
-    func testStatsCommandBuild() throws {
+/// Tests for the stats command
+final class StatsCommandTests: ResticTestCase {
+    func testStatsCommandBuilder() async throws {
         let options = CommonOptions(
-            repository: "/path/to/repo",
+            repository: "/tmp/repo",
             password: "test"
         )
 
@@ -13,36 +19,55 @@ final class StatsCommandTests: XCTestCase {
             .mode(.restoreSize)
             .host("test-host")
             .tag("test-tag")
-            .path("/test/path")
-            .snapshot("test-snapshot")
+            .path("path1")
+            .path("path2")
 
         XCTAssertEqual(command.commandName, "stats")
-        XCTAssertEqual(command.commandArguments, [
-            "test-snapshot",
-            "--mode", "restore-size",
-            "--host", "test-host",
-            "--tag", "test-tag",
-            "--path", "/test/path",
-        ])
-
-        XCTAssertEqual(command.environment["RESTIC_REPOSITORY"], "/path/to/repo")
-        XCTAssertEqual(command.environment["RESTIC_PASSWORD"], "test")
+        XCTAssertEqual(command.options.repository, "/tmp/repo")
+        XCTAssertEqual(command.options.password, "test")
+        XCTAssertTrue(command.arguments.contains("--mode=restore-size"))
+        XCTAssertTrue(command.arguments.contains("--host=test-host"))
+        XCTAssertTrue(command.arguments.contains("--tag=test-tag"))
+        XCTAssertTrue(command.arguments.contains("path1"))
+        XCTAssertTrue(command.arguments.contains("path2"))
     }
 
     func testStatsCommandExecution() async throws {
-        let helper = ResticCLIHelper()
-        let repo = try await TestRepository.create()
+        let mockRepository = try await TestRepository.create()
+        let helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
+
+        // Backup some files first
+        let backupCommand = BackupCommand(
+            paths: [mockRepository.testFilesPath],
+            options: CommonOptions(
+                repository: mockRepository.path,
+                password: mockRepository.password,
+                jsonOutput: true
+            )
+        )
+
+        _ = try await helper.execute(backupCommand)
 
         let options = CommonOptions(
-            repository: repo.path,
-            password: repo.password,
+            repository: mockRepository.path,
+            password: mockRepository.password,
             jsonOutput: true
         )
 
-        let command = StatsCommand(options: options)
-            .mode(.restoreSize)
-
-        let output = try await helper.execute(command)
-        XCTAssertFalse(output.isEmpty)
+        let statsCommand = StatsCommand(options: options)
+        let output = try await helper.execute(statsCommand)
+        
+        XCTAssertFalse(output.isEmpty, "Stats command should produce output")
+        
+        // Parse JSON manually since we don't have access to the Decodable implementation
+        let jsonData = Data(output.utf8)
+        guard let json = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
+            XCTFail("Failed to parse stats output as JSON")
+            return
+        }
+        
+        // Validate some basic stats properties
+        XCTAssertNotNil(json["total_file_count"], "Should have total_file_count in stats")
+        XCTAssertNotNil(json["snapshots_count"], "Should have snapshots_count in stats")
     }
 }

@@ -1,114 +1,122 @@
 import Foundation
-import ResticCLIHelper
+@testable import ResticCLIHelper
+@testable import ResticCLIHelperCommands
+@testable import ResticCLIHelperTypes
+import ResticTypes
+import UmbraTestKit
+import XCTest
 
-/// A test repository for testing Restic commands
+/**
+ * A test repository for restic tests.
+ * Each instance creates a temporary repository with a unique name and password.
+ */
 final class TestRepository {
     /// Path to the repository
     let path: String
-
-    /// Password for the repository
-    let password: String
-
-    /// Path to the cache directory
-    let cachePath: String
-
-    /// Path to test files
+    
+    /// Path to a directory for test files
     let testFilesPath: String
-
-    /// Path to restore files
+    
+    /// Path to a directory for restored files
     let restorePath: String
-
-    private init(
-        path: String,
-        password: String,
-        cachePath: String,
-        testFilesPath: String,
-        restorePath: String
-    ) {
-        self.path = path
-        self.password = password
-        self.cachePath = cachePath
-        self.testFilesPath = testFilesPath
-        self.restorePath = restorePath
-    }
-
-    /// Create a new test repository
+    
+    /// Path to a directory for cache files
+    let cachePath: String
+    
+    /// Password for the repository
+    let password: String = "test-password"
+    
+    /// Main helper instance
+    private let helper: ResticCLIHelper
+    
+    /// URL to repository folder
+    private let repositoryURL: URL
+    
+    /**
+     * Create a new test repository with a unique name.
+     * The repository will be deleted when the test case is torn down.
+     */
     static func create() async throws -> TestRepository {
-        let tempDir = FileManager.default.temporaryDirectory
-        let uuid = UUID().uuidString
-
-        let repoPath = tempDir.appendingPathComponent("restic-test-\(uuid)", isDirectory: true).path
-        let cachePath = tempDir.appendingPathComponent("restic-cache-\(uuid)", isDirectory: true).path
-        let testFilesPath = tempDir.appendingPathComponent("restic-test-files-\(uuid)", isDirectory: true)
-            .path
-        let restorePath = tempDir.appendingPathComponent("restic-restore-\(uuid)", isDirectory: true).path
-
-        // Clean up any existing directories
-        let fileManager = FileManager.default
-        if fileManager.fileExists(atPath: repoPath) {
-            try fileManager.removeItem(atPath: repoPath)
-        }
-        if fileManager.fileExists(atPath: cachePath) {
-            try fileManager.removeItem(atPath: cachePath)
-        }
-        if fileManager.fileExists(atPath: testFilesPath) {
-            try fileManager.removeItem(atPath: testFilesPath)
-        }
-        if fileManager.fileExists(atPath: restorePath) {
-            try fileManager.removeItem(atPath: restorePath)
-        }
-
-        // Create directories
-        try FileManager.default.createDirectory(atPath: repoPath, withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(atPath: cachePath, withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(
-            atPath: testFilesPath,
-            withIntermediateDirectories: true
+        let instance = try TestRepository()
+        
+        // Initialize the repository
+        let options = CommonOptions(
+            repository: instance.path,
+            password: instance.password,
+            validateCredentials: false,
+            jsonOutput: true
         )
-        try FileManager.default.createDirectory(atPath: restorePath, withIntermediateDirectories: true)
-
-        // Create test files
-        let testFile1Path = (testFilesPath as NSString).appendingPathComponent("test1.txt")
-        let testFile2Path = (testFilesPath as NSString).appendingPathComponent("test2.txt")
-        try "Test file 1".write(toFile: testFile1Path, atomically: true, encoding: .utf8)
-        try "Test file 2".write(toFile: testFile2Path, atomically: true, encoding: .utf8)
-
-        // Initialize repository
-        let helper = ResticCLIHelper()
-        let initCommand = InitCommand(
-            options: CommonOptions(
-                repository: repoPath,
-                password: "test-password",
-                validateCredentials: true,
-                jsonOutput: true
-            )
-        )
-        _ = try await helper.execute(initCommand)
-
-        return TestRepository(
-            path: repoPath,
-            password: "test-password",
-            cachePath: cachePath,
-            testFilesPath: testFilesPath,
-            restorePath: restorePath
-        )
+        
+        let initCommand = InitCommand(options: options)
+        _ = try await instance.helper.execute(initCommand)
+        
+        return instance
     }
-
-    /// Clean up the test repository
+    
+    /// Private initializer, call `create()` instead
+    private init() throws {
+        // Create unique temporary directory
+        let tempDirURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("restic-tests-\(UUID().uuidString)")
+        
+        // Create repository subdirectory
+        repositoryURL = tempDirURL.appendingPathComponent("repo")
+        path = repositoryURL.path
+        
+        // Create test files directory
+        let testFilesURL = tempDirURL.appendingPathComponent("test-files")
+        testFilesPath = testFilesURL.path
+        
+        // Create restore directory
+        let restoreURL = tempDirURL.appendingPathComponent("restore")
+        restorePath = restoreURL.path
+        
+        // Create cache directory
+        let cacheURL = tempDirURL.appendingPathComponent("cache")
+        cachePath = cacheURL.path
+        
+        // Create all directories
+        try FileManager.default.createDirectory(at: repositoryURL, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: testFilesURL, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: restoreURL, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: cacheURL, withIntermediateDirectories: true)
+        
+        // Initialize helper
+        helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
+    }
+    
+    /**
+     * Create standard test files for use in tests.
+     * This creates several files with different sizes and content types.
+     */
+    func createStandardTestFiles() throws {
+        // Create a simple text file
+        let textFile = (testFilesPath as NSString).appendingPathComponent("text.txt")
+        try "This is a test file.\nIt has multiple lines.\nThis is line 3."
+            .write(toFile: textFile, atomically: true, encoding: .utf8)
+        
+        // Create a binary file with random data
+        let binaryFile = (testFilesPath as NSString).appendingPathComponent("binary.dat")
+        var randomData = Data(count: 1024) // 1KB file
+        _ = randomData.withUnsafeMutableBytes { bytes in
+            SecRandomCopyBytes(kSecRandomDefault, bytes.count, bytes.baseAddress!)
+        }
+        try randomData.write(to: URL(fileURLWithPath: binaryFile))
+        
+        // Create a subdirectory with a file
+        let subdir = (testFilesPath as NSString).appendingPathComponent("subdir")
+        try FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true)
+        
+        let subdirFile = (subdir as NSString).appendingPathComponent("file.txt")
+        try "This is a file in a subdirectory."
+            .write(toFile: subdirFile, atomically: true, encoding: .utf8)
+    }
+    
+    /**
+     * Clean up the test repository.
+     * This deletes all the temporary directories created for the test.
+     */
     func cleanup() throws {
-        // Clean up any existing directories
-        let fileManager = FileManager.default
-        if fileManager.fileExists(atPath: path) {
-            try fileManager.removeItem(atPath: path)
-        }
-        if fileManager.fileExists(atPath: cachePath) {
-            try fileManager.removeItem(atPath: cachePath)
-        }
-        if fileManager.fileExists(atPath: testFilesPath) {
-            try fileManager.removeItem(atPath: testFilesPath)
-        }
-        if fileManager.fileExists(atPath: restorePath) {
-            try fileManager.removeItem(atPath: restorePath)
-        }
+        try FileManager.default.removeItem(at: repositoryURL.deletingLastPathComponent())
     }
 }

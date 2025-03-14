@@ -1,29 +1,23 @@
+import Foundation
 @testable import ResticCLIHelper
+@testable import ResticCLIHelperTypes
+import ResticTypes
 import UmbraTestKit
 import XCTest
 
-/// Base test case for Restic CLI tests
-open class ResticTestCase: XCTestCase {
-    /// Mock repository for testing
-    var mockRepository: MockResticRepository!
-
-    /// CLI helper instance
+/// Base test case for restic CLI tests
+class ResticTestCase: XCTestCase {
+    var mockRepository: TestRepository!
     var helper: ResticCLIHelper!
-
-    override open func setUp() async throws {
+    
+    override func setUp() async throws {
         try await super.setUp()
-
-        // Create mock repository
-        mockRepository = try MockResticRepository()
-
-        // Initialize CLI helper
-        helper = ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
+        mockRepository = try await TestRepository.create()
+        helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
     }
-
-    override open func tearDown() async throws {
-        try mockRepository?.cleanup()
-        mockRepository = nil
-        helper = nil
+    
+    override func tearDown() async throws {
+        try? mockRepository.cleanup()
         try await super.tearDown()
     }
 }

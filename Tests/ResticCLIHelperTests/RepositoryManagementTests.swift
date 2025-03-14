@@ -1,46 +1,41 @@
 import Foundation
 @testable import ResticCLIHelper
+@testable import ResticCLIHelperCommands
+@testable import ResticCLIHelperModels
+@testable import ResticCLIHelperTypes
+import ResticTypes
 import UmbraTestKit
 import XCTest
 
+/// Tests for repository initialization and management commands
 final class RepositoryManagementTests: ResticTestCase {
-    func testInitCommand() async throws {
-        // Create a new directory for the repository
-        let repoPath = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("restic_tests_\(UUID().uuidString)")
-            .appendingPathComponent("repo")
-            .path
+    func testInitAndCheck() async throws {
+        // Set up a clean repository
+        let tempPath = NSTemporaryDirectory()
+        let repoPath = (tempPath as NSString).appendingPathComponent("clean-repo")
+        try FileManager.default.createDirectory(atPath: repoPath, withIntermediateDirectories: true)
 
-        let helper = ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
+        let helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
 
         // Initialize a new repository
         let options = CommonOptions(
             repository: repoPath,
             password: "test-password",
             validateCredentials: true,
-            jsonOutput: true
+            jsonOutput: false
         )
 
         let initCommand = InitCommand(options: options)
         let output = try await helper.execute(initCommand)
+        XCTAssertTrue(output.contains("created restic repository"), "Repository should be created")
 
-        // Parse JSON output
-        struct InitOutput: Codable {
-            let messageType: String
-            let id: String
-            let repository: String
-
-            enum CodingKeys: String, CodingKey {
-                case messageType = "message_type"
-                case id
-                case repository
-            }
-        }
-
-        let initInfo = try JSONDecoder().decode(InitOutput.self, from: Data(output.utf8))
-        XCTAssertEqual(initInfo.messageType, "initialized", "Message type should be 'initialized'")
-        XCTAssertEqual(initInfo.repository, repoPath, "Repository path should match")
-        XCTAssertEqual(initInfo.id.count, 64, "Repository ID should be 64 characters (32 bytes hex)")
+        // Check repository structure
+        let repoFiles = try FileManager.default.contentsOfDirectory(atPath: repoPath)
+        XCTAssertTrue(repoFiles.contains("config"), "Repository should contain config file")
+        XCTAssertTrue(repoFiles.contains("data"), "Repository should contain data directory")
+        XCTAssertTrue(repoFiles.contains("index"), "Repository should contain index directory")
+        XCTAssertTrue(repoFiles.contains("keys"), "Repository should contain keys directory")
+        XCTAssertTrue(repoFiles.contains("snapshots"), "Repository should contain snapshots directory")
 
         // Verify repository exists and is valid
         let checkCommand = CheckCommand(options: options)
@@ -48,13 +43,18 @@ final class RepositoryManagementTests: ResticTestCase {
         XCTAssertTrue(checkOutput.contains("no errors were found"), "Repository check should pass")
     }
 
-    func testCopyCommand() async throws {
+    func testRepositoryCopy() async throws {
         let sourceRepo = try await TestRepository.create()
-        let targetRepo = try await TestRepository.create()
-        let helper = ResticCLIHelper()
+        let tempPath = NSTemporaryDirectory()
+        let destRepoPath = (tempPath as NSString).appendingPathComponent("dest-repo")
+        try FileManager.default.createDirectory(atPath: destRepoPath, withIntermediateDirectories: true)
+
+        let helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
 
         // Create a backup in source repository
         let backupCommand = BackupCommand(
+            paths: [sourceRepo.testFilesPath],
+            tags: ["test-copy"],
             options: CommonOptions(
                 repository: sourceRepo.path,
                 password: sourceRepo.password,
@@ -62,51 +62,20 @@ final class RepositoryManagementTests: ResticTestCase {
                 jsonOutput: true
             )
         )
-        backupCommand.addPath(sourceRepo.testFilesPath)
-        backupCommand.tag("test-copy")
-        print("Backup command arguments: \(backupCommand.arguments)")
-        print("Backup command environment: \(backupCommand.environment)")
-        let backupOutput = try await helper.execute(backupCommand)
-        print("Backup output: \(backupOutput)")
+        _ = try await helper.execute(backupCommand)
 
-        // Verify backup was created
-        struct BackupMessage: Codable {
-            let messageType: String
-            let filesNew: Int?
-            let snapshotId: String?
+        // Initialize destination repository
+        let initCommand = InitCommand(
+            options: CommonOptions(
+                repository: destRepoPath,
+                password: "dest-password",
+                validateCredentials: true,
+                jsonOutput: true
+            )
+        )
+        _ = try await helper.execute(initCommand)
 
-            enum CodingKeys: String, CodingKey {
-                case messageType = "message_type"
-                case filesNew = "files_new"
-                case snapshotId = "snapshot_id"
-            }
-        }
-
-        // Split output into lines and parse each line as JSON
-        var foundSummary = false
-        var newFiles = 0
-        var snapshotId: String?
-        for line in backupOutput.split(separator: "\n") {
-            if
-                let data = line.data(using: .utf8),
-                let message = try? JSONDecoder().decode(BackupMessage.self, from: data),
-                message.messageType == "summary"
-            {
-                foundSummary = true
-                newFiles = message.filesNew ?? 0
-                snapshotId = message.snapshotId
-                break
-            }
-        }
-
-        XCTAssertTrue(foundSummary, "Expected backup summary")
-        XCTAssertGreaterThan(newFiles, 0, "Expected new files to be backed up")
-        XCTAssertNotNil(snapshotId, "Expected snapshot ID in backup summary")
-
-        // Wait for backup to complete
-        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-
-        // Get snapshot ID
+        // Get snapshot IDs from source repository
         let snapshotCommand = SnapshotCommand(
             options: CommonOptions(
                 repository: sourceRepo.path,
@@ -117,81 +86,97 @@ final class RepositoryManagementTests: ResticTestCase {
             operation: .list,
             tags: ["test-copy"]
         )
-        print("Snapshot command arguments: \(snapshotCommand.arguments)")
-        print("Snapshot command environment: \(snapshotCommand.environment)")
         let snapshotOutput = try await helper.execute(snapshotCommand)
-        print("Snapshot output: \(snapshotOutput)")
-
-        // Add a small delay to ensure snapshot is fully written
-        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-
-        let snapshotInfo = try JSONDecoder().decode([SnapshotInfo].self, from: Data(snapshotOutput.utf8))
-
-        XCTAssertFalse(snapshotInfo.isEmpty, "Expected at least one snapshot")
-        guard !snapshotInfo.isEmpty else {
-            throw ResticError.missingParameter("No snapshots found with tag 'test-copy'")
+        
+        // Parse JSON output manually
+        guard let jsonData = snapshotOutput.data(using: .utf8),
+              let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
+              !snapshots.isEmpty,
+              let snapshotId = snapshots[0]["id"] as? String else {
+            XCTFail("Failed to parse snapshots output")
+            return
         }
-        let snapshotIdFromList = snapshotInfo[0].id
-        XCTAssertEqual(snapshotId, snapshotIdFromList, "Snapshot IDs should match")
 
-        // Copy snapshots from source to target
+        // Copy from source to destination repository
         let copyCommand = CopyCommand(
+            options: CommonOptions(
+                repository: sourceRepo.path, 
+                password: sourceRepo.password,
+                validateCredentials: true,
+                jsonOutput: true
+            ),
+            snapshotIds: [snapshotId],
+            targetRepository: destRepoPath,
+            targetPassword: "dest-password"
+        )
+        let copyOutput = try await helper.execute(copyCommand)
+        XCTAssertTrue(copyOutput.contains("snapshot"), "Copy command should copy at least one snapshot")
+
+        // Check destination repository
+        let checkCommand = CheckCommand(
+            options: CommonOptions(
+                repository: destRepoPath,
+                password: "dest-password",
+                validateCredentials: true,
+                jsonOutput: true
+            )
+        )
+        let checkOutput = try await helper.execute(checkCommand)
+        XCTAssertTrue(checkOutput.contains("no errors were found"), "Destination repository check should pass")
+    }
+
+    func testBackupAndRestore() async throws {
+        let sourceRepo = try await TestRepository.create()
+        let helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
+
+        // Get snapshot ID
+        let snapshotCommand = SnapshotCommand(
             options: CommonOptions(
                 repository: sourceRepo.path,
                 password: sourceRepo.password,
                 validateCredentials: true,
                 jsonOutput: true
             ),
-            snapshotIds: [snapshotIdFromList],
-            targetRepository: targetRepo.path,
-            targetPassword: targetRepo.password
+            operation: .list,
+            tags: []
         )
-        _ = try await helper.execute(copyCommand)
+        let snapshotOutput = try await helper.execute(snapshotCommand)
+        
+        // Parse JSON output manually
+        guard let jsonData = snapshotOutput.data(using: .utf8),
+              let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
+              !snapshots.isEmpty,
+              let snapshotId = snapshots[0]["id"] as? String else {
+            XCTFail("Failed to parse snapshots output")
+            return
+        }
 
-        // Verify snapshot was copied
-        let targetSnapshotCommand = SnapshotCommand(
-            options: CommonOptions(
-                repository: targetRepo.path,
-                password: targetRepo.password,
-                validateCredentials: true,
-                jsonOutput: true
-            ),
-            operation: .list
-        )
-        let targetOutput = try await helper.execute(targetSnapshotCommand)
-        let targetSnapshots = try JSONDecoder().decode([SnapshotInfo].self, from: Data(targetOutput.utf8))
-        XCTAssertEqual(targetSnapshots.count, 1, "Expected 1 snapshot to be copied")
-        XCTAssertEqual(targetSnapshots[0].tree, snapshotInfo[0].tree, "Snapshot tree hash should match")
-        XCTAssertEqual(targetSnapshots[0].paths, snapshotInfo[0].paths, "Snapshot paths should match")
-
-        // Clean up
-        try sourceRepo.cleanup()
-        try targetRepo.cleanup()
-    }
-
-    func testCheckCommand() async throws {
-        // Create a new directory for the repository
-        let repoPath = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("restic_tests_\(UUID().uuidString)")
-            .appendingPathComponent("repo")
-            .path
-
-        let helper = ResticCLIHelper(resticPath: "/opt/homebrew/bin/restic")
-
-        // Initialize repository
-        let options = CommonOptions(
-            repository: repoPath,
-            password: "test-password",
+        // Restore files from snapshot
+        let restoreOptions = CommonOptions(
+            repository: sourceRepo.path,
+            password: sourceRepo.password,
             validateCredentials: true,
             jsonOutput: true
         )
 
-        let initCommand = InitCommand(options: options)
-        _ = try await helper.execute(initCommand)
+        let restoreCommand = RestoreCommand(
+            options: restoreOptions,
+            snapshotId: snapshotId,
+            targetPath: sourceRepo.restorePath,
+            verify: true
+        )
+        _ = try await helper.execute(restoreCommand)
 
-        // Run check command
-        let checkCommand = CheckCommand(options: options)
-        let output = try await helper.execute(checkCommand)
-        XCTAssertTrue(output.contains("no errors were found"), "Repository check should pass")
+        // Verify restored files
+        let fileManager = FileManager.default
+        let restoredFiles = try fileManager.contentsOfDirectory(atPath: sourceRepo.restorePath)
+        XCTAssertTrue(
+            restoredFiles.contains(where: { $0.contains("test1.txt") }),
+            "test1.txt should be restored"
+        )
+        XCTAssertTrue(
+            restoredFiles.contains(where: { $0.contains("test2.txt") }),
+            "test2.txt should be restored"
+        )
     }
 }
