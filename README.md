@@ -22,7 +22,7 @@ If you find UmbraCore useful, please consider:
 - [Joining the Restic community](https://forum.restic.net)
 
 ## Quick Start
-- Complete developer documentation is update frequently and available at [https://umbracore.dev](https://umbracore.dev)
+- Complete developer documentation is update frequently and available at [UmbraCore Dot Dev](https://umbracore.dev)
 
 ### Requirements
 - macOS 14.0+
@@ -152,7 +152,7 @@ If you're contributing, please note that certain file types are excluded from Gi
 This approach keeps the repository clean while maintaining the necessary tools for development locally.
 
 ### Documentation
-The complete documentation is available at [https://umbracore.dev](https://umbracore.dev).
+The complete documentation is available at [UmbraCore Dot Dev](https://umbracore.dev).
 
 ## Security
 UmbraCore prioritises security through:
