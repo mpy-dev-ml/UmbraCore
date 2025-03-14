@@ -6,9 +6,9 @@
 
 [![Known Vulnerabilities](https://snyk.io/test/github/mpy-dev-ml/UmbraCore/badge.svg)](https://snyk.io/test/github/mpy-dev-ml/UmbraCore) [![Made with ❤️ in London](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20in-London-D40000.svg)](https://github.com/mpy-dev-ml/UmbraCore) [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
-UmbraCore is built to extend the foundation of [Restic](https://restic.net), a remarkable open-source backup programme that has set the standard for secure, efficient, and reliable backups. In particular, we have focussed extensively on enabling (Restic)(https://restic.net) to work more fully within Swift sandboxed environments as well as using native macOS security features coupled with Restic for those of us who struggle to remember passwords. 
+UmbraCore is built to extend the foundation of [Restic](https://restic.net), a remarkable open-source backup programme that has set the standard for secure, efficient, and reliable backups. In particular, we have focussed extensively on enabling [Restic](https://restic.net) to work more fully within Swift sandboxed environments as well as using native macOS security features coupled with Restic for those of us who struggle to remember passwords. 
 
-We are deeply grateful to the Restic team for their years of dedication in creating and maintaining such an exceptional tool, without whom UmbraCore would not exist. This bears noting as UmbraCore is not designed in any way to replace Restic but, rather, further extend its capabilities to ever more users who will undoubtedly come to use, admire, and love (Restic)(https://restic.net) as much as we do.
+We are deeply grateful to the Restic team for their years of dedication in creating and maintaining such an exceptional tool, without whom UmbraCore would not exist. This bears noting as UmbraCore is not designed in any way to replace Restic but, rather, further extend its capabilities to ever more users who will undoubtedly come to use, admire, and love [Restic](https://restic.net) as much as we do.
 
 Our mission with UmbraCore is to:
 - Extend Restic's capabilities specifically for macOS application development
