@@ -1,5 +1,5 @@
-import CryptoSwift
 @testable import CryptoTypes
+@testable import CryptoTypesTypes
 import XCTest
 
 final class CryptoServiceTests: XCTestCase {

@@ -12,6 +12,7 @@
  * Initialisation vector generation
  */
 
+import CryptoSwiftFoundationIndependent
 import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
@@ -38,8 +39,8 @@ final class SymmetricCrypto: Sendable {
     func encryptData(
         data: SecureBytes,
         key: SecureBytes,
-        algorithm _: String,
-        iv _: SecureBytes?
+        algorithm: String,
+        iv initialIV: SecureBytes?
     ) async -> SecurityResultDTO {
         // Validate inputs
         guard !data.isEmpty else {
@@ -55,19 +56,51 @@ final class SymmetricCrypto: Sendable {
                 error: UmbraErrors.Security.Protocols.invalidInput("Encryption key cannot be empty")
             )
         }
-
-        // In a real implementation, this would use platform crypto APIs
-        // For now, return a placeholder implementation
-
-        // Create a simple "encrypted" representation for demonstration
-        // DO NOT use this in production - this is just a placeholder!
-        var encryptedBytes = Array("ENCRYPTED:".utf8)
-        for i in 0 ..< data.count {
-            encryptedBytes.append(data[i])
+        
+        // Validate key size based on algorithm
+        if algorithm == "AES-GCM" {
+            // AES-256 requires a 32-byte key
+            guard key.count == 32 else {
+                return SecurityResultDTO(
+                    success: false,
+                    error: UmbraErrors.Security.Protocols.invalidInput("AES-256-GCM requires a 32-byte key, but got \(key.count) bytes"),
+                    errorDetails: "AES-256-GCM requires a 32-byte key, but got \(key.count) bytes"
+                )
+            }
         }
-        let encryptedData = SecureBytes(bytes: encryptedBytes)
 
-        return SecurityResultDTO(data: encryptedData)
+        // Use CryptoWrapper for real encryption
+        do {
+            // Generate IV if not provided
+            let iv = initialIV ?? CryptoWrapper.generateRandomIVSecure()
+            
+            // Encrypt data using the CryptoWrapper
+            // For AES-GCM, the IV is typically 12 bytes and is used for nonce
+            if algorithm == "AES-GCM" {
+                let encryptedData = try CryptoWrapper.encryptAES_GCM(
+                    data: data,
+                    key: key,
+                    iv: iv
+                )
+                
+                // Combine IV and encrypted data for proper decryption later
+                // Format: IV + EncryptedData
+                let combinedData = SecureBytes.combine(iv, encryptedData)
+                
+                return SecurityResultDTO(data: combinedData)
+            } else {
+                // Unsupported algorithm
+                return SecurityResultDTO(
+                    success: false,
+                    error: UmbraErrors.Security.Protocols.unsupportedOperation(name: "Encryption algorithm \(algorithm)")
+                )
+            }
+        } catch {
+            return SecurityResultDTO(
+                success: false,
+                error: UmbraErrors.Security.Protocols.encryptionFailed("Encryption failed: \(error.localizedDescription)")
+            )
+        }
     }
 
     /// Decrypt data using a symmetric key
@@ -80,8 +113,8 @@ final class SymmetricCrypto: Sendable {
     func decryptData(
         data: SecureBytes,
         key: SecureBytes,
-        algorithm _: String,
-        iv _: SecureBytes?
+        algorithm: String,
+        iv explicitIV: SecureBytes?
     ) async -> SecurityResultDTO {
         // Validate inputs
         guard !data.isEmpty else {
@@ -97,23 +130,63 @@ final class SymmetricCrypto: Sendable {
                 error: UmbraErrors.Security.Protocols.invalidInput("Decryption key cannot be empty")
             )
         }
-
-        // Check if this is our placeholder encrypted data
-        let prefix = Array("ENCRYPTED:".utf8)
-        let dataArray = Array(0 ..< data.count).map { data[$0] }
-        if data.count > prefix.count, prefix.elementsEqual(dataArray.prefix(prefix.count)) {
-            // Extract the original data
-            let decryptedBytes = Array(dataArray.dropFirst(prefix.count))
-            let decryptedData = SecureBytes(bytes: decryptedBytes)
-            return SecurityResultDTO(data: decryptedData)
+        
+        // Validate key size based on algorithm
+        if algorithm == "AES-GCM" {
+            // AES-256 requires a 32-byte key
+            guard key.count == 32 else {
+                return SecurityResultDTO(
+                    success: false,
+                    error: UmbraErrors.Security.Protocols.invalidInput("AES-256-GCM requires a 32-byte key, but got \(key.count) bytes"),
+                    errorDetails: "AES-256-GCM requires a 32-byte key, but got \(key.count) bytes"
+                )
+            }
         }
 
-        // If not our placeholder format, return an error
-        return SecurityResultDTO(
-            success: false,
-            error: UmbraErrors.Security.Protocols
-                .invalidFormat(reason: "Unable to decrypt data: invalid format")
-        )
+        do {
+            // For AES-GCM decryption
+            if algorithm == "AES-GCM" {
+                // If we have explicit IV, use it and the data as is
+                if let iv = explicitIV {
+                    let decryptedData = try CryptoWrapper.decryptAES_GCM(
+                        data: data,
+                        key: key,
+                        iv: iv
+                    )
+                    return SecurityResultDTO(data: decryptedData)
+                } 
+                // Otherwise, extract IV from the combined data
+                else if data.count > 12 {  // Minimum size for IV + any data
+                    // Extract IV (first 12 bytes) and encrypted data
+                    let iv = data[0..<12]
+                    let encryptedData = data[12..<data.count]
+                    
+                    // Decrypt using the extracted IV
+                    let decryptedData = try CryptoWrapper.decryptAES_GCM(
+                        data: encryptedData,
+                        key: key,
+                        iv: iv
+                    )
+                    return SecurityResultDTO(data: decryptedData)
+                } else {
+                    return SecurityResultDTO(
+                        success: false,
+                        error: UmbraErrors.Security.Protocols.invalidFormat(reason: "Data too short to contain IV and encrypted content")
+                    )
+                }
+            } else {
+                // Unsupported algorithm
+                return SecurityResultDTO(
+                    success: false,
+                    error: UmbraErrors.Security.Protocols.unsupportedOperation(name: "Decryption algorithm \(algorithm)")
+                )
+            }
+        } catch {
+            return SecurityResultDTO(
+                success: false,
+                error: UmbraErrors.Security.Protocols.invalidFormat(reason: "Unable to decrypt data: invalid format")
+            )
+        }
     }
 
     /// Generate an initialisation vector appropriate for the specified algorithm
@@ -132,12 +205,7 @@ final class SymmetricCrypto: Sendable {
             return nil
         }
 
-        // Generate random bytes for the IV
-        var randomBytes = [UInt8](repeating: 0, count: ivSize)
-        for i in 0 ..< ivSize {
-            randomBytes[i] = UInt8.random(in: 0 ... 255)
-        }
-
-        return SecureBytes(bytes: randomBytes)
+        // Use CryptoWrapper to generate random IV
+        return CryptoWrapper.generateRandomIVSecure(size: ivSize)
     }
 }
