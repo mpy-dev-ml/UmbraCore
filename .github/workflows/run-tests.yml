@@ -13,7 +13,6 @@ on:
 
 env:
   DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
-  # Removed SDKROOT to avoid conflicts with system-defined value
   SWIFT_DETERMINISTIC_HASHING: 1
   BAZEL_TEST_TIMEOUT: "600"  # 10 minute timeout for individual tests
 
@@ -81,19 +80,13 @@ jobs:
           TEST_OUTPUT_FLAG="--test_output=all"
         fi
         
-        # Run tests with optimized resource usage
+        # Run tests with standard settings (matching production)
         bazelisk test \
           --config=ci_tests \
           $TEST_OUTPUT_FLAG \
           --flaky_test_attempts=1 \
           --test_verbose_timeout_warnings \
           --show_progress_rate_limit=5 \
-          --jobs=2 \
-          --local_test_jobs=1 \
-          --local_resources=CPU=2.0,RAM=4096 \
-          --remote_timeout=3600 \
-          --worker_verbose \
-          --experimental_ui_max_stdouterr_bytes=10485760 \
           --keep_going \
           $(cat stable_test_targets.txt)
           
