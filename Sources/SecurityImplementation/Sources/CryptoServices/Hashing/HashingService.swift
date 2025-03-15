@@ -11,6 +11,7 @@
  * Data integrity verification
  */
 
+import CommonCrypto
 import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
@@ -55,26 +56,36 @@ final class HashingService: Sendable {
             )
         }
 
-        // In a real implementation, this would use platform crypto APIs
-        // For now, return a placeholder implementation
-
-        // Create a simple "hash" representation for demonstration
-        // DO NOT use this in production - this is just a placeholder!
-        var hashedBytes = Array("\(algorithm):".utf8)
-
-        // Append the first 8 bytes of the original data (or fewer if data is smaller)
-        let dataArray = Array(0 ..< data.count).map { data[$0] }
-        let bytesToAppend = dataArray.prefix(8)
-        hashedBytes.append(contentsOf: bytesToAppend)
-
-        // Add some padding to make it look like a real hash
-        for _ in 0 ..< 8 {
-            hashedBytes.append(UInt8.random(in: 0 ... 255))
+        do {
+            // Implement SHA-256 hashing using CommonCrypto
+            if algorithm == "SHA-256" {
+                // Allocate buffer for SHA-256 result (32 bytes)
+                var hashBytes = [UInt8](repeating: 0, count: 32)
+                
+                // Use CC_SHA256 from CommonCrypto
+                data.withUnsafeBytes { dataPtr in
+                    let dataCount = CC_LONG(data.count)
+                    _ = CC_SHA256(dataPtr.baseAddress, dataCount, &hashBytes)
+                }
+                
+                let hashedData = SecureBytes(bytes: hashBytes)
+                return SecurityResultDTO(data: hashedData)
+            } else {
+                // For now, return an unsupported operation error for other algorithms
+                return SecurityResultDTO(
+                    success: false,
+                    error: UmbraErrors.Security.Protocols
+                        .unsupportedOperation(name: "Hash algorithm: \(algorithm)"),
+                    errorDetails: "The specified hash algorithm is not currently implemented"
+                )
+            }
+        } catch {
+            return SecurityResultDTO(
+                success: false,
+                error: UmbraErrors.Security.Protocols.internalError("Hashing operation failed: \(error.localizedDescription)"),
+                errorDetails: "Error during cryptographic hashing: \(error)"
+            )
         }
-
-        let hashedData = SecureBytes(bytes: hashedBytes)
-
-        return SecurityResultDTO(data: hashedData)
     }
 
     // MARK: - Private Methods
@@ -83,14 +94,9 @@ final class HashingService: Sendable {
     /// - Parameter algorithm: The algorithm name to check
     /// - Returns: True if supported, false otherwise
     private func isSupportedHashAlgorithm(_ algorithm: String) -> Bool {
+        // For now, only SHA-256 is fully implemented
         let supportedAlgorithms = [
             "SHA-256",
-            "SHA-384",
-            "SHA-512",
-            "SHA3-256",
-            "SHA3-512",
-            "BLAKE2b",
-            "BLAKE2s",
         ]
 
         return supportedAlgorithms.contains(algorithm)

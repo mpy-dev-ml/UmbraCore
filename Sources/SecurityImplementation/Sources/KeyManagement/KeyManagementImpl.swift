@@ -148,7 +148,7 @@ public actor KeyManagementImpl: KeyManagementProtocol {
                 let decryptResult = await cryptoService.decryptSymmetric(
                     data: existingCiphertext,
                     key: oldKey,
-                    config: SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
+                    config: SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
                 )
                 guard case let .success(decryptedData) = decryptResult else {
                     if case let .failure(error) = decryptResult {
@@ -161,7 +161,7 @@ public actor KeyManagementImpl: KeyManagementProtocol {
                 let encryptResult = await cryptoService.encryptSymmetric(
                     data: decryptedData,
                     key: newKey,
-                    config: SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
+                    config: SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
                 )
                 guard case let .success(encryptedData) = encryptResult else {
                     if case let .failure(error) = encryptResult {
