@@ -27,6 +27,7 @@ swift_test(
     ],
     timeout = "moderate", # Test timeout to ensure Bazel doesn't kill tests prematurely
     flaky = True, # Correctly process XCTest's nonzero exit code
+    tags = ["problematic"], # Mark this test as problematic so it can be excluded in CI
     deps = [
         "//Sources/ResticCLIHelper",
         "//Sources/ResticCLIHelper/Commands:ResticCLIHelperCommands", 

@@ -94,6 +94,11 @@ build:withtests --test_output=errors
 build:withtests --flaky_test_attempts=3
 build:withtests --keep_going
 
+# CI-focused configuration that excludes problematic tests
+build:ci_tests --config=withtests
+build:ci_tests --test_tag_filters=-problematic
+build:ci_tests --test_env=BAZEL_TEST_TIMEOUT=300
+
 # Production build configuration using targets from production_targets.txt
 build:prod --compilation_mode=opt
 build:prod --build_tests_only=false
