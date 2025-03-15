@@ -6,12 +6,21 @@ umbra_swift_test(
     srcs = [
         "CredentialManagerTests.swift",
         "CryptoServiceTests.swift",
+        "TestHelpers.swift",
     ],
     module_name = "CryptoTests",
     deps = [
+        "//Sources/CoreErrors",
         "//Sources/CryptoTypes",
+        "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
+        "//Sources/CryptoTypes/Services:CryptoTypesServices",
+        "//Sources/CryptoTypes/Types:CryptoTypesTypes",
+        "//Sources/SecurityImplementation",
+        "//Sources/SecurityTypes",
+        "//Sources/UmbraCoreTypes",
         "//Sources/UmbraCryptoService",
+        "//Sources/UmbraMocks",
+        "//Sources/XPCProtocolsCore",
         "//Tests/UmbraTestKit:UmbraTestKit",
-        "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
 )
