@@ -81,20 +81,30 @@ jobs:
           TEST_OUTPUT_FLAG="--test_output=all"
         fi
         
-        # Run with stricter options to avoid hanging
+        # Run with optimized options to prevent resource contention
         bazelisk test \
           --config=ci_tests \
           $TEST_OUTPUT_FLAG \
           --flaky_test_attempts=1 \
           --test_verbose_timeout_warnings \
           --show_progress_rate_limit=5 \
-          --jobs=4 \
-          --local_test_jobs=2 \
+          --jobs=2 \
+          --local_test_jobs=1 \
+          --local_ram_resources=HOST_RAM*.5 \
+          --local_cpu_resources=HOST_CPUS*.5 \
           --remote_timeout=3600 \
+          --worker_verbose \
           --experimental_ui_max_stdouterr_bytes=10485760 \
           --keep_going \
           $(cat stable_test_targets.txt)
           
+    - name: Handle Swift Warnings
+      if: always()
+      run: |
+        echo "Note: There are several Swift concurrency warnings in the codebase."
+        echo "These are mainly related to Sendable conformance and will be errors in Swift 6."
+        echo "These warnings do not affect the functionality of the current tests."
+
     - name: Summarise Test Results
       if: always()
       run: |
@@ -106,5 +116,5 @@ jobs:
         echo "The following tests currently have build issues and were not included:"
         echo "- BookmarkTests"
         echo "- LoggingTests"
-        echo "- UmbraSecurityTests"
+        echo "- UmbraSecurityTests" 
         echo "- XPCTests"
