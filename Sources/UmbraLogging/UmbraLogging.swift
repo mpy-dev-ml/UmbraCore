@@ -100,7 +100,8 @@ public enum UmbraLogging {
         #if canImport(UmbraLoggingAdapters)
             return UmbraLoggingAdapters.createLogger()
         #else
-            fatalError("UmbraLoggingAdapters module not available")
+            // Use a fallback console logger for testing
+            return FallbackConsoleLogger()
         #endif
     }
 
@@ -111,7 +112,27 @@ public enum UmbraLogging {
         #if canImport(UmbraLoggingAdapters)
             return UmbraLoggingAdapters.createLoggerWithDestinations(destinations)
         #else
-            fatalError("UmbraLoggingAdapters module not available")
+            // Use a fallback console logger for testing
+            return FallbackConsoleLogger()
         #endif
+    }
+}
+
+/// A simple fallback console logger for use in tests when UmbraLoggingAdapters is not available
+private final class FallbackConsoleLogger: LoggingProtocol {
+    func debug(_ message: String, metadata: LogMetadata?) async {
+        print("[DEBUG] \(message)")
+    }
+
+    func info(_ message: String, metadata: LogMetadata?) async {
+        print("[INFO] \(message)")
+    }
+
+    func warning(_ message: String, metadata: LogMetadata?) async {
+        print("[WARNING] \(message)")
+    }
+
+    func error(_ message: String, metadata: LogMetadata?) async {
+        print("[ERROR] \(message)")
     }
 }

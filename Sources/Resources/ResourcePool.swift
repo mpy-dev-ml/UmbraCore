@@ -54,11 +54,11 @@ public actor ResourcePool<Resource: BasicManagedResource> {
     /// the pool is full, an error is thrown.
     ///
     /// - Parameter resource: Resource to add to the pool.
-    /// - Throws: `ResourcesTypes.ResourceError.poolExhausted` if the pool is at capacity,
+    /// - Throws: `ResourcesProtocols.ResourceError.poolExhausted` if the pool is at capacity,
     ///          or any error thrown by the resource during acquisition.
     public func add(_ resource: Resource) async throws {
         guard resources.count < maxSize else {
-            throw ResourcesTypes.ResourceError.poolExhausted
+            throw ResourcesProtocols.ResourceError.poolExhausted("Maximum pool size of \(maxSize) reached")
         }
 
         // Test the resource by acquiring and releasing it

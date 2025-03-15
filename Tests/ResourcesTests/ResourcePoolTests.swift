@@ -107,9 +107,11 @@ class ResourcePoolTests: XCTestCase {
             try await pool.add(resource2)
             XCTFail("Expected ResourceError.poolExhausted")
         } catch let error as ResourcesProtocols.ResourceError {
-            if case .poolExhausted = error {
+            switch error {
+            case .poolExhausted:
                 // Expected error
-            } else {
+                break
+            default:
                 XCTFail("Unexpected error: \(error)")
             }
         } catch {
