@@ -1,9 +1,9 @@
 // Test support for SecurityInterfaces
+import CoreTypesInterfaces
 import Foundation
 import SecurityBridge
 import SecurityInterfaces
 import SecurityInterfacesProtocols
-import CoreTypesInterfaces
 
 /// Mock implementation of SecurityProviderProtocol for testing
 public final class TestSecurityProviderImplementation: SecurityInterfacesProtocols.SecurityProviderProtocol {
@@ -24,7 +24,7 @@ public final class TestSecurityProviderImplementation: SecurityInterfacesProtoco
     }
 
     public func hash(
-        _ data: CoreTypesInterfaces.BinaryData
+        _: CoreTypesInterfaces.BinaryData
     ) async throws -> CoreTypesInterfaces.BinaryData {
         // Return a fixed hash value for testing
         CoreTypesInterfaces.BinaryData(bytes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])

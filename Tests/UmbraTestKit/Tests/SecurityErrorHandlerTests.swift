@@ -62,7 +62,7 @@ final class SecurityErrorHandlerTests: XCTestCase {
         ("testMaxRetries", testMaxRetries),
         ("testErrorStatsTracking", testErrorStatsTracking),
         ("testRapidFailureThrottling", testRapidFailureThrottling),
-        ("testContextReset", testContextReset)
+        ("testContextReset", testContextReset),
     ]
 
     override func setUp() async throws {
@@ -128,19 +128,19 @@ final class SecurityErrorHandlerTests: XCTestCase {
     func testRapidFailureThrottling() async throws {
         // Create a special test handler that doesn't depend on real time
         let testHandler = SecurityErrorHandler()
-        
+
         // First, ensure we have a clean state
         testHandler.resetErrorCounts()
-        
+
         // Verify that with no errors, retries are always allowed
         XCTAssertTrue(testHandler.shouldRetryAfterRapidFailures(for: "test_context"))
-        
+
         // Mark an error for test_context
         _ = testHandler.handleError(
             SecurityInterfaces.SecurityError.accessError("Test error"),
             context: "test_context"
         )
-        
+
         // Different context should be allowed regardless
         XCTAssertTrue(testHandler.shouldRetryAfterRapidFailures(for: "different_context"))
     }

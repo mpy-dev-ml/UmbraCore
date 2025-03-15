@@ -56,16 +56,16 @@ final class StatsCommandTests: ResticTestCase {
 
         let statsCommand = StatsCommand(options: options)
         let output = try await helper.execute(statsCommand)
-        
+
         XCTAssertFalse(output.isEmpty, "Stats command should produce output")
-        
+
         // Parse JSON manually since we don't have access to the Decodable implementation
         let jsonData = Data(output.utf8)
         guard let json = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
             XCTFail("Failed to parse stats output as JSON")
             return
         }
-        
+
         // Validate some basic stats properties
         XCTAssertNotNil(json["total_file_count"], "Should have total_file_count in stats")
         XCTAssertNotNil(json["snapshots_count"], "Should have snapshots_count in stats")

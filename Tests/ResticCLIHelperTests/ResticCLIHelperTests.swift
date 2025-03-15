@@ -81,11 +81,12 @@ final class ResticCLIHelperTests: ResticTestCase {
         )
 
         let snapshotOutput = try await helper.execute(snapshotCommand)
-        
+
         // Parse JSON output manually
         guard let jsonData = snapshotOutput.data(using: .utf8),
               let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
-              !snapshots.isEmpty else {
+              !snapshots.isEmpty
+        else {
             XCTFail("Failed to parse snapshots output")
             return
         }
@@ -115,7 +116,7 @@ final class ResticCLIHelperTests: ResticTestCase {
             tags: ["test-restore"],
             options: backupOptions
         )
-        
+
         _ = try await helper.execute(backupCommand)
 
         // Get the snapshot ID
@@ -130,12 +131,13 @@ final class ResticCLIHelperTests: ResticTestCase {
         )
 
         let snapshotOutput = try await helper.execute(snapshotCommand)
-        
+
         // Parse JSON output manually
         guard let jsonData = snapshotOutput.data(using: .utf8),
               let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
               !snapshots.isEmpty,
-              let snapshotId = snapshots[0]["id"] as? String else {
+              let snapshotId = snapshots[0]["id"] as? String
+        else {
             XCTFail("Failed to parse snapshots output")
             return
         }
@@ -154,7 +156,7 @@ final class ResticCLIHelperTests: ResticTestCase {
             targetPath: mockRepository.restorePath,
             verify: true
         )
-        
+
         _ = try await helper.execute(restoreCommand)
 
         // Verify file was restored
@@ -174,7 +176,7 @@ final class ResticCLIHelperTests: ResticTestCase {
             targetPath: mockRepository.restorePath,
             verify: false
         )
-        
+
         _ = try await helper.execute(restoreCommand2)
 
         // Verify file was restored
@@ -203,7 +205,7 @@ final class ResticCLIHelperTests: ResticTestCase {
             tags: ["test-snapshot"],
             options: options
         )
-        
+
         _ = try await helper.execute(backupCommand)
 
         // List snapshots
@@ -218,16 +220,17 @@ final class ResticCLIHelperTests: ResticTestCase {
         )
 
         let snapshotOutput = try await helper.execute(snapshotCommand)
-        
+
         // Parse JSON output manually
         guard let jsonData = snapshotOutput.data(using: .utf8),
               let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
               !snapshots.isEmpty,
-              let tags = snapshots[0]["tags"] as? [String] else {
+              let tags = snapshots[0]["tags"] as? [String]
+        else {
             XCTFail("Failed to parse snapshots output")
             return
         }
-        
+
         XCTAssertFalse(snapshots.isEmpty, "Should have at least one snapshot")
         XCTAssertEqual(tags, ["test-snapshot"])
     }

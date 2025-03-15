@@ -203,7 +203,8 @@ private final class DefaultBookmarkService: BookmarkServiceType {
 /// Default implementation of the security provider that conforms to both required protocols
 private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFoundationImpl,
     FoundationSecurityProvider, FoundationCryptoServiceImpl, FoundationKeyManagementImpl,
-    RandomDataGenerating {
+    RandomDataGenerating
+{
     // MARK: - FoundationSecurityProvider Properties
 
     /// Implementation of cryptoService for FoundationSecurityProvider protocol
@@ -241,6 +242,7 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
                         userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for encryption"]
                     ))
                 }
+
             case "decrypt":
                 if let data = options["data"] as? Data, let key = options["key"] as? Data {
                     let decrypted = try await decrypt(data, key: key)
@@ -264,7 +266,7 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
             return FoundationOperationResultImpl.failure(error)
         }
     }
-    
+
     /// Perform a security operation with Foundation types (FoundationSecurityProvider protocol)
     /// - Parameters:
     ///   - operation: Operation identifier as a string
@@ -287,6 +289,7 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
                         userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for encryption"]
                     ))
                 }
+
             case "decrypt":
                 if let data = options["data"] as? Data, let key = options["key"] as? Data {
                     let decrypted = try await decrypt(data, key: key)
@@ -593,7 +596,7 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
     func generateRandomBytes(length: Int) async throws -> Data {
         try await generateKey(length: length)
     }
-    
+
     func generateRandomData(length: Int) async -> Result<Data, Error> {
         do {
             let randomData = try await generateKey(length: length)
@@ -702,9 +705,9 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
     func encryptAsymmetric(
         data: Data,
         publicKey: Data,
-        algorithm: String,
-        keySizeInBits: Int,
-        options: [String: String]
+        algorithm _: String,
+        keySizeInBits _: Int,
+        options _: [String: String]
     ) async -> FoundationSecurityResult {
         // Simplified implementation that falls back to symmetric encryption
         do {
@@ -722,9 +725,9 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
     func decryptAsymmetric(
         data: Data,
         privateKey: Data,
-        algorithm: String,
-        keySizeInBits: Int,
-        options: [String: String]
+        algorithm _: String,
+        keySizeInBits _: Int,
+        options _: [String: String]
     ) async -> FoundationSecurityResult {
         // Simplified implementation that falls back to symmetric decryption
         do {
@@ -741,8 +744,8 @@ private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFound
     // Hashing with specific algorithm
     func hash(
         data: Data,
-        algorithm: String,
-        options: [String: String]
+        algorithm _: String,
+        options _: [String: String]
     ) async -> FoundationSecurityResult {
         do {
             let hashed = try await hashData(data)
@@ -764,6 +767,6 @@ extension DefaultSecurityProviderImpl {
         options: [String: Any]
     ) async -> Result<Data?, Error> {
         // Reuse the Swift implementation
-        return await performOperationSwift(operation: operation, options: options)
+        await performOperationSwift(operation: operation, options: options)
     }
 }

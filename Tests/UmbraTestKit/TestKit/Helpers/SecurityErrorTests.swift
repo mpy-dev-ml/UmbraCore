@@ -1,6 +1,6 @@
-import XCTest
 import Core
 import ErrorHandlingDomains
+import XCTest
 
 /// Test cases for Security Error handling
 final class SecurityErrorTests: XCTestCase {

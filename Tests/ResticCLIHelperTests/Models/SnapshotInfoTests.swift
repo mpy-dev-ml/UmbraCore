@@ -23,18 +23,18 @@ final class SnapshotInfoTests: XCTestCase {
             XCTFail("Failed to parse snapshot JSON")
             return
         }
-        
+
         XCTAssertEqual(snapshotDict["hostname"] as? String, "test-host")
         XCTAssertEqual(snapshotDict["username"] as? String, "test-user")
         XCTAssertEqual(snapshotDict["paths"] as? [String], ["/path/to/backup"])
         XCTAssertEqual(snapshotDict["tags"] as? [String], ["test", "sample"])
         XCTAssertEqual(snapshotDict["id"] as? String, "abc123")
         XCTAssertEqual(snapshotDict["short_id"] as? String, "abc123")
-        
+
         // Verify time string format
         let timeString = snapshotDict["time"] as? String
         XCTAssertEqual(timeString, "2023-08-01T12:00:00Z")
-        
+
         // Verify we can parse the date if needed
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]

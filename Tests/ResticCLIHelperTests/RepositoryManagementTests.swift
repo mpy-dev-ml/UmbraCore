@@ -87,12 +87,13 @@ final class RepositoryManagementTests: ResticTestCase {
             tags: ["test-copy"]
         )
         let snapshotOutput = try await helper.execute(snapshotCommand)
-        
+
         // Parse JSON output manually
         guard let jsonData = snapshotOutput.data(using: .utf8),
               let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
               !snapshots.isEmpty,
-              let snapshotId = snapshots[0]["id"] as? String else {
+              let snapshotId = snapshots[0]["id"] as? String
+        else {
             XCTFail("Failed to parse snapshots output")
             return
         }
@@ -100,7 +101,7 @@ final class RepositoryManagementTests: ResticTestCase {
         // Copy from source to destination repository
         let copyCommand = CopyCommand(
             options: CommonOptions(
-                repository: sourceRepo.path, 
+                repository: sourceRepo.path,
                 password: sourceRepo.password,
                 validateCredentials: true,
                 jsonOutput: true
@@ -141,12 +142,13 @@ final class RepositoryManagementTests: ResticTestCase {
             tags: []
         )
         let snapshotOutput = try await helper.execute(snapshotCommand)
-        
+
         // Parse JSON output manually
         guard let jsonData = snapshotOutput.data(using: .utf8),
               let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
               !snapshots.isEmpty,
-              let snapshotId = snapshots[0]["id"] as? String else {
+              let snapshotId = snapshots[0]["id"] as? String
+        else {
             XCTFail("Failed to parse snapshots output")
             return
         }

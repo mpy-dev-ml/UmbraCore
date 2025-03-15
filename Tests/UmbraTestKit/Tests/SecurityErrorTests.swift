@@ -8,9 +8,9 @@ final class SecurityErrorTests: XCTestCase {
     static var allTests = [
         ("testErrorDescription", testErrorDescription),
         ("testErrorEquality", testErrorEquality),
-        ("testErrorMetadata", testErrorMetadata)
+        ("testErrorMetadata", testErrorMetadata),
     ]
-    
+
     func testErrorDescription() {
         let error = SecurityInterfaces.SecurityError.accessError("Access denied to /test/path")
         XCTAssertEqual(

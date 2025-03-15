@@ -26,7 +26,7 @@ final class RepositoryStatsTests: XCTestCase {
             XCTFail("Failed to parse stats JSON")
             return
         }
-        
+
         XCTAssertEqual(statsDict["total_size"] as? Int, 1_073_741_824)
         XCTAssertEqual(statsDict["total_uncompressed_size"] as? Int, 2_147_483_648)
         XCTAssertEqual(statsDict["total_file_count"] as? Int, 42)
