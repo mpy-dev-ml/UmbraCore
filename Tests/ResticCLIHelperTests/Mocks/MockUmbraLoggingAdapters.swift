@@ -2,6 +2,7 @@ import Foundation
 import UmbraLogging
 
 // This mock implementation provides the UmbraLoggingAdapters functionality needed for tests
+// Make sure this module is properly recognized in the test environment
 public enum UmbraLoggingAdapters {
     public static func createLogger() -> LoggingProtocol {
         MockLogger()

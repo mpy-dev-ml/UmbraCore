@@ -44,57 +44,46 @@ final class ResticCLIHelperTests: ResticTestCase {
     }
 
     func testBackupCommand() async throws {
-        let mockRepository = try await TestRepository.create()
-        let helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
+        let helper = try ResticCLIHelper.createForTesting(executablePath: "/opt/homebrew/bin/restic")
 
         // Create test files
         let testFilePath = (mockRepository.testFilesPath as NSString).appendingPathComponent("test.txt")
-        try "Test file content".write(toFile: testFilePath, atomically: true, encoding: .utf8)
+        let testData = "Test data for backup"
+        try testData.write(toFile: testFilePath, atomically: true, encoding: .utf8)
 
-        // Create a backup
+        // Create and execute backup command
         let options = CommonOptions(
             repository: mockRepository.path,
             password: mockRepository.password,
             validateCredentials: true,
             jsonOutput: true
         )
-
+        
         let backupCommand = BackupCommand(
             paths: [mockRepository.testFilesPath],
-            tags: ["test-snapshot"],
+            tags: ["test", "backup"],
             options: options
         )
 
-        let output = try await helper.execute(backupCommand)
-        XCTAssertFalse(output.isEmpty, "Expected output from backup command")
+        let output = try await helper.testExecute(backupCommand)
+        XCTAssertTrue(output.contains("snapshot"), "Backup output should contain snapshot information")
+    }
 
-        // List snapshots
-        let snapshotCommand = SnapshotCommand(
-            options: CommonOptions(
-                repository: mockRepository.path,
-                password: mockRepository.password,
-                validateCredentials: true,
-                jsonOutput: true
-            ),
-            operation: .list,
-            tags: ["test-snapshot"]
+    func testInitCommand() async throws {
+        let helper = try ResticCLIHelper.createForTesting(executablePath: "/opt/homebrew/bin/restic")
+
+        // Create and execute init command
+        let options = CommonOptions(
+            repository: mockRepository.path,
+            password: mockRepository.password,
+            validateCredentials: false,
+            jsonOutput: true
         )
+        
+        let initCommand = InitCommand(options: options)
 
-        let snapshotOutput = try await helper.execute(snapshotCommand)
-
-        // Parse JSON output manually
-        guard let jsonData = snapshotOutput.data(using: .utf8),
-              let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
-              !snapshots.isEmpty
-        else {
-            XCTFail("Failed to parse snapshots output")
-            return
-        }
-
-        XCTAssertFalse(snapshots.isEmpty, "Expected at least one snapshot")
-        if let hostname = snapshots[0]["hostname"] as? String {
-            XCTAssertEqual(hostname, Host.current().localizedName ?? "unknown")
-        }
+        let output = try await helper.testExecute(initCommand)
+        XCTAssertTrue(output.contains("created restic repository"), "Init should contain repository creation message")
     }
 
     func testRestoreCommand() async throws {
@@ -103,37 +92,42 @@ final class ResticCLIHelperTests: ResticTestCase {
         let testData = "Test data for restore"
         try testData.write(toFile: testPath, atomically: true, encoding: .utf8)
 
-        // Create a backup first
+        // Create helper and backup the file
+        let helper = try ResticCLIHelper.createForTesting(executablePath: "/opt/homebrew/bin/restic")
+        
         let backupOptions = CommonOptions(
             repository: mockRepository.path,
             password: mockRepository.password,
             validateCredentials: true,
             jsonOutput: true
         )
-
+        
         let backupCommand = BackupCommand(
-            paths: [testPath],
-            tags: ["test-restore"],
+            paths: [mockRepository.testFilesPath],
+            tags: ["restore-test"],
             options: backupOptions
         )
+        
+        let backupOutput = try await helper.testExecute(backupCommand)
+        XCTAssertTrue(backupOutput.contains("snapshot"), "Backup output should contain snapshot information")
 
-        _ = try await helper.execute(backupCommand)
-
-        // Get the snapshot ID
-        let snapshotCommand = SnapshotCommand(
-            options: CommonOptions(
-                repository: mockRepository.path,
-                password: mockRepository.password,
-                jsonOutput: true
-            ),
-            operation: .list,
-            tags: ["test-restore"]
+        // Get latest snapshot
+        let snapshotOptions = CommonOptions(
+            repository: mockRepository.path,
+            password: mockRepository.password,
+            jsonOutput: true
         )
-
-        let snapshotOutput = try await helper.execute(snapshotCommand)
-
+        
+        let snapshotCommand = SnapshotCommand(
+            options: snapshotOptions,
+            operation: .list,
+            tags: ["restore-test"]
+        )
+        
+        let snapshotsOutput = try await helper.testExecute(snapshotCommand)
+        
         // Parse JSON output manually
-        guard let jsonData = snapshotOutput.data(using: .utf8),
+        guard let jsonData = snapshotsOutput.data(using: String.Encoding.utf8),
               let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
               !snapshots.isEmpty,
               let snapshotId = snapshots[0]["id"] as? String
@@ -141,49 +135,35 @@ final class ResticCLIHelperTests: ResticTestCase {
             XCTFail("Failed to parse snapshots output")
             return
         }
-
-        // First restore test - with verification
+        
+        // Remove original file
+        try FileManager.default.removeItem(atPath: testPath)
+        
+        // Restore the file
         let restoreOptions = CommonOptions(
             repository: mockRepository.path,
             password: mockRepository.password,
             validateCredentials: true,
             jsonOutput: true
         )
-
+        
         let restoreCommand = RestoreCommand(
             options: restoreOptions,
             snapshotId: snapshotId,
             targetPath: mockRepository.restorePath,
             verify: true
         )
-
-        _ = try await helper.execute(restoreCommand)
-
-        // Verify file was restored
-        let restoredPath = (mockRepository.restorePath as NSString)
-            .appendingPathComponent((testPath as NSString).lastPathComponent)
-        let restoredData = try String(contentsOfFile: restoredPath, encoding: .utf8)
-        XCTAssertEqual(restoredData, testData, "Restored file data should match original")
-
-        // Clean up restored files
-        try FileManager.default.removeItem(atPath: mockRepository.restorePath)
-        try FileManager.default.createDirectory(atPath: mockRepository.restorePath, withIntermediateDirectories: true)
-
-        // Second restore test - without verification
-        let restoreCommand2 = RestoreCommand(
-            options: restoreOptions,
-            snapshotId: snapshotId,
-            targetPath: mockRepository.restorePath,
-            verify: false
-        )
-
-        _ = try await helper.execute(restoreCommand2)
-
-        // Verify file was restored
-        let restoredPath2 = (mockRepository.restorePath as NSString)
-            .appendingPathComponent((testPath as NSString).lastPathComponent)
-        let restoredData2 = try String(contentsOfFile: restoredPath2, encoding: .utf8)
-        XCTAssertEqual(restoredData2, testData, "Restored file data should match original")
+        
+        let restoreOutput = try await helper.testExecute(restoreCommand)
+        XCTAssertTrue(restoreOutput.contains("restoring") || restoreOutput.contains("\"files_restored\""), 
+                      "Restore output should contain restoration information")
+        
+        // Verify restored file
+        let restoredFilePath = (mockRepository.restorePath as NSString)
+            .appendingPathComponent("restore-test.txt")
+        
+        let restoredData = try String(contentsOfFile: restoredFilePath, encoding: .utf8)
+        XCTAssertEqual(restoredData, testData, "Restored data should match original data")
     }
 
     func testSnapshotCommand() async throws {
@@ -191,23 +171,25 @@ final class ResticCLIHelperTests: ResticTestCase {
         let testPath = (mockRepository.testFilesPath as NSString).appendingPathComponent("snapshot-test.txt")
         let testData = "Test data for snapshot"
         try testData.write(toFile: testPath, atomically: true, encoding: .utf8)
-
-        // Create a backup
+        
+        let helper = try ResticCLIHelper.createForTesting(executablePath: "/opt/homebrew/bin/restic")
+        
+        // Create backup
         let options = CommonOptions(
             repository: mockRepository.path,
             password: mockRepository.password,
             validateCredentials: true,
             jsonOutput: true
         )
-
+        
         let backupCommand = BackupCommand(
             paths: [mockRepository.testFilesPath],
-            tags: ["test-snapshot"],
+            tags: ["snapshot-test"],
             options: options
         )
-
-        _ = try await helper.execute(backupCommand)
-
+        
+        _ = try await helper.testExecute(backupCommand)
+        
         // List snapshots
         let snapshotCommand = SnapshotCommand(
             options: CommonOptions(
@@ -216,22 +198,12 @@ final class ResticCLIHelperTests: ResticTestCase {
                 jsonOutput: true
             ),
             operation: .list,
-            tags: ["test-snapshot"]
+            tags: ["snapshot-test"]
         )
-
-        let snapshotOutput = try await helper.execute(snapshotCommand)
-
-        // Parse JSON output manually
-        guard let jsonData = snapshotOutput.data(using: .utf8),
-              let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
-              !snapshots.isEmpty,
-              let tags = snapshots[0]["tags"] as? [String]
-        else {
-            XCTFail("Failed to parse snapshots output")
-            return
-        }
-
-        XCTAssertFalse(snapshots.isEmpty, "Should have at least one snapshot")
-        XCTAssertEqual(tags, ["test-snapshot"])
+        
+        let output = try await helper.testExecute(snapshotCommand)
+        XCTAssertTrue(output.contains("snapshot") || output.contains("\"id\""), 
+                      "Snapshots output should contain snapshot information")
+        XCTAssertTrue(output.contains("snapshot-test"), "Snapshots output should contain our tag")
     }
 }

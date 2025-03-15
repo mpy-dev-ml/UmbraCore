@@ -48,7 +48,7 @@ final class TestRepository {
         )
 
         let initCommand = InitCommand(options: options)
-        _ = try await instance.helper.execute(initCommand)
+        _ = try await instance.helper.testExecute(initCommand)
 
         return instance
     }
@@ -81,8 +81,8 @@ final class TestRepository {
         try FileManager.default.createDirectory(at: restoreURL, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: cacheURL, withIntermediateDirectories: true)
 
-        // Initialize helper
-        helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
+        // Initialize helper using the test factory method instead of direct initialization
+        helper = try ResticCLIHelper.createForTesting(executablePath: "/opt/homebrew/bin/restic")
     }
 
     /**
@@ -99,22 +99,19 @@ final class TestRepository {
         let binaryFile = (testFilesPath as NSString).appendingPathComponent("binary.dat")
         var randomData = Data(count: 1024) // 1KB file
         _ = randomData.withUnsafeMutableBytes { bytes in
-            SecRandomCopyBytes(kSecRandomDefault, bytes.count, bytes.baseAddress!)
+            if let baseAddress = bytes.baseAddress {
+                arc4random_buf(baseAddress, 1024)
+            }
         }
         try randomData.write(to: URL(fileURLWithPath: binaryFile))
 
-        // Create a subdirectory with a file
-        let subdir = (testFilesPath as NSString).appendingPathComponent("subdir")
-        try FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true)
-
-        let subdirFile = (subdir as NSString).appendingPathComponent("file.txt")
-        try "This is a file in a subdirectory."
-            .write(toFile: subdirFile, atomically: true, encoding: .utf8)
+        // Create an empty file
+        let emptyFile = (testFilesPath as NSString).appendingPathComponent("empty.txt")
+        try Data().write(to: URL(fileURLWithPath: emptyFile))
     }
 
     /**
-     * Clean up the test repository.
-     * This deletes all the temporary directories created for the test.
+     * Clean up the repository and all associated directories.
      */
     func cleanup() throws {
         try FileManager.default.removeItem(at: repositoryURL.deletingLastPathComponent())

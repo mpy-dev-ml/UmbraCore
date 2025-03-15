@@ -3,9 +3,9 @@ load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
 umbra_swift_library(
     name = "UmbraLoggingAdapters",
-    srcs = glob([
-        "Sources/**/*.swift",
-    ]),
+    srcs = [
+        "UmbraLoggingAdapters.swift",
+    ],
     additional_copts = [],
     swift_mode = "default",
     enable_library_evolution = False,  # Disable library evolution for SwiftyBeaver compatibility

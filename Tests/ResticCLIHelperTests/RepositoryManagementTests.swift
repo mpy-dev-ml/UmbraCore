@@ -15,7 +15,8 @@ final class RepositoryManagementTests: ResticTestCase {
         let repoPath = (tempPath as NSString).appendingPathComponent("clean-repo")
         try FileManager.default.createDirectory(atPath: repoPath, withIntermediateDirectories: true)
 
-        let helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
+        // Use the test factory method instead of direct initialization
+        let helper = try ResticCLIHelper.createForTesting(executablePath: "/opt/homebrew/bin/restic")
 
         // Initialize a new repository
         let options = CommonOptions(
@@ -26,7 +27,7 @@ final class RepositoryManagementTests: ResticTestCase {
         )
 
         let initCommand = InitCommand(options: options)
-        let output = try await helper.execute(initCommand)
+        let output = try await helper.testExecute(initCommand)
         XCTAssertTrue(output.contains("created restic repository"), "Repository should be created")
 
         // Check repository structure
@@ -39,7 +40,7 @@ final class RepositoryManagementTests: ResticTestCase {
 
         // Verify repository exists and is valid
         let checkCommand = CheckCommand(options: options)
-        let checkOutput = try await helper.execute(checkCommand)
+        let checkOutput = try await helper.testExecute(checkCommand)
         XCTAssertTrue(checkOutput.contains("no errors were found"), "Repository check should pass")
     }
 
@@ -49,7 +50,8 @@ final class RepositoryManagementTests: ResticTestCase {
         let destRepoPath = (tempPath as NSString).appendingPathComponent("dest-repo")
         try FileManager.default.createDirectory(atPath: destRepoPath, withIntermediateDirectories: true)
 
-        let helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
+        // Use the test factory method instead of direct initialization
+        let helper = try ResticCLIHelper.createForTesting(executablePath: "/opt/homebrew/bin/restic")
 
         // Create a backup in source repository
         let backupCommand = BackupCommand(
@@ -62,7 +64,7 @@ final class RepositoryManagementTests: ResticTestCase {
                 jsonOutput: true
             )
         )
-        _ = try await helper.execute(backupCommand)
+        _ = try await helper.testExecute(backupCommand)
 
         // Initialize destination repository
         let initCommand = InitCommand(
@@ -73,7 +75,7 @@ final class RepositoryManagementTests: ResticTestCase {
                 jsonOutput: true
             )
         )
-        _ = try await helper.execute(initCommand)
+        _ = try await helper.testExecute(initCommand)
 
         // Get snapshot IDs from source repository
         let snapshotCommand = SnapshotCommand(
@@ -86,10 +88,10 @@ final class RepositoryManagementTests: ResticTestCase {
             operation: .list,
             tags: ["test-copy"]
         )
-        let snapshotOutput = try await helper.execute(snapshotCommand)
+        let snapshotOutput = try await helper.testExecute(snapshotCommand)
 
         // Parse JSON output manually
-        guard let jsonData = snapshotOutput.data(using: .utf8),
+        guard let jsonData = snapshotOutput.data(using: String.Encoding.utf8),
               let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
               !snapshots.isEmpty,
               let snapshotId = snapshots[0]["id"] as? String
@@ -110,7 +112,7 @@ final class RepositoryManagementTests: ResticTestCase {
             targetRepository: destRepoPath,
             targetPassword: "dest-password"
         )
-        let copyOutput = try await helper.execute(copyCommand)
+        let copyOutput = try await helper.testExecute(copyCommand)
         XCTAssertTrue(copyOutput.contains("snapshot"), "Copy command should copy at least one snapshot")
 
         // Check destination repository
@@ -122,13 +124,14 @@ final class RepositoryManagementTests: ResticTestCase {
                 jsonOutput: true
             )
         )
-        let checkOutput = try await helper.execute(checkCommand)
+        let checkOutput = try await helper.testExecute(checkCommand)
         XCTAssertTrue(checkOutput.contains("no errors were found"), "Destination repository check should pass")
     }
 
     func testBackupAndRestore() async throws {
         let sourceRepo = try await TestRepository.create()
-        let helper = try ResticCLIHelper(executablePath: "/opt/homebrew/bin/restic")
+        // Use the test factory method instead of direct initialization
+        let helper = try ResticCLIHelper.createForTesting(executablePath: "/opt/homebrew/bin/restic")
 
         // Get snapshot ID
         let snapshotCommand = SnapshotCommand(
@@ -141,10 +144,10 @@ final class RepositoryManagementTests: ResticTestCase {
             operation: .list,
             tags: []
         )
-        let snapshotOutput = try await helper.execute(snapshotCommand)
+        let snapshotOutput = try await helper.testExecute(snapshotCommand)
 
         // Parse JSON output manually
-        guard let jsonData = snapshotOutput.data(using: .utf8),
+        guard let jsonData = snapshotOutput.data(using: String.Encoding.utf8),
               let snapshots = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]],
               !snapshots.isEmpty,
               let snapshotId = snapshots[0]["id"] as? String
@@ -167,7 +170,7 @@ final class RepositoryManagementTests: ResticTestCase {
             targetPath: sourceRepo.restorePath,
             verify: true
         )
-        _ = try await helper.execute(restoreCommand)
+        _ = try await helper.testExecute(restoreCommand)
 
         // Verify restored files
         let fileManager = FileManager.default
