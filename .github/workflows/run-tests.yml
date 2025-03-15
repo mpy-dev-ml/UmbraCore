@@ -15,6 +15,7 @@ env:
   DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
   SDKROOT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
   SWIFT_DETERMINISTIC_HASHING: 1
+  BAZEL_TEST_TIMEOUT: "600"  # 10 minute timeout for individual tests
 
 permissions:
   contents: read
@@ -25,6 +26,7 @@ jobs:
   test:
     name: Run Stable Tests
     runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 60  # Set a job-level timeout
     
     steps:
     - uses: actions/checkout@v4
@@ -70,6 +72,7 @@ jobs:
         fi
           
     - name: Run Stable Tests
+      timeout-minutes: 45  # Set a step-level timeout
       run: |
         echo "Running stable tests with ci_tests configuration..."
         TEST_OUTPUT_FLAG="--test_output=errors"
@@ -78,7 +81,19 @@ jobs:
           TEST_OUTPUT_FLAG="--test_output=all"
         fi
         
-        bazelisk test --config=ci_tests $TEST_OUTPUT_FLAG --flaky_test_attempts=3 --keep_going $(cat stable_test_targets.txt)
+        # Run with stricter options to avoid hanging
+        bazelisk test \
+          --config=ci_tests \
+          $TEST_OUTPUT_FLAG \
+          --flaky_test_attempts=1 \
+          --test_verbose_timeout_warnings \
+          --show_progress_rate_limit=5 \
+          --jobs=4 \
+          --local_test_jobs=2 \
+          --remote_timeout=3600 \
+          --experimental_ui_max_stdouterr_bytes=10485760 \
+          --keep_going \
+          $(cat stable_test_targets.txt)
           
     - name: Summarise Test Results
       if: always()
