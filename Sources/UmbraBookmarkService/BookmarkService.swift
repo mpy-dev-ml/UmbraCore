@@ -145,7 +145,7 @@ public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCList
 
             // Now we're on the main thread
             Task { @MainActor [self] in
-                if let connection = getConnection(forId: connectionId) {
+                if let connection = self.getConnection(forId: connectionId) {
                     // Configure the connection object
                     connection.exportedObject = self
                     connection.resume()
