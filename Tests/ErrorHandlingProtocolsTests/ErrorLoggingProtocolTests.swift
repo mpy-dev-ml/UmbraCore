@@ -1,6 +1,7 @@
 @testable import ErrorHandling
 @testable import ErrorHandlingCommon
 @testable import ErrorHandlingProtocols
+@testable import ErrorHandlingRecovery
 import Foundation
 import XCTest
 
@@ -15,25 +16,34 @@ final class ErrorLoggingProtocolTests: XCTestCase {
         var loggedErrors: [Error] = []
         var loggedInfo: [String] = []
         var loggedWarnings: [String] = []
-        var recoveryActions: [String: RecoveryOption] = [:]
-
-        func logError(_ error: Error, file _: String, function _: String, line _: Int) {
+        var loggedWithSeverity: [(error: Error, severity: ErrorSeverity)] = []
+        var recoveryActions: [String: ErrorHandlingRecovery.RecoveryAction] = [:]
+        
+        // Required method from ErrorLoggingProtocol
+        func log<E: UmbraError>(error: E, severity: ErrorSeverity) {
+            loggedErrors.append(error)
+            loggedWithSeverity.append((error, severity))
+        }
+        
+        // Additional logging methods for testing
+        func logError(_ error: Error, file: String, function: String, line: Int) {
             loggedErrors.append(error)
         }
 
-        func logInfo(_ message: String, file _: String, function _: String, line _: Int) {
+        func logInfo(_ message: String, file: String, function: String, line: Int) {
             loggedInfo.append(message)
         }
 
-        func logWarning(_ message: String, file _: String, function _: String, line _: Int) {
+        func logWarning(_ message: String, file: String, function: String, line: Int) {
             loggedWarnings.append(message)
         }
 
-        func registerRecoveryOption(forErrorCode code: String, option: RecoveryOption) {
+        // Recovery option registration and retrieval
+        func registerRecoveryOption(forErrorCode code: String, option: ErrorHandlingRecovery.RecoveryAction) {
             recoveryActions[code] = option
         }
 
-        func getRecoveryOption(forError error: Error) -> RecoveryOption? {
+        func getRecoveryOption(forError error: Error) -> ErrorHandlingRecovery.RecoveryAction? {
             guard let umbraError = error as? UmbraError else { return nil }
             return recoveryActions[umbraError.code]
         }
@@ -47,9 +57,9 @@ final class ErrorLoggingProtocolTests: XCTestCase {
         var underlyingError: Error?
         var source: ErrorHandlingCommon.ErrorSource?
 
-        func with(context _: ErrorHandlingCommon.ErrorContext) -> Self { self }
-        func with(underlyingError _: Error) -> Self { self }
-        func with(source _: ErrorHandlingCommon.ErrorSource) -> Self { self }
+        func with(context: ErrorHandlingCommon.ErrorContext) -> Self { self }
+        func with(underlyingError: Error) -> Self { self }
+        func with(source: ErrorHandlingCommon.ErrorSource) -> Self { self }
     }
 
     private var errorLogger: MockErrorLogger!
@@ -77,6 +87,25 @@ final class ErrorLoggingProtocolTests: XCTestCase {
         if let loggedError = errorLogger.loggedErrors[0] as? TestLoggingError {
             XCTAssertEqual(loggedError.code, "L001", "Error code should match")
             XCTAssertEqual(loggedError.errorDescription, "Test logging error", "Error description should match")
+        }
+    }
+
+    /**
+     * Test error logging with severity
+     */
+    func testErrorLoggingWithSeverity() {
+        // Given
+        let error = TestLoggingError(code: "L002", errorDescription: "Critical error")
+        
+        // When
+        errorLogger.log(error: error, severity: .critical)
+        
+        // Then
+        XCTAssertEqual(errorLogger.loggedWithSeverity.count, 1, "Should have logged one error with severity")
+        XCTAssertEqual(errorLogger.loggedWithSeverity[0].severity, .critical, "Severity should be critical")
+        
+        if let loggedError = errorLogger.loggedWithSeverity[0].error as? TestLoggingError {
+            XCTAssertEqual(loggedError.code, "L002", "Error code should match")
         }
     }
 
@@ -112,30 +141,27 @@ final class ErrorLoggingProtocolTests: XCTestCase {
         let errorCode = "R001"
         let error = TestLoggingError(code: errorCode, errorDescription: "Recoverable error")
 
-        let recoveryOption = RecoveryOption(
-            localizedTitle: "Retry Connection",
-            localizedDescription: "Attempt to reconnect to the server",
-            handler: { true } // Simple handler that always succeeds
+        // Create a RecoveryAction (concrete implementation of RecoveryOption)
+        let recoveryAction = ErrorHandlingRecovery.RecoveryAction(
+            id: "retry_connection",
+            title: "Retry Connection",
+            description: "Attempt to reconnect to the server",
+            isDefault: true,
+            handler: { /* Simple handler that always succeeds */ }
         )
 
         // When - Register recovery option
-        errorLogger.registerRecoveryOption(forErrorCode: errorCode, option: recoveryOption)
+        errorLogger.registerRecoveryOption(forErrorCode: errorCode, option: recoveryAction)
 
         // Then - Verify we can retrieve it
         let retrievedOption = errorLogger.getRecoveryOption(forError: error)
         XCTAssertNotNil(retrievedOption, "Should retrieve a recovery option for this error")
 
         // Verify the recovery option properties
-        XCTAssertEqual(retrievedOption?.localizedTitle, "Retry Connection", "Title should match")
-        XCTAssertEqual(retrievedOption?.localizedDescription, "Attempt to reconnect to the server", "Description should match")
-
-        // Test executing the handler
-        if let handler = retrievedOption?.handler {
-            let result = handler()
-            XCTAssertTrue(result, "Recovery handler should return true")
-        } else {
-            XCTFail("Recovery handler should be available")
-        }
+        XCTAssertEqual(retrievedOption?.title, "Retry Connection", "Title should match")
+        XCTAssertEqual(retrievedOption?.description, "Attempt to reconnect to the server", "Description should match")
+        XCTAssertEqual(retrievedOption?.id, "retry_connection", "ID should match")
+        XCTAssertTrue(retrievedOption?.isDefault ?? false, "Should be set as default")
     }
 
     /**
@@ -169,9 +195,9 @@ final class ErrorLoggingProtocolTests: XCTestCase {
         // Given
         let errorCodes = ["NETWORK", "DISK", "PERMISSION"]
         let options = [
-            RecoveryOption(localizedTitle: "Retry Network", localizedDescription: "Retry network connection", handler: { true }),
-            RecoveryOption(localizedTitle: "Check Disk", localizedDescription: "Verify disk space", handler: { true }),
-            RecoveryOption(localizedTitle: "Request Permission", localizedDescription: "Ask for permission", handler: { true }),
+            ErrorHandlingRecovery.RecoveryAction(id: "retry_network", title: "Retry Network", description: "Retry network connection", handler: {}),
+            ErrorHandlingRecovery.RecoveryAction(id: "check_disk", title: "Check Disk", description: "Verify disk space", handler: {}),
+            ErrorHandlingRecovery.RecoveryAction(id: "request_permission", title: "Request Permission", description: "Ask for permission", handler: {})
         ]
 
         // When - Register all options
@@ -185,7 +211,7 @@ final class ErrorLoggingProtocolTests: XCTestCase {
             let retrievedOption = errorLogger.getRecoveryOption(forError: error)
 
             XCTAssertNotNil(retrievedOption, "Should retrieve recovery option for \(code)")
-            XCTAssertEqual(retrievedOption?.localizedTitle, options[index].localizedTitle,
+            XCTAssertEqual(retrievedOption?.title, options[index].title,
                            "Title should match for \(code)")
         }
     }

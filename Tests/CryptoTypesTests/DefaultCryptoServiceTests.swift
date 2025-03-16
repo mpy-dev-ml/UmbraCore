@@ -1,11 +1,13 @@
 import CryptoTypes
+import CryptoTypesServices
+import ErrorHandlingDomains
 import XCTest
 
 final class DefaultCryptoServiceTests: XCTestCase {
-    private var cryptoService: DefaultCryptoService!
+    private var cryptoService: DefaultCryptoServiceImpl!
 
     override func setUp() async throws {
-        cryptoService = DefaultCryptoService()
+        cryptoService = DefaultCryptoServiceImpl()
     }
 
     func testGenerateSecureRandomKey() async throws {
@@ -25,26 +27,54 @@ final class DefaultCryptoServiceTests: XCTestCase {
         let key = try await cryptoService.generateSecureRandomKey(length: 32)
         let initVector = try await cryptoService.generateSecureRandomBytes(length: 12)
 
-        let encrypted = try await cryptoService.encrypt(data, withKey: key, iv: initVector)
-        XCTAssertNotEqual(encrypted, data)
-
-        let decrypted = try await cryptoService.decrypt(encrypted, withKey: key, iv: initVector)
-        XCTAssertEqual(decrypted, data)
+        do {
+            _ = try await cryptoService.encrypt(data, using: key, iv: initVector)
+            XCTFail("Expected encryption to fail with functionality moved error")
+        } catch {
+            // Print the actual error for debugging
+            print("Encryption error: \(error)")
+            print("Localized description: \(error.localizedDescription)")
+            
+            // Check against specific UmbraErrors error
+            if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
+                switch securityError {
+                case .encryptionFailed(let reason):
+                    XCTAssertEqual(reason, "Encryption functionality moved to ResticBar")
+                default:
+                    XCTFail("Expected encryptionFailed error, got \(securityError)")
+                }
+            } else {
+                XCTFail("Expected UmbraErrors.GeneralSecurity.Core.encryptionFailed, got \(type(of: error))")
+            }
+        }
     }
 
     func testEncryptDecryptWithInvalidKey() async throws {
         let data = Data("Hello, World!".utf8)
         let key = try await cryptoService.generateSecureRandomKey(length: 32)
-        let invalidKey = try await cryptoService.generateSecureRandomKey(length: 32)
+        // We won't use this but keep it to show intent
+        let _ = try await cryptoService.generateSecureRandomKey(length: 32)
         let initVector = try await cryptoService.generateSecureRandomBytes(length: 12)
 
-        let encrypted = try await cryptoService.encrypt(data, withKey: key, iv: initVector)
-
         do {
-            _ = try await cryptoService.decrypt(encrypted, withKey: invalidKey, iv: initVector)
-            XCTFail("Expected decryption to fail with invalid key")
-        } catch let error as CryptoError {
-            XCTAssertTrue(error.localizedDescription.contains("decryption failed"))
+            _ = try await cryptoService.encrypt(data, using: key, iv: initVector)
+            XCTFail("Expected encryption to fail with functionality moved error")
+        } catch {
+            // Print the actual error for debugging
+            print("Encryption error: \(error)")
+            print("Localized description: \(error.localizedDescription)")
+            
+            // Check against specific UmbraErrors error
+            if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
+                switch securityError {
+                case .encryptionFailed(let reason):
+                    XCTAssertEqual(reason, "Encryption functionality moved to ResticBar")
+                default:
+                    XCTFail("Expected encryptionFailed error, got \(securityError)")
+                }
+            } else {
+                XCTFail("Expected UmbraErrors.GeneralSecurity.Core.encryptionFailed, got \(type(of: error))")
+            }
         }
     }
 
@@ -52,15 +82,28 @@ final class DefaultCryptoServiceTests: XCTestCase {
         let data = Data("Hello, World!".utf8)
         let key = try await cryptoService.generateSecureRandomKey(length: 32)
         let initVector = try await cryptoService.generateSecureRandomBytes(length: 12)
-        let invalidInitVector = try await cryptoService.generateSecureRandomBytes(length: 12)
-
-        let encrypted = try await cryptoService.encrypt(data, withKey: key, iv: initVector)
+        // We won't use this but keep it to show intent
+        let _ = try await cryptoService.generateSecureRandomBytes(length: 12)
 
         do {
-            _ = try await cryptoService.decrypt(encrypted, withKey: key, iv: invalidInitVector)
-            XCTFail("Expected decryption to fail with invalid IV")
-        } catch let error as CryptoError {
-            XCTAssertTrue(error.localizedDescription.contains("decryption failed"))
+            _ = try await cryptoService.encrypt(data, using: key, iv: initVector)
+            XCTFail("Expected encryption to fail with functionality moved error")
+        } catch {
+            // Print the actual error for debugging
+            print("Encryption error: \(error)")
+            print("Localized description: \(error.localizedDescription)")
+            
+            // Check against specific UmbraErrors error
+            if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
+                switch securityError {
+                case .encryptionFailed(let reason):
+                    XCTAssertEqual(reason, "Encryption functionality moved to ResticBar")
+                default:
+                    XCTFail("Expected encryptionFailed error, got \(securityError)")
+                }
+            } else {
+                XCTFail("Expected UmbraErrors.GeneralSecurity.Core.encryptionFailed, got \(type(of: error))")
+            }
         }
     }
 }
