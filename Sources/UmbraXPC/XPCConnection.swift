@@ -88,15 +88,15 @@ public enum XPCError: LocalizedError, Sendable {
     public var errorDescription: String? {
         switch self {
         case let .connectionFailed(reason):
-            return "XPC connection failed: \(reason)"
+            "XPC connection failed: \(reason)"
         case let .messageFailed(reason):
-            return "Failed to send XPC message: \(reason)"
+            "Failed to send XPC message: \(reason)"
         case let .invalidMessage(reason):
-            return "Invalid XPC message format: \(reason)"
+            "Invalid XPC message format: \(reason)"
         case let .invalidRequest(message):
-            return "XPC invalid request: \(message)"
+            "XPC invalid request: \(message)"
         case let .invalidData(message):
-            return "XPC invalid data: \(message)"
+            "XPC invalid data: \(message)"
         }
     }
 }

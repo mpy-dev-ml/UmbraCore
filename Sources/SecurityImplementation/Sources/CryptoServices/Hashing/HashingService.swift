@@ -61,13 +61,13 @@ final class HashingService: Sendable {
             if algorithm == "SHA-256" {
                 // Allocate buffer for SHA-256 result (32 bytes)
                 var hashBytes = [UInt8](repeating: 0, count: 32)
-                
+
                 // Use CC_SHA256 from CommonCrypto
                 data.withUnsafeBytes { dataPtr in
                     let dataCount = CC_LONG(data.count)
                     _ = CC_SHA256(dataPtr.baseAddress, dataCount, &hashBytes)
                 }
-                
+
                 let hashedData = SecureBytes(bytes: hashBytes)
                 return SecurityResultDTO(data: hashedData)
             } else {

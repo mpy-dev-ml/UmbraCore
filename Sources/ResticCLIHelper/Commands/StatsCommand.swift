@@ -12,13 +12,14 @@ public final class StatsCommand: ResticCommand, @unchecked Sendable {
 
     private var mode: Mode?
     private var tag: String?
-    private var path: String?
+    private var paths: [String] = []
     private var snapshotID: String?
     public private(set) var options: CommonOptions
     private var host: String?
 
     public var commandName: String { "stats" }
 
+    /// Command-specific arguments
     public var commandArguments: [String] {
         var args = [String]()
 
@@ -27,25 +28,39 @@ public final class StatsCommand: ResticCommand, @unchecked Sendable {
         }
 
         if let mode {
-            args.append("--mode")
-            args.append(mode.rawValue)
+            args.append("--mode=\(mode.rawValue)")
         }
 
         if let host {
-            args.append("--host")
-            args.append(host)
+            args.append("--host=\(host)")
         }
 
         if let tag {
-            args.append("--tag")
-            args.append(tag)
+            args.append("--tag=\(tag)")
         }
 
-        if let path {
-            args.append("--path")
-            args.append(path)
+        // Add all paths to arguments
+        args.append(contentsOf: paths)
+
+        return args
+    }
+
+    /// Override the arguments property to include both common and command-specific arguments
+    public var arguments: [String] {
+        var args = [String]()
+
+        // Add command-specific arguments
+        args.append(contentsOf: commandArguments)
+
+        // Add common arguments from options
+        if options.quiet {
+            args.append("--quiet")
+        }
+        if options.jsonOutput {
+            args.append("--json")
         }
 
+        args.append(contentsOf: options.arguments)
         return args
     }
 
@@ -74,11 +89,22 @@ public final class StatsCommand: ResticCommand, @unchecked Sendable {
         return self
     }
 
-    /// Set the path filter
+    /// Add a path filter
     @discardableResult
     public func path(_ path: String) -> Self {
-        self.path = path
-        return self
+        var newPaths = paths
+        newPaths.append(path)
+
+        // Since this is a final class, we can use self.init to create a new instance
+        let newCommand = StatsCommand(options: options)
+        newCommand.mode = mode
+        newCommand.tag = tag
+        newCommand.host = host
+        newCommand.snapshotID = snapshotID
+        newCommand.paths = newPaths
+
+        // Use 'as! Self' to satisfy the return type
+        return newCommand as! Self
     }
 
     /// Set the snapshot ID

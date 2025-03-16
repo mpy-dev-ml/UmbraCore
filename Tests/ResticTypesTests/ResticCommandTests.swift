@@ -25,7 +25,7 @@ private struct TestResticCommand: ResticCommand {
             throw ResticError.invalidConfiguration("Command cannot be empty")
         }
     }
-    
+
     // Fix: provide correct implementation for arguments property to match protocol
     var arguments: [String] {
         var args = [String]()

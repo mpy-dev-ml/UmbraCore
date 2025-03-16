@@ -37,6 +37,7 @@ swift_test(
         "//Sources/ResticTypes",
         "//Sources/UmbraLogging",
         "//Sources/UmbraLoggingAdapters",
+        "//Tests/TestKit:TestKit",
         "//Tests/UmbraTestKit:UmbraTestKit",
     ],
 )
