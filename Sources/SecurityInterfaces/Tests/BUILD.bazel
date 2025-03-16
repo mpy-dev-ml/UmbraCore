@@ -29,3 +29,36 @@ swift_test(
         "//Sources/XPCProtocolsCore",
     ],
 )
+
+swift_test(
+    name = "XPCMigrationTests",
+    srcs = ["XPCMigrationTests.swift"],
+    deps = [
+        "//Sources/SecurityInterfaces:SecurityInterfacesForTesting",
+        "//Sources/SecurityInterfacesBase",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/XPCProtocolsCore",
+    ],
+)
+
+swift_test(
+    name = "SecurityProviderBaseTests",
+    srcs = ["SecurityProviderBaseTests.swift"],
+    deps = [
+        "//Sources/SecurityInterfaces:SecurityInterfacesForTesting",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+        "//Sources/UmbraCoreTypes",
+    ],
+)
+
+# Meta-target that runs all SecurityInterfaces tests
+test_suite(
+    name = "AllSecurityInterfacesTests",
+    tests = [
+        ":SecurityProviderTests",
+        ":XPCMigrationTests",
+        ":SecurityProviderBaseTests",
+    ],
+)
