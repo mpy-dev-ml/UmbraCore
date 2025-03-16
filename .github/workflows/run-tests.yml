@@ -1,4 +1,4 @@
-name: UmbraCore Tests
+name: Core Tests
 
 on:
   push:
@@ -59,6 +59,7 @@ jobs:
         //Tests/SecurityImplementationTests:SecurityImplementationTests
         //Tests/UmbraTestKit/Tests:UmbraTestKitTests
         //Tests/UmbraXPCTests:UmbraXPCTests
+        //Sources/CoreErrors/Tests:CoreErrorsTests
         EOL
         
         # Count targets
