@@ -8,7 +8,7 @@ import XCTest
 ///
 /// These tests verify that security error types correctly implement
 /// the expected behaviour and properties across different error cases.
-final class SecurityErrorsTests: XCTestCase {
+final class TestErrorHandling_Security: XCTestCase {
     
     // MARK: - Security Protocol Errors Tests
     

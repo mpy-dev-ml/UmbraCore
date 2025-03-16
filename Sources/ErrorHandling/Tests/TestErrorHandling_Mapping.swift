@@ -10,7 +10,7 @@ import XCTest
 ///
 /// These tests verify that errors are correctly mapped between
 /// different domains and types within the UmbraCore error handling system.
-final class ErrorMappingTests: XCTestCase {
+final class TestErrorHandling_Mapping: XCTestCase {
     
     // MARK: - Security Error Mapping Tests
     
