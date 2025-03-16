@@ -60,6 +60,7 @@ jobs:
         //Tests/UmbraTestKit/Tests:UmbraTestKitTests
         //Tests/UmbraXPCTests:UmbraXPCTests
         //Sources/CoreErrors/Tests:CoreErrorsTests
+        //Sources/ErrorHandling/Tests:ErrorHandlingTests
         EOL
         
         # Count targets
