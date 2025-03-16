@@ -50,6 +50,8 @@ jobs:
         cat > stable_test_targets.txt << EOL
         //Tests/CoreTests:CoreTests
         //Tests/CryptoTests:CryptoTests
+        //Tests/CryptoTypesTests:CryptoTypesTests
+        //Tests/ErrorHandlingProtocolsTests:ErrorHandlingProtocolsTests
         //Tests/KeychainTests:KeychainTests
         //Tests/ModelsTests:ModelsTests
         //Tests/ResourcesTests:ResourcesTests
@@ -132,11 +134,11 @@ jobs:
       run: |
         TARGET_COUNT=$(wc -l < stable_test_targets.txt | xargs)
         echo "Completed testing of $TARGET_COUNT stable test targets"
-        echo "ResticCLIHelperTests were excluded as they require special environment setup"
         
         # List any tests with build issues that weren't attempted
         echo "The following tests currently have build issues and were not included:"
         echo "- BookmarkTests"
-        echo "- LoggingTests"
+        echo "- LoggingTests" 
+        echo "- ResticCLIHelperTests"
         echo "- UmbraSecurityTests" 
         echo "- XPCTests"
