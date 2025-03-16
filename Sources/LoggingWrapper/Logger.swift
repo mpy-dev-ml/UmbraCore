@@ -115,7 +115,7 @@ public class Logger: LoggerProtocol {
         Task { @MainActor [self] in
             // ConfigurationManager is already MainActor-isolated, but this task runs on MainActor
             // so we can access it directly
-            let shouldConfigure = configManager.configure()
+            let shouldConfigure = self.configManager.configure()
 
             // Create a new destination instance on the main actor
             // This avoids sending non-Sendable types across task boundaries
