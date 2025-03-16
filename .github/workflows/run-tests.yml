@@ -61,6 +61,9 @@ jobs:
         //Tests/UmbraXPCTests:UmbraXPCTests
         //Sources/CoreErrors/Tests:CoreErrorsTests
         //Sources/ErrorHandling/Tests:ErrorHandlingTests
+        //Sources/SecurityInterfaces/Tests:SecurityProviderTests
+        //Sources/SecurityInterfaces/Tests:SecurityProviderBaseTests
+        //Sources/SecurityInterfaces/Tests:XPCMigrationTests
         EOL
         
         # Count targets
