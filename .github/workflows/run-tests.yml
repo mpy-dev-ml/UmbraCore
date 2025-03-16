@@ -90,6 +90,36 @@ jobs:
           --keep_going \
           $(cat stable_test_targets.txt)
           
+    - name: Generate Coverage Report
+      if: success()
+      run: |
+        echo "Generating code coverage report..."
+        # Generate coverage report for all source files
+        bazelisk coverage \
+          --combined_report=lcov \
+          --instrumentation_filter="^//Sources" \
+          --test_output=errors \
+          --nocache_test_results \
+          $(cat stable_test_targets.txt)
+        
+        # The coverage report will be in bazel-out/_coverage/_coverage_report.dat
+        # Convert LCOV to a format that Codecov can understand
+        mkdir -p coverage_reports
+        cp bazel-out/_coverage/_coverage_report.dat coverage_reports/lcov.info
+        
+        echo "Code coverage report generated successfully"
+        
+    - name: Upload Coverage to Codecov
+      if: success()
+      uses: codecov/codecov-action@v4
+      with:
+        files: coverage_reports/lcov.info
+        name: UmbraCore-Coverage
+        fail_ci_if_error: false
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
     - name: Handle Swift Warnings
       if: always()
       run: |
