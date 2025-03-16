@@ -56,7 +56,7 @@ final class SymmetricCrypto: Sendable {
                 error: UmbraErrors.Security.Protocols.invalidInput("Encryption key cannot be empty")
             )
         }
-        
+
         // Validate key size based on algorithm
         if algorithm == "AES-GCM" {
             // AES-256 requires a 32-byte key
@@ -73,7 +73,7 @@ final class SymmetricCrypto: Sendable {
         do {
             // Generate IV if not provided
             let iv = initialIV ?? CryptoWrapper.generateRandomIVSecure()
-            
+
             // Encrypt data using the CryptoWrapper
             // For AES-GCM, the IV is typically 12 bytes and is used for nonce
             if algorithm == "AES-GCM" {
@@ -82,11 +82,11 @@ final class SymmetricCrypto: Sendable {
                     key: key,
                     iv: iv
                 )
-                
+
                 // Combine IV and encrypted data for proper decryption later
                 // Format: IV + EncryptedData
                 let combinedData = SecureBytes.combine(iv, encryptedData)
-                
+
                 return SecurityResultDTO(data: combinedData)
             } else {
                 // Unsupported algorithm
@@ -130,7 +130,7 @@ final class SymmetricCrypto: Sendable {
                 error: UmbraErrors.Security.Protocols.invalidInput("Decryption key cannot be empty")
             )
         }
-        
+
         // Validate key size based on algorithm
         if algorithm == "AES-GCM" {
             // AES-256 requires a 32-byte key
@@ -154,13 +154,13 @@ final class SymmetricCrypto: Sendable {
                         iv: iv
                     )
                     return SecurityResultDTO(data: decryptedData)
-                } 
+                }
                 // Otherwise, extract IV from the combined data
-                else if data.count > 12 {  // Minimum size for IV + any data
+                else if data.count > 12 { // Minimum size for IV + any data
                     // Extract IV (first 12 bytes) and encrypted data
-                    let iv = data[0..<12]
-                    let encryptedData = data[12..<data.count]
-                    
+                    let iv = data[0 ..< 12]
+                    let encryptedData = data[12 ..< data.count]
+
                     // Decrypt using the extracted IV
                     let decryptedData = try CryptoWrapper.decryptAES_GCM(
                         data: encryptedData,

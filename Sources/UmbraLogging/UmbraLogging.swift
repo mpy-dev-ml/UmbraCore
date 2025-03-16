@@ -120,19 +120,19 @@ public enum UmbraLogging {
 
 /// A simple fallback console logger for use in tests when UmbraLoggingAdapters is not available
 private final class FallbackConsoleLogger: LoggingProtocol {
-    func debug(_ message: String, metadata: LogMetadata?) async {
+    func debug(_ message: String, metadata _: LogMetadata?) async {
         print("[DEBUG] \(message)")
     }
 
-    func info(_ message: String, metadata: LogMetadata?) async {
+    func info(_ message: String, metadata _: LogMetadata?) async {
         print("[INFO] \(message)")
     }
 
-    func warning(_ message: String, metadata: LogMetadata?) async {
+    func warning(_ message: String, metadata _: LogMetadata?) async {
         print("[WARNING] \(message)")
     }
 
-    func error(_ message: String, metadata: LogMetadata?) async {
+    func error(_ message: String, metadata _: LogMetadata?) async {
         print("[ERROR] \(message)")
     }
 }
