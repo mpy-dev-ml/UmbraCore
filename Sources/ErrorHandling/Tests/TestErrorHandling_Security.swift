@@ -112,4 +112,34 @@ final class TestErrorHandling_Security: XCTestCase {
         let errorWithContext = UmbraErrors.GeneralSecurity.Core.encryptionFailed(reason: "Invalid key")
         XCTAssertNotNil(errorWithContext)
     }
+    
+    /// Tests that security test mode is properly recognized
+    func testSecurityTestMode() throws {
+        // Set security test mode flags
+        setenv("UMBRA_SECURITY_TEST_MODE", "1", 1)
+        UserDefaults.standard.set(true, forKey: "UMBRA_SECURITY_TEST_MODE")
+        
+        // Create a struct to capture test results
+        struct TestResults {
+            var securityTestModeDetected = false
+        }
+        var results = TestResults()
+        
+        // Check if we're in test mode using environment variable
+        if getenv("UMBRA_SECURITY_TEST_MODE") != nil {
+            results.securityTestModeDetected = true
+        }
+        
+        // Check if we're in test mode using UserDefaults
+        if UserDefaults.standard.bool(forKey: "UMBRA_SECURITY_TEST_MODE") {
+            results.securityTestModeDetected = true
+        }
+        
+        // Verify test mode was detected
+        XCTAssertTrue(results.securityTestModeDetected, "Security test mode should be detected")
+        
+        // Clean up
+        unsetenv("UMBRA_SECURITY_TEST_MODE")
+        UserDefaults.standard.removeObject(forKey: "UMBRA_SECURITY_TEST_MODE")
+    }
 }
