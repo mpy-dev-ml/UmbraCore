@@ -32,6 +32,7 @@ public enum XPCProtocolMigrationFactory {
         service: NSObject? = nil
     ) -> any XPCServiceProtocolStandard {
         if let legacyService = service {
+            // Warning: This use of LegacyXPCServiceAdapter is deprecated and will be removed in future
             return LegacyXPCServiceAdapter(service: legacyService)
         }
         return ModernXPCService()
@@ -45,6 +46,7 @@ public enum XPCProtocolMigrationFactory {
         service: NSObject? = nil
     ) -> any XPCServiceProtocolComplete {
         if let legacyService = service {
+            // Warning: This use of LegacyXPCServiceAdapter is deprecated and will be removed in future
             return LegacyXPCServiceAdapter(service: legacyService)
         }
         return ModernXPCService()
@@ -58,6 +60,7 @@ public enum XPCProtocolMigrationFactory {
         service: NSObject? = nil
     ) -> any XPCServiceProtocolBasic {
         if let legacyService = service {
+            // Warning: This use of LegacyXPCServiceAdapter is deprecated and will be removed in future
             return LegacyXPCServiceAdapter(service: legacyService)
         }
         return ModernXPCService()
