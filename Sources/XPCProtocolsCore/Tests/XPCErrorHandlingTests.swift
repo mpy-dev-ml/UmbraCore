@@ -209,35 +209,37 @@ class XPCErrorHandlingTests: XCTestCase {
     // MARK: - Service Status Tests
 
     func testServiceStatusValues() {
-        // Test all enum cases and their raw values
-        XCTAssertEqual(ServiceStatus.operational.rawValue, "operational")
-        XCTAssertEqual(ServiceStatus.initializing.rawValue, "initializing")
-        XCTAssertEqual(ServiceStatus.maintenance.rawValue, "maintenance")
-        XCTAssertEqual(ServiceStatus.shuttingDown.rawValue, "shuttingDown")
-        XCTAssertEqual(ServiceStatus.degraded.rawValue, "degraded")
-        XCTAssertEqual(ServiceStatus.failed.rawValue, "failed")
+        // Test XPCServiceStatus struct properties
+        let operationalStatus = XPCServiceStatus(isActive: true, version: "1.0.0", serviceType: "Test", additionalInfo: [:])
+        XCTAssertTrue(operationalStatus.isActive)
+        XCTAssertEqual(operationalStatus.version, "1.0.0")
+        XCTAssertEqual(operationalStatus.serviceType, "Test")
+        
+        let maintenanceStatus = XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "Test", additionalInfo: ["reason": "maintenance"])
+        XCTAssertFalse(maintenanceStatus.isActive)
+        XCTAssertEqual(maintenanceStatus.additionalInfo["reason"], "maintenance")
     }
 
     func testServiceStatusCoding() {
-        // Test encoding and decoding
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
 
-        // Test all statuses can be encoded and decoded correctly
-        for status in [
-            ServiceStatus.operational,
-            ServiceStatus.initializing,
-            ServiceStatus.maintenance,
-            ServiceStatus.shuttingDown,
-            ServiceStatus.degraded,
-            ServiceStatus.failed,
-        ] {
+        // Test statuses can be encoded and decoded correctly
+        let statuses = [
+            XPCServiceStatus(isActive: true, version: "1.0.0", serviceType: "UnitTest", additionalInfo: [:]), 
+            XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "UnitTest", additionalInfo: ["reason": "maintenance"]),
+            XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "UnitTest", additionalInfo: ["reason": "shutting_down"]),
+            XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "UnitTest", additionalInfo: ["reason": "degraded"]),
+            XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "UnitTest", additionalInfo: ["reason": "failed"]),
+        ]
+        
+        for status in statuses {
             do {
                 let encoded = try encoder.encode(status)
-                let decoded = try decoder.decode(ServiceStatus.self, from: encoded)
-                XCTAssertEqual(status, decoded, "Encoded and decoded ServiceStatus should be equal")
+                let decoded = try decoder.decode(XPCServiceStatus.self, from: encoded)
+                XCTAssertEqual(status, decoded, "Encoded and decoded XPCServiceStatus should be equal")
             } catch {
-                XCTFail("Failed to encode/decode ServiceStatus: \(error)")
+                XCTFail("Failed to encode/decode XPCServiceStatus: \(error)")
             }
         }
     }
@@ -309,7 +311,7 @@ extension XPCErrorHandlingTests {
 }
 
 /// Entry point to run tests directly
-struct XPCErrorHandlingTestsMain {
+enum XPCErrorHandlingTestsMain {
     static func main() throws {
         // Run tests
         let testSuite = XCTestSuite.default

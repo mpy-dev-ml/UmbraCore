@@ -581,7 +581,7 @@ public extension XPCServiceProtocolFoundationBridge {
     /// ```
     func asModernXPCService() -> any XPCProtocolsCore.XPCServiceProtocolComplete {
         // Use the migration factory to create a properly wrapped service
-        return XPCProtocolMigrationFactory.createCompleteAdapter(service: self)
+        XPCProtocolMigrationFactory.createCompleteAdapter(service: self)
     }
 }
 
@@ -591,42 +591,42 @@ public enum SecurityBridgeXPCMigrationGuide {
     public static var migrationSteps: String {
         """
         # SecurityBridge XPC Migration Guide
-        
+
         ## Overview
-        
+
         This guide provides steps to migrate from Foundation-based XPC bridges to the modern
         XPCProtocolsCore protocol hierarchy.
-        
+
         ## Migration Steps
-        
+
         1. Replace all usages of `XPCServiceProtocolFoundationBridge` with
            `XPCServiceProtocolComplete` from XPCProtocolsCore.
-           
+
         2. For existing services:
            ```swift
            // Instead of:
            let legacyService = getFoundationBridgeService()
-           
+
            // Use:
            let modernService = legacyService.asModernXPCService()
            ```
-           
+
         3. For adapter patterns:
            ```swift
            // Instead of creating custom adapter classes:
            // let adapter = CustomFoundationBridgeAdapter(service: someService)
-           
+
            // Use XPCProtocolMigrationFactory:
            let adapter = XPCProtocolMigrationFactory.createCompleteAdapter()
            ```
-           
+
         4. Update all method calls to use async/await syntax and Result types:
            ```swift
            // Instead of using explicit Objective-C style callbacks:
            foundationService.encryptFoundation(data: someData) { data, error in
                // Handle callback
            }
-           
+
            // Use async/await with results:
            let result = await modernService.encrypt(data: someData)
            switch result {
@@ -636,9 +636,9 @@ public enum SecurityBridgeXPCMigrationGuide {
                // Handle error
            }
            ```
-        
+
         ## Complete Documentation
-        
+
         For more detailed migration guidance, refer to the `XPCProtocolMigrationGuide` in
         XPCProtocolsCore.
         """

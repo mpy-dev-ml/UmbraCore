@@ -41,7 +41,7 @@ public protocol XPCServiceProtocolComplete: XPCServiceProtocolStandard {
     /// Get the service's current status with detailed information
     /// - Returns: Structured status information or error details on failure
     func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError>
-    
+
     /// Generate a cryptographic key
     /// - Parameters:
     ///   - keyType: Type of key to generate
@@ -78,14 +78,14 @@ public protocol XPCServiceProtocolComplete: XPCServiceProtocolStandard {
         keyIdentifier: String?,
         metadata: [String: String]?
     ) async -> Result<String, XPCSecurityError>
-    
+
     /// Export a key
     /// - Parameter keyIdentifier: Identifier of the key to export
     /// - Returns: Key data as SecureBytes or error with detailed failure information
     func exportKey(
         keyIdentifier: String
     ) async -> Result<SecureBytes, XPCSecurityError>
-    
+
     /// Derive a key from another key or password
     /// - Parameters:
     ///   - sourceKeyIdentifier: Identifier of the source key or password
@@ -115,7 +115,7 @@ public extension XPCServiceProtocolComplete {
         let isResponding = await ping()
         return .success(isResponding)
     }
-    
+
     /// Helper function to convert throwing operations to Result
     private func withErrorHandling<T>(_ operation: () throws -> T) -> Result<T, XPCSecurityError> {
         do {
@@ -129,45 +129,45 @@ public extension XPCServiceProtocolComplete {
             }
         }
     }
-    
+
     /// Default implementation for generating secure random data
     func generateSecureRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
-        return withErrorHandling {
-            let randomBytes = Array(0..<length).map { _ in UInt8.random(in: 0...255) }
+        withErrorHandling {
+            let randomBytes = Array(0 ..< length).map { _ in UInt8.random(in: 0 ... 255) }
             return SecureBytes(bytes: randomBytes)
         }
     }
-    
+
     /// Default implementation for encrypting secure data
-    func encryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    func encryptSecureData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
         // This is just a placeholder. Actual implementations should override this.
-        return .failure(.operationFailed(operation: "encrypt", reason: "Not implemented in base protocol"))
+        .failure(.notImplemented(reason: "Encryption not implemented in base protocol"))
     }
-    
+
     /// Default implementation for decrypting secure data
-    func decryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    func decryptSecureData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
         // This is just a placeholder. Actual implementations should override this.
-        return .failure(.operationFailed(operation: "decrypt", reason: "Not implemented in base protocol"))
+        .failure(.notImplemented(reason: "Decryption not implemented in base protocol"))
     }
-    
+
     /// Default implementation for hashing secure data
-    func hashSecureData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    func hashSecureData(_: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
         // This is just a placeholder. Actual implementations should override this.
-        return .failure(.operationFailed(operation: "hash", reason: "Not implemented in base protocol"))
+        .failure(.notImplemented(reason: "Hashing not implemented in base protocol"))
     }
-    
+
     /// Default implementation for signing secure data
-    func signSecureData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+    func signSecureData(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
         // This is just a placeholder. Actual implementations should override this.
-        return .failure(.operationFailed(operation: "sign", reason: "Not implemented in base protocol"))
+        .failure(.notImplemented(reason: "Signing not implemented in base protocol"))
     }
-    
+
     /// Default implementation for verifying secure signatures
-    func verifySecureSignature(_ signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    func verifySecureSignature(_: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
         // This is just a placeholder. Actual implementations should override this.
-        return .failure(.operationFailed(operation: "verify", reason: "Not implemented in base protocol"))
+        .failure(.notImplemented(reason: "Verification not implemented in base protocol"))
     }
-    
+
     /// Default implementation for getting service status
     func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError> {
         let isActive = await ping()

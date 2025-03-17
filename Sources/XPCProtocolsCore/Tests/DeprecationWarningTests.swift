@@ -1,8 +1,8 @@
 import CoreErrors
 import Foundation
+import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
-import SecurityProtocolsCore
 @testable import XPCProtocolsCore
 
 /// Tests that verify deprecated protocol warnings
@@ -25,16 +25,16 @@ class DeprecationWarningTests: XCTestCase {
         // Use the standardized protocols
         let secureBytes = UmbraCoreTypes.SecureBytes(bytes: [1, 2, 3, 4])
         let secureData = secureBytes.toNSData()
-        
+
         // Convert NSData to SecureBytes for assertion
         let encryptedData = await modernService.encryptData(secureData, keyIdentifier: "test-key")
         XCTAssertNotNil(encryptedData, "Encryption should succeed")
-        
+
         guard let encryptedNSData = encryptedData as? NSData else {
             XCTFail("Result should be NSData")
             return
         }
-        
+
         XCTAssertEqual(encryptedNSData.length, 4, "Encryption should work with modern service")
 
         // Try the result-based API
@@ -53,20 +53,60 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
     static var protocolIdentifier: String {
         "com.test.modern.service"
     }
-    
+
     @objc
     func ping() async -> Bool {
-        return true
+        true
     }
-    
-    @objc 
-    func synchroniseKeys(_ bytes: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
+
+    @objc
+    func synchroniseKeys(_: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
         // Legacy synchronisation implementation
         completionHandler(nil)
     }
-    
+
     func pingComplete() async -> Result<Bool, XPCSecurityError> {
         .success(true)
+    }
+
+    func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        .success(data)
+    }
+
+    func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        .success(data)
+    }
+
+    func hashSecureData(_ data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        .success(data)
+    }
+
+    func signSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        .success(data)
+    }
+
+    func verifySignature(_: UmbraCoreTypes.SecureBytes, for _: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
+        .success(true)
+    }
+
+    func generateKeyPair(type _: String, keySize _: Int, identifier _: String?) async -> Result<String, XPCSecurityError> {
+        .success("test-key-id")
+    }
+
+    func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError> {
+        .success(XPCServiceStatus(isActive: true, version: "1.0", serviceType: "test", additionalInfo: [:]))
+    }
+
+    func importKey(data _: UmbraCoreTypes.SecureBytes, type _: String, keyIdentifier _: String?) async -> Result<String, XPCSecurityError> {
+        .success("imported-key-id")
+    }
+
+    func exportKey(keyIdentifier _: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        .success(UmbraCoreTypes.SecureBytes())
+    }
+
+    func deriveKey(from _: String, salt _: UmbraCoreTypes.SecureBytes, iterations _: Int, keyLength _: Int, targetKeyIdentifier _: String?) async -> Result<String, XPCSecurityError> {
+        .success("derived-key-id")
     }
 
     func synchronizeKeys(_: UmbraCoreTypes.SecureBytes) async -> Result<Void, XPCSecurityError> {
@@ -90,8 +130,8 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
     func generateKey() async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: 0, count: 32)))
     }
-    
-    func generateKey(keyType: XPCProtocolTypeDefs.KeyType, keyIdentifier: String?, metadata: [String: String]?) async -> Result<String, XPCSecurityError> {
+
+    func generateKey(keyType _: XPCProtocolTypeDefs.KeyType, keyIdentifier: String?, metadata _: [String: String]?) async -> Result<String, XPCSecurityError> {
         .success(keyIdentifier ?? "generated-key-id")
     }
 
@@ -107,15 +147,15 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
     }
 
     func encryptData(
-        _ data: NSData, 
-        keyIdentifier: String?
+        _ data: NSData,
+        keyIdentifier _: String?
     ) async -> NSObject? {
         data
     }
 
     func decryptData(
-        _ data: NSData, 
-        keyIdentifier: String?
+        _ data: NSData,
+        keyIdentifier _: String?
     ) async -> NSObject? {
         data
     }
@@ -125,58 +165,58 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
     }
 
     func signData(
-        _ data: NSData,
-        keyIdentifier: String
+        _: NSData,
+        keyIdentifier _: String
     ) async -> NSObject? {
         NSData(bytes: Array(repeating: 0, count: 64), length: 64)
     }
 
     func verifySignature(
-        _ signature: NSData,
-        for data: NSData,
-        keyIdentifier: String
+        _: NSData,
+        for _: NSData,
+        keyIdentifier _: String
     ) async -> NSNumber? {
         NSNumber(value: true)
     }
-    
+
     func verify(
-        signature: UmbraCoreTypes.SecureBytes, 
-        data: UmbraCoreTypes.SecureBytes, 
-        keyIdentifier: String
+        signature _: UmbraCoreTypes.SecureBytes,
+        data _: UmbraCoreTypes.SecureBytes,
+        keyIdentifier _: String
     ) async -> Result<Bool, XPCSecurityError> {
         .success(true)
     }
-    
+
     func sign(
-        data: UmbraCoreTypes.SecureBytes, 
-        keyIdentifier: String
+        data _: UmbraCoreTypes.SecureBytes,
+        keyIdentifier _: String
     ) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: 0, count: 64)))
     }
-    
+
     // Add the missing importKey method as required by XPCServiceProtocolStandard
     func importKey(
-        keyData: UmbraCoreTypes.SecureBytes,
-        keyType: XPCProtocolTypeDefs.KeyType,
+        keyData _: UmbraCoreTypes.SecureBytes,
+        keyType _: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
-        metadata: [String: String]?
+        metadata _: [String: String]?
     ) async -> Result<String, XPCSecurityError> {
         .success(keyIdentifier ?? "imported-key-id")
     }
-    
+
     func importKey(
-        _ key: UmbraCoreTypes.SecureBytes, 
-        type: String, 
-        identifier: String
+        _: UmbraCoreTypes.SecureBytes,
+        type _: String,
+        identifier _: String
     ) async -> Result<Bool, XPCSecurityError> {
         .success(true)
     }
-    
+
     // Additional required methods for XPCServiceProtocolComplete
-    func deleteKey(keyIdentifier: String) async -> Result<Void, XPCSecurityError> {
+    func deleteKey(keyIdentifier _: String) async -> Result<Void, XPCSecurityError> {
         .success(())
     }
-    
+
     func listKeys() async -> Result<[String], XPCSecurityError> {
         .success(["test-key"])
     }

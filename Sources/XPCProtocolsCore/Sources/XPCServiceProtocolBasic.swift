@@ -59,15 +59,15 @@ public extension XPCServiceProtocolBasic {
     func ping() async -> Bool {
         true
     }
-    
+
     /// Convert the completion handler-based synchroniseKeys to a modern async method
     /// - Parameter bytes: Raw byte array for key synchronisation
     /// - Returns: Result indicating success or failure with error details
     func synchroniseKeysAsync(_ bytes: [UInt8]) async -> Result<Void, XPCSecurityError> {
         await withCheckedContinuation { continuation in
             synchroniseKeys(bytes) { error in
-                if let error = error {
-                    continuation.resume(returning: .failure(convertToXPCError(error)))
+                if let error {
+                    continuation.resume(returning: .failure(XPCErrorUtilities.convertToXPCError(error)))
                 } else {
                     continuation.resume(returning: .success(()))
                 }

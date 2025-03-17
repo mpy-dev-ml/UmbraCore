@@ -7,16 +7,16 @@ import Foundation
 public struct XPCServiceStatus: Codable, Hashable, Sendable {
     /// Whether the service is currently active and responding
     public let isActive: Bool
-    
+
     /// Version string of the service
     public let version: String
-    
+
     /// Type of service (e.g., "Encryption Service", "Authentication Service")
     public let serviceType: String
-    
+
     /// Additional service-specific information and metadata
     public let additionalInfo: [String: String]
-    
+
     /// Creates a new service status object
     /// - Parameters:
     ///   - isActive: Whether the service is active
@@ -34,7 +34,7 @@ public struct XPCServiceStatus: Codable, Hashable, Sendable {
         self.serviceType = serviceType
         self.additionalInfo = additionalInfo
     }
-    
+
     /// Creates a status with common failure information
     /// - Parameters:
     ///   - errorReason: Reason for the failure
@@ -51,7 +51,7 @@ public struct XPCServiceStatus: Codable, Hashable, Sendable {
             additionalInfo: ["errorReason": errorReason]
         )
     }
-    
+
     /// Status indicating the service is in an operational state
     public var isOperational: Bool {
         isActive && (additionalInfo["status"] != "degraded")

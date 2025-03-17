@@ -28,10 +28,10 @@ umbracore_foundation_free_module(
         
         # Migration guide and deprecation strategy
         "Sources/XPCProtocolMigrationGuide.swift",
+        "Sources/XPCMigrationExamples.swift",
         
         # Adapters
         "Sources/Adapters/CryptoXPCServiceAdapter.swift",
-        "Sources/Adapters/LegacyXPCServiceAdapter.swift",
         
         # Modern implementations
         "Sources/Modern/ModernXPCService.swift",

@@ -219,6 +219,41 @@ public enum XPCErrorUtilities {
         if let xpcError = error as? XPCSecurityError {
             return xpcError
         }
+        
+        // Handle CoreErrors.CryptoError specifically
+        if let cryptoError = error as? CoreErrors.CryptoError {
+            let operation: String
+            let details: String
+            
+            switch cryptoError {
+            case .encryptionFailed(let reason):
+                operation = "encryption"
+                details = reason
+            case .decryptionFailed(let reason):
+                operation = "decryption"
+                details = reason
+            case .keyGenerationFailed:
+                operation = "key generation"
+                details = "Key generation failed"
+            case .keyDerivationFailed(let reason):
+                operation = "key derivation"
+                details = reason
+            case .authenticationFailed(let reason):
+                operation = "authentication"
+                details = reason
+            case let .invalidKeyLength(expected, got):
+                operation = "key validation"
+                details = "Invalid key length: expected \(expected), got \(got)"
+            case .invalidKey(let reason):
+                operation = "key validation"
+                details = reason
+            default:
+                operation = "cryptographic operation"
+                details = String(describing: cryptoError)
+            }
+            
+            return .cryptographicError(operation: operation, details: details)
+        }
 
         let nsError = error as NSError
 

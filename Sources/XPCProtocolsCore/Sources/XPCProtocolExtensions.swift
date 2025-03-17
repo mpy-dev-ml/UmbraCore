@@ -113,9 +113,9 @@ public extension XPCServiceProtocolComplete {
     ///   - data: NSData to encrypt
     ///   - keyIdentifier: Optional key identifier
     /// - Returns: Encrypted NSData or nil
-    func encryptData(_ data: NSData, keyIdentifier _: String?) async -> NSObject? {
+    func encryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
         let secureBytes = convertNSDataToSecureBytes(data)
-        let result = await encrypt(data: secureBytes)
+        let result = await encryptSecureData(secureBytes, keyIdentifier: keyIdentifier)
 
         switch result {
         case let .success(encryptedData):
@@ -130,9 +130,9 @@ public extension XPCServiceProtocolComplete {
     ///   - data: NSData to decrypt
     ///   - keyIdentifier: Optional key identifier
     /// - Returns: Decrypted NSData or nil
-    func decryptData(_ data: NSData, keyIdentifier _: String?) async -> NSObject? {
+    func decryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
         let secureBytes = convertNSDataToSecureBytes(data)
-        let result = await decrypt(data: secureBytes)
+        let result = await decryptSecureData(secureBytes, keyIdentifier: keyIdentifier)
 
         switch result {
         case let .success(decryptedData):
@@ -147,7 +147,7 @@ public extension XPCServiceProtocolComplete {
     /// - Returns: Hash NSData or nil
     func hashData(_ data: NSData) async -> NSObject? {
         let secureBytes = convertNSDataToSecureBytes(data)
-        let result = await hash(data: secureBytes)
+        let result = await hashSecureData(secureBytes)
 
         switch result {
         case let .success(hashData):
@@ -160,13 +160,17 @@ public extension XPCServiceProtocolComplete {
     /// Bridge getServiceStatus from standard protocol to complete protocol
     /// - Returns: Status dictionary or nil
     func getServiceStatus() async -> NSDictionary? {
-        let result = await getStatus()
+        let result = await getServiceStatus()
 
         switch result {
         case let .success(status):
+            // Create a status dictionary
             return [
-                "status": status.rawValue,
+                "status": status.isActive ? "operational" : "offline",
+                "version": status.version,
+                "serviceType": status.serviceType,
                 "protocolVersion": Self.protocolIdentifier,
+                "additionalInfo": status.additionalInfo,
             ] as NSDictionary
         case .failure:
             return nil

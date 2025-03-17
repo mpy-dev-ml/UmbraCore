@@ -25,7 +25,7 @@ public protocol XPCServiceProtocol {
 ///
 /// **Migration Notice:**
 /// This protocol is deprecated and will be removed in a future release.
-/// Please use `XPCServiceProtocolStandard` or `XPCServiceProtocolComplete` from 
+/// Please use `XPCServiceProtocolStandard` or `XPCServiceProtocolComplete` from
 /// the XPCProtocolsCore module instead.
 ///
 /// See `XPCProtocolMigrationGuide` for comprehensive migration guidance.
@@ -313,11 +313,11 @@ public protocol SecurityXPCServiceProtocol: NSObjectProtocol {
 @available(*, deprecated, message: "Use ModernXPCService from XPCProtocolsCore directly")
 public class SecurityXPCServiceAdapter {
     private let standardService: any XPCServiceProtocolStandard
-    
+
     public init(standardService: any XPCServiceProtocolStandard) {
         self.standardService = standardService
     }
-    
+
     /// Creates a modern service implementation using the factory
     ///
     /// This is the recommended way to create a new instance for migration
@@ -325,7 +325,7 @@ public class SecurityXPCServiceAdapter {
         let modernService = XPCProtocolMigrationFactory.createStandardAdapter()
         return SecurityXPCServiceAdapter(standardService: modernService)
     }
-    
+
     // Bridge implementations between the protocols can be added here
 }
 

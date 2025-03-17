@@ -359,7 +359,7 @@ public extension XPCServiceProtocol {
 /// Extension to provide migration guidance for XPCServiceProtocol users
 public extension XPCServiceProtocol {
     /// Convert this legacy service to a modern XPCServiceProtocolBasic implementation
-    /// 
+    ///
     /// Use this method to bridge from the legacy protocol to the modern protocol
     /// system during migration.
     ///
@@ -374,9 +374,9 @@ public extension XPCServiceProtocol {
     @available(*, deprecated, message: "Transitional API - use XPCProtocolMigrationFactory directly")
     func asModernXPCService() -> any XPCProtocolsCore.XPCServiceProtocolBasic {
         // Use the migration factory to create a properly wrapped service
-        return XPCProtocolMigrationFactory.createBasicAdapter(service: self as? NSObject)
+        XPCProtocolMigrationFactory.createBasicAdapter(service: self as? NSObject)
     }
-    
+
     /// Convert this legacy service to a modern XPCServiceProtocolComplete implementation
     ///
     /// Use this method to bridge from the legacy protocol to the modern protocol
@@ -384,7 +384,7 @@ public extension XPCServiceProtocol {
     @available(*, deprecated, message: "Transitional API - use XPCProtocolMigrationFactory directly")
     func asCompleteXPCService() -> any XPCProtocolsCore.XPCServiceProtocolComplete {
         // Use the migration factory to create a properly wrapped service
-        return XPCProtocolMigrationFactory.createCompleteAdapter(service: self as? NSObject)
+        XPCProtocolMigrationFactory.createCompleteAdapter(service: self as? NSObject)
     }
 }
 
@@ -393,33 +393,33 @@ public enum XPCProtocolsMigrationGuide {
     /// Primary migration actions required
     public static let migrationSteps = """
     # XPC Protocols Migration Guide
-    
+
     ## Overview
-    
+
     The XPC protocol system in UmbraCore has been modernised with a new structure in the XPCProtocolsCore module.
     This guide outlines steps required to migrate from the legacy protocols to the new ones.
-    
+
     ## Migration Steps
-    
+
     1. Replace direct usage of legacy protocols (XPCServiceProtocol, etc.) with the equivalent protocols
        from XPCProtocolsCore (XPCServiceProtocolBasic, XPCServiceProtocolStandard, or XPCServiceProtocolComplete)
-    
+
     2. For legacy service implementations, use the XPCProtocolMigrationFactory to create adapters:
        ```swift
        // Instead of creating a legacy service directly:
        // let service = LegacyXPCService()
-       
+
        // Use the factory to create an appropriate adapter:
        let service = XPCProtocolMigrationFactory.createCompleteAdapter()
        ```
-    
+
     3. For client code, update to use async/await and Result types for proper error handling
-    
+
     4. Remove references to SecurityInterfaces.XPCProtocolsMigration and instead
        import XPCProtocolsCore directly
-    
+
     ## For Detailed Documentation
-    
+
     See the comprehensive migration guide in the XPCProtocolsCore module documentation.
     """
 }

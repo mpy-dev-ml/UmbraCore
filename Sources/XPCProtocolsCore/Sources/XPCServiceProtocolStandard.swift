@@ -28,7 +28,7 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
     /// - Parameter length: Length in bytes of random data to generate
     /// - Returns: Random data as NSObject (typically NSData) or nil if generation failed
     func generateRandomData(length: Int) async -> NSObject?
-    
+
     /// Modern version that returns SecureBytes instead of NSObject
     /// - Parameter length: Length in bytes of random data to generate
     /// - Returns: Result with SecureBytes on success or XPCSecurityError on failure
@@ -40,7 +40,7 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
     ///   - keyIdentifier: Optional identifier for the key to use
     /// - Returns: Encrypted data as NSObject (typically NSData) or nil if encryption failed
     func encryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject?
-    
+
     /// Modern version that uses SecureBytes instead of NSData
     /// - Parameters:
     ///   - data: SecureBytes to encrypt
@@ -54,7 +54,7 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
     ///   - keyIdentifier: Optional identifier for the key to use
     /// - Returns: Decrypted data as NSObject (typically NSData) or nil if decryption failed
     func decryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject?
-    
+
     /// Modern version that uses SecureBytes instead of NSData
     /// - Parameters:
     ///   - data: SecureBytes to decrypt
@@ -66,7 +66,7 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
     /// - Parameter data: Data to hash
     /// - Returns: Hash value as NSObject (typically NSData) or nil if hashing failed
     func hashData(_ data: NSData) async -> NSObject?
-    
+
     /// Modern version that uses SecureBytes instead of NSData
     /// - Parameter data: SecureBytes to hash
     /// - Returns: Result with hash as SecureBytes on success or XPCSecurityError on failure
@@ -78,7 +78,7 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
     ///   - keyIdentifier: Identifier for the signing key
     /// - Returns: Signature as NSObject (typically NSData) or nil if signing failed
     func signData(_ data: NSData, keyIdentifier: String) async -> NSObject?
-    
+
     /// Modern version that uses SecureBytes instead of NSData
     /// - Parameters:
     ///   - data: SecureBytes to sign
@@ -93,7 +93,7 @@ public protocol XPCServiceProtocolStandard: XPCServiceProtocolBasic {
     ///   - keyIdentifier: Identifier for the verification key
     /// - Returns: Verification result as NSObject (typically NSNumber containing a boolean) or nil if verification failed
     func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) async -> NSObject?
-    
+
     /// Modern version that uses SecureBytes instead of NSData
     /// - Parameters:
     ///   - signature: SecureBytes containing the signature to verify
@@ -110,73 +110,73 @@ public extension XPCServiceProtocolStandard {
     static var protocolIdentifier: String {
         "com.umbra.xpc.service.protocol.standard"
     }
-    
+
     /// Default implementation for random data generation that bridges to the modern version
     func generateRandomData(length: Int) async -> NSObject? {
         let result = await generateSecureRandomData(length: length)
         switch result {
-        case .success(let secureBytes):
+        case let .success(secureBytes):
             return convertSecureBytesToNSData(secureBytes)
         case .failure:
             return nil
         }
     }
-    
+
     /// Default implementation for data encryption that bridges to the modern version
     func encryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
         let secureData = convertNSDataToSecureBytes(data)
         let result = await encryptSecureData(secureData, keyIdentifier: keyIdentifier)
         switch result {
-        case .success(let encryptedData):
+        case let .success(encryptedData):
             return convertSecureBytesToNSData(encryptedData)
         case .failure:
             return nil
         }
     }
-    
+
     /// Default implementation for data decryption that bridges to the modern version
     func decryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
         let secureData = convertNSDataToSecureBytes(data)
         let result = await decryptSecureData(secureData, keyIdentifier: keyIdentifier)
         switch result {
-        case .success(let decryptedData):
+        case let .success(decryptedData):
             return convertSecureBytesToNSData(decryptedData)
         case .failure:
             return nil
         }
     }
-    
+
     /// Default implementation for data hashing that bridges to the modern version
     func hashData(_ data: NSData) async -> NSObject? {
         let secureData = convertNSDataToSecureBytes(data)
         let result = await hashSecureData(secureData)
         switch result {
-        case .success(let hashData):
+        case let .success(hashData):
             return convertSecureBytesToNSData(hashData)
         case .failure:
             return nil
         }
     }
-    
+
     /// Default implementation for data signing that bridges to the modern version
     func signData(_ data: NSData, keyIdentifier: String) async -> NSObject? {
         let secureData = convertNSDataToSecureBytes(data)
         let result = await signSecureData(secureData, keyIdentifier: keyIdentifier)
         switch result {
-        case .success(let signature):
+        case let .success(signature):
             return convertSecureBytesToNSData(signature)
         case .failure:
             return nil
         }
     }
-    
+
     /// Default implementation for signature verification that bridges to the modern version
     func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) async -> NSObject? {
         let secureSignature = convertNSDataToSecureBytes(signature)
         let secureData = convertNSDataToSecureBytes(data)
         let result = await verifySecureSignature(secureSignature, for: secureData, keyIdentifier: keyIdentifier)
         switch result {
-        case .success(let isValid):
+        case let .success(isValid):
             return NSNumber(value: isValid)
         case .failure:
             return nil

@@ -74,7 +74,7 @@ public extension XPCServiceProtocolBaseFoundation {
             }
         }
     }
-    
+
     /// Async implementation for synchronising keys with byte array
     func synchroniseKeys(_ bytes: [UInt8]) async throws {
         let data = Data(bytes) as NSData
@@ -98,22 +98,22 @@ public extension XPCServiceProtocolBaseFoundation {
             }
         }
     }
-    
+
     /// Convert this legacy service to a modern XPCServiceProtocolBasic
-    /// 
+    ///
     /// This helper method simplifies the migration from legacy to modern protocols
-    /// 
+    ///
     /// Example:
     /// ```swift
     /// // Legacy code:
     /// let legacyService: XPCServiceProtocolBaseFoundation = getLegacyService()
-    /// 
+    ///
     /// // Migration:
     /// let modernService = legacyService.asModernXPCService()
     /// ```
     func asModernXPCService() -> any XPCServiceProtocolBasic {
         // Use the migration factory to create a properly wrapped service
-        return XPCProtocolMigrationFactory.createBasicAdapter(service: self)
+        XPCProtocolMigrationFactory.createBasicAdapter(service: self)
     }
 }
 
@@ -125,42 +125,42 @@ public enum XPCServiceFoundationMigrationGuide {
     public static var migrationSteps: String {
         """
         # ObjC Bridging Types Foundation Migration Guide
-        
+
         ## Overview
-        
+
         This guide provides steps to migrate from Foundation-based ObjC bridging protocols to the modern
         XPCProtocolsCore protocol hierarchy.
-        
+
         ## Migration Steps
-        
-        1. Replace implementations of `XPCServiceProtocolBaseFoundation` with 
+
+        1. Replace implementations of `XPCServiceProtocolBaseFoundation` with
            `XPCServiceProtocolBasic` from XPCProtocolsCore.
-           
+
         2. For existing services:
            ```swift
            // Instead of:
            let service = myLegacyService
-           
+
            // Use:
            let modernService = service.asModernXPCService()
            ```
-           
+
         3. For creating new services:
            ```swift
            // Instead of creating Foundation-based services:
            // let service = FoundationBasedXPCService()
-           
+
            // Use ModernXPCService:
            let service = ModernXPCService()
            ```
-           
+
         4. Update all method calls to use async/await syntax and Result types:
            ```swift
            // Instead of:
            service.ping { success, error in
                // Handle callback
            }
-           
+
            // Use:
            let result = await service.ping()
            switch result {
@@ -170,9 +170,9 @@ public enum XPCServiceFoundationMigrationGuide {
                // Handle error
            }
            ```
-        
+
         ## Complete Documentation
-        
+
         For more detailed guidance, please refer to the `XPCProtocolMigrationGuide` in the
         XPCProtocolsCore module.
         """
