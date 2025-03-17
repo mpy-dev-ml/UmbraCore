@@ -138,6 +138,9 @@ public enum XPCProtocolsCore {
 
         /// The connection to the service was invalidated
         case connectionInvalidated(reason: String)
+
+        /// Operation failed with specified reason
+        case operationFailed(operation: String, reason: String)
     }
 }
 
