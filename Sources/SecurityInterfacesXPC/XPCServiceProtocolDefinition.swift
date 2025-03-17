@@ -6,6 +6,19 @@ import XPCProtocolsCore
 
 /// Protocol defining the XPC service interface for key management using Objective-C compatible
 /// methods
+///
+/// **Migration Notice:**
+/// This protocol is being deprecated in favour of the modern XPCServiceProtocolComplete and other
+/// protocols in the XPCProtocolsCore module. For new implementations, please use
+/// XPCProtocolMigrationFactory to create appropriate protocol adapters.
+///
+/// Migration steps:
+/// 1. Replace implementations of XPCServiceProtocolDefinition with XPCServiceProtocolComplete
+/// 2. Use XPCProtocolMigrationFactory.createCompleteAdapter() to create a service instance
+/// 3. Update client code to use async/await patterns and Result types for error handling
+///
+/// See also: XPCProtocolMigrationGuide for comprehensive migration documentation
+@available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 @objc
 public protocol XPCServiceProtocolDefinition: ObjCBridgingTypesFoundation
     .XPCServiceProtocolBaseFoundation
@@ -40,6 +53,12 @@ public protocol XPCServiceProtocolDefinition: ObjCBridgingTypesFoundation
 }
 
 /// Implementation of XPCServiceProtocolBaseFoundation interface
+///
+/// **Migration Notice:**
+/// This implementation is being deprecated in favour of ModernXPCService in the XPCProtocolsCore
+/// module. For new implementations, please use XPCProtocolMigrationFactory to create
+/// appropriate protocol adapters.
+@available(*, deprecated, message: "Use ModernXPCService from XPCProtocolsCore instead")
 public class XPCServiceProtocolDefinitionImpl: NSObject,
     ObjCBridgingTypesFoundation.XPCServiceProtocolBaseFoundation
 {

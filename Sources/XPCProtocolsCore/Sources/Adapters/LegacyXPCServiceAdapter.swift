@@ -18,7 +18,46 @@
  2. Ensure your code is using the protocol interfaces (XPCServiceProtocolBasic, etc.)
     rather than concrete implementation types
  3. Consider updating legacy services to implement the modern protocols directly
+ 
+ ## Implementation Details
+ 
+ This adapter implements all the methods required by XPCServiceProtocolComplete:
+ 
+ - pingComplete(): Implemented - Provides a Result-based ping response
+ - getServiceStatus(): Implemented - Provides detailed service status
+ - generateKey(): Implemented - Generates keys with specified parameters
+ - deleteKey(): Implemented - Deletes keys by identifier
+ - listKeys(): Implemented - Lists available key identifiers
+ - importKey(): Implemented - Imports keys with specified parameters
+ - exportKey(): Implemented - Exports keys by identifier
+ - deriveKey(): Implemented - Derives keys from source keys or passwords
+ - encryptSecureData(): Implemented - Encrypts data with specified key
+ - decryptSecureData(): Implemented - Decrypts data with specified key
+ - hashSecureData(): Implemented - Hashes data with specified algorithm
+ - signSecureData(): Implemented - Signs data with specified key
+ - verifySecureSignature(): Implemented - Verifies signatures against data
+ - generateSecureRandomData(): Implemented - Generates random data
+ 
+ The implementation delegates to the legacy service implementation where available,
+ with fallback mechanisms for services that don't implement all functionality.
  */
+
+/// Format options for exporting keys
+@available(*, deprecated, message: "Use XPCProtocolTypeDefs.KeyFormat instead")
+public enum KeyFormat {
+    /// Raw key material
+    case raw
+    
+    /// PKCS#8 formatted key (commonly used for asymmetric keys)
+    case pkcs8
+    
+    /// PEM format (Base64-encoded with header/footer)
+    case pem
+    
+    /// JWK format (JSON Web Key)
+    case jwk
+}
+
 @available(*, deprecated, message: "Use ModernXPCService or the factory methods in XPCProtocolMigrationFactory instead")
 public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete {
     /// The underlying legacy service
@@ -81,7 +120,7 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
                     XPCErrorUtilities.convertToXPCError(error)
                 }
             } catch {
-                return .failure(.internalError(reason: "Key derivation failed: \(error.localizedDescription)"))
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
             }
         }
         
@@ -102,7 +141,7 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
                     additionalInfo: status.additionalInfo ?? [:]
                 ))
             } catch {
-                return .failure(.internalError(reason: "Failed to get service status: \(error.localizedDescription)"))
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
             }
         }
         
@@ -132,7 +171,7 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
                         XPCErrorUtilities.convertToXPCError(error)
                     }
             } catch {
-                return .failure(.internalError(reason: "Encryption failed: \(error.localizedDescription)"))
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
             }
         } else if let legacyService = self.service as? LegacyCryptoProtocol {
             // Use our mock service for testing
@@ -158,7 +197,7 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
                         XPCErrorUtilities.convertToXPCError(error)
                     }
             } catch {
-                return .failure(.internalError(reason: "Decryption failed: \(error.localizedDescription)"))
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
             }
         } else if let legacyService = self.service as? LegacyCryptoProtocol {
             // Use our mock service for testing
@@ -182,7 +221,7 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
                         XPCErrorUtilities.convertToXPCError(error)
                     }
             } catch {
-                return .failure(.internalError(reason: "Hashing failed: \(error.localizedDescription)"))
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
             }
         } else if let legacyService = self.service as? LegacyCryptoProtocol {
             // Use our mock service for testing
@@ -208,7 +247,7 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
                         XPCErrorUtilities.convertToXPCError(error)
                     }
             } catch {
-                return .failure(.internalError(reason: "Signing failed: \(error.localizedDescription)"))
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
             }
         } else if let legacyService = self.service as? LegacyCryptoProtocol {
             // Use our mock service for testing
@@ -235,7 +274,7 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
                         XPCErrorUtilities.convertToXPCError(error)
                     }
             } catch {
-                return .failure(.internalError(reason: "Verification failed: \(error.localizedDescription)"))
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
             }
         } else if let legacyService = self.service as? LegacyVerificationProtocol {
             // Use our mock service for testing
@@ -257,23 +296,31 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
     /// - Parameter length: Length of the random data to generate
     /// - Returns: Result with random data or error
     public func generateSecureRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
-        if let randomGenerator = service as? RandomDataGenerationProtocol {
+        if let randomGenerator = service as? LegacyCryptoProtocol {
             do {
-                return try randomGenerator.generateRandomData(length: length)
-                    .mapError { error in
-                        XPCErrorUtilities.convertToXPCError(error)
-                    }
-            } catch {
-                return .failure(.internalError(reason: "Random generation failed: \(error.localizedDescription)"))
+                // Use the legacy NSData-based API
+                let randomData = randomGenerator.generateRandomData(length: length)
+                
+                // Convert NSData to SecureBytes
+                return .success(nsDataToSecureBytes(randomData))
+            } catch let error as NSError {
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
             }
-        } else if let legacyService = self.service as? LegacyCryptoProtocol {
-            // Use our mock service for testing
-            let randomData = legacyService.generateRandomData(length: length)
-            return .success(nsDataToSecureBytes(randomData))
+        } else if let randomGenerator = service as? RandomDataGenerationProtocol {
+            // Try to use the more modern protocol if available
+            do {
+                let result = try randomGenerator.generateRandomData(length: length)
+                
+                return result.mapError { error in
+                    XPCErrorUtilities.convertToXPCError(error)
+                }
+            } catch {
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
+            }
         }
         
-        // Default implementation returns error
-        return .failure(.operationFailed(operation: "generateRandom", reason: "No random generation service available"))
+        // Default implementation for services that don't support random data generation
+        return .failure(.unsupportedOperation(name: "Random data generation is not supported by this legacy service"))
     }
     
     /// Export a key by identifier
@@ -287,12 +334,12 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
                         XPCErrorUtilities.convertToXPCError(error)
                     }
             } catch {
-                return .failure(.internalError(reason: "Key export failed: \(error.localizedDescription)"))
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
             }
         }
         
         // Default implementation returns error
-        return .failure(.operationNotSupported(name: "exportKey"))
+        return .failure(.unsupportedOperation(name: "Key export"))
     }
     
     /// Import a key with simplified interface
@@ -313,7 +360,133 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
         )
     }
     
-    /// Create a typed key for protocol conformance
+    /// Import a key with the full parameter set required by XPCServiceProtocolComplete
+    /// - Parameters:
+    ///   - keyData: Key data to import as SecureBytes
+    ///   - keyType: Type of key using modern enum type
+    ///   - keyIdentifier: Optional identifier for the key
+    ///   - metadata: Optional metadata to associate with the key
+    /// - Returns: Identifier for the imported key or error
+    public func importKey(
+        keyData: SecureBytes,
+        keyType: XPCProtocolTypeDefs.KeyType,
+        keyIdentifier: String?,
+        metadata: [String: String]?
+    ) async -> Result<String, XPCSecurityError> {
+        // Convert the modern enum type to a string representation for legacy protocols
+        let typeString = keyType.rawValue
+        
+        if let keyManager = service as? KeyManagementProtocol {
+            do {
+                let result = try keyManager.importKey(
+                    keyData: keyData,
+                    keyType: typeString,
+                    keyIdentifier: keyIdentifier,
+                    metadata: metadata
+                )
+                
+                // Map the CoreErrors.SecurityError to XPCSecurityError
+                return result.mapError { error in
+                    // Use the utility function to convert errors
+                    XPCErrorUtilities.convertToXPCError(error)
+                }
+            } catch {
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
+            }
+        }
+        
+        // If no key management protocol is available, return an error
+        return .failure(.operationFailed(
+            reason: "Key management functionality not available",
+            operationName: "importKey"
+        ))
+    }
+    
+    // MARK: - Key Management Operations
+    
+    /// Delete a cryptographic key
+    /// - Parameter keyIdentifier: Identifier of the key to delete
+    /// - Returns: Success or error with detailed failure information
+    public func deleteKey(keyIdentifier: String) async -> Result<Void, XPCSecurityError> {
+        // Check if the legacy service supports key deletion
+        if let keyManager = service as? KeyManagementProtocol {
+            do {
+                let result = try keyManager.deleteKey(keyIdentifier: keyIdentifier)
+                
+                // Map the CoreErrors.SecurityError to XPCSecurityError
+                return result.mapError { error in
+                    XPCErrorUtilities.convertToXPCError(error)
+                }
+            } catch {
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
+            }
+        }
+        
+        // Default implementation for services that don't support key deletion
+        return .failure(.unsupportedOperation(name: "Key deletion is not supported by this legacy service"))
+    }
+    
+    /// Generate a cryptographic key to XPCServiceProtocolComplete specifications
+    /// - Parameters:
+    ///   - keyType: Type of key to generate
+    ///   - keyIdentifier: Optional identifier for the key
+    ///   - metadata: Optional metadata to associate with the key
+    /// - Returns: Identifier for the generated key or error
+    public func generateKey(
+        keyType: XPCProtocolTypeDefs.KeyType,
+        keyIdentifier: String?,
+        metadata: [String: String]?
+    ) async -> Result<String, XPCSecurityError> {
+        // Check if the legacy service supports key generation with identifiers and metadata
+        if let keyManager = service as? KeyManagementProtocol {
+            do {
+                // Convert the modern enum type to a string representation for legacy protocols
+                let typeString = keyType.rawValue
+                
+                let result = try keyManager.generateKey(
+                    keyType: typeString,
+                    keyIdentifier: keyIdentifier,
+                    metadata: metadata
+                )
+                
+                // Map the CoreErrors.SecurityError to XPCSecurityError
+                return result.mapError { error in
+                    XPCErrorUtilities.convertToXPCError(error)
+                }
+            } catch {
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
+            }
+        }
+        
+        // Fall back to the simpler key generation if metadata is not supported
+        let keyResult = await generateKey(type: keyType, bits: keyType == .rsa ? 2048 : 256)
+        
+        switch keyResult {
+        case .success(let keyData):
+            // Generate an identifier if one wasn't provided
+            let generatedId = keyIdentifier ?? UUID().uuidString
+            
+            // Try to import the generated key with the desired identifier
+            return await importKey(
+                keyData: keyData,
+                keyType: keyType,
+                keyIdentifier: generatedId,
+                metadata: metadata
+            )
+            
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+    
+    /// Generate a key with basic parameters (legacy method)
+    /// - Parameters:
+    ///   - type: Type of key to generate
+    ///   - bits: Size of the key in bits
+    /// - Returns: Generated key data as SecureBytes or error
+    /// - Note: This is a legacy method and should be avoided in favor of
+    ///         generateKey(keyType:keyIdentifier:metadata:) which conforms to XPCServiceProtocolComplete
+    @available(*, deprecated, message: "Use generateKey(keyType:keyIdentifier:metadata:) instead")
     public func generateKey(
         type: XPCProtocolTypeDefs.KeyType,
         bits: Int
@@ -321,6 +494,83 @@ public final class LegacyXPCServiceAdapter: NSObject, XPCServiceProtocolComplete
         // Delegate to the legacy implementation using string type
         let typeString = type.rawValue
         return await generateKey(type: typeString, bits: bits)
+    }
+    
+    /// List all available cryptographic keys
+    /// - Returns: Array of key identifiers or error with detailed failure information
+    public func listKeys() async -> Result<[String], XPCSecurityError> {
+        // Check if the legacy service supports key listing
+        if let keyManager = service as? KeyManagementProtocol {
+            do {
+                let result = try keyManager.listKeys()
+                
+                // Map the CoreErrors.SecurityError to XPCSecurityError
+                return result.mapError { error in
+                    XPCErrorUtilities.convertToXPCError(error)
+                }
+            } catch {
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
+            }
+        }
+        
+        // Default implementation for services that don't support key listing
+        return .failure(.unsupportedOperation(name: "Key listing is not supported by this legacy service"))
+    }
+    
+    /// Generate a key using the legacy string-based key type and bit length
+    /// - Parameters:
+    ///   - type: String representation of key type
+    ///   - bits: Size of the key in bits
+    /// - Returns: Generated key data as SecureBytes or error
+    private func generateKey(type: String, bits: Int) async -> Result<SecureBytes, XPCSecurityError> {
+        // Check if the legacy service supports key generation
+        if let keyGenerator = service as? LegacyCryptoProtocol {
+            do {
+                // Use the legacy NSData-based API
+                // Note: This is a synchronous call that may block the thread in legacy implementations
+                let keyData = keyGenerator.generateKey(withType: type, bits: bits)
+                
+                // Convert NSData to SecureBytes
+                return .success(nsDataToSecureBytes(keyData))
+            } catch let error as NSError {
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
+            }
+        } else if let keyManager = service as? KeyManagementProtocol {
+            // Try to use the more modern KeyManagementProtocol if available
+            do {
+                let result = try keyManager.generateKey(
+                    keyType: type,
+                    keyIdentifier: nil,
+                    metadata: nil
+                )
+                
+                switch result {
+                case .success(let keyIdentifier):
+                    // If we successfully generated a key, try to export it
+                    if let keyExporter = service as? KeyExportProtocol {
+                        let exportResult = try keyExporter.exportKey(
+                            keyIdentifier: keyIdentifier,
+                            format: .raw
+                        )
+                        
+                        return exportResult.mapError { error in
+                            XPCErrorUtilities.convertToXPCError(error)
+                        }
+                    } else {
+                        // We generated a key but can't export it
+                        return .failure(.unsupportedOperation(name: "Key export after generation"))
+                    }
+                    
+                case .failure(let error):
+                    return .failure(XPCErrorUtilities.convertToXPCError(error))
+                }
+            } catch {
+                return .failure(XPCErrorUtilities.convertToXPCError(error))
+            }
+        }
+        
+        // Default implementation for services that don't support key generation
+        return .failure(.unsupportedOperation(name: "Key generation is not supported by this legacy service"))
     }
     
     /// Convert a legacy NSData to SecureBytes
@@ -359,6 +609,7 @@ public protocol LegacyCryptoProtocol: NSObjectProtocol {
     @objc func hashData(_ data: NSData) -> NSData
     @objc func generateRandomData(length: Int) -> NSData
     @objc func signSecureData(_ data: NSData, keyIdentifier: String) -> NSData
+    @objc func generateKey(withType type: String, bits: Int) -> NSData
 }
 
 /// Define protocol for verification operations

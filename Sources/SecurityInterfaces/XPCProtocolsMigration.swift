@@ -16,6 +16,19 @@ public typealias SecureBytes = UmbraCoreTypes.SecureBytes
 /// Legacy protocol for XPC services that will be migrated to the new protocol hierarchy
 /// This protocol represents the base functionality from the previous implementation
 /// and is used only for migration purposes.
+///
+/// **Migration Notice:**
+/// This protocol is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolBasic` from the XPCProtocolsCore module instead.
+///
+/// Migration steps:
+/// 1. Replace implementations of XPCServiceProtocol with XPCServiceProtocolBasic
+/// 2. Use XPCProtocolMigrationFactory.createBasicAdapter() to create a service instance
+/// 3. Update client code to use async/await patterns with proper error handling
+///
+/// See `XPCProtocolMigrationGuide` in the XPCProtocolsCore module for comprehensive
+/// migration documentation.
+@available(*, deprecated, message: "Use XPCServiceProtocolBasic from XPCProtocolsCore instead")
 public protocol XPCServiceProtocol: Sendable {
     /// Get the protocol identifier for this service
     static var protocolIdentifier: String { get }
@@ -37,6 +50,7 @@ public protocol XPCServiceProtocol: Sendable {
 }
 
 // Extension to provide backward compatibility
+@available(*, deprecated, message: "Use XPCServiceProtocolBasic from XPCProtocolsCore instead")
 extension XPCServiceProtocol {
     func getServiceStatus() async -> [String: Any]? {
         nil
@@ -68,6 +82,14 @@ extension XPCServiceProtocol {
 /// by wrapping instances of the legacy protocols and translating method calls between them.
 
 /// Define XPCServiceProtocolBasic correctly - change to a non-class protocol
+///
+/// **Migration Notice:**
+/// This protocol is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolBasic` from the XPCProtocolsCore module instead.
+///
+/// See `XPCProtocolMigrationGuide` in the XPCProtocolsCore module for comprehensive
+/// migration documentation.
+@available(*, deprecated, message: "Use XPCServiceProtocolBasic from XPCProtocolsCore module instead")
 public protocol XPCServiceProtocolBasic: Sendable {
     static var protocolIdentifier: String { get }
     func ping() async throws -> Bool
@@ -75,6 +97,7 @@ public protocol XPCServiceProtocolBasic: Sendable {
 }
 
 /// Adapter to implement XPCServiceProtocolBasic from XPCServiceProtocol
+@available(*, deprecated, message: "Use XPCProtocolMigrationFactory from XPCProtocolsCore instead")
 private final class XPCBasicAdapter: XPCServiceProtocolBasic {
     private let service: any XPCServiceProtocol
 
@@ -101,6 +124,14 @@ private final class XPCBasicAdapter: XPCServiceProtocolBasic {
 }
 
 /// Standard protocol for XPC-based security services
+///
+/// **Migration Notice:**
+/// This protocol is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolStandard` from the XPCProtocolsCore module instead.
+///
+/// See `XPCProtocolMigrationGuide` in the XPCProtocolsCore module for comprehensive
+/// migration documentation.
+@available(*, deprecated, message: "Use XPCServiceProtocolStandard from XPCProtocolsCore module instead")
 public protocol XPCServiceProtocolStandard: Sendable {
     /// Protocol type identifier
     static var protocolIdentifier: String { get }
@@ -152,6 +183,7 @@ public protocol XPCServiceProtocolStandard: Sendable {
 }
 
 /// Adapter to implement XPCServiceProtocolStandard from XPCServiceProtocol
+@available(*, deprecated, message: "Use XPCProtocolMigrationFactory from XPCProtocolsCore instead")
 private final class XPCStandardAdapter: XPCServiceProtocolStandard {
     private let service: any XPCServiceProtocol
 
@@ -218,7 +250,17 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
     }
 }
 
-/// Adapter to implement XPCServiceProtocol from XPCServiceProtocolStandard
+/// Adapter that implements the legacy XPCServiceProtocol by wrapping an XPCServiceProtocolStandard
+/// This allows modern implementations to be used with legacy code during migration.
+///
+/// **Migration Notice:**
+/// This adapter is deprecated and will be removed in a future release.
+/// Please use `XPCProtocolMigrationFactory` from the XPCProtocolsCore module instead
+/// to create adapters between legacy and modern service implementations.
+///
+/// See `XPCProtocolMigrationGuide` in the XPCProtocolsCore module for comprehensive
+/// migration documentation.
+@available(*, deprecated, message: "Use XPCProtocolMigrationFactory from XPCProtocolsCore instead")
 private final class LegacyAdapter: XPCServiceProtocol {
     private let service: any XPCServiceProtocolStandard
 
@@ -310,4 +352,74 @@ public extension XPCServiceProtocol {
     func asXPCServiceProtocolStandard() -> any XPCServiceProtocolStandard {
         XPCProtocolMigrationFactory.createStandardAdapter(wrapping: self)
     }
+}
+
+// MARK: - Migration Helper Extensions
+
+/// Extension to provide migration guidance for XPCServiceProtocol users
+public extension XPCServiceProtocol {
+    /// Convert this legacy service to a modern XPCServiceProtocolBasic implementation
+    /// 
+    /// Use this method to bridge from the legacy protocol to the modern protocol
+    /// system during migration.
+    ///
+    /// Example:
+    /// ```swift
+    /// // Legacy code:
+    /// let legacyService: XPCServiceProtocol = getLegacyService()
+    ///
+    /// // Migration step:
+    /// let modernService = legacyService.asModernXPCService()
+    /// ```
+    @available(*, deprecated, message: "Transitional API - use XPCProtocolMigrationFactory directly")
+    func asModernXPCService() -> any XPCProtocolsCore.XPCServiceProtocolBasic {
+        // Use the migration factory to create a properly wrapped service
+        return XPCProtocolMigrationFactory.createBasicAdapter(service: self as? NSObject)
+    }
+    
+    /// Convert this legacy service to a modern XPCServiceProtocolComplete implementation
+    ///
+    /// Use this method to bridge from the legacy protocol to the modern protocol
+    /// system during migration.
+    @available(*, deprecated, message: "Transitional API - use XPCProtocolMigrationFactory directly")
+    func asCompleteXPCService() -> any XPCProtocolsCore.XPCServiceProtocolComplete {
+        // Use the migration factory to create a properly wrapped service
+        return XPCProtocolMigrationFactory.createCompleteAdapter(service: self as? NSObject)
+    }
+}
+
+/// Extension to provide migration guide information
+public enum XPCProtocolsMigrationGuide {
+    /// Primary migration actions required
+    public static let migrationSteps = """
+    # XPC Protocols Migration Guide
+    
+    ## Overview
+    
+    The XPC protocol system in UmbraCore has been modernised with a new structure in the XPCProtocolsCore module.
+    This guide outlines steps required to migrate from the legacy protocols to the new ones.
+    
+    ## Migration Steps
+    
+    1. Replace direct usage of legacy protocols (XPCServiceProtocol, etc.) with the equivalent protocols
+       from XPCProtocolsCore (XPCServiceProtocolBasic, XPCServiceProtocolStandard, or XPCServiceProtocolComplete)
+    
+    2. For legacy service implementations, use the XPCProtocolMigrationFactory to create adapters:
+       ```swift
+       // Instead of creating a legacy service directly:
+       // let service = LegacyXPCService()
+       
+       // Use the factory to create an appropriate adapter:
+       let service = XPCProtocolMigrationFactory.createCompleteAdapter()
+       ```
+    
+    3. For client code, update to use async/await and Result types for proper error handling
+    
+    4. Remove references to SecurityInterfaces.XPCProtocolsMigration and instead
+       import XPCProtocolsCore directly
+    
+    ## For Detailed Documentation
+    
+    See the comprehensive migration guide in the XPCProtocolsCore module documentation.
+    """
 }
