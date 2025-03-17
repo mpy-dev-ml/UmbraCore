@@ -11,6 +11,7 @@
  * Basic connectivity testing (ping)
  * Simplified key synchronisation mechanism
  * Foundation-free interface design
+ * Standardised error handling and data conversion
 
  This protocol serves as the base for all XPC service implementations in UmbraCore
  and ensures a consistent minimum API across all services.
@@ -33,7 +34,6 @@ public protocol XPCServiceProtocolBasic: NSObjectProtocol, Sendable {
     /// Basic ping method to test if service is responsive.
     /// This method can be used for health checks and to verify connectivity.
     /// - Returns: `true` if the service is responsive, `false` otherwise
-    @objc
     func ping() async -> Bool
 
     /// Basic synchronisation of keys between XPC service and client.
@@ -41,7 +41,6 @@ public protocol XPCServiceProtocolBasic: NSObjectProtocol, Sendable {
     /// - Parameters:
     ///   - bytes: Raw byte array for key synchronisation
     ///   - completionHandler: Called with `nil` if successful, or an NSError if failed
-    @objc
     func synchroniseKeys(_ bytes: [UInt8], completionHandler: @escaping (NSError?) -> Void)
 }
 
@@ -59,5 +58,20 @@ public extension XPCServiceProtocolBasic {
     /// In real implementations, this should verify actual service health.
     func ping() async -> Bool {
         true
+    }
+    
+    /// Convert the completion handler-based synchroniseKeys to a modern async method
+    /// - Parameter bytes: Raw byte array for key synchronisation
+    /// - Returns: Result indicating success or failure with error details
+    func synchroniseKeysAsync(_ bytes: [UInt8]) async -> Result<Void, XPCSecurityError> {
+        await withCheckedContinuation { continuation in
+            synchroniseKeys(bytes) { error in
+                if let error = error {
+                    continuation.resume(returning: .failure(convertToXPCError(error)))
+                } else {
+                    continuation.resume(returning: .success(()))
+                }
+            }
+        }
     }
 }

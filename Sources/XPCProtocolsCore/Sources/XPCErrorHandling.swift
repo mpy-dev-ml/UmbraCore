@@ -144,7 +144,7 @@ public enum XPCSecurityError: Error, Equatable, Sendable {
 }
 
 /// Service status information returned by XPC services
-public enum ServiceStatus: String, Codable, Sendable {
+public enum XPCServiceStatusType: String, Codable, Sendable {
     /// Service is fully operational
     case operational
 

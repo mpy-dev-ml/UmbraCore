@@ -268,23 +268,160 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         return .success(identifier)
     }
 
-    /// Other methods would be implemented similarly with proper error handling
-    public func exportKey(keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
-        .failure(.notImplemented(reason: "Key export not implemented in example"))
+    /// Export a key by identifier
+    /// - Parameter keyIdentifier: Identifier of the key to export
+    /// - Returns: Key data or error
+    public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+        // Example implementation that returns dummy key data
+        guard !keyIdentifier.isEmpty else {
+            return .failure(.invalidInput(details: "Empty key identifier"))
+        }
+        
+        // In a real implementation, this would retrieve the actual key
+        let keyBytes = [UInt8](repeating: 0xBB, count: 32)
+        return .success(SecureBytes(bytes: keyBytes))
     }
 
+    /// Import a key with simplified interface
     public func importKey(
-        _: SecureBytes,
-        identifier _: String?
+        _ keyData: SecureBytes,
+        identifier: String?
     ) async -> Result<String, XPCSecurityError> {
-        .failure(.notImplemented(reason: "Key import not implemented in example"))
+        // Delegate to the more complete implementation
+        return await importKey(
+            keyData: keyData,
+            keyType: .symmetric,
+            keyIdentifier: identifier,
+            metadata: nil
+        )
     }
 
     /// Generate a cryptographic key with specific type and size
     public func generateKey(
-        type _: String,
-        bits _: Int
+        type: String,
+        bits: Int
     ) async -> Result<SecureBytes, XPCSecurityError> {
-        .failure(.notImplemented(reason: "Parameterised key generation not implemented in example"))
+        // Simple example implementation
+        guard bits > 0 else {
+            return .failure(.invalidInput(details: "Bits must be positive"))
+        }
+        
+        let byteCount = (bits + 7) / 8 // Convert bits to bytes, rounding up
+        var keyBytes = [UInt8](repeating: 0, count: byteCount)
+        
+        // Generate random data
+        for i in 0 ..< byteCount {
+            keyBytes[i] = UInt8.random(in: 0...255)
+        }
+        
+        return .success(SecureBytes(bytes: keyBytes))
+    }
+    
+    /// Get service status with detailed information
+    public func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError> {
+        // Example implementation returning dummy status information
+        let isActive = await ping()
+        let status = XPCServiceStatus(
+            isActive: isActive,
+            version: "1.0.0",
+            serviceType: "Example XPC Service",
+            additionalInfo: [
+                "mode": "demonstration",
+                "securityLevel": "low - example only"
+            ]
+        )
+        return .success(status)
+    }
+    
+    /// Derive a key from another key or password
+    public func deriveKey(
+        from sourceKeyIdentifier: String,
+        salt: SecureBytes,
+        iterations: Int,
+        keyLength: Int,
+        targetKeyIdentifier: String?
+    ) async -> Result<String, XPCSecurityError> {
+        // Basic input validation
+        guard !sourceKeyIdentifier.isEmpty else {
+            return .failure(.invalidInput(details: "Source key identifier cannot be empty"))
+        }
+        
+        guard !salt.isEmpty else {
+            return .failure(.invalidInput(details: "Salt cannot be empty"))
+        }
+        
+        guard iterations > 0 else {
+            return .failure(.invalidInput(details: "Iterations must be positive"))
+        }
+        
+        guard keyLength > 0 else {
+            return .failure(.invalidInput(details: "Key length must be positive"))
+        }
+        
+        // For example purposes, just return a new identifier
+        let identifier = targetKeyIdentifier ?? "derived-\(UUID().uuidString)"
+        return .success(identifier)
+    }
+    
+    /// Encrypt secure data with a specific key
+    public func encryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+        // For the example, just delegate to the basic encrypt method
+        return await encrypt(data: data)
+    }
+    
+    /// Decrypt secure data with a specific key
+    public func decryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+        // For the example, just delegate to the basic decrypt method
+        return await decrypt(data: data)
+    }
+    
+    /// Hash secure data
+    public func hashSecureData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+        // Delegate to the existing hash method
+        return await hash(data: data)
+    }
+    
+    /// Sign secure data with a specific key
+    public func signSecureData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+        guard !data.isEmpty else {
+            return .failure(.invalidData(reason: "Cannot sign empty data"))
+        }
+        
+        guard !keyIdentifier.isEmpty else {
+            return .failure(.invalidInput(details: "Key identifier cannot be empty"))
+        }
+        
+        // Example implementation returning a dummy signature
+        let signatureBytes = [UInt8](repeating: 0x3, count: 64)
+        return .success(SecureBytes(bytes: signatureBytes))
+    }
+    
+    /// Verify a signature for secure data
+    public func verifySecureSignature(_ signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+        guard !signature.isEmpty else {
+            return .failure(.invalidData(reason: "Cannot verify empty signature"))
+        }
+        
+        guard !data.isEmpty else {
+            return .failure(.invalidData(reason: "Cannot verify signature for empty data"))
+        }
+        
+        guard !keyIdentifier.isEmpty else {
+            return .failure(.invalidInput(details: "Key identifier cannot be empty"))
+        }
+        
+        // Example implementation always returns true
+        return .success(true)
+    }
+    
+    /// Generate secure random data
+    public func generateSecureRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+        guard length > 0 else {
+            return .failure(.invalidInput(details: "Length must be positive"))
+        }
+        
+        // Generate random bytes
+        let randomBytes = (0..<length).map { _ in UInt8.random(in: 0...255) }
+        return .success(SecureBytes(bytes: randomBytes))
     }
 }

@@ -7,11 +7,11 @@
 
  ## Features
 
- * Advanced cryptographic operations
- * Key management and derivation
- * Digital signature creation and verification
- * Status reporting and monitoring
- * Asynchronous operation with detailed error reporting
+ * Advanced cryptographic operations with SecureBytes
+ * Comprehensive key management and derivation
+ * Digital signature creation and verification with modern interfaces
+ * Status reporting and monitoring with structured return types
+ * Fully async/await-based API with Result return types for detailed error handling
 
  ## Protocol Inheritance
 
@@ -38,81 +38,69 @@ public protocol XPCServiceProtocolComplete: XPCServiceProtocolStandard {
     ///   with detailed failure information.
     func pingComplete() async -> Result<Bool, XPCSecurityError>
 
-    /// Synchronise keys with the service.
-    /// - Parameter syncData: Key synchronisation data.
-    /// - Returns: Success or error with detailed failure information.
-    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError>
-
-    /// Encrypt data using the service.
-    /// - Parameter data: Data to encrypt.
-    /// - Returns: Encrypted data or error with detailed failure information.
-    func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError>
-
-    /// Decrypt data using the service.
-    /// - Parameter data: Data to decrypt.
-    /// - Returns: Decrypted data or error with detailed failure information.
-    func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError>
-
-    /// Generate a cryptographic key.
-    /// - Returns: Key data or error with detailed failure information.
-    func generateKey() async -> Result<SecureBytes, XPCSecurityError>
-
-    /// Generate a cryptographic key of specific type and bits.
+    /// Get the service's current status with detailed information
+    /// - Returns: Structured status information or error details on failure
+    func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError>
+    
+    /// Generate a cryptographic key
     /// - Parameters:
-    ///   - type: Type of key to generate.
-    ///   - bits: Key size in bits.
-    /// - Returns: Key data or error with detailed failure information.
+    ///   - keyType: Type of key to generate
+    ///   - keyIdentifier: Optional identifier for the key
+    ///   - metadata: Optional metadata to associate with the key
+    /// - Returns: Identifier for the generated key or error on failure
     func generateKey(
-        type: XPCProtocolTypeDefs.KeyType,
-        bits: Int
-    ) async -> Result<SecureBytes, XPCSecurityError>
+        keyType: XPCProtocolTypeDefs.KeyType,
+        keyIdentifier: String?,
+        metadata: [String: String]?
+    ) async -> Result<String, XPCSecurityError>
 
-    /// Hash data using the service's hashing implementation.
-    /// - Parameter data: Data to hash.
-    /// - Returns: Hash value or error with detailed failure information.
-    func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError>
-
-    /// Export a key from the service in secure format.
-    /// - Parameter keyIdentifier: Key to export.
-    /// - Returns: Secure data containing exported key or error with detailed
-    ///   failure information.
-    func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError>
-
-    /// Import a previously exported key.
-    /// - Parameters:
-    ///   - keyData: Key data to import.
-    ///   - keyIdentifier: Optional identifier to assign to the imported key.
-    /// - Returns: Success or error with detailed failure information.
-    func importKey(
-        keyData: SecureBytes,
-        keyIdentifier: String?
+    /// Delete a key
+    /// - Parameter keyIdentifier: Identifier of key to delete
+    /// - Returns: Success or error with detailed failure information
+    func deleteKey(
+        keyIdentifier: String
     ) async -> Result<Void, XPCSecurityError>
 
-    /// Sign data using a key managed by the service.
+    /// List all key identifiers
+    /// - Returns: Array of key identifiers or error with detailed failure information
+    func listKeys() async -> Result<[String], XPCSecurityError>
+
+    /// Import a key
     /// - Parameters:
-    ///   - data: Data to sign.
-    ///   - keyIdentifier: Identifier of the key to use for signing.
-    /// - Returns: Signature data or error with detailed failure information.
-    func sign(
-        data: SecureBytes,
+    ///   - keyData: Key data to import as SecureBytes
+    ///   - keyType: Type of key
+    ///   - keyIdentifier: Optional identifier for the key
+    ///   - metadata: Optional metadata to associate with the key
+    /// - Returns: Identifier for the imported key or error with detailed failure information
+    func importKey(
+        keyData: SecureBytes,
+        keyType: XPCProtocolTypeDefs.KeyType,
+        keyIdentifier: String?,
+        metadata: [String: String]?
+    ) async -> Result<String, XPCSecurityError>
+    
+    /// Export a key
+    /// - Parameter keyIdentifier: Identifier of the key to export
+    /// - Returns: Key data as SecureBytes or error with detailed failure information
+    func exportKey(
         keyIdentifier: String
     ) async -> Result<SecureBytes, XPCSecurityError>
-
-    /// Verify a signature for data.
+    
+    /// Derive a key from another key or password
     /// - Parameters:
-    ///   - signature: Signature to verify.
-    ///   - data: Original data that was signed.
-    ///   - keyIdentifier: Identifier of the key to use for verification.
-    /// - Returns: Verification result or error with detailed failure information.
-    func verify(
-        signature: SecureBytes,
-        data: SecureBytes,
-        keyIdentifier: String
-    ) async -> Result<Bool, XPCSecurityError>
-
-    /// Get the current status of the service.
-    /// - Returns: Service status or error with detailed failure information.
-    func getStatus() async -> Result<ServiceStatus, XPCSecurityError>
+    ///   - sourceKeyIdentifier: Identifier of the source key or password
+    ///   - salt: Salt data as SecureBytes
+    ///   - iterations: Number of iterations for key derivation
+    ///   - keyLength: Length of the derived key in bytes
+    ///   - targetKeyIdentifier: Optional identifier for the derived key
+    /// - Returns: Identifier for the derived key or error with detailed failure information
+    func deriveKey(
+        from sourceKeyIdentifier: String,
+        salt: SecureBytes,
+        iterations: Int,
+        keyLength: Int,
+        targetKeyIdentifier: String?
+    ) async -> Result<String, XPCSecurityError>
 }
 
 /// Default implementations for the complete XPC service protocol
@@ -122,79 +110,67 @@ public extension XPCServiceProtocolComplete {
         "com.umbra.xpc.service.protocol.complete"
     }
 
-    /// Default implementation of the ping complete method that delegates to the
-    /// basic ping.
+    /// Default implementation of pingComplete that delegates to the basic ping method
     func pingComplete() async -> Result<Bool, XPCSecurityError> {
-        let result = await ping()
-        return .success(result)
+        let isResponding = await ping()
+        return .success(isResponding)
     }
-
-    /// Default implementation of synchroniseKeys that returns success.
-    func synchronizeKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
-        .success(())
+    
+    /// Helper function to convert throwing operations to Result
+    private func withErrorHandling<T>(_ operation: () throws -> T) -> Result<T, XPCSecurityError> {
+        do {
+            let result = try operation()
+            return .success(result)
+        } catch {
+            if let xpcError = error as? XPCSecurityError {
+                return .failure(xpcError)
+            } else {
+                return .failure(.internalError(reason: "\(error)"))
+            }
+        }
     }
-
-    /// Default implementation of encrypt that returns a not implemented error.
-    func encrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-        .failure(.internalError(reason: "Encryption not implemented"))
+    
+    /// Default implementation for generating secure random data
+    func generateSecureRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+        return withErrorHandling {
+            let randomBytes = Array(0..<length).map { _ in UInt8.random(in: 0...255) }
+            return SecureBytes(bytes: randomBytes)
+        }
     }
-
-    /// Default implementation of decrypt that returns a not implemented error.
-    func decrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-        .failure(.internalError(reason: "Decryption not implemented"))
+    
+    /// Default implementation for encrypting secure data
+    func encryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+        // This is just a placeholder. Actual implementations should override this.
+        return .failure(.operationFailed(operation: "encrypt", reason: "Not implemented in base protocol"))
     }
-
-    /// Default implementation of generateKey that returns a not implemented error.
-    func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
-        .failure(.internalError(reason: "Key generation not implemented"))
+    
+    /// Default implementation for decrypting secure data
+    func decryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+        // This is just a placeholder. Actual implementations should override this.
+        return .failure(.operationFailed(operation: "decrypt", reason: "Not implemented in base protocol"))
     }
-
-    /// Default implementation of generateKey(type:bits:) that returns a not
-    /// implemented error.
-    func generateKey(
-        type _: XPCProtocolTypeDefs.KeyType,
-        bits _: Int
-    ) async -> Result<SecureBytes, XPCSecurityError> {
-        .failure(.internalError(reason: "Custom key generation not implemented"))
+    
+    /// Default implementation for hashing secure data
+    func hashSecureData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+        // This is just a placeholder. Actual implementations should override this.
+        return .failure(.operationFailed(operation: "hash", reason: "Not implemented in base protocol"))
     }
-
-    /// Default implementation of hash that returns a not implemented error.
-    func hash(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-        .failure(.internalError(reason: "Hashing not implemented"))
+    
+    /// Default implementation for signing secure data
+    func signSecureData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+        // This is just a placeholder. Actual implementations should override this.
+        return .failure(.operationFailed(operation: "sign", reason: "Not implemented in base protocol"))
     }
-
-    /// Default implementation of exportKey that returns a not implemented error.
-    func exportKey(keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
-        .failure(.internalError(reason: "Key export not implemented"))
+    
+    /// Default implementation for verifying secure signatures
+    func verifySecureSignature(_ signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+        // This is just a placeholder. Actual implementations should override this.
+        return .failure(.operationFailed(operation: "verify", reason: "Not implemented in base protocol"))
     }
-
-    /// Default implementation of importKey that returns a not implemented error.
-    func importKey(
-        keyData _: SecureBytes,
-        keyIdentifier _: String?
-    ) async -> Result<Void, XPCSecurityError> {
-        .failure(.internalError(reason: "Key import not implemented"))
-    }
-
-    /// Default implementation that returns a not implemented error.
-    func sign(
-        data _: SecureBytes,
-        keyIdentifier _: String
-    ) async -> Result<SecureBytes, XPCSecurityError> {
-        .failure(.internalError(reason: "Signing not implemented"))
-    }
-
-    /// Default implementation that returns a not implemented error.
-    func verify(
-        signature _: SecureBytes,
-        data _: SecureBytes,
-        keyIdentifier _: String
-    ) async -> Result<Bool, XPCSecurityError> {
-        .failure(.internalError(reason: "Verification not implemented"))
-    }
-
-    /// Default implementation that returns a not implemented error.
-    func getStatus() async -> Result<ServiceStatus, XPCSecurityError> {
-        .failure(.internalError(reason: "Get status not implemented"))
+    
+    /// Default implementation for getting service status
+    func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError> {
+        let isActive = await ping()
+        return .success(XPCServiceStatus(isActive: isActive, version: "1.0", serviceType: "XPC"))
     }
 }

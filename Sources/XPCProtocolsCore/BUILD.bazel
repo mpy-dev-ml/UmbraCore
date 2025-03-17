@@ -13,12 +13,21 @@ umbracore_foundation_free_module(
         "Sources/XPCServiceProtocolStandard.swift",
         "Sources/XPCServiceProtocolComplete.swift",
         
+        # New unified protocols
+        "Sources/Protocols/XPCErrorHandlingProtocol.swift",
+        "Sources/Protocols/XPCDataHandlingProtocol.swift",
+        "Sources/Protocols/XPCDataHandlingProtocolExtensions.swift",
+        
         # Error handling and utilities
         "Sources/XPCErrorHandling.swift",
         "Sources/XPCProtocolTypeDefs.swift",
         "Sources/XPCProtocolExtensions.swift",
         "Sources/XPCProtocolMigrationFactory.swift",
         "Sources/SecureBytes+NSData.swift",
+        "Sources/XPCServiceStatus.swift",
+        
+        # Migration guide and deprecation strategy
+        "Sources/XPCProtocolMigrationGuide.swift",
         
         # Adapters
         "Sources/Adapters/CryptoXPCServiceAdapter.swift",
