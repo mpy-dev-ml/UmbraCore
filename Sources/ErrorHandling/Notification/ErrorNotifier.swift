@@ -81,7 +81,7 @@ public final class ErrorNotifier: ErrorNotificationProtocol {
     ) {
         Task { @MainActor [self] in
             // Default to error notification level if not specified
-            await self.notifyUser(about: error, level: .error, recoveryOptions: recoveryOptions)
+            await notifyUser(about: error, level: .error, recoveryOptions: recoveryOptions)
         }
     }
 

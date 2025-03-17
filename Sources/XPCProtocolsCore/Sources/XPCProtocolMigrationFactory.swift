@@ -1,7 +1,8 @@
 import CoreErrors
 import ErrorHandling
 import ErrorHandlingDomains
-import SecurityProtocolsCore
+
+// Removed import SecurityProtocolsCore to break circular dependency
 import UmbraCoreTypes
 
 // Type alias to disambiguate SecurityError types

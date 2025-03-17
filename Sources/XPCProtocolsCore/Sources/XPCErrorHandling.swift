@@ -60,6 +60,12 @@ public enum XPCSecurityError: Error, Equatable, Sendable {
     /// The provided input was invalid for the requested operation
     case invalidInput(details: String)
 
+    /// The provided data was invalid for the requested operation
+    case invalidData(reason: String)
+
+    /// Encryption operation failed
+    case encryptionFailed(reason: String)
+
     /// The operation failed due to invalid state
     case invalidState(details: String)
 
@@ -71,6 +77,15 @@ public enum XPCSecurityError: Error, Equatable, Sendable {
 
     /// A cryptographic operation failed
     case cryptographicError(operation: String, details: String)
+
+    /// Decryption failed with a specific reason
+    case decryptionFailed(reason: String)
+
+    /// Key generation failed with a specific reason
+    case keyGenerationFailed(reason: String)
+
+    /// The operation is not implemented
+    case notImplemented(reason: String)
 
     /// An internal error occurred that cannot be exposed for security reasons
     case internalError(reason: String)
@@ -98,6 +113,10 @@ public enum XPCSecurityError: Error, Equatable, Sendable {
             lhsName == rhsName
         case let (.invalidInput(lhsDetails), .invalidInput(rhsDetails)):
             lhsDetails == rhsDetails
+        case let (.invalidData(lhsReason), .invalidData(rhsReason)):
+            lhsReason == rhsReason
+        case let (.encryptionFailed(lhsReason), .encryptionFailed(rhsReason)):
+            lhsReason == rhsReason
         case let (.invalidState(lhsDetails), .invalidState(rhsDetails)):
             lhsDetails == rhsDetails
         case let (.keyNotFound(lhsId), .keyNotFound(rhsId)):
@@ -106,6 +125,12 @@ public enum XPCSecurityError: Error, Equatable, Sendable {
             lhsExp == rhsExp && lhsRec == rhsRec
         case let (.cryptographicError(lhsOp, lhsDetails), .cryptographicError(rhsOp, rhsDetails)):
             lhsOp == rhsOp && lhsDetails == rhsDetails
+        case let (.decryptionFailed(lhsReason), .decryptionFailed(rhsReason)):
+            lhsReason == rhsReason
+        case let (.keyGenerationFailed(lhsReason), .keyGenerationFailed(rhsReason)):
+            lhsReason == rhsReason
+        case let (.notImplemented(lhsReason), .notImplemented(rhsReason)):
+            lhsReason == rhsReason
         case let (.internalError(lhsReason), .internalError(rhsReason)):
             lhsReason == rhsReason
         case (.connectionInterrupted, .connectionInterrupted):
@@ -157,6 +182,10 @@ extension XPCSecurityError: LocalizedError {
             "Operation not supported: \(name)"
         case let .invalidInput(details):
             "Invalid input: \(details)"
+        case let .invalidData(reason):
+            "Invalid data: \(reason)"
+        case let .encryptionFailed(reason):
+            "Encryption failed: \(reason)"
         case let .invalidState(details):
             "Invalid state: \(details)"
         case let .keyNotFound(identifier):
@@ -165,6 +194,12 @@ extension XPCSecurityError: LocalizedError {
             "Invalid key type: expected \(expected), received \(received)"
         case let .cryptographicError(operation, details):
             "Cryptographic error in \(operation): \(details)"
+        case let .decryptionFailed(reason):
+            "Decryption failed: \(reason)"
+        case let .keyGenerationFailed(reason):
+            "Key generation failed: \(reason)"
+        case let .notImplemented(reason):
+            "Operation not implemented: \(reason)"
         case let .internalError(reason):
             "Internal error: \(reason)"
         case .connectionInterrupted:
