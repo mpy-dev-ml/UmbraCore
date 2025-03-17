@@ -8,16 +8,26 @@ final class LegacyXPCAdapterTests: XCTestCase {
     // Test ping functionality
     func testPing() async throws {
         let mockService = MockLegacyXPCService()
+        mockService.shouldFail = false
+        print("DEBUG: Created mock service with shouldFail = \(mockService.shouldFail)")
+        print("DEBUG: Mock service is of type: \(type(of: mockService))")
+        
         let adapter = LegacyXPCServiceAdapter(service: mockService)
-
+        print("DEBUG: Created adapter with mock service")
+        
+        print("DEBUG: Calling adapter.pingComplete()")
         let result = await adapter.pingComplete()
-
+        
+        print("DEBUG: pingCalled = \(mockService.pingCalled), shouldFail = \(mockService.shouldFail)")
+        
         // Verify that the adapter correctly converts the result
         switch result {
         case let .success(value):
+            print("DEBUG: ping result success with value = \(value)")
             XCTAssertTrue(value)
-            XCTAssertTrue(mockService.pingCalled)
-        case .failure:
+            XCTAssertTrue(mockService.pingCalled, "The adapter should call ping() on the legacy service")
+        case .failure(let error):
+            print("DEBUG: ping result failure with error = \(error)")
             XCTFail("Ping should succeed")
         }
     }
@@ -101,49 +111,45 @@ final class LegacyXPCAdapterTests: XCTestCase {
 
     // Test factory creation
     func testFactoryCreation() {
-        let mockService = MockLegacyXPCService()
-
-        let standardAdapter = XPCProtocolMigrationFactory.createStandardAdapter(from: mockService)
+        let standardAdapter = XPCProtocolMigrationFactory.createStandardAdapter()
         XCTAssertNotNil(standardAdapter)
 
-        let completeAdapter = XPCProtocolMigrationFactory.createCompleteAdapter(from: mockService)
+        let completeAdapter = XPCProtocolMigrationFactory.createCompleteAdapter()
         XCTAssertNotNil(completeAdapter)
     }
 }
 
 // MARK: - Mock Classes for Testing
 
-/// Protocol definition for the legacy XPC service (for tests only)
-protocol LegacyXPCServiceProtocol {
-    func ping() -> Bool
-    func encryptData(_ data: NSData, keyIdentifier: String?) -> NSData?
-    func decryptData(_ data: NSData, keyIdentifier: String?) -> NSData?
-    func hashData(_ data: NSData) -> NSData?
-    func generateRandomData(length: Int) -> NSData?
-    func signData(_ data: NSData, keyIdentifier: String) -> NSData?
-    func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) -> NSNumber?
-}
-
 /// Mock implementation of a legacy XPC service to test the adapter
-class MockLegacyXPCService: LegacyXPCServiceProtocol {
+class MockLegacyXPCService: NSObject, PingProtocol, LegacyCryptoProtocol, LegacyVerificationProtocol {
     var encryptCalled = false
     var decryptCalled = false
     var hashCalled = false
     var generateRandomDataCalled = false
     var signDataCalled = false
     var verifySignatureCalled = false
+    var synchroniseKeysCalled = false
     var shouldFail = false
     var pingCalled = false
 
     func ping() -> Bool {
         pingCalled = true
+        print("DEBUG: Mock service ping() called, returning \( !shouldFail )")
         return !shouldFail
     }
 
-    func encryptData(_ data: NSData, keyIdentifier: String?) -> NSData? {
+    func pingComplete() async -> Bool {
+        pingCalled = true
+        print("DEBUG: Mock service pingComplete() called, returning \( !shouldFail )")
+        return !shouldFail
+    }
+
+    func encryptData(_ data: NSData, keyIdentifier: String?) -> NSData {
         encryptCalled = true
         if shouldFail {
-            return nil
+            // Still return empty data instead of nil
+            return NSData()
         }
         
         // Create a result that's different from the input
@@ -156,10 +162,11 @@ class MockLegacyXPCService: LegacyXPCServiceProtocol {
         return NSData(bytes: result, length: data.length)
     }
 
-    func decryptData(_ data: NSData, keyIdentifier: String?) -> NSData? {
+    func decryptData(_ data: NSData, keyIdentifier: String?) -> NSData {
         decryptCalled = true
         if shouldFail {
-            return nil
+            // Still return empty data instead of nil
+            return NSData()
         }
         
         // Create a result that's different from the input
@@ -172,28 +179,31 @@ class MockLegacyXPCService: LegacyXPCServiceProtocol {
         return NSData(bytes: result, length: data.length)
     }
 
-    func hashData(_ data: NSData) -> NSData? {
+    func hashData(_ data: NSData) -> NSData {
         hashCalled = true
         if shouldFail {
-            return nil
+            // Still return empty data instead of nil
+            return NSData()
         }
         
         // Return a fixed-size hash (like SHA-256)
         return NSData(bytes: Array(repeating: 1, count: 32), length: 32)
     }
 
-    func generateRandomData(length: Int) -> NSData? {
+    func generateRandomData(length: Int) -> NSData {
         generateRandomDataCalled = true
         if shouldFail {
-            return nil
+            // Still return empty data instead of nil
+            return NSData()
         }
         return NSData(bytes: Array(repeating: 0, count: length), length: length)
     }
     
-    func signData(_ data: NSData, keyIdentifier: String) -> NSData? {
+    func signData(_ data: NSData, keyIdentifier: String) -> NSData {
         signDataCalled = true
         if shouldFail {
-            return nil
+            // Still return empty data instead of nil
+            return NSData()
         }
         
         // Create a mock signature by prefixing key identifier hash and appending data
@@ -210,12 +220,48 @@ class MockLegacyXPCService: LegacyXPCServiceProtocol {
         if shouldFail {
             return nil
         }
-        
-        // Simple verification logic - if signature exists and length > data length, consider it valid
-        if signature.length > data.length {
-            return NSNumber(value: true)
+        return NSNumber(value: true)
+    }
+    
+    func synchroniseKeys(_ bytes: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
+        synchroniseKeysCalled = true
+        if shouldFail {
+            let error = NSError(domain: "com.umbra.xpc.test", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to synchronize keys"])
+            completionHandler(error)
         } else {
-            return NSNumber(value: false)
+            completionHandler(nil)
         }
+    }
+    
+    func getServiceStatus() -> NSDictionary? {
+        return ["status": "active", "version": "1.0.0"] as NSDictionary
+    }
+    
+    func generateKey(keyType: String, keyIdentifier: String?, metadata: NSDictionary?) -> NSNumber? {
+        if shouldFail {
+            return nil
+        }
+        return NSNumber(value: true)
+    }
+    
+    func deleteKey(keyIdentifier: String) -> NSNumber? {
+        if shouldFail {
+            return nil
+        }
+        return NSNumber(value: true)
+    }
+    
+    func listKeys() -> NSArray? {
+        if shouldFail {
+            return nil
+        }
+        return NSArray(array: ["key1", "key2", "key3"])
+    }
+    
+    func importKey(keyData: NSData, keyType: String, keyIdentifier: String?, metadata: NSDictionary?) -> NSNumber? {
+        if shouldFail {
+            return nil
+        }
+        return NSNumber(value: true)
     }
 }
