@@ -24,6 +24,9 @@ umbracore_foundation_free_module(
         "Sources/Adapters/CryptoXPCServiceAdapter.swift",
         "Sources/Adapters/LegacyXPCServiceAdapter.swift",
         
+        # Modern implementations
+        "Sources/Modern/ModernXPCService.swift",
+        
         # Examples
         "Sources/Examples/ExampleXPCService.swift",
     ],

@@ -370,7 +370,7 @@ extension SecureBytes {
 // MARK: - Mock Crypto XPC Service Implementation
 
 @available(macOS 14.0, *)
-class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol {
+class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Sendable {
     private let state = MockState()
     
     // Methods to check if methods were called

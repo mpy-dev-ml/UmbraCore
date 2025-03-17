@@ -1,4 +1,4 @@
-import CoreErrors
+import Foundation
 import ErrorHandling
 import ErrorHandlingDomains
 
@@ -10,38 +10,59 @@ typealias SPCSecurityError = UmbraErrors.Security.Protocols
 
 /// Factory class that provides convenience methods for creating protocol adapters
 /// during the migration from legacy protocols to the new XPCProtocolsCore protocols.
+///
+/// **Migration Notice:**
+/// This factory previously supported creating adapters that wrapped legacy services.
+/// In the current implementation, all factory methods create instances of ModernXPCService
+/// which directly implements all XPC service protocols by default. If specific test dependencies
+/// require a legacy adapter, you can still create one by providing the appropriate service.
+///
+/// - To transition from LegacyXPCServiceAdapter to ModernXPCService:
+///   1. Replace direct instantiation of LegacyXPCServiceAdapter with the appropriate factory method
+///   2. Ensure your code is using the protocol interfaces (XPCServiceProtocolBasic, etc.) rather than
+///      the concrete implementation types
+///   3. If you need specific functionality from the legacy adapter, consider subclassing ModernXPCService
+///      or extending the protocol with your custom implementation
 public enum XPCProtocolMigrationFactory {
-    /// Create a standard protocol adapter from a legacy XPC service
-    /// This allows using legacy implementations with the new protocol APIs
+    /// Create a standard protocol adapter
     ///
-    /// - Parameter legacyService: Any legacy XPC service that implements legacy protocols
-    /// - Returns: An adapter that conforms to XPCServiceProtocolStandard
-    public static func createStandardAdapter(from legacyService: Any)
-        -> any XPCServiceProtocolStandard
-    {
-        LegacyXPCServiceAdapter(service: legacyService)
+    /// - Parameter service: Optional legacy service to wrap (for testing and backwards compatibility)
+    /// - Returns: An implementation that conforms to XPCServiceProtocolStandard
+    public static func createStandardAdapter(
+        service: NSObject? = nil
+    ) -> any XPCServiceProtocolStandard {
+        if let legacyService = service {
+            return LegacyXPCServiceAdapter(service: legacyService)
+        }
+        return ModernXPCService()
     }
-
-    /// Create a complete protocol adapter from a legacy XPC service
-    /// This provides all the functionality of the complete XPC service protocol
+    
+    /// Create a complete protocol adapter
     ///
-    /// - Parameter legacyService: Any legacy XPC service that implements legacy protocols
-    /// - Returns: An adapter that conforms to XPCServiceProtocolComplete
-    public static func createCompleteAdapter(from legacyService: Any)
-        -> any XPCServiceProtocolComplete
-    {
-        LegacyXPCServiceAdapter(service: legacyService)
+    /// - Parameter service: Optional legacy service to wrap (for testing and backwards compatibility)
+    /// - Returns: An implementation that conforms to XPCServiceProtocolComplete
+    public static func createCompleteAdapter(
+        service: NSObject? = nil
+    ) -> any XPCServiceProtocolComplete {
+        if let legacyService = service {
+            return LegacyXPCServiceAdapter(service: legacyService)
+        }
+        return ModernXPCService()
     }
-
-    /// Create a basic protocol adapter from a legacy XPC service
-    /// This provides the minimal functionality of the basic XPC service protocol
+    
+    /// Create a basic protocol adapter
     ///
-    /// - Parameter legacyService: Any legacy XPC service that implements legacy protocols
-    /// - Returns: An adapter that conforms to XPCServiceProtocolBasic
-    public static func createBasicAdapter(from legacyService: Any) -> any XPCServiceProtocolBasic {
-        LegacyXPCServiceAdapter(service: legacyService)
+    /// - Parameter service: Optional legacy service to wrap (for testing and backwards compatibility)
+    /// - Returns: An implementation that conforms to XPCServiceProtocolBasic
+    public static func createBasicAdapter(
+        service: NSObject? = nil
+    ) -> any XPCServiceProtocolBasic {
+        if let legacyService = service {
+            return LegacyXPCServiceAdapter(service: legacyService)
+        }
+        return ModernXPCService()
     }
-
+    
     /// Convert from legacy error to XPCSecurityError
     ///
     /// - Parameter error: Legacy error to convert
@@ -51,11 +72,11 @@ public enum XPCProtocolMigrationFactory {
         if let xpcError = error as? XPCSecurityError {
             return xpcError
         }
-
+        
         // Otherwise create a general error with the original error's description
         return .internalError(reason: error.localizedDescription)
     }
-
+    
     /// Convert any error to XPCSecurityError
     ///
     /// - Parameter error: Any error
@@ -65,7 +86,7 @@ public enum XPCProtocolMigrationFactory {
         if let xpcError = error as? XPCSecurityError {
             return xpcError
         }
-
+        
         // Otherwise create a general error with the original error's description
         return .internalError(reason: error.localizedDescription)
     }

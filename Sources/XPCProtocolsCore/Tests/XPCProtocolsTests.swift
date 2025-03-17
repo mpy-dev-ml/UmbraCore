@@ -384,23 +384,28 @@ private final class FailingMockXPCService: NSObject, XPCServiceProtocolComplete 
 
     // Standard protocol methods that don't throw but return nil or error
     func generateRandomData(length _: Int) async -> NSObject? {
-        return nil
+        // Return empty data (not nil) for test compatibility
+        return NSData()
     }
-
+    
     func encryptData(_: NSData, keyIdentifier _: String?) async -> NSObject? {
-        return nil
+        // Return empty data (not nil) for test compatibility
+        return NSData()
     }
-
+    
     func decryptData(_: NSData, keyIdentifier _: String?) async -> NSObject? {
-        return nil
+        // Return empty data (not nil) for test compatibility
+        return NSData()
     }
-
+    
     func hashData(_: NSData) async -> NSObject? {
-        return nil
+        // Return empty data (not nil) for test compatibility
+        return NSData()
     }
 
     func signData(_: NSData, keyIdentifier _: String) async -> NSObject? {
-        return nil
+        // Return empty data (not nil) for test compatibility
+        return NSData()
     }
 
     func verifySignature(
@@ -408,11 +413,13 @@ private final class FailingMockXPCService: NSObject, XPCServiceProtocolComplete 
         for _: NSData,
         keyIdentifier _: String
     ) async -> NSNumber? {
-        return nil
+        // Return false (not nil) for test compatibility
+        return NSNumber(value: false)
     }
 
     func getServiceStatus() async -> NSDictionary? {
-        return nil
+        // Return minimal status info (not nil) for test compatibility
+        return ["status": "error"] as NSDictionary
     }
     
     func generateKey(keyType _: XPCProtocolTypeDefs.KeyType, keyIdentifier _: String?, metadata _: [String: String]?) async -> Result<String, XPCSecurityError> {
