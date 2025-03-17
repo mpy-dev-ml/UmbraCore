@@ -18,23 +18,23 @@ final class ErrorLoggingProtocolTests: XCTestCase {
         var loggedWarnings: [String] = []
         var loggedWithSeverity: [(error: Error, severity: ErrorSeverity)] = []
         var recoveryActions: [String: ErrorHandlingRecovery.RecoveryAction] = [:]
-        
+
         // Required method from ErrorLoggingProtocol
-        func log<E: UmbraError>(error: E, severity: ErrorSeverity) {
+        func log(error: some UmbraError, severity: ErrorSeverity) {
             loggedErrors.append(error)
             loggedWithSeverity.append((error, severity))
         }
-        
+
         // Additional logging methods for testing
-        func logError(_ error: Error, file: String, function: String, line: Int) {
+        func logError(_ error: Error, file _: String, function _: String, line _: Int) {
             loggedErrors.append(error)
         }
 
-        func logInfo(_ message: String, file: String, function: String, line: Int) {
+        func logInfo(_ message: String, file _: String, function _: String, line _: Int) {
             loggedInfo.append(message)
         }
 
-        func logWarning(_ message: String, file: String, function: String, line: Int) {
+        func logWarning(_ message: String, file _: String, function _: String, line _: Int) {
             loggedWarnings.append(message)
         }
 
@@ -57,9 +57,9 @@ final class ErrorLoggingProtocolTests: XCTestCase {
         var underlyingError: Error?
         var source: ErrorHandlingCommon.ErrorSource?
 
-        func with(context: ErrorHandlingCommon.ErrorContext) -> Self { self }
-        func with(underlyingError: Error) -> Self { self }
-        func with(source: ErrorHandlingCommon.ErrorSource) -> Self { self }
+        func with(context _: ErrorHandlingCommon.ErrorContext) -> Self { self }
+        func with(underlyingError _: Error) -> Self { self }
+        func with(source _: ErrorHandlingCommon.ErrorSource) -> Self { self }
     }
 
     private var errorLogger: MockErrorLogger!
@@ -96,14 +96,14 @@ final class ErrorLoggingProtocolTests: XCTestCase {
     func testErrorLoggingWithSeverity() {
         // Given
         let error = TestLoggingError(code: "L002", errorDescription: "Critical error")
-        
+
         // When
         errorLogger.log(error: error, severity: .critical)
-        
+
         // Then
         XCTAssertEqual(errorLogger.loggedWithSeverity.count, 1, "Should have logged one error with severity")
         XCTAssertEqual(errorLogger.loggedWithSeverity[0].severity, .critical, "Severity should be critical")
-        
+
         if let loggedError = errorLogger.loggedWithSeverity[0].error as? TestLoggingError {
             XCTAssertEqual(loggedError.code, "L002", "Error code should match")
         }
@@ -197,7 +197,7 @@ final class ErrorLoggingProtocolTests: XCTestCase {
         let options = [
             ErrorHandlingRecovery.RecoveryAction(id: "retry_network", title: "Retry Network", description: "Retry network connection", handler: {}),
             ErrorHandlingRecovery.RecoveryAction(id: "check_disk", title: "Check Disk", description: "Verify disk space", handler: {}),
-            ErrorHandlingRecovery.RecoveryAction(id: "request_permission", title: "Request Permission", description: "Ask for permission", handler: {})
+            ErrorHandlingRecovery.RecoveryAction(id: "request_permission", title: "Request Permission", description: "Ask for permission", handler: {}),
         ]
 
         // When - Register all options

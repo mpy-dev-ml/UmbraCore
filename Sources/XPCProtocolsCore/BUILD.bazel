@@ -17,15 +17,25 @@ umbracore_foundation_free_module(
         "Sources/XPCErrorHandling.swift",
         "Sources/XPCProtocolTypeDefs.swift",
         "Sources/XPCProtocolExtensions.swift",
+        "Sources/XPCProtocolMigrationFactory.swift",
+        "Sources/SecureBytes+NSData.swift",
         
         # Adapters
         "Sources/Adapters/CryptoXPCServiceAdapter.swift",
+        "Sources/Adapters/LegacyXPCServiceAdapter.swift",
+        
+        # Modern implementations
+        "Sources/Modern/ModernXPCService.swift",
+        
+        # Examples
+        "Sources/Examples/ExampleXPCService.swift",
     ],
     visibility = ["//visibility:public"],
     deps = [
         "//Sources/UmbraCoreTypes",
         "//Sources/CoreErrors",           # Required for error handling
         "//Sources/ErrorHandling",        # Required for error handling
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains", # Required for error domains
     ],
     copts = [
         "-target", "arm64-apple-macos15.4",
@@ -36,16 +46,17 @@ umbracore_foundation_free_module(
     ],
 )
 
-# Temporarily disabled for build verification
-# umbra_swift_test(
-#     name = "XPCProtocolsCoreTests",
-#     srcs = glob(["Tests/**/*.swift"]),
-#     module_name = "XPCProtocolsCoreTests",
-#     deps = [
-#         ":XPCProtocolsCore",
-#         "//Sources/UmbraCoreTypes",  # Using SecureBytes from UmbraCoreTypes, not the standalone module
-#         "//Sources/SecurityInterfaces",
-#         "//Sources/SecurityInterfacesBase",
-#         "//Sources/SecurityInterfacesProtocols",
-#     ],
-# )
+# Test target for XPCProtocolsCore
+umbra_swift_test(
+    name = "XPCProtocolsCoreTests",
+    srcs = glob(["Tests/**/*.swift"]),
+    module_name = "XPCProtocolsCoreTests",
+    deps = [
+        ":XPCProtocolsCore",
+        "//Sources/UmbraCoreTypes",  # Using SecureBytes from UmbraCoreTypes, not the standalone module
+        "//Sources/CoreErrors",      # Required for testing error conversions
+        "//Sources/ErrorHandling",   # Required for error handling
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains", # Required for error domains
+        "//Sources/SecurityProtocolsCore", # Required for test mocks
+    ],
+)

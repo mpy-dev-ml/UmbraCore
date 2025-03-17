@@ -34,7 +34,7 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             iterations: keyIterations
         )
         let iv = try await cryptoService.generateSecureRandomBytes(length: 12)
-        
+
         // When / Then
         do {
             _ = try await cryptoService.encrypt(testData, using: derivedKey, iv: iv)
@@ -43,11 +43,11 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             // Print the actual error for debugging
             print("Encryption error in roundtrip: \(error)")
             print("Localized description: \(error.localizedDescription)")
-            
+
             // Check against specific UmbraErrors error
             if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
                 switch securityError {
-                case .encryptionFailed(let reason):
+                case let .encryptionFailed(reason):
                     XCTAssertEqual(reason, "Encryption functionality moved to ResticBar")
                 default:
                     XCTFail("Expected encryptionFailed error, got \(securityError)")
@@ -57,7 +57,7 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             }
         }
     }
-    
+
     /**
      * Test that encryption produces different output for same password but different data
      */
@@ -65,14 +65,14 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
         // Given
         let testData1 = "Data set 1".data(using: .utf8)!
         // We won't use this but keep it to show intent
-        let _ = "Data set 2".data(using: .utf8)!
+        _ = "Data set 2".data(using: .utf8)!
         let derivedKey = try await cryptoService.deriveKey(
             from: "testpassword",
             salt: testSalt,
             iterations: keyIterations
         )
         let iv = try await cryptoService.generateSecureRandomBytes(length: 12)
-        
+
         // When / Then
         do {
             _ = try await cryptoService.encrypt(testData1, using: derivedKey, iv: iv)
@@ -81,11 +81,11 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             // Print the actual error for debugging
             print("Encryption error in different data: \(error)")
             print("Localized description: \(error.localizedDescription)")
-            
+
             // Check against specific UmbraErrors error
             if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
                 switch securityError {
-                case .encryptionFailed(let reason):
+                case let .encryptionFailed(reason):
                     XCTAssertEqual(reason, "Encryption functionality moved to ResticBar")
                 default:
                     XCTFail("Expected encryptionFailed error, got \(securityError)")
@@ -95,7 +95,7 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             }
         }
     }
-    
+
     /**
      * Test that decryption with incorrect password fails
      */
@@ -109,13 +109,13 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             iterations: keyIterations
         )
         // We won't use this but keep it to show intent
-        let _ = try await cryptoService.deriveKey(
+        _ = try await cryptoService.deriveKey(
             from: "incorrectpassword",
             salt: testSalt,
             iterations: keyIterations
         )
         let iv = try await cryptoService.generateSecureRandomBytes(length: 12)
-        
+
         // When / Then
         do {
             _ = try await cryptoService.encrypt(testData, using: correctKey, iv: iv)
@@ -124,11 +124,11 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             // Print the actual error for debugging
             print("Encryption error in incorrect password: \(error)")
             print("Localized description: \(error.localizedDescription)")
-            
+
             // Check against specific UmbraErrors error
             if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
                 switch securityError {
-                case .encryptionFailed(let reason):
+                case let .encryptionFailed(reason):
                     XCTAssertEqual(reason, "Encryption functionality moved to ResticBar")
                 default:
                     XCTFail("Expected encryptionFailed error, got \(securityError)")
@@ -138,7 +138,7 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             }
         }
     }
-    
+
     /**
      * Test that decryption with malformed data fails gracefully
      */
@@ -151,7 +151,7 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             iterations: keyIterations
         )
         let iv = try await cryptoService.generateSecureRandomBytes(length: 12)
-        
+
         // When/Then
         do {
             _ = try await cryptoService.decrypt(malformedData, using: key, iv: iv)
@@ -160,11 +160,11 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             // Print the actual error for debugging
             print("Decryption error with malformed data: \(error)")
             print("Localized description: \(error.localizedDescription)")
-            
+
             // Check against specific UmbraErrors error
             if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
                 switch securityError {
-                case .decryptionFailed(let reason):
+                case let .decryptionFailed(reason):
                     XCTAssertEqual(reason, "Decryption functionality moved to ResticBar")
                 default:
                     XCTFail("Expected decryptionFailed error, got \(securityError)")
@@ -174,7 +174,7 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             }
         }
     }
-    
+
     /**
      * Test that encryption works with large data
      */
@@ -187,7 +187,7 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             iterations: keyIterations
         )
         let iv = try await cryptoService.generateSecureRandomBytes(length: 12)
-        
+
         // When/Then
         do {
             _ = try await cryptoService.encrypt(largeData, using: key, iv: iv)
@@ -196,11 +196,11 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             // Print the actual error for debugging
             print("Encryption error with large data: \(error)")
             print("Localized description: \(error.localizedDescription)")
-            
+
             // Check against specific UmbraErrors error
             if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
                 switch securityError {
-                case .encryptionFailed(let reason):
+                case let .encryptionFailed(reason):
                     XCTAssertEqual(reason, "Encryption functionality moved to ResticBar")
                 default:
                     XCTFail("Expected encryptionFailed error, got \(securityError)")
@@ -210,7 +210,7 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             }
         }
     }
-    
+
     /**
      * Test that empty data can be encrypted and decrypted properly
      */
@@ -223,7 +223,7 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             iterations: keyIterations
         )
         let iv = try await cryptoService.generateSecureRandomBytes(length: 12)
-        
+
         // When/Then
         do {
             _ = try await cryptoService.encrypt(emptyData, using: key, iv: iv)
@@ -232,11 +232,11 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             // Print the actual error for debugging
             print("Encryption error with empty data: \(error)")
             print("Localized description: \(error.localizedDescription)")
-            
+
             // Check against specific UmbraErrors error
             if let securityError = error as? UmbraErrors.GeneralSecurity.Core {
                 switch securityError {
-                case .encryptionFailed(let reason):
+                case let .encryptionFailed(reason):
                     XCTAssertEqual(reason, "Encryption functionality moved to ResticBar")
                 default:
                     XCTFail("Expected encryptionFailed error, got \(securityError)")
@@ -246,14 +246,14 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
             }
         }
     }
-    
+
     /**
      * Test handling of empty password in key derivation
      */
     func testEncryptWithEmptyPassword() async throws {
         // Given
         // Empty password should be allowed in key derivation, though it's not secure
-        
+
         // When/Then
         do {
             let key = try await cryptoService.deriveKey(from: "", salt: testSalt, iterations: keyIterations)

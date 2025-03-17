@@ -1,20 +1,20 @@
 import ErrorHandlingDomains
-import SecurityProtocolsCore
 @testable import SecurityInterfaces
+import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
 
 /// Tests for the SecurityProviderBase protocol and its adapter functionality
 class SecurityProviderBaseTests: XCTestCase {
     // MARK: - Adapter Creation Tests
-    
+
     func testAdapterCreation() {
         // Create a mock base provider
         let baseProvider = MockSecurityProviderBase()
-        
+
         // Convert to the modern provider interface
         let modernProvider = baseProvider.asModernProvider()
-        
+
         // Verify we got a valid provider
         XCTAssertNotNil(modernProvider)
     }
@@ -27,20 +27,20 @@ private final class MockSecurityProviderBase: SecurityInterfaces.SecurityProvide
     func resetSecurityData() async -> Result<Void, SecurityInterfaces.SecurityError> {
         .success(())
     }
-    
+
     func getHostIdentifier() async -> Result<String, SecurityInterfaces.SecurityError> {
         .success("TEST-HOST-ID")
     }
-    
-    func registerClient(bundleIdentifier: String) async -> Result<Bool, SecurityInterfaces.SecurityError> {
+
+    func registerClient(bundleIdentifier _: String) async -> Result<Bool, SecurityInterfaces.SecurityError> {
         .success(true)
     }
-    
-    func requestKeyRotation(keyId: String) async -> Result<Void, SecurityInterfaces.SecurityError> {
+
+    func requestKeyRotation(keyId _: String) async -> Result<Void, SecurityInterfaces.SecurityError> {
         .success(())
     }
-    
-    func notifyKeyCompromise(keyId: String) async -> Result<Void, SecurityInterfaces.SecurityError> {
+
+    func notifyKeyCompromise(keyId _: String) async -> Result<Void, SecurityInterfaces.SecurityError> {
         .success(())
     }
 }

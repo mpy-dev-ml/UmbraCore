@@ -1,12 +1,11 @@
-import XCTest
 @testable import ErrorHandling
-@testable import ErrorHandlingInterfaces
 @testable import ErrorHandlingCommon
+@testable import ErrorHandlingInterfaces
+import XCTest
 
 final class TestErrorHandling_Interfaces: XCTestCase {
-    
     // MARK: - Test Implementations
-    
+
     /// A simple implementation of UmbraError for testing
     struct TestError: UmbraError {
         let domain: String
@@ -15,7 +14,7 @@ final class TestErrorHandling_Interfaces: XCTestCase {
         var source: ErrorHandlingInterfaces.ErrorSource?
         var underlyingError: Error?
         var context: ErrorHandlingInterfaces.ErrorContext
-        
+
         init(
             domain: String = "TestDomain",
             code: String = "TEST001",
@@ -26,56 +25,56 @@ final class TestErrorHandling_Interfaces: XCTestCase {
         ) {
             self.domain = domain
             self.code = code
-            self.errorDescription = description
+            errorDescription = description
             self.source = source
             self.underlyingError = underlyingError
             self.context = context ?? ErrorHandlingInterfaces.ErrorContext(source: "TestSource", operation: "testOperation")
         }
-        
+
         func with(context: ErrorHandlingInterfaces.ErrorContext) -> TestError {
             TestError(
-                domain: self.domain,
-                code: self.code,
-                description: self.errorDescription,
-                source: self.source,
-                underlyingError: self.underlyingError,
+                domain: domain,
+                code: code,
+                description: errorDescription,
+                source: source,
+                underlyingError: underlyingError,
                 context: context
             )
         }
-        
+
         func with(underlyingError: Error) -> TestError {
             TestError(
-                domain: self.domain,
-                code: self.code,
-                description: self.errorDescription,
-                source: self.source,
+                domain: domain,
+                code: code,
+                description: errorDescription,
+                source: source,
                 underlyingError: underlyingError,
-                context: self.context
+                context: context
             )
         }
-        
+
         func with(source: ErrorHandlingInterfaces.ErrorSource) -> TestError {
             TestError(
-                domain: self.domain,
-                code: self.code,
-                description: self.errorDescription,
+                domain: domain,
+                code: code,
+                description: errorDescription,
                 source: source,
-                underlyingError: self.underlyingError,
-                context: self.context
+                underlyingError: underlyingError,
+                context: context
             )
         }
-        
+
         var description: String {
-            return errorDescription
+            errorDescription
         }
     }
-    
+
     // MARK: - UmbraError Protocol Tests
-    
+
     func testUmbraErrorConformance() {
         // Create a basic error
         let error = TestError()
-        
+
         // Test basic protocol properties
         XCTAssertEqual(error.domain, "TestDomain")
         XCTAssertEqual(error.code, "TEST001")
@@ -85,7 +84,7 @@ final class TestErrorHandling_Interfaces: XCTestCase {
         XCTAssertNil(error.source)
         XCTAssertEqual(error.context.source, "TestSource")
         XCTAssertEqual(error.context.operation, "testOperation")
-        
+
         // Test with(context:) method
         let newContext = ErrorHandlingInterfaces.ErrorContext(
             source: "NewSource",
@@ -96,7 +95,7 @@ final class TestErrorHandling_Interfaces: XCTestCase {
         XCTAssertEqual(errorWithContext.context.source, "NewSource")
         XCTAssertEqual(errorWithContext.context.operation, "newOperation")
         XCTAssertEqual(errorWithContext.context.details, "New details")
-        
+
         // Test with(underlyingError:) method
         let underlyingError = NSError(domain: "UnderlyingDomain", code: 123)
         let errorWithUnderlying = error.with(underlyingError: underlyingError)
@@ -107,7 +106,7 @@ final class TestErrorHandling_Interfaces: XCTestCase {
         } else {
             XCTFail("Underlying error not properly stored or retrieved")
         }
-        
+
         // Test with source method
         let source = ErrorHandlingInterfaces.ErrorSource(
             file: "TestFile.swift",
@@ -120,26 +119,26 @@ final class TestErrorHandling_Interfaces: XCTestCase {
         XCTAssertEqual(errorWithSource.source?.line, 42)
         XCTAssertEqual(errorWithSource.source?.function, "testFunction()")
     }
-    
+
     // MARK: - Error Context Tests
-    
+
     func testErrorContextInterface() {
         // Create a context with minimal parameters
         let context = ErrorHandlingInterfaces.ErrorContext(
             source: "ContextSource",
             operation: "contextOperation"
         )
-        
+
         // Test the basic interface
         XCTAssertEqual(context.source, "ContextSource")
         XCTAssertEqual(context.operation, "contextOperation")
         XCTAssertNil(context.details)
         XCTAssertNil(context.underlyingError)
-        
+
         // File/line/function should be set to values from this test file
         XCTAssertTrue(context.file.hasSuffix("TestErrorHandling_Interfaces.swift"))
         XCTAssertTrue(context.function.contains("testErrorContextInterface"))
-        
+
         // Test with underlying error
         let underlyingError = NSError(domain: "UnderlyingDomain", code: 456)
         let contextWithError = ErrorHandlingInterfaces.ErrorContext(
@@ -147,7 +146,7 @@ final class TestErrorHandling_Interfaces: XCTestCase {
             operation: "contextOperation",
             underlyingError: underlyingError
         )
-        
+
         XCTAssertNotNil(contextWithError.underlyingError)
         if let unwrapped = contextWithError.underlyingError as? NSError {
             XCTAssertEqual(unwrapped.domain, "UnderlyingDomain")
@@ -156,9 +155,9 @@ final class TestErrorHandling_Interfaces: XCTestCase {
             XCTFail("Underlying error not properly stored or retrieved")
         }
     }
-    
+
     // MARK: - Error Source Tests
-    
+
     func testErrorSourceInterface() {
         // Create a source with explicit parameters
         let source = ErrorHandlingInterfaces.ErrorSource(
@@ -166,12 +165,12 @@ final class TestErrorHandling_Interfaces: XCTestCase {
             line: 123,
             function: "sourceFunction()"
         )
-        
+
         // Test the basic interface
         XCTAssertEqual(source.file, "SourceFile.swift")
         XCTAssertEqual(source.line, 123)
         XCTAssertEqual(source.function, "sourceFunction()")
-        
+
         // Test default parameters capturing current location
         let defaultSource = ErrorHandlingInterfaces.ErrorSource()
         XCTAssertTrue(defaultSource.file.hasSuffix("TestErrorHandling_Interfaces.swift"))

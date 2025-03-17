@@ -1,12 +1,11 @@
-import XCTest
 @testable import ErrorHandling
-@testable import ErrorHandlingUtilities
 @testable import ErrorHandlingInterfaces
+@testable import ErrorHandlingUtilities
+import XCTest
 
 final class TestErrorHandling_Utilities: XCTestCase {
-    
     // MARK: - Error Formatters Tests
-    
+
     func testErrorFormatters() {
         // Create a test error
         let error = TestError(
@@ -15,20 +14,20 @@ final class TestErrorHandling_Utilities: XCTestCase {
             description: "Test error description",
             source: ErrorHandlingInterfaces.ErrorSource(file: "TestFile.swift", line: 42, function: "testFunction()")
         )
-        
+
         // Test basic error formatter
         let basicFormatter = MockBasicErrorFormatter()
         let basicFormat = basicFormatter.format(error: error)
-        
+
         // Verify basic format contains expected information
         XCTAssertTrue(basicFormat.contains("TestDomain"))
         XCTAssertTrue(basicFormat.contains("TEST001"))
         XCTAssertTrue(basicFormat.contains("Test error description"))
-        
+
         // Test detailed error formatter
         let detailedFormatter = MockDetailedErrorFormatter()
         let detailedFormat = detailedFormatter.format(error: error)
-        
+
         // Verify detailed format contains additional information
         XCTAssertTrue(detailedFormat.contains("TestDomain"))
         XCTAssertTrue(detailedFormat.contains("TEST001"))
@@ -36,11 +35,11 @@ final class TestErrorHandling_Utilities: XCTestCase {
         XCTAssertTrue(detailedFormat.contains("TestFile.swift"))
         XCTAssertTrue(detailedFormat.contains("testFunction()"))
         XCTAssertTrue(detailedFormat.contains("Line: 42"))
-        
+
         // Test JSON error formatter
         let jsonFormatter = MockJSONErrorFormatter()
         let jsonFormat = jsonFormatter.format(error: error)
-        
+
         // Verify JSON format contains expected fields - with more flexible assertions
         // JSON formatters might have different whitespace or field order
         XCTAssertTrue(jsonFormat.contains("\"domain\""), "JSON should contain domain field")
@@ -56,32 +55,32 @@ final class TestErrorHandling_Utilities: XCTestCase {
         XCTAssertTrue(jsonFormat.contains("\"line\""), "JSON should contain line field")
         XCTAssertTrue(jsonFormat.contains("42"), "JSON should contain line value")
     }
-    
+
     // MARK: - Error Utility Functions Tests
-    
+
     func testErrorExtractionUtilities() {
         // Test extracting domain from an error
         let error1 = TestError(domain: "Domain1", code: "CODE1", description: "Description 1")
         let domain = MockErrorUtilities.extractDomain(from: error1)
         XCTAssertEqual(domain, "Domain1")
-        
+
         // Test extracting code from an error
         let code = MockErrorUtilities.extractCode(from: error1)
         XCTAssertEqual(code, "CODE1")
-        
+
         // Test getting error hierarchy as array
         let underlyingError = NSError(domain: "UnderlyingDomain", code: 200, userInfo: [NSLocalizedDescriptionKey: "Underlying error"])
         let topError = NSError(domain: "ErrorDomain", code: 100, userInfo: [NSUnderlyingErrorKey: underlyingError])
-        
+
         let hierarchy = MockErrorUtilities.getErrorHierarchy(topError)
-        
+
         XCTAssertEqual(hierarchy.count, 2)
         XCTAssertEqual(MockErrorUtilities.extractDomain(from: hierarchy[0]), "ErrorDomain")
         XCTAssertEqual(MockErrorUtilities.extractDomain(from: hierarchy[1]), "UnderlyingDomain")
     }
-    
+
     // MARK: - Debug Utilities Tests
-    
+
     func testDebugUtilities() {
         // Test error chain description
         let rootError = NSError(domain: "RootDomain", code: 100, userInfo: [NSLocalizedDescriptionKey: "Root error"])
@@ -97,23 +96,23 @@ final class TestErrorHandling_Utilities: XCTestCase {
             description: "Top error",
             underlyingError: middleError
         )
-        
+
         let chainDescription = MockErrorDebugUtilities.errorChainDescription(topError)
-        
+
         // Skip detailed testing of error chain description format
         // Just verify that we got a non-empty string result
         XCTAssertFalse(chainDescription.isEmpty, "Error chain description should not be empty")
-        
+
         // Test error source description
         let source = ErrorHandlingInterfaces.ErrorSource(file: "DebugFile.swift", line: 123, function: "debugFunction()")
         let sourceDescription = MockErrorDebugUtilities.errorSourceDescription(source)
-        
+
         // Just verify that we got a non-empty string result for source description
         XCTAssertFalse(sourceDescription.isEmpty, "Source description should not be empty")
     }
-    
+
     // MARK: - Test Implementations
-    
+
     class MockBasicErrorFormatter {
         func format(error: Error) -> String {
             if let umbraError = error as? UmbraError {
@@ -122,11 +121,12 @@ final class TestErrorHandling_Utilities: XCTestCase {
             return String(describing: error)
         }
     }
-    
+
     class MockDetailedErrorFormatter {
         func format(error: Error) -> String {
-            if let umbraError = error as? UmbraError, 
-               let source = umbraError.source {
+            if let umbraError = error as? UmbraError,
+               let source = umbraError.source
+            {
                 return """
                 Error: [\(umbraError.domain).\(umbraError.code)] \(umbraError.errorDescription)
                 Source: \(source.file)
@@ -137,7 +137,7 @@ final class TestErrorHandling_Utilities: XCTestCase {
             return String(describing: error)
         }
     }
-    
+
     class MockJSONErrorFormatter {
         func format(error: Error) -> String {
             if let umbraError = error as? UmbraError {
@@ -147,7 +147,7 @@ final class TestErrorHandling_Utilities: XCTestCase {
                   "code": "\(umbraError.code)",
                   "description": "\(umbraError.errorDescription)"
                 """
-                
+
                 if let source = umbraError.source {
                     json += """
                     ,
@@ -156,14 +156,14 @@ final class TestErrorHandling_Utilities: XCTestCase {
                       "line": \(source.line)
                     """
                 }
-                
+
                 json += "\n}"
                 return json
             }
             return "{\"error\": \"\(String(describing: error))\"}"
         }
     }
-    
+
     enum MockErrorUtilities {
         static func extractDomain(from error: Error) -> String {
             if let umbraError = error as? UmbraError {
@@ -173,7 +173,7 @@ final class TestErrorHandling_Utilities: XCTestCase {
                 return nsError.domain
             }
         }
-        
+
         static func extractCode(from error: Error) -> String {
             if let umbraError = error as? UmbraError {
                 return umbraError.code
@@ -182,11 +182,11 @@ final class TestErrorHandling_Utilities: XCTestCase {
                 return String(nsError.code)
             }
         }
-        
+
         static func getErrorHierarchy(_ error: Error) -> [Error] {
             var errors = [error]
             var currentError = error
-            
+
             while true {
                 let nsError = currentError as NSError
                 if let underlying = nsError.userInfo[NSUnderlyingErrorKey] as? Error {
@@ -196,29 +196,29 @@ final class TestErrorHandling_Utilities: XCTestCase {
                     break
                 }
             }
-            
+
             return errors
         }
     }
-    
+
     enum MockErrorDebugUtilities {
         static func errorChainDescription(_ error: Error) -> String {
             let hierarchy = MockErrorUtilities.getErrorHierarchy(error)
             var description = "Error Chain:\n"
-            
+
             for (index, err) in hierarchy.enumerated() {
                 let nsError = err as NSError
                 description += "[\(index)] \(nsError.domain) - \(nsError.code): \(nsError.localizedDescription)\n"
             }
-            
+
             return description
         }
-        
+
         static func errorSourceDescription(_ source: ErrorHandlingInterfaces.ErrorSource) -> String {
-            return "Source: \(source.file):\(source.line) - \(source.function)"
+            "Source: \(source.file):\(source.line) - \(source.function)"
         }
     }
-    
+
     struct TestError: UmbraError {
         let domain: String
         let code: String
@@ -226,7 +226,7 @@ final class TestErrorHandling_Utilities: XCTestCase {
         var source: ErrorHandlingInterfaces.ErrorSource?
         var underlyingError: Error?
         var context: ErrorHandlingInterfaces.ErrorContext
-        
+
         init(
             domain: String,
             code: String,
@@ -236,32 +236,32 @@ final class TestErrorHandling_Utilities: XCTestCase {
         ) {
             self.domain = domain
             self.code = code
-            self.errorDescription = description
+            errorDescription = description
             self.source = source
             self.underlyingError = underlyingError
-            self.context = ErrorHandlingInterfaces.ErrorContext(source: domain, operation: "testOperation")
+            context = ErrorHandlingInterfaces.ErrorContext(source: domain, operation: "testOperation")
         }
-        
+
         func with(context: ErrorHandlingInterfaces.ErrorContext) -> Self {
             var copy = self
             copy.context = context
             return copy
         }
-        
+
         func with(underlyingError: Error) -> Self {
             var copy = self
             copy.underlyingError = underlyingError
             return copy
         }
-        
+
         func with(source: ErrorHandlingInterfaces.ErrorSource) -> Self {
             var copy = self
             copy.source = source
             return copy
         }
-        
+
         var description: String {
-            return errorDescription
+            errorDescription
         }
     }
 }
