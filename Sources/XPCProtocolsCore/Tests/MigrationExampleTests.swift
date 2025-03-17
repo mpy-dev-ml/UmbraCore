@@ -47,9 +47,9 @@ final class MigrationExampleTests: XCTestCase {
 
         // Generate a key with Swift enums
         let generateResult = await service.generateKey(
-            keyType: .symmetric,
-            keyIdentifier: nil,
-            metadata: ["purpose": "test"]
+            algorithm: "AES-256",
+            keySize: 256,
+            purpose: "test"
         )
 
         switch generateResult {
@@ -171,6 +171,14 @@ private extension MigrationExampleTests {
         func generateKey(keyType _: XPCProtocolTypeDefs.KeyType, keyIdentifier: String?, metadata _: [String: String]?) async -> Result<String, XPCSecurityError> {
             .success(keyIdentifier ?? "generated-key-id")
         }
+        
+        func generateKey(
+            algorithm: String,
+            keySize: Int,
+            purpose: String
+        ) async -> Result<String, XPCSecurityError> {
+            .success("generated-key-\(algorithm)-\(keySize)-\(purpose)")
+        }
 
         func deleteKey(keyIdentifier _: String) async -> Result<Void, XPCSecurityError> {
             .success(())
@@ -236,6 +244,38 @@ private extension MigrationExampleTests {
         func verifySignature(_: NSData, for _: NSData, keyIdentifier _: String) -> NSNumber {
             // Simple implementation for testing
             NSNumber(value: true)
+        }
+
+        // Required methods for XPCServiceProtocolStandard
+        func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+            let bytes = [UInt8](repeating: 3, count: length)
+            return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
+        }
+        
+        func resetSecurity() async -> Result<Void, XPCSecurityError> {
+            .success(())
+        }
+        
+        func getServiceVersion() async -> Result<String, XPCSecurityError> {
+            .success("1.0.0")
+        }
+        
+        func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+            .success("test-hardware-id")
+        }
+        
+        func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+            let signature = [UInt8](repeating: 5, count: 64)
+            return .success(UmbraCoreTypes.SecureBytes(bytes: signature))
+        }
+        
+        func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+            .success(true)
+        }
+        
+        // Required for CryptoXPCServiceProtocol
+        func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+            // Implementation for synchronisation
         }
     }
 }

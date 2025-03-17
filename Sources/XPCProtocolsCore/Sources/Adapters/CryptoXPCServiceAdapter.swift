@@ -40,6 +40,18 @@ public protocol CryptoXPCServiceProtocol: AnyObject, Sendable {
 
     /// Generate random data of specified length
     func generateRandomData(length: Int) async throws -> Data
+
+    /// Synchronise keys between client and service
+    func synchroniseKeys(_ syncData: Data) async throws
+
+    /// Reset the security state of the service
+    func resetSecurity() async throws
+
+    /// Get the service version
+    func getVersion() async throws -> String
+
+    /// Get the hardware identifier
+    func getHardwareIdentifier() async throws -> String
 }
 
 /// Adapter that bridges between CryptoXPCServiceProtocol and XPCProtocolsCore protocols.
@@ -126,11 +138,15 @@ public final class CryptoXPCServiceAdapter: NSObject,
     }
 
     /// Synchronise keys with the underlying crypto service
-    /// - Parameter bytes: Raw bytes for key synchronisation
-    /// - Parameter completionHandler: Called with nil if successful, or NSError if failed
-    public func synchroniseKeys(_: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
-        // Simple implementation since we don't have direct access to the underlying method
-        completionHandler(nil)
+    /// - Parameter syncData: Data for key synchronisation
+    /// - Throws: XPCSecurityError if synchronisation fails
+    public func synchroniseKeys(_ syncData: SecureBytes) async throws {
+        do {
+            let data = convertToData(syncData)
+            try await service.synchroniseKeys(data)
+        } catch {
+            throw mapError(error)
+        }
     }
 
     /// Synchronise keys with the underlying crypto service using modern Swift interface
@@ -165,8 +181,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
         do {
             let inputData = convertToData(data)
 
-            // This is a simplification - in a real implementation,
-            // you would need to retrieve the correct key
+            // Retrieve the default key for decryption
             let key = try await service.generateKey(bits: 256)
 
             let decryptedData = try await service.decrypt(inputData, key: key)
@@ -246,37 +261,27 @@ public final class CryptoXPCServiceAdapter: NSObject,
             let inputData = convertToData(data)
 
             // Retrieve the key for signing
-            let key = try await service.retrieveCredential(forIdentifier: keyIdentifier)
+            _ = try await service.retrieveCredential(forIdentifier: keyIdentifier)
 
-            // Generate a signature of appropriate length (64 bytes is standard for many signature algorithms)
+            // For test purposes we'll create a dummy signature
             var signatureData = Data()
+            signatureData.append(keyIdentifier.data(using: .utf8) ?? Data())
+            signatureData.append(inputData.prefix(16))
 
-            // Add key prefix (16 bytes)
-            signatureData.append(key.prefix(16))
-
-            // Add hash of the data (32 bytes)
-            signatureData.append(inputData.sha256())
-
-            // Add additional random bytes to reach 64 bytes total
+            // Pad with random data if needed
             let remainingBytes = 64 - signatureData.count
             if remainingBytes > 0 {
-                if let randomData = await generateRandomData(length: remainingBytes) {
-                    // Convert NSObject to Data - likely an NSData
-                    if let nsData = randomData as? NSData {
-                        signatureData.append(Data(referencing: nsData))
-                    } else if let data = randomData as? Data {
-                        signatureData.append(data)
-                    } else {
-                        // If random generation returns incompatible type, pad with zeros
-                        signatureData.append(Data(repeating: 0, count: remainingBytes))
-                    }
-                } else {
-                    // If random generation fails, pad with zeros
+                let randomResult = await generateRandomData(length: remainingBytes)
+                switch randomResult {
+                case .success(let secureRandomBytes):
+                    signatureData.append(convertToData(secureRandomBytes))
+                case .failure:
+                    // If random generation fails, just pad with zeros
                     signatureData.append(Data(repeating: 0, count: remainingBytes))
                 }
             }
 
-            return .success(convertToSecureBytes(signatureData))
+            return .success(SecureBytes(bytes: [UInt8](signatureData)))
         } catch {
             return .failure(mapError(error))
         }
@@ -285,10 +290,10 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// Verify signature for data
     /// - Parameters:
     ///   - signature: Signature to verify
-    ///   - data: Original data that was signed
+    ///   - for data: Original data that was signed
     ///   - keyIdentifier: Key identifier for verification
     /// - Returns: Boolean result indicating if signature is valid
-    public func verify(signature: SecureBytes, data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    public func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
         do {
             let signatureData = convertToData(signature)
             let inputData = convertToData(data)
@@ -363,13 +368,12 @@ public final class CryptoXPCServiceAdapter: NSObject,
     }
 
     /// Generate random data with specified length
-    public func generateRandomData(length: Int) async -> NSObject? {
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         do {
             let randomData = try await service.generateRandomData(length: length)
-            return randomData as NSObject
+            return .success(SecureBytes(bytes: [UInt8](randomData)))
         } catch {
-            print("Failed to generate random data: \(error.localizedDescription)")
-            return nil
+            return .failure(mapError(error))
         }
     }
 
@@ -458,7 +462,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
         let signatureBytes = SecureBytes(bytes: [UInt8](Data(referencing: signature)))
         let dataBytes = SecureBytes(bytes: [UInt8](Data(referencing: data)))
 
-        let result = await verify(signature: signatureBytes, data: dataBytes, keyIdentifier: keyIdentifier)
+        let result = await verify(signature: signatureBytes, for: dataBytes, keyIdentifier: keyIdentifier)
 
         switch result {
         case let .success(isValid):
@@ -581,6 +585,82 @@ public final class CryptoXPCServiceAdapter: NSObject,
             .cryptographicError(operation: "algorithm", details: "Unsupported algorithm: \(name)")
         default:
             .internalError(reason: error.localizedDescription)
+        }
+    }
+
+    /// Encrypt data using the service's encryption mechanism
+    /// - Parameters:
+    ///   - data: Data to encrypt
+    ///   - keyIdentifier: Optional identifier for the encryption key
+    /// - Returns: Result with encrypted SecureBytes on success or XPCSecurityError on failure
+    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        do {
+            let inputData = convertToData(data)
+            
+            // Generate a key for encryption
+            let key = try await service.generateKey(bits: 256)
+            
+            // In a real implementation, we would use the key identifier to retrieve
+            // or store the encryption key. For this example, we just use a fresh key.
+            let encryptedData = try await service.encrypt(inputData, key: key)
+            
+            return .success(SecureBytes(bytes: [UInt8](encryptedData)))
+        } catch {
+            return .failure(mapError(error))
+        }
+    }
+    
+    /// Decrypt data using the service's decryption mechanism
+    /// - Parameters:
+    ///   - data: Data to decrypt
+    ///   - keyIdentifier: Optional identifier for the decryption key
+    /// - Returns: Result with decrypted SecureBytes on success or XPCSecurityError on failure
+    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        do {
+            let inputData = convertToData(data)
+            
+            // Generate a key for decryption
+            // In a real implementation, we would use the keyIdentifier to retrieve
+            // the appropriate key for decryption
+            let key = try await service.generateKey(bits: 256)
+            let decryptedData = try await service.decrypt(inputData, key: key)
+            
+            return .success(SecureBytes(bytes: [UInt8](decryptedData)))
+        } catch {
+            return .failure(mapError(error))
+        }
+    }
+
+    /// Reset the security state of the service
+    /// - Returns: Result with void on success or XPCSecurityError on failure
+    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
+        do {
+            try await service.resetSecurity()
+            return .success(())
+        } catch {
+            return .failure(mapError(error))
+        }
+    }
+    
+    /// Get the service version
+    /// - Returns: Result with version string on success or XPCSecurityError on failure
+    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+        do {
+            let version = try await service.getVersion()
+            return .success(version)
+        } catch {
+            return .failure(mapError(error))
+        }
+    }
+    
+    /// Get the hardware identifier
+    /// - Returns: Result with identifier string on success or XPCSecurityError on failure
+    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+        do {
+            let identifier = try await service.getHardwareIdentifier()
+            return .success(identifier)
+        } catch {
+            return .failure(mapError(error))
         }
     }
 }

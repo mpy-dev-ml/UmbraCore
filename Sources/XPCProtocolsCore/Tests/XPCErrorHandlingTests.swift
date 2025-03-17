@@ -210,14 +210,29 @@ class XPCErrorHandlingTests: XCTestCase {
 
     func testServiceStatusValues() {
         // Test XPCServiceStatus struct properties
-        let operationalStatus = XPCServiceStatus(isActive: true, version: "1.0.0", serviceType: "Test", additionalInfo: [:])
-        XCTAssertTrue(operationalStatus.isActive)
-        XCTAssertEqual(operationalStatus.version, "1.0.0")
-        XCTAssertEqual(operationalStatus.serviceType, "Test")
+        let operationalStatus = XPCServiceStatus(
+            timestamp: Date(),
+            protocolVersion: "1.0.0",
+            serviceVersion: "1.0.0",
+            deviceIdentifier: "TEST-ID",
+            additionalInfo: ["serviceType": "Test", "isActive": "true"]
+        )
         
-        let maintenanceStatus = XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "Test", additionalInfo: ["reason": "maintenance"])
-        XCTAssertFalse(maintenanceStatus.isActive)
-        XCTAssertEqual(maintenanceStatus.additionalInfo["reason"], "maintenance")
+        XCTAssertEqual(operationalStatus.serviceVersion, "1.0.0")
+        XCTAssertEqual(operationalStatus.deviceIdentifier, "TEST-ID")
+        XCTAssertEqual(operationalStatus.additionalInfo?["serviceType"], "Test")
+        XCTAssertEqual(operationalStatus.additionalInfo?["isActive"], "true")
+        
+        let maintenanceStatus = XPCServiceStatus(
+            timestamp: Date(),
+            protocolVersion: "1.0.0",
+            serviceVersion: "1.0.0",
+            deviceIdentifier: "TEST-ID",
+            additionalInfo: ["serviceType": "Test", "isActive": "false", "maintenanceReason": "Scheduled update"]
+        )
+        
+        XCTAssertEqual(maintenanceStatus.additionalInfo?["isActive"], "false")
+        XCTAssertEqual(maintenanceStatus.additionalInfo?["maintenanceReason"], "Scheduled update")
     }
 
     func testServiceStatusCoding() {
@@ -226,11 +241,41 @@ class XPCErrorHandlingTests: XCTestCase {
 
         // Test statuses can be encoded and decoded correctly
         let statuses = [
-            XPCServiceStatus(isActive: true, version: "1.0.0", serviceType: "UnitTest", additionalInfo: [:]), 
-            XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "UnitTest", additionalInfo: ["reason": "maintenance"]),
-            XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "UnitTest", additionalInfo: ["reason": "shutting_down"]),
-            XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "UnitTest", additionalInfo: ["reason": "degraded"]),
-            XPCServiceStatus(isActive: false, version: "1.0.0", serviceType: "UnitTest", additionalInfo: ["reason": "failed"]),
+            XPCServiceStatus(
+                timestamp: Date(),
+                protocolVersion: "1.0.0",
+                serviceVersion: "1.0.0",
+                deviceIdentifier: "TEST-ID",
+                additionalInfo: ["serviceType": "UnitTest", "isActive": "true"]
+            ), 
+            XPCServiceStatus(
+                timestamp: Date(),
+                protocolVersion: "1.0.0",
+                serviceVersion: "1.0.0",
+                deviceIdentifier: "TEST-ID",
+                additionalInfo: ["serviceType": "UnitTest", "isActive": "false", "maintenanceReason": "Scheduled update"]
+            ),
+            XPCServiceStatus(
+                timestamp: Date(),
+                protocolVersion: "1.0.0",
+                serviceVersion: "1.0.0",
+                deviceIdentifier: "TEST-ID",
+                additionalInfo: ["serviceType": "UnitTest", "isActive": "false", "maintenanceReason": "Scheduled update"]
+            ),
+            XPCServiceStatus(
+                timestamp: Date(),
+                protocolVersion: "1.0.0",
+                serviceVersion: "1.0.0",
+                deviceIdentifier: "TEST-ID",
+                additionalInfo: ["serviceType": "UnitTest", "isActive": "false", "maintenanceReason": "Scheduled update"]
+            ),
+            XPCServiceStatus(
+                timestamp: Date(),
+                protocolVersion: "1.0.0",
+                serviceVersion: "1.0.0",
+                deviceIdentifier: "TEST-ID",
+                additionalInfo: ["serviceType": "UnitTest", "isActive": "false", "maintenanceReason": "Scheduled update"]
+            ),
         ]
         
         for status in statuses {

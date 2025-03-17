@@ -94,7 +94,13 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
     }
 
     func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError> {
-        .success(XPCServiceStatus(isActive: true, version: "1.0", serviceType: "test", additionalInfo: [:]))
+        .success(XPCServiceStatus(
+            timestamp: Date(),
+            protocolVersion: "1.0",
+            serviceVersion: "1.0",
+            deviceIdentifier: "Mock-Device-ID",
+            additionalInfo: ["serviceType": "Mock Service"]
+        ))
     }
 
     func importKey(data _: UmbraCoreTypes.SecureBytes, type _: String, keyIdentifier _: String?) async -> Result<String, XPCSecurityError> {
@@ -142,8 +148,8 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
         .success(data)
     }
 
-    func generateRandomData(length: Int) async -> NSObject? {
-        NSData(bytes: Array(repeating: 0, count: length), length: length)
+    func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: 0, count: length)))
     }
 
     func encryptData(
@@ -180,16 +186,16 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
     }
 
     func verify(
-        signature _: UmbraCoreTypes.SecureBytes,
-        data _: UmbraCoreTypes.SecureBytes,
-        keyIdentifier _: String
+        signature: UmbraCoreTypes.SecureBytes, 
+        for data: UmbraCoreTypes.SecureBytes, 
+        keyIdentifier: String
     ) async -> Result<Bool, XPCSecurityError> {
         .success(true)
     }
 
     func sign(
-        data _: UmbraCoreTypes.SecureBytes,
-        keyIdentifier _: String
+        _ data: UmbraCoreTypes.SecureBytes,
+        keyIdentifier: String
     ) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: 0, count: 64)))
     }
@@ -210,6 +216,24 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
         identifier _: String
     ) async -> Result<Bool, XPCSecurityError> {
         .success(true)
+    }
+
+    // Required for XPCServiceProtocolStandard
+    func resetSecurity() async -> Result<Void, XPCSecurityError> {
+        .success(())
+    }
+    
+    func getServiceVersion() async -> Result<String, XPCSecurityError> {
+        .success("1.0.0")
+    }
+    
+    func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+        .success("test-hardware-id")
+    }
+    
+    // Required for CryptoXPCServiceProtocol
+    func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+        // Implementation for synchronisation
     }
 
     // Additional required methods for XPCServiceProtocolComplete

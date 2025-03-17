@@ -113,19 +113,25 @@ final class CryptoXPCServiceAdapterTests: XCTestCase {
 
     /// Test generateRandomData functionality
     func testGenerateRandomData() async {
+        // Ensure state is correctly tracked
+        await mockCryptoService.resetAllCalled()
+
+        // Request random data
         let randomData = await adapter.generateRandomData(length: 16)
 
         // Check if method was called before assertions
         let generateRandomDataCalled = await mockCryptoService.isGenerateRandomDataCalled()
 
-        // Cast to NSData and check length
-        if let nsData = randomData as? NSData {
-            XCTAssertEqual(nsData.length, 16, "Random data should be of requested length")
-        } else {
-            XCTFail("Random data should be NSData")
+        // Check if the result is successful and contains data
+        switch randomData {
+        case .success(let secureBytes):
+            XCTAssertEqual(secureBytes.count, 16, "Random data should be of requested length")
+        case .failure(let error):
+            XCTFail("Failed to generate random data: \(error)")
         }
 
-        XCTAssertTrue(generateRandomDataCalled, "generateRandomData should be called")
+        // Verify method was called
+        XCTAssertTrue(generateRandomDataCalled, "Generate random data method should be called")
     }
 
     /// Test encryptData functionality
@@ -275,13 +281,13 @@ final class CryptoXPCServiceAdapterTests: XCTestCase {
     /// Test synchroniseKeys functionality
     func testSynchroniseKeys() async {
         let testData = SecureBytes(bytes: [1, 2, 3, 4, 5])
-
-        // Call with completion handler since this is an @objc method
         let expectation = XCTestExpectation(description: "Synchronise keys completed")
 
-        adapter.synchroniseKeys(testData.withUnsafeBytes { Array($0) }) { error in
-            XCTAssertNil(error, "Should not return an error")
+        do {
+            try await adapter.synchroniseKeys(testData)
             expectation.fulfill()
+        } catch {
+            XCTFail("Should not throw error: \(error)")
         }
 
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -382,16 +388,8 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
         await state.isGenerateSaltCalled()
     }
 
-    func isStoreCredentialCalled() async -> Bool {
-        await state.isStoreCredentialCalled()
-    }
-
-    func isRetrieveCredentialCalled() async -> Bool {
-        await state.isRetrieveCredentialCalled()
-    }
-
-    func isDeleteCredentialCalled() async -> Bool {
-        await state.isDeleteCredentialCalled()
+    func isVerifySignatureCalled() async -> Bool {
+        await state.isVerifySignatureCalled()
     }
 
     func isEncryptCalled() async -> Bool {
@@ -402,152 +400,108 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
         await state.isDecryptCalled()
     }
 
+    func isImportKeyCalled() async -> Bool {
+        await state.isImportKeyCalled()
+    }
+
+    func isExportKeyCalled() async -> Bool {
+        await state.isExportKeyCalled()
+    }
+
+    func isSynchroniseKeysCalled() async -> Bool {
+        await state.isSynchroniseKeysCalled()
+    }
+
     func isGenerateRandomDataCalled() async -> Bool {
         await state.isGenerateRandomDataCalled()
     }
-
-    // Public methods to control error simulation
-    func setFailEncrypt(_ shouldFail: Bool) async {
-        await state.setShouldFailEncrypt(shouldFail)
+    
+    func isRetrieveCredentialCalled() async -> Bool {
+        await state.isRetrieveCredentialCalled()
     }
 
-    func setFailDecrypt(_ shouldFail: Bool) async {
-        await state.setShouldFailDecrypt(shouldFail)
-    }
-
-    func setFailGenerateKey(_ shouldFail: Bool) async {
-        await state.setShouldFailGenerateKey(shouldFail)
-    }
-
-    // Set the specific error type to use
-    func setErrorType(_ type: ErrorType) async {
-        await state.setErrorType(type)
-    }
-
-    // Add a method to reset all called flags for testing
     func resetAllCalled() async {
         await state.resetAllCalled()
     }
 
-    // Error types for better error mapping
-    enum ErrorType {
-        case encryptionFailed
-        case decryptionFailed
-        case keyGenerationFailed
-        case internalError
+    func setFailEncrypt(_ shouldFail: Bool) async {
+        await state.setFailEncrypt(shouldFail)
+    }
+    
+    func setFailDecrypt(_ shouldFail: Bool) async {
+        await state.setShouldFailDecrypt(shouldFail)
+    }
+    
+    func setFailGenerateKey(_ shouldFail: Bool) async {
+        await state.setShouldFailGenerateKey(shouldFail)
+    }
+    
+    func setErrorType(_ type: CryptoAdapterErrorType) async {
+        await state.setErrorType(type)
     }
 
-    private actor MockState {
-        var generateKeyCalled = false
-        var generateSaltCalled = false
-        var storeCredentialCalled = false
-        var retrieveCredentialCalled = false
-        var deleteCredentialCalled = false
-        var encryptCalled = false
-        var decryptCalled = false
-        var generateRandomDataCalled = false
+    // Mock configuration
+    func setShouldFailVerify(_ value: Bool) async {
+        await state.setShouldFailVerify(value)
+    }
 
-        // Error simulation
-        var shouldFailGenerateKey = false
-        var shouldFailEncrypt = false
-        var shouldFailDecrypt = false
-        var errorType: ErrorType = .internalError
+    func setShouldFailEncrypt(_ value: Bool) async {
+        await state.setShouldFailEncrypt(value)
+    }
 
-        // Method to reset all called flags
-        func resetAllCalled() {
-            generateKeyCalled = false
-            generateSaltCalled = false
-            storeCredentialCalled = false
-            retrieveCredentialCalled = false
-            deleteCredentialCalled = false
-            encryptCalled = false
-            decryptCalled = false
-            generateRandomDataCalled = false
+    func setShouldFailDecrypt(_ value: Bool) async {
+        await state.setShouldFailDecrypt(value)
+    }
+
+    func setShouldFailGenerateKey(_ value: Bool) async {
+        await state.setShouldFailGenerateKey(value)
+    }
+
+    func setShouldFailImportKey(_ value: Bool) async {
+        await state.setShouldFailImportKey(value)
+    }
+
+    func setShouldFailExportKey(_ value: Bool) async {
+        await state.setShouldFailExportKey(value)
+    }
+
+    func setShouldFailSynchroniseKeys(_ value: Bool) async {
+        await state.setShouldFailSynchroniseKeys(value)
+    }
+
+    func setShouldFailResetSecurity(_ value: Bool) async {
+        await state.setShouldFailResetSecurity(value)
+    }
+
+    // MARK: - Required Protocol Methods
+
+    func synchroniseKeys(_ syncData: Data) async throws {
+        await state.setSynchroniseKeysCalled()
+        
+        if await state.shouldFailSynchroniseKeys {
+            let errorType = await state.errorType
+            throw errorType.toNSError()
         }
-
-        // Method to set error type
-        func setErrorType(_ type: ErrorType) {
-            errorType = type
+    }
+    
+    func resetSecurity() async throws {
+        if await state.shouldFailResetSecurity {
+            let errorType = await state.errorType
+            throw errorType.toNSError()
         }
-
-        // Methods to check state
-        func isGenerateKeyCalled() -> Bool {
-            generateKeyCalled
-        }
-
-        func isGenerateSaltCalled() -> Bool {
-            generateSaltCalled
-        }
-
-        func isStoreCredentialCalled() -> Bool {
-            storeCredentialCalled
-        }
-
-        func isRetrieveCredentialCalled() -> Bool {
-            retrieveCredentialCalled
-        }
-
-        func isDeleteCredentialCalled() -> Bool {
-            deleteCredentialCalled
-        }
-
-        func isEncryptCalled() -> Bool {
-            encryptCalled
-        }
-
-        func isDecryptCalled() -> Bool {
-            decryptCalled
-        }
-
-        func isGenerateRandomDataCalled() -> Bool {
-            generateRandomDataCalled
-        }
-
-        // Methods to update state
-        func setGenerateKeyCalled() {
-            generateKeyCalled = true
-        }
-
-        func setGenerateSaltCalled() {
-            generateSaltCalled = true
-        }
-
-        func setStoreCredentialCalled() {
-            storeCredentialCalled = true
-        }
-
-        func setRetrieveCredentialCalled() {
-            retrieveCredentialCalled = true
-        }
-
-        func setDeleteCredentialCalled() {
-            deleteCredentialCalled = true
-        }
-
-        func setEncryptCalled() {
-            encryptCalled = true
-        }
-
-        func setDecryptCalled() {
-            decryptCalled = true
-        }
-
-        func setGenerateRandomDataCalled() {
-            generateRandomDataCalled = true
-        }
-
-        // Methods to set error simulation flags
-        func setShouldFailEncrypt(_ shouldFail: Bool) {
-            shouldFailEncrypt = shouldFail
-        }
-
-        func setShouldFailDecrypt(_ shouldFail: Bool) {
-            shouldFailDecrypt = shouldFail
-        }
-
-        func setShouldFailGenerateKey(_ shouldFail: Bool) {
-            shouldFailGenerateKey = shouldFail
-        }
+    }
+    
+    func getVersion() async throws -> String {
+        return "1.0.0"
+    }
+    
+    func getHardwareIdentifier() async throws -> String {
+        return "MOCK-HW-ID-123"
+    }
+    
+    func generateRandomData(length: Int) async throws -> Data {
+        await state.setGenerateRandomDataCalled()
+        return Data(Array(repeating: 0, count: length))
     }
 
     // Required method by CryptoXPCServiceProtocol
@@ -659,9 +613,273 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
         return data
     }
 
-    // Generate random data of specified length
-    func generateRandomData(length: Int) async throws -> Data {
-        await state.setGenerateRandomDataCalled()
-        return Data(repeating: 0x55, count: length)
+    // Verify a signature
+    func verifySignature(_ signature: Data, for data: Data, keyIdentifier: String) async throws -> Bool {
+        await state.setVerifySignatureCalled()
+
+        if await state.shouldFailVerify {
+            let errorType = await state.errorType
+            throw errorType.toNSError()
+        }
+
+        // Mock verification - just return true
+        return true
+    }
+
+    // Import a key
+    func importKey(_ key: Data, keyIdentifier: String) async throws {
+        await state.setImportKeyCalled()
+
+        if await state.shouldFailImportKey {
+            let errorType = await state.errorType
+            throw errorType.toNSError()
+        }
+
+        // Mock import - just return
+    }
+
+    // Export a key
+    func exportKey(keyIdentifier: String) async throws -> Data {
+        await state.setExportKeyCalled()
+
+        if await state.shouldFailExportKey {
+            let errorType = await state.errorType
+            throw errorType.toNSError()
+        }
+
+        // Mock export - just return mock key
+        return Data(repeating: 0x55, count: 32)
+    }
+
+    private actor MockState {
+        var generateKeyCalled = false
+        var generateSaltCalled = false
+        var verifySignatureCalled = false
+        var storeCredentialCalled = false
+        var retrieveCredentialCalled = false
+        var deleteCredentialCalled = false
+        var encryptCalled = false
+        var decryptCalled = false
+        var generateRandomDataCalled = false
+        var importKeyCalled = false
+        var exportKeyCalled = false
+        var synchroniseKeysCalled = false
+
+        // Error simulation
+        var shouldFailGenerateKey = false
+        var shouldFailEncrypt = false
+        var shouldFailDecrypt = false
+        var shouldFailVerify = false
+        var shouldFailImportKey = false
+        var shouldFailExportKey = false
+        var shouldFailSynchroniseKeys = false
+        var shouldFailResetSecurity = false
+        var errorType: CryptoAdapterErrorType = .internalError
+
+        // Method to reset all called flags
+        func resetAllCalled() {
+            generateKeyCalled = false
+            generateSaltCalled = false
+            verifySignatureCalled = false
+            storeCredentialCalled = false
+            retrieveCredentialCalled = false
+            deleteCredentialCalled = false
+            encryptCalled = false
+            decryptCalled = false
+            generateRandomDataCalled = false
+            importKeyCalled = false
+            exportKeyCalled = false
+            synchroniseKeysCalled = false
+        }
+
+        // Method to set error type
+        func setErrorType(_ type: CryptoAdapterErrorType) {
+            errorType = type
+        }
+
+        // Methods to check state
+        func isGenerateKeyCalled() -> Bool {
+            generateKeyCalled
+        }
+
+        func isGenerateSaltCalled() -> Bool {
+            generateSaltCalled
+        }
+
+        func isVerifySignatureCalled() -> Bool {
+            verifySignatureCalled
+        }
+
+        func isStoreCredentialCalled() -> Bool {
+            storeCredentialCalled
+        }
+
+        func isRetrieveCredentialCalled() -> Bool {
+            retrieveCredentialCalled
+        }
+
+        func isDeleteCredentialCalled() -> Bool {
+            deleteCredentialCalled
+        }
+
+        func isEncryptCalled() -> Bool {
+            encryptCalled
+        }
+
+        func isDecryptCalled() -> Bool {
+            decryptCalled
+        }
+
+        func isGenerateRandomDataCalled() -> Bool {
+            generateRandomDataCalled
+        }
+
+        func isImportKeyCalled() -> Bool {
+            importKeyCalled
+        }
+
+        func isExportKeyCalled() -> Bool {
+            exportKeyCalled
+        }
+
+        func isSynchroniseKeysCalled() -> Bool {
+            synchroniseKeysCalled
+        }
+
+        // Methods to update state
+        func setGenerateKeyCalled() {
+            generateKeyCalled = true
+        }
+
+        func setGenerateSaltCalled() {
+            generateSaltCalled = true
+        }
+
+        func setVerifySignatureCalled() {
+            verifySignatureCalled = true
+        }
+
+        func setStoreCredentialCalled() {
+            storeCredentialCalled = true
+        }
+
+        func setRetrieveCredentialCalled() {
+            retrieveCredentialCalled = true
+        }
+
+        func setDeleteCredentialCalled() {
+            deleteCredentialCalled = true
+        }
+
+        func setEncryptCalled() {
+            encryptCalled = true
+        }
+
+        func setDecryptCalled() {
+            decryptCalled = true
+        }
+
+        func setGenerateRandomDataCalled() {
+            generateRandomDataCalled = true
+        }
+
+        func setImportKeyCalled() {
+            importKeyCalled = true
+        }
+
+        func setExportKeyCalled() {
+            exportKeyCalled = true
+        }
+
+        func setSynchroniseKeysCalled() {
+            synchroniseKeysCalled = true
+        }
+
+        // Methods to set error simulation flags
+        func setShouldFailEncrypt(_ shouldFail: Bool) {
+            shouldFailEncrypt = shouldFail
+        }
+
+        func setFailEncrypt(_ value: Bool) {
+            shouldFailEncrypt = value
+        }
+
+        func setShouldFailDecrypt(_ shouldFail: Bool) {
+            shouldFailDecrypt = shouldFail
+        }
+
+        func setShouldFailGenerateKey(_ shouldFail: Bool) {
+            shouldFailGenerateKey = shouldFail
+        }
+
+        func setShouldFailVerify(_ shouldFail: Bool) {
+            shouldFailVerify = shouldFail
+        }
+
+        func setShouldFailImportKey(_ shouldFail: Bool) {
+            shouldFailImportKey = shouldFail
+        }
+
+        func setShouldFailExportKey(_ shouldFail: Bool) {
+            shouldFailExportKey = shouldFail
+        }
+
+        func setShouldFailSynchroniseKeys(_ shouldFail: Bool) {
+            shouldFailSynchroniseKeys = shouldFail
+        }
+
+        func setShouldFailResetSecurity(_ shouldFail: Bool) {
+            shouldFailResetSecurity = shouldFail
+        }
+    }
+}
+
+enum CryptoAdapterErrorType {
+    case encryptionFailed
+    case decryptionFailed
+    case keyGenerationFailed
+    case verificationFailed
+    case importFailed
+    case exportFailed
+    case syncFailed
+    case resetFailed
+    case internalError
+    
+    func toNSError() -> NSError {
+        let domain = "com.umbra.mock.crypto"
+        let code: Int
+        let description: String
+        
+        switch self {
+        case .encryptionFailed:
+            code = 1001
+            description = "Encryption operation failed"
+        case .decryptionFailed:
+            code = 1002
+            description = "Decryption operation failed"
+        case .keyGenerationFailed:
+            code = 1003
+            description = "Key generation failed"
+        case .verificationFailed:
+            code = 1004
+            description = "Signature verification failed"
+        case .importFailed:
+            code = 1005
+            description = "Key import failed"
+        case .exportFailed:
+            code = 1006
+            description = "Key export failed"
+        case .syncFailed:
+            code = 1007
+            description = "Key synchronization failed"
+        case .resetFailed:
+            code = 1008
+            description = "Security reset failed"
+        case .internalError:
+            code = 9999
+            description = "Internal error occurred"
+        }
+        
+        return NSError(domain: domain, code: code, userInfo: [NSLocalizedDescriptionKey: description])
     }
 }

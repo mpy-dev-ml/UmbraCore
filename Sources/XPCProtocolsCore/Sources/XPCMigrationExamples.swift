@@ -94,8 +94,7 @@ public enum XPCMigrationExamples {
         /*
          // BEFORE: Legacy XPC service implementation with @objc compatibility
 
-         @objc
-         class LegacyXPCService: NSObject, XPCServiceProtocol {
+         class LegacyXPCService: XPCServiceProtocol {
              func validateConnection(withReply reply: @escaping (Bool, Error?) -> Void) {
                  // Implementation
                  reply(true, nil)
@@ -237,33 +236,42 @@ public enum XPCMigrationExamples {
 
 /// Extension providing helper functions for use in migrations
 extension XPCMigrationExamples {
-    /// Demo helper to convert NSData to SecureBytes
+    /// Demo helper to convert Data to SecureBytes
     ///
-    /// Example of how to convert legacy NSData types
+    /// Example of how to convert legacy Data types
     /// to modern code that uses SecureBytes
-    static func convertNSDataToSecureBytes(_ nsData: NSData) -> SecureBytes {
-        SecureBytes(bytes: [UInt8](Data(referencing: nsData)))
+    static func convertDataToSecureBytes(_ data: Data) -> SecureBytes {
+        SecureBytes(bytes: [UInt8](data))
     }
 
-    /// Demo helper to convert NSError to XPCSecurityError
+    /// Demo helper to convert Error to XPCSecurityError
     ///
-    /// This is provided as a reference for migrating legacy code that uses NSError
+    /// This is provided as a reference for migrating legacy code that uses Error
     /// to modern code that uses XPCSecurityError
-    static func convertLegacyError(_ error: NSError) -> XPCSecurityError {
-        let errorDomain = error.domain
-        let code = error.code
-        let description = error.localizedDescription
-
-        if errorDomain.contains("encryption") {
-            return .cryptographicError(operation: "encryption", details: "Error \(code): \(description)")
-        } else if errorDomain.contains("storage") {
-            return .invalidState(details: "Storage error: \(description)")
-        } else if errorDomain.contains("key") {
-            return .keyGenerationFailed(reason: "Error \(code): \(description)")
-        } else if errorDomain.contains("signature") {
-            return .cryptographicError(operation: "signature", details: "Error \(code): \(description)")
-        } else {
-            return .internalError(reason: "Error \(code): \(description)")
+    static func convertLegacyError(_ error: Error) -> XPCSecurityError {
+        // If it's already the correct type, return it
+        if let securityError = error as? XPCSecurityError {
+            return securityError
         }
+        
+        // Otherwise map based on error properties
+        if let errorObject = error as? NSError {
+            let errorDomain = errorObject.domain
+            let code = errorObject.code
+            let description = error.localizedDescription
+
+            if errorDomain.contains("encryption") {
+                return .cryptographicError(operation: "encryption", details: "Error \(code): \(description)")
+            } else if errorDomain.contains("storage") {
+                return .invalidState(details: "Storage error: \(description)")
+            } else if errorDomain.contains("key") {
+                return .keyGenerationFailed(reason: "Error \(code): \(description)")
+            } else if errorDomain.contains("signature") {
+                return .cryptographicError(operation: "signature", details: "Error \(code): \(description)")
+            }
+        }
+        
+        // Default error case
+        return .internalError(reason: error.localizedDescription)
     }
 }

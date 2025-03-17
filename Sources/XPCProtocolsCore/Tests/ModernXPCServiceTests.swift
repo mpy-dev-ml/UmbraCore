@@ -13,7 +13,7 @@ final class ModernXPCMigrationTests: XCTestCase {
         let service = XPCProtocolMigrationFactory.createCompleteAdapter()
 
         // Test the ping operation with the modern service
-        let result = await service.pingComplete()
+        let result = await service.pingAsync()
 
         // Verify that the service returns the expected result
         switch result {
@@ -48,7 +48,7 @@ final class ModernXPCMigrationTests: XCTestCase {
     // Test random data generation
     func testRandomDataGeneration() async {
         let service = XPCProtocolMigrationFactory.createCompleteAdapter()
-        let result = await service.generateSecureRandomData(length: 32)
+        let result = await service.generateRandomData(length: 32)
 
         switch result {
         case let .success(data):

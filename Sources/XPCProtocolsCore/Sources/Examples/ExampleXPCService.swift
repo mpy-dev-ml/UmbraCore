@@ -34,6 +34,19 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         completionHandler(nil)
     }
 
+    /// Synchronise keys between client and service
+    /// - Parameter syncData: Data for key synchronisation
+    /// - Throws: XPCSecurityError if synchronisation fails
+    public func synchroniseKeys(_ syncData: SecureBytes) async throws {
+        // Example implementation - simply verify data is not empty
+        guard !syncData.isEmpty else {
+            throw XPCSecurityError.invalidData(reason: "Sync data cannot be empty")
+        }
+        
+        // If the code reaches here, synchronisation is considered successful
+        // In a real implementation, this would process the sync data
+    }
+
     /// Implementation of ping for extended protocol
     public func pingBasic() async -> Result<Bool, XPCSecurityError> {
         // Simple implementation that always succeeds
@@ -76,14 +89,12 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         return .success(())
     }
 
-    /// Generate random data of specified length
-    /// - Parameter length: Length of random data to generate in bytes
-    /// - Returns: Random data as NSObject or nil if generation failed
-    @objc
-    public func generateRandomData(length: Int) async -> NSObject? {
+    /// Generate random data with specified length
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         // Simple implementation that returns random data
         let bytes = (0 ..< length).map { _ in UInt8.random(in: 0 ... 255) }
-        return NSData(bytes: bytes, length: length)
+        let secureBytes = SecureBytes(bytes: bytes)
+        return .success(secureBytes)
     }
 
     /// Encrypt data using the service's encryption mechanism
@@ -322,12 +333,14 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         // Example implementation returning dummy status information
         let isActive = await ping()
         let status = XPCServiceStatus(
-            isActive: isActive,
-            version: "1.0.0",
-            serviceType: "Example XPC Service",
+            timestamp: Date(),
+            protocolVersion: Self.protocolIdentifier,
+            serviceVersion: "1.0.0",
+            deviceIdentifier: "Example-Device-ID",
             additionalInfo: [
                 "mode": "demonstration",
                 "securityLevel": "low - example only",
+                "isActive": String(describing: isActive)
             ]
         )
         return .success(status)
@@ -423,5 +436,60 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         // Generate random bytes
         let randomBytes = (0 ..< length).map { _ in UInt8.random(in: 0 ... 255) }
         return .success(SecureBytes(bytes: randomBytes))
+    }
+
+    /// Sign data using the service's signing mechanism
+    /// - Parameters:
+    ///   - data: Data to sign
+    ///   - keyIdentifier: Identifier for the signing key
+    /// - Returns: Result with signature as SecureBytes on success or XPCSecurityError on failure
+    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        // Example implementation - create a dummy signature
+        guard !data.isEmpty else {
+            return .failure(.invalidData(reason: "Cannot sign empty data"))
+        }
+        
+        // Use key identifier as salt for demo purposes
+        let salt = keyIdentifier.data(using: .utf8) ?? Data()
+        
+        // Create a dummy signature by hashing the data with salt
+        var signature = Data()
+        signature.append(salt)
+        signature.append(contentsOf: data.prefix(16))
+        
+        return .success(SecureBytes(bytes: [UInt8](signature)))
+    }
+    
+    /// Verify signature for data
+    /// - Parameters:
+    ///   - signature: Signature to verify
+    ///   - data: Original data that was signed
+    ///   - keyIdentifier: Identifier for the verification key
+    /// - Returns: Result with boolean indicating verification result or XPCSecurityError on failure
+    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+        // Example implementation - simple validation logic
+        guard !signature.isEmpty else {
+            return .failure(.invalidData(reason: "Empty signature"))
+        }
+        
+        guard !data.isEmpty else {
+            return .failure(.invalidData(reason: "Empty data"))
+        }
+        
+        // Use key identifier as salt for demo purposes
+        let salt = keyIdentifier.data(using: .utf8) ?? Data()
+        
+        // For demo purposes, just check if the signature starts with the salt
+        let signatureData = Data(signature)
+        let isValid = signatureData.starts(with: salt)
+        
+        return .success(isValid)
+    }
+    
+    /// Get the hardware identifier
+    /// - Returns: Result with identifier string on success or XPCSecurityError on failure
+    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+        // Example implementation - return a dummy hardware identifier
+        return .success("EXAMPLE-HW-ID-12345")
     }
 }

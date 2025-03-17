@@ -38,10 +38,13 @@ class XPCProtocolExtensionsTests: XCTestCase {
 
         // Test throwing default implementation that forwards to Result version
         let randomData = await service.generateRandomData(length: 16)
-        if let nsData = randomData as? NSData {
-            XCTAssertEqual(nsData.length, 16, "Random data should be of requested length")
-        } else {
-            XCTFail("Random data should be NSData")
+        
+        // Check if the result is successful and contains data
+        switch randomData {
+        case .success(let secureBytes):
+            XCTAssertEqual(secureBytes.count, 16, "Random data should be of requested length")
+        case .failure(let error):
+            XCTFail("Failed to generate random data: \(error)")
         }
 
         // Test ping default implementation
@@ -62,7 +65,10 @@ class XPCProtocolExtensionsTests: XCTestCase {
 
         // Test implementation with error
         let randomData = await service.generateRandomData(length: 16)
-        XCTAssertNil(randomData, "Should return nil for failing implementation")
+        XCTAssertFalse(randomData.isSuccess, "Should return failure for failing implementation")
+        if case let .failure(error) = randomData {
+            XCTAssertEqual(error.localizedDescription, XPCSecurityError.internalError(reason: "Generate random data operation failed").localizedDescription, "Error should be an internal error with the correct message")
+        }
     }
 
     /// Test default ping implementation in service extensions
@@ -143,8 +149,8 @@ private final class MockImplementationService: NSObject, XPCServiceProtocolStand
     }
     
     // Add the required methods from XPCServiceProtocolStandard
-    func generateRandomData(length: Int) async -> NSObject? {
-        return NSData(bytes: Array(repeating: UInt8(0), count: length), length: length)
+    func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: length)))
     }
     
     func generateSecureRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
@@ -180,7 +186,7 @@ private final class MockImplementationService: NSObject, XPCServiceProtocolStand
     }
     
     func signSecureData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
-        return .success(data)
+        return .success(SecureBytes(bytes: Array(repeating: UInt8(0), count: 64)))
     }
     
     func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) async -> NSObject? {
@@ -188,6 +194,14 @@ private final class MockImplementationService: NSObject, XPCServiceProtocolStand
     }
     
     func verifySecureSignature(_ signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+        return .success(true)
+    }
+
+    func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        return .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: 64)))
+    }
+    
+    func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
         return .success(true)
     }
 
@@ -205,7 +219,13 @@ private final class MockImplementationService: NSObject, XPCServiceProtocolStand
     }
 
     func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError> {
-        .success(XPCServiceStatus(isActive: true, version: "1.0", serviceType: "test", additionalInfo: [:]))
+        .success(XPCServiceStatus(
+            timestamp: Date(),
+            protocolVersion: "1.0",
+            serviceVersion: "1.0",
+            deviceIdentifier: "test-device",
+            additionalInfo: ["status": "active"]
+        ))
     }
 
     func deleteKey(keyIdentifier _: String) async -> Result<Void, XPCSecurityError> {
@@ -222,6 +242,23 @@ private final class MockImplementationService: NSObject, XPCServiceProtocolStand
 
     func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
         .success(SecureBytes(bytes: Array(repeating: UInt8(0), count: 32)))
+    }
+
+    func resetSecurity() async -> Result<Void, XPCSecurityError> {
+        .success(())
+    }
+    
+    func getServiceVersion() async -> Result<String, XPCSecurityError> {
+        .success("1.0.0")
+    }
+    
+    func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+        .success("mock-hardware-id")
+    }
+    
+    // Required for CryptoXPCServiceProtocol
+    func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+        // Simple implementation for synchronisation
     }
 }
 
@@ -242,8 +279,8 @@ private final class FailingMockImplementationService: NSObject, XPCServiceProtoc
     }
 
     // Add implementation for all required methods
-    func generateRandomData(length _: Int) async -> NSObject? {
-        nil
+    func generateRandomData(length _: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        .failure(.internalError(reason: "Generate random data operation failed"))
     }
 
     func generateSecureRandomData(length _: Int) async -> Result<SecureBytes, XPCSecurityError> {
@@ -290,8 +327,8 @@ private final class FailingMockImplementationService: NSObject, XPCServiceProtoc
         .failure(.cryptographicError(operation: "verify", details: "Test error"))
     }
 
-    func getServiceStatus() async -> NSDictionary? {
-        nil
+    func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError> {
+        .failure(.serviceUnavailable)
     }
 
     func pingComplete() async -> Result<Bool, XPCSecurityError> {
@@ -320,6 +357,31 @@ private final class FailingMockImplementationService: NSObject, XPCServiceProtoc
 
     func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
         .failure(.internalError(reason: "Generate key operation failed"))
+    }
+
+    func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        .failure(.cryptographicError(operation: "sign", details: "Sign operation failed for key: \(keyIdentifier)"))
+    }
+    
+    func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+        .failure(.cryptographicError(operation: "verify", details: "Verify operation failed for key: \(keyIdentifier)"))
+    }
+    
+    func resetSecurity() async -> Result<Void, XPCSecurityError> {
+        .failure(.internalError(reason: "Security reset failed"))
+    }
+    
+    func getServiceVersion() async -> Result<String, XPCSecurityError> {
+        .failure(.internalError(reason: "Cannot get service version"))
+    }
+    
+    func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+        .failure(.internalError(reason: "Cannot get hardware identifier"))
+    }
+    
+    // Required for CryptoXPCServiceProtocol
+    func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+        throw XPCSecurityError.internalError(reason: "Key synchronisation failed")
     }
 }
 
