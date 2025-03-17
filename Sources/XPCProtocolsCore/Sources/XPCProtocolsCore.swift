@@ -49,7 +49,7 @@ public enum XPCProtocolsCore {
     ///   - protocolLevel: The desired protocol level (basic, standard, complete)
     /// - Returns: A client implementing the requested protocol, or nil if unavailable
     public static func createServiceClient(
-        serviceConnection _: NSXPCConnection,
+        serviceConnection _: XPCConnection,
         protocolLevel _: ProtocolLevel
     ) -> Any? {
         // Simple implementation for now
@@ -144,16 +144,43 @@ public enum XPCProtocolsCore {
     }
 }
 
-/// Compatibility level between different protocol versions
+/// Protocol to represent XPC connections abstracting the underlying implementation
+public protocol XPCConnection {
+    /// The remote interface that the connection exposes
+    var remoteObjectInterface: XPCInterface? { get set }
+    
+    /// The local interface that the connection exposes to the remote side
+    var exportedInterface: XPCInterface? { get set }
+    
+    /// The exported object that will receive messages from the remote side
+    var exportedObject: Any? { get set }
+    
+    /// Resume the connection
+    func resume()
+    
+    /// Suspend the connection
+    func suspend()
+    
+    /// Invalidate the connection
+    func invalidate()
+}
+
+/// Protocol to represent XPC interfaces abstracting the underlying implementation
+public protocol XPCInterface {
+    /// Add a protocol that the interface should support
+    func setProtocol(_ protocolType: Protocol)
+}
+
+/// Level of compatibility between different protocol versions
 public enum XPCProtocolCompatibility {
-    /// Protocols are compatible and should work together
+    /// Protocols are fully compatible
     case compatible
-
-    /// Protocols are incompatible and should not be used together
-    case incompatible
-
-    /// Protocols may be compatible but with reduced functionality
+    
+    /// Protocols are partially compatible (some features may not work)
     case partiallyCompatible
+    
+    /// Protocols are incompatible
+    case incompatible
 }
 
 /**
@@ -161,16 +188,16 @@ public enum XPCProtocolCompatibility {
 
  This module provides a comprehensive set of XPC service protocols for the UmbraCore security
  infrastructure. These protocols define the boundaries for inter-process communication in a
- type-safe, secure, and maintainable manner.
+ type-safe, secure manner.
 
- ## Features
+ ## Key Components
 
- * Hierarchical protocol design with multiple abstraction levels
- * Strong type safety for all inter-process communication
- * Comprehensive error handling with detailed diagnostics
- * Support for both synchronous and asynchronous operations
- * Compatibility with legacy systems through protocol adaptation
+ * XPCServiceProtocolBasic - Base protocol for minimal service functionality
+ * XPCServiceProtocolStandard - Standard protocol for secure data handling
+ * XPCServiceProtocolComplete - Complete protocol with advanced features
+ * XPCDataHandlingProtocol - Protocol for secure data transformation
+ * XPCErrorHandlingProtocol - Protocol for standardised error handling
 
- XPC protocols enable secure isolation of sensitive security operations while maintaining
- usability and performance.
+ The protocols in this module are designed to be used as interfaces for XPC services,
+ ensuring type safety, security, and compatibility across the UmbraCore platform.
  */

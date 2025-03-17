@@ -25,8 +25,7 @@ import UmbraCoreTypes
 /// Protocol defining the base XPC service interface without Foundation dependencies.
 /// This protocol serves as the foundation for all XPC services in UmbraCore and
 /// provides the minimal functionality required for service discovery and basic operations.
-@objc
-public protocol XPCServiceProtocolBasic: NSObjectProtocol, Sendable {
+public protocol XPCServiceProtocolBasic: Sendable {
     /// Protocol identifier - used for protocol negotiation and service discovery.
     /// Each XPC service implementation should provide a unique identifier.
     static var protocolIdentifier: String { get }
@@ -38,10 +37,9 @@ public protocol XPCServiceProtocolBasic: NSObjectProtocol, Sendable {
 
     /// Basic synchronisation of keys between XPC service and client.
     /// This method allows secure key material to be shared across process boundaries.
-    /// - Parameters:
-    ///   - bytes: Raw byte array for key synchronisation
-    ///   - completionHandler: Called with `nil` if successful, or an NSError if failed
-    func synchroniseKeys(_ bytes: [UInt8], completionHandler: @escaping (NSError?) -> Void)
+    /// - Parameter syncData: Secure bytes for key synchronisation
+    /// - Throws: XPCSecurityError if synchronisation fails
+    func synchroniseKeys(_ syncData: SecureBytes) async throws
 }
 
 /// Default protocol implementation with baseline functionality.
@@ -49,29 +47,32 @@ public protocol XPCServiceProtocolBasic: NSObjectProtocol, Sendable {
 /// but provide sensible defaults for minimal compliance.
 public extension XPCServiceProtocolBasic {
     /// Default protocol identifier that uniquely identifies this protocol version.
-    /// Services should override this with their own unique identifier.
     static var protocolIdentifier: String {
-        "com.umbra.xpc.service.protocol.basic"
-    }
-
-    /// Default implementation of ping - always succeeds.
-    /// In real implementations, this should verify actual service health.
-    func ping() async -> Bool {
-        true
+        "com.umbra.xpc.service.basic"
     }
     
-    /// Convert the completion handler-based synchroniseKeys to a modern async method
-    /// - Parameter bytes: Raw byte array for key synchronisation
-    /// - Returns: Result indicating success or failure with error details
-    func synchroniseKeysAsync(_ bytes: [UInt8]) async -> Result<Void, XPCSecurityError> {
-        await withCheckedContinuation { continuation in
-            synchroniseKeys(bytes) { error in
-                if let error = error {
-                    continuation.resume(returning: .failure(convertToXPCError(error)))
-                } else {
-                    continuation.resume(returning: .success(()))
-                }
-            }
+    /// Default implementation of the basic ping method.
+    /// - Returns: Always returns true for basic implementations
+    func pingBasic() async -> Result<Bool, XPCSecurityError> {
+        do {
+            let pingResult = try await ping()
+            return .success(pingResult)
+        } catch {
+            return .failure(XPCSecurityError.serviceUnavailable)
+        }
+    }
+    
+    /// Extended synchronisation implementation with Result type return.
+    /// - Parameter syncData: Secure bytes for key synchronisation
+    /// - Returns: Result with success or failure with error information
+    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
+        do {
+            try await synchroniseKeys(syncData)
+            return .success(())
+        } catch let error as XPCSecurityError {
+            return .failure(error)
+        } catch {
+            return .failure(.internalError(reason: error.localizedDescription))
         }
     }
 }

@@ -8,6 +8,17 @@ import XPCProtocolsCore
 
 /// Protocol defining Foundation-dependent XPC security service.
 /// This protocol is designed for use with Foundation-based security implementations.
+///
+/// **Migration Notice:**
+/// This protocol is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolComplete` from the XPCProtocolsCore module instead.
+///
+/// Migration steps:
+/// 1. Replace implementations of FoundationXPCSecurityService with XPCServiceProtocolComplete
+/// 2. Use XPCProtocolMigrationFactory.createCompleteAdapter() to create a service instance
+///
+/// See `XPCProtocolMigrationGuide` in XPCProtocolsCore for comprehensive migration guidance.
+@available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 @objc
 public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
     // MARK: - Crypto Operations
@@ -16,18 +27,21 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
     /// - Parameters:
     ///   - data: The data to encrypt
     ///   - completion: Completion handler called with encrypted data or error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.encrypt instead")
     func encryptDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void)
 
     /// Decrypt data using XPC
     /// - Parameters:
     ///   - data: The data to decrypt
     ///   - completion: Completion handler called with decrypted data or error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.decrypt instead")
     func decryptDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void)
 
     /// Generate random data using XPC
     /// - Parameters:
     ///   - length: Length of random data to generate
     ///   - completion: Completion handler called with generated data or error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.generateRandomData instead")
     func generateRandomDataXPC(
         _ length: Int,
         completion: @escaping (Data?, NSNumber?, String?) -> Void
@@ -37,6 +51,7 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
     /// - Parameters:
     ///   - data: The data to hash
     ///   - completion: Completion handler called with hash data or error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.hash instead")
     func hashDataXPC(_ data: Data, completion: @escaping (Data?, NSNumber?, String?) -> Void)
 
     /// Sign data using XPC
@@ -44,6 +59,7 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
     ///   - data: The data to sign
     ///   - algorithm: The algorithm to use for signing
     ///   - completion: Completion handler called with signature or error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.sign instead")
     func signDataXPC(
         _ data: Data,
         algorithm: String,
@@ -56,6 +72,7 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
     ///   - signature: The signature to verify against
     ///   - algorithm: The algorithm used for signing
     ///   - completion: Completion handler called with verification result
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.verify instead")
     func verifyDataXPC(
         _ data: Data,
         signature: Data,
@@ -69,6 +86,7 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
     /// - Parameters:
     ///   - identifier: The key identifier
     ///   - completion: Completion handler called with key data or error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.retrieveKey instead")
     func retrieveKeyXPC(
         withIdentifier identifier: String,
         completion: @escaping (Data?, NSNumber?, String?) -> Void
@@ -79,6 +97,7 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
     ///   - key: The key data to store
     ///   - identifier: The key identifier
     ///   - completion: Completion handler called with result
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.storeKey instead")
     func storeKeyXPC(
         _ key: Data,
         withIdentifier identifier: String,
@@ -87,11 +106,23 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
 
     /// List all key identifiers using XPC
     /// - Parameter completion: Completion handler called with list of identifiers or error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.listKeyIdentifiers instead")
     func listKeyIdentifiers(completion: @escaping ([String]?, Error?) -> Void)
 }
 
 /// Protocol defining Foundation-dependent XPC service interface.
 /// This protocol is designed to work with the Objective-C runtime and NSXPCConnection.
+///
+/// **Migration Notice:**
+/// This protocol is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolComplete` from the XPCProtocolsCore module instead.
+///
+/// Migration steps:
+/// 1. Replace implementations of XPCServiceProtocolFoundationBridge with XPCServiceProtocolComplete
+/// 2. Use XPCProtocolMigrationFactory.createCompleteAdapter() to create a service instance
+///
+/// See `XPCProtocolMigrationGuide` in XPCProtocolsCore for comprehensive migration guidance.
+@available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 @objc
 public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol {
     /// Protocol identifier - used for protocol negotiation
@@ -99,12 +130,14 @@ public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol {
 
     /// Test connectivity with a Foundation-based reply
     /// - Parameter reply: Reply block that is called with result and optional error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.ping instead")
     func pingFoundation(withReply reply: @escaping @Sendable (Bool, Error?) -> Void)
 
     /// Synchronize keys across processes with a Foundation-based reply
     /// - Parameters:
     ///   - syncData: The key data to synchronize
     ///   - reply: Reply block that is called when the operation completes
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.synchroniseKeys instead")
     func synchroniseKeysFoundation(
         _ syncData: Data,
         withReply reply: @escaping @Sendable (Error?) -> Void
@@ -114,18 +147,21 @@ public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol {
     /// - Parameters:
     ///   - data: Data to encrypt
     ///   - reply: Reply block with encrypted data and optional error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.encrypt instead")
     func encryptFoundation(data: Data, withReply reply: @escaping @Sendable (Data?, Error?) -> Void)
 
     /// Decrypt data using Foundation types
     /// - Parameters:
     ///   - data: Data to decrypt
     ///   - reply: Reply block with decrypted data and optional error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.decrypt instead")
     func decryptFoundation(data: Data, withReply reply: @escaping @Sendable (Data?, Error?) -> Void)
 
     /// Generate random data using Foundation types
     /// - Parameters:
     ///   - length: Length of random data to generate
     ///   - reply: Reply block with generated data and optional error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.generateRandomData instead")
     func generateRandomDataFoundation(
         _ length: Int,
         withReply reply: @escaping @Sendable (Data?, Error?) -> Void
@@ -133,18 +169,32 @@ public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol {
 
     /// Reset security data with a Foundation-based reply
     /// - Parameter reply: Reply block that is called with optional error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.resetSecurityData instead")
     func resetSecurityDataFoundation(withReply reply: @escaping @Sendable (Error?) -> Void)
 
     /// Get version with a Foundation-based reply
     /// - Parameter reply: Reply block that is called with version string and optional error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.getVersion instead")
     func getVersionFoundation(withReply reply: @escaping @Sendable (String?, Error?) -> Void)
 
     /// Get host identifier with a Foundation-based reply
     /// - Parameter reply: Reply block that is called with identifier string and optional error
+    @available(*, deprecated, message: "Use XPCServiceProtocolComplete.getHostIdentifier instead")
     func getHostIdentifierFoundation(withReply reply: @escaping @Sendable (String?, Error?) -> Void)
 }
 
 /// Adapter to convert between Core and Foundation XPC service protocols
+///
+/// **Migration Notice:**
+/// This adapter is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolComplete` from XPCProtocolsCore module directly.
+///
+/// Migration steps:
+/// 1. Replace usage of this adapter with direct use of XPCServiceProtocolComplete
+/// 2. Update client code to use async/await patterns
+///
+/// See `XPCProtocolMigrationGuide` in XPCProtocolsCore for comprehensive migration guidance.
+@available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 public final class CoreTypesToFoundationBridgeAdapter: NSObject,
     XPCServiceProtocolFoundationBridge, @unchecked Sendable
 {
@@ -246,6 +296,19 @@ public final class CoreTypesToFoundationBridgeAdapter: NSObject,
     }
 }
 
+/// Adapter to bridge from Foundation protocol to core service protocol.
+/// Allows Foundation XPC protocol to be used with the core service implementations.
+///
+/// **Migration Notice:**
+/// This adapter is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolComplete` from XPCProtocolsCore module directly.
+///
+/// Migration steps:
+/// 1. Replace usage of this adapter with direct use of XPCServiceProtocolComplete
+/// 2. Update client code to use async/await patterns
+///
+/// See `XPCProtocolMigrationGuide` in XPCProtocolsCore for comprehensive migration guidance.
+@available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProtocolBasic,
     @unchecked Sendable
 {
@@ -496,5 +559,88 @@ private enum XPCDataAdapter {
             let bufferPointer = bytes.bindMemory(to: UInt8.self)
             return SecureBytes(bytes: Array(bufferPointer))
         }
+    }
+}
+
+// MARK: - Migration Extensions
+
+/// Extension to provide migration assistance for Foundation-based XPC services
+@available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
+public extension XPCServiceProtocolFoundationBridge {
+    /// Convert this legacy Foundation-based service to a modern XPCServiceProtocolComplete
+    ///
+    /// This helper method simplifies the migration from legacy to modern protocols
+    ///
+    /// Example:
+    /// ```swift
+    /// // Legacy code:
+    /// let legacyService: XPCServiceProtocolFoundationBridge = getLegacyService()
+    ///
+    /// // Migration:
+    /// let modernService = legacyService.asModernXPCService()
+    /// ```
+    func asModernXPCService() -> any XPCProtocolsCore.XPCServiceProtocolComplete {
+        // Use the migration factory to create a properly wrapped service
+        XPCProtocolMigrationFactory.createCompleteAdapter(service: self)
+    }
+}
+
+/// Migration guide for SecurityBridge XPC protocols
+public enum SecurityBridgeXPCMigrationGuide {
+    /// Comprehensive guide for migrating from Foundation-based bridges to XPCProtocolsCore
+    public static var migrationSteps: String {
+        """
+        # SecurityBridge XPC Migration Guide
+
+        ## Overview
+
+        This guide provides steps to migrate from Foundation-based XPC bridges to the modern
+        XPCProtocolsCore protocol hierarchy.
+
+        ## Migration Steps
+
+        1. Replace all usages of `XPCServiceProtocolFoundationBridge` with
+           `XPCServiceProtocolComplete` from XPCProtocolsCore.
+
+        2. For existing services:
+           ```swift
+           // Instead of:
+           let legacyService = getFoundationBridgeService()
+
+           // Use:
+           let modernService = legacyService.asModernXPCService()
+           ```
+
+        3. For adapter patterns:
+           ```swift
+           // Instead of creating custom adapter classes:
+           // let adapter = CustomFoundationBridgeAdapter(service: someService)
+
+           // Use XPCProtocolMigrationFactory:
+           let adapter = XPCProtocolMigrationFactory.createCompleteAdapter()
+           ```
+
+        4. Update all method calls to use async/await syntax and Result types:
+           ```swift
+           // Instead of using explicit Objective-C style callbacks:
+           foundationService.encryptFoundation(data: someData) { data, error in
+               // Handle callback
+           }
+
+           // Use async/await with results:
+           let result = await modernService.encrypt(data: someData)
+           switch result {
+           case .success(let encryptedData):
+               // Handle success
+           case .failure(let error):
+               // Handle error
+           }
+           ```
+
+        ## Complete Documentation
+
+        For more detailed migration guidance, refer to the `XPCProtocolMigrationGuide` in
+        XPCProtocolsCore.
+        """
     }
 }

@@ -4,6 +4,13 @@ import UmbraCoreTypes
 import XPCProtocolsCore
 
 /// Base protocol for all XPC services
+///
+/// **Migration Notice:**
+/// This protocol is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolBasic` from the XPCProtocolsCore module instead.
+///
+/// See `XPCProtocolMigrationGuide` for comprehensive migration guidance.
+@available(*, deprecated, message: "Use XPCServiceProtocolBasic from XPCProtocolsCore instead")
 @objc
 public protocol XPCServiceProtocol {
     /// Validates the connection with the service
@@ -15,6 +22,14 @@ public protocol XPCServiceProtocol {
 
 /// Modern crypto XPC service protocol that conforms to XPCServiceProtocolStandard
 /// Uses Objective-C compatible method signatures with completion handlers
+///
+/// **Migration Notice:**
+/// This protocol is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolStandard` or `XPCServiceProtocolComplete` from
+/// the XPCProtocolsCore module instead.
+///
+/// See `XPCProtocolMigrationGuide` for comprehensive migration guidance.
+@available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 @objc(ModernCryptoXPCServiceProtocol)
 public protocol ModernCryptoXPCServiceProtocol: XPCServiceProtocol {
     /// Encrypts data using the specified key
@@ -236,6 +251,14 @@ public extension ModernCryptoXPCServiceProtocol {
 
 /// Security XPC service protocol that provides ObjC compatibility for security bookmarks
 /// Note: This doesn't inherit from XPCServiceProtocolStandard to avoid @objc compatibility issues
+///
+/// **Migration Notice:**
+/// This protocol is deprecated and will be removed in a future release.
+/// Please use `XPCServiceProtocolComplete` from the XPCProtocolsCore module instead,
+/// which provides equivalent functionality with improved error handling.
+///
+/// See `XPCProtocolMigrationGuide` for comprehensive migration guidance.
+@available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 @objc(SecurityXPCServiceProtocol)
 public protocol SecurityXPCServiceProtocol: NSObjectProtocol {
     /// Creates a security-scoped bookmark
@@ -269,11 +292,38 @@ public protocol SecurityXPCServiceProtocol: NSObjectProtocol {
 }
 
 /// Adapter to bridge between SecurityXPCServiceProtocol and XPCServiceProtocolStandard
+///
+/// **Migration Notice:**
+/// This adapter is designed to aid in the migration from legacy SecurityXPCServiceProtocol
+/// to modern XPCServiceProtocolComplete implementations. For new code, use
+/// ModernXPCService from XPCProtocolsCore directly instead of this adapter.
+///
+/// Example usage:
+/// ```swift
+/// // Legacy code:
+/// let legacyService = obtainLegacySecurityXPCService()
+///
+/// // Migration step:
+/// let modernService = XPCProtocolMigrationFactory.createCompleteAdapter()
+/// let adapter = SecurityXPCServiceAdapter(standardService: modernService)
+///
+/// // Future code:
+/// let modernService = ModernXPCService()
+/// ```
+@available(*, deprecated, message: "Use ModernXPCService from XPCProtocolsCore directly")
 public class SecurityXPCServiceAdapter {
     private let standardService: any XPCServiceProtocolStandard
 
     public init(standardService: any XPCServiceProtocolStandard) {
         self.standardService = standardService
+    }
+
+    /// Creates a modern service implementation using the factory
+    ///
+    /// This is the recommended way to create a new instance for migration
+    public static func createModernServiceAdapter() -> SecurityXPCServiceAdapter {
+        let modernService = XPCProtocolMigrationFactory.createStandardAdapter()
+        return SecurityXPCServiceAdapter(standardService: modernService)
     }
 
     // Bridge implementations between the protocols can be added here

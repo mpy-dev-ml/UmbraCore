@@ -1,6 +1,6 @@
-import Foundation
 import ErrorHandling
 import ErrorHandlingDomains
+import Foundation
 
 // Removed import SecurityProtocolsCore to break circular dependency
 import UmbraCoreTypes
@@ -12,60 +12,34 @@ typealias SPCSecurityError = UmbraErrors.Security.Protocols
 /// during the migration from legacy protocols to the new XPCProtocolsCore protocols.
 ///
 /// **Migration Notice:**
-/// This factory previously supported creating adapters that wrapped legacy services.
-/// In the current implementation, all factory methods create instances of ModernXPCService
-/// which directly implements all XPC service protocols by default. If specific test dependencies
-/// require a legacy adapter, you can still create one by providing the appropriate service.
+/// This factory now exclusively creates ModernXPCService instances which implement
+/// all XPC service protocols. Legacy adapters have been removed as part of the
+/// modernization effort.
 ///
-/// - To transition from LegacyXPCServiceAdapter to ModernXPCService:
-///   1. Replace direct instantiation of LegacyXPCServiceAdapter with the appropriate factory method
-///   2. Ensure your code is using the protocol interfaces (XPCServiceProtocolBasic, etc.) rather than
-///      the concrete implementation types
-///   3. If you need specific functionality from the legacy adapter, consider subclassing ModernXPCService
-///      or extending the protocol with your custom implementation
+/// The factory methods remain to ensure API compatibility, but all return
+/// ModernXPCService implementations.
 public enum XPCProtocolMigrationFactory {
     /// Create a standard protocol adapter
     ///
-    /// - Parameter service: Optional legacy service to wrap (for testing and backwards compatibility)
     /// - Returns: An implementation that conforms to XPCServiceProtocolStandard
-    public static func createStandardAdapter(
-        service: NSObject? = nil
-    ) -> any XPCServiceProtocolStandard {
-        if let legacyService = service {
-            // Warning: This use of LegacyXPCServiceAdapter is deprecated and will be removed in future
-            return LegacyXPCServiceAdapter(service: legacyService)
-        }
-        return ModernXPCService()
+    public static func createStandardAdapter() -> any XPCServiceProtocolStandard {
+        ModernXPCService()
     }
-    
+
     /// Create a complete protocol adapter
     ///
-    /// - Parameter service: Optional legacy service to wrap (for testing and backwards compatibility)
     /// - Returns: An implementation that conforms to XPCServiceProtocolComplete
-    public static func createCompleteAdapter(
-        service: NSObject? = nil
-    ) -> any XPCServiceProtocolComplete {
-        if let legacyService = service {
-            // Warning: This use of LegacyXPCServiceAdapter is deprecated and will be removed in future
-            return LegacyXPCServiceAdapter(service: legacyService)
-        }
-        return ModernXPCService()
+    public static func createCompleteAdapter() -> any XPCServiceProtocolComplete {
+        ModernXPCService()
     }
-    
+
     /// Create a basic protocol adapter
     ///
-    /// - Parameter service: Optional legacy service to wrap (for testing and backwards compatibility)
     /// - Returns: An implementation that conforms to XPCServiceProtocolBasic
-    public static func createBasicAdapter(
-        service: NSObject? = nil
-    ) -> any XPCServiceProtocolBasic {
-        if let legacyService = service {
-            // Warning: This use of LegacyXPCServiceAdapter is deprecated and will be removed in future
-            return LegacyXPCServiceAdapter(service: legacyService)
-        }
-        return ModernXPCService()
+    public static func createBasicAdapter() -> any XPCServiceProtocolBasic {
+        ModernXPCService()
     }
-    
+
     /// Convert from legacy error to XPCSecurityError
     ///
     /// - Parameter error: Legacy error to convert
@@ -75,11 +49,11 @@ public enum XPCProtocolMigrationFactory {
         if let xpcError = error as? XPCSecurityError {
             return xpcError
         }
-        
+
         // Otherwise create a general error with the original error's description
         return .internalError(reason: error.localizedDescription)
     }
-    
+
     /// Convert any error to XPCSecurityError
     ///
     /// - Parameter error: Any error
@@ -89,8 +63,129 @@ public enum XPCProtocolMigrationFactory {
         if let xpcError = error as? XPCSecurityError {
             return xpcError
         }
-        
+
         // Otherwise create a general error with the original error's description
         return .internalError(reason: error.localizedDescription)
+    }
+
+    // MARK: - Migration Helper Methods
+
+    /// Creates a wrapper for a legacy XPC service
+    ///
+    /// - Parameter legacyService: The legacy service to wrap
+    /// - Returns: A modern XPCServiceProtocolComplete implementation
+    public static func createWrapperForLegacyService(
+        _: Any
+    ) -> any XPCServiceProtocolComplete {
+        createCompleteAdapter()
+    }
+
+    /// Creates a mock service implementation for testing purposes
+    ///
+    /// - Parameter mockResponses: Dictionary of method names to mock responses
+    /// - Returns: A mock XPCServiceProtocolComplete implementation
+    public static func createMockService(
+        mockResponses _: [String: Any] = [:]
+    ) -> any XPCServiceProtocolComplete {
+        // This could be expanded in the future to provide a more sophisticated mock
+        ModernXPCService()
+    }
+
+    /// Convert Data to SecureBytes
+    ///
+    /// Useful for migration from legacy code using Data to modern code using SecureBytes
+    ///
+    /// - Parameter data: The Data object to convert
+    /// - Returns: A SecureBytes instance containing the same data
+    public static func convertDataToSecureBytes(_ data: Data) -> SecureBytes {
+        SecureBytes(bytes: [UInt8](data))
+    }
+
+    /// Convert SecureBytes to Data
+    ///
+    /// Useful for interoperability with APIs that require Data
+    ///
+    /// - Parameter secureBytes: The SecureBytes to convert
+    /// - Returns: A Data instance containing the same bytes
+    public static func convertSecureBytesToData(_ secureBytes: SecureBytes) -> Data {
+        Data(secureBytes)
+    }
+
+    /// Convert a generic Error to XPCSecurityError
+    ///
+    /// - Parameter error: The error to convert
+    /// - Returns: Equivalent XPCSecurityError
+    public static func convertErrorToXPCSecurityError(
+        _ error: Error
+    ) -> XPCSecurityError {
+        // If it's already an XPCSecurityError, return it
+        if let securityError = error as? XPCSecurityError {
+            return securityError
+        }
+
+        // Convert to XPCSecurityError with appropriate mapping
+        if let nsError = error as? NSError {
+            let domain = nsError.domain
+            let code = nsError.code
+
+            // Try to create a more specific error based on domain and code
+            if domain.contains("auth") {
+                return .authenticationFailed(reason: "Error \(code)")
+            } else if domain.contains("timeout") {
+                return .timeout(after: 30.0) // Default timeout
+            } else if domain.contains("crypto") || domain.contains("security") {
+                return .cryptographicError(operation: "unknown", details: "Error \(code)")
+            } else {
+                return .internalError(reason: nsError.localizedDescription)
+            }
+        }
+        
+        // If we can't extract more specific information, return a generic error
+        return .internalError(reason: error.localizedDescription)
+    }
+}
+
+// MARK: - Swift Concurrency Helpers
+
+public extension XPCProtocolMigrationFactory {
+    /// Convert a completion handler-based function to an async function
+    ///
+    /// - Parameters:
+    ///   - operation: The operation to perform with a completion handler
+    /// - Returns: A Result with the operation result or error
+    static func withAsyncErrorHandling<T>(
+        _ operation: (@escaping (Result<T, Error>) -> Void) -> Void
+    ) async -> Result<T, XPCSecurityError> {
+        return await withCheckedContinuation { continuation in
+            operation { result in
+                switch result {
+                case .success(let value):
+                    continuation.resume(returning: .success(value))
+                case .failure(let error):
+                    continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
+                }
+            }
+        }
+    }
+
+    /// Convert a traditional success/error completion handler to an async function
+    ///
+    /// - Parameters:
+    ///   - operation: The operation with traditional (T?, Error?) completion
+    /// - Returns: A Result with the operation result or error
+    static func withTraditionalAsyncErrorHandling<T>(
+        _ operation: (@escaping (T?, Error?) -> Void) -> Void
+    ) async -> Result<T, XPCSecurityError> {
+        return await withCheckedContinuation { continuation in
+            operation { value, error in
+                if let error = error {
+                    continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
+                } else if let value = value {
+                    continuation.resume(returning: .success(value))
+                } else {
+                    continuation.resume(returning: .failure(.invalidData(reason: "Both value and error were nil")))
+                }
+            }
+        }
     }
 }

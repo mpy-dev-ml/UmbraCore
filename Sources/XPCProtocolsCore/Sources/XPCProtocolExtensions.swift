@@ -10,7 +10,7 @@
  * Protocol bridging utilities between different protocol levels
  * Data conversion helpers for working with different data representations
  * Common implementation patterns for protocol requirements
- * Extension methods for working with NSObject-based protocols
+ * Extension methods for Swift-native protocols
 
  These extensions are designed to simplify the implementation of XPC services
  by providing reusable functionality.
@@ -35,141 +35,87 @@ public extension XPCServiceProtocolBasic {
         [UInt8](data)
     }
 
-    /// Convert NSData to Data
-    /// - Parameter nsData: NSData to convert
-    /// - Returns: Swift Data equivalent
-    func convertNSDataToData(_ nsData: NSData) -> Data {
-        Data(referencing: nsData)
-    }
-
-    /// Convert Data to NSData
+    /// Convert Data to SecureBytes
     /// - Parameter data: Data to convert
-    /// - Returns: NSData equivalent
-    func convertDataToNSData(_ data: Data) -> NSData {
-        data as NSData
+    /// - Returns: SecureBytes safely containing the data
+    func convertDataToSecureBytes(_ data: Data) -> SecureBytes {
+        SecureBytes(bytes: [UInt8](data))
     }
 
-    /// Convert SecureBytes to NSData for Objective-C interfaces
+    /// Convert SecureBytes to Data
     /// - Parameter secureBytes: SecureBytes to convert
-    /// - Returns: NSData representation
-    func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
-        secureBytes.withUnsafeBytes { bytes in
-            Data(bytes) as NSData
+    /// - Returns: Data representation
+    func convertSecureBytesToData(_ secureBytes: SecureBytes) -> Data {
+        var data = Data()
+        secureBytes.withUnsafeBytes { rawBuffer in
+            data = Data(rawBuffer)
         }
+        return data
     }
 
-    /// Convert NSData to SecureBytes for secure storage
-    /// - Parameter nsData: NSData to convert
-    /// - Returns: SecureBytes representation
-    func convertNSDataToSecureBytes(_ nsData: NSData) -> SecureBytes {
-        SecureBytes(bytes: [UInt8](Data(referencing: nsData)))
+    /// Convert UInt8 array to SecureBytes
+    /// - Parameter bytes: Byte array to convert
+    /// - Returns: SecureBytes safely containing the bytes
+    func convertBytesToSecureBytes(_ bytes: [UInt8]) -> SecureBytes {
+        SecureBytes(bytes: bytes)
+    }
+    
+    /// Convert SecureBytes to bytes
+    /// - Parameter secureBytes: SecureBytes to convert
+    /// - Returns: A byte array containing the bytes
+    func convertSecureBytesToBytes(_ secureBytes: SecureBytes) -> [UInt8] {
+        var bytes = [UInt8]()
+        secureBytes.withUnsafeBytes { rawBuffer in
+            bytes = Array(rawBuffer)
+        }
+        return bytes
     }
 }
 
-/// Extension methods for standardising error handling in XPC protocols
+/// Extension methods for standard protocol implementations
 public extension XPCServiceProtocolStandard {
-    /// Create an NSError with domain and code for XPC communication
-    /// - Parameters:
-    ///   - message: Error message
-    ///   - code: Error code
-    /// - Returns: Formatted NSError
-    func createXPCError(message: String, code: Int) -> NSError {
-        NSError(
-            domain: "com.umbra.xpc.error",
-            code: code,
-            userInfo: [NSLocalizedDescriptionKey: message]
-        )
+    /// Convenience method to get service status
+    /// - Returns: Dictionary with status information
+    func getStatus() -> [String: Any] {
+        [
+            "timestamp": Date().timeIntervalSince1970,
+            "protocol": Self.protocolIdentifier,
+            "isActive": true
+        ]
     }
-
-    /// Convert a Result to an optional NSObject for Objective-C interfaces
-    /// - Parameter result: Result to convert
-    /// - Returns: NSObject or nil
-    func convertResultToNSObject(_ result: Result<some NSObject, Error>) -> NSObject? {
-        switch result {
-        case let .success(value):
-            value
-        case .failure:
-            nil
-        }
-    }
-
-    /// Convert a Result<Bool, Error> to an optional NSNumber for Objective-C interfaces
-    /// - Parameter result: Result to convert
-    /// - Returns: NSNumber or nil
-    func convertBoolResultToNSNumber(_ result: Result<Bool, Error>) -> NSNumber? {
-        switch result {
-        case let .success(value):
-            NSNumber(value: value)
-        case .failure:
-            nil
-        }
+    
+    /// Default implementation for generating random data
+    /// - Parameter length: Length in bytes
+    /// - Returns: SecureBytes containing random data
+    func generateRandomSecureBytes(length: Int) -> SecureBytes {
+        let bytes = (0..<length).map { _ in UInt8.random(in: 0...255) }
+        return SecureBytes(bytes: bytes)
     }
 }
 
-/// Extension methods for bridging between complete and standard protocols
+/// Extension methods for complete protocol implementations
 public extension XPCServiceProtocolComplete {
-    /// Bridge encryptData from standard protocol to complete protocol
+    /// Bridge encryption from standard protocol to complete protocol
     /// - Parameters:
-    ///   - data: NSData to encrypt
+    ///   - data: SecureBytes to encrypt
     ///   - keyIdentifier: Optional key identifier
-    /// - Returns: Encrypted NSData or nil
-    func encryptData(_ data: NSData, keyIdentifier _: String?) async -> NSObject? {
-        let secureBytes = convertNSDataToSecureBytes(data)
-        let result = await encrypt(data: secureBytes)
-
-        switch result {
-        case let .success(encryptedData):
-            return convertSecureBytesToNSData(encryptedData)
-        case .failure:
-            return nil
-        }
+    /// - Returns: Result with encrypted data or error
+    func bridgeEncryption(
+        data: SecureBytes,
+        keyIdentifier: String?
+    ) async -> Result<SecureBytes, XPCSecurityError> {
+        await encryptSecureData(data, keyIdentifier: keyIdentifier)
     }
-
-    /// Bridge decryptData from standard protocol to complete protocol
+    
+    /// Bridge decryption from standard protocol to complete protocol
     /// - Parameters:
-    ///   - data: NSData to decrypt
+    ///   - data: SecureBytes to decrypt
     ///   - keyIdentifier: Optional key identifier
-    /// - Returns: Decrypted NSData or nil
-    func decryptData(_ data: NSData, keyIdentifier _: String?) async -> NSObject? {
-        let secureBytes = convertNSDataToSecureBytes(data)
-        let result = await decrypt(data: secureBytes)
-
-        switch result {
-        case let .success(decryptedData):
-            return convertSecureBytesToNSData(decryptedData)
-        case .failure:
-            return nil
-        }
-    }
-
-    /// Bridge hashData from standard protocol to complete protocol
-    /// - Parameter data: NSData to hash
-    /// - Returns: Hash NSData or nil
-    func hashData(_ data: NSData) async -> NSObject? {
-        let secureBytes = convertNSDataToSecureBytes(data)
-        let result = await hash(data: secureBytes)
-
-        switch result {
-        case let .success(hashData):
-            return convertSecureBytesToNSData(hashData)
-        case .failure:
-            return nil
-        }
-    }
-
-    /// Bridge getServiceStatus from standard protocol to complete protocol
-    /// - Returns: Status dictionary or nil
-    func getServiceStatus() async -> NSDictionary? {
-        let result = await getStatus()
-
-        switch result {
-        case let .success(status):
-            return [
-                "status": status.rawValue,
-                "protocolVersion": Self.protocolIdentifier,
-            ] as NSDictionary
-        case .failure:
-            return nil
-        }
+    /// - Returns: Result with decrypted data or error
+    func bridgeDecryption(
+        data: SecureBytes,
+        keyIdentifier: String?
+    ) async -> Result<SecureBytes, XPCSecurityError> {
+        await decryptSecureData(data, keyIdentifier: keyIdentifier)
     }
 }
