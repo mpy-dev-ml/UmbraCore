@@ -1,0 +1,27 @@
+load(
+    "//tools/build_defs:apple.bzl",
+    "umbracore_swift_library",
+)
+
+package(default_visibility = ["//visibility:public"])
+
+umbracore_swift_library(
+    name = "CoreDTOs",
+    srcs = glob(["Sources/**/*.swift"]),
+    deps = [
+        "//Sources/UmbraCoreTypes",
+        "//Sources/ErrorHandling",
+        "//Sources/ErrorHandlingDomains",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+umbracore_swift_library(
+    name = "CoreDTOsTests",
+    srcs = glob(["Tests/**/*.swift"]),
+    deps = [
+        ":CoreDTOs",
+    ],
+    testonly = True,
+    visibility = ["//visibility:public"],
+)
