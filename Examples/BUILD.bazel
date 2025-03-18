@@ -1,0 +1,15 @@
+package(default_visibility = ["//visibility:public"])
+
+# This directory contains example code that is not meant to be built
+# with the main project. It's excluded from continuous integration
+# builds and tests to prevent interference with the main codebase.
+#
+# If you need to build or test these examples, you can do so explicitly:
+# bazel build //Examples/...
+# bazel test //Examples/...
+
+# This filegroup allows us to reference all examples in other build rules
+filegroup(
+    name = "all_examples",
+    srcs = glob(["**/*.swift"]),
+)

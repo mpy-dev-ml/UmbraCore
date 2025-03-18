@@ -1,0 +1,15 @@
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+umbra_swift_library(
+    name = "XPCProtocolsCoreExamples",
+    srcs = glob(["*.swift"]),
+    enable_library_evolution = True,
+    tags = ["manual"],  # Mark as manual so it won't be built by default
+    deps = [
+        "//Sources/CoreDTOs",
+        "//Sources/CoreErrors",
+        "//Sources/ErrorHandling",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/XPCProtocolsCore",
+    ],
+)
