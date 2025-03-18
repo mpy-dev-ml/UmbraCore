@@ -373,7 +373,11 @@ public final class SecurityProviderMockKeyManager: SecurityProtocolsCore.KeyMana
 public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
     // MARK: - Properties
 
-    private let failAllOperations: Bool
+    /// Static protocol identifier
+    public static let protocolIdentifier: String = "com.umbra.security.mock"
+
+    /// Flag to force operations to fail for testing error paths
+    public var failAllOperations: Bool = false
 
     // MARK: - Initialization
 
@@ -399,12 +403,12 @@ public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
         ]
     }
 
-    public func checkConnection() async -> XPCConnectionStatus {
+    public func checkConnection() async -> XPCServiceStatusType {
         if failAllOperations {
-            return .disconnected
+            return .degraded
         }
 
-        return .connected
+        return .operational
     }
 
     public func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {

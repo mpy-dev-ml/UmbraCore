@@ -10,7 +10,113 @@ import XPCProtocolsCore
 @available(macOS 14.0, *)
 public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
     public init() {}
-
+    
+    // Required protocol methods
+    public func encrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        // Simple mock implementation to XOR data with key
+        var bytes = [UInt8]()
+        
+        // Extract key bytes
+        var keyBytes = [UInt8]()
+        do {
+            for i in 0..<key.count {
+                keyBytes.append(try key.byte(at: i))
+            }
+        } catch {
+            return .failure(.encryptionFailed("Error accessing key bytes"))
+        }
+        
+        // XOR data with key
+        for i in 0..<data.count {
+            do {
+                let keyByte = keyBytes[i % keyBytes.count]
+                bytes.append(try data.byte(at: i) ^ keyByte)
+            } catch {
+                return .failure(.encryptionFailed("Error accessing data bytes"))
+            }
+        }
+        
+        return .success(SecureBytes(bytes: bytes))
+    }
+    
+    public func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        // For XOR, encryption and decryption are the same operation
+        return await encrypt(data: data, using: key)
+    }
+    
+    public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        // Generate a random key
+        var keyBytes = [UInt8](repeating: 0, count: 32)
+        for i in 0..<keyBytes.count {
+            keyBytes[i] = UInt8.random(in: 0...255)
+        }
+        return .success(SecureBytes(bytes: keyBytes))
+    }
+    
+    public func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        // Very simple "hash" for example purposes - NOT a real hash
+        var hash = [UInt8](repeating: 0, count: 32)
+        
+        do {
+            for i in 0..<data.count {
+                let byte = try data.byte(at: i)
+                hash[i % 32] ^= byte
+            }
+            
+            // Add some minimal avalanche effect
+            for i in 0..<hash.count-1 {
+                hash[i+1] ^= hash[i]
+            }
+            
+            return .success(SecureBytes(bytes: hash))
+        } catch {
+            return .failure(.internalError("Error accessing data bytes during hashing"))
+        }
+    }
+    
+    public func hash(data: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        // Use the same implementation as the simpler hash method
+        return await hash(data: data)
+    }
+    
+    public func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        // Generate random data
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        for i in 0..<length {
+            randomBytes[i] = UInt8.random(in: 0...255)
+        }
+        return .success(SecureBytes(bytes: randomBytes))
+    }
+    
+    public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+        // Compute the hash of the data
+        let hashResult = await self.hash(data: data)
+        
+        // Compare with the provided hash
+        switch hashResult {
+        case .success(let computedHash):
+            // Compare the hashes
+            if computedHash.count != hash.count {
+                return .success(false)
+            }
+            
+            do {
+                for i in 0..<computedHash.count {
+                    if try computedHash.byte(at: i) != hash.byte(at: i) {
+                        return .success(false)
+                    }
+                }
+                return .success(true)
+            } catch {
+                return .failure(.invalidInput("Error comparing hash bytes"))
+            }
+            
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+    
+    // Additional convenience methods
     public func encryptSymmetric(data: SecureBytes, key: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Simple mock implementation to XOR data with key
         var bytes = [UInt8]()
@@ -105,7 +211,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
             do {
                 signatureBytes[i] = try data.byte(at: i)
             } catch {
-                return .failure(.signingFailed("Error accessing data bytes"))
+                return .failure(.internalError("Error accessing data bytes during signing"))
             }
         }
         
@@ -122,7 +228,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         var isValid = true
         
         if signature.count < 64 {
-            return .failure(.verificationFailed("Signature too short"))
+            return .failure(.invalidInput("Signature too short"))
         }
         
         // Check the pattern in the last part of the signature
@@ -133,7 +239,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
                     break
                 }
             } catch {
-                return .failure(.verificationFailed("Error accessing signature bytes"))
+                return .failure(.invalidInput("Error accessing signature bytes"))
             }
         }
         
@@ -141,140 +247,76 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
     }
 }
 
-/// A mock implementation of KeyManagementProtocol for testing
-/// Replaces the deprecated DummyKeyManager
+/// Mock implementation of KeyManagementProtocol for testing
 @available(macOS 14.0, *)
-public final class MockKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
-    // Thread-safe access to keys using an actor for Sendable conformance
-    private actor KeyStorage {
-        var keys: [String: SecureBytes] = [:]
-        
-        func storeKey(_ key: SecureBytes, withIdentifier identifier: String) {
-            keys[identifier] = key
-        }
-        
-        func retrieveKey(withIdentifier identifier: String) -> SecureBytes? {
-            keys[identifier]
-        }
-        
-        func deleteKey(withIdentifier identifier: String) {
-            keys.removeValue(forKey: identifier)
-        }
-        
-        func hasKey(forIdentifier identifier: String) -> Bool {
-            keys[identifier] != nil
-        }
-        
-        func getAllKeyIdentifiers() -> [String] {
-            Array(keys.keys)
-        }
-    }
-    
-    private let storage = KeyStorage()
+public final class MockKeyManager: @unchecked Sendable, SecurityProtocolsCore.KeyManagementProtocol {
+    private var keyStore: [String: SecureBytes] = [:]
     
     public init() {}
     
-    public func generateKey(
-        type: SecurityProtocolsCore.KeyType,
-        metadata: SecurityProtocolsCore.KeyMetadata
-    ) async -> Result<(key: SecureBytes, identifier: String), UmbraErrors.Security.Protocols> {
-        // Generate a mock key for testing
-        let keyLength = type == .symmetric ? 32 : 64
-        var keyBytes = [UInt8](repeating: 0, count: keyLength)
-        for i in 0..<keyLength {
-            keyBytes[i] = UInt8.random(in: 0...255)
-        }
-        
-        let key = SecureBytes(bytes: keyBytes)
-        let identifier = "key-\(UUID().uuidString)"
-        
-        // Store the key
-        await storage.storeKey(key, withIdentifier: identifier)
-        
-        return .success((key: key, identifier: identifier))
-    }
-    
-    public func storeKey(
-        _ key: SecureBytes,
-        identifier: String?,
-        metadata: SecurityProtocolsCore.KeyMetadata
-    ) async -> Result<String, UmbraErrors.Security.Protocols> {
-        let actualIdentifier = identifier ?? "key-\(UUID().uuidString)"
-        
-        // Store the key
-        await storage.storeKey(key, withIdentifier: actualIdentifier)
-        
-        return .success(actualIdentifier)
-    }
-    
-    public func retrieveKey(
-        identifier: String
-    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        if let key = await storage.retrieveKey(withIdentifier: identifier) {
+    public func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        if let key = keyStore[identifier] {
             return .success(key)
         } else {
-            return .failure(.keyManagementFailed("No key found with identifier: \(identifier)"))
+            return .failure(.storageOperationFailed("Key not found with identifier: \(identifier)"))
         }
     }
     
-    public func deleteKey(
-        identifier: String
-    ) async -> Result<Void, UmbraErrors.Security.Protocols> {
-        await storage.deleteKey(withIdentifier: identifier)
+    public func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
+        keyStore[identifier] = key
         return .success(())
     }
     
-    public func rotateKey(
-        identifier: String,
-        data: SecureBytes?
-    ) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), UmbraErrors.Security.Protocols> {
-        // First check if we have the original key
-        guard await storage.hasKey(forIdentifier: identifier) else {
-            return .failure(.storageOperationFailed("Cannot rotate nonexistent key with identifier: \(identifier)"))
+    public func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
+        if keyStore.removeValue(forKey: identifier) != nil {
+            return .success(())
+        } else {
+            return .failure(.storageOperationFailed("Key not found with identifier: \(identifier)"))
+        }
+    }
+    
+    public func rotateKey(withIdentifier identifier: String, dataToReencrypt: SecureBytes?) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), UmbraErrors.Security.Protocols> {
+        // Check if the key exists
+        if keyStore[identifier] == nil {
+            return .failure(.storageOperationFailed("Key not found with identifier: \(identifier)"))
         }
         
-        // Generate a new key (same length as original)
-        let originalKey = await storage.retrieveKey(withIdentifier: identifier)!
-        var newKeyBytes = [UInt8](repeating: 0, count: originalKey.count)
-        for i in 0..<originalKey.count {
-            newKeyBytes[i] = UInt8.random(in: 0...255)
+        // Generate a new key
+        var keyBytes = [UInt8](repeating: 0, count: 32)
+        for i in 0..<keyBytes.count {
+            keyBytes[i] = UInt8.random(in: 0...255)
         }
+        let newKey = SecureBytes(bytes: keyBytes)
         
-        let newKey = SecureBytes(bytes: newKeyBytes)
-        
-        // Store the new key with the same identifier (replacing old one)
-        await storage.storeKey(newKey, withIdentifier: identifier)
+        // Store the new key
+        keyStore[identifier] = newKey
         
         // Re-encrypt data if provided
-        var reencryptedData: SecureBytes? = nil
-        if let data = data {
-            // For this mock implementation, we'll just XOR the data with both old and new keys
-            var bytes = [UInt8]()
+        if let dataToReencrypt = dataToReencrypt {
+            var reencryptedBytes = [UInt8]()
             
-            // Decrypt with old key (XOR)
-            for i in 0..<data.count {
-                do {
-                    let dataByte = try data.byte(at: i)
-                    let keyByte = try originalKey.byte(at: i % originalKey.count)
-                    bytes.append(dataByte ^ keyByte)
-                } catch {
-                    return .failure(.encryptionFailed("Error during re-encryption"))
+            do {
+                // Extract bytes from data
+                var dataBytes = [UInt8]()
+                for i in 0..<dataToReencrypt.count {
+                    dataBytes.append(try dataToReencrypt.byte(at: i))
                 }
-            }
-            
-            // Encrypt with new key (XOR)
-            for i in 0..<bytes.count {
-                do {
-                    let keyByte = try newKey.byte(at: i % newKey.count)
-                    bytes[i] = bytes[i] ^ keyByte
-                } catch {
-                    return .failure(.encryptionFailed("Error during re-encryption"))
+                
+                // Simple XOR encryption with new key
+                for i in 0..<dataBytes.count {
+                    reencryptedBytes.append(dataBytes[i] ^ keyBytes[i % keyBytes.count])
                 }
+                
+                return .success((newKey: newKey, reencryptedData: SecureBytes(bytes: reencryptedBytes)))
+            } catch {
+                return .failure(.encryptionFailed("Error accessing data bytes for rotation"))
             }
-            
-            reencryptedData = SecureBytes(bytes: bytes)
         }
         
-        return .success((newKey: newKey, reencryptedData: reencryptedData))
+        return .success((newKey: newKey, reencryptedData: nil))
+    }
+    
+    public func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
+        return .success(Array(keyStore.keys))
     }
 }

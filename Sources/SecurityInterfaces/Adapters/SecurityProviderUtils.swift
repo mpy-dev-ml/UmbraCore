@@ -43,46 +43,29 @@ public enum SecurityProviderUtils {
         return securityInterfacesError
     }
 
-    /// Maps an XPCSecurityError to a SecurityInterfacesError
-    /// - Parameter error: The error to map
-    /// - Returns: A SecurityInterfacesError equivalent
-    public static func mapXPCError(_ error: XPCProtocolsCore.SecurityError) -> SecurityInterfacesError {
-        // Convert the error to a SecurityInterfacesError instance
+    /// Convert an XPCSecurityError to a SecurityInterfacesError
+    /// - Parameter error: The XPCSecurityError to convert
+    /// - Returns: A SecurityInterfacesError
+    public static func convertXPCError(_ error: XPCSecurityError) -> SecurityInterfacesError {
         let securityInterfacesError: SecurityInterfacesError = switch error {
         case .serviceUnavailable:
             .operationFailed("XPC service unavailable")
-        case .operationFailed(let operation, let reason):
-            .operationFailed("\(operation) failed: \(reason)")
-        case .authenticationFailed:
-            .authenticationFailed
+        case .serviceNotReady(let reason):
+            .operationFailed("Service not ready: \(reason)")
+        case .authenticationFailed(let reason):
+            .operationFailed("Authentication failed: \(reason)")
         case .invalidInput(let details):
             .invalidParameters(details)
         case .encryptionFailed(let reason):
-            .operationFailed("Encryption failed: \(reason)")
+            .encryptionFailed(reason: reason)
         case .decryptionFailed(let reason):
-            .operationFailed("Decryption failed: \(reason)")
+            .decryptionFailed(reason: reason)
         case .keyGenerationFailed(let reason):
-            .operationFailed("Key generation failed: \(reason)")
-        case .keyStoreFailed(let reason):
-            .operationFailed("Key store operation failed: \(reason)")
-        case .noServiceAvailable:
-            .serviceNotAvailable
+            .keyGenerationFailed(reason: reason)
+        case .cryptographicError(let operation, let details):
+            .operationFailed("Cryptographic error in \(operation): \(details)")
         case .timeout:
-            .timeout
-        case .invalidStateTransition(let fromState, let toState):
-            .invalidState(fromState: fromState, toState: toState)
-        case .securityViolation(let details):
-            .securityViolation(details)
-        case .internal(let message):
-            .operationFailed("Internal error: \(message)")
-        case .serviceNotReady(let reason):
-            .operationFailed("Service not ready: \(reason)")
-        case .timeout(let interval):
-            .operationFailed("Operation timed out after \(interval) seconds")
-        case .authenticationFailed(let reason):
-            .operationFailed("Authentication failed: \(reason)")
-        case .authorizationDenied(let operation):
-            .operationFailed("Authorization denied for operation: \(operation)")
+            .operationFailed("Operation timed out")
         case .operationNotSupported(let name):
             .operationFailed("Operation not supported: \(name)")
         case .invalidState(let details):
@@ -91,18 +74,63 @@ public enum SecurityProviderUtils {
             .operationFailed("Key not found: \(identifier)")
         case .invalidKeyType(let expected, let received):
             .operationFailed("Invalid key type. Expected: \(expected), Received: \(received)")
-        case .cryptographicError(let operation, let details):
-            .operationFailed("Cryptographic error in \(operation): \(details)")
+        case .invalidData(let reason):
+            .operationFailed("Invalid data: \(reason)")
+        case .authorizationDenied(let operation):
+            .operationFailed("Authorization denied for operation: \(operation)")
+        case .notImplemented(let reason):
+            .operationFailed("Not implemented: \(reason)")
         case .internalError(let reason):
             .operationFailed("Internal error: \(reason)")
         case .connectionInterrupted:
             .operationFailed("Connection interrupted")
         case .connectionInvalidated(let reason):
             .operationFailed("Connection invalidated: \(reason)")
-        default:
-            .operationFailed("Unknown error: \(error.localizedDescription)")
+        @unknown default:
+            .operationFailed("Unknown XPC error: \(error.localizedDescription)")
         }
+        
+        return securityInterfacesError
+    }
 
+    /// Convert a CoreErrors.SecurityError to a SecurityInterfacesError
+    /// - Parameter error: The error to convert
+    /// - Returns: A SecurityInterfacesError
+    public static func convertError(_ error: CoreErrors.SecurityError) -> SecurityInterfacesError {
+        // Map CoreErrors.SecurityError to SecurityInterfacesError
+        let securityInterfacesError: SecurityInterfacesError = switch error {
+        case .general(let message):
+            .operationFailed(message)
+        case .authentication(let message):
+            .authenticationFailed
+        case .authorization(let message):
+            .authorizationFailed(message)
+        case .encryption(let message):
+            .encryptionFailed(reason: message)
+        case .decryption(let message):
+            .decryptionFailed(reason: message)
+        case .keyGeneration(let message):
+            .keyGenerationFailed(reason: message)
+        case .keyStorage(let message):
+            .operationFailed("Key storage error: \(message)")
+        case .invalidInput(let message):
+            .invalidParameters(message)
+        case .invalidState(let message):
+            .operationFailed("Invalid state: \(message)")
+        case .timeout(let message):
+            .timeout
+        case .serialization(let message):
+            .operationFailed("Serialization error: \(message)")
+        case .unsupportedOperation(let message):
+            .operationFailed("Unsupported operation: \(message)")
+        case .serviceUnavailable(let message):
+            .serviceNotAvailable
+        case .protocolViolation(let message):
+            .securityViolation(message)
+        case .internalError(let message):
+            .operationFailed("Internal error: \(message)")
+        }
+        
         return securityInterfacesError
     }
 

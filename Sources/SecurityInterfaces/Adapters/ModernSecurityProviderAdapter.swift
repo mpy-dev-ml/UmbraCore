@@ -13,7 +13,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
     // MARK: - Properties
 
     private let provider: any SecurityProtocolsCore.SecurityProviderProtocol
-    private let service: any XPCProtocolsCore.XPCServiceProtocolBasic
+    private let service: any XPCServiceProtocolBasic
 
     /// The crypto service from the provider
     public var cryptoService: any SecurityProtocolsCore.CryptoServiceProtocol {
@@ -33,7 +33,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
     ///   - service: The XPC service to use
     public init(
         provider: any SecurityProtocolsCore.SecurityProviderProtocol,
-        service: any XPCProtocolsCore.XPCServiceProtocolBasic
+        service: any XPCServiceProtocolBasic
     ) {
         self.provider = provider
         self.service = service
@@ -321,7 +321,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
 
     private func getServiceStatus() async -> Result<[String: String], SecurityInterfacesError> {
         // Use service's type to check if it can provide status
-        if let standardService = service as? XPCProtocolsCore.XPCServiceProtocolStandard {
+        if let standardService = service as? XPCServiceProtocolStandard {
             // Get the status from the service
             let statusResult = await standardService.status()
             
