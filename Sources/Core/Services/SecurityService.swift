@@ -9,12 +9,20 @@ import SecurityTypes
 import SecurityTypesProtocols
 import UmbraCoreTypes
 import UmbraLogging
+import UmbraSecurity
 import XPCProtocolsCore
 
 // Type alias to disambiguate SecurityError types
 typealias SPCSecurityError = UmbraErrors.Security.Protocols
 
 /// Manages security operations and access control
+/// @deprecated This will be replaced by UmbraSecurity.SecurityService in a future version.
+/// New code should use UmbraSecurity.SecurityService instead.
+@available(
+    *,
+    deprecated,
+    message: "This will be replaced by UmbraSecurity.SecurityService in a future version. Use UmbraSecurity.SecurityService instead."
+)
 public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProviderProtocol {
     public static let serviceIdentifier = "com.umbracore.security"
 
@@ -111,7 +119,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
         }
 
         // Extract token parameters with defaults
-        let expirationInterval = options["expirationInterval"] as? TimeInterval ?? 3600
+        let expirationInterval = options["expirationInterval"] as? TimeInterval ?? 3_600
         let scope = options["scope"] as? String ?? "default"
 
         // Generate token data (simplified implementation)
@@ -123,7 +131,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
             "timestamp": timestamp,
             "expiration": expirationTime,
             "scope": scope,
-            "id": UUID().uuidString,
+            "id": UUID().uuidString
         ]
 
         // Convert to JSON
@@ -342,8 +350,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     /// - Parameter options: Optional dictionary of configuration options
     /// - Returns: A properly configured SecurityConfigDTO
     public nonisolated func createSecureConfig(options _: [String: Any]?) -> SecurityProtocolsCore
-        .SecurityConfigDTO
-    {
+        .SecurityConfigDTO {
         // This is a placeholder implementation to satisfy protocol requirements
         SecurityProtocolsCore.SecurityConfigDTO(
             algorithm: "AES-GCM",

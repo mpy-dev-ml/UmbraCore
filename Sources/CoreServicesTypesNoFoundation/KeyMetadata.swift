@@ -2,10 +2,7 @@ import KeyManagementTypes
 
 /// Metadata about a cryptographic key
 ///
-/// - Important: This type is deprecated. Please use `KeyManagementTypes.KeyMetadata` instead.
-///
-/// The canonical implementation is available in the KeyManagementTypes module and provides
-/// a standardised representation used across the UmbraCore framework.
+/// - Important: This type is deprecated. Please use the canonical `KeyMetadata` instead.
 @available(*, deprecated, message: "Please use KeyManagementTypes.KeyMetadata instead")
 public struct KeyMetadata: Sendable, Codable {
     /// Current status of the key
@@ -15,16 +12,8 @@ public struct KeyMetadata: Sendable, Codable {
     public let storageLocation: KeyManagementTypes.StorageLocation
 
     /// Access control settings for the key
-    public enum AccessControls: String, Sendable, Codable {
-        /// No special access controls
-        case none
-        /// Requires user authentication
-        case requiresAuthentication
-        /// Requires biometric authentication
-        case requiresBiometric
-        /// Requires both user and biometric authentication
-        case requiresBoth
-    }
+    @available(*, deprecated, message: "Please use KeyManagementTypes.KeyMetadata.AccessControls instead")
+    public typealias AccessControls = KeyManagementTypes.KeyMetadata.AccessControls
 
     /// Access controls applied to the key
     public let accessControls: AccessControls
@@ -83,18 +72,10 @@ public struct KeyMetadata: Sendable, Codable {
     /// Convert to the canonical KeyMetadata type
     /// - Returns: The equivalent canonical KeyMetadata
     public func toCanonical() -> KeyManagementTypes.KeyMetadata {
-        // Map AccessControls to canonical enum
-        let canonicalControls: KeyManagementTypes.KeyMetadata.AccessControls = switch accessControls {
-        case .none: .none
-        case .requiresAuthentication: .requiresAuthentication
-        case .requiresBiometric: .requiresBiometric
-        case .requiresBoth: .requiresBoth
-        }
-
         return KeyManagementTypes.KeyMetadata.withTimestamps(
             status: status,
             storageLocation: storageLocation,
-            accessControls: canonicalControls,
+            accessControls: accessControls,
             createdAtTimestamp: createdAtTimestamp,
             lastModifiedTimestamp: lastModifiedTimestamp,
             algorithm: algorithm,
@@ -111,21 +92,10 @@ public struct KeyMetadata: Sendable, Codable {
     /// - Parameter canonical: The canonical KeyMetadata to convert from
     /// - Returns: The equivalent legacy KeyMetadata
     public static func from(canonical: KeyManagementTypes.KeyMetadata) -> KeyMetadata {
-        // Map AccessControls from canonical enum
-        let legacyControls: AccessControls = switch canonical.accessControls {
-        case .none: .none
-        case .requiresAuthentication: .requiresAuthentication
-        case .requiresBiometric: .requiresBiometric
-        case .requiresBoth: .requiresBoth
-        @unknown default:
-            // Default to the most restrictive option for any new unknown enum values
-            .requiresBoth
-        }
-
         return KeyMetadata(
             status: canonical.status,
             storageLocation: canonical.storageLocation,
-            accessControls: legacyControls,
+            accessControls: canonical.accessControls,
             createdAtTimestamp: canonical.createdAtTimestamp,
             lastModifiedTimestamp: canonical.lastModifiedTimestamp,
             identifier: canonical.identifier,
@@ -135,41 +105,5 @@ public struct KeyMetadata: Sendable, Codable {
             exportable: canonical.exportable,
             isSystemKey: canonical.isSystemKey
         )
-    }
-
-    // Helper to convert AccessControls to the canonical type
-    private static func convertAccessControls(_ controls: AccessControls) -> KeyManagementTypes
-        .KeyMetadata.AccessControls
-    {
-        switch controls {
-        case .none:
-            .none
-        case .requiresAuthentication:
-            .requiresAuthentication
-        case .requiresBiometric:
-            .requiresBiometric
-        case .requiresBoth:
-            .requiresBoth
-        }
-    }
-
-    // Helper to convert canonical AccessControls to the legacy type
-    private static func convertAccessControls(
-        _ canonicalControls: KeyManagementTypes.KeyMetadata
-            .AccessControls
-    ) -> AccessControls {
-        switch canonicalControls {
-        case .none:
-            return .none
-        case .requiresAuthentication:
-            return .requiresAuthentication
-        case .requiresBiometric:
-            return .requiresBiometric
-        case .requiresBoth:
-            return .requiresBoth
-        @unknown default:
-            // Default to 'none' for any future cases
-            return .none
-        }
     }
 }

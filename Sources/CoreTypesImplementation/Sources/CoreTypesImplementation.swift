@@ -47,7 +47,7 @@ public struct ProviderConfiguration: Sendable {
             CoreCapability.decryption,
             CoreCapability.keyGeneration,
             CoreCapability.randomGeneration,
-            CoreCapability.hashing,
+            CoreCapability.hashing
         ]
     ) {
         self.providerId = providerId

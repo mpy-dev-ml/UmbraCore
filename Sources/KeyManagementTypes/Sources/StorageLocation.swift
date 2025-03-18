@@ -34,8 +34,7 @@ public extension StorageLocation {
     /// convert from
     /// - Returns: The equivalent canonical StorageLocation
     static func fromCoreServicesNoFoundation(_ coreServicesNoFoundation: Any)
-        -> StorageLocation
-    {
+        -> StorageLocation {
         // This is a type-erased conversion to avoid direct import
         // The actual type is CoreServicesTypesNoFoundation.StorageLocation
         let rawValue = String(describing: coreServicesNoFoundation)

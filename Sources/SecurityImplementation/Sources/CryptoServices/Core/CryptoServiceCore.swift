@@ -126,8 +126,7 @@ final class CryptoServiceCore: CryptoServiceProtocol, Sendable {
     ///   - hash: The expected hash value as `SecureBytes`.
     /// - Returns: Boolean indicating whether the hash matches.
     public func verify(data: SecureBytes, against hash: SecureBytes) async
-        -> Result<Bool, UmbraErrors.Security.Protocols>
-    {
+        -> Result<Bool, UmbraErrors.Security.Protocols> {
         // Hash the data using SHA-256
         let hashResult = await self.hash(data: data)
 
@@ -316,8 +315,7 @@ final class CryptoServiceCore: CryptoServiceProtocol, Sendable {
     /// - Parameter length: Length of random data in bytes
     /// - Returns: Random data or error
     func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
-    {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         do {
             // Use SecRandomCopyBytes directly instead of CryptoWrapper
             var randomBytes = [UInt8](repeating: 0, count: length)

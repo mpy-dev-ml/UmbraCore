@@ -113,7 +113,7 @@ public extension XPCServiceProtocolBaseFoundation {
     /// ```
     func asModernXPCService() -> any XPCServiceProtocolBasic {
         // Use the migration factory to create a properly wrapped service
-        XPCProtocolMigrationFactory.createBasicAdapter(service: self)
+        XPCProtocolMigrationFactory.createBasicAdapter()
     }
 }
 

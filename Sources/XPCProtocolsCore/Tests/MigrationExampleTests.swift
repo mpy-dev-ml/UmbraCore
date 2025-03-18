@@ -171,7 +171,7 @@ private extension MigrationExampleTests {
         func generateKey(keyType _: XPCProtocolTypeDefs.KeyType, keyIdentifier: String?, metadata _: [String: String]?) async -> Result<String, XPCSecurityError> {
             .success(keyIdentifier ?? "generated-key-id")
         }
-        
+
         func generateKey(
             algorithm: String,
             keySize: Int,
@@ -251,28 +251,28 @@ private extension MigrationExampleTests {
             let bytes = [UInt8](repeating: 3, count: length)
             return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
         }
-        
+
         func resetSecurity() async -> Result<Void, XPCSecurityError> {
             .success(())
         }
-        
+
         func getServiceVersion() async -> Result<String, XPCSecurityError> {
             .success("1.0.0")
         }
-        
+
         func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
             .success("test-hardware-id")
         }
-        
+
         func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
             let signature = [UInt8](repeating: 5, count: 64)
             return .success(UmbraCoreTypes.SecureBytes(bytes: signature))
         }
-        
+
         func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
             .success(true)
         }
-        
+
         // Required for CryptoXPCServiceProtocol
         func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
             // Implementation for synchronisation

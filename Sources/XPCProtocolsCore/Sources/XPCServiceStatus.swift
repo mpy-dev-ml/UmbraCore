@@ -22,19 +22,19 @@ import Foundation
 public struct XPCServiceStatus: Codable, Hashable, Sendable {
     /// When the status was captured
     public var timestamp: Date
-    
+
     /// Version of the XPC protocol used
     public var protocolVersion: String
-    
+
     /// Version of the service implementation
     public var serviceVersion: String?
-    
+
     /// Device identifier if available
     public var deviceIdentifier: String?
-    
+
     /// Additional status information
     public var additionalInfo: [String: String]?
-    
+
     /// Creates a new service status object
     /// - Parameters:
     ///   - timestamp: When the status was captured
@@ -71,7 +71,7 @@ public struct XPCServiceStatus: Codable, Hashable, Sendable {
             additionalInfo: ["errorReason": errorReason, "isActive": "false"]
         )
     }
-    
+
     /// A convenience initializer for creating service status
     /// - Parameters:
     ///   - isActive: Whether the service is active
@@ -82,7 +82,7 @@ public struct XPCServiceStatus: Codable, Hashable, Sendable {
         var info = additionalInfo
         info["isActive"] = isActive ? "true" : "false"
         info["serviceType"] = serviceType
-        
+
         self.init(
             timestamp: Date(),
             protocolVersion: "1.0",

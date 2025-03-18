@@ -98,7 +98,7 @@ public struct SecurityConfigDTO: Sendable, Equatable {
     /// Create a configuration for RSA asymmetric encryption
     /// - Parameter keySizeInBits: Key size in bits (2048, 3072, or 4096)
     /// - Returns: Configuration for RSA
-    public static func rsa(keySizeInBits: Int = 2048) -> SecurityConfigDTO {
+    public static func rsa(keySizeInBits: Int = 2_048) -> SecurityConfigDTO {
         SecurityConfigDTO(
             algorithm: "RSA",
             keySizeInBits: keySizeInBits
@@ -111,7 +111,7 @@ public struct SecurityConfigDTO: Sendable, Equatable {
     ///   - outputKeySizeInBits: Size of the derived key in bits
     /// - Returns: Configuration for PBKDF2
     public static func pbkdf2(
-        iterations: Int = 10000,
+        iterations: Int = 10_000,
         outputKeySizeInBits: Int = 256
     ) -> SecurityConfigDTO {
         SecurityConfigDTO(
@@ -210,6 +210,24 @@ public struct SecurityConfigDTO: Sendable, Equatable {
             inputData: inputData,
             key: key,
             additionalData: data
+        )
+    }
+
+    /// Add options to the configuration
+    /// - Parameter options: The options to use
+    /// - Returns: A new configuration with the specified options
+    public func withOptions(_ options: [String: String]) -> SecurityConfigDTO {
+        SecurityConfigDTO(
+            algorithm: algorithm,
+            keySizeInBits: keySizeInBits,
+            initializationVector: initializationVector,
+            additionalAuthenticatedData: additionalAuthenticatedData,
+            iterations: iterations,
+            options: options,
+            keyIdentifier: keyIdentifier,
+            inputData: inputData,
+            key: key,
+            additionalData: additionalData
         )
     }
 }

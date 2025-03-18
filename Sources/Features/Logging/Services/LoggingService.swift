@@ -28,8 +28,7 @@ public actor LoggingService {
     /// - Parameter path: Path to create a bookmark for
     /// - Returns: Result with bookmark data or error
     public func createLogBookmark(path: String) async
-        -> Result<[UInt8], XPCProtocolsCore.XPCSecurityError>
-    {
+        -> Result<[UInt8], XPCProtocolsCore.XPCSecurityError> {
         let result = await securityProvider.createBookmark(for: path)
 
         switch result {
@@ -44,8 +43,7 @@ public actor LoggingService {
     /// - Parameter bookmarkData: The bookmark data to resolve
     /// - Returns: Result with resolved path or error
     public func resolveLogBookmark(_ bookmarkData: [UInt8]) async
-        -> Result<String, XPCProtocolsCore.XPCSecurityError>
-    {
+        -> Result<String, XPCProtocolsCore.XPCSecurityError> {
         let secureBytes = SecureBytes(bytes: bookmarkData)
         let result = await securityProvider.resolveBookmark(secureBytes)
 
@@ -66,8 +64,7 @@ public actor LoggingService {
     /// - Parameter bookmarkData: The bookmark data to validate
     /// - Returns: Result with validation status or error
     public func validateLogBookmark(_ bookmarkData: [UInt8]) async
-        -> Result<Bool, XPCProtocolsCore.XPCSecurityError>
-    {
+        -> Result<Bool, XPCProtocolsCore.XPCSecurityError> {
         let secureBytes = SecureBytes(bytes: bookmarkData)
         let result = await securityProvider.validateBookmark(secureBytes)
 
@@ -83,8 +80,7 @@ public actor LoggingService {
     /// - Parameter path: Path to the resource
     /// - Returns: Result with access status or error
     public func startAccessingLogResource(_ path: String) async
-        -> Result<Bool, XPCProtocolsCore.XPCSecurityError>
-    {
+        -> Result<Bool, XPCProtocolsCore.XPCSecurityError> {
         let result = await securityProvider.startAccessingResource(identifier: path)
 
         switch result {

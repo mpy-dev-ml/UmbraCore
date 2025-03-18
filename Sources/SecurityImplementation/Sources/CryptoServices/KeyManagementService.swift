@@ -51,7 +51,7 @@ public struct KeyManagementService: Sendable {
             return .failure(.invalidInput(reason: "Random data length must be greater than zero"))
         }
 
-        guard length <= 1024 * 1024 else {
+        guard length <= 1_024 * 1_024 else {
             return .failure(.invalidInput(
                 reason: "Random data length exceeds maximum allowed (1MB)"
             ))
@@ -78,7 +78,7 @@ public struct KeyManagementService: Sendable {
     public func deriveKey(
         from password: SecureBytes,
         salt: SecureBytes,
-        iterations: Int = 10000,
+        iterations: Int = 10_000,
         keyLength: Int = 32
     ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Input validation
@@ -86,7 +86,7 @@ public struct KeyManagementService: Sendable {
             return .failure(.invalidInput(reason: "Password or salt is empty"))
         }
 
-        guard iterations >= 1000 else {
+        guard iterations >= 1_000 else {
             return .failure(.invalidInput(
                 reason: "Iteration count too low, minimum 1000 required"
             ))

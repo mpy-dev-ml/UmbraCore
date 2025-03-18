@@ -40,8 +40,7 @@ public final class TestSecurityProviderImplementation: SecurityInterfacesProtoco
 public enum SecurityInterfacesTestSupport {
     /// Creates a test security provider for testing
     public static func createTestSecurityProvider() -> any SecurityInterfacesProtocols
-        .SecurityProviderProtocol
-    {
+        .SecurityProviderProtocol {
         TestSecurityProviderImplementation()
     }
 

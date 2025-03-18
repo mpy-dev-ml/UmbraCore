@@ -148,19 +148,19 @@ public enum XPCProtocolsCore {
 public protocol XPCConnection {
     /// The remote interface that the connection exposes
     var remoteObjectInterface: XPCInterface? { get set }
-    
+
     /// The local interface that the connection exposes to the remote side
     var exportedInterface: XPCInterface? { get set }
-    
+
     /// The exported object that will receive messages from the remote side
     var exportedObject: Any? { get set }
-    
+
     /// Resume the connection
     func resume()
-    
+
     /// Suspend the connection
     func suspend()
-    
+
     /// Invalidate the connection
     func invalidate()
 }
@@ -175,10 +175,10 @@ public protocol XPCInterface {
 public enum XPCProtocolCompatibility {
     /// Protocols are fully compatible
     case compatible
-    
+
     /// Protocols are partially compatible (some features may not work)
     case partiallyCompatible
-    
+
     /// Protocols are incompatible
     case incompatible
 }

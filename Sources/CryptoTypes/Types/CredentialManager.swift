@@ -155,8 +155,7 @@ private actor KeychainAccess: SecureStorageServiceProtocol {
     }
 
     func getDataMetadata(for identifier: String) async
-        -> Result<[String: String]?, XPCSecurityError>
-    {
+        -> Result<[String: String]?, XPCSecurityError> {
         guard let item = items[identifier] else {
             return .failure(.keyNotFound(identifier: identifier))
         }

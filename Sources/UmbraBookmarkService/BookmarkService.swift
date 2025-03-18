@@ -3,8 +3,7 @@ import UmbraXPC
 
 /// Service for managing security-scoped bookmarks
 public final class BookmarkService: NSObject, BookmarkServiceProtocol, NSXPCListenerDelegate,
-    @unchecked Sendable
-{
+    @unchecked Sendable {
     /// Set of URLs currently being accessed
     @MainActor
     private var activeAccessURLs: Set<URL> = []

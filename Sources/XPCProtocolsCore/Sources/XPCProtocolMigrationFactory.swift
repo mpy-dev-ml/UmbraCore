@@ -139,7 +139,7 @@ public enum XPCProtocolMigrationFactory {
                 return .internalError(reason: nsError.localizedDescription)
             }
         }
-        
+
         // If we can't extract more specific information, return a generic error
         return .internalError(reason: error.localizedDescription)
     }

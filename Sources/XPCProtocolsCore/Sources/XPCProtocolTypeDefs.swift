@@ -59,7 +59,7 @@ public enum XPCProtocolTypeDefs {
         public var defaultBitLength: Int {
             switch self {
             case .symmetric: 256
-            case .asymmetric: 2048
+            case .asymmetric: 2_048
             case .hmac: 256
             }
         }
@@ -96,7 +96,7 @@ public enum XPCProtocolTypeDefs {
         public var bitLength: Int {
             switch self {
             case .aes: 128
-            case .rsa: 2048
+            case .rsa: 2_048
             case .ecc: 256
             case .hmac: 256
             case .chacha20: 256
@@ -188,18 +188,18 @@ public enum XPCProtocolTypeDefs {
         /// Maximum security with all protections enabled
         case maximum
     }
-    
+
     /// Format options for exporting keys
     public enum KeyFormat: String, Codable, Sendable {
         /// Raw key material
         case raw
-        
+
         /// PKCS#8 formatted key (commonly used for asymmetric keys)
         case pkcs8
-        
+
         /// PEM format (Base64-encoded with header/footer)
         case pem
-        
+
         /// JWK format (JSON Web Key)
         case jwk
     }

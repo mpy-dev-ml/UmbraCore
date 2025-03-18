@@ -13,16 +13,8 @@ public struct KeyMetadata: Sendable, Codable {
     public let storageLocation: KeyManagementTypes.StorageLocation
 
     /// Access control settings for the key
-    public enum AccessControls: String, Sendable, Codable {
-        /// No special access controls
-        case none
-        /// Requires user authentication
-        case requiresAuthentication
-        /// Requires biometric authentication
-        case requiresBiometric
-        /// Requires both user and biometric authentication
-        case requiresBoth
-    }
+    @available(*, deprecated, message: "Please use KeyManagementTypes.KeyMetadata.AccessControls instead")
+    public typealias AccessControls = KeyManagementTypes.KeyMetadata.AccessControls
 
     /// Access controls applied to the key
     public let accessControls: AccessControls

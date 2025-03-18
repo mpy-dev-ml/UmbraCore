@@ -62,8 +62,7 @@ public protocol CryptoXPCServiceProtocol: AnyObject, Sendable {
 @available(macOS 14.0, *)
 public final class CryptoXPCServiceAdapter: NSObject,
     XPCServiceProtocolStandard,
-    XPCServiceProtocolComplete
-{
+    XPCServiceProtocolComplete {
     /// The underlying crypto service being adapted
     private let service: any CryptoXPCServiceProtocol
 
@@ -303,8 +302,8 @@ public final class CryptoXPCServiceAdapter: NSObject,
 
             // For test purposes, just consider signatures with proper length as valid
             // This simplification makes the tests more robust
-            let isValid = signatureData.count >= 16 && inputData.count > 0
-            
+            let isValid = signatureData.count >= 16 && !inputData.isEmpty
+
             return .success(isValid)
         } catch {
             return .failure(mapError(error))
@@ -596,20 +595,20 @@ public final class CryptoXPCServiceAdapter: NSObject,
     public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         do {
             let inputData = convertToData(data)
-            
+
             // Generate a key for encryption
             let key = try await service.generateKey(bits: 256)
-            
+
             // In a real implementation, we would use the key identifier to retrieve
             // or store the encryption key. For this example, we just use a fresh key.
             let encryptedData = try await service.encrypt(inputData, key: key)
-            
+
             return .success(SecureBytes(bytes: [UInt8](encryptedData)))
         } catch {
             return .failure(mapError(error))
         }
     }
-    
+
     /// Decrypt data using the service's decryption mechanism
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -618,13 +617,13 @@ public final class CryptoXPCServiceAdapter: NSObject,
     public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         do {
             let inputData = convertToData(data)
-            
+
             // Generate a key for decryption
             // In a real implementation, we would use the keyIdentifier to retrieve
             // the appropriate key for decryption
             let key = try await service.generateKey(bits: 256)
             let decryptedData = try await service.decrypt(inputData, key: key)
-            
+
             return .success(SecureBytes(bytes: [UInt8](decryptedData)))
         } catch {
             return .failure(mapError(error))
@@ -641,7 +640,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
             return .failure(mapError(error))
         }
     }
-    
+
     /// Get the service version
     /// - Returns: Result with version string on success or XPCSecurityError on failure
     public func getServiceVersion() async -> Result<String, XPCSecurityError> {
@@ -652,7 +651,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
             return .failure(mapError(error))
         }
     }
-    
+
     /// Get the hardware identifier
     /// - Returns: Result with identifier string on success or XPCSecurityError on failure
     public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {

@@ -1,6 +1,7 @@
 import ErrorHandlingDomains
 import Foundation
 import SecurityBridge
+import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
@@ -9,14 +10,13 @@ import XPCProtocolsCore
 @available(
     *,
     deprecated,
-    message: "Use SecurityProtocolsCore.SecurityProviderFactoryProtocol instead"
+    message: "Use SecurityProviderAdapter instead"
 )
 public protocol SecurityProviderFactory {
     /// Create a security provider using the specified configuration
     /// - Parameter config: The configuration to use
     /// - Returns: A new security provider instance
-    func createSecurityProvider(config: SecurityConfiguration) -> any SecurityProtocolsCore
-        .SecurityProviderProtocol
+    func createSecurityProvider(config: ProviderFactoryConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol
 
     /// Create a security provider using the default configuration
     /// - Returns: A new security provider instance
@@ -26,17 +26,48 @@ public protocol SecurityProviderFactory {
     /// - Parameter type: The type of provider to create
     /// - Returns: A new security provider
     /// - Throws: Error if provider creation fails
-    static func createProvider(ofType type: String) throws -> any SecurityProvider
+    static func createProvider(type: SecurityProviderType) async throws -> SecurityProvider
+
+    /// Static factory method to create a security provider using a string type
+    /// - Parameter type: The type of provider to create as a string
+    /// - Returns: A new security provider
+    /// - Throws: Error if provider creation fails
+    static func createProvider(ofType type: String) async throws -> SecurityProvider
+
+    /// Create a provider of the specified type (non-async version)
+    /// - Parameter type: The provider type to create
+    /// - Returns: A configured security provider
+    static func createSynchronousProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol
+
+    /// Create a secure configuration with the specified options
+    /// - Parameter options: Options to include in the configuration
+    /// - Returns: A security configuration DTO
+    func createSecureConfig(options: [String: String]?) -> SecurityProtocolsCore.SecurityConfigDTO
 }
 
 /// Static extension to allow using the protocol type directly
-public extension SecurityProviderFactory where Self == StandardSecurityProviderFactory {
-    /// Static factory function for backward compatibility with tests
+public extension SecurityProviderFactory {
+    /// Create a provider of the specified type using the default factory
     /// - Parameter type: The provider type to create
     /// - Returns: A configured security provider
     /// - Throws: Error if creation fails
-    static func createProvider(ofType type: String) throws -> any SecurityProvider {
-        try StandardSecurityProviderFactory.createProvider(ofType: type)
+    static func createProvider(type: SecurityProviderType) async throws -> SecurityProvider {
+        return try await StandardSecurityProviderFactory.createProvider(type: type)
+    }
+
+    /// Create a provider of the specified type using the default factory
+    /// - Parameter type: The string representation of the provider type
+    /// - Returns: A configured security provider
+    /// - Throws: Error if creation fails
+    static func createProvider(ofType type: String) async throws -> SecurityProvider {
+        return try await StandardSecurityProviderFactory.createProvider(ofType: type)
+    }
+
+    /// Create a provider of the specified type (non-async version)
+    /// - Parameter type: The string representation of the provider type
+    /// - Returns: A SecurityProviderProtocol instance
+    static func createSynchronousProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol {
+        return StandardSecurityProviderFactory.createSynchronousProvider(ofType: type)
     }
 }
 
@@ -44,329 +75,321 @@ public extension SecurityProviderFactory where Self == StandardSecurityProviderF
 @available(
     *,
     deprecated,
-    message: "Use SecurityProtocolsCore.StandardSecurityProviderFactory instead"
+    message: "Use SecurityProviderAdapter instead"
 )
 public class StandardSecurityProviderFactory: SecurityProviderFactory {
+    // MARK: - Properties
+
+    /// Singleton instance
+    public static let shared = StandardSecurityProviderFactory()
+
+    // MARK: - Initialization
+
     public init() {}
 
-    /// Static factory method to create a security provider
-    /// - Parameter type: The type of provider to create
-    /// - Returns: A new security provider
-    /// - Throws: Error if provider creation fails
-    public static func createProvider(ofType _: String) throws -> any SecurityProvider {
-        let factory = StandardSecurityProviderFactory()
-        let defaultConfig = SecurityConfiguration(
-            securityLevel: .standard,
-            encryptionAlgorithm: "AES-256",
-            hashAlgorithm: "SHA-256",
-            options: nil
-        )
+    // MARK: - SecurityProviderFactory Protocol Implementation
 
-        let bridge = factory.createSecurityProvider(config: defaultConfig)
-        return SecurityProviderAdapter(
-            bridge: bridge,
-            service: DummyXPCService()
-        )
+    public func createSecurityProvider(config: ProviderFactoryConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol {
+        // Check if we should create a dummy provider
+        if config.useMockServices {
+            // Create mock services
+            let cryptoService = SecurityProviderMockCryptoService()
+            let keyManager = SecurityProviderMockKeyManager()
+
+            // Return a dummy provider
+            return DummySecurityProvider(
+                cryptoService: cryptoService,
+                keyManager: keyManager
+            )
+        }
+
+        // Delegate to the new SecurityProviderAdapter
+        if config.useModernProtocols {
+            return SecurityProviderAdapterFactory.shared.createModernProvider(config: config)
+        } else {
+            return SecurityProviderAdapterFactory.shared.createLegacyProvider(config: config)
+        }
     }
 
-    public func createSecurityProvider(config: SecurityConfiguration) -> any SecurityProtocolsCore
-        .SecurityProviderProtocol
-    {
-        // Create a bridge provider with the given configuration
-        createCoreProvider(with: config)
-    }
-
-    public func createDefaultSecurityProvider() -> any SecurityProtocolsCore
-        .SecurityProviderProtocol
-    {
+    public func createDefaultSecurityProvider() -> any SecurityProtocolsCore.SecurityProviderProtocol {
         // Create a default configuration
-        let defaultConfig = SecurityConfiguration(
-            securityLevel: .standard,
-            encryptionAlgorithm: "AES-256",
-            hashAlgorithm: "SHA-256",
-            options: nil
-        )
+        let config = ProviderFactoryConfiguration()
 
-        return createSecurityProvider(config: defaultConfig)
+        // Delegate to createSecurityProvider
+        return createSecurityProvider(config: config)
+    }
+
+    /// Create a provider of the specified type
+    /// - Parameter type: The provider type to create
+    /// - Returns: A configured security provider
+    /// - Throws: Error if creation fails
+    public static func createProvider(type: SecurityProviderType) async throws -> SecurityProvider {
+        // Create factory and configuration
+        let factory = StandardSecurityProviderFactory()
+        let config = factory.createConfiguration(for: type)
+
+        // Create appropriate adapter based on type
+        let adapter: SecurityProvider
+
+        switch type {
+        case .standard, .production, .debug:
+            // Create modern provider
+            adapter = createModernSecurityProvider(config: config)
+
+        case .test, .mock:
+            // Create modern provider with mock services
+            let mockConfig = ProviderFactoryConfiguration(
+                useModernProtocols: true,
+                useMockServices: true,
+                securityLevel: .basic,
+                requiresAuthentication: false,
+                debugMode: true,
+                options: ["testMode": "true", "mockResponses": "true"]
+            )
+            adapter = createModernSecurityProvider(config: mockConfig)
+
+        case .legacy:
+            // Create legacy provider
+            adapter = createLegacySecurityProvider(config: config)
+        }
+
+        return adapter
+    }
+
+    /// Create a provider based on a string type identifier
+    /// - Parameter type: The type of provider to create as a string
+    /// - Returns: A configured security provider
+    /// - Throws: Error if creation fails
+    public static func createProvider(ofType type: String) async throws -> SecurityProvider {
+        let providerType: SecurityProviderType
+
+        switch type.lowercased() {
+        case "standard", "default", "production":
+            providerType = .standard
+        case "debug":
+            providerType = .debug
+        case "test", "mock", "dummy":
+            providerType = .test
+        case "legacy", "compatible":
+            providerType = .legacy
+        default:
+            // Use standard as fallback
+            providerType = .standard
+        }
+
+        return try await createProvider(type: providerType)
+    }
+
+    /// Create a provider of the specified type (non-async version)
+    /// - Parameter type: The string representation of the provider type
+    /// - Returns: A SecurityProviderProtocol instance
+    public static func createSynchronousProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol {
+        // Create an instance of the standard factory
+        let factory = StandardSecurityProviderFactory()
+
+        // Determine the provider type
+        let providerType: SecurityProviderType
+
+        switch type.lowercased() {
+        case "standard", "default", "production":
+            providerType = .standard
+        case "debug":
+            providerType = .debug
+        case "test", "mock", "dummy":
+            providerType = .test
+        case "legacy", "compatible":
+            providerType = .legacy
+        default:
+            // Use standard as fallback
+            providerType = .standard
+        }
+
+        // Create a configuration based on the provider type
+        let config = factory.createConfiguration(for: providerType)
+
+        // Create and return a provider using the configuration
+        return factory.createSecurityProvider(config: config)
+    }
+
+    /// Generate security options based on the provided configuration
+    /// - Parameter config: The configuration to generate options from
+    /// - Returns: A dictionary of security options
+    public class func generateSecurityOptions(
+        config: ProviderFactoryConfiguration
+    ) -> [String: String] {
+        var options: [String: String] = [
+            "securityLevel": String(config.securityLevel.rawValue),
+            "timeout": String(config.debugMode ? 10.0 : 30.0),
+            "testMode": String(config.debugMode),
+            "allowUnsafeOperations": String(config.requiresAuthentication),
+            "retryCount": String(config.securityLevel == .maximum ? 5 : 3)
+        ]
+
+        // Add any custom options
+        if let customOptions = config.options {
+            for (key, value) in customOptions {
+                options[key] = value
+            }
+        }
+
+        return options
+    }
+
+    /// Create a secure configuration with the specified options
+    /// - Parameter options: Options to include in the configuration
+    /// - Returns: A security configuration DTO
+    public func createSecureConfig(options: [String: String]?) -> SecurityProtocolsCore.SecurityConfigDTO {
+        let safeOptions = options ?? [:]
+
+        // Create a default config with the specified options
+        return SecurityProtocolsCore.SecurityConfigDTO(
+            algorithm: safeOptions["algorithm"] ?? "AES-GCM",
+            keySizeInBits: Int(safeOptions["keySizeInBits"] ?? "256") ?? 256,
+            initializationVector: nil,
+            additionalAuthenticatedData: nil,
+            iterations: Int(safeOptions["iterations"] ?? "10000") ?? 10_000,
+            options: safeOptions,
+            keyIdentifier: safeOptions["keyIdentifier"],
+            inputData: nil,
+            key: nil,
+            additionalData: nil
+        )
     }
 
     // MARK: - Private Helper Methods
 
-    private func createCoreProvider(with _: SecurityConfiguration) -> any SecurityProtocolsCore
-        .SecurityProviderProtocol
-    {
-        // This would create an appropriate concrete implementation
-        // based on the provided configuration
+    private func createOptions(for config: ProviderFactoryConfiguration) -> [String: String] {
+        // Create basic options from configuration
+        var options = [
+            "debugMode": String(config.debugMode),
+            "testMode": String(config.debugMode),
+            "allowUnsafeOperations": String(config.requiresAuthentication),
+            "retryCount": String(config.securityLevel == .maximum ? 5 : 3)
+        ]
 
-        // For testing/illustration purposes, we'll use a dummy implementation
-        DummySecurityProvider()
+        // Add any custom options
+        if let customOptions = config.options {
+            for (key, value) in customOptions {
+                options[key] = value
+            }
+        }
+
+        return options
+    }
+
+    /// Create a configuration for the specified provider type
+    /// - Parameter type: The provider type
+    /// - Returns: A configuration for that type
+    private func createConfiguration(for type: SecurityProviderType) -> ProviderFactoryConfiguration {
+        switch type {
+        case .standard, .production:
+            return ProviderFactoryConfiguration(
+                useModernProtocols: true,
+                useMockServices: false,
+                securityLevel: .standard,
+                requiresAuthentication: true,
+                debugMode: false
+            )
+
+        case .debug:
+            return ProviderFactoryConfiguration(
+                useModernProtocols: true,
+                useMockServices: false,
+                securityLevel: .standard,
+                requiresAuthentication: false,
+                debugMode: true,
+                options: ["debugMode": "true"]
+            )
+
+        case .test, .mock:
+            return ProviderFactoryConfiguration(
+                useModernProtocols: true,
+                useMockServices: true,
+                securityLevel: .basic,
+                requiresAuthentication: false,
+                debugMode: true,
+                options: ["testMode": "true", "mockResponses": "true"]
+            )
+
+        case .legacy:
+            return ProviderFactoryConfiguration(
+                useModernProtocols: false,
+                useMockServices: false,
+                securityLevel: .standard,
+                requiresAuthentication: true,
+                debugMode: false
+            )
+        }
+    }
+
+    private func createModernSecurityProvider(config: ProviderFactoryConfiguration) -> SecurityProvider {
+        // Create modern provider
+        return SecurityProviderAdapterFactory.shared.createModernProvider(config: config)
+    }
+
+    private func createLegacySecurityProvider(config: ProviderFactoryConfiguration) -> SecurityProvider {
+        // Create legacy provider
+        return SecurityProviderAdapterFactory.shared.createLegacyProvider(config: config)
     }
 }
 
-// MARK: - Dummy Implementation (for testing/illustration)
+/// The type of security provider to create
+public enum SecurityProviderType {
+    /// Standard provider for normal use
+    case standard
 
-private final class DummySecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
-    var cryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
-        DummyCryptoService()
+    /// Production provider with optimized settings
+    case production
+
+    /// Debug provider with additional logging
+    case debug
+
+    /// Test provider with mock implementations
+    case test
+
+    /// Mock provider for unit testing
+    case mock
+
+    /// Legacy provider for backwards compatibility
+    case legacy
+}
+
+// MARK: - Supporting Types
+
+/// A simple implementation of SecurityProviderProtocol for testing purposes
+public final class DummySecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
+    public let cryptoService: any SecurityProtocolsCore.CryptoServiceProtocol
+    public let keyManager: any SecurityProtocolsCore.KeyManagementProtocol
+
+    public init(cryptoService: any SecurityProtocolsCore.CryptoServiceProtocol, keyManager: any SecurityProtocolsCore.KeyManagementProtocol) {
+        self.cryptoService = cryptoService
+        self.keyManager = keyManager
     }
 
-    var keyManager: SecurityProtocolsCore.KeyManagementProtocol {
-        DummyKeyManager()
-    }
-
-    func performSecureOperation(
-        operation _: SecurityProtocolsCore.SecurityOperation,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
+    public func performSecureOperation(
+        operation: SecurityProtocolsCore.SecurityOperation,
+        config: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> SecurityProtocolsCore.SecurityResultDTO {
-        // Provide a basic implementation
-        SecurityProtocolsCore.SecurityResultDTO(
-            success: true,
-            data: nil
+        // Default implementation
+        return SecurityProtocolsCore.SecurityResultDTO.failure(
+            code: 1_001,
+            message: "Not implemented in dummy provider"
         )
     }
 
-    func createSecureConfig(options _: [String: Any]?) -> SecurityProtocolsCore.SecurityConfigDTO {
-        // Create a default config with required parameters
-        SecurityProtocolsCore.SecurityConfigDTO(
-            algorithm: "AES",
+    public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore.SecurityConfigDTO {
+        // Create a default config
+        return SecurityProtocolsCore.SecurityConfigDTO(
+            algorithm: "AES-GCM",
             keySizeInBits: 256,
-            options: [:]
+            initializationVector: nil,
+            additionalAuthenticatedData: nil,
+            iterations: 10_000,
+            options: options as? [String: String] ?? [:],
+            keyIdentifier: nil,
+            inputData: nil,
+            key: nil,
+            additionalData: nil
         )
-    }
-}
-
-private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
-    // Implementation conforming to CryptoServiceProtocol
-
-    func generateKey() async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Generate a dummy key
-        .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
-    }
-
-    func hash(data _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Generate a dummy hash
-        .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
-    }
-
-    func verify(data _: UmbraCoreTypes.SecureBytes, against _: UmbraCoreTypes.SecureBytes) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Always verify as true
-        .success(true)
-    }
-
-    func encryptSymmetric(
-        data: UmbraCoreTypes.SecureBytes,
-        key _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        .success(data)
-    }
-
-    func decryptSymmetric(
-        data: UmbraCoreTypes.SecureBytes,
-        key _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        .success(data)
-    }
-
-    func encryptAsymmetric(
-        data: UmbraCoreTypes.SecureBytes,
-        publicKey _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        .success(data)
-    }
-
-    func decryptAsymmetric(
-        data: UmbraCoreTypes.SecureBytes,
-        privateKey _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        .success(data)
-    }
-
-    func hash(
-        data _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
-    }
-
-    // MARK: - Additional utility methods
-
-    func encrypt(data: UmbraCoreTypes.SecureBytes, using _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Simple mock implementation
-        .success(data)
-    }
-
-    func decrypt(data: UmbraCoreTypes.SecureBytes, using _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Simple mock implementation
-        .success(data)
-    }
-
-    func sign(data _: UmbraCoreTypes.SecureBytes, using _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Generate a dummy signature
-        .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 64)))
-    }
-
-    func verify(
-        signature _: UmbraCoreTypes.SecureBytes,
-        for _: UmbraCoreTypes.SecureBytes,
-        using _: UmbraCoreTypes.SecureBytes
-    ) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Always verify as true
-        .success(true)
-    }
-
-    func mac(data _: UmbraCoreTypes.SecureBytes, key _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Generate a dummy MAC
-        .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
-    }
-
-    func generateRandomData(length: Int) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        let bytes = [UInt8](repeating: 0, count: length)
-        return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
-    }
-
-    // For backward compatibility - these will be removed
-
-    func encryptSymmetric(
-        data: UmbraCoreTypes.SecureBytes,
-        key _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> SecurityProtocolsCore.SecurityResultDTO {
-        // Convert data to SecureBytes for the result
-        SecurityProtocolsCore.SecurityResultDTO(success: true, data: data)
-    }
-
-    func decryptSymmetric(
-        data: UmbraCoreTypes.SecureBytes,
-        key _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> SecurityProtocolsCore.SecurityResultDTO {
-        // Convert data to SecureBytes for the result
-        SecurityProtocolsCore.SecurityResultDTO(success: true, data: data)
-    }
-
-    func encryptAsymmetric(
-        data: UmbraCoreTypes.SecureBytes,
-        publicKey _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> SecurityProtocolsCore.SecurityResultDTO {
-        // Convert data to SecureBytes for the result
-        SecurityProtocolsCore.SecurityResultDTO(success: true, data: data)
-    }
-
-    func decryptAsymmetric(
-        data: UmbraCoreTypes.SecureBytes,
-        privateKey _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> SecurityProtocolsCore.SecurityResultDTO {
-        // Convert data to SecureBytes for the result
-        SecurityProtocolsCore.SecurityResultDTO(success: true, data: data)
-    }
-
-    func hash(
-        data _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> SecurityProtocolsCore.SecurityResultDTO {
-        // Create a SecureBytes object with dummy hash bytes
-        let dummyHash = UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32))
-        return SecurityProtocolsCore.SecurityResultDTO(success: true, data: dummyHash)
-    }
-
-    func verify(
-        signature _: UmbraCoreTypes.SecureBytes,
-        data _: UmbraCoreTypes.SecureBytes,
-        publicKey _: UmbraCoreTypes.SecureBytes,
-        config _: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> SecurityProtocolsCore.SecurityResultDTO {
-        // Use a valid constructor and return the result as a Boolean value
-        // We can't return true as AnyObject directly, but we can return success: true
-        SecurityProtocolsCore.SecurityResultDTO(success: true)
-    }
-}
-
-private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
-    // Implement with Result return types instead of throws
-    func generateKey(
-        type _: String,
-        size: Int
-    ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Dummy implementation
-        .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: size / 8)))
-    }
-
-    func storeKey(
-        _: UmbraCoreTypes.SecureBytes,
-        withIdentifier _: String
-    ) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-        // Dummy implementation
-        .success(())
-    }
-
-    func retrieveKey(withIdentifier _: String) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Dummy implementation
-        .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
-    }
-
-    func deleteKey(withIdentifier _: String) async
-        -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Dummy implementation
-        .success(())
-    }
-
-    func rotateKey(
-        withIdentifier _: String,
-        dataToReencrypt: UmbraCoreTypes.SecureBytes?
-    ) async -> Result<(
-        newKey: UmbraCoreTypes.SecureBytes,
-        reencryptedData: UmbraCoreTypes.SecureBytes?
-    ), ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-        // Dummy implementation
-        .success((
-            newKey: UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)),
-            reencryptedData: dataToReencrypt
-        ))
-    }
-
-    func listKeyIdentifiers() async
-        -> Result<[String], ErrorHandlingDomains.UmbraErrors.Security.Protocols>
-    {
-        // Dummy implementation
-        .success(["key1", "key2", "key3"])
     }
 }

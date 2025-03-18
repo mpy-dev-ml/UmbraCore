@@ -1,4 +1,5 @@
 import Foundation
+import SecurityInterfaces
 
 /// UmbraCore provides the foundational types and protocols for the Umbra security framework.
 public enum UmbraCore {
@@ -15,7 +16,7 @@ public enum UmbraCore {
 
         public init(
             verboseLogging: Bool = false,
-            defaultSecurityLevel: SecurityLevel = .high
+            defaultSecurityLevel: SecurityLevel = .standard
         ) {
             self.verboseLogging = verboseLogging
             self.defaultSecurityLevel = defaultSecurityLevel
@@ -23,6 +24,13 @@ public enum UmbraCore {
     }
 
     /// Security levels for cryptographic operations
+    /// @deprecated This will be replaced by SecurityInterfaces.SecurityLevel in a future version.
+    /// New code should use SecurityInterfaces.SecurityLevel directly.
+    @available(
+        *,
+        deprecated,
+        message: "This will be replaced by SecurityInterfaces.SecurityLevel in a future version. Use SecurityInterfaces.SecurityLevel directly."
+    )
     @frozen
     public enum SecurityLevel: Sendable {
         /// High security - suitable for sensitive data
@@ -38,6 +46,25 @@ public enum UmbraCore {
             case .high: 256
             case .medium: 192
             case .low: 128
+            }
+        }
+
+        /// Convert to SecurityInterfaces.SecurityLevel
+        public func toSecurityInterfaces() -> SecurityInterfaces.SecurityLevel {
+            switch self {
+            case .high: return .advanced
+            case .medium: return .standard
+            case .low: return .basic
+            }
+        }
+
+        /// Create from SecurityInterfaces.SecurityLevel
+        public static func from(securityInterfaces level: SecurityInterfaces.SecurityLevel) -> SecurityLevel {
+            switch level {
+            case .maximum, .advanced: return .high
+            case .standard: return .medium
+            case .basic: return .low
+            @unknown default: return .medium // Default to medium security for future cases
             }
         }
 

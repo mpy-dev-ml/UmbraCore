@@ -17,7 +17,7 @@ public extension RepositoryService {
     /// - Throws: `UmbraErrors.Repository.Core.repositoryNotFound` if repository does not exist
     func validateRepository(at url: URL) async throws -> Bool {
         let metadata = LogMetadata([
-            "path": url.path,
+            "path": url.path
         ])
 
         await logger.info("Validating repository", metadata: metadata)
@@ -64,7 +64,7 @@ public extension RepositoryService {
         at url: URL
     ) async throws -> any Repository {
         let metadata = LogMetadata([
-            "path": url.path,
+            "path": url.path
         ])
 
         await logger.info("Creating repository", metadata: metadata)
@@ -122,7 +122,7 @@ public extension RepositoryService {
     /// - Throws: `UmbraErrors.Repository.Core.repositoryNotFound` if repository does not exist
     func removeRepository(at url: URL) async throws {
         let metadata = LogMetadata([
-            "path": url.path,
+            "path": url.path
         ])
 
         await logger.info("Removing repository", metadata: metadata)
@@ -150,7 +150,7 @@ public extension RepositoryService {
     /// exists at the URL
     func initialiseRepository(at url: URL) async throws -> any Repository {
         let metadata = LogMetadata([
-            "path": url.path,
+            "path": url.path
         ])
         await logger.info("Initialising new repository", metadata: metadata)
 
@@ -203,7 +203,7 @@ public extension RepositoryService {
     /// - Throws: `UmbraErrors.Repository.Core.repositoryNotFound` if the repository is not found
     func checkRepository(at url: URL) async throws -> RepositoryStats {
         let metadata = LogMetadata([
-            "path": url.path,
+            "path": url.path
         ])
         await logger.info("Starting repository check", metadata: metadata)
 

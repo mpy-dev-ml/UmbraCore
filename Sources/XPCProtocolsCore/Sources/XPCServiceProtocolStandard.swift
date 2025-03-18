@@ -99,16 +99,16 @@ public extension XPCServiceProtocolStandard {
     /// Default service status implementation
     func status() async -> Result<[String: Any], XPCSecurityError> {
         let versionResult = await getServiceVersion()
-        
+
         var statusDict: [String: Any] = [
             "timestamp": Date().timeIntervalSince1970,
             "protocol": Self.protocolIdentifier
         ]
-        
+
         if case .success(let version) = versionResult {
             statusDict["version"] = version
         }
-        
+
         return .success(statusDict)
     }
 
@@ -154,7 +154,7 @@ public protocol KeyManagementServiceProtocol: Sendable {
     ///   - metadata: Optional metadata for the key
     /// - Returns: Result with key identifier on success or XPCSecurityError on failure
     func importKey(
-        keyData: UmbraCoreTypes.SecureBytes, 
+        keyData: UmbraCoreTypes.SecureBytes,
         keyType: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
         metadata: [String: String]?

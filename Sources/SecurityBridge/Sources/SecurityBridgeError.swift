@@ -51,8 +51,7 @@ public enum SecurityBridgeErrorMapper {
             // For any other error cases, create a generic message
             let message: String = if
                 let localizedError = error as? LocalizedError,
-                let errorDescription = localizedError.errorDescription
-            {
+                let errorDescription = localizedError.errorDescription {
                 errorDescription
             } else {
                 "\(error)"

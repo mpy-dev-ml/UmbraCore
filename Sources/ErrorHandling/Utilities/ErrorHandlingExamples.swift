@@ -90,7 +90,7 @@ public final class ErrorHandlingExamples {
             "expectedHash": "a1b2c3d4e5f6",
             "actualHash": "a1b2c3d4e5f7",
             "userID": "user123",
-            "documentID": "doc456",
+            "documentID": "doc456"
         ]
 
         // Use hashVerificationFailed which is appropriate for integrity violations

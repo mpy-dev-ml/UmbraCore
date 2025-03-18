@@ -79,7 +79,7 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
     private func configToOptions(_ config: SecurityConfigDTO) -> [String: Any] {
         var options: [String: Any] = [
             "algorithm": config.algorithm,
-            "keySizeInBits": config.keySizeInBits,
+            "keySizeInBits": config.keySizeInBits
         ]
 
         // Add optional parameters if they exist

@@ -42,7 +42,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         guard !syncData.isEmpty else {
             throw XPCSecurityError.invalidData(reason: "Sync data cannot be empty")
         }
-        
+
         // If the code reaches here, synchronisation is considered successful
         // In a real implementation, this would process the sync data
     }
@@ -448,18 +448,18 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         guard !data.isEmpty else {
             return .failure(.invalidData(reason: "Cannot sign empty data"))
         }
-        
+
         // Use key identifier as salt for demo purposes
         let salt = keyIdentifier.data(using: .utf8) ?? Data()
-        
+
         // Create a dummy signature by hashing the data with salt
         var signature = Data()
         signature.append(salt)
         signature.append(contentsOf: data.prefix(16))
-        
+
         return .success(SecureBytes(bytes: [UInt8](signature)))
     }
-    
+
     /// Verify signature for data
     /// - Parameters:
     ///   - signature: Signature to verify
@@ -471,21 +471,21 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         guard !signature.isEmpty else {
             return .failure(.invalidData(reason: "Empty signature"))
         }
-        
+
         guard !data.isEmpty else {
             return .failure(.invalidData(reason: "Empty data"))
         }
-        
+
         // Use key identifier as salt for demo purposes
         let salt = keyIdentifier.data(using: .utf8) ?? Data()
-        
+
         // For demo purposes, just check if the signature starts with the salt
         let signatureData = Data(signature)
         let isValid = signatureData.starts(with: salt)
-        
+
         return .success(isValid)
     }
-    
+
     /// Get the hardware identifier
     /// - Returns: Result with identifier string on success or XPCSecurityError on failure
     public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {

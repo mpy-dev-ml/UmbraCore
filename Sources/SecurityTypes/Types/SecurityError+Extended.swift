@@ -15,8 +15,7 @@ public extension UmbraErrors.Security.Core {
 
     /// Bookmark creation failed with the given error
     static func bookmarkCreationFailed(path: String, error: Error) -> UmbraErrors.Security
-        .Core
-    {
+        .Core {
         .internalError(reason: "Failed to create bookmark for \(path): \(error.localizedDescription)")
     }
 

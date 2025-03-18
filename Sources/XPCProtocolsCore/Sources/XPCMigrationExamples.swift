@@ -253,7 +253,7 @@ extension XPCMigrationExamples {
         if let securityError = error as? XPCSecurityError {
             return securityError
         }
-        
+
         // Otherwise map based on error properties
         if let errorObject = error as? NSError {
             let errorDomain = errorObject.domain
@@ -270,7 +270,7 @@ extension XPCMigrationExamples {
                 return .cryptographicError(operation: "signature", details: "Error \(code): \(description)")
             }
         }
-        
+
         // Default error case
         return .internalError(reason: error.localizedDescription)
     }

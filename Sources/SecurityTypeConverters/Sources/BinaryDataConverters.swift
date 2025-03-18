@@ -21,8 +21,7 @@ public extension CoreTypesInterfaces.BinaryData {
     /// - Parameter secureBytes: The SecureBytes to convert
     /// - Returns: BinaryData representation
     static func from(secureBytes: UmbraCoreTypes.SecureBytes) -> CoreTypesInterfaces
-        .BinaryData
-    {
+        .BinaryData {
         // Access each byte in the secure bytes and create a new array
         var bytes = [UInt8]()
         for i in 0 ..< secureBytes.count {
