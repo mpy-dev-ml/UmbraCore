@@ -217,12 +217,12 @@ class XPCErrorHandlingTests: XCTestCase {
             deviceIdentifier: "TEST-ID",
             additionalInfo: ["serviceType": "Test", "isActive": "true"]
         )
-        
+
         XCTAssertEqual(operationalStatus.serviceVersion, "1.0.0")
         XCTAssertEqual(operationalStatus.deviceIdentifier, "TEST-ID")
         XCTAssertEqual(operationalStatus.additionalInfo?["serviceType"], "Test")
         XCTAssertEqual(operationalStatus.additionalInfo?["isActive"], "true")
-        
+
         let maintenanceStatus = XPCServiceStatus(
             timestamp: Date(),
             protocolVersion: "1.0.0",
@@ -230,7 +230,7 @@ class XPCErrorHandlingTests: XCTestCase {
             deviceIdentifier: "TEST-ID",
             additionalInfo: ["serviceType": "Test", "isActive": "false", "maintenanceReason": "Scheduled update"]
         )
-        
+
         XCTAssertEqual(maintenanceStatus.additionalInfo?["isActive"], "false")
         XCTAssertEqual(maintenanceStatus.additionalInfo?["maintenanceReason"], "Scheduled update")
     }
@@ -247,13 +247,6 @@ class XPCErrorHandlingTests: XCTestCase {
                 serviceVersion: "1.0.0",
                 deviceIdentifier: "TEST-ID",
                 additionalInfo: ["serviceType": "UnitTest", "isActive": "true"]
-            ), 
-            XPCServiceStatus(
-                timestamp: Date(),
-                protocolVersion: "1.0.0",
-                serviceVersion: "1.0.0",
-                deviceIdentifier: "TEST-ID",
-                additionalInfo: ["serviceType": "UnitTest", "isActive": "false", "maintenanceReason": "Scheduled update"]
             ),
             XPCServiceStatus(
                 timestamp: Date(),
@@ -276,8 +269,15 @@ class XPCErrorHandlingTests: XCTestCase {
                 deviceIdentifier: "TEST-ID",
                 additionalInfo: ["serviceType": "UnitTest", "isActive": "false", "maintenanceReason": "Scheduled update"]
             ),
+            XPCServiceStatus(
+                timestamp: Date(),
+                protocolVersion: "1.0.0",
+                serviceVersion: "1.0.0",
+                deviceIdentifier: "TEST-ID",
+                additionalInfo: ["serviceType": "UnitTest", "isActive": "false", "maintenanceReason": "Scheduled update"]
+            )
         ]
-        
+
         for status in statuses {
             do {
                 let encoded = try encoder.encode(status)
@@ -312,7 +312,7 @@ class XPCErrorHandlingTests: XCTestCase {
             .notImplemented(reason: "Feature planned for next release"),
             .internalError(reason: "Unexpected state"),
             .connectionInterrupted,
-            .connectionInvalidated(reason: "Service crashed"),
+            .connectionInvalidated(reason: "Service crashed")
         ]
 
         for error in errors {

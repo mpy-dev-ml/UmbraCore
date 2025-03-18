@@ -31,7 +31,7 @@ enum ErrorLoggingExample {
             .warning,
             .info,
             .debug,
-            .trace,
+            .trace
         ]
 
         print("Available severity levels for error handling:")

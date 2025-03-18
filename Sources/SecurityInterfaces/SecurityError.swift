@@ -31,6 +31,20 @@ public enum SecurityInterfacesError: Error, Sendable {
     case serializationFailed(reason: String)
     /// Encryption failed with reason
     case encryptionFailed(reason: String)
+    /// Decryption failed with reason
+    case decryptionFailed(reason: String)
+    /// Signature failed with reason
+    case signatureFailed(reason: String)
+    /// Verification failed with reason
+    case verificationFailed(reason: String)
+    /// Key generation failed with reason
+    case keyGenerationFailed(reason: String)
+    /// Authentication failed
+    case authenticationFailed
+    /// Invalid parameters with details
+    case invalidParameters(String)
+    /// Unknown error with reason
+    case unknown(reason: String)
     /// Wrapped UmbraErrors.Security.Core
     case wrapped(UmbraErrors.Security.Core)
 
@@ -61,7 +75,21 @@ public enum SecurityInterfacesError: Error, Sendable {
         case let .serializationFailed(reason):
             "Serialization or deserialization failed: \(reason)"
         case let .encryptionFailed(reason):
-            "Encryption failed: \(reason)"
+            "Encryption operation failed: \(reason)"
+        case let .decryptionFailed(reason):
+            "Decryption operation failed: \(reason)"
+        case let .signatureFailed(reason):
+            "Signature operation failed: \(reason)"
+        case let .verificationFailed(reason):
+            "Verification operation failed: \(reason)"
+        case let .keyGenerationFailed(reason):
+            "Key generation failed: \(reason)"
+        case .authenticationFailed:
+            "Authentication failed"
+        case let .invalidParameters(details):
+            "Invalid parameters: \(details)"
+        case let .unknown(reason):
+            "Unknown error: \(reason)"
         case let .wrapped(error):
             "Wrapped security error: \(error.localizedDescription)"
         }
@@ -78,7 +106,7 @@ public enum SecurityInterfacesError: Error, Sendable {
         case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
              .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
              .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError,
-             .serializationFailed, .encryptionFailed:
+             .serializationFailed, .encryptionFailed, .decryptionFailed, .signatureFailed, .verificationFailed, .keyGenerationFailed, .authenticationFailed, .invalidParameters, .unknown:
             nil
         }
     }
@@ -131,10 +159,12 @@ private func mapFromProtocolError(
         return .operationFailed("Internal error: \(message)")
     case let .invalidInput(reason):
         return .operationFailed("Invalid input: \(reason)")
+    case let .invalidParameters(details):
+        return .invalidParameters(details)
     case let .encryptionFailed(reason):
         return .encryptionFailed(reason: reason)
     case let .decryptionFailed(reason):
-        return .operationFailed("Decryption failed: \(reason)")
+        return .decryptionFailed(reason: reason)
     case let .randomGenerationFailed(reason):
         return .operationFailed("Random generation failed: \(reason)")
     case let .storageOperationFailed(reason):

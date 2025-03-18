@@ -54,8 +54,7 @@ public final class SecurityProviderBridgeAdapter: SecurityProviderBridge {
     }
 
     public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore
-        .SecurityConfigDTO
-    {
+        .SecurityConfigDTO {
         provider.createSecureConfig(options: options)
     }
 }

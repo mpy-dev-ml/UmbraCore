@@ -50,7 +50,7 @@ public class MockResticRepository {
         process.arguments = [
             "init",
             "--repo", repoPath,
-            "--password", "test-password",
+            "--password", "test-password"
         ]
 
         let pipe = Pipe()

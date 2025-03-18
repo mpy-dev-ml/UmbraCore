@@ -176,7 +176,7 @@ final class SecurityProviderTests: XCTestCase {
             .asymmetricEncryption,
             .asymmetricDecryption,
             .signatureGeneration,
-            .signatureVerification,
+            .signatureVerification
         ]
 
         // Verify each operation properly reports as unsupported

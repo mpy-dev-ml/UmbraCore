@@ -50,7 +50,7 @@ public extension XPCServiceProtocolBasic {
     static var protocolIdentifier: String {
         "com.umbra.xpc.service.basic"
     }
-    
+
     /// Default implementation of the basic ping method.
     /// - Returns: Always returns true for basic implementations
     func pingBasic() async -> Result<Bool, XPCSecurityError> {
@@ -61,7 +61,7 @@ public extension XPCServiceProtocolBasic {
             return .failure(XPCSecurityError.serviceUnavailable)
         }
     }
-    
+
     /// Extended synchronisation implementation with Result type return.
     /// - Parameter syncData: Secure bytes for key synchronisation
     /// - Returns: Result with success or failure with error information

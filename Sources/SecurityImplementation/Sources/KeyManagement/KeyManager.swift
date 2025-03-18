@@ -137,8 +137,7 @@ public final class KeyManager: KeyManagementProtocol {
     /// - Parameter identifier: The identifier of the key to retrieve
     /// - Returns: The key if found, or an error if not found
     public func retrieveKey(withIdentifier identifier: String) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
-    {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         await keyStore.retrieveKey(withIdentifier: identifier)
     }
 
@@ -165,8 +164,7 @@ public final class KeyManager: KeyManagementProtocol {
     /// - Parameter identifier: The identifier of the key to delete
     /// - Returns: Success or an error
     public func deleteKey(withIdentifier identifier: String) async
-        -> Result<Void, UmbraErrors.Security.Protocols>
-    {
+        -> Result<Void, UmbraErrors.Security.Protocols> {
         await keyStore.deleteSecurely(identifier: identifier)
     }
 
@@ -333,8 +331,7 @@ public final class KeyManager: KeyManagementProtocol {
     /// - Parameter length: Number of bytes to generate
     /// - Returns: The generated random data or an error
     public func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
-    {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Validate length
         guard length > 0 else {
             return .failure(.invalidInput("Random data length must be greater than 0"))

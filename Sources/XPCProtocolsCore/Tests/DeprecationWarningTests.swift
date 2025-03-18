@@ -186,8 +186,8 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
     }
 
     func verify(
-        signature: UmbraCoreTypes.SecureBytes, 
-        for data: UmbraCoreTypes.SecureBytes, 
+        signature: UmbraCoreTypes.SecureBytes,
+        for data: UmbraCoreTypes.SecureBytes,
         keyIdentifier: String
     ) async -> Result<Bool, XPCSecurityError> {
         .success(true)
@@ -222,15 +222,15 @@ private final class ModernService: NSObject, XPCServiceProtocolComplete {
     func resetSecurity() async -> Result<Void, XPCSecurityError> {
         .success(())
     }
-    
+
     func getServiceVersion() async -> Result<String, XPCSecurityError> {
         .success("1.0.0")
     }
-    
+
     func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
         .success("test-hardware-id")
     }
-    
+
     // Required for CryptoXPCServiceProtocol
     func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
         // Implementation for synchronisation

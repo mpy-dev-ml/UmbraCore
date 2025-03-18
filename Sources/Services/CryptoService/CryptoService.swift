@@ -1,8 +1,17 @@
 // CryptoKit removed - cryptography will be handled in ResticBar
+import CoreErrors
+import CryptoTypes
 import Foundation
 
 /// Service for performing cryptographic operations
 /// This is a placeholder implementation that will be replaced by ResticBar
+/// @deprecated This will be replaced by CryptoTypes.CryptoService in a future version.
+/// New code should use CryptoTypes.CryptoService instead.
+@available(
+    *,
+    deprecated,
+    message: "This will be replaced by CryptoTypes.CryptoService in a future version. Use CryptoTypes.CryptoService protocol instead."
+)
 public actor CryptoService {
     /// Shared instance of the crypto service
     public static let shared = CryptoService()
@@ -17,7 +26,7 @@ public actor CryptoService {
     public func generateSymmetricKey(algorithm _: String, keySize _: Int) throws -> Data {
         // Placeholder implementation - will be replaced by ResticBar
         throw NSError(domain: "CryptoService", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar",
+            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar"
         ])
     }
 
@@ -29,7 +38,7 @@ public actor CryptoService {
     public func encrypt(_: Data, using _: Data) throws -> Data {
         // Placeholder implementation - will be replaced by ResticBar
         throw NSError(domain: "CryptoService", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar",
+            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar"
         ])
     }
 
@@ -41,32 +50,17 @@ public actor CryptoService {
     public func decrypt(_: Data, using _: Data) throws -> Data {
         // Placeholder implementation - will be replaced by ResticBar
         throw NSError(domain: "CryptoService", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar",
+            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar"
         ])
     }
 }
 
 /// Errors that can occur during cryptographic operations
-public enum CryptoError: LocalizedError {
-    /// The algorithm is not supported
-    case unsupportedAlgorithm(String)
-    /// The key size is not valid for the algorithm
-    case invalidKeySize(Int)
-    /// The key is not valid
-    case invalidKey(String)
-    /// The operation failed
-    case operationFailed(String)
-
-    public var errorDescription: String? {
-        switch self {
-        case let .unsupportedAlgorithm(algorithm):
-            "Unsupported algorithm: \(algorithm)"
-        case let .invalidKeySize(size):
-            "Invalid key size: \(size) bits"
-        case let .invalidKey(reason):
-            "Invalid key: \(reason)"
-        case let .operationFailed(reason):
-            "Operation failed: \(reason)"
-        }
-    }
-}
+/// @deprecated This will be replaced by CoreErrors.CryptoError in a future version.
+/// New code should use CoreErrors.CryptoError directly.
+@available(
+    *,
+    deprecated,
+    message: "This will be replaced by CoreErrors.CryptoError in a future version. Use CoreErrors.CryptoError directly."
+)
+public typealias CryptoError = CoreErrors.CryptoError

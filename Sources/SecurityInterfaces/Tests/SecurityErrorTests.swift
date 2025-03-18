@@ -26,7 +26,7 @@ class SecurityErrorTests: XCTestCase {
             (.bookmarkError("Bookmark issue"), "Security bookmark error: Bookmark issue"),
             (.accessError("Access issue"), "Security access error: Access issue"),
             (.serializationFailed(reason: "Invalid format"), "Serialization or deserialization failed: Invalid format"),
-            (.encryptionFailed(reason: "Bad key"), "Encryption failed: Bad key"),
+            (.encryptionFailed(reason: "Bad key"), "Encryption failed: Bad key")
         ]
 
         for (error, expectedDescription) in cases {
@@ -123,7 +123,7 @@ class SecurityErrorTests: XCTestCase {
             (.randomGenerationFailed(reason: "Entropy issue"), "Random generation failed: Entropy issue"),
             (.storageOperationFailed(reason: "Disk full"), "Storage operation failed: Disk full"),
             (.serviceError(reason: "Service unavailable"), "Service error: Service unavailable"),
-            (.notImplemented(feature: "TestFeature"), "Not implemented: TestFeature"),
+            (.notImplemented(feature: "TestFeature"), "Not implemented: TestFeature")
         ]
 
         for (protocolError, expectedErrorMessage) in protocolErrors {

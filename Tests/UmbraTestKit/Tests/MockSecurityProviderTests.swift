@@ -43,7 +43,7 @@ actor TestMockSecurityProvider: SecurityProvider, @unchecked Sendable {
         let info: [String: AnyObject] = [
             "algorithm": "AES-256" as NSString,
             "keySize": 256 as NSNumber,
-            "created": Date() as NSDate,
+            "created": Date() as NSDate
         ]
         return .success(info)
     }
@@ -401,7 +401,7 @@ final class MockSecurityProviderTests: XCTestCase {
         ("testSaveAndLoadBookmark", testSaveAndLoadBookmark),
         ("testDeleteBookmark", testDeleteBookmark),
         ("testEncryptDecrypt", testEncryptDecrypt),
-        ("testGenerateKey", testGenerateKey),
+        ("testGenerateKey", testGenerateKey)
     ]
 
     override func setUp() async throws {

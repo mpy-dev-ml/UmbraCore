@@ -116,6 +116,13 @@ public enum Core {
 }
 
 /// Errors that can occur during Core operations
+/// @deprecated This will be replaced by ErrorHandling.CoreError in a future version.
+/// New code should use ErrorHandling.CoreError directly.
+@available(
+    *,
+    deprecated,
+    message: "This will be replaced by ErrorHandling.CoreError in a future version. Use ErrorHandling.CoreError instead."
+)
 public enum CoreError: Foundation.LocalizedError {
     /// Error during initialisation
     case initialisationError(String)

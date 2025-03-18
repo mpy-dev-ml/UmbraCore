@@ -8,16 +8,7 @@ import KeyManagementTypes
 /// The canonical implementation is available in the KeyManagementTypes module and provides
 /// a standardised representation used across the UmbraCore framework.
 @available(*, deprecated, message: "Please use the canonical KeyStatus instead")
-public enum KeyStatus: Sendable, Equatable {
-    /// Key is active and can be used
-    case active
-    /// Key has been compromised and should not be used
-    case compromised
-    /// Key has been retired and should not be used
-    case retired
-    /// Key is scheduled for deletion at the specified time
-    case pendingDeletion(Date)
-}
+public typealias KeyStatus = KeyManagementTypes.KeyStatus
 
 public extension KeyStatus {
     static func == (lhs: KeyStatus, rhs: KeyStatus) -> Bool {
@@ -40,12 +31,9 @@ extension KeyStatus: Codable {
         case deletionDate
     }
 
-    private enum StatusType: String, Codable {
-        case active
-        case compromised
-        case retired
-        case pendingDeletion
-    }
+    // Use the StatusType from KeyManagementTypes
+    @available(*, deprecated, message: "The internal implementation of StatusType will be unified with KeyManagementTypes in a future version")
+    public typealias StatusType = KeyManagementTypes.KeyStatus.StatusType
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)

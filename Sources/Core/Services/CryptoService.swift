@@ -1,6 +1,7 @@
 import CommonCrypto
 import CoreErrors
 import CoreServicesTypes
+import CryptoTypes
 import Foundation
 
 // CryptoKit removed - cryptography will be handled in ResticBar
@@ -10,36 +11,38 @@ import Foundation
 /// This struct defines the parameters used for key derivation, encryption,
 /// and other cryptographic operations. Default values are chosen to provide
 /// a good balance of security and performance.
-public struct CryptoConfig {
-    /// The size of cryptographic keys in bits.
-    ///
-    /// Common values are 128, 192, or 256 bits.
-    public let keySize: Int
+/// @deprecated This will be replaced by CryptoTypes.CryptoConfig in a future version.
+/// New code should use CryptoTypes.CryptoConfig instead.
+@available(
+    *,
+    deprecated,
+    message: "This will be replaced by CryptoTypes.CryptoConfig in a future version. Use CryptoTypes.CryptoConfig instead."
+)
+public typealias CryptoConfig = CryptoTypes.CryptoConfig
 
-    /// The size of initialization vectors in bits.
-    ///
-    /// For most block ciphers, this should be equal to the block size.
-    public let ivSize: Int
-
+// Keep existing functionality for backward compatibility
+extension CryptoTypes.CryptoConfig {
     /// The number of iterations for key derivation.
     ///
     /// Higher values increase security but also increase processing time.
-    public let iterations: Int
+    @available(*, deprecated, message: "Will be removed in a future version")
+    public var iterations: Int {
+        return 10_000
+    }
 
-    /// Creates a new crypto configuration.
+    /// Creates a legacy crypto configuration.
     ///
     /// - Parameters:
     ///   - keySize: Key size in bits. Defaults to 256.
     ///   - ivSize: IV size in bits. Defaults to 96 (12 bytes) for AES-GCM.
-    ///   - iterations: PBKDF2 iterations. Defaults to 10,000.
-    public init(
+    ///   - iterations: PBKDF2 iterations (ignored in modern implementation). Defaults to 10,000.
+    @available(*, deprecated, message: "Use the standard initializer instead")
+    public static func legacyInit(
         keySize: Int = 256,
         ivSize: Int = 96,
-        iterations: Int = 10000
-    ) {
-        self.keySize = keySize
-        self.ivSize = ivSize
-        self.iterations = iterations
+        iterations: Int = 10_000
+    ) -> CryptoTypes.CryptoConfig {
+        return CryptoTypes.CryptoConfig(keyLength: keySize, ivLength: ivSize / 8)
     }
 }
 
@@ -62,13 +65,13 @@ public struct EncryptionResult: Sendable {
 /// `CryptoService` handles encryption, decryption, and key derivation operations
 /// in a thread-safe manner. It uses industry-standard algorithms and practices
 /// to ensure data security.
-///
-/// Example:
-/// ```swift
-/// let service = CryptoService()
-/// try await service.initialize()
-/// let encrypted = try await service.encrypt(data: myData, key: myKey)
-/// ```
+/// @deprecated This will be replaced by CryptoTypes.CryptoService in a future version.
+/// New code should use CryptoTypes.CryptoService implementation instead.
+@available(
+    *,
+    deprecated,
+    message: "This will be replaced by CryptoTypes.CryptoService in a future version. Use CryptoTypes.CryptoService implementation instead."
+)
 public actor CryptoService: UmbraService {
     /// The unique identifier for this service.
     public static let serviceIdentifier = "com.umbracore.crypto"
@@ -86,7 +89,7 @@ public actor CryptoService: UmbraService {
     ///
     /// - Parameter config: The configuration to use for cryptographic operations.
     ///                    Defaults to standard secure parameters.
-    public init(config: CryptoConfig = CryptoConfig()) {
+    public init(config: CryptoConfig = CryptoConfig.legacyInit()) {
         self.config = config
     }
 
@@ -103,7 +106,7 @@ public actor CryptoService: UmbraService {
         _state = .initializing
 
         // Validate configuration
-        guard config.keySize > 0, config.ivSize > 0, config.iterations > 0 else {
+        guard config.keyLength > 0, config.ivLength > 0 else {
             state = .error
             _state = .error
             throw CoreErrors.ServiceError.configurationError
@@ -135,7 +138,7 @@ public actor CryptoService: UmbraService {
             throw CoreErrors.ServiceError.invalidState
         }
 
-        var key = [UInt8](repeating: 0, count: config.keySize / 8)
+        var key = [UInt8](repeating: 0, count: config.keyLength)
         let status = SecRandomCopyBytes(kSecRandomDefault, key.count, &key)
         guard status == errSecSuccess else {
             throw CoreErrors.CryptoError.keyGenerationFailed
@@ -152,7 +155,7 @@ public actor CryptoService: UmbraService {
             throw CoreErrors.ServiceError.invalidState
         }
 
-        var iv = [UInt8](repeating: 0, count: config.ivSize / 8)
+        var iv = [UInt8](repeating: 0, count: config.ivLength)
         let status = SecRandomCopyBytes(kSecRandomDefault, iv.count, &iv)
         guard status == errSecSuccess else {
             throw CoreErrors.CryptoError.ivGenerationFailed

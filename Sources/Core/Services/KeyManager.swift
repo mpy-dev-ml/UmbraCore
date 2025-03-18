@@ -117,7 +117,16 @@ public struct KeyValidationResult: Sendable {
     }
 }
 
-/// Manages cryptographic keys for the application
+/// Manager for cryptographic keys.
+///
+/// This actor handles key generation, storage, and retrieval operations.
+/// @deprecated This will be replaced by SecurityImplementation.KeyManager in a future version.
+/// New code should use SecurityImplementation.KeyManager instead.
+@available(
+    *,
+    deprecated,
+    message: "This will be replaced by SecurityImplementation.KeyManager in a future version. Use SecurityImplementation.KeyManager instead."
+)
 public actor KeyManager {
     /// Current state of the key manager
     private var _state: CoreServicesTypes.ServiceState = .uninitialized
@@ -343,8 +352,7 @@ public actor KeyManager {
                 let expirationDate: Date? = if
                     let expirationTimestamp = json[
                         "expirationDate"
-                    ] as? TimeInterval
-                {
+                    ] as? TimeInterval {
                     Date(timeIntervalSince1970: expirationTimestamp)
                 } else {
                     nil
@@ -390,7 +398,7 @@ public actor KeyManager {
                 "purpose": metadata.purpose,
                 "algorithm": metadata.algorithm,
                 "strength": metadata.strength,
-                "creationDate": metadata.creationDate.timeIntervalSince1970,
+                "creationDate": metadata.creationDate.timeIntervalSince1970
             ]
 
             // Add optional expiration date if available
@@ -422,7 +430,7 @@ public actor KeyManager {
                 "algorithm": metadata.algorithm,
                 "strength": metadata.strength,
                 "creationDate": metadata.creationDate.timeIntervalSince1970,
-                "expirationDate": metadata.expirationDate?.timeIntervalSince1970 as Any,
+                "expirationDate": metadata.expirationDate?.timeIntervalSince1970 as Any
             ]
             keys.append(keyData)
         }
@@ -474,34 +482,11 @@ public actor KeyManager {
 }
 
 /// Errors that can occur during key management operations
-public enum KeyManagerError: LocalizedError {
-    /// Key manager is not initialized
-    case notInitialized
-    /// Key not found
-    case keyNotFound(String)
-    /// Error with key storage
-    case storageError(String)
-    /// Error with key metadata
-    case metadataError(String)
-    /// Error during key synchronisation
-    case synchronisationError(String)
-    /// Security boundary violation
-    case securityBoundaryViolation(String)
-
-    public var errorDescription: String? {
-        switch self {
-        case .notInitialized:
-            "Key manager not initialized"
-        case let .keyNotFound(id):
-            "Key not found: \(id)"
-        case let .storageError(message):
-            "Storage error: \(message)"
-        case let .metadataError(message):
-            "Metadata error: \(message)"
-        case let .synchronisationError(message):
-            "Synchronisation error: \(message)"
-        case let .securityBoundaryViolation(message):
-            "Security boundary violation: \(message)"
-        }
-    }
-}
+/// @deprecated This will be replaced by CoreErrors.KeyManagerError in a future version.
+/// New code should use CoreErrors.KeyManagerError directly.
+@available(
+    *,
+    deprecated,
+    message: "This will be replaced by CoreErrors.KeyManagerError in a future version. Use CoreErrors.KeyManagerError directly."
+)
+public typealias KeyManagerError = CoreErrors.KeyManagerError

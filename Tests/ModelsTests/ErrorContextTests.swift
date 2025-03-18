@@ -27,7 +27,7 @@ final class ErrorContextTests: XCTestCase {
                 "details": "Test details",
                 "file": "test.swift",
                 "line": "42",
-                "function": "testFunction()",
+                "function": "testFunction()"
             ]
         )
 

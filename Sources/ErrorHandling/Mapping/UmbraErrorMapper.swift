@@ -23,8 +23,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
     /// - Parameter error: The source error
     /// - Returns: The mapped error
     public func mapSecurityError(_ error: UmbraErrors.GeneralSecurity.Core) -> ErrorHandlingTypes
-        .SecurityError
-    {
+        .SecurityError {
         securityMapper.mapError(error)
     }
 
@@ -42,8 +41,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
     /// - Parameter error: The source error
     /// - Returns: The mapped error
     public func mapSecurityXPCError(_ error: UmbraErrors.Security.XPC) -> ErrorHandlingTypes
-        .SecurityError
-    {
+        .SecurityError {
         .domainXPCError(error)
     }
 
@@ -51,8 +49,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
     /// - Parameter error: The source error
     /// - Returns: The mapped error
     public func mapToSecurityCore(_ error: ErrorHandlingTypes.SecurityError) -> UmbraErrors
-        .GeneralSecurity.Core
-    {
+        .GeneralSecurity.Core {
         securityMapper.mapBtoA(error)
     }
 
@@ -69,8 +66,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
     /// - Parameter error: The source error
     /// - Returns: The mapped error
     public func mapDatabaseStorageError(_ error: UmbraErrors.Storage.Database) -> ErrorHandlingTypes
-        .StorageError
-    {
+        .StorageError {
         switch error {
         case let .queryFailed(reason):
             return .queryFailed(reason: reason)
@@ -138,8 +134,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
     /// - Parameter error: The source error
     /// - Returns: The mapped error
     public func mapNetworkError(_ error: UmbraErrors.Network.Core) -> ErrorHandlingTypes
-        .NetworkError
-    {
+        .NetworkError {
         // Use string descriptions to avoid pattern matching errors with non-existent enum members
         let errorDescription = String(describing: error)
 
@@ -148,7 +143,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
         } else if errorDescription.contains("hostUnreachable") {
             return .connectionFailed(reason: "Host unreachable: \(errorDescription)")
         } else if errorDescription.contains("timeout") {
-            return .timeout(operation: "Network operation", durationMs: 30000)
+            return .timeout(operation: "Network operation", durationMs: 30_000)
         } else if errorDescription.contains("interrupted") {
             return .interrupted(reason: "Connection interrupted: \(errorDescription)")
         } else if errorDescription.contains("invalidRequest") {
@@ -244,7 +239,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
         } else if errorDescription.contains("notFound") {
             return .requestRejected(code: 404, reason: "Not found: \(errorDescription)")
         } else if errorDescription.contains("timeout") || errorDescription.contains("requestTimeout") {
-            return .timeout(operation: "HTTP request", durationMs: 30000)
+            return .timeout(operation: "HTTP request", durationMs: 30_000)
         } else {
             return .invalidRequest(reason: "HTTP error: \(errorDescription)")
         }
@@ -306,8 +301,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
     /// - Parameter error: The source error
     /// - Returns: The mapped error
     public func mapApplicationError(_ error: UmbraErrors.Application.Core) -> ErrorHandlingTypes
-        .ApplicationError
-    {
+        .ApplicationError {
         let errorDescription = String(describing: error)
 
         if errorDescription.contains("configurationError") {
@@ -331,8 +325,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
     /// - Parameter error: The source error
     /// - Returns: The mapped error
     public func mapUIApplicationError(_ error: UmbraErrors.Application.UI) -> ErrorHandlingTypes
-        .ApplicationError
-    {
+        .ApplicationError {
         // Use string descriptions to avoid pattern matching errors
         let errorDescription = String(describing: error)
 
@@ -372,7 +365,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
             domain: "UmbraCore.RepositoryError",
             code: 0,
             userInfo: [
-                NSLocalizedDescriptionKey: "Repository error: \(error)",
+                NSLocalizedDescriptionKey: "Repository error: \(error)"
             ]
         )
     }
@@ -416,7 +409,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
             domain: "UmbraCore.LoggingError",
             code: 0,
             userInfo: [
-                NSLocalizedDescriptionKey: "Logging error: \(error)",
+                NSLocalizedDescriptionKey: "Logging error: \(error)"
             ]
         )
     }
@@ -430,7 +423,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
             domain: "UmbraCore.BookmarkError",
             code: 0,
             userInfo: [
-                NSLocalizedDescriptionKey: "Bookmark error: \(error)",
+                NSLocalizedDescriptionKey: "Bookmark error: \(error)"
             ]
         )
     }
@@ -444,7 +437,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
             domain: "UmbraCore.XPCError",
             code: 0,
             userInfo: [
-                NSLocalizedDescriptionKey: "XPC error: \(error)",
+                NSLocalizedDescriptionKey: "XPC error: \(error)"
             ]
         )
     }
@@ -460,7 +453,7 @@ public final class UmbraErrorMapper: @unchecked Sendable {
             domain: "UmbraCore.CryptoError",
             code: 0,
             userInfo: [
-                NSLocalizedDescriptionKey: "Crypto error: \(error)",
+                NSLocalizedDescriptionKey: "Crypto error: \(error)"
             ]
         )
     }

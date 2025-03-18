@@ -59,7 +59,7 @@ public extension XPCServiceProtocolBasic {
     func convertBytesToSecureBytes(_ bytes: [UInt8]) -> SecureBytes {
         SecureBytes(bytes: bytes)
     }
-    
+
     /// Convert SecureBytes to bytes
     /// - Parameter secureBytes: SecureBytes to convert
     /// - Returns: A byte array containing the bytes
@@ -83,7 +83,7 @@ public extension XPCServiceProtocolStandard {
             "isActive": true
         ]
     }
-    
+
     /// Default implementation for generating random data
     /// - Parameter length: Length in bytes
     /// - Returns: SecureBytes containing random data
@@ -106,7 +106,7 @@ public extension XPCServiceProtocolComplete {
     ) async -> Result<SecureBytes, XPCSecurityError> {
         await encryptSecureData(data, keyIdentifier: keyIdentifier)
     }
-    
+
     /// Bridge decryption from standard protocol to complete protocol
     /// - Parameters:
     ///   - data: SecureBytes to decrypt

@@ -53,6 +53,19 @@ swift_test(
     ],
 )
 
+swift_test(
+    name = "ProviderFactoryAdapterTests",
+    srcs = ["ProviderFactoryAdapterTests.swift"],
+    deps = [
+        "//Sources/SecurityInterfaces:SecurityInterfacesForTesting",
+        "//Sources/SecurityBridge",
+        "//Sources/SecurityInterfacesBase",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/XPCProtocolsCore",
+    ],
+)
+
 # Meta-target that runs all SecurityInterfaces tests
 test_suite(
     name = "AllSecurityInterfacesTests",
@@ -60,5 +73,6 @@ test_suite(
         ":SecurityProviderTests",
         ":XPCMigrationTests",
         ":SecurityProviderBaseTests",
+        ":ProviderFactoryAdapterTests",
     ],
 )

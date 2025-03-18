@@ -415,7 +415,7 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
     func isGenerateRandomDataCalled() async -> Bool {
         await state.isGenerateRandomDataCalled()
     }
-    
+
     func isRetrieveCredentialCalled() async -> Bool {
         await state.isRetrieveCredentialCalled()
     }
@@ -427,15 +427,15 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
     func setFailEncrypt(_ shouldFail: Bool) async {
         await state.setFailEncrypt(shouldFail)
     }
-    
+
     func setFailDecrypt(_ shouldFail: Bool) async {
         await state.setShouldFailDecrypt(shouldFail)
     }
-    
+
     func setFailGenerateKey(_ shouldFail: Bool) async {
         await state.setShouldFailGenerateKey(shouldFail)
     }
-    
+
     func setErrorType(_ type: CryptoAdapterErrorType) async {
         await state.setErrorType(type)
     }
@@ -477,28 +477,28 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
 
     func synchroniseKeys(_ syncData: Data) async throws {
         await state.setSynchroniseKeysCalled()
-        
+
         if await state.shouldFailSynchroniseKeys {
             let errorType = await state.errorType
             throw errorType.toNSError()
         }
     }
-    
+
     func resetSecurity() async throws {
         if await state.shouldFailResetSecurity {
             let errorType = await state.errorType
             throw errorType.toNSError()
         }
     }
-    
+
     func getVersion() async throws -> String {
         return "1.0.0"
     }
-    
+
     func getHardwareIdentifier() async throws -> String {
         return "MOCK-HW-ID-123"
     }
-    
+
     func generateRandomData(length: Int) async throws -> Data {
         await state.setGenerateRandomDataCalled()
         return Data(Array(repeating: 0, count: length))
@@ -844,42 +844,42 @@ enum CryptoAdapterErrorType {
     case syncFailed
     case resetFailed
     case internalError
-    
+
     func toNSError() -> NSError {
         let domain = "com.umbra.mock.crypto"
         let code: Int
         let description: String
-        
+
         switch self {
         case .encryptionFailed:
-            code = 1001
+            code = 1_001
             description = "Encryption operation failed"
         case .decryptionFailed:
-            code = 1002
+            code = 1_002
             description = "Decryption operation failed"
         case .keyGenerationFailed:
-            code = 1003
+            code = 1_003
             description = "Key generation failed"
         case .verificationFailed:
-            code = 1004
+            code = 1_004
             description = "Signature verification failed"
         case .importFailed:
-            code = 1005
+            code = 1_005
             description = "Key import failed"
         case .exportFailed:
-            code = 1006
+            code = 1_006
             description = "Key export failed"
         case .syncFailed:
-            code = 1007
+            code = 1_007
             description = "Key synchronization failed"
         case .resetFailed:
-            code = 1008
+            code = 1_008
             description = "Security reset failed"
         case .internalError:
-            code = 9999
+            code = 9_999
             description = "Internal error occurred"
         }
-        
+
         return NSError(domain: domain, code: code, userInfo: [NSLocalizedDescriptionKey: description])
     }
 }

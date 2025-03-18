@@ -1,3 +1,4 @@
+import CoreErrors
 import CoreServicesTypes
 import Foundation
 
@@ -29,33 +30,14 @@ public extension UmbraService {
 }
 
 /// Errors that can occur during service operations
-public enum ServiceError: LocalizedError, Sendable {
-    /// Service initialisation failed
-    case initialisationFailed(String)
-    /// Service is in an invalid state for the requested operation
-    case invalidState(String)
-    /// Service configuration error
-    case configurationError(String)
-    /// Service dependency error
-    case dependencyError(String)
-    /// Operation failed
-    case operationFailed(String)
-
-    public var errorDescription: String? {
-        switch self {
-        case let .initialisationFailed(message):
-            "Service initialisation failed: \(message)"
-        case let .invalidState(message):
-            "Invalid service state: \(message)"
-        case let .configurationError(message):
-            "Service configuration error: \(message)"
-        case let .dependencyError(message):
-            "Service dependency error: \(message)"
-        case let .operationFailed(message):
-            "Operation failed: \(message)"
-        }
-    }
-}
+/// @deprecated This will be replaced by CoreErrors.ServiceError in a future version.
+/// New code should use CoreErrors.ServiceError directly.
+@available(
+    *,
+    deprecated,
+    message: "This will be replaced by CoreErrors.ServiceError in a future version. Use CoreErrors.ServiceError directly."
+)
+public typealias ServiceError = CoreErrors.ServiceError
 
 /// Protocol for services that require cleanup of resources
 public protocol CleanupCapable {
@@ -80,4 +62,31 @@ public protocol HealthCheckable {
     /// Get detailed health status information
     /// - Returns: Dictionary containing health status details
     func getHealthStatus() async -> [String: Any]
+}
+
+// Extension to add more details to CoreErrors.ServiceError
+extension CoreErrors.ServiceError {
+    /// Add a detailed message to the error
+    /// - Parameter message: The detailed error message
+    /// - Returns: A corresponding CoreErrors.ServiceError with the message
+    public static func withMessage(_ message: String) -> CoreErrors.ServiceError {
+        switch self {
+        case .initialisationFailed:
+            // We can't modify the enum case, but we can provide guidance on how to handle the message
+            print("Service initialisation failed: \(message)")
+            return .initialisationFailed
+        case .invalidState:
+            print("Invalid service state: \(message)")
+            return .invalidState
+        case .configurationError:
+            print("Service configuration error: \(message)")
+            return .configurationError
+        case .dependencyError:
+            print("Service dependency error: \(message)")
+            return .dependencyError
+        case .operationFailed:
+            print("Operation failed: \(message)")
+            return .operationFailed
+        }
+    }
 }

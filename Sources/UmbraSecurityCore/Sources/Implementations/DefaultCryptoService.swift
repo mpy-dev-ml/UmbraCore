@@ -201,8 +201,7 @@ public final class DefaultCryptoService: CryptoServiceProtocol {
     }
 
     public func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
-    {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Placeholder implementation
         // In a real implementation, would use a secure random number generator
 

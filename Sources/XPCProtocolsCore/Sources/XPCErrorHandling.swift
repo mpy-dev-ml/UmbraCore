@@ -219,12 +219,12 @@ public enum XPCErrorUtilities {
         if let xpcError = error as? XPCSecurityError {
             return xpcError
         }
-        
+
         // Handle CoreErrors.CryptoError specifically
         if let cryptoError = error as? CoreErrors.CryptoError {
             let operation: String
             let details: String
-            
+
             switch cryptoError {
             case .encryptionFailed(let reason):
                 operation = "encryption"
@@ -251,7 +251,7 @@ public enum XPCErrorUtilities {
                 operation = "cryptographic operation"
                 details = String(describing: cryptoError)
             }
-            
+
             return .cryptographicError(operation: operation, details: details)
         }
 

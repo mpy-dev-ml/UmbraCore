@@ -48,7 +48,7 @@ public protocol XPCDataHandlingProtocol {
     /// - Parameter secureBytes: SecureBytes to convert
     /// - Returns: A Data object containing the bytes
     func convertSecureBytesToData(_ secureBytes: SecureBytes) -> Data
-    
+
     /// Convert SecureBytes to bytes
     /// - Parameter secureBytes: SecureBytes to convert
     /// - Returns: A byte array containing the bytes

@@ -219,7 +219,7 @@ public actor MockURLProvider: SecurityInterfaces.SecurityProvider, @unchecked Se
         let info: [String: AnyObject] = [
             "algorithm": "AES-256" as NSString,
             "created": Date() as NSDate,
-            "keySize": 256 as NSNumber,
+            "keySize": 256 as NSNumber
         ]
         return .success(info)
     }

@@ -26,8 +26,7 @@ public actor KeyManagementImpl: KeyManagementProtocol {
     // MARK: - KeyManagementProtocol Implementation
 
     public func retrieveKey(withIdentifier identifier: String) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
-    {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // If secure storage is available, use it
         if let secureStorage {
             let result = await secureStorage.retrieveSecurely(identifier: identifier)
@@ -76,8 +75,7 @@ public actor KeyManagementImpl: KeyManagementProtocol {
     }
 
     public func deleteKey(withIdentifier identifier: String) async
-        -> Result<Void, UmbraErrors.Security.Protocols>
-    {
+        -> Result<Void, UmbraErrors.Security.Protocols> {
         // If secure storage is available, use it
         if let secureStorage {
             let result = await secureStorage.deleteSecurely(identifier: identifier)

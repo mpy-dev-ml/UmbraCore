@@ -20,8 +20,8 @@
  the full suite of cryptographic capabilities.
  */
 
-import Foundation
 import CoreErrors
+import Foundation
 import UmbraCoreTypes
 
 /// The most comprehensive XPC service protocol that provides a complete suite

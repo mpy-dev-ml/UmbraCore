@@ -77,8 +77,8 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
 
     /// Generate random data of specified length
     public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
-        guard length > 0 else { 
-            return .failure(.invalidInput(details: "Length must be positive")) 
+        guard length > 0 else {
+            return .failure(.invalidInput(details: "Length must be positive"))
         }
 
         let bytes = (0 ..< length).map { _ in UInt8.random(in: 0 ... 255) }
@@ -108,7 +108,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
         guard !data.isEmpty else {
             return .failure(.invalidData(reason: "Cannot sign empty data"))
         }
-        
+
         // In a real implementation, would perform cryptographic signing
         let signatureBytes = [UInt8](repeating: 0x1, count: 64)
         return .success(SecureBytes(bytes: signatureBytes))
@@ -123,11 +123,11 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
         guard !data.isEmpty else {
             return .failure(.invalidData(reason: "Cannot verify empty data"))
         }
-        
+
         guard !signature.isEmpty else {
             return .failure(.invalidData(reason: "Cannot verify with empty signature"))
         }
-        
+
         // In a real implementation, would verify the signature against the data
         return .success(true)
     }
@@ -378,10 +378,10 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
         purpose: String
     ) async -> Result<String, XPCSecurityError> {
         let identifier = "generated-key-\(algorithm)-\(keySize)-\(purpose)"
-        
+
         // In a real implementation, would generate an appropriate key based on the algorithm, 
         // key size, and purpose, then store it securely with the provided identifier
-        
+
         return .success(identifier)
     }
 }
