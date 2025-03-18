@@ -13,5 +13,6 @@ umbracore_swift_library(
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
         "//Sources/SecurityProtocolsCore",
     ],
+    module_name = "CoreDTOs",
     visibility = ["//visibility:public"],
 )

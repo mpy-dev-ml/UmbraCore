@@ -6,17 +6,17 @@ import XPCProtocolsCore
 @available(macOS 14.0, *)
 public final class DummyXPCService: XPCServiceProtocolStandard {
     public init() {}
-
+    
     public static var protocolIdentifier: String {
         return "com.umbra.test.xpc.service"
     }
-
+    
     // MARK: - XPCServiceProtocolBasic Implementation
-
+    
     public func ping() async -> Bool {
         return true
     }
-
+    
     public func getStatus() async -> XPCProtocolTypeDefs.ServiceStatusInfo {
         return XPCProtocolTypeDefs.ServiceStatusInfo(
             status: XPCProtocolTypeDefs.ServiceStatus.operational.rawValue,
@@ -24,7 +24,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
             protocolVersion: "1.0"
         )
     }
-
+    
     public func generateRandomBytes(count: Int) async -> Result<Data, XPCProtocolsCore.SecurityError> {
         // Generate random bytes for testing
         var bytes = [UInt8](repeating: 0, count: count)
@@ -33,9 +33,9 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
         }
         return .success(Data(bytes))
     }
-
+    
     // MARK: - XPCServiceProtocolStandard Implementation
-
+    
     public func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
         let statusDict: [String: Any] = [
             "status": "active",
