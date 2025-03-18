@@ -1,4 +1,5 @@
 import Foundation
+import UmbraCoreTypes
 
 // MARK: - Date Extensions for ScheduleDTO
 
@@ -21,287 +22,201 @@ public extension Date {
 extension ScheduleDTO {
     /// Create a ScheduleDTO from Foundation Date objects
     /// - Parameters:
-    ///   - frequencyType: The frequency type
-    ///   - startDate: The starting date
-    ///   - endDate: Optional ending date
-    ///   - windowStartTime: Optional window start time
-    ///   - windowEndTime: Optional window end time
-    ///   - maxRuns: Optional maximum runs
+    ///   - calendar: The Calendar to use
+    ///   - startDate: Start date for the schedule
+    ///   - endDate: Optional end date for the schedule
+    ///   - repeatType: Repeat frequency type
+    ///   - repeatInterval: Repeat interval
+    ///   - daysOfWeek: Specific days of week (for weekly schedules)
+    ///   - daysOfMonth: Specific days of month (for monthly schedules)
+    ///   - windowStartTime: Optional start time of day window
+    ///   - windowEndTime: Optional end time of day window
     ///   - enabled: Whether the schedule is enabled
-    /// - Returns: A ScheduleDTO configured with dates converted to timestamps
-    public static func fromDates(
-        frequencyType: FrequencyType,
+    ///   - maxRuns: Maximum number of runs
+    /// - Returns: A configured ScheduleDTO
+    public static func fromCalendarComponents(
+        calendar: Calendar,
         startDate: Date,
         endDate: Date? = nil,
+        repeatType: Frequency,
+        repeatInterval: Int = 1,
+        daysOfWeek: [DayOfWeek]? = nil,
+        daysOfMonth: [Int]? = nil,
         windowStartTime: Date? = nil,
         windowEndTime: Date? = nil,
-        maxRuns: Int? = nil,
-        enabled: Bool = true
+        enabled: Bool = true,
+        maxRuns: Int? = nil
     ) -> ScheduleDTO {
-        // Convert dates to timestamps
-        let startTimestamp = startDate.timestampInSeconds
-        
-        // Convert end date if present
-        let endTimestamp: UInt64? = endDate?.timestampInSeconds
-        
-        // Calculate window start/end times if present
-        // Extract just the time component for the window times
-        var windowStart: UInt32?
+        // Convert window times to seconds since midnight
+        var windowStart: Int? = nil
         if let windowStartTime = windowStartTime {
-            let calendar = Calendar.current
             let components = calendar.dateComponents([.hour, .minute, .second], from: windowStartTime)
-            let secondsFromMidnight = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
-            windowStart = UInt32(secondsFromMidnight)
+            let seconds = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
+            windowStart = seconds
         }
         
-        var windowEnd: UInt32?
+        var windowEnd: Int? = nil
         if let windowEndTime = windowEndTime {
-            let calendar = Calendar.current
             let components = calendar.dateComponents([.hour, .minute, .second], from: windowEndTime)
-            let secondsFromMidnight = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
-            windowEnd = UInt32(secondsFromMidnight)
+            let seconds = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
+            windowEnd = seconds
         }
         
         return ScheduleDTO(
-            frequencyType: frequencyType,
-            startTimestamp: startTimestamp,
-            endTimestamp: endTimestamp,
-            windowStartTime: windowStart,
-            windowEndTime: windowEnd,
+            id: UUID().uuidString,
+            name: "Schedule created at \(Date())",
+            isEnabled: enabled,
+            frequency: repeatType,
+            interval: repeatInterval,
+            startTimeOfDay: windowStart,
+            endTimeOfDay: windowEnd,
+            daysOfWeek: daysOfWeek,
+            daysOfMonth: daysOfMonth,
+            cronExpression: nil,
+            nextRunTime: nil,
+            lastRunTime: nil,
+            runMissedSchedule: true,
             maxRuns: maxRuns,
-            enabled: enabled
+            runCount: 0,
+            createdAt: UInt64(Date().timeIntervalSince1970),
+            metadata: [:]
         )
     }
     
-    /// Get the start date of this schedule
-    /// - Returns: A Date object representing the start date
-    public func startDate() -> Date {
-        Date.fromTimestamp(startTimestamp)
-    }
-    
-    /// Get the end date of this schedule
-    /// - Returns: A Date object representing the end date, if available
-    public func endDate() -> Date? {
-        endTimestamp.map { Date.fromTimestamp($0) }
-    }
-    
-    /// Get the window start time
-    /// - Returns: A Date object representing today at the window start time, if available
-    public func windowStartDate() -> Date? {
-        guard let windowStartTime = windowStartTime else { return nil }
+    /// Convert the timestamps in this DTO to Foundation Date objects
+    /// - Returns: A tuple containing dates derived from timestamps
+    public func toDates() -> (start: Date, end: Date?, lastRun: Date?, nextRun: Date?) {
+        let start = Date(timeIntervalSince1970: TimeInterval(createdAt))
+        let end = nextRunTime.map { Date(timeIntervalSince1970: TimeInterval($0)) }
+        let lastRun = lastRunTime.map { Date(timeIntervalSince1970: TimeInterval($0)) }
+        let nextRun = nextRunTime.map { Date(timeIntervalSince1970: TimeInterval($0)) }
         
-        let calendar = Calendar.current
-        let now = Date()
-        let startOfDay = calendar.startOfDay(for: now)
-        
-        // Add the window start time (seconds from midnight) to the start of day
-        return calendar.date(byAdding: .second, value: Int(windowStartTime), to: startOfDay)
-    }
-    
-    /// Get the window end time
-    /// - Returns: A Date object representing today at the window end time, if available
-    public func windowEndDate() -> Date? {
-        guard let windowEndTime = windowEndTime else { return nil }
-        
-        let calendar = Calendar.current
-        let now = Date()
-        let startOfDay = calendar.startOfDay(for: now)
-        
-        // Add the window end time (seconds from midnight) to the start of day
-        return calendar.date(byAdding: .second, value: Int(windowEndTime), to: startOfDay)
+        return (start, end, lastRun, nextRun)
     }
 }
-
-// MARK: - ScheduledTaskDTO Extensions
 
 extension ScheduledTaskDTO {
-    /// Create a ScheduledTaskDTO from Foundation Date objects
+    /// Create a task from a schedule
     /// - Parameters:
-    ///   - taskId: The task identifier
-    ///   - schedule: The schedule for this task
-    ///   - status: The task status
-    ///   - configData: Optional configuration data for the task
-    ///   - lastRunDate: Optional last run date
-    ///   - nextRunDate: Optional next run date
-    ///   - creationDate: Creation date
-    /// - Returns: A ScheduledTaskDTO with dates converted to timestamps
-    public static func fromDates(
-        taskId: String,
-        schedule: ScheduleDTO,
-        status: TaskStatus = .idle,
-        configData: [String: String] = [:],
-        lastRunDate: Date? = nil,
-        nextRunDate: Date? = nil,
-        creationDate: Date
+    ///   - schedule: The schedule to create a task for
+    ///   - taskId: Task identifier (auto-generated if nil)
+    ///   - status: Initial task status
+    ///   - configData: Task configuration data
+    ///   - lastRunTimestamp: Timestamp of the last run
+    ///   - nextRunTimestamp: Timestamp of the next run
+    /// - Returns: A ScheduledTaskDTO
+    static func fromSchedule(
+        _ schedule: ScheduleDTO,
+        taskId: String? = nil,
+        status: TaskStatus = .pending,
+        configData: String = "{}",
+        lastRunTimestamp: UInt64? = nil,
+        nextRunTimestamp: UInt64? = nil
     ) -> ScheduledTaskDTO {
-        // Convert dates to timestamps
-        let lastRunTimestamp = lastRunDate?.timestampInSeconds
-        let nextRunTimestamp = nextRunDate?.timestampInSeconds
-        let creationTimestamp = creationDate.timestampInSeconds
+        let id = taskId ?? UUID().uuidString
         
         return ScheduledTaskDTO(
-            taskId: taskId,
-            schedule: schedule,
+            id: id,
+            scheduleId: schedule.id,
+            name: schedule.name,
+            taskType: .custom,
             status: status,
             configData: configData,
-            lastRunTimestamp: lastRunTimestamp,
-            nextRunTimestamp: nextRunTimestamp,
-            creationTimestamp: creationTimestamp
+            createdAt: UInt64(Date().timeIntervalSince1970),
+            startedAt: nil,
+            completedAt: nil,
+            duration: nil,
+            errorMessage: nil,
+            resultData: nil,
+            metadata: [:]
         )
     }
     
-    /// Get the last run date of this task
-    /// - Returns: A Date object representing the last run date, if available
-    public func lastRunDate() -> Date? {
-        lastRunTimestamp.map { Date.fromTimestamp($0) }
-    }
-    
-    /// Get the next run date of this task
-    /// - Returns: A Date object representing the next run date, if available
-    public func nextRunDate() -> Date? {
-        nextRunTimestamp.map { Date.fromTimestamp($0) }
-    }
-    
-    /// Get the creation date of this task
-    /// - Returns: A Date object representing the creation date
-    public func creationDate() -> Date {
-        Date.fromTimestamp(creationTimestamp)
-    }
-    
-    /// Calculate and update the next run timestamp based on the schedule
-    /// - Parameter currentDate: The current date (defaults to now)
-    /// - Returns: A new task with the updated next run timestamp
-    public func calculateNextRun(currentDate: Date = Date()) -> ScheduledTaskDTO {
-        // Get current timestamp
-        let currentTimestamp = currentDate.timestampInSeconds
+    /// Create a task with specified parameters
+    /// - Parameters:
+    ///   - id: Task identifier
+    ///   - scheduleId: Schedule identifier
+    ///   - name: Task name
+    ///   - type: Task type
+    ///   - status: Task status
+    ///   - configData: Configuration data
+    ///   - lastRun: Last run timestamp
+    ///   - nextRun: Next run timestamp
+    ///   - startedAt: Start timestamp
+    ///   - completedAt: Completion timestamp
+    ///   - duration: Duration in seconds
+    ///   - errorMessage: Error message if failed
+    /// - Returns: A new ScheduledTaskDTO
+    static func create(
+        id: String? = nil,
+        scheduleId: String,
+        name: String,
+        type: TaskType,
+        status: TaskStatus = .pending,
+        configData: String = "{}",
+        lastRun: UInt64? = nil,
+        nextRun: UInt64? = nil,
+        startedAt: UInt64? = nil,
+        completedAt: UInt64? = nil,
+        duration: UInt64? = nil,
+        errorMessage: String? = nil
+    ) -> ScheduledTaskDTO {
+        let taskId = id ?? UUID().uuidString
         
-        // If schedule is disabled or end date is passed, no next run
-        if !schedule.enabled || (schedule.endTimestamp != nil && schedule.endTimestamp! < currentTimestamp) {
-            return .init(
-                taskId: taskId,
-                schedule: schedule,
-                status: status,
-                configData: configData,
-                lastRunTimestamp: lastRunTimestamp,
-                nextRunTimestamp: nil,
-                creationTimestamp: creationTimestamp
-            )
-        }
-        
-        // Calculate next run based on frequency type
-        let nextTimestamp: UInt64
-        
-        switch schedule.frequencyType {
-        case .hourly:
-            // Next hour
-            let calendar = Calendar.current
-            var nextHourDate = calendar.date(byAdding: .hour, value: 1, to: currentDate)!
-            
-            // If we have a time window, ensure next run is within that window
-            if let windowStart = schedule.windowStartTime, let windowEnd = schedule.windowEndTime {
-                let components = calendar.dateComponents([.hour, .minute, .second], from: nextHourDate)
-                let secondsFromMidnight = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
-                
-                // If not within window, adjust to next window start
-                if secondsFromMidnight < windowStart || secondsFromMidnight > windowEnd {
-                    // Move to start of day
-                    nextHourDate = calendar.startOfDay(for: nextHourDate)
-                    
-                    // Add window start time
-                    nextHourDate = calendar.date(byAdding: .second, value: Int(windowStart), to: nextHourDate)!
-                    
-                    // If still earlier than current time, move to next day
-                    if nextHourDate.compare(currentDate) == .orderedAscending {
-                        nextHourDate = calendar.date(byAdding: .day, value: 1, to: nextHourDate)!
-                    }
-                }
-            }
-            
-            nextTimestamp = nextHourDate.timestampInSeconds
-            
-        case .daily:
-            // Next day at same time
-            let calendar = Calendar.current
-            var nextDayDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
-            
-            // If we have a time window, adjust to window start
-            if let windowStart = schedule.windowStartTime {
-                // Get time components
-                let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: nextDayDate)
-                
-                // Start of the next day
-                nextDayDate = calendar.startOfDay(for: nextDayDate)
-                
-                // Add window start time
-                nextDayDate = calendar.date(byAdding: .second, value: Int(windowStart), to: nextDayDate)!
-            }
-            
-            nextTimestamp = nextDayDate.timestampInSeconds
-            
-        case .weekly:
-            // Next week, same day and time
-            let calendar = Calendar.current
-            var nextWeekDate = calendar.date(byAdding: .weekOfYear, value: 1, to: currentDate)!
-            
-            // If we have a time window, adjust to window start
-            if let windowStart = schedule.windowStartTime {
-                // Start of the day for next week
-                nextWeekDate = calendar.startOfDay(for: nextWeekDate)
-                
-                // Add window start time
-                nextWeekDate = calendar.date(byAdding: .second, value: Int(windowStart), to: nextWeekDate)!
-            }
-            
-            nextTimestamp = nextWeekDate.timestampInSeconds
-            
-        case .monthly:
-            // Next month, same day and time
-            let calendar = Calendar.current
-            var nextMonthDate = calendar.date(byAdding: .month, value: 1, to: currentDate)!
-            
-            // If we have a time window, adjust to window start
-            if let windowStart = schedule.windowStartTime {
-                // Start of the day for next month
-                nextMonthDate = calendar.startOfDay(for: nextMonthDate)
-                
-                // Add window start time
-                nextMonthDate = calendar.date(byAdding: .second, value: Int(windowStart), to: nextMonthDate)!
-            }
-            
-            nextTimestamp = nextMonthDate.timestampInSeconds
-            
-        case .custom:
-            // For custom, assume it's a one-time schedule
-            nextTimestamp = 0
-        }
-        
-        // Check if we've reached max runs
-        if let maxRuns = schedule.maxRuns, let lastRunCount = runCount {
-            if lastRunCount >= maxRuns {
-                // Max runs reached, no more runs
-                return .init(
-                    taskId: taskId,
-                    schedule: schedule,
-                    status: status,
-                    configData: configData,
-                    lastRunTimestamp: lastRunTimestamp,
-                    nextRunTimestamp: nil,
-                    creationTimestamp: creationTimestamp,
-                    runCount: lastRunCount
-                )
-            }
-        }
-        
-        // Return updated task with new next run timestamp
-        return .init(
-            taskId: taskId,
-            schedule: schedule,
+        return ScheduledTaskDTO(
+            id: taskId,
+            scheduleId: scheduleId,
+            name: name,
+            taskType: type,
             status: status,
             configData: configData,
-            lastRunTimestamp: lastRunTimestamp,
-            nextRunTimestamp: nextTimestamp,
-            creationTimestamp: creationTimestamp,
-            runCount: runCount
+            createdAt: UInt64(Date().timeIntervalSince1970),
+            startedAt: startedAt,
+            completedAt: completedAt,
+            duration: duration,
+            errorMessage: errorMessage,
+            resultData: nil,
+            metadata: [:]
+        )
+    }
+    
+    /// Update a task with a new status and timing information
+    /// - Parameters:
+    ///   - status: The new status
+    ///   - scheduleDTO: The associated schedule
+    ///   - startedAt: Timestamp when started
+    ///   - completedAt: Timestamp when completed
+    ///   - duration: Duration in seconds
+    ///   - errorMessage: Error message if failed
+    ///   - configData: Configuration data
+    /// - Returns: A new ScheduledTaskDTO with updated status
+    func updateStatus(
+        status: TaskStatus,
+        scheduleDTO: ScheduleDTO,
+        startedAt: UInt64? = nil,
+        completedAt: UInt64? = nil,
+        duration: UInt64? = nil,
+        errorMessage: String? = nil,
+        configData: String? = nil
+    ) -> ScheduledTaskDTO {
+        return ScheduledTaskDTO(
+            id: id,
+            scheduleId: scheduleDTO.id,
+            name: name,
+            taskType: taskType,
+            status: status,
+            configData: configData ?? self.configData,
+            createdAt: createdAt,
+            startedAt: startedAt ?? self.startedAt,
+            completedAt: completedAt ?? self.completedAt,
+            duration: duration ?? self.duration,
+            errorMessage: errorMessage ?? self.errorMessage,
+            resultData: self.resultData,
+            metadata: self.metadata
         )
     }
 }
+
+// MARK: - Date Extensions
+
+// Removed duplicate Date extension that was causing redeclaration errors

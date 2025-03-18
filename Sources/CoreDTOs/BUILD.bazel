@@ -1,7 +1,6 @@
-load(
-    "//tools/build_defs:apple.bzl",
-    "umbracore_swift_library",
-)
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+load("//tools/swift:build_rules.bzl", "umbracore_swift_library", "umbracore_swift_test_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -11,17 +10,8 @@ umbracore_swift_library(
     deps = [
         "//Sources/UmbraCoreTypes",
         "//Sources/ErrorHandling",
-        "//Sources/ErrorHandlingDomains",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+        "//Sources/SecurityProtocolsCore",
     ],
-    visibility = ["//visibility:public"],
-)
-
-umbracore_swift_library(
-    name = "CoreDTOsTests",
-    srcs = glob(["Tests/**/*.swift"]),
-    deps = [
-        ":CoreDTOs",
-    ],
-    testonly = True,
     visibility = ["//visibility:public"],
 )

@@ -19,7 +19,7 @@ public extension OperationResultDTO where T == SecureBytes {
         case .failure, .cancelled:
             if let errorCode = errorCode, let errorMessage = errorMessage {
                 return SecurityProtocolsCore.SecurityResultDTO(
-                    errorCode: errorCode, 
+                    errorCode: Int(errorCode), 
                     errorMessage: errorMessage
                 )
             } else {
@@ -36,10 +36,10 @@ public extension OperationResultDTO where T == SecureBytes {
     /// - Returns: An OperationResultDTO representation
     static func fromSecurityResultDTO(_ result: SecurityProtocolsCore.SecurityResultDTO) -> OperationResultDTO<SecureBytes> {
         if result.success {
-            return OperationResultDTO<SecureBytes>.success(result.data ?? SecureBytes())
+            return OperationResultDTO<SecureBytes>(value: result.data ?? SecureBytes())
         } else {
-            return OperationResultDTO<SecureBytes>.failure(
-                errorCode: result.errorCode ?? -1,
+            return OperationResultDTO<SecureBytes>(
+                errorCode: Int32(result.errorCode ?? -1),
                 errorMessage: result.errorMessage ?? "Unknown security error"
             )
         }
@@ -54,41 +54,13 @@ public extension SecurityConfigDTO {
     func toSecurityProtocolsCoreConfig() -> SecurityProtocolsCore.SecurityConfigDTO {
         // Extract algorithm and key size information from options
         let algorithm = options["algorithm"] ?? "AES-GCM"
-        let keySizeStr = options["keySizeInBits"] ?? "256"
-        let keySize = Int(keySizeStr) ?? 256
+        let keySizeInBits = Int(options["keySizeInBits"] ?? "256") ?? 256
         
-        // Create a base configuration
-        var config = SecurityProtocolsCore.SecurityConfigDTO(
+        // Create a configuration with all the necessary parameters
+        let config = SecurityProtocolsCore.SecurityConfigDTO(
             algorithm: algorithm,
-            keySizeInBits: keySize
+            keySizeInBits: keySizeInBits
         )
-        
-        // Add key identifier if present
-        if let keyID = options["keyIdentifier"] {
-            config = config.withKeyIdentifier(keyID)
-        }
-        
-        // Add iterations if present
-        if let iterationsStr = options["iterations"], let iterations = Int(iterationsStr) {
-            config = SecurityProtocolsCore.SecurityConfigDTO(
-                algorithm: algorithm,
-                keySizeInBits: keySize,
-                initializationVector: config.initializationVector,
-                additionalAuthenticatedData: config.additionalAuthenticatedData,
-                iterations: iterations,
-                options: config.options,
-                keyIdentifier: config.keyIdentifier,
-                inputData: config.inputData,
-                key: config.key,
-                additionalData: config.additionalData
-            )
-        }
-        
-        // Add any input data
-        if let inputData = inputData {
-            let secureInputData = SecureBytes(bytes: Array(inputData))
-            config = config.withInputData(secureInputData)
-        }
         
         // Add options
         var allOptions = [String: String]()
@@ -107,7 +79,7 @@ public extension SecurityConfigDTO {
             iterations: config.iterations,
             options: allOptions,
             keyIdentifier: config.keyIdentifier,
-            inputData: config.inputData,
+            inputData: convertToSecureBytes(inputData),
             key: config.key,
             additionalData: config.additionalData
         )
@@ -135,16 +107,22 @@ public extension SecurityConfigDTO {
         if let secureInputData = config.inputData {
             inputData = []
             for i in 0 ..< secureInputData.count {
-                if let byte = secureInputData[i] {
-                    inputData?.append(byte)
-                }
+                inputData?.append(secureInputData[i])
             }
         }
         
         return SecurityConfigDTO(
+            algorithm: config.algorithm,
+            keySizeInBits: config.keySizeInBits,
             options: options,
             inputData: inputData
         )
+    }
+    
+    /// Helper to convert [UInt8]? to SecureBytes?
+    private func convertToSecureBytes(_ bytes: [UInt8]?) -> SecureBytes? {
+        guard let bytes = bytes else { return nil }
+        return SecureBytes(bytes: bytes)
     }
 }
 
@@ -155,61 +133,69 @@ public extension NotificationDTO {
     /// - Parameters:
     ///   - error: The security error
     ///   - details: Optional additional details
-    ///   - timestamp: Current timestamp
-    /// - Returns: A NotificationDTO for the security error
-    static func forSecurityError(
-        _ error: UmbraErrors.Security.Protocols,
-        details: String? = nil,
-        timestamp: UInt64
+    /// - Returns: A notification representing a security error
+    static func securityError(
+        _ error: SecurityErrorDTO,
+        details: [String: String] = [:]
     ) -> NotificationDTO {
-        let errorCode: Int
+        var metadata = details
+        metadata["errorDomain"] = error.domain
+        metadata["errorCode"] = String(error.code)
         
-        // Map error type to code
-        switch error {
-        case .invalidFormat:
-            errorCode = 1001
-        case .unsupportedOperation:
-            errorCode = 1002
-        case .incompatibleVersion:
-            errorCode = 1003
-        case .missingProtocolImplementation:
-            errorCode = 1004
-        case .invalidState:
-            errorCode = 1005
-        case .internalError:
-            errorCode = 1006
-        case .invalidInput:
-            errorCode = 1007
-        case .encryptionFailed:
-            errorCode = 1008
-        case .decryptionFailed:
-            errorCode = 1009
-        case .randomGenerationFailed:
-            errorCode = 1010
-        case .storageOperationFailed:
-            errorCode = 1011
-        case .serviceError:
-            errorCode = 1012
-        case .notImplemented:
-            errorCode = 1013
-        @unknown default:
-            errorCode = 1099
-        }
+        // Generate current timestamp
+        let timestamp = UInt64(Date().timeIntervalSince1970)
         
-        let errorTitle = "Security Error"
-        let errorMessage = details ?? String(describing: error)
-        
-        // Create notification with error metadata
         return NotificationDTO.error(
-            title: errorTitle,
-            message: errorMessage,
-            source: "SecurityProvider",
-            timestamp: timestamp,
-            id: "sec_err_\(errorCode)"
-        ).withUpdatedMetadata([
-            "errorCode": String(errorCode),
-            "errorType": String(describing: error),
-            "category": "security"
-        ])
+            title: "Security Error",
+            message: error.message,
+            source: "security_service",
+            timestamp: timestamp
+        ).withUpdatedMetadata(metadata)
+    }
+    
+    /// Create a security notification for a warning
+    /// - Parameters:
+    ///   - message: Warning message
+    ///   - details: Optional additional details
+    /// - Returns: A notification representing a security warning
+    static func securityWarning(
+        _ message: String,
+        details: [String: String] = [:]
+    ) -> NotificationDTO {
+        var metadata = details
+        metadata["domain"] = "security"
+        
+        // Generate current timestamp
+        let timestamp = UInt64(Date().timeIntervalSince1970)
+        
+        return NotificationDTO.warning(
+            title: "Security Warning",
+            message: message,
+            source: "security_service",
+            timestamp: timestamp
+        ).withUpdatedMetadata(metadata)
+    }
+    
+    /// Create a security notification for an info message
+    /// - Parameters:
+    ///   - message: Information message
+    ///   - details: Optional additional details
+    /// - Returns: A notification representing security information
+    static func securityInfo(
+        _ message: String,
+        details: [String: String] = [:]
+    ) -> NotificationDTO {
+        var metadata = details
+        metadata["domain"] = "security"
+        
+        // Generate current timestamp
+        let timestamp = UInt64(Date().timeIntervalSince1970)
+        
+        return NotificationDTO.info(
+            title: "Security Info",
+            message: message,
+            source: "security_service",
+            timestamp: timestamp
+        ).withUpdatedMetadata(metadata)
     }
 }

@@ -278,9 +278,11 @@ public struct NotificationDTO: Sendable, Equatable {
     /// - Parameter prefix: Optional prefix for the ID
     /// - Returns: A unique ID string
     private static func generateId(prefix: String? = nil) -> String {
-        let randomPart = String(format: "%08x%08x", 
-                               arc4random(), 
-                               arc4random())
+        // Use simple random numbers for ID generation without Foundation
+        let rand1 = UInt32.random(in: 0...UInt32.max)
+        let rand2 = UInt32.random(in: 0...UInt32.max)
+        let rand3 = UInt32.random(in: 0...UInt32.max)
+        let randomPart = String(format: "%08x%08x%08x", rand1, rand2, rand3)
         if let prefix = prefix {
             return "\(prefix)_\(randomPart)"
         }
