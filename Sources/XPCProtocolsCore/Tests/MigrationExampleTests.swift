@@ -264,17 +264,17 @@ private extension MigrationExampleTests {
             .success("test-hardware-id")
         }
 
-        func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        func sign(_: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
             let signature = [UInt8](repeating: 5, count: 64)
             return .success(UmbraCoreTypes.SecureBytes(bytes: signature))
         }
 
-        func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+        func verify(signature _: UmbraCoreTypes.SecureBytes, for _: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
             .success(true)
         }
 
         // Required for CryptoXPCServiceProtocol
-        func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+        func synchroniseKeys(_: UmbraCoreTypes.SecureBytes) async throws {
             // Implementation for synchronisation
         }
     }

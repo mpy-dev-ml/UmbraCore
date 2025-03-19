@@ -5,13 +5,13 @@ import Foundation
 public struct SecurityServiceStatus: Sendable, Equatable, Hashable {
     /// Current operational status of the service
     public let status: String
-    
+
     /// Version of the service
     public let version: String
-    
+
     /// Additional information about the service
     public let info: [String: Any]
-    
+
     /// Create a new security service status
     /// - Parameters:
     ///   - status: The current status (e.g., "active", "degraded", "offline")
@@ -22,13 +22,13 @@ public struct SecurityServiceStatus: Sendable, Equatable, Hashable {
         self.version = version
         self.info = info
     }
-    
+
     // Required for Equatable/Hashable due to info containing Any
     public static func == (lhs: SecurityServiceStatus, rhs: SecurityServiceStatus) -> Bool {
-        return lhs.status == rhs.status && 
-               lhs.version == rhs.version
+        lhs.status == rhs.status &&
+            lhs.version == rhs.version
     }
-    
+
     // Required for Hashable due to info containing Any
     public func hash(into hasher: inout Hasher) {
         hasher.combine(status)

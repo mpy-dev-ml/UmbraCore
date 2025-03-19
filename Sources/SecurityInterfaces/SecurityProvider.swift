@@ -1,104 +1,17 @@
-import CoreTypesInterfaces
-import ErrorHandling
-import ErrorHandlingDomains
 import Foundation
-import FoundationBridgeTypes
-import SecurityBridge
-import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import CoreDTOs
+import CoreErrors
+import ErrorHandling
 import XPCProtocolsCore
 
-/// Protocol defining security-related operations for managing secure resource access
-public protocol SecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
-    /// Get the current security configuration
-    /// - Returns: The active security configuration
-    func getSecurityConfiguration() async -> Result<SecurityConfiguration, SecurityInterfacesError>
-
-    /// Update the security configuration
-    /// - Parameter configuration: The new configuration to apply
-    /// - Throws: SecurityInterfacesError if update fails
-    func updateSecurityConfiguration(_ configuration: SecurityConfiguration) async throws
-
-    /// Get the host identifier
-    /// - Returns: The host identifier
-    func getHostIdentifier() async -> Result<String, SecurityInterfacesError>
-
-    /// Register a client with the security provider
-    /// - Parameter bundleIdentifier: The bundle identifier of the client
-    /// - Returns: Success or failure
-    func registerClient(bundleIdentifier: String) async -> Result<Bool, SecurityInterfacesError>
-
-    /// Request key rotation for the specified key
-    /// - Parameter keyId: The key identifier
-    /// - Returns: Success or failure
-    func requestKeyRotation(keyId: String) async -> Result<Void, SecurityInterfacesError>
-
-    /// Notify that a key has been compromised
-    /// - Parameter keyId: The key identifier
-    /// - Returns: Success or failure
-    func notifyKeyCompromise(keyId: String) async -> Result<Void, SecurityInterfacesError>
-
-    /// Generate random data of the specified length
-    /// - Parameter length: The number of bytes to generate
-    /// - Returns: The random data or an error
-    func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityInterfacesError>
-
-    /// Get key information for the specified key
-    /// - Parameter keyId: The key identifier
-    /// - Returns: Key information or an error
-    func getKeyInfo(keyId: String) async -> Result<[String: AnyObject], SecurityInterfacesError>
-
-    /// Register for notifications
-    /// - Returns: Success or failure
-    func registerNotifications() async -> Result<Void, SecurityInterfacesError>
-
-    /// Generate random bytes of the specified length
-    /// - Parameter count: The number of bytes to generate
-    /// - Returns: The random bytes or an error
-    func randomBytes(count: Int) async -> Result<SecureBytes, SecurityInterfacesError>
-
-    /// Encrypt data with the specified key
-    /// - Parameters:
-    ///   - data: The data to encrypt
-    ///   - key: The key to use for encryption
-    /// - Returns: The encrypted data or an error
-    func encryptData(_ data: SecureBytes, withKey key: SecureBytes) async
-        -> Result<SecureBytes, SecurityInterfacesError>
-
-    /// Perform a security operation
-    /// - Parameters:
-    ///   - operation: The operation to perform
-    ///   - data: The input data for the operation
-    ///   - parameters: Additional parameters for the operation
-    /// - Returns: Result containing the outcome of the operation
-    /// - Throws: SecurityInterfacesError if operation fails
-    func performSecurityOperation(
-        operation: SecurityProtocolsCore.SecurityOperation,
-        data: Data?,
-        parameters: [String: String]
-    ) async throws -> SecurityResult
-
-    /// Perform a security operation with a string operation name
-    /// - Parameters:
-    ///   - operationName: The name of the operation to perform
-    ///   - data: The input data for the operation
-    ///   - parameters: Additional parameters for the operation
-    /// - Returns: Result containing the outcome of the operation
-    /// - Throws: SecurityInterfacesError if operation fails
-    func performSecurityOperation(
-        operationName: String,
-        data: Data?,
-        parameters: [String: String]
-    ) async throws -> SecurityResult
-}
-
-/// Adapter that implements SecurityProvider by wrapping a SecurityProtocolsCore provider
-public final class SecurityProviderAdapter: SecurityProvider {
+/// The security provider is a facade that provides access to all security operations
+public final class SecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
     // MARK: - Properties
 
     private let bridge: any SecurityProtocolsCore.SecurityProviderProtocol
-    // XPCServiceProtocolStandard is at the module level, not inside the enum
+    // Using the non-deprecated XPCServiceProtocolStandard directly from XPCProtocolsCore module
     private let service: any XPCServiceProtocolStandard
 
     public init(
@@ -109,16 +22,23 @@ public final class SecurityProviderAdapter: SecurityProvider {
         self.service = service
     }
 
-    // MARK: - SecurityProviderProtocol conformance
+    // MARK: - SecurityProviderProtocol Implementation
 
+    /// Access to cryptographic service implementation
     public var cryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
         bridge.cryptoService
     }
 
+    /// Access to key management service implementation
     public var keyManager: SecurityProtocolsCore.KeyManagementProtocol {
         bridge.keyManager
     }
 
+    /// Perform a secure operation with appropriate error handling
+    /// - Parameters:
+    ///   - operation: The security operation to perform
+    ///   - config: Configuration options
+    /// - Returns: Result of the operation
     public func performSecureOperation(
         operation: SecurityProtocolsCore.SecurityOperation,
         config: SecurityProtocolsCore.SecurityConfigDTO
@@ -126,12 +46,14 @@ public final class SecurityProviderAdapter: SecurityProvider {
         await bridge.performSecureOperation(operation: operation, config: config)
     }
 
-    public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore
-        .SecurityConfigDTO {
+    /// Create a secure configuration with appropriate defaults
+    /// - Parameter options: Optional dictionary of configuration options
+    /// - Returns: A properly configured SecurityConfigDTO
+    public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore.SecurityConfigDTO {
         bridge.createSecureConfig(options: options)
     }
 
-    // MARK: - SecurityProvider implementation
+    // MARK: - Implementation
 
     public func getHostIdentifier() async -> Result<String, SecurityInterfacesError> {
         // Use the XPC service directly to get hardware identifier
@@ -141,7 +63,7 @@ public final class SecurityProviderAdapter: SecurityProvider {
         case let .success(identifier):
             return .success(identifier)
         case let .failure(error):
-            return .failure(mapXPCError(error))
+            return .failure(SecurityInterfacesError.operationFailed(error.localizedDescription))
         }
     }
 
@@ -343,7 +265,7 @@ public final class SecurityProviderAdapter: SecurityProvider {
                 )
             }
         case let .failure(error):
-            return .failure(mapXPCError(error))
+            return .failure(SecurityInterfacesError.operationFailed(error.localizedDescription))
         }
     }
 
@@ -365,7 +287,7 @@ public final class SecurityProviderAdapter: SecurityProvider {
         case .success:
             return
         case let .failure(error):
-            throw mapXPCError(error)
+            throw SecurityInterfacesError.operationFailed(error.localizedDescription)
         }
     }
 

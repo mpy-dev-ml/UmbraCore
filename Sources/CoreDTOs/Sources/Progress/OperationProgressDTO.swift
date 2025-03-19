@@ -27,19 +27,19 @@ public struct OperationProgressDTO: Sendable, Equatable {
         public var description: String {
             switch self {
             case .backup:
-                return "Backup"
+                "Backup"
             case .restore:
-                return "Restore"
+                "Restore"
             case .check:
-                return "Check"
+                "Check"
             case .prune:
-                return "Prune"
+                "Prune"
             case .security:
-                return "Security"
+                "Security"
             case .crypto:
-                return "Crypto"
-            case .other(let description):
-                return description
+                "Crypto"
+            case let .other(description):
+                description
             }
         }
     }
@@ -234,13 +234,13 @@ public struct OperationProgressDTO: Sendable, Equatable {
     /// - Returns: A new OperationProgressDTO with updated bytes
     public func withBytes(processed: UInt64, total: UInt64? = nil) -> OperationProgressDTO {
         let totalToUse = total ?? totalBytes
-        
+
         // Calculate new progress if we have total bytes
         var newProgress = progress
-        if let totalToUse = totalToUse, totalToUse > 0 {
+        if let totalToUse, totalToUse > 0 {
             newProgress = min(1.0, Double(processed) / Double(totalToUse))
         }
-        
+
         return OperationProgressDTO(
             operationType: operationType,
             progress: newProgress,
@@ -263,13 +263,13 @@ public struct OperationProgressDTO: Sendable, Equatable {
     /// - Returns: A new OperationProgressDTO with updated items
     public func withItems(processed: Int, total: Int? = nil) -> OperationProgressDTO {
         let totalToUse = total ?? totalItems
-        
+
         // Calculate new progress if we have total items
         var newProgress = progress
-        if let totalToUse = totalToUse, totalToUse > 0 {
+        if let totalToUse, totalToUse > 0 {
             newProgress = min(1.0, Double(processed) / Double(totalToUse))
         }
-        
+
         return OperationProgressDTO(
             operationType: operationType,
             progress: newProgress,
@@ -347,7 +347,7 @@ public struct OperationProgressDTO: Sendable, Equatable {
     /// - Returns: A new OperationProgressDTO marked as complete
     public func completed(message: String? = nil) -> OperationProgressDTO {
         let completionMessage = message ?? "Operation completed successfully"
-        
+
         return OperationProgressDTO(
             operationType: operationType,
             progress: 1.0,

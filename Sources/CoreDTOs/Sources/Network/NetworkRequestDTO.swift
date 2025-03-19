@@ -5,7 +5,7 @@ import UmbraCoreTypes
 /// without using any Foundation types.
 public struct NetworkRequestDTO: Sendable, Equatable {
     // MARK: - Types
-    
+
     /// The HTTP method for the request
     public enum HTTPMethod: String, Sendable, Equatable {
         case get = "GET"
@@ -16,7 +16,7 @@ public struct NetworkRequestDTO: Sendable, Equatable {
         case options = "OPTIONS"
         case patch = "PATCH"
     }
-    
+
     /// Authentication type for the request
     public enum AuthType: Sendable, Equatable {
         /// No authentication
@@ -30,47 +30,47 @@ public struct NetworkRequestDTO: Sendable, Equatable {
         /// Custom authentication with headers
         case custom(headers: [String: String])
     }
-    
+
     // MARK: - Properties
-    
+
     /// Unique identifier for the request
     public let id: String
-    
+
     /// The URL for the request as a string
     public let urlString: String
-    
+
     /// The HTTP method to use
     public let method: HTTPMethod
-    
+
     /// Headers to send with the request
     public let headers: [String: String]
-    
+
     /// Query parameters for the request
     public let queryParams: [String: String]
-    
+
     /// Body data as bytes (for POST, PUT, etc.)
     public let bodyData: [UInt8]?
-    
+
     /// Timeout interval in seconds
     public let timeoutInterval: Double
-    
+
     /// Authentication configuration
     public let authentication: AuthType
-    
+
     /// Whether to use caching
     public let useCache: Bool
-    
+
     /// Whether to follow redirects
     public let followRedirects: Bool
-    
+
     /// Creation time as Unix timestamp in seconds
     public let createdAt: UInt64
-    
+
     /// Additional metadata for the request
     public let metadata: [String: String]
-    
+
     // MARK: - Initializers
-    
+
     /// Full initializer with all request properties
     /// - Parameters:
     ///   - id: Unique identifier for the request
@@ -112,9 +112,9 @@ public struct NetworkRequestDTO: Sendable, Equatable {
         self.createdAt = createdAt
         self.metadata = metadata
     }
-    
+
     // MARK: - Factory Methods
-    
+
     /// Create a GET request
     /// - Parameters:
     ///   - id: Unique identifier for the request
@@ -142,7 +142,7 @@ public struct NetworkRequestDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     /// Create a POST request
     /// - Parameters:
     ///   - id: Unique identifier for the request
@@ -170,7 +170,7 @@ public struct NetworkRequestDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     /// Create a request with basic authentication
     /// - Parameters:
     ///   - id: Unique identifier for the request
@@ -196,7 +196,7 @@ public struct NetworkRequestDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     /// Create a request with bearer token authentication
     /// - Parameters:
     ///   - id: Unique identifier for the request
@@ -220,35 +220,35 @@ public struct NetworkRequestDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     // MARK: - Computed Properties
-    
+
     /// Whether this is a read-only request (GET or HEAD)
     public var isReadOnly: Bool {
         method == .get || method == .head
     }
-    
+
     /// Whether this request has a body
     public var hasBody: Bool {
         bodyData != nil && !bodyData!.isEmpty
     }
-    
+
     /// The size of the body data in bytes
     public var bodySize: Int {
         bodyData?.count ?? 0
     }
-    
+
     // MARK: - Utility Methods
-    
+
     /// Create a copy of this request with updated headers
     /// - Parameter newHeaders: The headers to add or update
     /// - Returns: A new NetworkRequestDTO with updated headers
     public func withUpdatedHeaders(_ newHeaders: [String: String]) -> NetworkRequestDTO {
-        var updatedHeaders = self.headers
+        var updatedHeaders = headers
         for (key, value) in newHeaders {
             updatedHeaders[key] = value
         }
-        
+
         return NetworkRequestDTO(
             id: id,
             urlString: urlString,
@@ -264,16 +264,16 @@ public struct NetworkRequestDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this request with updated query parameters
     /// - Parameter newParams: The query parameters to add or update
     /// - Returns: A new NetworkRequestDTO with updated query parameters
     public func withUpdatedQueryParams(_ newParams: [String: String]) -> NetworkRequestDTO {
-        var updatedParams = self.queryParams
+        var updatedParams = queryParams
         for (key, value) in newParams {
             updatedParams[key] = value
         }
-        
+
         return NetworkRequestDTO(
             id: id,
             urlString: urlString,
@@ -289,7 +289,7 @@ public struct NetworkRequestDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this request with updated body data
     /// - Parameter newBodyData: The new body data
     /// - Returns: A new NetworkRequestDTO with updated body data
@@ -309,7 +309,7 @@ public struct NetworkRequestDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this request with updated authentication
     /// - Parameter newAuth: The new authentication configuration
     /// - Returns: A new NetworkRequestDTO with updated authentication
@@ -329,16 +329,16 @@ public struct NetworkRequestDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this request with updated metadata
     /// - Parameter additionalMetadata: The metadata to add or update
     /// - Returns: A new NetworkRequestDTO with updated metadata
     public func withUpdatedMetadata(_ additionalMetadata: [String: String]) -> NetworkRequestDTO {
-        var newMetadata = self.metadata
+        var newMetadata = metadata
         for (key, value) in additionalMetadata {
             newMetadata[key] = value
         }
-        
+
         return NetworkRequestDTO(
             id: id,
             urlString: urlString,

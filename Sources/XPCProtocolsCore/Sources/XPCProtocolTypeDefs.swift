@@ -59,7 +59,7 @@ public enum XPCProtocolTypeDefs {
         public var defaultBitLength: Int {
             switch self {
             case .symmetric: 256
-            case .asymmetric: 2_048
+            case .asymmetric: 2048
             case .hmac: 256
             }
         }
@@ -96,7 +96,7 @@ public enum XPCProtocolTypeDefs {
         public var bitLength: Int {
             switch self {
             case .aes: 128
-            case .rsa: 2_048
+            case .rsa: 2048
             case .ecc: 256
             case .hmac: 256
             case .chacha20: 256

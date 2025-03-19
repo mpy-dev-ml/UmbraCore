@@ -62,11 +62,11 @@ public final class XPCServiceStandardAdapter: NSObject, BaseXPCAdapter, @uncheck
         // Use different error codes to determine the type of error
         if error.domain == NSCocoaErrorDomain {
             switch error.code {
-            case 1_001:
+            case 1001:
                 return .internalError(reason: "Network error: \(error.localizedDescription)")
-            case 1_002:
+            case 1002:
                 return .invalidInput(details: error.localizedDescription)
-            case 1_003:
+            case 1003:
                 return .serviceUnavailable
             default:
                 return .internalError(reason: error.localizedDescription)
@@ -100,11 +100,11 @@ public final class XPCServiceStandardAdapter: NSObject, BaseXPCAdapter, @uncheck
         } else if error.domain == "XPCServiceErrorDomain" {
             // Map specific error codes to appropriate UmbraErrors
             switch error.code {
-            case 1_001:
+            case 1001:
                 return .connectionFailed(reason: error.localizedDescription)
-            case 1_002:
+            case 1002:
                 return .invalidMessageFormat(reason: error.localizedDescription)
-            case 1_003:
+            case 1003:
                 return .serviceUnavailable(serviceName: "XPC Service")
             default:
                 return .internalError(error.localizedDescription)
@@ -141,7 +141,7 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
         guard let proxy = connection.remoteObjectProxy as? XPCServiceProtocolBasic else {
             let error = NSError(
                 domain: "com.umbra.xpc.security",
-                code: 1_003,
+                code: 1003,
                 userInfo: [NSLocalizedDescriptionKey: "Service unavailable"]
             )
             completionHandler(error)

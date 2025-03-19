@@ -71,7 +71,8 @@ public extension SecurityResultDTO {
     /// - Parameter transform: Transformation function for the result value
     /// - Returns: Result with mapped error and transformed value
     func toCoreResult<T>(_ transform: (SecurityResultDTO) -> T?)
-        -> Result<T, UmbraErrors.Security.Core> {
+        -> Result<T, UmbraErrors.Security.Core>
+    {
         // Handle error case
         if let error {
             let mappedError = SecurityErrorMapper.toCoreError(error)

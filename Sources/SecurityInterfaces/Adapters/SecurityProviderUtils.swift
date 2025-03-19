@@ -1,3 +1,4 @@
+import CoreErrors
 import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
@@ -6,43 +7,6 @@ import XPCProtocolsCore
 
 /// Utility functions for SecurityProvider implementations
 public enum SecurityProviderUtils {
-    /// Map a SecurityProtocolsCore error to a SecurityInterfacesError
-    /// - Parameter error: The error to map
-    /// - Returns: A SecurityInterfacesError equivalent
-    public static func mapSPCError(_ error: SecurityProtocolsCore.SecurityError) -> SecurityInterfacesError {
-        // Convert the error to a SecurityInterfacesError instance
-        let securityInterfacesError: SecurityInterfacesError = switch error {
-        case .serviceUnavailable:
-            .operationFailed("XPC service unavailable")
-        case .operationFailed(let operation, let reason):
-            .operationFailed("\(operation) failed: \(reason)")
-        case .authenticationFailed:
-            .authenticationFailed
-        case let .invalidParameters(details):
-            .invalidParameters(details)
-        case let .encryptionFailed(reason):
-            .operationFailed("Encryption failed: \(reason)")
-        case let .decryptionFailed(reason):
-            .operationFailed("Decryption failed: \(reason)")
-        case let .keyGenerationFailed(reason):
-            .operationFailed("Key generation failed: \(reason)")
-        case let .keyStoreFailed(reason):
-            .operationFailed("Key store operation failed: \(reason)")
-        case .noServiceAvailable:
-            .serviceNotAvailable
-        case .timeout:
-            .timeout
-        case let .invalidStateTransition(fromState, toState):
-            .invalidState(fromState: fromState, toState: toState)
-        case let .securityViolation(details):
-            .securityViolation(details)
-        case let .internal(message):
-            .operationFailed("Internal error: \(message)")
-        }
-
-        return securityInterfacesError
-    }
-
     /// Convert an XPCSecurityError to a SecurityInterfacesError
     /// - Parameter error: The XPCSecurityError to convert
     /// - Returns: A SecurityInterfacesError
@@ -50,88 +14,101 @@ public enum SecurityProviderUtils {
         let securityInterfacesError: SecurityInterfacesError = switch error {
         case .serviceUnavailable:
             .operationFailed("XPC service unavailable")
-        case .serviceNotReady(let reason):
+        case let .serviceNotReady(reason):
             .operationFailed("Service not ready: \(reason)")
-        case .authenticationFailed(let reason):
+        case let .authenticationFailed(reason):
             .operationFailed("Authentication failed: \(reason)")
-        case .invalidInput(let details):
+        case let .invalidInput(details):
             .invalidParameters(details)
-        case .encryptionFailed(let reason):
+        case let .encryptionFailed(reason):
             .encryptionFailed(reason: reason)
-        case .decryptionFailed(let reason):
+        case let .decryptionFailed(reason):
             .decryptionFailed(reason: reason)
-        case .keyGenerationFailed(let reason):
+        case let .keyGenerationFailed(reason):
             .keyGenerationFailed(reason: reason)
-        case .cryptographicError(let operation, let details):
+        case let .cryptographicError(operation, details):
             .operationFailed("Cryptographic error in \(operation): \(details)")
         case .timeout:
             .operationFailed("Operation timed out")
-        case .operationNotSupported(let name):
+        case let .operationNotSupported(name):
             .operationFailed("Operation not supported: \(name)")
-        case .invalidState(let details):
+        case let .invalidState(details):
             .operationFailed("Invalid state: \(details)")
-        case .keyNotFound(let identifier):
+        case let .keyNotFound(identifier):
             .operationFailed("Key not found: \(identifier)")
-        case .invalidKeyType(let expected, let received):
+        case let .invalidKeyType(expected, received):
             .operationFailed("Invalid key type. Expected: \(expected), Received: \(received)")
-        case .invalidData(let reason):
+        case let .invalidData(reason):
             .operationFailed("Invalid data: \(reason)")
-        case .authorizationDenied(let operation):
+        case let .authorizationDenied(operation):
             .operationFailed("Authorization denied for operation: \(operation)")
-        case .notImplemented(let reason):
+        case let .notImplemented(reason):
             .operationFailed("Not implemented: \(reason)")
-        case .internalError(let reason):
+        case let .internalError(reason):
             .operationFailed("Internal error: \(reason)")
         case .connectionInterrupted:
             .operationFailed("Connection interrupted")
-        case .connectionInvalidated(let reason):
+        case let .connectionInvalidated(reason):
             .operationFailed("Connection invalidated: \(reason)")
         @unknown default:
             .operationFailed("Unknown XPC error: \(error.localizedDescription)")
+        }
+
+        return securityInterfacesError
+    }
+
+    /// Alias for convertXPCError - maps an XPCSecurityError to a SecurityInterfacesError
+    /// - Parameter error: The XPCSecurityError to convert
+    /// - Returns: A SecurityInterfacesError
+    public static func mapXPCError(_ error: XPCSecurityError) -> SecurityInterfacesError {
+        return convertXPCError(error)
+    }
+
+    /// Map a CoreErrors SecurityError to a SecurityInterfacesError
+    /// - Parameter error: The error to map
+    /// - Returns: A SecurityInterfacesError equivalent
+    public static func convertError(_ error: CoreErrors.SecurityError) -> SecurityInterfacesError {
+        // Convert the error to a SecurityInterfacesError instance
+        let securityInterfacesError: SecurityInterfacesError = switch error {
+        case let .invalidKey(reason):
+            .keyError("Invalid key: \(reason)")
+        case let .invalidContext(reason):
+            .operationFailed("Invalid context: \(reason)")
+        case let .invalidParameter(name, reason):
+            .operationFailed("Invalid parameter '\(name)': \(reason)")
+        case let .operationFailed(operation, reason):
+            .operationFailed("\(operation) failed: \(reason)")
+        case let .unsupportedAlgorithm(name):
+            .operationFailed("Unsupported algorithm: \(name)")
+        case let .missingImplementation(component):
+            .operationFailed("Missing implementation: \(component)")
+        case let .internalError(description):
+            .operationFailed("Internal error: \(description)")
         }
         
         return securityInterfacesError
     }
 
-    /// Convert a CoreErrors.SecurityError to a SecurityInterfacesError
+    /// Maps a general Error to a SecurityInterfacesError
     /// - Parameter error: The error to convert
-    /// - Returns: A SecurityInterfacesError
-    public static func convertError(_ error: CoreErrors.SecurityError) -> SecurityInterfacesError {
-        // Map CoreErrors.SecurityError to SecurityInterfacesError
-        let securityInterfacesError: SecurityInterfacesError = switch error {
-        case .general(let message):
-            .operationFailed(message)
-        case .authentication(let message):
-            .authenticationFailed
-        case .authorization(let message):
-            .authorizationFailed(message)
-        case .encryption(let message):
-            .encryptionFailed(reason: message)
-        case .decryption(let message):
-            .decryptionFailed(reason: message)
-        case .keyGeneration(let message):
-            .keyGenerationFailed(reason: message)
-        case .keyStorage(let message):
-            .operationFailed("Key storage error: \(message)")
-        case .invalidInput(let message):
-            .invalidParameters(message)
-        case .invalidState(let message):
-            .operationFailed("Invalid state: \(message)")
-        case .timeout(let message):
-            .timeout
-        case .serialization(let message):
-            .operationFailed("Serialization error: \(message)")
-        case .unsupportedOperation(let message):
-            .operationFailed("Unsupported operation: \(message)")
-        case .serviceUnavailable(let message):
-            .serviceNotAvailable
-        case .protocolViolation(let message):
-            .securityViolation(message)
-        case .internalError(let message):
-            .operationFailed("Internal error: \(message)")
+    /// - Returns: A SecurityInterfacesError representation of the input error
+    public static func mapToSecurityInterfacesError(_ error: Error) -> SecurityInterfacesError {
+        if let securityError = error as? SecurityInterfacesError {
+            return securityError
+        } else if let coreError = error as? CoreErrors.SecurityError {
+            return convertError(coreError)
+        } else if let xpcError = error as? XPCSecurityError {
+            switch xpcError {
+            case .operationFailed(let message):
+                return .operationFailed(message)
+            case .keyError(let message):
+                return .keyError(message)
+            case .authenticationFailed:
+                return .authenticationFailed
+            }
+        } else {
+            return .operationFailed("Unknown error: \(error.localizedDescription)")
         }
-        
-        return securityInterfacesError
     }
 
     /// Creates a SecurityConfiguration from a service status response
@@ -146,7 +123,8 @@ public enum SecurityProviderUtils {
 
         // Copy additional options from the status dictionary
         for (key, value) in status where
-            !["securityLevel", "encryptionAlgorithm", "hashAlgorithm"].contains(key) {
+            !["securityLevel", "encryptionAlgorithm", "hashAlgorithm"].contains(key)
+        {
             options[key] = value
         }
 
@@ -169,7 +147,7 @@ public enum SecurityProviderUtils {
     /// - Parameter secureBytes: The secure bytes to convert
     /// - Returns: Data representation
     public static func secureBytesToData(_ secureBytes: SecureBytes) -> Data {
-        return secureBytes.withUnsafeBytes { pointer in
+        secureBytes.withUnsafeBytes { pointer in
             Data(bytes: pointer.baseAddress!, count: pointer.count)
         }
     }

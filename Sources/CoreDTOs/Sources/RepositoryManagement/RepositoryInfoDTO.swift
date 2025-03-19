@@ -108,11 +108,11 @@ public struct RepositoryInfoDTO: Sendable, Equatable {
     /// - Parameter additionalMetadata: The metadata to add or update
     /// - Returns: A new RepositoryInfoDTO with updated metadata
     public func withUpdatedMetadata(_ additionalMetadata: [String: String]) -> RepositoryInfoDTO {
-        var newMetadata = self.metadata
+        var newMetadata = metadata
         for (key, value) in additionalMetadata {
             newMetadata[key] = value
         }
-        
+
         return RepositoryInfoDTO(
             id: id,
             path: path,

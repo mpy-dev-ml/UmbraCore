@@ -52,9 +52,9 @@ public enum UmbraCore {
         /// Convert to SecurityInterfaces.SecurityLevel
         public func toSecurityInterfaces() -> SecurityInterfaces.SecurityLevel {
             switch self {
-            case .high: return .advanced
-            case .medium: return .standard
-            case .low: return .basic
+            case .high: .advanced
+            case .medium: .standard
+            case .low: .basic
             }
         }
 

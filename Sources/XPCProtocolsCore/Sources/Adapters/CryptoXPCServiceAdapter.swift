@@ -62,7 +62,8 @@ public protocol CryptoXPCServiceProtocol: AnyObject, Sendable {
 @available(macOS 14.0, *)
 public final class CryptoXPCServiceAdapter: NSObject,
     XPCServiceProtocolStandard,
-    XPCServiceProtocolComplete {
+    XPCServiceProtocolComplete
+{
     /// The underlying crypto service being adapted
     private let service: any CryptoXPCServiceProtocol
 
@@ -272,7 +273,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
             if remainingBytes > 0 {
                 let randomResult = await generateRandomData(length: remainingBytes)
                 switch randomResult {
-                case .success(let secureRandomBytes):
+                case let .success(secureRandomBytes):
                     signatureData.append(convertToData(secureRandomBytes))
                 case .failure:
                     // If random generation fails, just pad with zeros
@@ -592,7 +593,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     ///   - data: Data to encrypt
     ///   - keyIdentifier: Optional identifier for the encryption key
     /// - Returns: Result with encrypted SecureBytes on success or XPCSecurityError on failure
-    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         do {
             let inputData = convertToData(data)
 
@@ -614,7 +615,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     ///   - data: Data to decrypt
     ///   - keyIdentifier: Optional identifier for the decryption key
     /// - Returns: Result with decrypted SecureBytes on success or XPCSecurityError on failure
-    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         do {
             let inputData = convertToData(data)
 

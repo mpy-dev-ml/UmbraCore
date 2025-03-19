@@ -16,16 +16,16 @@ public struct NotificationDTO: Sendable, Equatable {
         case error
         /// Success message
         case success
-        
+
         /// Order for comparing severity levels
         public static func < (lhs: Level, rhs: Level) -> Bool {
             let order: [Level: Int] = [
                 .info: 0,
                 .success: 1,
                 .warning: 2,
-                .error: 3
+                .error: 3,
             ]
-            
+
             return order[lhs, default: 0] < order[rhs, default: 0]
         }
     }
@@ -118,7 +118,7 @@ public struct NotificationDTO: Sendable, Equatable {
         id: String? = nil
     ) -> NotificationDTO {
         let notificationId = id ?? generateId(prefix: "info")
-        
+
         return NotificationDTO(
             id: notificationId,
             timestamp: timestamp,
@@ -145,7 +145,7 @@ public struct NotificationDTO: Sendable, Equatable {
         id: String? = nil
     ) -> NotificationDTO {
         let notificationId = id ?? generateId(prefix: "warn")
-        
+
         return NotificationDTO(
             id: notificationId,
             timestamp: timestamp,
@@ -172,7 +172,7 @@ public struct NotificationDTO: Sendable, Equatable {
         id: String? = nil
     ) -> NotificationDTO {
         let notificationId = id ?? generateId(prefix: "err")
-        
+
         return NotificationDTO(
             id: notificationId,
             timestamp: timestamp,
@@ -199,7 +199,7 @@ public struct NotificationDTO: Sendable, Equatable {
         id: String? = nil
     ) -> NotificationDTO {
         let notificationId = id ?? generateId(prefix: "succ")
-        
+
         return NotificationDTO(
             id: notificationId,
             timestamp: timestamp,
@@ -230,7 +230,7 @@ public struct NotificationDTO: Sendable, Equatable {
         id: String? = nil
     ) -> NotificationDTO {
         let notificationId = id ?? generateId(prefix: "act")
-        
+
         return NotificationDTO(
             id: notificationId,
             timestamp: timestamp,
@@ -260,7 +260,7 @@ public struct NotificationDTO: Sendable, Equatable {
         id: String? = nil
     ) -> NotificationDTO {
         let notificationId = id ?? generateId(prefix: "sec")
-        
+
         return NotificationDTO(
             id: notificationId,
             timestamp: timestamp,
@@ -279,11 +279,11 @@ public struct NotificationDTO: Sendable, Equatable {
     /// - Returns: A unique ID string
     private static func generateId(prefix: String? = nil) -> String {
         // Use simple random numbers for ID generation without Foundation
-        let rand1 = UInt32.random(in: 0...UInt32.max)
-        let rand2 = UInt32.random(in: 0...UInt32.max)
-        let rand3 = UInt32.random(in: 0...UInt32.max)
+        let rand1 = UInt32.random(in: 0 ... UInt32.max)
+        let rand2 = UInt32.random(in: 0 ... UInt32.max)
+        let rand3 = UInt32.random(in: 0 ... UInt32.max)
         let randomPart = String(format: "%08x%08x%08x", rand1, rand2, rand3)
-        if let prefix = prefix {
+        if let prefix {
             return "\(prefix)_\(randomPart)"
         }
         return randomPart
@@ -312,11 +312,11 @@ public struct NotificationDTO: Sendable, Equatable {
     /// - Parameter additionalMetadata: The metadata to add or update
     /// - Returns: A new NotificationDTO with updated metadata
     public func withUpdatedMetadata(_ additionalMetadata: [String: String]) -> NotificationDTO {
-        var newMetadata = self.metadata
+        var newMetadata = metadata
         for (key, value) in additionalMetadata {
             newMetadata[key] = value
         }
-        
+
         return NotificationDTO(
             id: id,
             timestamp: timestamp,

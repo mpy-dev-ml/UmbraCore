@@ -15,7 +15,7 @@ final class ErrorMappingTests: XCTestCase {
             (.decryptionFailed(reason: "Test reason"), "decryption_failed"),
             (.keyGenerationFailed, "key_generation_failed"),
             (.keyNotFound(identifier: "testKey"), "key_not_found"),
-            (.randomGenerationFailed(status: -1), "random_generation_failed")
+            (.randomGenerationFailed(status: -1), "random_generation_failed"),
         ]
 
         for (error, expectedCasePrefix) in testCases {
@@ -41,7 +41,7 @@ final class ErrorMappingTests: XCTestCase {
             (.decryptionFailed(algorithm: "AES", reason: "Test"), "decryptionFailed"),
             (.keyGenerationFailed(keyType: "RSA", reason: "Test"), "keyGenerationFailed"),
             (.randomGenerationFailed(reason: "Test"), "randomGenerationFailed"),
-            (.keyNotFound(keyIdentifier: "testKey"), "keyNotFound")
+            (.keyNotFound(keyIdentifier: "testKey"), "keyNotFound"),
         ]
 
         for (canonicalError, expectedCaseName) in testCases {

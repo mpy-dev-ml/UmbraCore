@@ -3,6 +3,7 @@ import SecurityInterfaces
 
 /// A mock implementation of XPCServiceProtocol for testing
 /// Provides predictable responses without requiring actual XPC communication
+@available(*, deprecated, message: "Use MockXPCService instead")
 public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
     /// Protocol identifier for this service
     public static var protocolIdentifier: String { "com.umbracore.testing.xpc" }
@@ -39,8 +40,8 @@ public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
     public func getServiceStatus() async -> [String: Any]? {
         [
             "status": "running",
-            "uptime": 3_600,
-            "memoryUsage": 1_024 * 1_024
+            "uptime": 3600,
+            "memoryUsage": 1024 * 1024,
         ]
     }
 
@@ -72,7 +73,7 @@ public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
             completion(true, responseData, nil)
         } else {
             let error = NSError(domain: "com.umbracore.test", code: 500, userInfo: [
-                NSLocalizedDescriptionKey: "Mock operation failure"
+                NSLocalizedDescriptionKey: "Mock operation failure",
             ])
             completion(false, nil, error)
         }
@@ -85,7 +86,7 @@ public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
             completion(.success(hostIdentifier))
         } else {
             let error = NSError(domain: "com.umbracore.test", code: 501, userInfo: [
-                NSLocalizedDescriptionKey: "Failed to get host identifier"
+                NSLocalizedDescriptionKey: "Failed to get host identifier",
             ])
             completion(.failure(error))
         }
@@ -103,7 +104,7 @@ public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
             completion(.success(true))
         } else {
             let error = NSError(domain: "com.umbracore.test", code: 502, userInfo: [
-                NSLocalizedDescriptionKey: "Failed to register client"
+                NSLocalizedDescriptionKey: "Failed to register client",
             ])
             completion(.failure(error))
         }

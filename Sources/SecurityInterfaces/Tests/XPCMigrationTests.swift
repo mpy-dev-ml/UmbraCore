@@ -155,7 +155,7 @@ private final class MockLegacyXPCService: XPCServiceProtocol {
     }
 
     func getServiceStatus() async -> [String: Any]? {
-        ["version": "1.0", "status": "running", "uptime": 3_600]
+        ["version": "1.0", "status": "running", "uptime": 3600]
     }
 
     func getDeviceIdentifier() async -> String? {

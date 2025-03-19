@@ -253,13 +253,13 @@ public extension UmbraErrors.Network.HTTP {
         case 404:
             .notFound(resource: resource ?? "unknown")
         case 408:
-            .requestTimeout(timeoutMs: 30_000) // Default timeout
+            .requestTimeout(timeoutMs: 30000) // Default timeout
         case 409:
             .conflict(resource: resource ?? "unknown", reason: reason)
         case 413:
             .payloadTooLarge(sizeBytes: 0, maxSizeBytes: 0) // Would need actual size info
         case 429:
-            .tooManyRequests(retryAfterMs: 60_000) // Default retry after 1 minute
+            .tooManyRequests(retryAfterMs: 60000) // Default retry after 1 minute
         case 500:
             .internalServerError(reason: reason)
         case 501:

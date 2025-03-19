@@ -99,10 +99,10 @@ public extension XPCServiceProtocolStandard {
 
         var statusDict: [String: Any] = [
             "timestamp": Date().timeIntervalSince1970,
-            "protocol": Self.protocolIdentifier
+            "protocol": Self.protocolIdentifier,
         ]
 
-        if case .success(let version) = versionResult {
+        if case let .success(version) = versionResult {
             statusDict["version"] = version
         }
 

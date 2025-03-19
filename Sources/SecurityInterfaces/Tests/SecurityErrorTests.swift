@@ -26,7 +26,7 @@ class SecurityErrorTests: XCTestCase {
             (.bookmarkError("Bookmark issue"), "Security bookmark error: Bookmark issue"),
             (.accessError("Access issue"), "Security access error: Access issue"),
             (.serializationFailed(reason: "Invalid format"), "Serialization or deserialization failed: Invalid format"),
-            (.encryptionFailed(reason: "Bad key"), "Encryption failed: Bad key")
+            (.encryptionFailed(reason: "Bad key"), "Encryption failed: Bad key"),
         ]
 
         for (error, expectedDescription) in cases {
@@ -123,7 +123,7 @@ class SecurityErrorTests: XCTestCase {
             (.randomGenerationFailed(reason: "Entropy issue"), "Random generation failed: Entropy issue"),
             (.storageOperationFailed(reason: "Disk full"), "Storage operation failed: Disk full"),
             (.serviceError(reason: "Service unavailable"), "Service error: Service unavailable"),
-            (.notImplemented(feature: "TestFeature"), "Not implemented: TestFeature")
+            (.notImplemented(feature: "TestFeature"), "Not implemented: TestFeature"),
         ]
 
         for (protocolError, expectedErrorMessage) in protocolErrors {
@@ -185,14 +185,17 @@ class SecurityErrorTests: XCTestCase {
     // MARK: - Type Alias Tests
 
     func testTypeAlias() {
-        // Verify that SecurityError is indeed an alias for SecurityInterfacesError
-        let interfaceError = SecurityInterfacesError.operationFailed("Test")
-        let aliasedError: SecurityError = .operationFailed("Test")
-
-        // Both should be the same type
-        XCTAssertTrue(
-            type(of: interfaceError) == type(of: aliasedError),
-            "SecurityError should be a type alias for SecurityInterfacesError"
-        )
+        // This test is now obsolete as we've removed the SecurityError typealias
+        // in favor of using SecurityInterfacesError directly for better code clarity.
+        // Keeping this test as documentation of the change.
+        
+        // The following would have previously tested:
+        // let interfaceError = SecurityInterfacesError.operationFailed("Test")
+        // let aliasedError: SecurityError = .operationFailed("Test")
+        // XCTAssertTrue(type(of: interfaceError) == type(of: aliasedError))
+        
+        // Now we simply use SecurityInterfacesError directly everywhere
+        let error = SecurityInterfacesError.operationFailed("Test")
+        XCTAssertEqual(error.errorDescription, "Security operation failed: Test")
     }
 }

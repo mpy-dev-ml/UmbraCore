@@ -45,7 +45,8 @@ public class ErrorHandlingExample {
     private final class SampleRecoveryProvider: ErrorHandlingInterfaces.RecoveryOptionsProvider {
         /// Provides recovery options for security errors
         public func recoveryOptions(for error: some Error)
-            -> [any ErrorHandlingInterfaces.RecoveryOption] {
+            -> [any ErrorHandlingInterfaces.RecoveryOption]
+        {
             // Map to security error if possible
             if let securityError = error as? SecurityCoreErrorWrapper {
                 // Provide different recovery options based on error type
@@ -65,7 +66,7 @@ public class ErrorHandlingExample {
                             handler: { @Sendable in
                                 print("Using alternative cryptographic method...")
                             }
-                        ) as any ErrorHandlingInterfaces.RecoveryOption
+                        ) as any ErrorHandlingInterfaces.RecoveryOption,
                     ]
                 case .invalidKey:
                     return [
@@ -82,7 +83,7 @@ public class ErrorHandlingExample {
                             handler: { @Sendable in
                                 print("Importing existing key...")
                             }
-                        ) as any ErrorHandlingInterfaces.RecoveryOption
+                        ) as any ErrorHandlingInterfaces.RecoveryOption,
                     ]
                 case .hashVerificationFailed:
                     return [
@@ -100,7 +101,7 @@ public class ErrorHandlingExample {
                             handler: { @Sendable in
                                 print("Ignoring integrity warning...")
                             }
-                        ) as any ErrorHandlingInterfaces.RecoveryOption
+                        ) as any ErrorHandlingInterfaces.RecoveryOption,
                     ]
                 default:
                     return [
@@ -110,7 +111,7 @@ public class ErrorHandlingExample {
                             handler: { @Sendable in
                                 print("Retrying operation...")
                             }
-                        ) as any ErrorHandlingInterfaces.RecoveryOption
+                        ) as any ErrorHandlingInterfaces.RecoveryOption,
                     ]
                 }
             }
@@ -130,7 +131,7 @@ public class ErrorHandlingExample {
                     handler: { @Sendable in
                         print("Operation cancelled")
                     }
-                ) as any ErrorHandlingInterfaces.RecoveryOption
+                ) as any ErrorHandlingInterfaces.RecoveryOption,
             ]
         }
     }

@@ -5,7 +5,7 @@ import UmbraCoreTypes
 /// without using any Foundation types.
 public struct ScheduledTaskDTO: Sendable, Equatable {
     // MARK: - Types
-    
+
     /// The type of task to be scheduled
     public enum TaskType: String, Sendable, Equatable {
         /// Backup task
@@ -21,7 +21,7 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
         /// Custom task
         case custom
     }
-    
+
     /// The current status of the task
     public enum TaskStatus: String, Sendable, Equatable {
         /// Task is waiting to be executed
@@ -36,71 +36,71 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
         case cancelled
         /// Task has been skipped
         case skipped
-        
+
         /// Whether this status represents a terminal state
         public var isTerminal: Bool {
             switch self {
             case .pending, .running:
-                return false
+                false
             case .completed, .failed, .cancelled, .skipped:
-                return true
+                true
             }
         }
-        
+
         /// Whether this status represents a success
         public var isSuccess: Bool {
             self == .completed
         }
-        
+
         /// Whether this status represents a failure
         public var isFailure: Bool {
             self == .failed || self == .cancelled
         }
     }
-    
+
     // MARK: - Properties
-    
+
     /// Unique identifier for the task
     public let id: String
-    
+
     /// ID of the schedule that triggered this task
     public let scheduleId: String
-    
+
     /// Human-readable name of the task
     public let name: String
-    
+
     /// Type of the task
     public let taskType: TaskType
-    
+
     /// Current status of the task
     public let status: TaskStatus
-    
+
     /// Task-specific configuration data as JSON string
     public let configData: String
-    
+
     /// Creation time as Unix timestamp in seconds
     public let createdAt: UInt64
-    
+
     /// Start time as Unix timestamp in seconds
     public let startedAt: UInt64?
-    
+
     /// Completion time as Unix timestamp in seconds
     public let completedAt: UInt64?
-    
+
     /// Duration in seconds (if completed)
     public let duration: UInt64?
-    
+
     /// Error message if the task failed
     public let errorMessage: String?
-    
+
     /// Task result data as JSON string
     public let resultData: String?
-    
+
     /// Additional metadata for the task
     public let metadata: [String: String]
-    
+
     // MARK: - Initializers
-    
+
     /// Full initializer with all task properties
     /// - Parameters:
     ///   - id: Unique identifier for the task
@@ -145,9 +145,9 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
         self.resultData = resultData
         self.metadata = metadata
     }
-    
+
     // MARK: - Factory Methods
-    
+
     /// Create a backup task
     /// - Parameters:
     ///   - id: Unique identifier for the task
@@ -172,7 +172,7 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     /// Create a security task
     /// - Parameters:
     ///   - id: Unique identifier for the task
@@ -197,26 +197,26 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     // MARK: - Computed Properties
-    
+
     /// Whether the task is currently in progress
     public var isInProgress: Bool {
         status == .running
     }
-    
+
     /// Whether the task has completed (success or failure)
     public var isComplete: Bool {
         status.isTerminal
     }
-    
+
     /// Whether the task was successful
     public var isSuccessful: Bool {
         status.isSuccess
     }
-    
+
     // MARK: - Utility Methods
-    
+
     /// Create a copy of this task marked as started
     /// - Parameter startTime: Start time as Unix timestamp
     /// - Returns: A new ScheduledTaskDTO marked as started
@@ -237,7 +237,7 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this task marked as completed
     /// - Parameters:
     ///   - endTime: Completion time as Unix timestamp
@@ -247,13 +247,12 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
         at endTime: UInt64,
         result: String? = nil
     ) -> ScheduledTaskDTO {
-        let calculatedDuration: UInt64
-        if let startedAt = startedAt {
-            calculatedDuration = endTime > startedAt ? endTime - startedAt : 0
+        let calculatedDuration: UInt64 = if let startedAt {
+            endTime > startedAt ? endTime - startedAt : 0
         } else {
-            calculatedDuration = 0
+            0
         }
-        
+
         return ScheduledTaskDTO(
             id: id,
             scheduleId: scheduleId,
@@ -270,7 +269,7 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this task marked as failed
     /// - Parameters:
     ///   - endTime: Failure time as Unix timestamp
@@ -280,13 +279,12 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
         at endTime: UInt64,
         error: String
     ) -> ScheduledTaskDTO {
-        let calculatedDuration: UInt64
-        if let startedAt = startedAt {
-            calculatedDuration = endTime > startedAt ? endTime - startedAt : 0
+        let calculatedDuration: UInt64 = if let startedAt {
+            endTime > startedAt ? endTime - startedAt : 0
         } else {
-            calculatedDuration = 0
+            0
         }
-        
+
         return ScheduledTaskDTO(
             id: id,
             scheduleId: scheduleId,
@@ -303,18 +301,17 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this task marked as cancelled
     /// - Parameter endTime: Cancellation time as Unix timestamp
     /// - Returns: A new ScheduledTaskDTO marked as cancelled
     public func markAsCancelled(at endTime: UInt64) -> ScheduledTaskDTO {
-        let calculatedDuration: UInt64
-        if let startedAt = startedAt {
-            calculatedDuration = endTime > startedAt ? endTime - startedAt : 0
+        let calculatedDuration: UInt64 = if let startedAt {
+            endTime > startedAt ? endTime - startedAt : 0
         } else {
-            calculatedDuration = 0
+            0
         }
-        
+
         return ScheduledTaskDTO(
             id: id,
             scheduleId: scheduleId,
@@ -331,16 +328,16 @@ public struct ScheduledTaskDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this task with updated metadata
     /// - Parameter additionalMetadata: The metadata to add or update
     /// - Returns: A new ScheduledTaskDTO with updated metadata
     public func withUpdatedMetadata(_ additionalMetadata: [String: String]) -> ScheduledTaskDTO {
-        var newMetadata = self.metadata
+        var newMetadata = metadata
         for (key, value) in additionalMetadata {
             newMetadata[key] = value
         }
-        
+
         return ScheduledTaskDTO(
             id: id,
             scheduleId: scheduleId,

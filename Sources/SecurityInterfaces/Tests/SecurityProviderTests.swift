@@ -27,7 +27,7 @@ class SecurityProviderTests: XCTestCase {
             operationName: "symmetricEncryption",
             options: [
                 "key": "test_key",
-                "algorithm": "AES-GCM"
+                "algorithm": "AES-GCM",
             ]
         )
 
@@ -61,8 +61,8 @@ class SecurityProviderTests: XCTestCase {
         // Get a wrapped provider
         let wrappedProvider = SecurityTestHelpers.SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
-        // Create a dummy XPC service for testing
-        let xpcService = SecurityTestHelpers.DummyXPCService()
+        // Create a mock XPC service for testing
+        let xpcService = SecurityTestHelpers.MockXPCService()
 
         // Use the adapter method to convert XPCServiceProtocol to XPCServiceProtocolStandard
         let standardService = xpcService.asXPCServiceProtocolStandard()
@@ -84,8 +84,8 @@ class SecurityProviderTests: XCTestCase {
         // Get a wrapped test provider
         let wrappedProvider = SecurityTestHelpers.SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
-        // Create a dummy XPC service for testing
-        let xpcService = SecurityTestHelpers.DummyXPCService()
+        // Create a mock XPC service for testing
+        let xpcService = SecurityTestHelpers.MockXPCService()
 
         // Use the adapter method to convert XPCServiceProtocol to XPCServiceProtocolStandard
         let standardService = xpcService.asXPCServiceProtocolStandard()
@@ -115,7 +115,7 @@ class SecurityProviderTests: XCTestCase {
             operationName: "symmetricEncryption",
             options: [
                 "key": "test_encryption_key",
-                "data": "Test secure data".data(using: .utf8)!
+                "data": "Test secure data".data(using: .utf8)!,
             ]
         )
 
@@ -127,8 +127,8 @@ class SecurityProviderTests: XCTestCase {
         // Get a wrapped test provider
         let wrappedProvider = SecurityTestHelpers.SecurityProtocolsWrapperFactory.createProvider(ofType: "test")
 
-        // Create a dummy XPC service for testing
-        let xpcService = SecurityTestHelpers.DummyXPCService()
+        // Create a mock XPC service for testing
+        let xpcService = SecurityTestHelpers.MockXPCService()
 
         // Use the adapter method to convert XPCServiceProtocol to XPCServiceProtocolStandard
         let standardService = xpcService.asXPCServiceProtocolStandard()

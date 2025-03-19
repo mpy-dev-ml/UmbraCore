@@ -74,7 +74,7 @@ public extension RecoveryOptions {
         RecoveryOptions(
             actions: [
                 .retry(handler: retryHandler),
-                .cancel(handler: cancelHandler)
+                .cancel(handler: cancelHandler),
             ],
             title: title,
             message: message
@@ -100,7 +100,7 @@ public extension RecoveryOptions {
             actions: [
                 .retry(handler: retryHandler),
                 .ignore(handler: ignoreHandler),
-                .cancel(handler: cancelHandler)
+                .cancel(handler: cancelHandler),
             ],
             title: title,
             message: message

@@ -95,8 +95,8 @@ final class TestErrorHandling_Security: XCTestCase {
         // Since the ErrorContext doesn't have metadata methods in this version,
         // we'll create a dictionary to simulate what metadata would contain
         let metadata: [String: Any] = [
-            "dataSize": 1_024,
-            "algorithm": "AES-256"
+            "dataSize": 1024,
+            "algorithm": "AES-256",
         ]
 
         // Verify context properties
@@ -104,7 +104,7 @@ final class TestErrorHandling_Security: XCTestCase {
         XCTAssertEqual(context.operation, "encryptData")
 
         // Verify the metadata dictionary values directly
-        XCTAssertEqual(metadata["dataSize"] as? Int, 1_024)
+        XCTAssertEqual(metadata["dataSize"] as? Int, 1024)
         XCTAssertEqual(metadata["algorithm"] as? String, "AES-256")
 
         // Demonstrate how an error would be created with this context if needed

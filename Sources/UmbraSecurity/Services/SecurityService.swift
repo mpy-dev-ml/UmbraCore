@@ -203,7 +203,8 @@ private final class DefaultBookmarkService: BookmarkServiceType {
 /// Default implementation of the security provider that conforms to both required protocols
 private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFoundationImpl,
     FoundationSecurityProvider, FoundationCryptoServiceImpl, FoundationKeyManagementImpl,
-    RandomDataGenerating {
+    RandomDataGenerating
+{
     // MARK: - FoundationSecurityProvider Properties
 
     /// Implementation of cryptoService for FoundationSecurityProvider protocol

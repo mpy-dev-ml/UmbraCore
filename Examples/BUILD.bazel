@@ -8,8 +8,17 @@ package(default_visibility = ["//visibility:public"])
 # bazel build //Examples/...
 # bazel test //Examples/...
 
-# This filegroup allows us to reference all examples in other build rules
-filegroup(
-    name = "all_examples",
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+# This is a meta-package that includes all examples
+swift_library(
+    name = "Examples",
     srcs = glob(["**/*.swift"]),
+)
+
+test_suite(
+    name = "all_examples",
+    tests = [
+        "//Examples/Services:ServicesDTOExample",
+    ],
 )

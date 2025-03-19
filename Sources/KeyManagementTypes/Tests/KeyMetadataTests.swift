@@ -7,7 +7,7 @@ final class KeyMetadataTests: XCTestCase {
 
     func testCanonicalKeyMetadataCreation() {
         let createdAt = Date()
-        let expiryDate = Date(timeIntervalSinceNow: 86_400 * 30) // 30 days
+        let expiryDate = Date(timeIntervalSinceNow: 86400 * 30) // 30 days
 
         let metadata = KeyManagementTypes.KeyMetadata(
             status: .active,
@@ -140,7 +140,7 @@ final class KeyMetadataTests: XCTestCase {
         let notExpired = KeyManagementTypes.KeyMetadata(
             status: .active,
             storageLocation: .secureEnclave,
-            expiryDate: Date(timeIntervalSinceNow: 86_400), // 1 day in future
+            expiryDate: Date(timeIntervalSinceNow: 86400), // 1 day in future
             algorithm: "AES-256-GCM",
             keySize: 256,
             identifier: "test-key-123"
@@ -151,7 +151,7 @@ final class KeyMetadataTests: XCTestCase {
         let expired = KeyManagementTypes.KeyMetadata(
             status: .active,
             storageLocation: .secureEnclave,
-            expiryDate: Date(timeIntervalSinceNow: -86_400), // 1 day in past
+            expiryDate: Date(timeIntervalSinceNow: -86400), // 1 day in past
             algorithm: "AES-256-GCM",
             keySize: 256,
             identifier: "test-key-123"
@@ -179,7 +179,7 @@ final class KeyMetadataTests: XCTestCase {
         )
 
         // Add small delay to ensure timestamps are different
-        usleep(1_000) // Sleep for 1 millisecond
+        usleep(1000) // Sleep for 1 millisecond
 
         let updated = original.withStatus(.compromised)
 
@@ -200,7 +200,7 @@ final class KeyMetadataTests: XCTestCase {
 
     func testRawMetadataConversion() {
         let createdAt = Date()
-        let expiryDate = Date(timeIntervalSinceNow: 86_400 * 30) // 30 days
+        let expiryDate = Date(timeIntervalSinceNow: 86400 * 30) // 30 days
 
         // Create original metadata
         let original = KeyManagementTypes.KeyMetadata(

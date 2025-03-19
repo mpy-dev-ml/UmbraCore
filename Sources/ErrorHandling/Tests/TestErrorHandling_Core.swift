@@ -102,7 +102,7 @@ final class TestErrorHandling_Core: XCTestCase {
         // Create mock recovery options
         let options = [
             TestRecoveryOption(title: "Retry"),
-            TestRecoveryOption(title: "Cancel")
+            TestRecoveryOption(title: "Cancel"),
         ]
 
         // Test error presentation
@@ -188,7 +188,7 @@ final class TestErrorHandling_Core: XCTestCase {
         nonisolated func recoveryOptions(for _: some Error) -> [any RecoveryOption] {
             [
                 TestRecoveryOption(title: "Option 1"),
-                TestRecoveryOption(title: "Option 2")
+                TestRecoveryOption(title: "Option 2"),
             ]
         }
     }

@@ -49,13 +49,13 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
         } else if error.domain == "CryptoErrorDomain" {
             // Map specific crypto error codes to appropriate UmbraErrors
             switch error.code {
-            case 1_001:
+            case 1001:
                 return .serviceError(code: error.code, reason: error.localizedDescription)
-            case 1_002:
+            case 1002:
                 return .serviceError(code: error.code, reason: error.localizedDescription)
-            case 1_003:
+            case 1003:
                 return .serviceError(code: error.code, reason: error.localizedDescription)
-            case 1_004:
+            case 1004:
                 return .serviceError(code: error.code, reason: error.localizedDescription)
             default:
                 return .serviceError(code: error.code, reason: error.localizedDescription)
@@ -103,7 +103,8 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
 
     // Helper to map XPC-specific errors to protocol errors
     private func mapToProtocolError(_ error: UmbraErrors.Security.XPC) -> UmbraErrors.Security
-        .Protocols {
+        .Protocols
+    {
         // Map XPC error to Protocol error based on case
         switch error {
         case let .connectionFailed(reason):
@@ -211,7 +212,8 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
 
     // XPC-specific implementation
     private func hashDataInternal(data: SecureBytes) async
-        -> Result<SecureBytes, UmbraErrors.Security.XPC> {
+        -> Result<SecureBytes, UmbraErrors.Security.XPC>
+    {
         await withCheckedContinuation { continuation in
             Task {
                 // Convert SecureBytes to NSData
@@ -328,7 +330,8 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     }
 
     private func performHash(data: SecureBytes) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         // Convert internal XPC error type to Protocols error type
         let result = await withCheckedContinuation { continuation in
             Task {
@@ -364,7 +367,8 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
 
                 if
                     let service = connection.remoteObjectProxy as? NSObject,
-                    service.responds(to: selector) {
+                    service.responds(to: selector)
+                {
                     service.perform(
                         selector,
                         with: nsData,
@@ -470,7 +474,8 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     }
 
     public func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         let result = await withCheckedContinuation { continuation in
             Task {
                 // This would call the appropriate XPC service method

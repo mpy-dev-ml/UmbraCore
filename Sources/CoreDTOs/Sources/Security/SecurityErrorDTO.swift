@@ -5,21 +5,21 @@ import UmbraCoreTypes
 /// without using any Foundation types.
 public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConvertible {
     // MARK: - Properties
-    
+
     /// Error code value
     public let code: Int32
-    
+
     /// Error domain identifier
     public let domain: String
-    
+
     /// Human-readable error message
     public let message: String
-    
+
     /// Additional error details
     public let details: [String: String]
-    
+
     // MARK: - Initializers
-    
+
     /// Create a security error
     /// - Parameters:
     ///   - code: Error code
@@ -37,16 +37,16 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         self.message = message
         self.details = details
     }
-    
+
     // MARK: - CustomStringConvertible
-    
+
     /// Human-readable description
     public var description: String {
         "[\(domain):\(code)] \(message)"
     }
-    
+
     // MARK: - Factory Methods
-    
+
     /// Create an encryption error
     /// - Parameters:
     ///   - message: Error message
@@ -62,7 +62,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
             details: details
         )
     }
-    
+
     /// Create a decryption error
     /// - Parameters:
     ///   - message: Error message
@@ -78,7 +78,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
             details: details
         )
     }
-    
+
     /// Create a key error
     /// - Parameters:
     ///   - message: Error message
@@ -94,7 +94,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
             details: details
         )
     }
-    
+
     /// Create a storage error
     /// - Parameters:
     ///   - message: Error message
@@ -110,7 +110,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
             details: details
         )
     }
-    
+
     /// Create an access error
     /// - Parameters:
     ///   - message: Error message

@@ -22,7 +22,8 @@ public enum UmbraLoggingAdapters {
     /// - Parameter destinations: Array of log destinations (must be Sendable types)
     /// - Returns: A logger instance conforming to LoggingProtocol
     public static func createLoggerWithDestinations(_ destinations: [some Sendable])
-        -> LoggingProtocol {
+        -> LoggingProtocol
+    {
         // Use a dedicated initialiser method that properly isolates the destinations
         // This ensures thread safety for Swift 6 compatibility
         LoggerImplementation.withDestinations(destinations)

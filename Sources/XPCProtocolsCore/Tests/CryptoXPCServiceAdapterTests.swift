@@ -124,9 +124,9 @@ final class CryptoXPCServiceAdapterTests: XCTestCase {
 
         // Check if the result is successful and contains data
         switch randomData {
-        case .success(let secureBytes):
+        case let .success(secureBytes):
             XCTAssertEqual(secureBytes.count, 16, "Random data should be of requested length")
-        case .failure(let error):
+        case let .failure(error):
             XCTFail("Failed to generate random data: \(error)")
         }
 
@@ -475,7 +475,7 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
 
     // MARK: - Required Protocol Methods
 
-    func synchroniseKeys(_ syncData: Data) async throws {
+    func synchroniseKeys(_: Data) async throws {
         await state.setSynchroniseKeysCalled()
 
         if await state.shouldFailSynchroniseKeys {
@@ -492,11 +492,11 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
     }
 
     func getVersion() async throws -> String {
-        return "1.0.0"
+        "1.0.0"
     }
 
     func getHardwareIdentifier() async throws -> String {
-        return "MOCK-HW-ID-123"
+        "MOCK-HW-ID-123"
     }
 
     func generateRandomData(length: Int) async throws -> Data {
@@ -614,7 +614,7 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
     }
 
     // Verify a signature
-    func verifySignature(_ signature: Data, for data: Data, keyIdentifier: String) async throws -> Bool {
+    func verifySignature(_: Data, for _: Data, keyIdentifier _: String) async throws -> Bool {
         await state.setVerifySignatureCalled()
 
         if await state.shouldFailVerify {
@@ -627,7 +627,7 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
     }
 
     // Import a key
-    func importKey(_ key: Data, keyIdentifier: String) async throws {
+    func importKey(_: Data, keyIdentifier _: String) async throws {
         await state.setImportKeyCalled()
 
         if await state.shouldFailImportKey {
@@ -639,7 +639,7 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
     }
 
     // Export a key
-    func exportKey(keyIdentifier: String) async throws -> Data {
+    func exportKey(keyIdentifier _: String) async throws -> Data {
         await state.setExportKeyCalled()
 
         if await state.shouldFailExportKey {
@@ -852,31 +852,31 @@ enum CryptoAdapterErrorType {
 
         switch self {
         case .encryptionFailed:
-            code = 1_001
+            code = 1001
             description = "Encryption operation failed"
         case .decryptionFailed:
-            code = 1_002
+            code = 1002
             description = "Decryption operation failed"
         case .keyGenerationFailed:
-            code = 1_003
+            code = 1003
             description = "Key generation failed"
         case .verificationFailed:
-            code = 1_004
+            code = 1004
             description = "Signature verification failed"
         case .importFailed:
-            code = 1_005
+            code = 1005
             description = "Key import failed"
         case .exportFailed:
-            code = 1_006
+            code = 1006
             description = "Key export failed"
         case .syncFailed:
-            code = 1_007
+            code = 1007
             description = "Key synchronization failed"
         case .resetFailed:
-            code = 1_008
+            code = 1008
             description = "Security reset failed"
         case .internalError:
-            code = 9_999
+            code = 9999
             description = "Internal error occurred"
         }
 

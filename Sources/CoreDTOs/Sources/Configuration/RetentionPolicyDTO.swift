@@ -93,7 +93,7 @@ public struct RetentionPolicyDTO: Sendable, Equatable {
     /// Returns false if all keep values are nil or 0
     public var willKeepSnapshots: Bool {
         [keepLast, keepHourly, keepDaily, keepWeekly, keepMonthly, keepYearly]
-            .compactMap { $0 }
+            .compactMap(\.self)
             .contains { $0 > 0 } || keepWithinDuration != nil
     }
 

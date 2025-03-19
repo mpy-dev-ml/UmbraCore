@@ -38,7 +38,7 @@ public final class DefaultCoreProvider: CoreProvider {
             CoreCapability.decryption,
             CoreCapability.keyGeneration,
             CoreCapability.randomGeneration,
-            CoreCapability.hashing
+            CoreCapability.hashing,
         ]
     }
 }

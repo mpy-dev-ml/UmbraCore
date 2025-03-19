@@ -15,7 +15,7 @@ import XCTest
             XCTMain([
                 testCase(MockSecurityProviderTests.allTests),
                 testCase(SecurityErrorHandlerTests.allTests),
-                testCase(SecurityErrorTests.allTests)
+                testCase(SecurityErrorTests.allTests),
             ])
         }
     }

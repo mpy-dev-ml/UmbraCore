@@ -12,22 +12,22 @@ import UmbraCoreTypes
 )
 public protocol SecurityProviderBase: Sendable {
     /// Reset all security data
-    func resetSecurityData() async -> Result<Void, SecurityError>
+    func resetSecurityData() async -> Result<Void, SecurityInterfacesError>
 
     /// Get the host identifier
-    func getHostIdentifier() async -> Result<String, SecurityError>
+    func getHostIdentifier() async -> Result<String, SecurityInterfacesError>
 
     /// Register a client application
     /// - Parameter bundleIdentifier: The bundle identifier of the client application
-    func registerClient(bundleIdentifier: String) async -> Result<Bool, SecurityError>
+    func registerClient(bundleIdentifier: String) async -> Result<Bool, SecurityInterfacesError>
 
     /// Request key rotation
     /// - Parameter keyId: The ID of the key to rotate
-    func requestKeyRotation(keyId: String) async -> Result<Void, SecurityError>
+    func requestKeyRotation(keyId: String) async -> Result<Void, SecurityInterfacesError>
 
     /// Notify about a potentially compromised key
     /// - Parameter keyId: The ID of the compromised key
-    func notifyKeyCompromise(keyId: String) async -> Result<Void, SecurityError>
+    func notifyKeyCompromise(keyId: String) async -> Result<Void, SecurityInterfacesError>
 }
 
 /// Extension to provide adapters between the legacy and new protocols
@@ -57,7 +57,7 @@ private struct SecurityProviderBaseAdapter: SecurityProtocolsCore.SecurityProvid
 
     public var cryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
         // Create and return a dummy crypto service
-        DummyCryptoService()
+        InternalDummyCryptoService()
     }
 
     public var keyManager: SecurityProtocolsCore.KeyManagementProtocol {
@@ -80,7 +80,8 @@ private struct SecurityProviderBaseAdapter: SecurityProtocolsCore.SecurityProvid
     }
 
     public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore
-        .SecurityConfigDTO {
+        .SecurityConfigDTO
+    {
         // Create a default config with the required algorithm and key size parameters
         SecurityProtocolsCore.SecurityConfigDTO(
             algorithm: "AES",
@@ -91,23 +92,23 @@ private struct SecurityProviderBaseAdapter: SecurityProtocolsCore.SecurityProvid
 
     // MARK: - Methods from SecurityProviderBase
 
-    func resetSecurityData() async -> Result<Void, SecurityError> {
+    func resetSecurityData() async -> Result<Void, SecurityInterfacesError> {
         await provider.resetSecurityData()
     }
 
-    func getHostIdentifier() async -> Result<String, SecurityError> {
+    func getHostIdentifier() async -> Result<String, SecurityInterfacesError> {
         await provider.getHostIdentifier()
     }
 
-    func registerClient(bundleIdentifier: String) async -> Result<Bool, SecurityError> {
+    func registerClient(bundleIdentifier: String) async -> Result<Bool, SecurityInterfacesError> {
         await provider.registerClient(bundleIdentifier: bundleIdentifier)
     }
 
-    func requestKeyRotation(keyId: String) async -> Result<Void, SecurityError> {
+    func requestKeyRotation(keyId: String) async -> Result<Void, SecurityInterfacesError> {
         await provider.requestKeyRotation(keyId: keyId)
     }
 
-    func notifyKeyCompromise(keyId: String) async -> Result<Void, SecurityError> {
+    func notifyKeyCompromise(keyId: String) async -> Result<Void, SecurityInterfacesError> {
         await provider.notifyKeyCompromise(keyId: keyId)
     }
 }
@@ -115,22 +116,25 @@ private struct SecurityProviderBaseAdapter: SecurityProtocolsCore.SecurityProvid
 // MARK: - Helper Classes for Adapter
 
 /// Simple implementation of CryptoServiceProtocol for use in the adapter
-private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
+private final class InternalDummyCryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
     // MARK: - Required methods from CryptoServiceProtocol
 
     func generateKey() async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
     func hash(data _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Generate a dummy hash
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
     func verify(data _: UmbraCoreTypes.SecureBytes, against _: UmbraCoreTypes.SecureBytes) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Always verify as true
         .success(true)
     }
@@ -140,7 +144,8 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         key _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(data)
     }
 
@@ -149,7 +154,8 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         key _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(data)
     }
 
@@ -158,7 +164,8 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         publicKey _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(data)
     }
 
@@ -167,7 +174,8 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         privateKey _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(data)
     }
 
@@ -175,26 +183,30 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         data _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
     // MARK: - Additional methods
 
     func encrypt(data: UmbraCoreTypes.SecureBytes, using _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Simple mock implementation
         .success(data)
     }
 
     func decrypt(data: UmbraCoreTypes.SecureBytes, using _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Simple mock implementation
         .success(data)
     }
 
     func sign(data _: UmbraCoreTypes.SecureBytes, using _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Generate a dummy signature
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 64)))
     }
@@ -204,19 +216,22 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         for _: UmbraCoreTypes.SecureBytes,
         using _: UmbraCoreTypes.SecureBytes
     ) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Always verify as true
         .success(true)
     }
 
     func mac(data _: UmbraCoreTypes.SecureBytes, key _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Generate a dummy MAC
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
     func generateRandomData(length: Int) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         let bytes = [UInt8](repeating: 0, count: length)
         return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
     }
@@ -289,57 +304,5 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
     ) async -> SecurityProtocolsCore.SecurityResultDTO {
         // Use a valid constructor and return the result as a Boolean value
         SecurityProtocolsCore.SecurityResultDTO(success: true)
-    }
-}
-
-/// Simple implementation of KeyManagementProtocol for use in the adapter
-private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
-    func generateKey(
-        type _: String,
-        size: Int
-    ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-        // Dummy implementation
-        .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: size / 8)))
-    }
-
-    func storeKey(
-        _: UmbraCoreTypes.SecureBytes,
-        withIdentifier _: String
-    ) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-        // Dummy implementation
-        .success(())
-    }
-
-    func retrieveKey(withIdentifier _: String) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-        // Dummy implementation
-        .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
-    }
-
-    func deleteKey(withIdentifier _: String) async
-        -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-        // Dummy implementation
-        .success(())
-    }
-
-    func rotateKey(
-        withIdentifier _: String,
-        dataToReencrypt: UmbraCoreTypes.SecureBytes? = nil
-    ) async -> Result<(
-        newKey: UmbraCoreTypes.SecureBytes,
-        reencryptedData: UmbraCoreTypes.SecureBytes?
-    ), ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-        // Dummy implementation
-        .success((
-            newKey: UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)),
-            reencryptedData: dataToReencrypt
-        ))
-    }
-
-    func listKeyIdentifiers() async
-        -> Result<[String], ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-        // Dummy implementation
-        .success(["key1", "key2", "key3"])
     }
 }

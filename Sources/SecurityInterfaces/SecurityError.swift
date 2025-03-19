@@ -41,8 +41,20 @@ public enum SecurityInterfacesError: Error, Sendable {
     case keyGenerationFailed(reason: String)
     /// Authentication failed
     case authenticationFailed
+    /// Authorization failed with reason
+    case authorizationFailed(String)
+    /// Operation timed out
+    case timeout
     /// Invalid parameters with details
     case invalidParameters(String)
+    /// Security protocol violation
+    case securityViolation(String)
+    /// Service is not available
+    case serviceNotAvailable
+    /// Key-related error with reason
+    case keyError(String)
+    /// Internal error that should not occur in normal operation
+    case internalError(reason: String)
     /// Unknown error with reason
     case unknown(reason: String)
     /// Wrapped UmbraErrors.Security.Core
@@ -86,8 +98,20 @@ public enum SecurityInterfacesError: Error, Sendable {
             "Key generation failed: \(reason)"
         case .authenticationFailed:
             "Authentication failed"
+        case let .authorizationFailed(message):
+            "Authorization failed: \(message)"
+        case .timeout:
+            "Operation timed out"
         case let .invalidParameters(details):
             "Invalid parameters: \(details)"
+        case let .securityViolation(message):
+            "Security protocol violation: \(message)"
+        case .serviceNotAvailable:
+            "Security service is not available"
+        case let .keyError(message):
+            "Key operation error: \(message)"
+        case let .internalError(reason):
+            "Internal security error: \(reason)"
         case let .unknown(reason):
             "Unknown error: \(reason)"
         case let .wrapped(error):
@@ -106,7 +130,7 @@ public enum SecurityInterfacesError: Error, Sendable {
         case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
              .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
              .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError,
-             .serializationFailed, .encryptionFailed, .decryptionFailed, .signatureFailed, .verificationFailed, .keyGenerationFailed, .authenticationFailed, .invalidParameters, .unknown:
+             .serializationFailed, .encryptionFailed, .decryptionFailed, .signatureFailed, .verificationFailed, .keyGenerationFailed, .authenticationFailed, .invalidParameters, .unknown, .authorizationFailed, .timeout, .securityViolation, .serviceNotAvailable, .internalError, .keyError:
             nil
         }
     }
@@ -120,21 +144,55 @@ public extension SecurityInterfacesError {
     }
 }
 
-// For backward compatibility
-public typealias SecurityError = SecurityInterfacesError
-
 /// Map a SecurityProtocolsCore.SecurityError to a SecurityInterfacesError
 /// This function is used by tests to verify error mapping functionality
 /// - Parameter error: The original error from SecurityProtocolsCore
 /// - Returns: A mapped SecurityInterfacesError
 @available(*, deprecated, message: "Use SecurityProviderAdapter.mapError instead")
-public func mapSPCError(_ error: Error) -> Error {
-    if let protocolError = error as? UmbraErrors.Security.Protocols {
-        return mapFromProtocolError(protocolError)
+public func mapSPCError(_ error: XPCProtocolsCore.SecurityError) -> SecurityInterfacesError {
+    switch error {
+    case let .cryptographicError(operation, details):
+        switch operation {
+        case "encryption":
+            return .encryptionFailed(reason: details)
+        case "decryption":
+            return .decryptionFailed(reason: details)
+        case "signing":
+            return .signatureFailed(reason: details)
+        case "verification":
+            return .verificationFailed(reason: details)
+        case "key generation":
+            return .keyGenerationFailed(reason: details)
+        default:
+            return .operationFailed("\(operation) failed: \(details)")
+        }
+    case let .authenticationFailed(details):
+        return .authenticationFailed
+    case let .authorizationFailed(details):
+        return .authorizationFailed(details)
+    case let .invalidFormat(details):
+        return .invalidParameters("Invalid format: \(details)")
+    case let .invalidKey(details):
+        return .invalidParameters("Invalid key: \(details)")
+    case let .invalidParameters(details):
+        return .invalidParameters(details)
+    case let .keyNotFound(identifier):
+        return .invalidParameters("Key not found: \(identifier)")
+    case let .operationNotSupported(name):
+        return .operationFailed("Operation not supported: \(name)")
+    case .serviceUnavailable:
+        return .serviceNotAvailable
+    case let .timeout(details):
+        return .timeout
+    case let .invalidState(details):
+        return .operationFailed("Invalid state: \(details)")
+    case let .protocolViolation(details):
+        return .securityViolation(details)
+    case let .internalError(details):
+        return .internalError(reason: details)
+    case let .unknownError(details):
+        return .unknown(reason: details)
     }
-
-    // Return a generic error if type doesn't match
-    return SecurityInterfacesError.operationFailed("Unknown error: \(error)")
 }
 
 /// Map a UmbraErrors.Security.Protocols error to a SecurityInterfacesError
@@ -159,8 +217,6 @@ private func mapFromProtocolError(
         return .operationFailed("Internal error: \(message)")
     case let .invalidInput(reason):
         return .operationFailed("Invalid input: \(reason)")
-    case let .invalidParameters(details):
-        return .invalidParameters(details)
     case let .encryptionFailed(reason):
         return .encryptionFailed(reason: reason)
     case let .decryptionFailed(reason):

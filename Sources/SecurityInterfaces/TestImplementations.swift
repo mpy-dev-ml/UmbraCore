@@ -17,7 +17,7 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         // This is a simplistic mock implementation that just returns the input data with first byte XORed
         var encryptedBytes: [UInt8] = []
 
-        for i in 0..<data.count {
+        for i in 0 ..< data.count {
             do {
                 let dataByte = try data.byte(at: i)
                 let keyByte = try key.byte(at: i % key.count)
@@ -32,13 +32,13 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
 
     public func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // For testing, decrypt is the same operation as encrypt
-        return await encrypt(data: data, using: key)
+        await encrypt(data: data, using: key)
     }
 
     public func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         var hashBytes = [UInt8]()
 
-        for i in 0..<data.count {
+        for i in 0 ..< data.count {
             do {
                 let dataByte = try data.byte(at: i)
                 hashBytes.append(dataByte ^ 0xAB)
@@ -50,26 +50,26 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         return .success(SecureBytes(bytes: hashBytes))
     }
 
-    public func sign(data: SecureBytes, using privateKey: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    public func sign(data: SecureBytes, using _: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Just use the hash function as a mock signing operation for tests
-        return await hash(data: data)
+        await hash(data: data)
     }
 
-    public func sign(data: SecureBytes, withAlgorithm algorithm: String, using privateKey: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    public func sign(data: SecureBytes, withAlgorithm _: String, using privateKey: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // For testing, all algorithms do the same thing
-        return await sign(data: data, using: privateKey)
+        await sign(data: data, using: privateKey)
     }
 
     public func verify(data: SecureBytes, against expectedSignature: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
         let result = await hash(data: data)
         switch result {
-        case .success(let calculatedSignature):
+        case let .success(calculatedSignature):
             do {
                 if calculatedSignature.count != expectedSignature.count {
                     return .success(false)
                 }
 
-                for i in 0..<calculatedSignature.count {
+                for i in 0 ..< calculatedSignature.count {
                     let calcByte = try calculatedSignature.byte(at: i)
                     let expectedByte = try expectedSignature.byte(at: i)
                     if calcByte != expectedByte {
@@ -81,7 +81,7 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
             } catch {
                 return .failure(.internalError("Error comparing signatures"))
             }
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -89,8 +89,8 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
     public func generateRandomBytes(count: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Generate random bytes (for testing only)
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0..<count {
-            bytes[i] = UInt8.random(in: 0...255)
+        for i in 0 ..< count {
+            bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(SecureBytes(bytes: bytes))
     }
@@ -99,20 +99,20 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
 
     public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Generate a test key (for testing only)
-        return await generateRandomBytes(count: 32)
+        await generateRandomBytes(count: 32)
     }
 
     public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
         // Verify a hash against data
         let hashResult = await self.hash(data: data)
         switch hashResult {
-        case .success(let calculatedHash):
+        case let .success(calculatedHash):
             // Compare hashes
             var matches = true
             if calculatedHash.count != hash.count {
                 matches = false
             } else {
-                for i in 0..<calculatedHash.count {
+                for i in 0 ..< calculatedHash.count {
                     do {
                         if try calculatedHash.byte(at: i) != hash.byte(at: i) {
                             matches = false
@@ -124,32 +124,32 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
                 }
             }
             return .success(matches)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
 
     // MARK: - Additional CryptoServiceProtocol Methods
 
-    public func encryptSymmetric(data: SecureBytes, key: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await encrypt(data: data, using: key)
+    public func encryptSymmetric(data: SecureBytes, key: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        await encrypt(data: data, using: key)
     }
 
-    public func decryptSymmetric(data: SecureBytes, key: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await decrypt(data: data, using: key)
+    public func decryptSymmetric(data: SecureBytes, key: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        await decrypt(data: data, using: key)
     }
 
-    public func encryptAsymmetric(data: SecureBytes, publicKey: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    public func encryptAsymmetric(data: SecureBytes, publicKey: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Simple mock implementation
-        return await encrypt(data: data, using: publicKey)
+        await encrypt(data: data, using: publicKey)
     }
 
-    public func decryptAsymmetric(data: SecureBytes, privateKey: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    public func decryptAsymmetric(data: SecureBytes, privateKey: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Simple mock implementation
-        return await decrypt(data: data, using: privateKey)
+        await decrypt(data: data, using: privateKey)
     }
 
-    public func generateKeyPair(config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<(publicKey: SecureBytes, privateKey: SecureBytes), UmbraErrors.Security.Protocols> {
+    public func generateKeyPair(config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<(publicKey: SecureBytes, privateKey: SecureBytes), UmbraErrors.Security.Protocols> {
         // Generate mock key pair for testing
         let publicKeyBytes = [UInt8](repeating: 0xAA, count: 32)
         let privateKeyBytes = [UInt8](repeating: 0xBB, count: 32)
@@ -161,10 +161,10 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
     }
 
     // Additional required methods
-    public func hash(data: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+    public func hash(data: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         var hashBytes = [UInt8]()
 
-        for i in 0..<data.count {
+        for i in 0 ..< data.count {
             do {
                 let dataByte = try data.byte(at: i)
                 hashBytes.append(dataByte ^ 0xAB)
@@ -179,9 +179,9 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
     public func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         let result = await generateRandomBytes(count: length)
         switch result {
-        case .success(let data):
+        case let .success(data):
             return .success(SecureBytes(bytes: [UInt8](data)))
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -222,9 +222,9 @@ public final actor TestKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
 
         // Re-encrypt the data if provided
         var reencryptedData: SecureBytes?
-        if let dataToReencrypt = dataToReencrypt {
+        if let dataToReencrypt {
             var reencryptedBytes = [UInt8]()
-            for i in 0..<dataToReencrypt.count {
+            for i in 0 ..< dataToReencrypt.count {
                 do {
                     let dataByte = try dataToReencrypt.byte(at: i)
                     reencryptedBytes.append(dataByte ^ 0xCC)
@@ -243,19 +243,19 @@ public final actor TestKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
 
     public func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
         // Return a list of all stored key identifiers
-        return .success(Array(keys.keys))
+        .success(Array(keys.keys))
     }
 
-    public func generateKey(withConfig config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<String, UmbraErrors.Security.Protocols> {
+    public func generateKey(withConfig _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<String, UmbraErrors.Security.Protocols> {
         // Generate a test key and store it
         let randomResult = await generateRandomData(count: 32)
 
         switch randomResult {
-        case .success(let keyData):
+        case let .success(keyData):
             let keyId = UUID().uuidString
             keys[keyId] = keyData
             return .success(keyId)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -263,8 +263,8 @@ public final actor TestKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
     public func generateRandomData(count: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Generate random bytes (for testing only)
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0..<count {
-            bytes[i] = UInt8.random(in: 0...255)
+        for i in 0 ..< count {
+            bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(SecureBytes(bytes: bytes))
     }
@@ -277,18 +277,18 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
     private let keyManager: TestKeyManager
 
     public init() {
-        self.cryptoService = TestCryptoService()
-        self.keyManager = TestKeyManager()
+        cryptoService = TestCryptoService()
+        keyManager = TestKeyManager()
     }
 
     // MARK: - XPCServiceProtocolStandard
 
     public func ping() async -> Bool {
-        return true
+        true
     }
 
     public func status() async -> XPCServiceStatus {
-        return XPCServiceStatus(
+        XPCServiceStatus(
             isActive: true,
             version: "1.0.0",
             serviceType: "TestXPCService"
@@ -296,110 +296,110 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
     }
 
     public func getServiceVersion() async -> String {
-        return "1.0.0-test"
+        "1.0.0-test"
     }
 
     public func getHardwareIdentifier() async -> String {
-        return "test-hardware-\(UUID().uuidString)"
+        "test-hardware-\(UUID().uuidString)"
     }
 
-    public func synchroniseKeys(_ keys: [String: Data]) async -> Bool {
-        return true
+    public func synchroniseKeys(_: [String: Data]) async -> Bool {
+        true
     }
 
     // MARK: - CryptoServiceProtocol Methods
 
     public func encrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.encrypt(data: data, using: key)
+        await cryptoService.encrypt(data: data, using: key)
     }
 
     public func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.decrypt(data: data, using: key)
+        await cryptoService.decrypt(data: data, using: key)
     }
 
     public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.generateKey()
+        await cryptoService.generateKey()
     }
 
     public func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.hash(data: data)
+        await cryptoService.hash(data: data)
     }
 
     public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
-        return await cryptoService.verify(data: data, against: hash)
+        await cryptoService.verify(data: data, against: hash)
     }
 
     public func sign(data: SecureBytes, using privateKey: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.sign(data: data, using: privateKey)
+        await cryptoService.sign(data: data, using: privateKey)
     }
 
     public func sign(data: SecureBytes, withAlgorithm algorithm: String, using privateKey: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.sign(data: data, withAlgorithm: algorithm, using: privateKey)
+        await cryptoService.sign(data: data, withAlgorithm: algorithm, using: privateKey)
     }
 
-    public func verify(signature: SecureBytes, for data: SecureBytes, using publicKey: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
-        return await cryptoService.verify(data: data, against: signature)
+    public func verify(signature: SecureBytes, for data: SecureBytes, using _: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+        await cryptoService.verify(data: data, against: signature)
     }
 
     public func generateRandomBytes(count: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.generateRandomBytes(count: count)
+        await cryptoService.generateRandomBytes(count: count)
     }
 
     public func encryptSymmetric(data: SecureBytes, key: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.encryptSymmetric(data: data, key: key, config: config)
+        await cryptoService.encryptSymmetric(data: data, key: key, config: config)
     }
 
     public func decryptSymmetric(data: SecureBytes, key: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.decryptSymmetric(data: data, key: key, config: config)
+        await cryptoService.decryptSymmetric(data: data, key: key, config: config)
     }
 
     public func encryptAsymmetric(data: SecureBytes, publicKey: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.encryptAsymmetric(data: data, publicKey: publicKey, config: config)
+        await cryptoService.encryptAsymmetric(data: data, publicKey: publicKey, config: config)
     }
 
     public func decryptAsymmetric(data: SecureBytes, privateKey: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.decryptAsymmetric(data: data, privateKey: privateKey, config: config)
+        await cryptoService.decryptAsymmetric(data: data, privateKey: privateKey, config: config)
     }
 
     public func hash(data: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.hash(data: data, config: config)
+        await cryptoService.hash(data: data, config: config)
     }
 
     public func generateKeyPair(config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<(publicKey: SecureBytes, privateKey: SecureBytes), UmbraErrors.Security.Protocols> {
-        return await cryptoService.generateKeyPair(config: config)
+        await cryptoService.generateKeyPair(config: config)
     }
 
     public func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await cryptoService.generateRandomData(length: length)
+        await cryptoService.generateRandomData(length: length)
     }
 
     // MARK: - KeyManagementProtocol (delegated to TestKeyManager)
 
     public func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
-        return await keyManager.storeKey(key, withIdentifier: identifier)
+        await keyManager.storeKey(key, withIdentifier: identifier)
     }
 
     public func generateKey(withConfig config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<String, UmbraErrors.Security.Protocols> {
-        return await keyManager.generateKey(withConfig: config)
+        await keyManager.generateKey(withConfig: config)
     }
 
     public func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
-        return await keyManager.deleteKey(withIdentifier: identifier)
+        await keyManager.deleteKey(withIdentifier: identifier)
     }
 
     public func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await keyManager.retrieveKey(withIdentifier: identifier)
+        await keyManager.retrieveKey(withIdentifier: identifier)
     }
 
     public func rotateKey(withIdentifier identifier: String, dataToReencrypt: SecureBytes?) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), UmbraErrors.Security.Protocols> {
-        return await keyManager.rotateKey(withIdentifier: identifier, dataToReencrypt: dataToReencrypt)
+        await keyManager.rotateKey(withIdentifier: identifier, dataToReencrypt: dataToReencrypt)
     }
 
     public func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
-        return await keyManager.listKeyIdentifiers()
+        await keyManager.listKeyIdentifiers()
     }
 
     public func generateRandomData(count: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        return await keyManager.generateRandomData(count: count)
+        await keyManager.generateRandomData(count: count)
     }
 }

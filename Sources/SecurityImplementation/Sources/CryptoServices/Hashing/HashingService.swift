@@ -96,7 +96,7 @@ final class HashingService: Sendable {
     private func isSupportedHashAlgorithm(_ algorithm: String) -> Bool {
         // For now, only SHA-256 is fully implemented
         let supportedAlgorithms = [
-            "SHA-256"
+            "SHA-256",
         ]
 
         return supportedAlgorithms.contains(algorithm)

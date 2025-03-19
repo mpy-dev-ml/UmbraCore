@@ -64,7 +64,7 @@ extension KeychainXPCProtocol {
                 accessGroup: accessGroup,
                 data: data
             ) { error in
-                if let error = error {
+                if let error {
                     continuation.resume(throwing: error)
                 } else {
                     continuation.resume()
@@ -86,7 +86,7 @@ extension KeychainXPCProtocol {
                 accessGroup: accessGroup,
                 data: data
             ) { error in
-                if let error = error {
+                if let error {
                     continuation.resume(throwing: error)
                 } else {
                     continuation.resume()
@@ -106,7 +106,7 @@ extension KeychainXPCProtocol {
                 service: service,
                 accessGroup: accessGroup
             ) { error in
-                if let error = error {
+                if let error {
                     continuation.resume(throwing: error)
                 } else {
                     continuation.resume()
@@ -126,7 +126,7 @@ extension KeychainXPCProtocol {
                 service: service,
                 accessGroup: accessGroup
             ) { result, error in
-                if let error = error {
+                if let error {
                     continuation.resume(throwing: error)
                 } else {
                     continuation.resume(returning: result)
@@ -146,9 +146,9 @@ extension KeychainXPCProtocol {
                 service: service,
                 accessGroup: accessGroup
             ) { data, error in
-                if let error = error {
+                if let error {
                     continuation.resume(throwing: error)
-                } else if let data = data {
+                } else if let data {
                     continuation.resume(returning: data)
                 } else {
                     continuation.resume(throwing: KeychainError.itemNotFound)
@@ -169,15 +169,15 @@ public enum KeychainError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .duplicateItem:
-            return "A duplicate item was found"
+            "A duplicate item was found"
         case .itemNotFound:
-            return "The item could not be found"
+            "The item could not be found"
         case .authenticationFailed:
-            return "Authentication failed"
-        case .unhandledError(let status):
-            return "Unhandled error with status: \(status)"
-        case .other(let message):
-            return message
+            "Authentication failed"
+        case let .unhandledError(status):
+            "Unhandled error with status: \(status)"
+        case let .other(message):
+            message
         }
     }
 }
@@ -237,7 +237,7 @@ final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, KeychainXP
     /// - Returns: True if service is available
     @objc
     public func ping() async -> Bool {
-        return isStarted
+        isStarted
     }
 
     /// Synchronize keys between XPC service and client
@@ -275,19 +275,19 @@ final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, KeychainXP
     public func resetSecurity() async -> Result<Void, XPCSecurityError> {
         // For a keychain service, resetting would mean clearing keychain items
         // This is a simplified version for demonstration
-        return .success(())
+        .success(())
     }
 
     /// Get the service version
     /// - Returns: Result with version string on success or error on failure
     public func getServiceVersion() async -> Result<String, XPCSecurityError> {
-        return .success("1.0.0")
+        .success("1.0.0")
     }
 
     /// Get the hardware identifier
     /// - Returns: Result with identifier string on success or error on failure
     public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
-        return .success("keychain-xpc-service-hardware-id")
+        .success("keychain-xpc-service-hardware-id")
     }
 
     /// Store secure data by key
@@ -367,7 +367,7 @@ final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, KeychainXP
         let statusInfo: [String: Any] = [
             "available": isStarted,
             "version": "1.0.0",
-            "protocol": Self.protocolIdentifier
+            "protocol": Self.protocolIdentifier,
         ]
         return .success(statusInfo)
     }
@@ -463,15 +463,15 @@ final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, KeychainXP
     private func mapKeychainErrorToXPCSecurityError(_ error: KeychainError, operation: String) -> XPCSecurityError {
         switch error {
         case .duplicateItem:
-            return .secureStorageError(operation: operation, details: "Duplicate item exists")
+            .secureStorageError(operation: operation, details: "Duplicate item exists")
         case .itemNotFound:
-            return .itemNotFound(itemType: "keychain", identifier: operation)
+            .itemNotFound(itemType: "keychain", identifier: operation)
         case .authenticationFailed:
-            return .authenticationFailed(reason: "Keychain authentication failed")
-        case .unhandledError(let status):
-            return .secureStorageError(operation: operation, details: "Unhandled error with status: \(status)")
-        case .other(let message):
-            return .secureStorageError(operation: operation, details: message)
+            .authenticationFailed(reason: "Keychain authentication failed")
+        case let .unhandledError(status):
+            .secureStorageError(operation: operation, details: "Unhandled error with status: \(status)")
+        case let .other(message):
+            .secureStorageError(operation: operation, details: message)
         }
     }
 
@@ -482,9 +482,9 @@ final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, KeychainXP
     ///   - data: SecureBytes to encrypt
     ///   - keyIdentifier: Optional identifier for the key to use
     /// - Returns: Result with encrypted SecureBytes on success or error on failure
-    public func encryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    public func encryptSecureData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
         // Keychain service doesn't provide encryption
-        return .failure(.notImplemented(reason: "Encryption not implemented in KeychainXPCService"))
+        .failure(.notImplemented(reason: "Encryption not implemented in KeychainXPCService"))
     }
 
     /// Decrypt data using the service's decryption mechanism
@@ -492,9 +492,9 @@ final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, KeychainXP
     ///   - data: SecureBytes to decrypt
     ///   - keyIdentifier: Optional identifier for the key to use
     /// - Returns: Result with decrypted SecureBytes on success or error on failure
-    public func decryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    public func decryptSecureData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
         // Keychain service doesn't provide decryption
-        return .failure(.notImplemented(reason: "Decryption not implemented in KeychainXPCService"))
+        .failure(.notImplemented(reason: "Decryption not implemented in KeychainXPCService"))
     }
 
     /// Sign data using the service's signing mechanism
@@ -502,9 +502,9 @@ final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, KeychainXP
     ///   - data: SecureBytes to sign
     ///   - keyIdentifier: Identifier for the signing key
     /// - Returns: Result with signature as SecureBytes on success or error on failure
-    public func sign(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+    public func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
         // Keychain service doesn't provide signing
-        return .failure(.notImplemented(reason: "Signing not implemented in KeychainXPCService"))
+        .failure(.notImplemented(reason: "Signing not implemented in KeychainXPCService"))
     }
 
     /// Verify signature for data
@@ -513,9 +513,9 @@ final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, KeychainXP
     ///   - data: SecureBytes containing the data to verify
     ///   - keyIdentifier: Identifier for the verification key
     /// - Returns: Result with boolean indicating verification result or error on failure
-    public func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    public func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
         // Keychain service doesn't provide signature verification
-        return .failure(.notImplemented(reason: "Signature verification not implemented in KeychainXPCService"))
+        .failure(.notImplemented(reason: "Signature verification not implemented in KeychainXPCService"))
     }
 }
 

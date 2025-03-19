@@ -71,16 +71,16 @@ public extension XPCErrorHandlingProtocol {
     /// Default implementation for converting XPCSecurityError to Error
     func convertToError(_ error: XPCSecurityError) -> Error {
         // Simply return the XPCSecurityError as it already conforms to Error
-        return error
+        error
     }
 
     /// Map any Swift error to an XPCSecurityError
     func mapError(_ error: Error) -> XPCSecurityError {
         if let xpcError = error as? XPCSecurityError {
-            return xpcError
+            xpcError
         } else {
             // Convert generic errors to XPCSecurityError
-            return .internalError(reason: "\(type(of: error)) error: \(error.localizedDescription)")
+            .internalError(reason: "\(type(of: error)) error: \(error.localizedDescription)")
         }
     }
 }

@@ -62,7 +62,7 @@ final class SecurityErrorHandlerTests: XCTestCase {
         ("testMaxRetries", testMaxRetries),
         ("testErrorStatsTracking", testErrorStatsTracking),
         ("testRapidFailureThrottling", testRapidFailureThrottling),
-        ("testContextReset", testContextReset)
+        ("testContextReset", testContextReset),
     ]
 
     override func setUp() async throws {

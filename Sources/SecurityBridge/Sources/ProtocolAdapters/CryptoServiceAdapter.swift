@@ -107,7 +107,8 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     /// - Parameter length: Number of random bytes to generate
     /// - Returns: Result containing random data or error
     public func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         // Call the implementation
         let result = await implementation.generateRandomData(length: length)
 
@@ -333,7 +334,8 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     /// - Parameter result: The failed result
     /// - Returns: A Security.Protocols error
     private func mapFoundationSecurityResult(_ result: FoundationSecurityResult) -> UmbraErrors
-        .Security.Protocols {
+        .Security.Protocols
+    {
         let errorMessage = result.errorMessage ?? "Unknown error"
         let errorCode = result.errorCode ?? -1
 

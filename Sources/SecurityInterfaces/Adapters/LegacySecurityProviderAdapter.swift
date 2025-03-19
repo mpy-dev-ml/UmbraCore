@@ -8,15 +8,17 @@ import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
+import CoreDTOs
 
-/// Legacy adapter implementation conforming to SecurityProvider protocol
+/// Legacy adapter implementation conforming to SecurityProtocolsCore.SecurityProviderProtocol protocol
 /// This adapter works with older SecurityProviderBase implementations
 @available(macOS 14.0, *)
 @available(*, deprecated, message: "Use ModernSecurityProviderAdapter instead")
-public final class LegacySecurityProviderAdapter: SecurityProvider {
+public final class LegacySecurityProviderAdapter: SecurityProtocolsCore.SecurityProviderProtocol {
     // MARK: - Properties
 
     private let legacyProvider: any SecurityProviderBase
+    private let provider: any SecurityProtocolsCore.SecurityProviderProtocol
     private let service: any XPCServiceProtocolStandard
     private let cryptoServiceImpl: any SecurityProtocolsCore.CryptoServiceProtocol
     private let keyManagerImpl: any SecurityProtocolsCore.KeyManagementProtocol
@@ -36,30 +38,54 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
     /// Initialize with a legacy provider and XPC service
     /// - Parameters:
     ///   - legacyProvider: The SecurityProviderBase implementation to adapt
+    ///   - provider: The security provider to adapt
     ///   - service: The XPC service to use
     ///   - cryptoService: The crypto service to use
     ///   - keyManager: The key manager to use
     public init(
         legacyProvider: any SecurityProviderBase,
+        provider: any SecurityProtocolsCore.SecurityProviderProtocol,
         service: any XPCServiceProtocolStandard,
         cryptoService: any SecurityProtocolsCore.CryptoServiceProtocol,
         keyManager: any SecurityProtocolsCore.KeyManagementProtocol
     ) {
         self.legacyProvider = legacyProvider
+        self.provider = provider
         self.service = service
-        self.cryptoServiceImpl = cryptoService
-        self.keyManagerImpl = keyManager
+        cryptoServiceImpl = cryptoService
+        keyManagerImpl = keyManager
+    }
+
+    convenience init(
+        legacyProvider: any SecurityProviderBase,
+        provider: any SecurityProtocolsCore.SecurityProviderProtocol,
+        basicService: any XPCServiceProtocolBasic
+    ) {
+        // Cast the basic service to a standard service
+        assert(
+            basicService is XPCServiceProtocolStandard,
+            "Service must implement XPCServiceProtocolStandard"
+        )
+        
+        self.init(
+            legacyProvider: legacyProvider,
+            provider: provider,
+            service: basicService as! XPCServiceProtocolStandard,
+            cryptoService: SecurityProviderMockCryptoService(),
+            keyManager: SecurityProviderMockKeyManager()
+        )
     }
 
     /// Initialize with a legacy provider and mock services
     /// - Parameter legacyProvider: The SecurityProviderBase implementation to adapt
     public init(legacyProvider: any SecurityProviderBase) {
         self.legacyProvider = legacyProvider
+        self.provider = legacyProvider as! any SecurityProtocolsCore.SecurityProviderProtocol
         // Create a basic service and adapt it to the standard protocol
         let basicService = SecurityProviderMockXPCService()
-        self.service = basicService as! any XPCServiceProtocolStandard
-        self.cryptoServiceImpl = SecurityProviderMockCryptoService()
-        self.keyManagerImpl = SecurityProviderMockKeyManager()
+        service = basicService as! XPCServiceProtocolStandard
+        cryptoServiceImpl = SecurityProviderMockCryptoService()
+        keyManagerImpl = SecurityProviderMockKeyManager()
     }
 
     // MARK: - SecurityProviderProtocol implementation
@@ -85,9 +111,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
                 )
 
             switch result {
-            case .success(let data):
+            case let .success(data):
                 return SecurityProtocolsCore.SecurityResultDTO(success: true, data: data)
-            case .failure(let error):
+            case let .failure(error):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: false,
                     error: SecurityProtocolsCore.SecurityError.operationFailed(operation: "decrypt", reason: "\(error)")
@@ -99,12 +125,12 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
             let result = await keyManager.generateKey(type: .aes256, config: config)
 
             switch result {
-            case .success(let keyId):
+            case let .success(keyId):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: true,
                     options: ["keyIdentifier": keyId]
                 )
-            case .failure(let error):
+            case let .failure(error):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: false,
                     error: SecurityProtocolsCore.SecurityError.operationFailed(operation: "generateKey", reason: "\(error)")
@@ -119,7 +145,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
             switch result {
             case .success:
                 return SecurityProtocolsCore.SecurityResultDTO(success: true)
-            case .failure(let error):
+            case let .failure(error):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: false,
                     error: SecurityProtocolsCore.SecurityError.operationFailed(operation: "requestKeyRotation", reason: "\(error)")
@@ -156,17 +182,18 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let result = await service.status()
 
         switch result {
-        case .success(let status):
+        case let .success(status):
             let config = SecurityProviderUtils.createSecurityConfiguration(from: status)
             return .success(config)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapXPCError(error))
         }
     }
 
-    public func updateSecurityConfiguration(_ configuration: SecurityConfiguration) async throws {
+    public func updateSecurityConfiguration(_: SecurityConfiguration) async throws -> Result<Void, SecurityInterfacesError> {
         // Legacy providers don't support security configuration updates,
         // so we just return successfully
+        return .success(())
     }
 
     public func getHostIdentifier() async -> Result<String, SecurityInterfacesError> {
@@ -174,9 +201,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let result = await legacyProvider.getHostIdentifier()
 
         switch result {
-        case .success(let identifier):
+        case let .success(identifier):
             return .success(identifier)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityInterfacesError.operationFailed("Host identifier error: \(error)"))
         }
     }
@@ -186,9 +213,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let result = await legacyProvider.registerClient(bundleIdentifier: bundleIdentifier)
 
         switch result {
-        case .success(let registered):
+        case let .success(registered):
             return .success(registered)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityInterfacesError.operationFailed("Client registration error: \(error)"))
         }
     }
@@ -200,7 +227,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         switch result {
         case .success:
             return .success(())
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityInterfacesError.operationFailed("Key rotation error: \(error)"))
         }
     }
@@ -212,7 +239,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         switch result {
         case .success:
             return .success(())
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityInterfacesError.operationFailed("Key compromise notification error: \(error)"))
         }
     }
@@ -222,9 +249,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let result = await service.generateRandomData(length: length)
 
         switch result {
-        case .success(let data):
+        case let .success(data):
             return .success(data)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapXPCError(error))
         }
     }
@@ -235,7 +262,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let keyInfo: [String: AnyObject] = [
             "keyId": keyId as AnyObject,
             "type": "unknown" as AnyObject,
-            "creationDate": Date() as AnyObject
+            "creationDate": Date() as AnyObject,
         ]
 
         return .success(keyInfo)
@@ -257,14 +284,12 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
             key: key,
             config: createSecureConfig(options: nil)
         )
-
+        
         switch result {
-        case .success(let encryptedData):
+        case let .success(encryptedData):
             return .success(encryptedData)
-        case .failure(let error):
-            return .failure(
-                error: SecurityProtocolsCore.SecurityError.operationFailed(operation: "encrypt", reason: "\(error)")
-            )
+        case let .failure(error):
+            return .failure(SecurityInterfacesError.operationFailed("Encryption failed: \(error.localizedDescription)"))
         }
     }
 
@@ -272,38 +297,36 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         operation: SecurityProtocolsCore.SecurityOperation,
         data: Data?,
         parameters: [String: String]
-    ) async throws -> SecurityResult {
+    ) async throws -> SecurityResultDTO {
         // Convert data to SecureBytes if provided
         let secureData = data.map { SecurityProviderUtils.dataToSecureBytes($0) }
 
-        // Create a configuration
-        var config = createSecureConfig(options: parameters)
-        if let secureData = secureData {
-            config = config.withInputData(secureData)
-        }
-
-        // Perform the operation
-        let result = await performSecureOperation(
-            operation: operation,
-            config: config
+        // Create a configuration from the parameters
+        let config = SecurityProtocolsCore.SecurityConfigDTO(
+            algorithm: parameters["algorithm"] ?? "AES",
+            keySizeInBits: Int(parameters["keySize"] ?? "256") ?? 256,
+            options: parameters
         )
+
+        // Use the CryptoService directly to perform the operation
+        let result = await performSecureOperation(operation: operation, config: config.withData(secureData))
 
         // Convert the result
         if result.success {
             let resultData = result.data.map { SecurityProviderUtils.secureBytesToData($0) }
-            return SecurityResult(success: true, data: resultData, options: result.options)
+            return SecurityResultDTO(success: true, data: resultData, options: result.options)
         } else if let error = result.error {
             throw SecurityProviderUtils.mapSPCError(error)
         } else {
             throw SecurityInterfacesError.operationFailed("Operation failed without specific error")
         }
     }
-
-    public func performSecurityOperation(
+    
+    public func performCustomSecurityOperation(
         operationName: String,
         data: Data?,
         parameters: [String: String]
-    ) async throws -> SecurityResult {
+    ) async throws -> SecurityResultDTO {
         // Map the operation name to a SecurityOperation enum value
         guard let operation = SecurityProtocolsCore.SecurityOperation(rawValue: operationName) else {
             throw SecurityInterfacesError.invalidParameters("Invalid operation name: \(operationName)")

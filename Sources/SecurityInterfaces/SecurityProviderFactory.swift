@@ -52,7 +52,7 @@ public extension SecurityProviderFactory {
     /// - Returns: A configured security provider
     /// - Throws: Error if creation fails
     static func createProvider(type: SecurityProviderType) async throws -> SecurityProvider {
-        return try await StandardSecurityProviderFactory.createProvider(type: type)
+        try await StandardSecurityProviderFactory.createProvider(type: type)
     }
 
     /// Create a provider of the specified type using the default factory
@@ -60,14 +60,14 @@ public extension SecurityProviderFactory {
     /// - Returns: A configured security provider
     /// - Throws: Error if creation fails
     static func createProvider(ofType type: String) async throws -> SecurityProvider {
-        return try await StandardSecurityProviderFactory.createProvider(ofType: type)
+        try await StandardSecurityProviderFactory.createProvider(ofType: type)
     }
 
     /// Create a provider of the specified type (non-async version)
     /// - Parameter type: The string representation of the provider type
     /// - Returns: A SecurityProviderProtocol instance
     static func createSynchronousProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol {
-        return StandardSecurityProviderFactory.createSynchronousProvider(ofType: type)
+        StandardSecurityProviderFactory.createSynchronousProvider(ofType: type)
     }
 }
 
@@ -161,20 +161,18 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
     /// - Returns: A configured security provider
     /// - Throws: Error if creation fails
     public static func createProvider(ofType type: String) async throws -> SecurityProvider {
-        let providerType: SecurityProviderType
-
-        switch type.lowercased() {
+        let providerType: SecurityProviderType = switch type.lowercased() {
         case "standard", "default", "production":
-            providerType = .standard
+            .standard
         case "debug":
-            providerType = .debug
+            .debug
         case "test", "mock", "dummy":
-            providerType = .test
+            .test
         case "legacy", "compatible":
-            providerType = .legacy
+            .legacy
         default:
             // Use standard as fallback
-            providerType = .standard
+            .standard
         }
 
         return try await createProvider(type: providerType)
@@ -188,20 +186,18 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
         let factory = StandardSecurityProviderFactory()
 
         // Determine the provider type
-        let providerType: SecurityProviderType
-
-        switch type.lowercased() {
+        let providerType: SecurityProviderType = switch type.lowercased() {
         case "standard", "default", "production":
-            providerType = .standard
+            .standard
         case "debug":
-            providerType = .debug
+            .debug
         case "test", "mock", "dummy":
-            providerType = .test
+            .test
         case "legacy", "compatible":
-            providerType = .legacy
+            .legacy
         default:
             // Use standard as fallback
-            providerType = .standard
+            .standard
         }
 
         // Create a configuration based on the provider type
@@ -222,7 +218,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
             "timeout": String(config.debugMode ? 10.0 : 30.0),
             "testMode": String(config.debugMode),
             "allowUnsafeOperations": String(config.requiresAuthentication),
-            "retryCount": String(config.securityLevel == .maximum ? 5 : 3)
+            "retryCount": String(config.securityLevel == .maximum ? 5 : 3),
         ]
 
         // Add any custom options
@@ -247,7 +243,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
             keySizeInBits: Int(safeOptions["keySizeInBits"] ?? "256") ?? 256,
             initializationVector: nil,
             additionalAuthenticatedData: nil,
-            iterations: Int(safeOptions["iterations"] ?? "10000") ?? 10_000,
+            iterations: Int(safeOptions["iterations"] ?? "10000") ?? 10000,
             options: safeOptions,
             keyIdentifier: safeOptions["keyIdentifier"],
             inputData: nil,
@@ -264,7 +260,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
             "debugMode": String(config.debugMode),
             "testMode": String(config.debugMode),
             "allowUnsafeOperations": String(config.requiresAuthentication),
-            "retryCount": String(config.securityLevel == .maximum ? 5 : 3)
+            "retryCount": String(config.securityLevel == .maximum ? 5 : 3),
         ]
 
         // Add any custom options
@@ -283,7 +279,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
     private func createConfiguration(for type: SecurityProviderType) -> ProviderFactoryConfiguration {
         switch type {
         case .standard, .production:
-            return ProviderFactoryConfiguration(
+            ProviderFactoryConfiguration(
                 useModernProtocols: true,
                 useMockServices: false,
                 securityLevel: .standard,
@@ -292,7 +288,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
             )
 
         case .debug:
-            return ProviderFactoryConfiguration(
+            ProviderFactoryConfiguration(
                 useModernProtocols: true,
                 useMockServices: false,
                 securityLevel: .standard,
@@ -302,7 +298,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
             )
 
         case .test, .mock:
-            return ProviderFactoryConfiguration(
+            ProviderFactoryConfiguration(
                 useModernProtocols: true,
                 useMockServices: true,
                 securityLevel: .basic,
@@ -312,7 +308,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
             )
 
         case .legacy:
-            return ProviderFactoryConfiguration(
+            ProviderFactoryConfiguration(
                 useModernProtocols: false,
                 useMockServices: false,
                 securityLevel: .standard,
@@ -324,12 +320,12 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
 
     private func createModernSecurityProvider(config: ProviderFactoryConfiguration) -> SecurityProvider {
         // Create modern provider
-        return SecurityProviderAdapterFactory.shared.createModernProvider(config: config)
+        SecurityProviderAdapterFactory.shared.createModernProvider(config: config)
     }
 
     private func createLegacySecurityProvider(config: ProviderFactoryConfiguration) -> SecurityProvider {
         // Create legacy provider
-        return SecurityProviderAdapterFactory.shared.createLegacyProvider(config: config)
+        SecurityProviderAdapterFactory.shared.createLegacyProvider(config: config)
     }
 }
 
@@ -367,24 +363,24 @@ public final class DummySecurityProvider: SecurityProtocolsCore.SecurityProvider
     }
 
     public func performSecureOperation(
-        operation: SecurityProtocolsCore.SecurityOperation,
-        config: SecurityProtocolsCore.SecurityConfigDTO
+        operation _: SecurityProtocolsCore.SecurityOperation,
+        config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> SecurityProtocolsCore.SecurityResultDTO {
         // Default implementation
-        return SecurityProtocolsCore.SecurityResultDTO.failure(
-            code: 1_001,
+        SecurityProtocolsCore.SecurityResultDTO.failure(
+            code: 1001,
             message: "Not implemented in dummy provider"
         )
     }
 
     public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore.SecurityConfigDTO {
         // Create a default config
-        return SecurityProtocolsCore.SecurityConfigDTO(
+        SecurityProtocolsCore.SecurityConfigDTO(
             algorithm: "AES-GCM",
             keySizeInBits: 256,
             initializationVector: nil,
             additionalAuthenticatedData: nil,
-            iterations: 10_000,
+            iterations: 10000,
             options: options as? [String: String] ?? [:],
             keyIdentifier: nil,
             inputData: nil,

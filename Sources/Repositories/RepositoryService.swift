@@ -59,7 +59,7 @@ public actor RepositoryService {
         let metadata = LogMetadata([
             "repository_id": identifier,
             "location": location.path,
-            "state": String(describing: state)
+            "state": String(describing: state),
         ])
 
         await logger.info("Registering repository", metadata: metadata)
@@ -117,7 +117,7 @@ public actor RepositoryService {
     /// identifier.
     public func deregister(identifier: String) async throws {
         let metadata = LogMetadata([
-            "repository_id": identifier
+            "repository_id": identifier,
         ])
         await logger.info("Deregistering repository", metadata: metadata)
 
@@ -136,7 +136,7 @@ public actor RepositoryService {
         await logger.debug(
             "Listing repositories",
             metadata: LogMetadata([
-                "count": String(repositories.count)
+                "count": String(repositories.count),
             ])
         )
         return Array(repositories.values)
@@ -150,7 +150,7 @@ public actor RepositoryService {
         await logger.debug(
             "Getting repository",
             metadata: LogMetadata([
-                "repository_id": identifier
+                "repository_id": identifier,
             ])
         )
         return repositories[identifier]
@@ -165,7 +165,7 @@ public actor RepositoryService {
         await logger.debug(
             "Getting repository by URL",
             metadata: LogMetadata([
-                "path": path
+                "path": path,
             ])
         )
 

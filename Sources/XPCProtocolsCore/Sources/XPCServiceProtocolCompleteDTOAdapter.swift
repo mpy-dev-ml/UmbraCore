@@ -1,12 +1,12 @@
 /**
  # XPC Service Protocol Complete DTO Adapter
- 
+
  This file implements an adapter for wrapping a legacy complete XPC service implementation with
  the new DTO-based protocol interface. It provides a bridge between the old and new protocols,
  allowing existing implementations to be used with the new DTO approach.
- 
+
  ## Features
- 
+
  * Compatible with existing XPCServiceProtocolComplete implementations
  * Provides Foundation-independent interface via DTOs
  * Handles conversion between legacy errors and DTO-based errors
@@ -21,15 +21,15 @@ import UmbraCoreTypes
 public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, KeyManagementDTOProtocol, AdvancedSecurityDTOProtocol, KeyExchangeDTOProtocol {
     /// Wrapped legacy service implementation
     private let completeService: XPCServiceProtocolComplete
-    
+
     /// Initialize with a legacy complete service
     /// - Parameter completeService: Legacy complete service to wrap
     public init(completeService: XPCServiceProtocolComplete) {
         self.completeService = completeService
     }
-    
+
     // MARK: - Basic Protocol
-    
+
     /// Ping the service with DTO
     /// - Returns: Operation result with boolean success or error
     public func pingWithDTO() async -> OperationResultDTO<Bool> {
@@ -37,7 +37,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
         let result = await completeService.ping()
         return OperationResultDTO(value: result)
     }
-    
+
     /// Synchronise keys with DTO-based result
     /// - Parameter syncData: Data for key synchronisation
     /// - Returns: Operation result indicating success or detailed error
@@ -53,20 +53,20 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     // MARK: - Standard Protocol
-    
+
     /// Generate random data with DTO response
     /// - Parameter length: Length of random data in bytes
     /// - Returns: Operation result with secure bytes or error
     public func generateRandomDataWithDTO(length: Int) async -> OperationResultDTO<SecureBytes> {
         // Call legacy method
         let resultValue = await completeService.generateRandomData(length: length)
-        
+
         switch resultValue {
-        case .success(let randomData):
+        case let .success(randomData):
             return OperationResultDTO(value: randomData)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Random data generation failed: \(error.localizedDescription)",
@@ -74,7 +74,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Encrypt data using service's encryption mechanism with DTOs
     /// - Parameters:
     ///   - data: Data to encrypt
@@ -82,15 +82,15 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
     /// - Returns: Operation result with encrypted data or error
     public func encryptWithDTO(
         data: SecureBytes,
-        config: SecurityConfigDTO
+        config _: SecurityConfigDTO
     ) async -> OperationResultDTO<SecureBytes> {
         // Call legacy method
         let resultValue = await completeService.encrypt(data: data)
-        
+
         switch resultValue {
-        case .success(let encryptedData):
+        case let .success(encryptedData):
             return OperationResultDTO(value: encryptedData)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Encryption failed: \(error.localizedDescription)",
@@ -98,7 +98,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Decrypt data using service's decryption mechanism with DTOs
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -106,15 +106,15 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
     /// - Returns: Operation result with decrypted data or error
     public func decryptWithDTO(
         data: SecureBytes,
-        config: SecurityConfigDTO
+        config _: SecurityConfigDTO
     ) async -> OperationResultDTO<SecureBytes> {
         // Call legacy method
         let resultValue = await completeService.decrypt(data: data)
-        
+
         switch resultValue {
-        case .success(let decryptedData):
+        case let .success(decryptedData):
             return OperationResultDTO(value: decryptedData)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Decryption failed: \(error.localizedDescription)",
@@ -122,7 +122,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Generate a cryptographic key with DTO
     /// - Parameter config: Key generation configuration
     /// - Returns: Operation result with key identifier or detailed error
@@ -131,35 +131,35 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
     ) async -> OperationResultDTO<String> {
         // Extract purpose from options dictionary
         let purpose = config.options["purpose"] ?? "encryption"
-        
+
         // Call legacy method with extracted values
         let result = await completeService.generateKey(
             algorithm: config.algorithm,
             keySize: config.keySizeInBits,
             purpose: purpose
         )
-        
+
         switch result {
-        case .success(let keyId):
+        case let .success(keyId):
             return OperationResultDTO(value: keyId)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Key generation failed: \(error.localizedDescription)",
                 details: [
                     "errorCode": "\(error.code)",
-                    "errorDomain": error.domain
+                    "errorDomain": error.domain,
                 ]
             )
         }
     }
-    
+
     /// Get current service status with DTO
     /// - Returns: Operation result with service status DTO or error
     public func getStatusWithDTO() async -> OperationResultDTO<XPCProtocolDTOs.ServiceStatusDTO> {
         // Get status from the complete service
-        let _ = completeService.getStatus()
-        
+        _ = completeService.getStatus()
+
         // Convert legacy status to DTO
         return OperationResultDTO(value: XPCProtocolDTOs.ServiceStatusDTO(
             timestamp: Int64(Date().timeIntervalSince1970 * 1000),
@@ -169,18 +169,18 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             additionalInfo: [:]
         ))
     }
-    
+
     // MARK: - Complete Protocol (Key Management)
-    
+
     /// List available keys
     /// - Returns: Operation result with array of key identifiers or error
     public func listKeysWithDTO() async -> OperationResultDTO<[String]> {
         let result = await completeService.getKeyIdentifiers()
-        
+
         switch result {
-        case .success(let keys):
+        case let .success(keys):
             return OperationResultDTO(value: keys)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Key listing failed: \(error.localizedDescription)",
@@ -188,17 +188,17 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Delete a key
     /// - Parameter keyIdentifier: Identifier of the key to delete
     /// - Returns: Operation result indicating success or detailed error
     public func deleteKeyWithDTO(keyIdentifier: String) async -> OperationResultDTO<Bool> {
         let result = await completeService.deleteKey(keyIdentifier: keyIdentifier)
-        
+
         switch result {
-        case .success(let success):
+        case let .success(success):
             return OperationResultDTO(value: success)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Key deletion failed: \(error.localizedDescription)",
@@ -206,14 +206,14 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Import a key
     /// - Parameters:
     ///   - keyData: Key data to import
     ///   - config: Configuration for the key import operation
     /// - Returns: Operation result with key identifier or error
     public func importKeyWithDTO(
-        keyData: SecureBytes,
+        keyData _: SecureBytes,
         config: SecurityConfigDTO
     ) async -> OperationResultDTO<String> {
         // Use generateKey as a substitute since XPCServiceProtocolComplete doesn't have importKey with the same signature
@@ -222,11 +222,11 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             keySize: config.keySizeInBits,
             purpose: config.options["purpose"] ?? "encryption"
         )
-        
+
         switch result {
-        case .success(let keyId):
+        case let .success(keyId):
             return OperationResultDTO(value: keyId)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Key import failed: \(error.localizedDescription)",
@@ -234,7 +234,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Export a key
     /// - Parameters:
     ///   - keyIdentifier: Identifier of the key to export
@@ -242,17 +242,17 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
     /// - Returns: Operation result with key data or error
     public func exportKeyWithDTO(
         keyIdentifier: String,
-        config: SecurityConfigDTO
+        config _: SecurityConfigDTO
     ) async -> OperationResultDTO<SecureBytes> {
         // Call legacy method - ignore config parameter for now
         let result = await completeService.exportKey(
             keyIdentifier: keyIdentifier
         )
-        
+
         switch result {
-        case .success(let keyData):
+        case let .success(keyData):
             return OperationResultDTO(value: keyData)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Key export failed: \(error.localizedDescription)",
@@ -260,7 +260,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Get information about a key
     /// - Parameter keyIdentifier: Identifier of the key
     /// - Returns: Operation result with key info or error
@@ -268,11 +268,11 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
         keyIdentifier: String
     ) async -> OperationResultDTO<[String: String]> {
         let result = await completeService.getKeyInfo(keyIdentifier: keyIdentifier)
-        
+
         switch result {
-        case .success(let keyInfo):
+        case let .success(keyInfo):
             return OperationResultDTO(value: keyInfo)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Key info retrieval failed: \(error.localizedDescription)",
@@ -280,9 +280,9 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     // MARK: - Key Exchange
-    
+
     /// Generate key exchange parameters
     /// - Parameter config: Configuration for key exchange
     /// - Returns: Operation result with key exchange parameters or error
@@ -293,7 +293,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
         let adapter = KeyExchangeDTOAdapter(service: self)
         return await adapter.generateKeyExchangeParametersWithDTO(config: config)
     }
-    
+
     /// Calculate shared secret
     /// - Parameters:
     ///   - publicKey: Public key from the other party
@@ -313,9 +313,9 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             config: config
         )
     }
-    
+
     // MARK: - Advanced Operations
-    
+
     /// Perform a secure operation with multiple inputs and outputs
     /// - Parameters:
     ///   - operation: Operation identifier
@@ -325,55 +325,55 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
     public func performSecureOperationWithDTO(
         operation: String,
         inputs: [String: SecureBytes],
-        config: SecurityConfigDTO
+        config _: SecurityConfigDTO
     ) async -> OperationResultDTO<[String: SecureBytes]> {
         // Simple implementation for a few common operations
         switch operation {
         case "HASH":
             // Hash each input separately
             var outputs: [String: SecureBytes] = [:]
-            
+
             for (key, _) in inputs {
                 if let input = inputs[key] {
                     // Encrypt the input data
                     let result = await completeService.encrypt(
                         data: input
                     )
-                    
+
                     switch result {
-                    case .success(let encrypted):
+                    case let .success(encrypted):
                         outputs[key] = encrypted
-                    case .failure(let error):
+                    case let .failure(error):
                         // Handle error case
                         return OperationResultDTO(
                             errorCode: Int32(error.code),
                             errorMessage: "Encryption failed: \(error.localizedDescription)",
                             details: [
                                 "errorCode": "\(error.code)",
-                                "errorDomain": error.domain
+                                "errorDomain": error.domain,
                             ]
                         )
                     }
                 }
             }
-            
+
             return OperationResultDTO(value: outputs)
-            
+
         case "COMBINE":
             // Combine all inputs
             var combinedData = [UInt8]()
-            
+
             for (_, value) in inputs.sorted(by: { $0.key < $1.key }) {
                 var valueBytes = [UInt8]()
-                for i in 0..<value.count {
+                for i in 0 ..< value.count {
                     valueBytes.append(value[i])
                 }
                 combinedData.append(contentsOf: valueBytes)
             }
-            
+
             let result = SecureBytes(bytes: combinedData)
             return OperationResultDTO(value: ["result": result])
-            
+
         default:
             // For unknown operations, return an error
             return OperationResultDTO(
@@ -383,9 +383,9 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     // MARK: - Advanced Security Protocol
-    
+
     /// Sign data
     /// - Parameters:
     ///   - data: Data to sign
@@ -402,11 +402,11 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             keyIdentifier: keyIdentifier,
             algorithm: config.algorithm
         )
-        
+
         switch result {
-        case .success(let signature):
+        case let .success(signature):
             return OperationResultDTO(value: signature)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Signing failed: \(error.localizedDescription)",
@@ -414,7 +414,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Verify signature
     /// - Parameters:
     ///   - signature: Signature to verify
@@ -434,11 +434,11 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             keyIdentifier: keyIdentifier,
             algorithm: config.algorithm
         )
-        
+
         switch result {
-        case .success(let isValid):
+        case let .success(isValid):
             return OperationResultDTO(value: isValid)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Signature verification failed: \(error.localizedDescription)",
@@ -446,7 +446,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Derive a key from a password
     /// - Parameters:
     ///   - password: Password to derive from (as secure bytes)
@@ -459,22 +459,22 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
         // Convert SecureBytes to String for the underlying API
         // This is a simplification; in a real implementation we would need proper conversion
         var passwordBytes = [UInt8]()
-        for i in 0..<password.count {
+        for i in 0 ..< password.count {
             passwordBytes.append(password[i])
         }
         let passwordString = String(bytes: passwordBytes, encoding: .utf8) ?? ""
-        
+
         let result = await completeService.deriveKey(
             password: passwordString,
             salt: SecureBytes(bytes: []),
             iterations: Int(config.options["iterations"] ?? "10000") ?? 10000,
             keySize: config.keySizeInBits
         )
-        
+
         switch result {
-        case .success(let derivedKey):
+        case let .success(derivedKey):
             return OperationResultDTO(value: derivedKey)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Password-based key derivation failed: \(error.localizedDescription)",
@@ -482,7 +482,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Derive a key from another key
     /// - Parameters:
     ///   - sourceKeyIdentifier: Identifier of the source key
@@ -497,11 +497,11 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             algorithm: config.algorithm,
             keySize: config.keySizeInBits
         )
-        
+
         switch result {
-        case .success(let derivedKey):
+        case let .success(derivedKey):
             return OperationResultDTO(value: derivedKey)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Key-based key derivation failed: \(error.localizedDescription)",
@@ -509,22 +509,22 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             )
         }
     }
-    
+
     /// Reset security state with DTO
     /// - Returns: Operation result indicating success or detailed error
     public func resetSecurityWithDTO() async -> OperationResultDTO<Bool> {
         let result = await completeService.resetSecurity()
-        
+
         switch result {
         case .success:
             return OperationResultDTO(value: true)
-        case .failure(let error):
+        case let .failure(error):
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Security reset failed: \(error.localizedDescription)",
                 details: [
                     "errorCode": "\(error.code)",
-                    "errorDomain": error.domain
+                    "errorDomain": error.domain,
                 ]
             )
         }

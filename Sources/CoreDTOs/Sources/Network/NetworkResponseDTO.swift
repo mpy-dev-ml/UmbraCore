@@ -5,42 +5,42 @@ import UmbraCoreTypes
 /// without using any Foundation types.
 public struct NetworkResponseDTO: Sendable, Equatable {
     // MARK: - Properties
-    
+
     /// The ID of the request that this is a response to
     public let requestId: String
-    
+
     /// HTTP status code
     public let statusCode: Int
-    
+
     /// HTTP status message
     public let statusMessage: String
-    
+
     /// Response headers
     public let headers: [String: String]
-    
+
     /// Response body data as bytes
     public let bodyData: [UInt8]
-    
+
     /// Mime type of the response
     public let mimeType: String?
-    
+
     /// Character encoding of the response
     public let textEncodingName: String?
-    
+
     /// Whether the response was loaded from cache
     public let isFromCache: Bool
-    
+
     /// Duration of the network operation in seconds
     public let duration: Double
-    
+
     /// Timestamp when the response was received (Unix timestamp in seconds)
     public let timestamp: UInt64
-    
+
     /// Additional metadata for the response
     public let metadata: [String: String]
-    
+
     // MARK: - Initializers
-    
+
     /// Full initializer with all response properties
     /// - Parameters:
     ///   - requestId: The ID of the request that this is a response to
@@ -79,9 +79,9 @@ public struct NetworkResponseDTO: Sendable, Equatable {
         self.timestamp = timestamp
         self.metadata = metadata
     }
-    
+
     // MARK: - Factory Methods
-    
+
     /// Create a successful response
     /// - Parameters:
     ///   - requestId: The ID of the request that this is a response to
@@ -110,7 +110,7 @@ public struct NetworkResponseDTO: Sendable, Equatable {
             timestamp: timestamp
         )
     }
-    
+
     /// Create an error response
     /// - Parameters:
     ///   - requestId: The ID of the request that this is a response to
@@ -138,7 +138,7 @@ public struct NetworkResponseDTO: Sendable, Equatable {
             metadata: ["error": "true"]
         )
     }
-    
+
     /// Create a network failure response (not a HTTP error)
     /// - Parameters:
     ///   - requestId: The ID of the request that this is a response to
@@ -161,70 +161,70 @@ public struct NetworkResponseDTO: Sendable, Equatable {
             metadata: ["error": "true", "networkError": "true"]
         )
     }
-    
+
     // MARK: - Computed Properties
-    
+
     /// Whether the response represents a successful HTTP status (200-299)
     public var isSuccess: Bool {
         statusCode >= 200 && statusCode < 300
     }
-    
+
     /// Whether the response represents a client error (400-499)
     public var isClientError: Bool {
         statusCode >= 400 && statusCode < 500
     }
-    
+
     /// Whether the response represents a server error (500-599)
     public var isServerError: Bool {
         statusCode >= 500 && statusCode < 600
     }
-    
+
     /// Whether the response represents any kind of error
     public var isError: Bool {
         statusCode < 0 || statusCode >= 400
     }
-    
+
     /// Size of the response body in bytes
     public var bodySize: Int {
         bodyData.count
     }
-    
+
     // MARK: - Utility Methods
-    
+
     /// Attempts to convert the body data to a UTF-8 string
     /// - Returns: Body data as a UTF-8 string, or nil if conversion fails
     public func bodyAsUTF8String() -> String? {
         guard !bodyData.isEmpty else { return nil }
-        
+
         // Use native Swift String initializer with byte array
         return String(bytes: bodyData, encoding: .utf8)
     }
-    
+
     /// Get a header value by name
     /// - Parameter name: Header name (case-insensitive)
     /// - Returns: Header value, or nil if not found
     public func getHeader(_ name: String) -> String? {
         // Headers are often case-insensitive, so we'll check in a case-insensitive way
         let lowercaseName = name.lowercased()
-        
+
         for (key, value) in headers {
             if key.lowercased() == lowercaseName {
                 return value
             }
         }
-        
+
         return nil
     }
-    
+
     /// Create a copy of this response with updated metadata
     /// - Parameter additionalMetadata: The metadata to add or update
     /// - Returns: A new NetworkResponseDTO with updated metadata
     public func withUpdatedMetadata(_ additionalMetadata: [String: String]) -> NetworkResponseDTO {
-        var newMetadata = self.metadata
+        var newMetadata = metadata
         for (key, value) in additionalMetadata {
             newMetadata[key] = value
         }
-        
+
         return NetworkResponseDTO(
             requestId: requestId,
             statusCode: statusCode,

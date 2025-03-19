@@ -1,18 +1,15 @@
-import ErrorHandling
-import ErrorHandlingDomains
 import Foundation
-import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
 
-/// Modern adapter implementation conforming to SecurityProvider protocol
-/// This adapter works with the modern SecurityProtocolsCore provider
+/// A modern adapter that bridges between provider protocols and the XPC service
 @available(macOS 14.0, *)
-public final class ModernSecurityProviderAdapter: SecurityProvider {
+public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.SecurityProviderProtocol {
     // MARK: - Properties
 
     private let provider: any SecurityProtocolsCore.SecurityProviderProtocol
+    // Using the basic XPC service protocol directly from XPCProtocolsCore
     private let service: any XPCServiceProtocolBasic
 
     /// The crypto service from the provider
@@ -27,10 +24,10 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
 
     // MARK: - Initialization
 
-    /// Create a Modern Security Provider Adapter
+    /// Initialize with a security provider and service
     /// - Parameters:
-    ///   - provider: The security provider to adapt
-    ///   - service: The XPC service to use
+    ///   - provider: The security provider implementation
+    ///   - service: The XPC service
     public init(
         provider: any SecurityProtocolsCore.SecurityProviderProtocol,
         service: any XPCServiceProtocolBasic
@@ -59,7 +56,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         let statusResult = await getServiceStatus()
 
         switch statusResult {
-        case .success(let status):
+        case let .success(status):
             // Create a security configuration from the status
             var securityLevel: SecurityLevel = .standard
             if let levelString = status["securityLevel"], let level = Int(levelString), let secLevel = SecurityLevel(rawValue: level) {
@@ -69,7 +66,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
             // Create a basic configuration with defaults
             let config = SecurityConfiguration(securityLevel: securityLevel)
             return .success(config)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -81,7 +78,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         let options = [
             "securityLevel": String(securityLevel),
             "encryptionEnabled": "true",
-            "hashingEnabled": "true"
+            "hashingEnabled": "true",
         ]
 
         var config = provider.createSecureConfig(options: options)
@@ -110,7 +107,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         switch result {
         case .success:
             return
-        case .failure(let error):
+        case let .failure(error):
             throw error
         }
     }
@@ -120,9 +117,9 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         let result = await service.getHardwareIdentifier()
 
         switch result {
-        case .success(let identifier):
+        case let .success(identifier):
             return .success(identifier)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapXPCError(error))
         }
     }
@@ -196,9 +193,9 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         let result = await service.generateRandomData(length: length)
 
         switch result {
-        case .success(let data):
+        case let .success(data):
             return .success(data)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapXPCError(error))
         }
     }
@@ -281,7 +278,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
 
         // Create a configuration
         var config = provider.createSecureConfig(options: parameters)
-        if let secureData = secureData {
+        if let secureData {
             config = config.withInputData(secureData)
         }
 
@@ -321,25 +318,28 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
 
     private func getServiceStatus() async -> Result<[String: String], SecurityInterfacesError> {
         // Use service's type to check if it can provide status
-        if let standardService = service as? XPCServiceProtocolStandard {
+        if let standardService = service as? any XPCServiceProtocolStandard {
             // Get the status from the service
             let statusResult = await standardService.status()
-            
-            // Handle the result
+
             switch statusResult {
             case .success(let statusDict):
-                // Convert the AnyObject values to strings
-                var stringDict: [String: String] = [:]
+                // Convert Any values to String for consistent interface
+                var stringDict = [String: String]()
                 for (key, value) in statusDict {
                     stringDict[key] = String(describing: value)
                 }
                 return .success(stringDict)
             case .failure(let error):
-                return .failure(.operationFailed("Failed to get service status: \(error)"))
+                return .failure(SecurityProviderUtils.mapToSecurityInterfacesError(error))
             }
-        } else {
-            // Basic service doesn't support status
-            return .success(["status": "active", "type": "basic"])
         }
+        
+        // Default implementation - return basic info
+        return .success([
+            "service": service.protocolIdentifier,
+            "available": "true",
+            "ping": String(await service.ping())
+        ])
     }
 }

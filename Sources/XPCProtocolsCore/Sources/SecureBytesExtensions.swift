@@ -1,11 +1,11 @@
 /**
  # SecureBytes Extensions
- 
+
  This file provides extensions to SecureBytes for handling common encoding/decoding operations
  in a Foundation-independent way.
- 
+
  ## Features
- 
+
  * Foundation-independent string conversions
  * Utility methods for working with passwords and text
  * Compatible with the XPC DTO-based protocols
@@ -19,14 +19,14 @@ public extension SecureBytes {
     private static let asciiTable: [UInt8: Character] = {
         var table: [UInt8: Character] = [:]
         // ASCII printable characters (32-126)
-        for byte in 32...126 {
+        for byte in 32 ... 126 {
             if let scalar = UnicodeScalar(byte) {
                 table[UInt8(byte)] = Character(scalar)
             }
         }
         return table
     }()
-    
+
     /// Convert SecureBytes to a string using ASCII encoding
     /// - Returns: ASCII string representation or nil if data contains non-ASCII bytes
     func toASCIIString() -> String? {
@@ -39,7 +39,7 @@ public extension SecureBytes {
         }
         return result
     }
-    
+
     /// Create SecureBytes from an ASCII string
     /// - Parameter string: ASCII string to convert
     /// - Returns: New SecureBytes containing the encoded string data
@@ -47,15 +47,16 @@ public extension SecureBytes {
         var bytes: [UInt8] = []
         for char in string {
             guard let scalar = char.unicodeScalars.first,
-                  scalar.value <= 127,  // ASCII range
-                  let byte = UInt8(exactly: scalar.value) else {
+                  scalar.value <= 127, // ASCII range
+                  let byte = UInt8(exactly: scalar.value)
+            else {
                 return nil // Non-ASCII character found
             }
             bytes.append(byte)
         }
         return SecureBytes(bytes: bytes)
     }
-    
+
     /// Get a substring as SecureBytes
     /// - Parameters:
     ///   - start: Start index
@@ -66,12 +67,12 @@ public extension SecureBytes {
             return SecureBytes()
         }
         var result = [UInt8]()
-        for i in start..<(start + length) {
+        for i in start ..< (start + length) {
             result.append(self[i])
         }
         return SecureBytes(bytes: result)
     }
-    
+
     /// Determine if SecureBytes is valid ASCII text
     /// - Returns: True if all bytes are valid ASCII
     func isASCIIText() -> Bool {

@@ -72,7 +72,7 @@ public struct KeyMetadata: Sendable, Codable {
     /// Convert to the canonical KeyMetadata type
     /// - Returns: The equivalent canonical KeyMetadata
     public func toCanonical() -> KeyManagementTypes.KeyMetadata {
-        return KeyManagementTypes.KeyMetadata.withTimestamps(
+        KeyManagementTypes.KeyMetadata.withTimestamps(
             status: status,
             storageLocation: storageLocation,
             accessControls: accessControls,
@@ -92,7 +92,7 @@ public struct KeyMetadata: Sendable, Codable {
     /// - Parameter canonical: The canonical KeyMetadata to convert from
     /// - Returns: The equivalent legacy KeyMetadata
     public static func from(canonical: KeyManagementTypes.KeyMetadata) -> KeyMetadata {
-        return KeyMetadata(
+        KeyMetadata(
             status: canonical.status,
             storageLocation: canonical.storageLocation,
             accessControls: canonical.accessControls,
