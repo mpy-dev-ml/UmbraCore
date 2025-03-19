@@ -1,0 +1,17 @@
+load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+
+umbra_swift_library(
+    name = "SecurityInterfacesExamples",
+    srcs = glob(["*.swift"]),
+    enable_library_evolution = True,
+    tags = ["manual"],  # Mark as manual so it won't be built by default
+    deps = [
+        "//Sources/CoreDTOs",
+        "//Sources/SecurityBridge",
+        "//Sources/SecurityInterfaces",
+        "//Sources/SecurityInterfacesBase",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/XPCProtocolsCore",
+    ],
+)

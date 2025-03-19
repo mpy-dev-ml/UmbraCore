@@ -88,12 +88,9 @@ public extension XPCServiceProtocolStandard {
 
     /// Default implementation forwards to the basic ping
     func pingStandard() async -> Result<Bool, XPCSecurityError> {
-        do {
-            let pingResult = try await ping()
-            return .success(pingResult)
-        } catch {
-            return .failure(.serviceUnavailable)
-        }
+        // Simple implementation that doesn't throw
+        let pingResult = await ping()
+        return .success(pingResult)
     }
 
     /// Default service status implementation
