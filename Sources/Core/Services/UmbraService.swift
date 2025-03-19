@@ -65,11 +65,11 @@ public protocol HealthCheckable {
 }
 
 // Extension to add more details to CoreErrors.ServiceError
-extension CoreErrors.ServiceError {
+public extension CoreErrors.ServiceError {
     /// Add a detailed message to the error
     /// - Parameter message: The detailed error message
     /// - Returns: A corresponding CoreErrors.ServiceError with the message
-    public static func withMessage(_ message: String) -> CoreErrors.ServiceError {
+    static func withMessage(_ message: String) -> CoreErrors.ServiceError {
         switch self {
         case .initialisationFailed:
             // We can't modify the enum case, but we can provide guidance on how to handle the message

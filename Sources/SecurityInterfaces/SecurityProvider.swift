@@ -127,7 +127,8 @@ public final class SecurityProviderAdapter: SecurityProvider {
     }
 
     public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore
-        .SecurityConfigDTO {
+        .SecurityConfigDTO
+    {
         bridge.createSecureConfig(options: options)
     }
 

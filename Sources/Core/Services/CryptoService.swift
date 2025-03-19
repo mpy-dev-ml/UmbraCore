@@ -21,13 +21,13 @@ import Foundation
 public typealias CryptoConfig = CryptoTypes.CryptoConfig
 
 // Keep existing functionality for backward compatibility
-extension CryptoTypes.CryptoConfig {
+public extension CryptoTypes.CryptoConfig {
     /// The number of iterations for key derivation.
     ///
     /// Higher values increase security but also increase processing time.
     @available(*, deprecated, message: "Will be removed in a future version")
-    public var iterations: Int {
-        return 10_000
+    var iterations: Int {
+        10000
     }
 
     /// Creates a legacy crypto configuration.
@@ -37,12 +37,12 @@ extension CryptoTypes.CryptoConfig {
     ///   - ivSize: IV size in bits. Defaults to 96 (12 bytes) for AES-GCM.
     ///   - iterations: PBKDF2 iterations (ignored in modern implementation). Defaults to 10,000.
     @available(*, deprecated, message: "Use the standard initializer instead")
-    public static func legacyInit(
+    static func legacyInit(
         keySize: Int = 256,
         ivSize: Int = 96,
-        iterations: Int = 10_000
+        iterations _: Int = 10000
     ) -> CryptoTypes.CryptoConfig {
-        return CryptoTypes.CryptoConfig(keyLength: keySize, ivLength: ivSize / 8)
+        CryptoTypes.CryptoConfig(keyLength: keySize, ivLength: ivSize / 8)
     }
 }
 

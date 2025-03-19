@@ -14,7 +14,7 @@ public enum SecurityProviderUtils {
         let securityInterfacesError: SecurityInterfacesError = switch error {
         case .serviceUnavailable:
             .operationFailed("XPC service unavailable")
-        case .operationFailed(let operation, let reason):
+        case let .operationFailed(operation, reason):
             .operationFailed("\(operation) failed: \(reason)")
         case .authenticationFailed:
             .authenticationFailed
@@ -50,46 +50,46 @@ public enum SecurityProviderUtils {
         let securityInterfacesError: SecurityInterfacesError = switch error {
         case .serviceUnavailable:
             .operationFailed("XPC service unavailable")
-        case .serviceNotReady(let reason):
+        case let .serviceNotReady(reason):
             .operationFailed("Service not ready: \(reason)")
-        case .authenticationFailed(let reason):
+        case let .authenticationFailed(reason):
             .operationFailed("Authentication failed: \(reason)")
-        case .invalidInput(let details):
+        case let .invalidInput(details):
             .invalidParameters(details)
-        case .encryptionFailed(let reason):
+        case let .encryptionFailed(reason):
             .encryptionFailed(reason: reason)
-        case .decryptionFailed(let reason):
+        case let .decryptionFailed(reason):
             .decryptionFailed(reason: reason)
-        case .keyGenerationFailed(let reason):
+        case let .keyGenerationFailed(reason):
             .keyGenerationFailed(reason: reason)
-        case .cryptographicError(let operation, let details):
+        case let .cryptographicError(operation, details):
             .operationFailed("Cryptographic error in \(operation): \(details)")
         case .timeout:
             .operationFailed("Operation timed out")
-        case .operationNotSupported(let name):
+        case let .operationNotSupported(name):
             .operationFailed("Operation not supported: \(name)")
-        case .invalidState(let details):
+        case let .invalidState(details):
             .operationFailed("Invalid state: \(details)")
-        case .keyNotFound(let identifier):
+        case let .keyNotFound(identifier):
             .operationFailed("Key not found: \(identifier)")
-        case .invalidKeyType(let expected, let received):
+        case let .invalidKeyType(expected, received):
             .operationFailed("Invalid key type. Expected: \(expected), Received: \(received)")
-        case .invalidData(let reason):
+        case let .invalidData(reason):
             .operationFailed("Invalid data: \(reason)")
-        case .authorizationDenied(let operation):
+        case let .authorizationDenied(operation):
             .operationFailed("Authorization denied for operation: \(operation)")
-        case .notImplemented(let reason):
+        case let .notImplemented(reason):
             .operationFailed("Not implemented: \(reason)")
-        case .internalError(let reason):
+        case let .internalError(reason):
             .operationFailed("Internal error: \(reason)")
         case .connectionInterrupted:
             .operationFailed("Connection interrupted")
-        case .connectionInvalidated(let reason):
+        case let .connectionInvalidated(reason):
             .operationFailed("Connection invalidated: \(reason)")
         @unknown default:
             .operationFailed("Unknown XPC error: \(error.localizedDescription)")
         }
-        
+
         return securityInterfacesError
     }
 
@@ -99,38 +99,38 @@ public enum SecurityProviderUtils {
     public static func convertError(_ error: CoreErrors.SecurityError) -> SecurityInterfacesError {
         // Map CoreErrors.SecurityError to SecurityInterfacesError
         let securityInterfacesError: SecurityInterfacesError = switch error {
-        case .general(let message):
+        case let .general(message):
             .operationFailed(message)
-        case .authentication(let message):
+        case let .authentication(message):
             .authenticationFailed
-        case .authorization(let message):
+        case let .authorization(message):
             .authorizationFailed(message)
-        case .encryption(let message):
+        case let .encryption(message):
             .encryptionFailed(reason: message)
-        case .decryption(let message):
+        case let .decryption(message):
             .decryptionFailed(reason: message)
-        case .keyGeneration(let message):
+        case let .keyGeneration(message):
             .keyGenerationFailed(reason: message)
-        case .keyStorage(let message):
+        case let .keyStorage(message):
             .operationFailed("Key storage error: \(message)")
-        case .invalidInput(let message):
+        case let .invalidInput(message):
             .invalidParameters(message)
-        case .invalidState(let message):
+        case let .invalidState(message):
             .operationFailed("Invalid state: \(message)")
-        case .timeout(let message):
+        case let .timeout(message):
             .timeout
-        case .serialization(let message):
+        case let .serialization(message):
             .operationFailed("Serialization error: \(message)")
-        case .unsupportedOperation(let message):
+        case let .unsupportedOperation(message):
             .operationFailed("Unsupported operation: \(message)")
-        case .serviceUnavailable(let message):
+        case let .serviceUnavailable(message):
             .serviceNotAvailable
-        case .protocolViolation(let message):
+        case let .protocolViolation(message):
             .securityViolation(message)
-        case .internalError(let message):
+        case let .internalError(message):
             .operationFailed("Internal error: \(message)")
         }
-        
+
         return securityInterfacesError
     }
 
@@ -146,7 +146,8 @@ public enum SecurityProviderUtils {
 
         // Copy additional options from the status dictionary
         for (key, value) in status where
-            !["securityLevel", "encryptionAlgorithm", "hashAlgorithm"].contains(key) {
+            !["securityLevel", "encryptionAlgorithm", "hashAlgorithm"].contains(key)
+        {
             options[key] = value
         }
 
@@ -169,7 +170,7 @@ public enum SecurityProviderUtils {
     /// - Parameter secureBytes: The secure bytes to convert
     /// - Returns: Data representation
     public static func secureBytesToData(_ secureBytes: SecureBytes) -> Data {
-        return secureBytes.withUnsafeBytes { pointer in
+        secureBytes.withUnsafeBytes { pointer in
             Data(bytes: pointer.baseAddress!, count: pointer.count)
         }
     }

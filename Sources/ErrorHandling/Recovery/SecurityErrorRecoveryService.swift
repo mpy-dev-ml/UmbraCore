@@ -179,7 +179,7 @@ extension SecurityErrorRecoveryService: RecoveryOptionsProvider {
                     description: "Retry with different credentials",
                     isDefault: true,
                     handler: { /* Implementation to retry authentication */ }
-                )
+                ),
             ]
         } else if errorString.contains("certificate") {
             title = "Certificate Issue"
@@ -191,7 +191,7 @@ extension SecurityErrorRecoveryService: RecoveryOptionsProvider {
                     description: "Trust this certificate for the current session",
                     isDefault: true,
                     handler: { /* Implementation to trust certificate */ }
-                )
+                ),
             ]
         } else {
             // Generic security error
@@ -211,7 +211,7 @@ extension SecurityErrorRecoveryService: RecoveryOptionsProvider {
                     description: "Cancel the operation",
                     isDefault: false,
                     handler: { /* Cancel implementation */ }
-                )
+                ),
             ]
         }
 
@@ -254,7 +254,7 @@ extension SecurityErrorRecoveryService {
                     description: "Cancel and take no action",
                     isDisruptive: false,
                     recoveryAction: { /* No action required */ }
-                )
+                ),
             ]
         }
     }

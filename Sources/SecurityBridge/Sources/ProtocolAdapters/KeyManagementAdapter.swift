@@ -36,7 +36,8 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     // MARK: - KeyManagementProtocol Implementation
 
     public func retrieveKey(withIdentifier identifier: String) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         let result = await implementation.retrieveKey(withIdentifier: identifier)
 
         switch result {
@@ -65,7 +66,8 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     }
 
     public func deleteKey(withIdentifier identifier: String) async
-        -> Result<Void, UmbraErrors.Security.Protocols> {
+        -> Result<Void, UmbraErrors.Security.Protocols>
+    {
         let result = await implementation.deleteKey(withIdentifier: identifier)
 
         switch result {

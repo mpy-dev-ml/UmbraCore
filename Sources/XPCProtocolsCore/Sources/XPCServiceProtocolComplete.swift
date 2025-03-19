@@ -220,7 +220,7 @@ public extension XPCServiceProtocolComplete {
     }
 
     /// Default implementation for configuration setting
-    func setConfiguration(_ configuration: [String: String]) async -> Result<Bool, XPCSecurityError> {
+    func setConfiguration(_: [String: String]) async -> Result<Bool, XPCSecurityError> {
         .failure(.notImplemented(reason: "Configuration setting not implemented"))
     }
 
@@ -231,28 +231,28 @@ public extension XPCServiceProtocolComplete {
 
     /// Default implementation for key generation
     func generateKey(
-        algorithm: String,
-        keySize: Int,
-        purpose: String
+        algorithm _: String,
+        keySize _: Int,
+        purpose _: String
     ) async -> Result<String, XPCSecurityError> {
         .failure(.notImplemented(reason: "Key generation not implemented"))
     }
 
     /// Default implementation for password-based key derivation
     func deriveKey(
-        password: String,
-        salt: UmbraCoreTypes.SecureBytes,
-        iterations: Int,
-        keySize: Int
+        password _: String,
+        salt _: UmbraCoreTypes.SecureBytes,
+        iterations _: Int,
+        keySize _: Int
     ) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .failure(.notImplemented(reason: "Password-based key derivation not implemented"))
     }
 
     /// Default implementation for key-based key derivation
     func deriveKeyFromKey(
-        sourceKeyIdentifier: String,
-        algorithm: String,
-        keySize: Int
+        sourceKeyIdentifier _: String,
+        algorithm _: String,
+        keySize _: Int
     ) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .failure(.notImplemented(reason: "Key-based derivation not implemented"))
     }
@@ -263,61 +263,61 @@ public extension XPCServiceProtocolComplete {
     }
 
     /// Default implementation for key info
-    func getKeyInfo(keyIdentifier: String) async -> Result<[String: String], XPCSecurityError> {
+    func getKeyInfo(keyIdentifier _: String) async -> Result<[String: String], XPCSecurityError> {
         .failure(.notImplemented(reason: "Key information not implemented"))
     }
 
     /// Default implementation for key deletion
-    func deleteKey(keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    func deleteKey(keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
         .failure(.notImplemented(reason: "Key deletion not implemented"))
     }
 
     /// Default implementation for authenticated encryption
     func encryptAuthenticated(
-        data: UmbraCoreTypes.SecureBytes,
-        keyIdentifier: String,
-        associatedData: UmbraCoreTypes.SecureBytes?
+        data _: UmbraCoreTypes.SecureBytes,
+        keyIdentifier _: String,
+        associatedData _: UmbraCoreTypes.SecureBytes?
     ) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .failure(.notImplemented(reason: "Authenticated encryption not implemented"))
     }
 
     /// Default implementation for authenticated decryption
     func decryptAuthenticated(
-        data: UmbraCoreTypes.SecureBytes,
-        keyIdentifier: String,
-        associatedData: UmbraCoreTypes.SecureBytes?
+        data _: UmbraCoreTypes.SecureBytes,
+        keyIdentifier _: String,
+        associatedData _: UmbraCoreTypes.SecureBytes?
     ) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .failure(.notImplemented(reason: "Authenticated decryption not implemented"))
     }
 
     /// Default implementation for signature generation
     func generateSignature(
-        data: UmbraCoreTypes.SecureBytes,
-        keyIdentifier: String,
-        algorithm: String
+        data _: UmbraCoreTypes.SecureBytes,
+        keyIdentifier _: String,
+        algorithm _: String
     ) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .failure(.notImplemented(reason: "Signature generation not implemented"))
     }
 
     /// Default implementation for signature verification
     func verifySignature(
-        signature: UmbraCoreTypes.SecureBytes,
-        data: UmbraCoreTypes.SecureBytes,
-        keyIdentifier: String,
-        algorithm: String
+        signature _: UmbraCoreTypes.SecureBytes,
+        data _: UmbraCoreTypes.SecureBytes,
+        keyIdentifier _: String,
+        algorithm _: String
     ) async -> Result<Bool, XPCSecurityError> {
         .failure(.notImplemented(reason: "Signature verification not implemented"))
     }
 
     /// Default implementation for secure backup
-    func createSecureBackup(password: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    func createSecureBackup(password _: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .failure(.notImplemented(reason: "Secure backup not implemented"))
     }
 
     /// Default implementation for backup restoration
     func restoreFromSecureBackup(
-        backup: UmbraCoreTypes.SecureBytes,
-        password: String
+        backup _: UmbraCoreTypes.SecureBytes,
+        password _: String
     ) async -> Result<Bool, XPCSecurityError> {
         .failure(.notImplemented(reason: "Backup restoration not implemented"))
     }
@@ -328,9 +328,9 @@ public extension XPCServiceProtocolComplete {
     }
 
     /// Default implementation for export key without format specification
-    func exportKey(keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    func exportKey(keyIdentifier _: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         // Provide a simple default implementation that returns not implemented
         // Instead of calling the format-specific version which could cause infinite recursion
-        return .failure(.notImplemented(reason: "Key export not implemented"))
+        .failure(.notImplemented(reason: "Key export not implemented"))
     }
 }

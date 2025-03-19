@@ -64,17 +64,17 @@ public extension UmbraErrors.Security.Core {
         // Map from core error to XPC error
         switch self {
         case let .authenticationFailed(reason):
-            return .authenticationFailed(reason: reason)
+            .authenticationFailed(reason: reason)
         case let .authorizationFailed(reason):
-            return .authorizationDenied(operation: reason)
+            .authorizationDenied(operation: reason)
         case let .secureConnectionFailed(reason):
-            return .serviceUnavailable
+            .serviceUnavailable
         case let .internalError(reason) where reason.contains("timed out"):
-            return .timeout(after: 30.0) // Default timeout
+            .timeout(after: 30.0) // Default timeout
         case let .internalError(reason):
-            return .internalError(reason: reason)
+            .internalError(reason: reason)
         default:
-            return .internalError(reason: localizedDescription)
+            .internalError(reason: localizedDescription)
         }
     }
 }

@@ -1,8 +1,8 @@
+import CoreDTOs
 import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import CoreDTOs
 
 /// FoundationConversions provides utilities for converting between Foundation types
 /// and foundation-free types when communicating through XPC or with legacy systems.
@@ -14,7 +14,8 @@ public enum FoundationConversions {
     /// - Parameter dictionary: Dictionary of strings to SecureBytes
     /// - Returns: Dictionary of strings to Data
     public static func toFoundation(dictionary: [String: UmbraCoreTypes.SecureBytes])
-        -> [String: Data] {
+        -> [String: Data]
+    {
         dictionary.mapValues { secureBytes -> Data in
             let bytes = Array(secureBytes)
             let nsData = NSData(bytes: bytes, length: bytes.count)
@@ -27,7 +28,8 @@ public enum FoundationConversions {
     /// - Parameter dictionary: Dictionary of strings to Data
     /// - Returns: Dictionary of strings to SecureBytes
     public static func fromFoundation(dictionary: [String: Data])
-        -> [String: UmbraCoreTypes.SecureBytes] {
+        -> [String: UmbraCoreTypes.SecureBytes]
+    {
         dictionary.mapValues { data -> UmbraCoreTypes.SecureBytes in
             let bytes = [UInt8](data)
             return UmbraCoreTypes.SecureBytes(bytes: bytes)
@@ -96,9 +98,9 @@ public enum FoundationConversions {
                 .invalidFormat(reason: "Could not convert object to JSON: \(error.localizedDescription)")
         }
     }
-    
+
     // MARK: - DTO Conversions
-    
+
     /// Convert SecurityErrorDTO to NSError
     ///
     /// - Parameter errorDTO: The SecurityErrorDTO to convert
@@ -109,11 +111,11 @@ public enum FoundationConversions {
             code: Int(errorDTO.code),
             userInfo: [
                 NSLocalizedDescriptionKey: errorDTO.message,
-                "details": errorDTO.details
+                "details": errorDTO.details,
             ]
         )
     }
-    
+
     /// Convert NSError to SecurityErrorDTO
     ///
     /// - Parameter error: The NSError to convert
@@ -121,7 +123,7 @@ public enum FoundationConversions {
     public static func toErrorDTO(error: NSError) -> SecurityErrorDTO {
         // Extract details from user info if available
         var details: [String: String] = [:]
-        
+
         if let detailsDict = error.userInfo["details"] as? [String: String] {
             details = detailsDict
         } else {
@@ -130,7 +132,7 @@ public enum FoundationConversions {
                 details[key] = String(describing: value)
             }
         }
-        
+
         return SecurityErrorDTO(
             code: Int32(error.code),
             domain: error.domain,
@@ -138,7 +140,7 @@ public enum FoundationConversions {
             details: details
         )
     }
-    
+
     /// Convert SecurityConfigDTO to a Foundation-compatible dictionary
     ///
     /// - Parameter configDTO: The SecurityConfigDTO to convert
@@ -147,17 +149,17 @@ public enum FoundationConversions {
         var result: [String: Any] = [
             "algorithm": configDTO.algorithm,
             "keySizeInBits": configDTO.keySizeInBits,
-            "options": configDTO.options
+            "options": configDTO.options,
         ]
-        
+
         // Convert input data to Foundation Data if present
         if let inputData = configDTO.inputData {
             result["inputData"] = Data(inputData)
         }
-        
+
         return result
     }
-    
+
     /// Create SecurityConfigDTO from a Foundation dictionary
     ///
     /// - Parameter dictionary: A Foundation dictionary with configuration values
@@ -166,7 +168,7 @@ public enum FoundationConversions {
         // Extract required values with defaults
         let algorithm = dictionary["algorithm"] as? String ?? "DEFAULT"
         let keySizeInBits = dictionary["keySizeInBits"] as? Int ?? 256
-        
+
         // Extract options dictionary
         var options: [String: String] = [:]
         if let optionsDict = dictionary["options"] as? [String: String] {
@@ -177,13 +179,13 @@ public enum FoundationConversions {
                 options[key] = String(describing: value)
             }
         }
-        
+
         // Extract input data if present
         var inputData: [UInt8]?
         if let data = dictionary["inputData"] as? Data {
             inputData = [UInt8](data)
         }
-        
+
         return SecurityConfigDTO(
             algorithm: algorithm,
             keySizeInBits: keySizeInBits,
@@ -191,22 +193,22 @@ public enum FoundationConversions {
             inputData: inputData
         )
     }
-    
+
     /// Convert OperationResultDTO to a Foundation-compatible dictionary
     ///
     /// - Parameter result: The OperationResultDTO to convert
     /// - Returns: A [String: Any] dictionary suitable for serialization
-    public static func toFoundationDictionary<T: Encodable>(result: OperationResultDTO<T>) -> [String: Any] {
+    public static func toFoundationDictionary(result: OperationResultDTO<some Encodable>) -> [String: Any] {
         var dictionary: [String: Any] = [
-            "success": result.isSuccess
+            "success": result.isSuccess,
         ]
-        
+
         // Add value if successful and encodable
         if result.isSuccess, let value = result.value {
             do {
                 let data = try JSONEncoder().encode(value)
                 dictionary["valueData"] = data
-                
+
                 // Also try to convert to a JSON object for easier debugging
                 if let jsonObject = try? JSONSerialization.jsonObject(with: data) {
                     dictionary["valueJson"] = jsonObject
@@ -216,7 +218,7 @@ public enum FoundationConversions {
                 dictionary["encodingError"] = error.localizedDescription
             }
         }
-        
+
         // Add error information if failed
         if !result.isSuccess, let error = result.error {
             dictionary["error"] = toNSError(errorDTO: error)
@@ -224,10 +226,10 @@ public enum FoundationConversions {
                 "code": error.code,
                 "domain": error.domain,
                 "message": error.message,
-                "details": error.details
+                "details": error.details,
             ]
         }
-        
+
         return dictionary
     }
 }

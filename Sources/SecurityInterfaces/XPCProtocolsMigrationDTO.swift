@@ -17,12 +17,12 @@ public protocol XPCServiceProtocolDTO: XPCServiceProtocolComplete {
     /// Get the security configuration
     /// - Returns: Result with the security configuration DTO or an error
     func getSecurityConfigDTO() async -> Result<SecurityProtocolsCore.SecurityConfigDTO, CoreDTOs.SecurityErrorDTO>
-    
+
     /// Update the security configuration
     /// - Parameter config: The new security configuration DTO
     /// - Returns: Result with success or an error
     func updateSecurityConfigDTO(_ config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<Void, CoreDTOs.SecurityErrorDTO>
-    
+
     /// Encrypt data using the DTO-based approach
     /// - Parameters:
     ///   - data: Data to encrypt
@@ -34,7 +34,7 @@ public protocol XPCServiceProtocolDTO: XPCServiceProtocolComplete {
         key: SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO>
-    
+
     /// Decrypt data using the DTO-based approach
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -46,7 +46,7 @@ public protocol XPCServiceProtocolDTO: XPCServiceProtocolComplete {
         key: SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO>
-    
+
     /// Perform a hash operation using the DTO-based approach
     /// - Parameters:
     ///   - data: Data to hash
@@ -56,7 +56,7 @@ public protocol XPCServiceProtocolDTO: XPCServiceProtocolComplete {
         data: SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO>
-    
+
     /// Generate a key using the DTO-based approach
     /// - Parameter config: Key generation configuration
     /// - Returns: Generated key or an error
@@ -72,35 +72,35 @@ public protocol XPCServiceProtocolDTO: XPCServiceProtocolComplete {
 /// DTO interface.
 public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
     // MARK: - Properties
-    
+
     private let service: any XPCServiceProtocolComplete
-    
+
     // MARK: - Initializer
-    
+
     /// Initialize with an XPCServiceProtocolComplete
     /// - Parameter service: The service to adapt
     public init(_ service: any XPCServiceProtocolComplete) {
         self.service = service
     }
-    
+
     // MARK: - XPCServiceProtocolComplete Implementation
-    
+
     public static var protocolIdentifier: String {
         "\(XPCServiceProtocolComplete.protocolIdentifier).dto"
     }
-    
+
     public func ping() async throws -> Bool {
         try await service.ping()
     }
-    
+
     public func synchroniseKeys(_ syncData: SecureBytes) async throws {
         try await service.synchroniseKeys(syncData)
     }
-    
+
     public func status() async -> Result<SecurityServiceStatus, XPCProtocolsCore.SecurityError> {
         await service.status()
     }
-    
+
     public func encrypt(
         data: SecureBytes,
         key: SecureBytes,
@@ -108,7 +108,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
     ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.encrypt(data: data, key: key, config: config)
     }
-    
+
     public func decrypt(
         data: SecureBytes,
         key: SecureBytes,
@@ -116,20 +116,20 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
     ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.decrypt(data: data, key: key, config: config)
     }
-    
+
     public func hash(
         data: SecureBytes,
         config: SecurityConfig
     ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.hash(data: data, config: config)
     }
-    
+
     public func generateKey(
         config: SecurityConfig
     ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.generateKey(config: config)
     }
-    
+
     public func authenticatedEncrypt(
         data: SecureBytes,
         key: SecureBytes,
@@ -138,7 +138,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
     ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.authenticatedEncrypt(data: data, key: key, authData: authData, config: config)
     }
-    
+
     public func authenticatedDecrypt(
         data: SecureBytes,
         key: SecureBytes,
@@ -147,17 +147,17 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
     ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.authenticatedDecrypt(data: data, key: key, authData: authData, config: config)
     }
-    
+
     public func secureRandom(length: Int) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.secureRandom(length: length)
     }
-    
+
     // MARK: - XPCServiceProtocolDTO Implementation
-    
+
     public func getSecurityConfigDTO() async -> Result<SecurityProtocolsCore.SecurityConfigDTO, CoreDTOs.SecurityErrorDTO> {
         let result = await service.status()
         switch result {
-        case .success(let status):
+        case let .success(status):
             // Extract config information from status
             var options: [String: String] = [:]
             if let configDict = status.info["config"] as? [String: Any] {
@@ -165,25 +165,25 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
                     options[key] = String(describing: value)
                 }
             }
-            
+
             return .success(SecurityProtocolsCore.SecurityConfigDTO(
                 algorithm: options["algorithm"] ?? "AES-GCM",
                 keySizeInBits: Int(options["keySizeInBits"] ?? "256") ?? 256,
                 options: options
             ))
-            
-        case .failure(let error):
+
+        case let .failure(error):
             return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func updateSecurityConfigDTO(_ config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<Void, CoreDTOs.SecurityErrorDTO> {
         // Convert DTO to SecurityConfig
         let securityConfig = SecurityConfig(
             algorithm: config.algorithm,
             keySizeInBits: config.keySizeInBits
         )
-        
+
         // Apply configuration through the status endpoint
         let result = await service.status()
         switch result {
@@ -191,11 +191,11 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
             // We don't have a direct way to update configuration in the protocol,
             // so we'll consider this a success if the service is available
             return .success(())
-        case .failure(let error):
+        case let .failure(error):
             return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func encryptDTO(
         data: SecureBytes,
         key: SecureBytes,
@@ -207,17 +207,17 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
             keySizeInBits: config.keySizeInBits,
             options: config.options
         )
-        
+
         // Call the underlying service
         let result = await service.encrypt(data: data, key: key, config: securityConfig)
         switch result {
-        case .success(let encryptedData):
+        case let .success(encryptedData):
             return .success(encryptedData)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func decryptDTO(
         data: SecureBytes,
         key: SecureBytes,
@@ -229,17 +229,17 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
             keySizeInBits: config.keySizeInBits,
             options: config.options
         )
-        
+
         // Call the underlying service
         let result = await service.decrypt(data: data, key: key, config: securityConfig)
         switch result {
-        case .success(let decryptedData):
+        case let .success(decryptedData):
             return .success(decryptedData)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func hashDTO(
         data: SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
@@ -250,17 +250,17 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
             keySizeInBits: config.keySizeInBits,
             options: config.options
         )
-        
+
         // Call the underlying service
         let result = await service.hash(data: data, config: securityConfig)
         switch result {
-        case .success(let hashData):
+        case let .success(hashData):
             return .success(hashData)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func generateKeyDTO(
         config: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
@@ -270,13 +270,13 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
             keySizeInBits: config.keySizeInBits,
             options: config.options
         )
-        
+
         // Call the underlying service
         let result = await service.generateKey(config: securityConfig)
         switch result {
-        case .success(let keyData):
+        case let .success(keyData):
             return .success(keyData)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
         }
     }
@@ -290,9 +290,9 @@ public extension XPCProtocolMigrationFactory {
     /// - Parameter service: The underlying XPC service
     /// - Returns: An XPCServiceProtocolDTO adapter
     static func createDTOAdapter(_ service: any XPCServiceProtocolComplete) -> any XPCServiceProtocolDTO {
-        return XPCServiceDTOAdapter(service)
+        XPCServiceDTOAdapter(service)
     }
-    
+
     /// Create a DTO adapter from a legacy XPC service
     /// - Parameter service: The legacy XPC service
     /// - Returns: An XPCServiceProtocolDTO adapter

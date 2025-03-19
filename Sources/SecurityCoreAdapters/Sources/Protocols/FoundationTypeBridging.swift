@@ -33,7 +33,8 @@ public extension FoundationTypeBridging {
     /// - Parameter foundation: The Foundation type to convert
     /// - Returns: The Foundation-free equivalent or an error
     static func tryFromFoundation(_ foundation: FoundationType)
-        -> Result<Self, TypeBridgingError> {
+        -> Result<Self, TypeBridgingError>
+    {
         // Simply call the non-throwing method since we know it won't throw
         // In a real implementation, this would likely use a throwing method
         .success(fromFoundation(foundation))

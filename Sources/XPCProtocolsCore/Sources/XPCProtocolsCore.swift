@@ -18,16 +18,16 @@
  enabling isolated processes to communicate while maintaining security boundaries.
  */
 
-import CoreErrors
 @_exported import CoreDTOs
+@_exported import struct CoreDTOs.OperationResultDTO
+@_exported import struct CoreDTOs.SecurityConfigDTO
+@_exported import struct CoreDTOs.SecurityErrorDTO
+import CoreErrors
 @_exported import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
 import UmbraCoreTypes
 @_exported import struct UmbraCoreTypes.SecureBytes
-@_exported import struct CoreDTOs.SecurityErrorDTO
-@_exported import struct CoreDTOs.SecurityConfigDTO
-@_exported import struct CoreDTOs.OperationResultDTO
 
 /// Provides access to the XPC protocol factory methods and module-level information
 public enum XPCProtocolsCore {
@@ -60,7 +60,7 @@ public enum XPCProtocolsCore {
         // Simple implementation for now
         nil
     }
-    
+
     /// Factory method to create a DTO-based XPC service client
     /// - Parameters:
     ///   - serviceConnection: The underlying service connection

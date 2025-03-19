@@ -70,7 +70,7 @@ class SecurityProtocolsCoreTests: XCTestCase {
         // Test configurations are equatable
         let config1 = SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
         let config2 = SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256)
-        let config3 = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2_048)
+        let config3 = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2048)
 
         XCTAssertEqual(config1, config2)
         XCTAssertNotEqual(config1, config3)

@@ -119,7 +119,8 @@ public final class SecureKeyStorage: SafeStorage, Sendable {
     /// - Parameter identifier: The identifier of the key to retrieve
     /// - Returns: A result containing the key or an error
     public func retrieveKey(withIdentifier identifier: String) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         if let key = await get(identifier: identifier) {
             .success(key)
         } else {
@@ -149,7 +150,8 @@ public final class SecureKeyStorage: SafeStorage, Sendable {
     /// - Parameter identifier: The identifier of the key to delete
     /// - Returns: A result indicating success or an error
     public func deleteSecurely(identifier: String) async
-        -> Result<Void, UmbraErrors.Security.Protocols> {
+        -> Result<Void, UmbraErrors.Security.Protocols>
+    {
         if await contains(identifier: identifier) {
             await delete(identifier: identifier)
             return .success(())
@@ -169,7 +171,8 @@ public final class SecureKeyStorage: SafeStorage, Sendable {
     /// - Parameter identifier: The identifier of the data to retrieve
     /// - Returns: The data or an error
     public func retrieveSecurely(identifier: String) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         await retrieveKey(withIdentifier: identifier)
     }
 

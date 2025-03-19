@@ -73,7 +73,7 @@ final class TestErrorHandling_Models: XCTestCase {
             message: "There was a problem with the operation",
             recoveryOptions: [
                 PresentationRecoveryOption(title: "Retry", description: nil, isDisruptive: false, action: { true }),
-                PresentationRecoveryOption(title: "Cancel", description: nil, isDisruptive: false, action: { false })
+                PresentationRecoveryOption(title: "Cancel", description: nil, isDisruptive: false, action: { false }),
             ]
         )
 

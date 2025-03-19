@@ -340,7 +340,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
             additionalInfo: [
                 "mode": "demonstration",
                 "securityLevel": "low - example only",
-                "isActive": String(describing: isActive)
+                "isActive": String(describing: isActive),
             ]
         )
         return .success(status)
@@ -490,6 +490,6 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     /// - Returns: Result with identifier string on success or XPCSecurityError on failure
     public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
         // Example implementation - return a dummy hardware identifier
-        return .success("EXAMPLE-HW-ID-12345")
+        .success("EXAMPLE-HW-ID-12345")
     }
 }

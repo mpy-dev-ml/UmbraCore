@@ -41,9 +41,9 @@ class XPCProtocolExtensionsTests: XCTestCase {
 
         // Check if the result is successful and contains data
         switch randomData {
-        case .success(let secureBytes):
+        case let .success(secureBytes):
             XCTAssertEqual(secureBytes.count, 16, "Random data should be of requested length")
-        case .failure(let error):
+        case let .failure(error):
             XCTFail("Failed to generate random data: \(error)")
         }
 
@@ -143,66 +143,66 @@ private final class MockImplementationService: NSObject, XPCServiceProtocolStand
 
     // Add the required synchroniseKeys method with completion handler
     @objc
-    func synchroniseKeys(_ bytes: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
+    func synchroniseKeys(_: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
         // Simple implementation - always succeeds
         completionHandler(nil)
     }
 
     // Add the required methods from XPCServiceProtocolStandard
     func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
-        return .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: length)))
+        .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: length)))
     }
 
     func generateSecureRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
-        return .success(SecureBytes(bytes: Array(repeating: UInt8(0), count: length)))
+        .success(SecureBytes(bytes: Array(repeating: UInt8(0), count: length)))
     }
 
-    func encryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
-        return data
+    func encryptData(_ data: NSData, keyIdentifier _: String?) async -> NSObject? {
+        data
     }
 
-    func encryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
-        return .success(data)
+    func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+        .success(data)
     }
 
-    func decryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
-        return data
+    func decryptData(_ data: NSData, keyIdentifier _: String?) async -> NSObject? {
+        data
     }
 
-    func decryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityError> {
-        return .success(data)
+    func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+        .success(data)
     }
 
     func hashData(_ data: NSData) async -> NSObject? {
-        return data
+        data
     }
 
     func hashSecureData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
-        return .success(data)
+        .success(data)
     }
 
-    func signData(_ data: NSData, keyIdentifier: String) async -> NSObject? {
-        return data
+    func signData(_ data: NSData, keyIdentifier _: String) async -> NSObject? {
+        data
     }
 
-    func signSecureData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
-        return .success(SecureBytes(bytes: Array(repeating: UInt8(0), count: 64)))
+    func signSecureData(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
+        .success(SecureBytes(bytes: Array(repeating: UInt8(0), count: 64)))
     }
 
-    func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) async -> NSObject? {
-        return NSNumber(value: true)
+    func verifySignature(_: NSData, for _: NSData, keyIdentifier _: String) async -> NSObject? {
+        NSNumber(value: true)
     }
 
-    func verifySecureSignature(_ signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
-        return .success(true)
+    func verifySecureSignature(_: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
+        .success(true)
     }
 
-    func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
-        return .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: 64)))
+    func sign(_: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: 64)))
     }
 
-    func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
-        return .success(true)
+    func verify(signature _: UmbraCoreTypes.SecureBytes, for _: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
+        .success(true)
     }
 
     // Implement the base methods that aren't provided by defaults
@@ -257,7 +257,7 @@ private final class MockImplementationService: NSObject, XPCServiceProtocolStand
     }
 
     // Required for CryptoXPCServiceProtocol
-    func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+    func synchroniseKeys(_: UmbraCoreTypes.SecureBytes) async throws {
         // Simple implementation for synchronisation
     }
 }
@@ -359,11 +359,11 @@ private final class FailingMockImplementationService: NSObject, XPCServiceProtoc
         .failure(.internalError(reason: "Generate key operation failed"))
     }
 
-    func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    func sign(_: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         .failure(.cryptographicError(operation: "sign", details: "Sign operation failed for key: \(keyIdentifier)"))
     }
 
-    func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    func verify(signature _: UmbraCoreTypes.SecureBytes, for _: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
         .failure(.cryptographicError(operation: "verify", details: "Verify operation failed for key: \(keyIdentifier)"))
     }
 
@@ -380,7 +380,7 @@ private final class FailingMockImplementationService: NSObject, XPCServiceProtoc
     }
 
     // Required for CryptoXPCServiceProtocol
-    func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+    func synchroniseKeys(_: UmbraCoreTypes.SecureBytes) async throws {
         throw XPCSecurityError.internalError(reason: "Key synchronisation failed")
     }
 }

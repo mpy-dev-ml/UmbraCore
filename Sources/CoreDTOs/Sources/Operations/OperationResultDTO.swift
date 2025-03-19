@@ -1,14 +1,14 @@
-import UmbraCoreTypes
 import ErrorHandling
+import UmbraCoreTypes
 
 /// A simple error type for operation failures that doesn't depend on Foundation
 public struct OperationError: Error, CustomStringConvertible, Sendable, Equatable {
     /// Error message
     public let message: String
-    
+
     /// Error code
     public let code: Int32
-    
+
     /// Initializer
     /// - Parameters:
     ///   - message: Error message
@@ -17,7 +17,7 @@ public struct OperationError: Error, CustomStringConvertible, Sendable, Equatabl
         self.message = message
         self.code = code
     }
-    
+
     /// Human-readable description
     public var description: String {
         "Operation failed: \(message) (code: \(code))"
@@ -64,10 +64,10 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
     ///   - value: The result value
     ///   - details: Optional additional details
     public init(value: T, details: [String: String] = [:]) {
-        self.status = .success
+        status = .success
         self.value = value
-        self.errorCode = nil
-        self.errorMessage = nil
+        errorCode = nil
+        errorMessage = nil
         self.details = details
     }
 
@@ -77,8 +77,8 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
     ///   - errorMessage: Error message
     ///   - details: Optional additional details
     public init(errorCode: Int32, errorMessage: String, details: [String: String] = [:]) {
-        self.status = .failure
-        self.value = nil
+        status = .failure
+        value = nil
         self.errorCode = errorCode
         self.errorMessage = errorMessage
         self.details = details
@@ -86,11 +86,11 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
 
     /// Create a cancelled operation result
     /// - Parameter details: Optional additional details
-    public init(cancelled: Bool = true, details: [String: String] = [:]) {
-        self.status = .cancelled
-        self.value = nil
-        self.errorCode = nil
-        self.errorMessage = "Operation cancelled"
+    public init(cancelled _: Bool = true, details: [String: String] = [:]) {
+        status = .cancelled
+        value = nil
+        errorCode = nil
+        errorMessage = "Operation cancelled"
         self.details = details
     }
 
@@ -121,7 +121,7 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
     /// - Returns: The operation value
     /// - Throws: An error if the operation failed
     public func valueOrThrow() throws -> T {
-        guard let value = value, status == .success else {
+        guard let value, status == .success else {
             throw OperationError(
                 message: errorMessage ?? "Unknown error",
                 code: errorCode ?? -1
@@ -136,7 +136,7 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
     public func map<U>(_ transform: (T) -> U) -> OperationResultDTO<U> where U: Sendable, U: Equatable {
         switch status {
         case .success:
-            guard let value = value else {
+            guard let value else {
                 return OperationResultDTO<U>(
                     status: .failure,
                     errorCode: -1,
@@ -172,7 +172,7 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
     public func flatMap<U>(_ transform: (T) -> OperationResultDTO<U>) -> OperationResultDTO<U> where U: Sendable, U: Equatable {
         switch status {
         case .success:
-            guard let value = value else {
+            guard let value else {
                 return OperationResultDTO<U>(
                     status: .failure,
                     errorCode: -1,
@@ -202,11 +202,11 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
     /// - Parameter additionalDetails: The details to add
     /// - Returns: A new OperationResultDTO with the added details
     public func withDetails(_ additionalDetails: [String: String]) -> OperationResultDTO<T> {
-        var newDetails = self.details
+        var newDetails = details
         for (key, value) in additionalDetails {
             newDetails[key] = value
         }
-        
+
         return OperationResultDTO<T>(
             status: status,
             value: value,
@@ -215,9 +215,9 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
             details: newDetails
         )
     }
-    
+
     // MARK: - Static Factory Methods
-    
+
     /// Create a successful operation result
     /// - Parameters:
     ///   - value: The successful result value
@@ -226,7 +226,7 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
     public static func success(_ value: T, details: [String: String] = [:]) -> OperationResultDTO<T> {
         OperationResultDTO(value: value, details: details)
     }
-    
+
     /// Create a failure operation result
     /// - Parameters:
     ///   - errorCode: Error code for the failure

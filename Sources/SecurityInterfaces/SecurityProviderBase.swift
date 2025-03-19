@@ -80,7 +80,8 @@ private struct SecurityProviderBaseAdapter: SecurityProtocolsCore.SecurityProvid
     }
 
     public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore
-        .SecurityConfigDTO {
+        .SecurityConfigDTO
+    {
         // Create a default config with the required algorithm and key size parameters
         SecurityProtocolsCore.SecurityConfigDTO(
             algorithm: "AES",
@@ -119,18 +120,21 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
     // MARK: - Required methods from CryptoServiceProtocol
 
     func generateKey() async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
     func hash(data _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Generate a dummy hash
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
     func verify(data _: UmbraCoreTypes.SecureBytes, against _: UmbraCoreTypes.SecureBytes) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Always verify as true
         .success(true)
     }
@@ -140,7 +144,8 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         key _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(data)
     }
 
@@ -149,7 +154,8 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         key _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(data)
     }
 
@@ -158,7 +164,8 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         publicKey _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(data)
     }
 
@@ -167,7 +174,8 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         privateKey _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(data)
     }
 
@@ -175,26 +183,30 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         data _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
     // MARK: - Additional methods
 
     func encrypt(data: UmbraCoreTypes.SecureBytes, using _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Simple mock implementation
         .success(data)
     }
 
     func decrypt(data: UmbraCoreTypes.SecureBytes, using _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Simple mock implementation
         .success(data)
     }
 
     func sign(data _: UmbraCoreTypes.SecureBytes, using _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Generate a dummy signature
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 64)))
     }
@@ -204,19 +216,22 @@ private final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProto
         for _: UmbraCoreTypes.SecureBytes,
         using _: UmbraCoreTypes.SecureBytes
     ) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Always verify as true
         .success(true)
     }
 
     func mac(data _: UmbraCoreTypes.SecureBytes, key _: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Generate a dummy MAC
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
     func generateRandomData(length: Int) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         let bytes = [UInt8](repeating: 0, count: length)
         return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
     }
@@ -298,7 +313,8 @@ private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol
         type _: String,
         size: Int
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Dummy implementation
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: size / 8)))
     }
@@ -312,13 +328,15 @@ private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol
     }
 
     func retrieveKey(withIdentifier _: String) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Dummy implementation
         .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
     func deleteKey(withIdentifier _: String) async
-        -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Dummy implementation
         .success(())
     }
@@ -338,7 +356,8 @@ private final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol
     }
 
     func listKeyIdentifiers() async
-        -> Result<[String], ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<[String], ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         // Dummy implementation
         .success(["key1", "key2", "key3"])
     }

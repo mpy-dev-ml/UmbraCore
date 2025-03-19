@@ -11,29 +11,29 @@ import XPCProtocolsCore
 /// with the new Foundation-independent DTO interfaces.
 public final class SecurityProviderDTOAdapter: SecurityProviderDTO {
     // MARK: - Properties
-    
+
     private let provider: any SecurityProtocolsCore.SecurityProviderProtocol
-    
+
     // MARK: - Initializer
-    
+
     /// Initialize with a SecurityProvider
     /// - Parameter provider: The provider to adapt
     public init(provider: any SecurityProtocolsCore.SecurityProviderProtocol) {
         self.provider = provider
     }
-    
+
     // MARK: - SecurityProviderDTO Implementation
-    
+
     public func getSecurityConfigDTO() async -> Result<CoreDTOs.SecurityConfigDTO, CoreDTOs.SecurityErrorDTO> {
         let result = await provider.getSecurityConfiguration()
         switch result {
-        case .success(let config):
+        case let .success(config):
             return .success(SecurityDTOAdapter.toDTO(config))
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func updateSecurityConfigDTO(_ configuration: CoreDTOs.SecurityConfigDTO) async -> Result<Void, CoreDTOs.SecurityErrorDTO> {
         do {
             try await provider.updateSecurityConfiguration(SecurityDTOAdapter.fromDTO(configuration))
@@ -49,77 +49,77 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO {
             ))
         }
     }
-    
+
     public func getHostIdentifier() async -> Result<String, CoreDTOs.SecurityErrorDTO> {
         let result = await provider.getHostIdentifier()
         switch result {
-        case .success(let hostId):
+        case let .success(hostId):
             return .success(hostId)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func registerClient(bundleIdentifier: String) async -> Result<Bool, CoreDTOs.SecurityErrorDTO> {
         let result = await provider.registerClient(bundleIdentifier: bundleIdentifier)
         switch result {
-        case .success(let success):
+        case let .success(success):
             return .success(success)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func requestKeyRotation(keyId: String) async -> Result<Void, CoreDTOs.SecurityErrorDTO> {
         let result = await provider.requestKeyRotation(keyId: keyId)
         switch result {
         case .success:
             return .success(())
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func notifyKeyCompromise(keyId: String) async -> Result<Void, CoreDTOs.SecurityErrorDTO> {
         let result = await provider.notifyKeyCompromise(keyId: keyId)
         switch result {
         case .success:
             return .success(())
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func generateRandomData(length: Int) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
         let result = await provider.generateRandomData(length: length)
         switch result {
-        case .success(let data):
+        case let .success(data):
             return .success(data)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func randomBytes(count: Int) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
         let result = await provider.randomBytes(count: count)
         switch result {
-        case .success(let data):
+        case let .success(data):
             return .success(data)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func encryptData(_ data: SecureBytes, withKey key: SecureBytes) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
         let result = await provider.encryptData(data, withKey: key)
         switch result {
-        case .success(let encryptedData):
+        case let .success(encryptedData):
             return .success(encryptedData)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
-    
+
     public func performSecurityOperationDTO(
         operation: SecurityProtocolsCore.SecurityOperation,
         data: SecureBytes?,
@@ -143,7 +143,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO {
             ))
         }
     }
-    
+
     public func performSecurityOperationDTO(
         operationName: String,
         data: SecureBytes?,
@@ -167,13 +167,13 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO {
             ))
         }
     }
-    
+
     // MARK: - SecurityProviderProtocol Implementation
-    
+
     public func createSecureConfig(options: [String: String]?) -> Result<CoreDTOs.SecurityConfigDTO, CoreDTOs.SecurityErrorDTO> {
         // Convert the string options to Any for the provider
         let anyOptions: [String: Any]? = options?.mapValues { $0 as Any }
-        
+
         // Call the provider's createSecureConfig which returns a SecurityConfigDTO directly, not a Result
         let config = provider.createSecureConfig(options: anyOptions)
         return .success(SecurityDTOAdapter.toDTO(config))
@@ -187,7 +187,7 @@ public extension SecurityProviderFactory {
     /// Create a SecurityProviderDTO instance
     /// - Parameter environment: Optional environment parameters
     /// - Returns: A Foundation-independent SecurityProviderDTO
-    static func createSecurityProviderDTO(environment: [String: String]? = nil) -> any SecurityProviderDTO {
+    static func createSecurityProviderDTO(environment _: [String: String]? = nil) -> any SecurityProviderDTO {
         // Create a provider using the standard factory
         let config = ProviderFactoryConfiguration()
         let provider = StandardSecurityProviderFactory.shared.createSecurityProvider(config: config)

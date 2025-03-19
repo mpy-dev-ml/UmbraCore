@@ -156,7 +156,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
             kSecAttrAccount as String: account,
-            kSecValueData as String: password.data(using: .utf8)!
+            kSecValueData as String: password.data(using: .utf8)!,
         ]
 
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -176,7 +176,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
             kSecAttrAccount as String: account,
-            kSecReturnData as String: true
+            kSecReturnData as String: true,
         ]
 
         var item: CFTypeRef?
@@ -202,7 +202,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
-            kSecAttrAccount as String: account
+            kSecAttrAccount as String: account,
         ]
 
         let status = SecItemDelete(query as CFDictionary)

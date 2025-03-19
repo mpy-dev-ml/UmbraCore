@@ -117,7 +117,8 @@ public final class ErrorNotifier: ErrorNotificationProtocol {
                     about: error,
                     level: level,
                     recoveryOptions: options
-                ) {
+                )
+            {
                 return chosenOptionID
             }
         }
@@ -151,7 +152,8 @@ public final class ErrorNotifier: ErrorNotificationProtocol {
                 about: error,
                 level: level,
                 recoveryOptions: options
-            ) {
+            )
+        {
             // Find the selected option
             for option in options where option.id == selectedOptionID {
                 // Perform recovery

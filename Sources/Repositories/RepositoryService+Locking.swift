@@ -23,7 +23,7 @@ public extension RepositoryService {
     ) async throws {
         let metadata = LogMetadata([
             "repository_id": identifier,
-            "force": String(force)
+            "force": String(force),
         ])
 
         await logger.info("Unlocking repository", metadata: metadata)
@@ -57,7 +57,7 @@ public extension RepositoryService {
     /// is false
     func unlockAllRepositories(force: Bool = false) async throws {
         let metadata = LogMetadata([
-            "force": String(force)
+            "force": String(force),
         ])
 
         await logger.info("Unlocking all repositories", metadata: metadata)
@@ -67,7 +67,7 @@ public extension RepositoryService {
         for (identifier, repository) in repositories {
             let repositoryMetadata = LogMetadata([
                 "repository_id": identifier,
-                "force": String(force)
+                "force": String(force),
             ])
 
             do {

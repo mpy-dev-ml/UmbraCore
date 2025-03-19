@@ -51,15 +51,15 @@ final class ProgressTests: XCTestCase {
         XCTAssertEqual(progressUpdates[0]["percent_done"] as? Double, 0.2)
         XCTAssertEqual(progressUpdates[0]["total_files"] as? Int, 100)
         XCTAssertEqual(progressUpdates[0]["files_done"] as? Int, 20)
-        XCTAssertEqual(progressUpdates[0]["total_bytes"] as? Int, 10_000)
-        XCTAssertEqual(progressUpdates[0]["bytes_done"] as? Int, 2_000)
+        XCTAssertEqual(progressUpdates[0]["total_bytes"] as? Int, 10000)
+        XCTAssertEqual(progressUpdates[0]["bytes_done"] as? Int, 2000)
 
         XCTAssertEqual(progressUpdates[1]["percent_done"] as? Double, 0.5)
         XCTAssertEqual(progressUpdates[1]["files_done"] as? Int, 50)
 
         XCTAssertEqual(progressUpdates[2]["percent_done"] as? Double, 1.0)
         XCTAssertEqual(progressUpdates[2]["files_done"] as? Int, 100)
-        XCTAssertEqual(progressUpdates[2]["bytes_done"] as? Int, 10_000)
+        XCTAssertEqual(progressUpdates[2]["bytes_done"] as? Int, 10000)
     }
 
     func testParseRestoreProgress() throws {
@@ -92,14 +92,14 @@ final class ProgressTests: XCTestCase {
         XCTAssertEqual(progressUpdates[0]["percent_done"] as? Double, 0.25)
         XCTAssertEqual(progressUpdates[0]["total_files"] as? Int, 40)
         XCTAssertEqual(progressUpdates[0]["files_done"] as? Int, 10)
-        XCTAssertEqual(progressUpdates[0]["total_bytes"] as? Int, 8_000)
-        XCTAssertEqual(progressUpdates[0]["bytes_done"] as? Int, 2_000)
+        XCTAssertEqual(progressUpdates[0]["total_bytes"] as? Int, 8000)
+        XCTAssertEqual(progressUpdates[0]["bytes_done"] as? Int, 2000)
 
         XCTAssertEqual(progressUpdates[1]["percent_done"] as? Double, 0.75)
         XCTAssertEqual(progressUpdates[1]["files_done"] as? Int, 30)
 
         XCTAssertEqual(progressUpdates[2]["percent_done"] as? Double, 1.0)
         XCTAssertEqual(progressUpdates[2]["files_done"] as? Int, 40)
-        XCTAssertEqual(progressUpdates[2]["bytes_done"] as? Int, 8_000)
+        XCTAssertEqual(progressUpdates[2]["bytes_done"] as? Int, 8000)
     }
 }

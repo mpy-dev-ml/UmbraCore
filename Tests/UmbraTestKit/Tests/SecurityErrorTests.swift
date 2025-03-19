@@ -8,7 +8,7 @@ final class SecurityErrorTests: XCTestCase {
     static var allTests = [
         ("testErrorDescription", testErrorDescription),
         ("testErrorEquality", testErrorEquality),
-        ("testErrorMetadata", testErrorMetadata)
+        ("testErrorMetadata", testErrorMetadata),
     ]
 
     func testErrorDescription() {

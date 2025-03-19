@@ -28,9 +28,9 @@ public struct SecurityProviderAdapterFactory: Sendable {
     /// - Returns: A SecurityProvider instance
     public func createSecurityProvider(config: ProviderFactoryConfiguration) -> any SecurityProvider {
         if config.useModernProtocols {
-            return createModernProvider(config: config)
+            createModernProvider(config: config)
         } else {
-            return createLegacyProvider(config: config)
+            createLegacyProvider(config: config)
         }
     }
 
@@ -42,13 +42,12 @@ public struct SecurityProviderAdapterFactory: Sendable {
         let securityProvider = SecurityProviderMockImplementation()
 
         // Create the appropriate XPC service
-        let xpcService: XPCProtocolsCore.XPCServiceProtocolBasic
-        if config.useMockServices {
-            xpcService = SecurityProviderMockXPCService()
+        let xpcService: XPCProtocolsCore.XPCServiceProtocolBasic = if config.useMockServices {
+            SecurityProviderMockXPCService()
         } else {
             // For now, use the mock implementation for all cases
             // In a real implementation, this would create a real XPC service
-            xpcService = SecurityProviderMockXPCService()
+            SecurityProviderMockXPCService()
         }
 
         // Create and return the adapter
@@ -139,15 +138,15 @@ private final class LegacySecurityProviderBase: SecurityProviderBase {
         .success("legacy-host-\(UUID().uuidString)")
     }
 
-    func registerClient(bundleIdentifier: String) async -> Result<Bool, SecurityError> {
+    func registerClient(bundleIdentifier _: String) async -> Result<Bool, SecurityError> {
         .success(true)
     }
 
-    func requestKeyRotation(keyId: String) async -> Result<Void, SecurityError> {
+    func requestKeyRotation(keyId _: String) async -> Result<Void, SecurityError> {
         .success(())
     }
 
-    func notifyKeyCompromise(keyId: String) async -> Result<Void, SecurityError> {
+    func notifyKeyCompromise(keyId _: String) async -> Result<Void, SecurityError> {
         .success(())
     }
 }

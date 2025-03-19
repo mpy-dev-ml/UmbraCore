@@ -22,7 +22,7 @@ final class SecurityBookmarkServiceTests: XCTestCase {
 
         // Set file permissions
         try FileManager.default.setAttributes([
-            .posixPermissions: 0o644
+            .posixPermissions: 0o644,
         ], ofItemAtPath: testFileURL.path)
 
         // Set up service

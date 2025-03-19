@@ -15,7 +15,7 @@ final class CoreErrorsDefinitionTests: XCTestCase {
             .operationFailed(operation: "test", reason: "Test reason"),
             .unsupportedAlgorithm(name: "algo"),
             .missingImplementation(component: "test"),
-            .internalError(description: "Test error")
+            .internalError(description: "Test error"),
         ]
 
         for errorCase in testCases {
@@ -53,7 +53,7 @@ final class CoreErrorsDefinitionTests: XCTestCase {
             .invalidKeyLength(expected: 32, got: 16),
             .invalidIVLength(expected: 16, got: 8),
             .invalidSaltLength(expected: 16, got: 8),
-            .invalidIterationCount(expected: 1_000, got: 500),
+            .invalidIterationCount(expected: 1000, got: 500),
             .keyGenerationFailed,
             .ivGenerationFailed,
             .encryptionFailed(reason: "Test reason"),
@@ -64,11 +64,11 @@ final class CoreErrorsDefinitionTests: XCTestCase {
             .randomGenerationFailed(status: -1),
             .keyNotFound(identifier: "testKey"),
             .keyExists(identifier: "testKey"),
-            .keychainError(status: -25_300),
+            .keychainError(status: -25300),
             .invalidKey(reason: "Test reason"),
             .invalidKeySize(reason: "Test reason"),
             .invalidKeyFormat(reason: "Test reason"),
-            .invalidCredentialIdentifier(reason: "Test reason")
+            .invalidCredentialIdentifier(reason: "Test reason"),
         ]
 
         for errorCase in testCases {

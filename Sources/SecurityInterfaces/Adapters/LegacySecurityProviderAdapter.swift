@@ -47,8 +47,8 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
     ) {
         self.legacyProvider = legacyProvider
         self.service = service
-        self.cryptoServiceImpl = cryptoService
-        self.keyManagerImpl = keyManager
+        cryptoServiceImpl = cryptoService
+        keyManagerImpl = keyManager
     }
 
     /// Initialize with a legacy provider and mock services
@@ -57,9 +57,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         self.legacyProvider = legacyProvider
         // Create a basic service and adapt it to the standard protocol
         let basicService = SecurityProviderMockXPCService()
-        self.service = basicService as! any XPCServiceProtocolStandard
-        self.cryptoServiceImpl = SecurityProviderMockCryptoService()
-        self.keyManagerImpl = SecurityProviderMockKeyManager()
+        service = basicService as! any XPCServiceProtocolStandard
+        cryptoServiceImpl = SecurityProviderMockCryptoService()
+        keyManagerImpl = SecurityProviderMockKeyManager()
     }
 
     // MARK: - SecurityProviderProtocol implementation
@@ -85,9 +85,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
                 )
 
             switch result {
-            case .success(let data):
+            case let .success(data):
                 return SecurityProtocolsCore.SecurityResultDTO(success: true, data: data)
-            case .failure(let error):
+            case let .failure(error):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: false,
                     error: SecurityProtocolsCore.SecurityError.operationFailed(operation: "decrypt", reason: "\(error)")
@@ -99,12 +99,12 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
             let result = await keyManager.generateKey(type: .aes256, config: config)
 
             switch result {
-            case .success(let keyId):
+            case let .success(keyId):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: true,
                     options: ["keyIdentifier": keyId]
                 )
-            case .failure(let error):
+            case let .failure(error):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: false,
                     error: SecurityProtocolsCore.SecurityError.operationFailed(operation: "generateKey", reason: "\(error)")
@@ -119,7 +119,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
             switch result {
             case .success:
                 return SecurityProtocolsCore.SecurityResultDTO(success: true)
-            case .failure(let error):
+            case let .failure(error):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: false,
                     error: SecurityProtocolsCore.SecurityError.operationFailed(operation: "requestKeyRotation", reason: "\(error)")
@@ -156,15 +156,15 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let result = await service.status()
 
         switch result {
-        case .success(let status):
+        case let .success(status):
             let config = SecurityProviderUtils.createSecurityConfiguration(from: status)
             return .success(config)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapXPCError(error))
         }
     }
 
-    public func updateSecurityConfiguration(_ configuration: SecurityConfiguration) async throws {
+    public func updateSecurityConfiguration(_: SecurityConfiguration) async throws {
         // Legacy providers don't support security configuration updates,
         // so we just return successfully
     }
@@ -174,9 +174,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let result = await legacyProvider.getHostIdentifier()
 
         switch result {
-        case .success(let identifier):
+        case let .success(identifier):
             return .success(identifier)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityInterfacesError.operationFailed("Host identifier error: \(error)"))
         }
     }
@@ -186,9 +186,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let result = await legacyProvider.registerClient(bundleIdentifier: bundleIdentifier)
 
         switch result {
-        case .success(let registered):
+        case let .success(registered):
             return .success(registered)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityInterfacesError.operationFailed("Client registration error: \(error)"))
         }
     }
@@ -200,7 +200,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         switch result {
         case .success:
             return .success(())
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityInterfacesError.operationFailed("Key rotation error: \(error)"))
         }
     }
@@ -212,7 +212,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         switch result {
         case .success:
             return .success(())
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityInterfacesError.operationFailed("Key compromise notification error: \(error)"))
         }
     }
@@ -222,9 +222,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let result = await service.generateRandomData(length: length)
 
         switch result {
-        case .success(let data):
+        case let .success(data):
             return .success(data)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapXPCError(error))
         }
     }
@@ -235,7 +235,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         let keyInfo: [String: AnyObject] = [
             "keyId": keyId as AnyObject,
             "type": "unknown" as AnyObject,
-            "creationDate": Date() as AnyObject
+            "creationDate": Date() as AnyObject,
         ]
 
         return .success(keyInfo)
@@ -243,7 +243,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
 
     public func registerNotifications() async -> Result<Void, SecurityInterfacesError> {
         // Legacy providers don't support notifications
-        return .success(())
+        .success(())
     }
 
     public func randomBytes(count: Int) async -> Result<SecureBytes, SecurityInterfacesError> {
@@ -259,9 +259,9 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
         )
 
         switch result {
-        case .success(let encryptedData):
+        case let .success(encryptedData):
             return .success(encryptedData)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(
                 error: SecurityProtocolsCore.SecurityError.operationFailed(operation: "encrypt", reason: "\(error)")
             )
@@ -278,7 +278,7 @@ public final class LegacySecurityProviderAdapter: SecurityProvider {
 
         // Create a configuration
         var config = createSecureConfig(options: parameters)
-        if let secureData = secureData {
+        if let secureData {
             config = config.withInputData(secureData)
         }
 

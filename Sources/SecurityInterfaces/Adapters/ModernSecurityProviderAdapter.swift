@@ -59,7 +59,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         let statusResult = await getServiceStatus()
 
         switch statusResult {
-        case .success(let status):
+        case let .success(status):
             // Create a security configuration from the status
             var securityLevel: SecurityLevel = .standard
             if let levelString = status["securityLevel"], let level = Int(levelString), let secLevel = SecurityLevel(rawValue: level) {
@@ -69,7 +69,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
             // Create a basic configuration with defaults
             let config = SecurityConfiguration(securityLevel: securityLevel)
             return .success(config)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -81,7 +81,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         let options = [
             "securityLevel": String(securityLevel),
             "encryptionEnabled": "true",
-            "hashingEnabled": "true"
+            "hashingEnabled": "true",
         ]
 
         var config = provider.createSecureConfig(options: options)
@@ -110,7 +110,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         switch result {
         case .success:
             return
-        case .failure(let error):
+        case let .failure(error):
             throw error
         }
     }
@@ -120,9 +120,9 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         let result = await service.getHardwareIdentifier()
 
         switch result {
-        case .success(let identifier):
+        case let .success(identifier):
             return .success(identifier)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapXPCError(error))
         }
     }
@@ -196,9 +196,9 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         let result = await service.generateRandomData(length: length)
 
         switch result {
-        case .success(let data):
+        case let .success(data):
             return .success(data)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapXPCError(error))
         }
     }
@@ -281,7 +281,7 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
 
         // Create a configuration
         var config = provider.createSecureConfig(options: parameters)
-        if let secureData = secureData {
+        if let secureData {
             config = config.withInputData(secureData)
         }
 
@@ -324,17 +324,17 @@ public final class ModernSecurityProviderAdapter: SecurityProvider {
         if let standardService = service as? XPCServiceProtocolStandard {
             // Get the status from the service
             let statusResult = await standardService.status()
-            
+
             // Handle the result
             switch statusResult {
-            case .success(let statusDict):
+            case let .success(statusDict):
                 // Convert the AnyObject values to strings
                 var stringDict: [String: String] = [:]
                 for (key, value) in statusDict {
                     stringDict[key] = String(describing: value)
                 }
                 return .success(stringDict)
-            case .failure(let error):
+            case let .failure(error):
                 return .failure(.operationFailed("Failed to get service status: \(error)"))
             }
         } else {

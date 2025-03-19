@@ -1,9 +1,9 @@
-import Foundation
-import SecurityProtocolsCore
-import UmbraCoreTypes
 import CoreDTOs
 import ErrorHandling
 import ErrorHandlingDomains
+import Foundation
+import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// SecurityDTOAdapter supports conversions between various error domains and configurations in the
 /// security subsystem and their Foundation-independent DTO representations.
@@ -14,7 +14,7 @@ public enum SecurityDTOAdapter {
     public typealias SecurityError = UmbraErrors.Security.Core
 
     // MARK: - Error Conversions
-    
+
     /// Convert UmbraErrors.Security to SecurityErrorDTO
     ///
     /// - Parameter error: The UmbraErrors.Security to convert
@@ -22,37 +22,37 @@ public enum SecurityDTOAdapter {
     public static func toDTO(error: SecurityError) -> ErrorDTO {
         let details: [String: String] = error.userInfo.compactMapValues { value in
             if let stringValue = value as? String {
-                return stringValue
+                stringValue
             } else if let intValue = value as? Int {
-                return String(intValue)
+                String(intValue)
             } else if let boolValue = value as? Bool {
-                return String(boolValue)
+                String(boolValue)
             } else if let doubleValue = value as? Double {
-                return String(doubleValue)
+                String(doubleValue)
             } else {
-                return String(describing: value)
+                String(describing: value)
             }
         }
-        
+
         switch error {
-        case .encryptionFailed(let reason):
+        case let .encryptionFailed(reason):
             return ErrorDTO.encryptionError(message: reason, details: details)
-            
-        case .decryptionFailed(let reason):
+
+        case let .decryptionFailed(reason):
             return ErrorDTO.decryptionError(message: reason, details: details)
-            
-        case .hashingFailed(let reason):
+
+        case let .hashingFailed(reason):
             return ErrorDTO.keyError(message: reason, details: details)
-            
-        case .signatureInvalid(let reason):
+
+        case let .signatureInvalid(reason):
             return ErrorDTO.keyError(message: reason, details: details)
-            
-        case .secureStorageFailed(let operation, let reason):
+
+        case let .secureStorageFailed(operation, reason):
             var storageDetails = details
             storageDetails["operation"] = operation
             return ErrorDTO.storageError(message: reason, details: storageDetails)
-            
-        case .policyViolation(let policy, let reason):
+
+        case let .policyViolation(policy, reason):
             var policyDetails = details
             policyDetails["policy"] = policy
             return ErrorDTO(
@@ -61,15 +61,15 @@ public enum SecurityDTOAdapter {
                 message: reason,
                 details: policyDetails
             )
-            
-        case .internalError(let reason):
+
+        case let .internalError(reason):
             return ErrorDTO(
                 code: 1000,
                 domain: "security",
                 message: reason,
                 details: details
             )
-            
+
         default:
             return ErrorDTO(
                 code: 9999,
@@ -79,7 +79,7 @@ public enum SecurityDTOAdapter {
             )
         }
     }
-    
+
     /// Convert SecurityErrorDTO to UmbraErrors.Security
     ///
     /// - Parameter dto: The SecurityErrorDTO to convert
@@ -89,31 +89,31 @@ public enum SecurityDTOAdapter {
         switch (dto.code, dto.domain) {
         case (1001, _):
             return .encryptionFailed(reason: dto.message)
-            
+
         case (1002, _):
             return .decryptionFailed(reason: dto.message)
-            
+
         case (1003, _):
             return .hashingFailed(reason: dto.message)
-            
+
         case (1004, _):
             let operation = dto.details["operation"] ?? "unknown"
             return .secureStorageFailed(operation: operation, reason: dto.message)
-            
+
         case (1005, _):
             return .signatureInvalid(reason: dto.message)
-            
+
         case (1006, _):
             let policy = dto.details["policy"] ?? "unknown"
             return .policyViolation(policy: policy, reason: dto.message)
-            
+
         default:
             return .internalError(reason: dto.message)
         }
     }
-    
+
     // MARK: - Configuration Conversions
-    
+
     /// Converts from a SecurityConfigDTO to a SecurityConfigDTO (pass-through for API consistency)
     ///
     /// - Parameter config: The SecurityConfigDTO to process
@@ -121,7 +121,7 @@ public enum SecurityDTOAdapter {
     public static func keyConfigFromDTO(config dto: ConfigDTO) -> ConfigDTO {
         dto
     }
-    
+
     /// Converts from a SecurityConfigDTO to a SecurityConfigDTO (pass-through for API consistency)
     ///
     /// - Parameter config: The SecurityConfigDTO to process

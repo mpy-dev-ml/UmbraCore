@@ -80,7 +80,7 @@ public extension XPCServiceProtocolStandard {
         [
             "timestamp": Date().timeIntervalSince1970,
             "protocol": Self.protocolIdentifier,
-            "isActive": true
+            "isActive": true,
         ]
     }
 
@@ -88,7 +88,7 @@ public extension XPCServiceProtocolStandard {
     /// - Parameter length: Length in bytes
     /// - Returns: SecureBytes containing random data
     func generateRandomSecureBytes(length: Int) -> SecureBytes {
-        let bytes = (0..<length).map { _ in UInt8.random(in: 0...255) }
+        let bytes = (0 ..< length).map { _ in UInt8.random(in: 0 ... 255) }
         return SecureBytes(bytes: bytes)
     }
 }

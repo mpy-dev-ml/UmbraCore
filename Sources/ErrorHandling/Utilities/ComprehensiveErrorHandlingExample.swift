@@ -225,7 +225,7 @@ public final class ComprehensiveErrorHandlingExample {
                 RecoveryAction(id: "help", title: "Contact Support", handler: {
                     print("Opening support contact form...")
                     return true
-                })
+                }),
             ]
 
         case .invalidKey:
@@ -237,7 +237,7 @@ public final class ComprehensiveErrorHandlingExample {
                 RecoveryAction(id: "import", title: "Import Existing Key", handler: {
                     print("Opening key import dialog...")
                     return true
-                })
+                }),
             ]
 
         default:
@@ -249,7 +249,7 @@ public final class ComprehensiveErrorHandlingExample {
                 RecoveryAction(id: "cancel", title: "Cancel", handler: {
                     print("Operation cancelled")
                     return false
-                })
+                }),
             ]
         }
     }
@@ -268,7 +268,7 @@ public final class ComprehensiveErrorHandlingExample {
                 RecoveryAction(id: "offline", title: "Work Offline", handler: {
                     print("Switching to offline mode...")
                     return true
-                })
+                }),
             ]
 
         default:
@@ -276,7 +276,7 @@ public final class ComprehensiveErrorHandlingExample {
                 RecoveryAction(id: "retry", title: "Try Again", handler: {
                     print("Retrying network operation...")
                     return true
-                })
+                }),
             ]
         }
     }
@@ -295,7 +295,7 @@ public final class ComprehensiveErrorHandlingExample {
                 RecoveryAction(id: "browse", title: "Browse for File", handler: {
                     print("Opening file browser...")
                     return true
-                })
+                }),
             ]
 
         case .permissionDenied:
@@ -303,7 +303,7 @@ public final class ComprehensiveErrorHandlingExample {
                 RecoveryAction(id: "elevate", title: "Request Permission", isDefault: true, handler: {
                     print("Requesting elevated permissions...")
                     return true
-                })
+                }),
             ]
 
         default:
@@ -311,7 +311,7 @@ public final class ComprehensiveErrorHandlingExample {
                 RecoveryAction(id: "retry", title: "Try Again", handler: {
                     print("Retrying file operation...")
                     return true
-                })
+                }),
             ]
         }
     }

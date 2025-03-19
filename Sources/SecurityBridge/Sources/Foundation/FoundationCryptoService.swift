@@ -190,7 +190,8 @@ public extension Result where Success == Data, Failure == Error {
 extension SecurityBridge {
     /// Helper to convert a Foundation.Result to a domain result
     static func mapResult<T>(_ result: Result<T, Error>)
-        -> Result<T, UmbraErrors.Security.Protocols> {
+        -> Result<T, UmbraErrors.Security.Protocols>
+    {
         switch result {
         case let .success(value):
             .success(value)

@@ -152,12 +152,12 @@ public extension XPCProtocolMigrationFactory {
     static func withAsyncErrorHandling<T>(
         _ operation: (@escaping (Result<T, Error>) -> Void) -> Void
     ) async -> Result<T, XPCSecurityError> {
-        return await withCheckedContinuation { continuation in
+        await withCheckedContinuation { continuation in
             operation { result in
                 switch result {
-                case .success(let value):
+                case let .success(value):
                     continuation.resume(returning: .success(value))
-                case .failure(let error):
+                case let .failure(error):
                     continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
                 }
             }
@@ -172,11 +172,11 @@ public extension XPCProtocolMigrationFactory {
     static func withTraditionalAsyncErrorHandling<T>(
         _ operation: (@escaping (T?, Error?) -> Void) -> Void
     ) async -> Result<T, XPCSecurityError> {
-        return await withCheckedContinuation { continuation in
+        await withCheckedContinuation { continuation in
             operation { value, error in
-                if let error = error {
+                if let error {
                     continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
-                } else if let value = value {
+                } else if let value {
                     continuation.resume(returning: .success(value))
                 } else {
                     continuation.resume(returning: .failure(.invalidData(reason: "Both value and error were nil")))

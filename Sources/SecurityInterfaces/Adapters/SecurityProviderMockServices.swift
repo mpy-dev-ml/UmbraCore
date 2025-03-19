@@ -22,7 +22,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     // MARK: - Core Cryptographic Methods
 
     public func encrypt(data: UmbraCoreTypes.SecureBytes, using key: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.encryptionFailed("Mock encryption failure"))
         }
@@ -31,7 +32,7 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
         var encrypted = [UInt8]()
 
         do {
-            for i in 0..<data.count {
+            for i in 0 ..< data.count {
                 let dataByte = try data.byte(at: i)
                 let keyByte = try key.byte(at: i % key.count)
                 encrypted.append(dataByte ^ keyByte)
@@ -44,7 +45,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     }
 
     public func decrypt(data: UmbraCoreTypes.SecureBytes, using key: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.decryptionFailed("Mock decryption failure"))
         }
@@ -54,7 +56,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     }
 
     public func generateKey() async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.internalError("Mock failure"))
         }
@@ -63,7 +66,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     }
 
     public func hash(data: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.internalError("Mock hash failure"))
         }
@@ -73,7 +77,7 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
 
         do {
             // Simple deterministic hash - XOR the input bytes into the result
-            for i in 0..<min(data.count, 32) {
+            for i in 0 ..< min(data.count, 32) {
                 let dataByte = try data.byte(at: i)
                 result[i] = dataByte ^ UInt8(i)
             }
@@ -85,7 +89,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     }
 
     public func verify(data: UmbraCoreTypes.SecureBytes, against signature: UmbraCoreTypes.SecureBytes) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.internalError("Mock verification failure"))
         }
@@ -99,9 +104,10 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     public func encryptSymmetric(
         data: UmbraCoreTypes.SecureBytes,
         key: UmbraCoreTypes.SecureBytes,
-        config: SecurityProtocolsCore.SecurityConfigDTO
+        config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.encryptionFailed("Mock encryption failure"))
         }
@@ -118,9 +124,10 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     public func decryptSymmetric(
         data: UmbraCoreTypes.SecureBytes,
         key: UmbraCoreTypes.SecureBytes,
-        config: SecurityProtocolsCore.SecurityConfigDTO
+        config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.decryptionFailed("Mock decryption failure"))
         }
@@ -136,10 +143,11 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
 
     public func encryptAsymmetric(
         data: UmbraCoreTypes.SecureBytes,
-        publicKey: UmbraCoreTypes.SecureBytes,
-        config: SecurityProtocolsCore.SecurityConfigDTO
+        publicKey _: UmbraCoreTypes.SecureBytes,
+        config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.encryptionFailed("Mock asymmetric encryption failure"))
         }
@@ -150,10 +158,11 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
 
     public func decryptAsymmetric(
         data: UmbraCoreTypes.SecureBytes,
-        privateKey: UmbraCoreTypes.SecureBytes,
-        config: SecurityProtocolsCore.SecurityConfigDTO
+        privateKey _: UmbraCoreTypes.SecureBytes,
+        config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.decryptionFailed("Mock asymmetric decryption failure"))
         }
@@ -164,7 +173,7 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
 
     public func hash(
         data: UmbraCoreTypes.SecureBytes,
-        config: SecurityProtocolsCore.SecurityConfigDTO
+        config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         if failAllOperations {
             return .failure(.internalError("Mock hash with config failure"))
@@ -182,8 +191,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
         }
 
         var bytes = [UInt8](repeating: 0, count: length)
-        for i in 0..<length {
-            bytes[i] = UInt8.random(in: 0...255)
+        for i in 0 ..< length {
+            bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
     }
@@ -232,7 +241,7 @@ public final class SecurityProviderMockKeyManager: SecurityProtocolsCore.KeyMana
 
     public init(failAllOperations: Bool = false) {
         self.failAllOperations = failAllOperations
-        self.keyStore = [:]
+        keyStore = [:]
     }
 
     // MARK: - Thread-safe keyStore access
@@ -329,7 +338,7 @@ public final class SecurityProviderMockKeyManager: SecurityProtocolsCore.KeyMana
 
     public func generateKey(
         type: String,
-        size: Int? = nil,
+        size _: Int? = nil,
         withIdentifier keyId: String? = nil
     ) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         if failAllOperations {
@@ -348,7 +357,7 @@ public final class SecurityProviderMockKeyManager: SecurityProtocolsCore.KeyMana
     public func importKey(
         keyData: UmbraCoreTypes.SecureBytes,
         keyType: String,
-        options: [String: String]?
+        options _: [String: String]?
     ) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         if failAllOperations {
             return .failure(.internalError("Mock import failure"))
@@ -388,7 +397,7 @@ public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
     // MARK: - XPCServiceProtocolBasic
 
     public func ping() async -> Bool {
-        return !failAllOperations
+        !failAllOperations
     }
 
     public func getServiceInfo() async -> [String: String] {
@@ -399,7 +408,7 @@ public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
         return [
             "name": "SecurityProviderMockXPCService",
             "version": "1.0.0",
-            "status": "operational"
+            "status": "operational",
         ]
     }
 
@@ -411,7 +420,7 @@ public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
         return .operational
     }
 
-    public func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+    public func synchroniseKeys(_: UmbraCoreTypes.SecureBytes) async throws {
         if failAllOperations {
             throw XPCProtocolsCore.SecurityError.serviceUnavailable
         }
@@ -436,7 +445,7 @@ public final class SecurityProviderMockFileHandler: Sendable {
 
     // MARK: - File Handler Methods
 
-    public func writeSecureDataToFile(_ data: UmbraCoreTypes.SecureBytes, at path: String, options: [String: Any]?) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+    public func writeSecureDataToFile(_: UmbraCoreTypes.SecureBytes, at _: String, options _: [String: Any]?) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         if failAllOperations {
             return .failure(.internalError("Mock file write failed"))
         }
@@ -446,7 +455,7 @@ public final class SecurityProviderMockFileHandler: Sendable {
         return .success(())
     }
 
-    public func readSecureDataFromFile(at path: String, options: [String: Any]?) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+    public func readSecureDataFromFile(at _: String, options _: [String: Any]?) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         if failAllOperations {
             return .failure(.internalError("Mock file read failed"))
         }
@@ -455,7 +464,7 @@ public final class SecurityProviderMockFileHandler: Sendable {
         return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](repeating: 0, count: 32)))
     }
 
-    public func deleteFile(at path: String, options: [String: Any]?) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+    public func deleteFile(at _: String, options _: [String: Any]?) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         if failAllOperations {
             return .failure(.internalError("Mock file delete failed"))
         }
@@ -471,11 +480,11 @@ public final class SecurityProviderMockImplementation: SecurityProtocolsCore.Sec
     // MARK: - Properties
 
     public var cryptoService: any SecurityProtocolsCore.CryptoServiceProtocol {
-        return _cryptoService
+        _cryptoService
     }
 
     public var keyManager: any SecurityProtocolsCore.KeyManagementProtocol {
-        return _keyManager
+        _keyManager
     }
 
     // These properties are not part of the SecurityProviderProtocol but are used internally
@@ -489,10 +498,10 @@ public final class SecurityProviderMockImplementation: SecurityProtocolsCore.Sec
     public init(
         failAllOperations: Bool = false
     ) {
-        self._cryptoService = SecurityProviderMockCryptoService(failAllOperations: failAllOperations)
-        self._keyManager = SecurityProviderMockKeyManager(failAllOperations: failAllOperations)
-        self._fileHandler = SecurityProviderMockFileHandler(failAllOperations: failAllOperations)
-        self.xpcService = SecurityProviderMockXPCService(failAllOperations: failAllOperations)
+        _cryptoService = SecurityProviderMockCryptoService(failAllOperations: failAllOperations)
+        _keyManager = SecurityProviderMockKeyManager(failAllOperations: failAllOperations)
+        _fileHandler = SecurityProviderMockFileHandler(failAllOperations: failAllOperations)
+        xpcService = SecurityProviderMockXPCService(failAllOperations: failAllOperations)
     }
 
     // MARK: - SecurityProviderProtocol Methods
@@ -521,9 +530,9 @@ public final class SecurityProviderMockImplementation: SecurityProtocolsCore.Sec
             let encryptResult = await _cryptoService.encrypt(data: inputData, using: key)
 
             switch encryptResult {
-            case .success(let encrypted):
+            case let .success(encrypted):
                 return SecurityProtocolsCore.SecurityResultDTO(data: encrypted)
-            case .failure(let error):
+            case let .failure(error):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: false,
                     error: error
@@ -534,9 +543,9 @@ public final class SecurityProviderMockImplementation: SecurityProtocolsCore.Sec
             let decryptResult = await _cryptoService.decrypt(data: inputData, using: key)
 
             switch decryptResult {
-            case .success(let decrypted):
+            case let .success(decrypted):
                 return SecurityProtocolsCore.SecurityResultDTO(data: decrypted)
-            case .failure(let error):
+            case let .failure(error):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: false,
                     error: error
@@ -547,9 +556,9 @@ public final class SecurityProviderMockImplementation: SecurityProtocolsCore.Sec
             let hashResult = await _cryptoService.hash(data: inputData)
 
             switch hashResult {
-            case .success(let hashed):
+            case let .success(hashed):
                 return SecurityProtocolsCore.SecurityResultDTO(data: hashed)
-            case .failure(let error):
+            case let .failure(error):
                 return SecurityProtocolsCore.SecurityResultDTO(
                     success: false,
                     error: error

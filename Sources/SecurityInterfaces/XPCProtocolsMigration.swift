@@ -278,7 +278,8 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
     }
 
     func getKeyInfo(keyId _: String) async
-        -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError> {
+        -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError>
+    {
         // Legacy services don't support this
         .failure(.serviceUnavailable)
     }
@@ -295,24 +296,24 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
         .failure(.serviceUnavailable)
     }
 
-    func encryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    func encryptSecureData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // Legacy services don't support this
         .failure(.serviceUnavailable)
     }
 
-    func decryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    func decryptSecureData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // Legacy services don't support this
         .failure(.serviceUnavailable)
     }
 
-    func sign(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // Many legacy services don't support signing
-        return .failure(.operationNotSupported(name: "sign"))
+        .failure(.operationNotSupported(name: "sign"))
     }
 
-    func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+    func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // Many legacy services don't support verification
-        return .failure(.operationNotSupported(name: "verify"))
+        .failure(.operationNotSupported(name: "verify"))
     }
 
     func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
@@ -390,8 +391,8 @@ private final class CompleteAdapter: XPCServiceProtocolComplete {
     private let standardAdapter: XPCStandardAdapter
 
     init(_ service: any XPCServiceProtocol) {
-        self.legacyService = service
-        self.standardAdapter = XPCStandardAdapter(service)
+        legacyService = service
+        standardAdapter = XPCStandardAdapter(service)
     }
 
     static var protocolIdentifier: String {
@@ -399,27 +400,27 @@ private final class CompleteAdapter: XPCServiceProtocolComplete {
     }
 
     // MARK: - XPCServiceProtocolBasic Implementation
-    
+
     public func ping() async -> Bool {
         await standardAdapter.ping()
     }
-    
+
     public func getServiceVersion() async -> Result<String, XPCProtocolsCore.SecurityError> {
         await standardAdapter.getServiceVersion()
     }
-    
+
     public func synchroniseKeys(_ syncData: SecureBytes) async throws {
         // Modern services use an async/await method with Result type
         // This is the bridge implementation
         do {
-            let _ = try await standardAdapter.synchronizeKeys(syncData)
+            _ = try await standardAdapter.synchronizeKeys(syncData)
         } catch {
             throw XPCProtocolsCore.SecurityError.operationFailed(operation: "synchroniseKeys", reason: error.localizedDescription)
         }
     }
 
     // MARK: - XPCServiceProtocolStandard Methods
-    
+
     func status() async -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError> {
         await standardAdapter.status()
     }
@@ -427,22 +428,22 @@ private final class CompleteAdapter: XPCServiceProtocolComplete {
     func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
         await standardAdapter.getHardwareIdentifier()
     }
-    
+
     func generateRandomData(length: Int) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // Using the random bytes generator from standardAdapter
         let result = await standardAdapter.generateRandomBytes(count: length)
         switch result {
-        case .success(let data):
+        case let .success(data):
             return .success(SecureBytes(data: data))
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
-    
+
     func encryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await standardAdapter.encryptSecureData(data, keyIdentifier: keyIdentifier)
     }
-    
+
     func decryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await standardAdapter.decryptSecureData(data, keyIdentifier: keyIdentifier)
     }
@@ -470,32 +471,33 @@ private final class CompleteAdapter: XPCServiceProtocolComplete {
         .failure(.serviceUnavailable)
     }
 
-    func getKeyInfo(keyId: String) async
-        -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError> {
+    func getKeyInfo(keyId _: String) async
+        -> Result<[String: AnyObject], XPCProtocolsCore.SecurityError>
+    {
         // Legacy services don't support this
         .failure(.serviceUnavailable)
     }
 
-    func deleteKey(keyId: String) async -> Result<Void, XPCProtocolsCore.SecurityError> {
+    func deleteKey(keyId _: String) async -> Result<Void, XPCProtocolsCore.SecurityError> {
         // Legacy services don't support this
         .failure(.serviceUnavailable)
     }
 
     func exportKey(
-        keyIdentifier: String
+        keyIdentifier _: String
     ) async -> Result<(SecureBytes, XPCProtocolTypeDefs.KeyType), XPCProtocolsCore.SecurityError> {
         // Legacy services don't support this
         .failure(.serviceUnavailable)
     }
 
-    func sign(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // Many legacy services don't support signing
-        return .failure(.operationNotSupported(name: "sign"))
+        .failure(.operationNotSupported(name: "sign"))
     }
 
-    func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+    func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // Many legacy services don't support verification
-        return .failure(.operationNotSupported(name: "verify"))
+        .failure(.operationNotSupported(name: "verify"))
     }
 
     func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
@@ -504,46 +506,46 @@ private final class CompleteAdapter: XPCServiceProtocolComplete {
 
     // Additional methods required by XPCServiceProtocolComplete beyond Standard protocol
     func encryptAuthenticated(
-        data: SecureBytes,
-        keyIdentifier: String,
-        associatedData: SecureBytes?
+        data _: SecureBytes,
+        keyIdentifier _: String,
+        associatedData _: SecureBytes?
     ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
-        return .failure(.operationNotSupported(name: "Authenticated encryption not available in legacy service"))
+        .failure(.operationNotSupported(name: "Authenticated encryption not available in legacy service"))
     }
 
     func decryptAuthenticated(
-        data: SecureBytes,
-        keyIdentifier: String,
-        associatedData: SecureBytes?
+        data _: SecureBytes,
+        keyIdentifier _: String,
+        associatedData _: SecureBytes?
     ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
-        return .failure(.operationNotSupported(name: "Authenticated decryption not available in legacy service"))
+        .failure(.operationNotSupported(name: "Authenticated decryption not available in legacy service"))
     }
 
     func generateKey(
-        type: XPCProtocolTypeDefs.KeyType,
-        keyIdentifier: String?,
-        metadata: [String: String]?
+        type _: XPCProtocolTypeDefs.KeyType,
+        keyIdentifier _: String?,
+        metadata _: [String: String]?
     ) async -> Result<String, XPCProtocolsCore.SecurityError> {
-        return .failure(.operationNotSupported(name: "Key generation not available in legacy service"))
+        .failure(.operationNotSupported(name: "Key generation not available in legacy service"))
     }
 
     func generateKeyPair(
-        algorithm: String,
-        keySize: Int,
-        metadata: [String: String]?
+        algorithm _: String,
+        keySize _: Int,
+        metadata _: [String: String]?
     ) async -> Result<String, XPCProtocolsCore.SecurityError> {
-        return .failure(.operationNotSupported(name: "Key generation not available in legacy service"))
+        .failure(.operationNotSupported(name: "Key generation not available in legacy service"))
     }
 
-    func createSecureBackup(password: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
-        return .failure(.operationNotSupported(name: "Secure backup not available in legacy service"))
+    func createSecureBackup(password _: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+        .failure(.operationNotSupported(name: "Secure backup not available in legacy service"))
     }
 
     func restoreFromSecureBackup(
-        backup: SecureBytes,
-        password: String
+        backup _: SecureBytes,
+        password _: String
     ) async -> Result<Void, XPCProtocolsCore.SecurityError> {
-        return .failure(.operationNotSupported(name: "Secure backup restoration not available in legacy service"))
+        .failure(.operationNotSupported(name: "Secure backup restoration not available in legacy service"))
     }
 }
 

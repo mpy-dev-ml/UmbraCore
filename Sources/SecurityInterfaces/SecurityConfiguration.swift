@@ -72,7 +72,7 @@ public struct SecurityConfiguration: Sendable, Codable {
         var result: [String: Any] = [
             "securityLevel": securityLevel.rawValue,
             "encryptionAlgorithm": encryptionAlgorithm,
-            "hashAlgorithm": hashAlgorithm
+            "hashAlgorithm": hashAlgorithm,
         ]
 
         if let options {

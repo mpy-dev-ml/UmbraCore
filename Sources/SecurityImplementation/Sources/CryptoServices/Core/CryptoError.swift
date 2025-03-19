@@ -7,7 +7,7 @@
 
  * Provide specific error types for cryptographic operations
  * Ensure consistent error handling across the cryptographic services
- 
+
  @Warning This error type is deprecated and will be replaced by CoreErrors.CryptoError.
  */
 

@@ -1,11 +1,11 @@
 /**
  # XPC Service Status
- 
+
  This file defines the structure for reporting XPC service status information
  in a standardized format across all UmbraCore XPC services.
- 
+
  ## Features
- 
+
  * Timestamp information for when status was captured
  * Protocol and service version information
  * Optional device identification

@@ -5,7 +5,7 @@ import UmbraCoreTypes
 /// without using any Foundation types.
 public struct ScheduleDTO: Sendable, Equatable {
     // MARK: - Types
-    
+
     /// The type of scheduling frequency
     public enum Frequency: String, Sendable, Equatable {
         /// Run once only
@@ -27,7 +27,7 @@ public struct ScheduleDTO: Sendable, Equatable {
         /// Run according to a custom cron expression
         case custom
     }
-    
+
     /// Days of the week for scheduling
     public enum DayOfWeek: Int, Sendable, Equatable, CaseIterable {
         case sunday = 0
@@ -37,89 +37,89 @@ public struct ScheduleDTO: Sendable, Equatable {
         case thursday = 4
         case friday = 5
         case saturday = 6
-        
+
         /// String representation of the day
         public var name: String {
             switch self {
-            case .sunday: return "Sunday"
-            case .monday: return "Monday"
-            case .tuesday: return "Tuesday"
-            case .wednesday: return "Wednesday"
-            case .thursday: return "Thursday"
-            case .friday: return "Friday"
-            case .saturday: return "Saturday"
+            case .sunday: "Sunday"
+            case .monday: "Monday"
+            case .tuesday: "Tuesday"
+            case .wednesday: "Wednesday"
+            case .thursday: "Thursday"
+            case .friday: "Friday"
+            case .saturday: "Saturday"
             }
         }
-        
+
         /// Short string representation of the day
         public var shortName: String {
             switch self {
-            case .sunday: return "Sun"
-            case .monday: return "Mon"
-            case .tuesday: return "Tue"
-            case .wednesday: return "Wed"
-            case .thursday: return "Thu"
-            case .friday: return "Fri"
-            case .saturday: return "Sat"
+            case .sunday: "Sun"
+            case .monday: "Mon"
+            case .tuesday: "Tue"
+            case .wednesday: "Wed"
+            case .thursday: "Thu"
+            case .friday: "Fri"
+            case .saturday: "Sat"
             }
         }
     }
-    
+
     // MARK: - Properties
-    
+
     /// Unique identifier for the schedule
     public let id: String
-    
+
     /// Human-readable name of the schedule
     public let name: String
-    
+
     /// Whether the schedule is enabled
     public let isEnabled: Bool
-    
+
     /// The frequency of the schedule
     public let frequency: Frequency
-    
+
     /// Interval for the frequency (e.g., every 2 hours for hourly)
     public let interval: Int
-    
+
     /// Start time of day in seconds since midnight
     public let startTimeOfDay: Int?
-    
+
     /// End time of day in seconds since midnight (for time window)
     public let endTimeOfDay: Int?
-    
+
     /// Specific days of week to run on (for daysOfWeek frequency)
     public let daysOfWeek: [DayOfWeek]?
-    
+
     /// Specific days of month to run on (for daysOfMonth frequency)
     public let daysOfMonth: [Int]?
-    
+
     /// Custom cron expression (for custom frequency)
     public let cronExpression: String?
-    
+
     /// Unix timestamp of the next scheduled run time in seconds
     public let nextRunTime: UInt64?
-    
+
     /// Unix timestamp of the last run time in seconds
     public let lastRunTime: UInt64?
-    
+
     /// Whether the schedule should run as soon as possible if a scheduled time was missed
     public let runMissedSchedule: Bool
-    
+
     /// Maximum number of times to run the schedule (nil = no limit)
     public let maxRuns: Int?
-    
+
     /// Number of times the schedule has already run
     public let runCount: Int
-    
+
     /// Creation time as Unix timestamp in seconds
     public let createdAt: UInt64
-    
+
     /// Additional metadata for the schedule
     public let metadata: [String: String]
-    
+
     // MARK: - Initializers
-    
+
     /// Full initializer with all schedule properties
     /// - Parameters:
     ///   - id: Unique identifier for the schedule
@@ -166,29 +166,29 @@ public struct ScheduleDTO: Sendable, Equatable {
         self.interval = max(1, interval)
         self.startTimeOfDay = startTimeOfDay
         self.endTimeOfDay = endTimeOfDay
-        
+
         // Validate days of week
-        if let daysOfWeek = daysOfWeek, frequency == .daysOfWeek {
+        if let daysOfWeek, frequency == .daysOfWeek {
             self.daysOfWeek = daysOfWeek.isEmpty ? [.monday] : daysOfWeek
         } else {
             self.daysOfWeek = daysOfWeek
         }
-        
+
         // Validate days of month, ensure values are between 1-31
-        if let daysOfMonth = daysOfMonth, frequency == .daysOfMonth {
+        if let daysOfMonth, frequency == .daysOfMonth {
             let validDays = daysOfMonth.filter { $0 >= 1 && $0 <= 31 }
             self.daysOfMonth = validDays.isEmpty ? [1] : validDays
         } else {
             self.daysOfMonth = daysOfMonth
         }
-        
+
         // Validate cron expression
         if frequency == .custom {
             self.cronExpression = cronExpression ?? "0 0 * * *" // Default to daily at midnight
         } else {
             self.cronExpression = cronExpression
         }
-        
+
         self.nextRunTime = nextRunTime
         self.lastRunTime = lastRunTime
         self.runMissedSchedule = runMissedSchedule
@@ -197,9 +197,9 @@ public struct ScheduleDTO: Sendable, Equatable {
         self.createdAt = createdAt
         self.metadata = metadata
     }
-    
+
     // MARK: - Factory Methods
-    
+
     /// Create a daily schedule
     /// - Parameters:
     ///   - id: Unique identifier for the schedule
@@ -222,7 +222,7 @@ public struct ScheduleDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     /// Create a weekly schedule
     /// - Parameters:
     ///   - id: Unique identifier for the schedule
@@ -248,7 +248,7 @@ public struct ScheduleDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     /// Create a monthly schedule
     /// - Parameters:
     ///   - id: Unique identifier for the schedule
@@ -274,7 +274,7 @@ public struct ScheduleDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     /// Create a custom schedule using cron expression
     /// - Parameters:
     ///   - id: Unique identifier for the schedule
@@ -296,7 +296,7 @@ public struct ScheduleDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     /// Create a one-time schedule
     /// - Parameters:
     ///   - id: Unique identifier for the schedule
@@ -320,22 +320,22 @@ public struct ScheduleDTO: Sendable, Equatable {
             createdAt: createdAt
         )
     }
-    
+
     // MARK: - Computed Properties
-    
+
     /// Whether the schedule has reached its maximum run count
     public var isComplete: Bool {
-        if let maxRuns = maxRuns {
+        if let maxRuns {
             return runCount >= maxRuns
         }
         return false
     }
-    
+
     /// Whether the schedule is one-time only
     public var isOneTimeOnly: Bool {
         frequency == .once || maxRuns == 1
     }
-    
+
     /// Human-readable description of the schedule's frequency
     public var frequencyDescription: String {
         switch frequency {
@@ -353,7 +353,7 @@ public struct ScheduleDTO: Sendable, Equatable {
             return interval == 1 ? "Monthly" : "Every \(interval) months"
         case .daysOfWeek:
             if let days = daysOfWeek {
-                let dayNames = days.map { $0.shortName }.joined(separator: ", ")
+                let dayNames = days.map(\.shortName).joined(separator: ", ")
                 return "Weekly on \(dayNames)"
             }
             return "Weekly on specific days"
@@ -367,9 +367,9 @@ public struct ScheduleDTO: Sendable, Equatable {
             return "Custom schedule"
         }
     }
-    
+
     // MARK: - Utility Methods
-    
+
     /// Create a copy of this schedule with updated enabled status
     /// - Parameter enabled: New enabled status
     /// - Returns: A new ScheduleDTO with updated enabled status
@@ -394,7 +394,7 @@ public struct ScheduleDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this schedule with updated next run time
     /// - Parameter nextRun: New next run time
     /// - Returns: A new ScheduleDTO with updated next run time
@@ -419,7 +419,7 @@ public struct ScheduleDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this schedule with updated last run time and incremented run count
     /// - Parameter lastRun: New last run time
     /// - Returns: A new ScheduleDTO with updated last run time and run count
@@ -444,16 +444,16 @@ public struct ScheduleDTO: Sendable, Equatable {
             metadata: metadata
         )
     }
-    
+
     /// Create a copy of this schedule with updated metadata
     /// - Parameter additionalMetadata: The metadata to add or update
     /// - Returns: A new ScheduleDTO with updated metadata
     public func withUpdatedMetadata(_ additionalMetadata: [String: String]) -> ScheduleDTO {
-        var newMetadata = self.metadata
+        var newMetadata = metadata
         for (key, value) in additionalMetadata {
             newMetadata[key] = value
         }
-        
+
         return ScheduleDTO(
             id: id,
             name: name,

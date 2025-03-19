@@ -20,22 +20,22 @@ public struct BackupStatusDTO: Sendable, Equatable {
         case cancelled
         /// Operation is paused
         case paused
-        
+
         /// Whether this status represents a terminal state
         public var isTerminal: Bool {
             switch self {
             case .idle, .succeeded, .failed, .cancelled:
-                return true
+                true
             case .running, .paused:
-                return false
+                false
             }
         }
-        
+
         /// Whether this status represents a success
         public var isSuccess: Bool {
             self == .succeeded
         }
-        
+
         /// Whether this status represents a failure
         public var isFailure: Bool {
             self == .failed || self == .cancelled
@@ -376,7 +376,7 @@ public struct BackupStatusDTO: Sendable, Equatable {
     public func withAddedErrors(_ messages: [String]) -> BackupStatusDTO {
         var newErrors = errors
         newErrors.append(contentsOf: messages)
-        
+
         return BackupStatusDTO(
             status: status,
             repositoryId: repositoryId,

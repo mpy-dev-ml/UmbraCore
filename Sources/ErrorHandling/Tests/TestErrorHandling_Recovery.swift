@@ -119,7 +119,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
                     recoveryAction: { @Sendable in
                         // No-op recovery action for testing
                     }
-                )
+                ),
             ]
         }
 
@@ -142,7 +142,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
 
         func recoveryOptions(for _: Error) -> [any ErrorHandlingInterfaces.RecoveryOption] {
             [
-                TestRecoveryOption(title: "Default Recovery", description: "Standard recovery action")
+                TestRecoveryOption(title: "Default Recovery", description: "Standard recovery action"),
             ]
         }
     }
@@ -273,7 +273,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
         func recoveryOptions(for _: Error) -> [any ErrorHandlingInterfaces.RecoveryOption] {
             // Return recovery options that don't rely on any security or encryption
             [
-                TestRecoveryOption(title: "Safe Recovery Test", description: "Recovery option that doesn't use encryption")
+                TestRecoveryOption(title: "Safe Recovery Test", description: "Recovery option that doesn't use encryption"),
             ]
         }
     }
@@ -329,7 +329,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
                     recoveryAction: { @Sendable in
                         // No-op recovery action for testing
                     }
-                )
+                ),
             ]
         }
 

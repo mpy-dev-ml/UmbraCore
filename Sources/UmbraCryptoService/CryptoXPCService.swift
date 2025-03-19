@@ -77,7 +77,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
     /// - Returns: True if service is available
     @objc
     public func ping() async -> Bool {
-        return true
+        true
     }
 
     /// Synchronize keys between XPC service and client
@@ -223,20 +223,20 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
     public func resetSecurity() async -> Result<Void, XPCSecurityError> {
         // In a real implementation, this would reset internal state,
         // clear caches, and potentially rotate encryption keys
-        return .success(())
+        .success(())
     }
 
     /// Get the service version
     /// - Returns: Result with version string on success or error on failure
     public func getServiceVersion() async -> Result<String, XPCSecurityError> {
-        return .success("1.0.0")
+        .success("1.0.0")
     }
 
     /// Get the hardware identifier
     /// - Returns: Result with identifier string on success or error on failure
     public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
         // In a real implementation, this would return a unique identifier for the hardware
-        return .success("crypto-xpc-service-hardware-id")
+        .success("crypto-xpc-service-hardware-id")
     }
 
     /// Get the service status
@@ -245,7 +245,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
         let statusInfo: [String: Any] = [
             "available": true,
             "version": "1.0.0",
-            "protocol": Self.protocolIdentifier
+            "protocol": Self.protocolIdentifier,
         ]
         return .success(statusInfo)
     }
@@ -255,7 +255,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
     /// Enhanced ping with detailed error reporting
     /// - Returns: Result with boolean and detailed error information
     public func pingAsync() async -> Result<Bool, XPCSecurityError> {
-        return .success(true)
+        .success(true)
     }
 
     /// Get diagnostic information about the service
@@ -274,7 +274,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
     /// Get service version with modern interface
     /// - Returns: Result with version string or error
     public func getVersion() async -> Result<String, XPCSecurityError> {
-        return .success("1.0.0")
+        .success("1.0.0")
     }
 
     /// Get metrics about service performance
@@ -284,7 +284,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
         let metrics: [String: Any] = [
             "operations_count": 0,
             "errors_count": 0,
-            "average_operation_time_ms": 0.0
+            "average_operation_time_ms": 0.0,
         ]
         return .success(metrics)
     }
@@ -295,7 +295,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
     ///   - keySize: Size of the key in bits
     ///   - metadata: Optional metadata to associate with the key
     /// - Returns: Result with the key identifier or error
-    public func generateKey(algorithm: String, keySize: Int, metadata: [String: String]?) async -> Result<String, XPCSecurityError> {
+    public func generateKey(algorithm _: String, keySize: Int, metadata _: [String: String]?) async -> Result<String, XPCSecurityError> {
         do {
             let keyId = "key-\(UUID().uuidString)"
             let bytes = keySize / 8
@@ -599,9 +599,9 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
         }
     }
 
-    public func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func decrypt(data _: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
         // Without a key, we can't decrypt
-        return .failure(.invalidInput(details: "Key required for decryption"))
+        .failure(.invalidInput(details: "Key required for decryption"))
     }
 
     public func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
@@ -618,12 +618,12 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
         return .success(SecureBytes(bytes: keyData))
     }
 
-    public func deriveKey(from password: String, salt: SecureBytes, iterations: Int, keyLength: Int, targetKeyIdentifier: String?) async -> Result<String, XPCSecurityError> {
+    public func deriveKey(from _: String, salt _: SecureBytes, iterations _: Int, keyLength _: Int, targetKeyIdentifier _: String?) async -> Result<String, XPCSecurityError> {
         // This would typically use PBKDF2 or similar
-        return .failure(.notImplemented(reason: "Key derivation not implemented"))
+        .failure(.notImplemented(reason: "Key derivation not implemented"))
     }
 
-    public func generateKey(keyType: XPCProtocolTypeDefs.KeyType, keyIdentifier: String?, metadata: [String: String]?) async -> Result<String, XPCSecurityError> {
+    public func generateKey(keyType: XPCProtocolTypeDefs.KeyType, keyIdentifier: String?, metadata _: [String: String]?) async -> Result<String, XPCSecurityError> {
         let actualKeyId = keyIdentifier ?? "key-\(UUID().uuidString)"
         let keySize = keyType == .aes256 ? 256 : 128
 

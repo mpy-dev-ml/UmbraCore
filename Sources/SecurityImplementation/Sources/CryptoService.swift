@@ -56,7 +56,8 @@ public final class CryptoService: CryptoServiceProtocol {
     ///   - key: The encryption key as `SecureBytes`.
     /// - Returns: The encrypted data as `SecureBytes` or an error.
     public func encrypt(data: SecureBytes, using key: SecureBytes) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         // Use the default AES-GCM algorithm
         let config = SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
         let result = await encryptSymmetricDTO(data: data, key: key, config: config)
@@ -74,7 +75,8 @@ public final class CryptoService: CryptoServiceProtocol {
     ///   - key: The decryption key as `SecureBytes`.
     /// - Returns: The decrypted data as `SecureBytes` or an error.
     public func decrypt(data: SecureBytes, using key: SecureBytes) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         // Use the default AES-GCM algorithm
         let config = SecurityConfigDTO(algorithm: "AES-GCM", keySizeInBits: 256)
         let result = await decryptSymmetricDTO(data: data, key: key, config: config)
@@ -127,7 +129,8 @@ public final class CryptoService: CryptoServiceProtocol {
     ///   - hash: The expected hash value as `SecureBytes`.
     /// - Returns: Boolean indicating whether the hash matches.
     public func verify(data: SecureBytes, against hash: SecureBytes) async
-        -> Result<Bool, UmbraErrors.Security.Protocols> {
+        -> Result<Bool, UmbraErrors.Security.Protocols>
+    {
         // Hash the data
         let hashResult = await self.hash(data: data)
 
@@ -277,7 +280,8 @@ public final class CryptoService: CryptoServiceProtocol {
     /// - Parameter length: The length of random data to generate in bytes
     /// - Returns: Result containing random data or error
     public func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         // Implement random data generation
         guard length > 0 else {
             return .failure(.invalidInput("Random data length must be greater than 0"))

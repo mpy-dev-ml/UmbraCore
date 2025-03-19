@@ -22,7 +22,8 @@ public class DefaultProcessExecutor: ProcessExecutorProtocol {
 
     public func execute(executablePath: String,
                         arguments: [String],
-                        environment: [String: String]) throws -> String {
+                        environment: [String: String]) throws -> String
+    {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executablePath)
         process.arguments = arguments
@@ -84,7 +85,8 @@ public class MockProcessExecutor: ProcessExecutorProtocol {
     /// - Throws: The configured error if failure was configured
     public func execute(executablePath: String,
                         arguments: [String],
-                        environment: [String: String]) throws -> String {
+                        environment: [String: String]) throws -> String
+    {
         // Record this execution
         executionHistory.append((executablePath, arguments, environment))
 

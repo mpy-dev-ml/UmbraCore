@@ -106,18 +106,16 @@ public struct RepositoryStatsDTO: Sendable, Equatable {
     /// - Returns: A new RepositoryStatsDTO with combined statistics
     public func mergedWith(_ other: RepositoryStatsDTO) -> RepositoryStatsDTO {
         // Determine oldest and newest snapshot timestamps
-        let oldestTimestamp: UInt64?
-        if let selfOldest = oldestSnapshot, let otherOldest = other.oldestSnapshot {
-            oldestTimestamp = min(selfOldest, otherOldest)
+        let oldestTimestamp: UInt64? = if let selfOldest = oldestSnapshot, let otherOldest = other.oldestSnapshot {
+            min(selfOldest, otherOldest)
         } else {
-            oldestTimestamp = oldestSnapshot ?? other.oldestSnapshot
+            oldestSnapshot ?? other.oldestSnapshot
         }
 
-        let newestTimestamp: UInt64?
-        if let selfNewest = newestSnapshot, let otherNewest = other.newestSnapshot {
-            newestTimestamp = max(selfNewest, otherNewest)
+        let newestTimestamp: UInt64? = if let selfNewest = newestSnapshot, let otherNewest = other.newestSnapshot {
+            max(selfNewest, otherNewest)
         } else {
-            newestTimestamp = newestSnapshot ?? other.newestSnapshot
+            newestSnapshot ?? other.newestSnapshot
         }
 
         return RepositoryStatsDTO(

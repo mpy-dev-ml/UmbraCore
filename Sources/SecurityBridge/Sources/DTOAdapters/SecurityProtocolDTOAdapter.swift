@@ -1,9 +1,9 @@
-import Foundation
-import SecurityProtocolsCore
-import UmbraCoreTypes
 import CoreDTOs
 import ErrorHandling
 import ErrorHandlingDomains
+import Foundation
+import SecurityProtocolsCore
+import UmbraCoreTypes
 
 /// SecurityProtocolDTOAdapter enables conversion between protocol-specific types
 /// and CoreDTOs types for security operations.
@@ -14,9 +14,9 @@ public enum SecurityProtocolDTOAdapter {
     public typealias ProtocolConfigDTO = SecurityProtocolsCore.SecurityConfigDTO
     public typealias SecurityCoreError = UmbraErrors.Security.Core
     public typealias SecurityProtocolError = UmbraErrors.Security.Protocols
-    
+
     // MARK: - Protocol Config Conversions
-    
+
     /// Convert from CoreDTOs.SecurityConfigDTO to SecurityProtocolsCore.SecurityConfigDTO
     ///
     /// - Parameter config: The ConfigDTO to convert
@@ -25,14 +25,14 @@ public enum SecurityProtocolDTOAdapter {
         // Extract algorithm details
         let algorithm = config.algorithm
         let keySizeInBits = config.keySizeInBits
-        
+
         // Extract all options as a dictionary
         let options = config.options
-        
+
         // Extract input data if available
         let inputDataBytes = config.inputData
         let inputSecureBytes: SecureBytes? = inputDataBytes != nil ? SecureBytes(bytes: inputDataBytes!) : nil
-        
+
         // Create and return the protocol config
         return ProtocolConfigDTO(
             algorithm: algorithm,
@@ -41,7 +41,7 @@ public enum SecurityProtocolDTOAdapter {
             inputData: inputSecureBytes
         )
     }
-    
+
     /// Convert from SecurityProtocolsCore.SecurityConfigDTO to CoreDTOs.SecurityConfigDTO
     ///
     /// - Parameter protocolConfig: The SecurityProtocolsCore.SecurityConfigDTO to convert
@@ -52,7 +52,7 @@ public enum SecurityProtocolDTOAdapter {
         if let secureBytes = protocolConfig.inputData {
             inputDataBytes = Array(secureBytes)
         }
-        
+
         // Create and return the CoreDTOs config
         return ConfigDTO(
             algorithm: protocolConfig.algorithm,
@@ -61,9 +61,9 @@ public enum SecurityProtocolDTOAdapter {
             inputData: inputDataBytes
         )
     }
-    
+
     // MARK: - Error Conversions
-    
+
     /// Convert a SecurityProtocolsCore error to a SecurityErrorDTO
     ///
     /// - Parameter error: The error from SecurityProtocolsCore
@@ -73,48 +73,48 @@ public enum SecurityProtocolDTOAdapter {
         if let coreError = error as? SecurityCoreError {
             return SecurityDTOAdapter.toDTO(error: coreError)
         }
-        
+
         // Handle UmbraErrors.Security.Protocols errors
         if let protocolError = error as? SecurityProtocolError {
             switch protocolError {
-            case .encryptionFailed(let reason):
+            case let .encryptionFailed(reason):
                 return ErrorDTO.encryptionError(message: reason)
-                
-            case .decryptionFailed(let reason):
+
+            case let .decryptionFailed(reason):
                 return ErrorDTO.decryptionError(message: reason)
-                
-            case .invalidFormat(let reason):
+
+            case let .invalidFormat(reason):
                 return ErrorDTO(
                     code: 1001,
                     domain: "security.protocol",
                     message: reason,
                     details: [:]
                 )
-                
-            case .unsupportedOperation(let name):
+
+            case let .unsupportedOperation(name):
                 return ErrorDTO(
                     code: 1002,
                     domain: "security.protocol",
                     message: "Operation not supported: \(name)",
                     details: ["operation": name]
                 )
-                
-            case .invalidInput(let reason):
+
+            case let .invalidInput(reason):
                 return ErrorDTO(
                     code: 1007,
                     domain: "security.protocol",
                     message: "Invalid input: \(reason)",
                     details: ["details": reason]
                 )
-                
-            case .internalError(let reason):
+
+            case let .internalError(reason):
                 return ErrorDTO(
                     code: 1006,
                     domain: "security.protocol",
                     message: reason,
                     details: [:]
                 )
-                
+
             default:
                 return ErrorDTO(
                     code: 1000,
@@ -124,7 +124,7 @@ public enum SecurityProtocolDTOAdapter {
                 )
             }
         }
-        
+
         // Generic error handling
         return ErrorDTO(
             code: -1,
@@ -133,7 +133,7 @@ public enum SecurityProtocolDTOAdapter {
             details: [:]
         )
     }
-    
+
     /// Convert a SecurityErrorDTO to a SecurityProtocolError
     ///
     /// - Parameter dto: The SecurityErrorDTO to convert
@@ -142,25 +142,25 @@ public enum SecurityProtocolDTOAdapter {
         // Map based on domain and code
         switch (dto.domain, dto.code) {
         case (_, 1001):
-            return .invalidFormat(reason: dto.message)
-            
+            .invalidFormat(reason: dto.message)
+
         case (_, 1002):
-            return .unsupportedOperation(name: dto.details["operation"] ?? "unknown")
-            
+            .unsupportedOperation(name: dto.details["operation"] ?? "unknown")
+
         case (_, 1007):
-            return .invalidInput(dto.message)
-            
+            .invalidInput(dto.message)
+
         case (_, 1008):
-            return .encryptionFailed(dto.message)
-            
+            .encryptionFailed(dto.message)
+
         case (_, 1009):
-            return .decryptionFailed(dto.message)
-            
+            .decryptionFailed(dto.message)
+
         case (_, 1006):
-            return .internalError(dto.message)
-            
+            .internalError(dto.message)
+
         default:
-            return .serviceError(dto.message)
+            .serviceError(dto.message)
         }
     }
 }

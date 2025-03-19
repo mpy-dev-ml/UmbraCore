@@ -131,7 +131,7 @@ final class MockStatsCommandTests: XCTestCase {
         let statsInfo = try JSONDecoder().decode(RepositoryStats.self, from: statsData)
 
         // Verify the stats values
-        XCTAssertEqual(statsInfo.totalSize, 1_024)
+        XCTAssertEqual(statsInfo.totalSize, 1024)
         XCTAssertEqual(statsInfo.totalFileCount, 10)
         XCTAssertEqual(statsInfo.totalBlobCount, 15)
         XCTAssertEqual(statsInfo.compressionRatio, 0.5)

@@ -97,7 +97,7 @@ final class TestRepository {
 
         // Create a binary file with random data
         let binaryFile = (testFilesPath as NSString).appendingPathComponent("binary.dat")
-        var randomData = Data(count: 1_024) // 1KB file
+        var randomData = Data(count: 1024) // 1KB file
         _ = randomData.withUnsafeMutableBytes { bytes in
             SecRandomCopyBytes(kSecRandomDefault, bytes.count, bytes.baseAddress!)
         }

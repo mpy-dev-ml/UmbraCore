@@ -226,25 +226,25 @@ public enum XPCErrorUtilities {
             let details: String
 
             switch cryptoError {
-            case .encryptionFailed(let reason):
+            case let .encryptionFailed(reason):
                 operation = "encryption"
                 details = reason
-            case .decryptionFailed(let reason):
+            case let .decryptionFailed(reason):
                 operation = "decryption"
                 details = reason
             case .keyGenerationFailed:
                 operation = "key generation"
                 details = "Key generation failed"
-            case .keyDerivationFailed(let reason):
+            case let .keyDerivationFailed(reason):
                 operation = "key derivation"
                 details = reason
-            case .authenticationFailed(let reason):
+            case let .authenticationFailed(reason):
                 operation = "authentication"
                 details = reason
             case let .invalidKeyLength(expected, got):
                 operation = "key validation"
                 details = "Invalid key length: expected \(expected), got \(got)"
-            case .invalidKey(let reason):
+            case let .invalidKey(reason):
                 operation = "key validation"
                 details = reason
             default:
