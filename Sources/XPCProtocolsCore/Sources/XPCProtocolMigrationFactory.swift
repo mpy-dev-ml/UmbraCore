@@ -124,24 +124,20 @@ public enum XPCProtocolMigrationFactory {
         }
 
         // Convert to XPCSecurityError with appropriate mapping
-        if let nsError = error as? NSError {
-            let domain = nsError.domain
-            let code = nsError.code
+        let nsError = error as NSError
+        let domain = nsError.domain
+        let code = nsError.code
 
-            // Try to create a more specific error based on domain and code
-            if domain.contains("auth") {
-                return .authenticationFailed(reason: "Error \(code)")
-            } else if domain.contains("timeout") {
-                return .timeout(after: 30.0) // Default timeout
-            } else if domain.contains("crypto") || domain.contains("security") {
-                return .cryptographicError(operation: "unknown", details: "Error \(code)")
-            } else {
-                return .internalError(reason: nsError.localizedDescription)
-            }
+        // Try to create a more specific error based on domain and code
+        if domain.contains("auth") {
+            return .authenticationFailed(reason: "Error \(code)")
+        } else if domain.contains("timeout") {
+            return .timeout(after: 30.0) // Default timeout
+        } else if domain.contains("crypto") || domain.contains("security") {
+            return .cryptographicError(operation: "unknown", details: "Error \(code)")
+        } else {
+            return .internalError(reason: nsError.localizedDescription)
         }
-
-        // If we can't extract more specific information, return a generic error
-        return .internalError(reason: error.localizedDescription)
     }
 }
 

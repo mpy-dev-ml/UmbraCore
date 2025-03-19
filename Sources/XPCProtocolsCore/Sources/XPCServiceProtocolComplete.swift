@@ -195,12 +195,8 @@ public extension XPCServiceProtocolComplete {
 
     /// Default implementation for ping with async error handling
     func pingAsync() async -> Result<Bool, XPCSecurityError> {
-        do {
-            let pingResult = await ping()
-            return .success(pingResult)
-        } catch {
-            return .failure(XPCSecurityError.serviceUnavailable)
-        }
+        let pingResult = await ping()
+        return .success(pingResult)
     }
 
     /// Default implementation for diagnostics

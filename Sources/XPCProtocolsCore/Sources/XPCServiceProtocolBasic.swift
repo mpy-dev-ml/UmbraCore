@@ -54,12 +54,9 @@ public extension XPCServiceProtocolBasic {
     /// Default implementation of the basic ping method.
     /// - Returns: Always returns true for basic implementations
     func pingBasic() async -> Result<Bool, XPCSecurityError> {
-        do {
-            let pingResult = try await ping()
-            return .success(pingResult)
-        } catch {
-            return .failure(XPCSecurityError.serviceUnavailable)
-        }
+        // Simple implementation that doesn't throw
+        let pingResult = await ping()
+        return .success(pingResult)
     }
 
     /// Extended synchronisation implementation with Result type return.

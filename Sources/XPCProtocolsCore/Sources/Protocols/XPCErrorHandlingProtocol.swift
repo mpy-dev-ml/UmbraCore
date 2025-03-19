@@ -51,17 +51,16 @@ public extension XPCErrorHandlingProtocol {
         }
 
         // Handle common Foundation error domains
-        if let nsError = error as? NSError {
-            if nsError.domain == URLError.errorDomain {
-                let errorCode = nsError.code
-                switch errorCode {
-                case URLError.timedOut.rawValue, URLError.cannotConnectToHost.rawValue:
-                    return .serviceUnavailable
-                case URLError.networkConnectionLost.rawValue:
-                    return .connectionInterrupted
-                default:
-                    return .internalError(reason: "Network error \(errorCode): \(nsError.localizedDescription)")
-                }
+        let nsError = error as NSError
+        if nsError.domain == URLError.errorDomain {
+            let errorCode = nsError.code
+            switch errorCode {
+            case URLError.timedOut.rawValue, URLError.cannotConnectToHost.rawValue:
+                return .serviceUnavailable
+            case URLError.networkConnectionLost.rawValue:
+                return .connectionInterrupted
+            default:
+                return .internalError(reason: "Network error \(errorCode): \(nsError.localizedDescription)")
             }
         }
 
