@@ -1,0 +1,17 @@
+load("//tools/swift:docc_rules.bzl", "docc_documentation")
+
+# DocC documentation for SecurityInterfaces
+docc_documentation(
+    name = "SecurityInterfacesDocC",
+    module_name = "SecurityInterfaces",
+    srcs = glob([
+        "**/*.md",
+        "**/*.png",
+        "**/*.jpg",
+        "**/*.docc",
+        "Info.plist",
+    ]) + [
+        "//Sources/SecurityInterfaces:srcs",
+    ],
+    visibility = ["//visibility:public"],
+)
