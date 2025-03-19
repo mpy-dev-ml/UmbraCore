@@ -25,10 +25,10 @@ umbracore_foundation_free_module(
         "Sources/XPCProtocolMigrationFactory.swift",
         "Sources/SecureBytes+NSData.swift",
         "Sources/XPCServiceStatus.swift",
+        "Sources/SecureBytesExtensions.swift",
         
         # Migration guide and deprecation strategy
         "Sources/XPCProtocolMigrationGuide.swift",
-        "Sources/XPCMigrationExamples.swift",
         
         # Adapters
         "Sources/Adapters/CryptoXPCServiceAdapter.swift",
@@ -36,8 +36,12 @@ umbracore_foundation_free_module(
         # Modern implementations
         "Sources/Modern/ModernXPCService.swift",
         
-        # Examples
-        "Sources/Examples/ExampleXPCService.swift",
+        # DTO-based protocols and implementations
+        "Sources/XPCProtocolDTOs.swift",
+        "Sources/XPCServiceProtocolDTO.swift",
+        "Sources/XPCServiceProtocolDTOAdapter.swift",
+        "Sources/XPCServiceProtocolCompleteDTOAdapter.swift",
+        "Sources/KeyExchangeDTOAdapter.swift",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -45,6 +49,7 @@ umbracore_foundation_free_module(
         "//Sources/CoreErrors",           # Required for error handling
         "//Sources/ErrorHandling",        # Required for error handling
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains", # Required for error domains
+        "//Sources/CoreDTOs",            # Required for DTO-based protocols
     ],
     copts = [
         "-target", "arm64-apple-macos15.4",

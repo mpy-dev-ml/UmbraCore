@@ -130,6 +130,7 @@ UmbraCore_archive/
 *.md
 !README*.md
 !docs/**/*.md
+!Examples/**/*.md
 # Exclude additional file types
 *.csv
 *.go

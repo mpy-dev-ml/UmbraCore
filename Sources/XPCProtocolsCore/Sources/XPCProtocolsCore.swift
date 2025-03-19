@@ -12,17 +12,22 @@
  * Comprehensive error handling
  * Support for both legacy and modern interfaces
  * Protocol version management
+ * Foundation-independent DTOs for standardised data exchange
 
  XPCProtocolsCore serves as the foundation for all secure XPC communication in the Umbra platform,
  enabling isolated processes to communicate while maintaining security boundaries.
  */
 
 import CoreErrors
+@_exported import CoreDTOs
 @_exported import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
 import UmbraCoreTypes
 @_exported import struct UmbraCoreTypes.SecureBytes
+@_exported import struct CoreDTOs.SecurityErrorDTO
+@_exported import struct CoreDTOs.SecurityConfigDTO
+@_exported import struct CoreDTOs.OperationResultDTO
 
 /// Provides access to the XPC protocol factory methods and module-level information
 public enum XPCProtocolsCore {
@@ -51,6 +56,19 @@ public enum XPCProtocolsCore {
     public static func createServiceClient(
         serviceConnection _: XPCConnection,
         protocolLevel _: ProtocolLevel
+    ) -> Any? {
+        // Simple implementation for now
+        nil
+    }
+    
+    /// Factory method to create a DTO-based XPC service client
+    /// - Parameters:
+    ///   - serviceConnection: The underlying service connection
+    ///   - protocolLevel: The desired protocol level
+    /// - Returns: A DTO-based client implementing the requested protocol, or nil if unavailable
+    public static func createDTOServiceClient(
+        serviceConnection _: XPCConnection,
+        protocolLevel _: DTOProtocolLevel
     ) -> Any? {
         // Simple implementation for now
         nil
@@ -104,7 +122,7 @@ public enum XPCProtocolsCore {
         case serviceNotReady(reason: String)
 
         /// Operation timed out after waiting for the specified interval
-        case timeout(after: TimeInterval)
+        case timeout(after: Double)
 
         /// Authentication with the service failed
         case authenticationFailed(reason: String)
@@ -114,6 +132,9 @@ public enum XPCProtocolsCore {
 
         /// The requested operation is not supported by this service
         case operationNotSupported(name: String)
+
+        /// Feature or operation not implemented
+        case notImplemented(reason: String)
 
         /// Input parameters to the operation were invalid
         case invalidInput(details: String)
@@ -181,6 +202,42 @@ public enum XPCProtocolCompatibility {
 
     /// Protocols are incompatible
     case incompatible
+}
+
+/// Level of compatibility between different DTO protocol versions
+public enum DTOProtocolLevel: Int, CaseIterable {
+    /// Basic DTO protocol with minimal functionality
+    case basic = 0
+
+    /// Standard DTO protocol with comprehensive security operations
+    case standard = 1
+
+    /// Complete DTO protocol with all advanced features
+    case complete = 2
+
+    /// Get the Swift protocol type for this level
+    public var protocolType: Any.Type {
+        switch self {
+        case .basic:
+            XPCServiceProtocolBasic.self
+        case .standard:
+            XPCServiceProtocolStandard.self
+        case .complete:
+            XPCServiceProtocolComplete.self
+        }
+    }
+
+    /// Get the protocol identifier
+    public var identifier: String {
+        switch self {
+        case .basic:
+            "com.umbra.xpc.dto.protocol.basic"
+        case .standard:
+            "com.umbra.xpc.dto.protocol.standard"
+        case .complete:
+            "com.umbra.xpc.dto.protocol.complete"
+        }
+    }
 }
 
 /**

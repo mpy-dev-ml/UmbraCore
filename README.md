@@ -91,6 +91,9 @@ UmbraCore powers several macOS backup management tools:
 - **ErrorHandling**: Comprehensive error management
 - **Autocomplete**: Context-aware command completion
 
+### Examples
+The `/Examples` directory contains sample implementations demonstrating correct usage of UmbraCore APIs and patterns. These examples are kept separate from the main codebase to prevent build/test interference while still providing reference implementations.
+
 ## Cross-Functional Cryptographic Strategy
 
 UmbraCore implements a dual-library cryptographic approach to support both native macOS security features and cross-process operations:
