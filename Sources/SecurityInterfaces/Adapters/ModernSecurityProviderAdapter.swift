@@ -3,13 +3,14 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
 
-/// A modern adapter that bridges between provider protocols and the XPC service
+/// Modern adapter implementation that wraps a security provider and service
+/// and implements the SecurityProviderProtocol using both components.
 @available(macOS 14.0, *)
 public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.SecurityProviderProtocol {
     // MARK: - Properties
 
     private let provider: any SecurityProtocolsCore.SecurityProviderProtocol
-    // Using the basic XPC service protocol directly from XPCProtocolsCore
+    // Using the protocol defined in XPCProtocolsCore module
     private let service: any XPCServiceProtocolBasic
 
     /// The crypto service from the provider
@@ -78,7 +79,7 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
         let options = [
             "securityLevel": String(securityLevel),
             "encryptionEnabled": "true",
-            "hashingEnabled": "true",
+            "hashingEnabled": "true"
         ]
 
         var config = provider.createSecureConfig(options: options)
@@ -200,7 +201,7 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
         }
     }
 
-    public func getKeyInfo(keyId: String) async -> Result<[String: AnyObject], SecurityInterfacesError> {
+    public func getKeyInfo(keyId: String) async -> Result<[String: Any], SecurityInterfacesError> {
         // Create a configuration with keyIdentifier
         var config = provider.createSecureConfig(options: nil)
         config = config.withKeyIdentifier(keyId)
@@ -213,10 +214,10 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
 
         // Handle the result
         if result.success, let options = result.options {
-            // Convert options to [String: AnyObject]
-            var keyInfo: [String: AnyObject] = [:]
+            // Convert options to [String: Any]
+            var keyInfo: [String: Any] = [:]
             for (key, value) in options {
-                keyInfo[key] = value as AnyObject
+                keyInfo[key] = value
             }
             return .success(keyInfo)
         } else if let error = result.error {
@@ -262,7 +263,7 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
         if let encryptedData = result.data {
             return .success(encryptedData)
         } else if let error = result.error {
-            return .failure(SecurityProviderUtils.mapSPCError(error))
+            return .failure(SecurityInterfacesError.operationFailed("Encryption failed: \(error.localizedDescription)"))
         } else {
             return .failure(SecurityInterfacesError.operationFailed("Encryption failed"))
         }
@@ -293,7 +294,7 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
             let resultData = result.data.map { SecurityProviderUtils.secureBytesToData($0) }
             return SecurityResult(success: true, data: resultData)
         } else if let error = result.error {
-            throw SecurityProviderUtils.mapSPCError(error)
+            throw SecurityInterfacesError.operationFailed("Operation failed: \(error.localizedDescription)")
         } else {
             throw SecurityInterfacesError.operationFailed("Operation failed with unknown error")
         }
@@ -317,29 +318,22 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
     }
 
     private func getServiceStatus() async -> Result<[String: String], SecurityInterfacesError> {
-        // Use service's type to check if it can provide status
-        if let standardService = service as? any XPCServiceProtocolStandard {
-            // Get the status from the service
-            let statusResult = await standardService.status()
-
-            switch statusResult {
-            case .success(let statusDict):
-                // Convert Any values to String for consistent interface
-                var stringDict = [String: String]()
-                for (key, value) in statusDict {
-                    stringDict[key] = String(describing: value)
-                }
-                return .success(stringDict)
-            case .failure(let error):
-                return .failure(SecurityProviderUtils.mapToSecurityInterfacesError(error))
-            }
-        }
+        // For the status, we don't need a cast since we require a service that conforms
+        // to XPCServiceProtocolBasic in the constructor
         
-        // Default implementation - return basic info
-        return .success([
-            "service": service.protocolIdentifier,
-            "available": "true",
-            "ping": String(await service.ping())
-        ])
+        // Get the status from the service
+        let statusResult = await service.status()
+        
+        switch statusResult {
+        case let .success(statusDict):
+            // Convert Any values to String for consistent interface
+            var stringDict = [String: String]()
+            for (key, value) in statusDict {
+                stringDict[key] = String(describing: value)
+            }
+            return .success(stringDict)
+        case let .failure(error):
+            return .failure(SecurityProviderUtils.mapToSecurityInterfacesError(error))
+        }
     }
 }

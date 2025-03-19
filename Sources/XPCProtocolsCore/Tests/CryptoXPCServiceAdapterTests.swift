@@ -852,31 +852,31 @@ enum CryptoAdapterErrorType {
 
         switch self {
         case .encryptionFailed:
-            code = 1001
+            code = 1_001
             description = "Encryption operation failed"
         case .decryptionFailed:
-            code = 1002
+            code = 1_002
             description = "Decryption operation failed"
         case .keyGenerationFailed:
-            code = 1003
+            code = 1_003
             description = "Key generation failed"
         case .verificationFailed:
-            code = 1004
+            code = 1_004
             description = "Signature verification failed"
         case .importFailed:
-            code = 1005
+            code = 1_005
             description = "Key import failed"
         case .exportFailed:
-            code = 1006
+            code = 1_006
             description = "Key export failed"
         case .syncFailed:
-            code = 1007
+            code = 1_007
             description = "Key synchronization failed"
         case .resetFailed:
-            code = 1008
+            code = 1_008
             description = "Security reset failed"
         case .internalError:
-            code = 9999
+            code = 9_999
             description = "Internal error occurred"
         }
 

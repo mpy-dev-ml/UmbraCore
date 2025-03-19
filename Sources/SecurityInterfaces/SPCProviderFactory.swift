@@ -15,7 +15,7 @@ public enum SPCProviderFactory {
     public static func createProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol {
         // Get the shared instance of the provider adapter factory
         let factory = SecurityProviderAdapterFactory.shared
-        
+
         // Create a configuration based on the type
         let config = ProviderFactoryConfiguration(
             useModernProtocols: true,
@@ -23,15 +23,15 @@ public enum SPCProviderFactory {
             securityLevel: .standard,
             options: ["providerType": type]
         )
-        
+
         // Use the factory to create the provider
         return factory.createSecurityProvider(config: config)
     }
-    
+
     /// Create a default provider
     /// - Returns: A SecurityProtocolsCore provider instance
     public static func createDefaultProvider() -> any SecurityProtocolsCore.SecurityProviderProtocol {
         // Use the factory to create a provider with default configuration
-        return createProvider(ofType: "standard")
+        createProvider(ofType: "standard")
     }
 }

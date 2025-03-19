@@ -196,8 +196,7 @@ public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol {
 /// See `XPCProtocolMigrationGuide` in XPCProtocolsCore for comprehensive migration guidance.
 @available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 public final class CoreTypesToFoundationBridgeAdapter: NSObject,
-    XPCServiceProtocolFoundationBridge, @unchecked Sendable
-{
+    XPCServiceProtocolFoundationBridge, @unchecked Sendable {
     public static var protocolIdentifier: String = "com.umbra.xpc.service.adapter.foundation.outgoing"
 
     private let coreService: any ComprehensiveSecurityServiceProtocol
@@ -245,14 +244,14 @@ public final class CoreTypesToFoundationBridgeAdapter: NSObject,
         withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
         let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
-            NSLocalizedDescriptionKey: "Method 'generateRandomData' not available in XPCServiceProtocolBasic",
+            NSLocalizedDescriptionKey: "Method 'generateRandomData' not available in XPCServiceProtocolBasic"
         ])
         reply(nil, error)
     }
 
     public func resetSecurityDataFoundation(withReply reply: @escaping @Sendable (Error?) -> Void) {
         let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
-            NSLocalizedDescriptionKey: "Method 'resetSecurityData' not available in XPCServiceProtocolBasic",
+            NSLocalizedDescriptionKey: "Method 'resetSecurityData' not available in XPCServiceProtocolBasic"
         ])
         reply(error)
     }
@@ -261,7 +260,7 @@ public final class CoreTypesToFoundationBridgeAdapter: NSObject,
         withReply reply: @escaping @Sendable (String?, Error?) -> Void
     ) {
         let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
-            NSLocalizedDescriptionKey: "Method 'getVersion' not available in XPCServiceProtocolBasic",
+            NSLocalizedDescriptionKey: "Method 'getVersion' not available in XPCServiceProtocolBasic"
         ])
         reply(nil, error)
     }
@@ -270,7 +269,7 @@ public final class CoreTypesToFoundationBridgeAdapter: NSObject,
         withReply reply: @escaping @Sendable (String?, Error?) -> Void
     ) {
         let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
-            NSLocalizedDescriptionKey: "Method 'getHostIdentifier' not available in XPCServiceProtocolBasic",
+            NSLocalizedDescriptionKey: "Method 'getHostIdentifier' not available in XPCServiceProtocolBasic"
         ])
         reply(nil, error)
     }
@@ -280,7 +279,7 @@ public final class CoreTypesToFoundationBridgeAdapter: NSObject,
         withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
         let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
-            NSLocalizedDescriptionKey: "Method 'encrypt' not available in XPCServiceProtocolBasic",
+            NSLocalizedDescriptionKey: "Method 'encrypt' not available in XPCServiceProtocolBasic"
         ])
         reply(nil, error)
     }
@@ -290,7 +289,7 @@ public final class CoreTypesToFoundationBridgeAdapter: NSObject,
         withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
         let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
-            NSLocalizedDescriptionKey: "Method 'decrypt' not available in XPCServiceProtocolBasic",
+            NSLocalizedDescriptionKey: "Method 'decrypt' not available in XPCServiceProtocolBasic"
         ])
         reply(nil, error)
     }
@@ -310,8 +309,7 @@ public final class CoreTypesToFoundationBridgeAdapter: NSObject,
 /// See `XPCProtocolMigrationGuide` in XPCProtocolsCore for comprehensive migration guidance.
 @available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProtocolBasic,
-    @unchecked Sendable
-{
+    @unchecked Sendable {
     public static var protocolIdentifier: String = "com.umbra.xpc.service.adapter.foundation.bridge"
 
     private let foundation: any XPCServiceProtocolFoundationBridge
@@ -348,8 +346,7 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
 
     // Swift-friendly SecureBytes version
     public func synchroniseKeys(_ syncData: SecureBytes) async
-        -> Result<Void, XPCProtocolsCore.SecurityError>
-    {
+        -> Result<Void, XPCProtocolsCore.SecurityError> {
         await withCheckedContinuation { continuation in
             // Convert SecureBytes to [UInt8]
             let bytes = [UInt8](syncData)
@@ -433,8 +430,7 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     }
 
     public func generateRandomData(length: Int) async
-        -> Result<SecureBytes, XPCProtocolsCore.SecurityError>
-    {
+        -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await withCheckedContinuation { continuation in
             self.foundation.generateRandomDataFoundation(length) { data, error in
                 if let error {

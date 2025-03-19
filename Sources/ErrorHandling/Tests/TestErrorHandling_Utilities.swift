@@ -125,8 +125,7 @@ final class TestErrorHandling_Utilities: XCTestCase {
     class MockDetailedErrorFormatter {
         func format(error: Error) -> String {
             if let umbraError = error as? UmbraError,
-               let source = umbraError.source
-            {
+               let source = umbraError.source {
                 return """
                 Error: [\(umbraError.domain).\(umbraError.code)] \(umbraError.errorDescription)
                 Source: \(source.file)

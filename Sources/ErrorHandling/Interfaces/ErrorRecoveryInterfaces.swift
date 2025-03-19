@@ -68,8 +68,7 @@ public extension ErrorRecoveryOption {
     /// Creates a "Try Again" recovery option
     /// - Parameter handler: The action to perform when trying again
     static func tryAgain(handler: @escaping @Sendable () async -> Void)
-        -> ErrorRecoveryOption
-    {
+        -> ErrorRecoveryOption {
         ErrorRecoveryOption(
             title: "Try Again",
             description: "Attempt the operation again",

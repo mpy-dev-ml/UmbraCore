@@ -15,15 +15,16 @@ public enum SecurityDTOAdapter {
     /// - Returns: A Foundation-independent SecurityConfigDTO
     public static func toDTO(_ config: SecurityConfiguration) -> CoreDTOs.SecurityConfigDTO {
         // Determine key size based on security level
-        let keySizeInBits = switch config.securityLevel {
+        let keySizeInBits: Int
+        switch config.securityLevel {
         case .basic:
-            128
+            keySizeInBits = 128
         case .standard:
-            256
+            keySizeInBits = 256
         case .advanced:
-            384
+            keySizeInBits = 384
         case .maximum:
-            512
+            keySizeInBits = 512
         }
 
         // Create options dictionary
@@ -44,15 +45,16 @@ public enum SecurityDTOAdapter {
     /// - Returns: A SecurityConfiguration compatible with the existing API
     public static func fromDTO(_ dto: CoreDTOs.SecurityConfigDTO) -> SecurityConfiguration {
         // Determine security level based on key size
-        let securityLevel = switch dto.keySizeInBits {
+        let securityLevel: SecurityLevel
+        switch dto.keySizeInBits {
         case ..<192:
-            SecurityLevel.basic
+            securityLevel = .basic
         case 192 ..< 384:
-            SecurityLevel.standard
+            securityLevel = .standard
         case 384 ..< 512:
-            SecurityLevel.advanced
+            securityLevel = .advanced
         default:
-            SecurityLevel.maximum
+            securityLevel = .maximum
         }
 
         // Extract hash algorithm from options or use default
@@ -79,150 +81,136 @@ public enum SecurityDTOAdapter {
         switch error {
         case let .bookmarkCreationFailed(path):
             CoreDTOs.SecurityErrorDTO(
-                code: 1001,
+                code: 1_001,
                 domain: "security.bookmark",
                 message: "Failed to create bookmark for \(path)",
                 details: ["path": path]
             )
         case .bookmarkResolutionFailed:
             CoreDTOs.SecurityErrorDTO(
-                code: 1002,
+                code: 1_002,
                 domain: "security.bookmark",
                 message: "Failed to resolve bookmark",
                 details: [:]
             )
         case let .bookmarkStale(path):
             CoreDTOs.SecurityErrorDTO(
-                code: 1003,
+                code: 1_003,
                 domain: "security.bookmark",
                 message: "Bookmark is stale for \(path)",
                 details: ["path": path]
             )
         case let .bookmarkNotFound(path):
             CoreDTOs.SecurityErrorDTO(
-                code: 1004,
+                code: 1_004,
                 domain: "security.bookmark",
                 message: "Bookmark not found for \(path)",
                 details: ["path": path]
             )
         case let .resourceAccessFailed(path):
             CoreDTOs.SecurityErrorDTO(
-                code: 1005,
+                code: 1_005,
                 domain: "security.resource",
                 message: "Failed to access resource at \(path)",
                 details: ["path": path]
             )
         case .randomGenerationFailed:
             CoreDTOs.SecurityErrorDTO(
-                code: 1006,
+                code: 1_006,
                 domain: "security.crypto",
                 message: "Random generation failed",
                 details: [:]
             )
-        case .hashingFailed:
+        case let .authorizationFailed(reason):
             CoreDTOs.SecurityErrorDTO(
-                code: 1007,
-                domain: "security.crypto",
-                message: "Hashing operation failed",
-                details: [:]
-            )
-        case .itemNotFound:
-            CoreDTOs.SecurityErrorDTO(
-                code: 1008,
-                domain: "security.credential",
-                message: "Credential or secure item not found",
-                details: [:]
-            )
-        case let .operationFailed(message):
-            CoreDTOs.SecurityErrorDTO(
-                code: 1009,
-                domain: "security.operation",
-                message: message,
-                details: [:]
-            )
-        case let .bookmarkError(message):
-            CoreDTOs.SecurityErrorDTO(
-                code: 1010,
-                domain: "security.bookmark",
-                message: message,
-                details: [:]
-            )
-        case let .accessError(message):
-            CoreDTOs.SecurityErrorDTO(
-                code: 1011,
-                domain: "security.access",
-                message: message,
-                details: [:]
-            )
-        case let .serializationFailed(reason):
-            CoreDTOs.SecurityErrorDTO(
-                code: 1012,
-                domain: "security.serialization",
-                message: "Serialization failed: \(reason)",
-                details: ["reason": reason]
-            )
-        case let .encryptionFailed(reason):
-            CoreDTOs.SecurityErrorDTO(
-                code: 1013,
-                domain: "security.crypto",
-                message: "Encryption failed: \(reason)",
-                details: ["reason": reason]
-            )
-        case let .decryptionFailed(reason):
-            CoreDTOs.SecurityErrorDTO(
-                code: 1014,
-                domain: "security.crypto",
-                message: "Decryption failed: \(reason)",
-                details: ["reason": reason]
-            )
-        case let .signatureFailed(reason):
-            CoreDTOs.SecurityErrorDTO(
-                code: 1015,
-                domain: "security.crypto",
-                message: "Signature failed: \(reason)",
-                details: ["reason": reason]
-            )
-        case let .verificationFailed(reason):
-            CoreDTOs.SecurityErrorDTO(
-                code: 1016,
-                domain: "security.crypto",
-                message: "Verification failed: \(reason)",
-                details: ["reason": reason]
-            )
-        case let .keyGenerationFailed(reason):
-            CoreDTOs.SecurityErrorDTO(
-                code: 1017,
-                domain: "security.crypto",
-                message: "Key generation failed: \(reason)",
-                details: ["reason": reason]
-            )
-        case .authenticationFailed:
-            CoreDTOs.SecurityErrorDTO(
-                code: 1018,
+                code: 1_007,
                 domain: "security.auth",
-                message: "Authentication failed",
+                message: "Authorization failed: \(reason)",
+                details: ["reason": reason]
+            )
+        case .timeout:
+            CoreDTOs.SecurityErrorDTO(
+                code: 1_008,
+                domain: "security.service",
+                message: "Operation timed out",
                 details: [:]
             )
-        case let .invalidParameters(details):
+        case let .securityViolation(details):
             CoreDTOs.SecurityErrorDTO(
-                code: 1019,
-                domain: "security.parameters",
-                message: "Invalid parameters: \(details)",
+                code: 1_009,
+                domain: "security.violation",
+                message: "Security violation detected",
                 details: ["details": details]
             )
-        case let .unknown(reason):
+        case .serviceNotAvailable:
             CoreDTOs.SecurityErrorDTO(
-                code: 1020,
-                domain: "security.unknown",
-                message: "Unknown error: \(reason)",
+                code: 1_010,
+                domain: "security.service",
+                message: "Security service not available",
+                details: [:]
+            )
+        case let .keyError(details):
+            CoreDTOs.SecurityErrorDTO(
+                code: 1_011,
+                domain: "security.key",
+                message: "Key operation failed",
+                details: ["details": details]
+            )
+        case let .internalError(reason):
+            CoreDTOs.SecurityErrorDTO(
+                code: 1_012,
+                domain: "security.internal",
+                message: "Internal error: \(reason)",
                 details: ["reason": reason]
             )
         case let .wrapped(error):
             CoreDTOs.SecurityErrorDTO(
-                code: Int32(error.code),
-                domain: "security.core.\(error.domain)",
-                message: error.localizedDescription,
-                details: ["raw_code": String(error.code), "raw_domain": error.domain]
+                code: 1_013,
+                domain: "security.wrapped",
+                message: "Wrapped error: \(error.localizedDescription)",
+                details: [:]
+            )
+        case let .operationFailed(message):
+            CoreDTOs.SecurityErrorDTO(
+                code: 1_100,
+                domain: "security.operation",
+                message: message,
+                details: [:]
+            )
+        case .encryptionFailed:
+            CoreDTOs.SecurityErrorDTO(
+                code: 1_200,
+                domain: "security.crypto",
+                message: "Encryption operation failed",
+                details: [:]
+            )
+        case .decryptionFailed:
+            CoreDTOs.SecurityErrorDTO(
+                code: 1_201,
+                domain: "security.crypto",
+                message: "Decryption operation failed",
+                details: [:]
+            )
+        case .keyManagementFailed:
+            CoreDTOs.SecurityErrorDTO(
+                code: 1_202,
+                domain: "security.key",
+                message: "Key management operation failed",
+                details: [:]
+            )
+        case let .invalidParameters(message):
+            CoreDTOs.SecurityErrorDTO(
+                code: 1_203,
+                domain: "security.params",
+                message: message,
+                details: [:]
+            )
+        case .unknownError:
+            CoreDTOs.SecurityErrorDTO(
+                code: 9_999,
+                domain: "security.unknown",
+                message: "Unknown security error",
+                details: [:]
             )
         }
     }
@@ -239,17 +227,17 @@ public enum SecurityDTOAdapter {
         case "bookmark":
             if let path = dto.details["path"] {
                 switch dto.code {
-                case 1001:
+                case 1_001:
                     return .bookmarkCreationFailed(path: path)
-                case 1003:
+                case 1_003:
                     return .bookmarkStale(path: path)
-                case 1004:
+                case 1_004:
                     return .bookmarkNotFound(path: path)
                 default:
                     return .bookmarkError(dto.message)
                 }
             } else {
-                return dto.code == 1002 ? .bookmarkResolutionFailed : .bookmarkError(dto.message)
+                return dto.code == 1_002 ? .bookmarkResolutionFailed : .bookmarkError(dto.message)
             }
 
         case "resource":
@@ -262,19 +250,19 @@ public enum SecurityDTOAdapter {
         case "crypto":
             let reason = dto.details["reason"] ?? dto.message
             switch dto.code {
-            case 1006:
+            case 1_006:
                 return .randomGenerationFailed
-            case 1007:
+            case 1_007:
                 return .hashingFailed
-            case 1013:
+            case 1_013:
                 return .encryptionFailed(reason: reason)
-            case 1014:
+            case 1_014:
                 return .decryptionFailed(reason: reason)
-            case 1015:
+            case 1_015:
                 return .signatureFailed(reason: reason)
-            case 1016:
+            case 1_016:
                 return .verificationFailed(reason: reason)
-            case 1017:
+            case 1_017:
                 return .keyGenerationFailed(reason: reason)
             default:
                 return .operationFailed(dto.message)
@@ -295,9 +283,8 @@ public enum SecurityDTOAdapter {
         default:
             if dto.domain.hasPrefix("security.core") {
                 // Try to convert back to a CoreError
-                if let rawCode = dto.details["raw_code"], let code = Int(rawCode),
-                   let rawDomain = dto.details["raw_domain"]
-                {
+                if let rawCode = dto.details["raw_code"], let _ = Int(rawCode),
+                   let _ = dto.details["raw_domain"] {
                     let coreError = UmbraErrors.Security.Core.internalError(reason: dto.message)
                     return .wrapped(coreError)
                 }
@@ -326,80 +313,73 @@ public enum SecurityDTOAdapter {
         if dto.domain.hasPrefix("xpc.") {
             switch dto.code {
             // Operation failures
-            case 2001:
+            case 2_001:
                 return .operationFailed("Service unavailable")
-            case 2002:
+            case 2_002:
                 return .operationFailed(dto.message)
-                
             // Parameter issues
-            case 2003:
+            case 2_003:
                 return .invalidParameters("Operation not supported: \(dto.details["operation"] ?? dto.message)")
-            case 2004:
+            case 2_004:
                 return .invalidParameters("Invalid input data")
-            case 2005:
+            case 2_005:
                 return .invalidParameters(dto.details["details"] as? String ?? dto.message)
-                
             // Authentication issues
-            case 2010:
+            case 2_010:
                 return .authenticationFailed
-                
             // Bookmark issues
-            case 2020:
+            case 2_020:
                 let path = dto.details["path"] as? String ?? "unknown"
                 return .bookmarkCreationFailed(path: path)
-            case 2021:
+            case 2_021:
                 return .bookmarkResolutionFailed
-            case 2022:
+            case 2_022:
                 let path = dto.details["path"] as? String ?? "unknown"
                 return .bookmarkStale(path: path)
-            case 2023:
+            case 2_023:
                 let path = dto.details["path"] as? String ?? "unknown"
                 return .bookmarkNotFound(path: path)
-            case 2060:
+            case 2_060:
                 let errorMsg = dto.details["error"] ?? dto.message
                 return .bookmarkError(errorMsg)
-                
             // Resource issues
-            case 2030:
+            case 2_030:
                 let path = dto.details["path"] as? String ?? "unknown"
                 return .resourceAccessFailed(path: path)
-            case 2061:
+            case 2_061:
                 let errorMsg = dto.details["error"] ?? dto.message
                 return .accessError(errorMsg)
-                
             // Item issues
-            case 2050:
+            case 2_050:
                 return .itemNotFound
-                
             // Cryptographic issues
-            case 2040:
+            case 2_040:
                 return .randomGenerationFailed
-            case 2041:
+            case 2_041:
                 return .hashingFailed
-            case 2070:
+            case 2_070:
                 let reason = dto.details["reason"] ?? dto.message
                 return .serializationFailed(reason: reason)
-            case 2071:
+            case 2_071:
                 let reason = dto.details["reason"] ?? dto.message
                 return .encryptionFailed(reason: reason)
-            case 2072:
+            case 2_072:
                 let reason = dto.details["reason"] ?? dto.message
                 return .decryptionFailed(reason: reason)
-            case 2073:
+            case 2_073:
                 let reason = dto.details["reason"] ?? dto.message
                 return .signatureFailed(reason: reason)
-            case 2074:
+            case 2_074:
                 let reason = dto.details["reason"] ?? dto.message
                 return .verificationFailed(reason: reason)
-            case 2075:
+            case 2_075:
                 let reason = dto.details["reason"] ?? dto.message
                 return .keyGenerationFailed(reason: reason)
-                
             // Other issues
-            case 2099:
+            case 2_099:
                 let reason = dto.details["reason"] ?? dto.message
                 return .unknown(reason: reason)
-            case 2100:
+            case 2_100:
                 // For wrapped errors, we create a generic error since we can't reconstruct the original
                 return .operationFailed("Wrapped error: \(dto.message)")
             default:

@@ -80,7 +80,7 @@ public extension XPCServiceProtocolStandard {
         [
             "timestamp": Date().timeIntervalSince1970,
             "protocol": Self.protocolIdentifier,
-            "isActive": true,
+            "isActive": true
         ]
     }
 

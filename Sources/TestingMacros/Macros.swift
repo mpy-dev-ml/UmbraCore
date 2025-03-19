@@ -21,7 +21,7 @@ public struct SuiteMacro: MemberMacro {
         return [
             """
             public var suiteName: String { "\(raw: stringLiteral)" }
-            """,
+            """
         ]
     }
 }
@@ -68,6 +68,6 @@ struct TestingMacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         SuiteMacro.self,
         TestMacro.self,
-        ExpectMacro.self,
+        ExpectMacro.self
     ]
 }

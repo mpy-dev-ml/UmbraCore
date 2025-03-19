@@ -14,7 +14,7 @@ final class TestErrorHandling_Extensions: XCTestCase {
             NSLocalizedFailureReasonErrorKey: "Test failure reason",
             NSLocalizedRecoverySuggestionErrorKey: "Test recovery suggestion",
             NSHelpAnchorErrorKey: "Test help anchor",
-            NSUnderlyingErrorKey: underlyingError,
+            NSUnderlyingErrorKey: underlyingError
         ]
 
         let error = NSError(domain: "TestDomain", code: 123, userInfo: userInfo)

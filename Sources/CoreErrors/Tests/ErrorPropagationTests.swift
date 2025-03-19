@@ -21,8 +21,7 @@ final class ErrorPropagationTests: XCTestCase {
 
         // Different module recovers the error
         if let recoveredError = anyError as? UmbraErrors.Crypto.Core,
-           case let .invalidParameters(_, parameter, reason) = recoveredError
-        {
+           case let .invalidParameters(_, parameter, reason) = recoveredError {
             // Verify essential information was preserved
             XCTAssertEqual(parameter, "keyLength", "Parameter name should be preserved")
             XCTAssertTrue(reason.contains("32") && reason.contains("16"),
@@ -80,8 +79,7 @@ final class ErrorPropagationTests: XCTestCase {
         let canonicalError = originalError.toCanonical()
 
         if let canonicalError = canonicalError as? UmbraErrors.Crypto.Core,
-           case let .invalidParameters(_, _, reason) = canonicalError
-        {
+           case let .invalidParameters(_, _, reason) = canonicalError {
             XCTAssertTrue(reason.contains("32") && reason.contains("16"),
                           "Canonical error should maintain numerical parameters")
         } else {

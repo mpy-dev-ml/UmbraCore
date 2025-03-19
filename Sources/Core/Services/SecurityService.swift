@@ -119,7 +119,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
         }
 
         // Extract token parameters with defaults
-        let expirationInterval = options["expirationInterval"] as? TimeInterval ?? 3600
+        let expirationInterval = options["expirationInterval"] as? TimeInterval ?? 3_600
         let scope = options["scope"] as? String ?? "default"
 
         // Generate token data (simplified implementation)
@@ -131,7 +131,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
             "timestamp": timestamp,
             "expiration": expirationTime,
             "scope": scope,
-            "id": UUID().uuidString,
+            "id": UUID().uuidString
         ]
 
         // Convert to JSON
@@ -350,8 +350,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     /// - Parameter options: Optional dictionary of configuration options
     /// - Returns: A properly configured SecurityConfigDTO
     public nonisolated func createSecureConfig(options _: [String: Any]?) -> SecurityProtocolsCore
-        .SecurityConfigDTO
-    {
+        .SecurityConfigDTO {
         // This is a placeholder implementation to satisfy protocol requirements
         SecurityProtocolsCore.SecurityConfigDTO(
             algorithm: "AES-GCM",

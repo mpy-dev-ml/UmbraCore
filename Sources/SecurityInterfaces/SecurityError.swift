@@ -154,44 +154,44 @@ public func mapSPCError(_ error: XPCProtocolsCore.SecurityError) -> SecurityInte
     case let .cryptographicError(operation, details):
         switch operation {
         case "encryption":
-            return .encryptionFailed(reason: details)
+            .encryptionFailed(reason: details)
         case "decryption":
-            return .decryptionFailed(reason: details)
+            .decryptionFailed(reason: details)
         case "signing":
-            return .signatureFailed(reason: details)
+            .signatureFailed(reason: details)
         case "verification":
-            return .verificationFailed(reason: details)
+            .verificationFailed(reason: details)
         case "key generation":
-            return .keyGenerationFailed(reason: details)
+            .keyGenerationFailed(reason: details)
         default:
-            return .operationFailed("\(operation) failed: \(details)")
+            .operationFailed("\(operation) failed: \(details)")
         }
     case let .authenticationFailed(details):
-        return .authenticationFailed
+        .authenticationFailed
     case let .authorizationFailed(details):
-        return .authorizationFailed(details)
+        .authorizationFailed(details)
     case let .invalidFormat(details):
-        return .invalidParameters("Invalid format: \(details)")
+        .invalidParameters("Invalid format: \(details)")
     case let .invalidKey(details):
-        return .invalidParameters("Invalid key: \(details)")
+        .invalidParameters("Invalid key: \(details)")
     case let .invalidParameters(details):
-        return .invalidParameters(details)
+        .invalidParameters(details)
     case let .keyNotFound(identifier):
-        return .invalidParameters("Key not found: \(identifier)")
+        .invalidParameters("Key not found: \(identifier)")
     case let .operationNotSupported(name):
-        return .operationFailed("Operation not supported: \(name)")
+        .operationFailed("Operation not supported: \(name)")
     case .serviceUnavailable:
-        return .serviceNotAvailable
+        .serviceNotAvailable
     case let .timeout(details):
-        return .timeout
+        .timeout
     case let .invalidState(details):
-        return .operationFailed("Invalid state: \(details)")
+        .operationFailed("Invalid state: \(details)")
     case let .protocolViolation(details):
-        return .securityViolation(details)
+        .securityViolation(details)
     case let .internalError(details):
-        return .internalError(reason: details)
+        .internalError(reason: details)
     case let .unknownError(details):
-        return .unknown(reason: details)
+        .unknown(reason: details)
     }
 }
 

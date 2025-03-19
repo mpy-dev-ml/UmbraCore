@@ -71,8 +71,7 @@ final class DefaultSecurityProviderBridge: SecurityProviderBridge.SecurityProvid
     }
 
     func hash(_ data: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes
-        .DataBridge
-    {
+        .DataBridge {
         try await adapter.hash(data)
     }
 

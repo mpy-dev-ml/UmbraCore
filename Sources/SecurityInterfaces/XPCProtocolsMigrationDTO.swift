@@ -193,7 +193,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
 
     public func encryptDTO(
         data: UmbraCoreTypes.SecureBytes,
-        key: UmbraCoreTypes.SecureBytes,
+        key _: UmbraCoreTypes.SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO> {
         // Convert DTO to SecurityConfig
@@ -214,7 +214,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
 
     public func decryptDTO(
         data: UmbraCoreTypes.SecureBytes,
-        key: UmbraCoreTypes.SecureBytes,
+        key _: UmbraCoreTypes.SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO> {
         // Convert DTO to SecurityConfig

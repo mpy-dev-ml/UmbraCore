@@ -224,7 +224,7 @@ public actor MockSecurityProvider: SecurityInterfaces.SecurityProvider {
             "keyId": keyId as NSString,
             "algorithm": "AES256" as NSString,
             "status": "active" as NSString,
-            "created": Date() as NSDate,
+            "created": Date() as NSDate
         ]
 
         return .success(info)
@@ -415,7 +415,7 @@ final class MockSecurityCryptoService: CryptoServiceProtocol {
         [
             "keyId": keyId as NSString,
             "algorithm": "AES256" as NSString,
-            "status": "active" as NSString,
+            "status": "active" as NSString
         ]
     }
 

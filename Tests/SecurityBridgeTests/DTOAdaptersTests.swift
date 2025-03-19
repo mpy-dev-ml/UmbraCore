@@ -95,7 +95,7 @@ final class DTOAdaptersTests: XCTestCase {
         // Create a native key config
         let nativeConfig = SecurityProtocols.KeyConfig(
             algorithm: .rsa,
-            keySizeInBits: 2048
+            keySizeInBits: 2_048
         )
 
         // Convert to DTO
@@ -103,14 +103,14 @@ final class DTOAdaptersTests: XCTestCase {
 
         // Verify properties
         XCTAssertEqual(configDTO.algorithm, "RSA")
-        XCTAssertEqual(configDTO.keySizeInBits, 2048)
+        XCTAssertEqual(configDTO.keySizeInBits, 2_048)
 
         // Convert back
         let convertedConfig = SecurityBridge.DTOAdapters.keyConfigFromDTO(config: configDTO)
 
         // Verify properties
         XCTAssertEqual(convertedConfig.algorithm, .rsa)
-        XCTAssertEqual(convertedConfig.keySizeInBits, 2048)
+        XCTAssertEqual(convertedConfig.keySizeInBits, 2_048)
     }
 
     // MARK: - XPC Conversion Tests

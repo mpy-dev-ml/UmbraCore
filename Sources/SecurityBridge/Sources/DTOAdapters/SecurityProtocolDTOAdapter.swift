@@ -85,7 +85,7 @@ public enum SecurityProtocolDTOAdapter {
 
             case let .invalidFormat(reason):
                 return ErrorDTO(
-                    code: 1001,
+                    code: 1_001,
                     domain: "security.protocol",
                     message: reason,
                     details: [:]
@@ -93,7 +93,7 @@ public enum SecurityProtocolDTOAdapter {
 
             case let .unsupportedOperation(name):
                 return ErrorDTO(
-                    code: 1002,
+                    code: 1_002,
                     domain: "security.protocol",
                     message: "Operation not supported: \(name)",
                     details: ["operation": name]
@@ -101,7 +101,7 @@ public enum SecurityProtocolDTOAdapter {
 
             case let .invalidInput(reason):
                 return ErrorDTO(
-                    code: 1007,
+                    code: 1_007,
                     domain: "security.protocol",
                     message: "Invalid input: \(reason)",
                     details: ["details": reason]
@@ -109,7 +109,7 @@ public enum SecurityProtocolDTOAdapter {
 
             case let .internalError(reason):
                 return ErrorDTO(
-                    code: 1006,
+                    code: 1_006,
                     domain: "security.protocol",
                     message: reason,
                     details: [:]
@@ -117,7 +117,7 @@ public enum SecurityProtocolDTOAdapter {
 
             default:
                 return ErrorDTO(
-                    code: 1000,
+                    code: 1_000,
                     domain: "security.protocol",
                     message: String(describing: protocolError),
                     details: [:]
@@ -141,22 +141,22 @@ public enum SecurityProtocolDTOAdapter {
     public static func fromDTO(error dto: ErrorDTO) -> SecurityProtocolError {
         // Map based on domain and code
         switch (dto.domain, dto.code) {
-        case (_, 1001):
+        case (_, 1_001):
             .invalidFormat(reason: dto.message)
 
-        case (_, 1002):
+        case (_, 1_002):
             .unsupportedOperation(name: dto.details["operation"] ?? "unknown")
 
-        case (_, 1007):
+        case (_, 1_007):
             .invalidInput(dto.message)
 
-        case (_, 1008):
+        case (_, 1_008):
             .encryptionFailed(dto.message)
 
-        case (_, 1009):
+        case (_, 1_009):
             .decryptionFailed(dto.message)
 
-        case (_, 1006):
+        case (_, 1_006):
             .internalError(dto.message)
 
         default:

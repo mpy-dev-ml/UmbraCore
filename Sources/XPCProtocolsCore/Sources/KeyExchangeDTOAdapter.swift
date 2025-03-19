@@ -97,7 +97,7 @@ public class KeyExchangeDTOAdapter: KeyExchangeDTOProtocol {
         guard case .success = publicKeyResult.status, let publicKeyData = publicKeyResult.value else {
             // Return the error
             return OperationResultDTO(
-                errorCode: 10012,
+                errorCode: 10_012,
                 errorMessage: "Failed to generate public key",
                 details: ["error": "Key generation failed"]
             )
@@ -113,7 +113,7 @@ public class KeyExchangeDTOAdapter: KeyExchangeDTOProtocol {
         guard case .success = privateKeyResult.status, let privateKeyData = privateKeyResult.value else {
             // Return the error from the service
             return OperationResultDTO(
-                errorCode: 10013,
+                errorCode: 10_013,
                 errorMessage: "Failed to generate private key",
                 details: ["error": "Key generation failed"]
             )
@@ -136,7 +136,7 @@ public class KeyExchangeDTOAdapter: KeyExchangeDTOProtocol {
         guard case .success = exportPublicResult.status, let publicKeyData = exportPublicResult.value else {
             // Return the error from the service
             return OperationResultDTO(
-                errorCode: 10014,
+                errorCode: 10_014,
                 errorMessage: "Failed to export public key",
                 details: ["error": "Key export failed"]
             )
@@ -156,7 +156,7 @@ public class KeyExchangeDTOAdapter: KeyExchangeDTOProtocol {
         guard case .success = exportPrivateResult.status, let privateKeyData = exportPrivateResult.value else {
             // Return the error from the service
             return OperationResultDTO(
-                errorCode: 10015,
+                errorCode: 10_015,
                 errorMessage: "Failed to export private key",
                 details: ["error": "Key export failed"]
             )
@@ -200,7 +200,7 @@ public class KeyExchangeDTOAdapter: KeyExchangeDTOProtocol {
         guard case .success = importPublicResult.status, let publicKeyId = importPublicResult.value else {
             // Return the error from the service
             return OperationResultDTO(
-                errorCode: 10016,
+                errorCode: 10_016,
                 errorMessage: "Failed to import public key",
                 details: ["error": "Key import failed"]
             )
@@ -222,7 +222,7 @@ public class KeyExchangeDTOAdapter: KeyExchangeDTOProtocol {
         guard case .success = importPrivateResult.status, let privateKeyId = importPrivateResult.value else {
             // Return the error from the service
             return OperationResultDTO(
-                errorCode: 10017,
+                errorCode: 10_017,
                 errorMessage: "Failed to import private key",
                 details: ["error": "Key import failed"]
             )
@@ -239,7 +239,7 @@ public class KeyExchangeDTOAdapter: KeyExchangeDTOProtocol {
             keySizeInBits: 256,
             options: [
                 "publicKeyId": publicKeyId,
-                "privateKeyId": privateKeyId,
+                "privateKeyId": privateKeyId
             ]
         )
 

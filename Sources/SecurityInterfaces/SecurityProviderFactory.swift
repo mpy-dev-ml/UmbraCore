@@ -67,7 +67,23 @@ public extension SecurityProviderFactory {
     /// - Parameter type: The string representation of the provider type
     /// - Returns: A SecurityProviderProtocol instance
     static func createSynchronousProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol {
-        StandardSecurityProviderFactory.createSynchronousProvider(ofType: type)
+        // Use the adapter factory directly instead of the deprecated StandardSecurityProviderFactory
+        let providerType: SecurityProviderType = switch type.lowercased() {
+        case "standard", "default", "production":
+            .standard
+        case "debug":
+            .debug
+        case "test", "mock", "dummy":
+            .test
+        case "legacy", "compatible":
+            .legacy
+        default:
+            // Use standard as fallback
+            .standard
+        }
+
+        let config = StandardSecurityProviderFactory.shared.createConfiguration(for: providerType)
+        return SecurityProviderAdapterFactory.shared.createSecurityProvider(config: config)
     }
 }
 
@@ -134,7 +150,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
         switch type {
         case .standard, .production, .debug:
             // Create modern provider
-            adapter = createModernSecurityProvider(config: config)
+            adapter = StandardSecurityProviderFactory.createModernSecurityProvider(config: config)
 
         case .test, .mock:
             // Create modern provider with mock services
@@ -146,11 +162,11 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
                 debugMode: true,
                 options: ["testMode": "true", "mockResponses": "true"]
             )
-            adapter = createModernSecurityProvider(config: mockConfig)
+            adapter = StandardSecurityProviderFactory.createModernSecurityProvider(config: mockConfig)
 
         case .legacy:
             // Create legacy provider
-            adapter = createLegacySecurityProvider(config: config)
+            adapter = StandardSecurityProviderFactory.createLegacySecurityProvider(config: config)
         }
 
         return adapter
@@ -218,7 +234,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
             "timeout": String(config.debugMode ? 10.0 : 30.0),
             "testMode": String(config.debugMode),
             "allowUnsafeOperations": String(config.requiresAuthentication),
-            "retryCount": String(config.securityLevel == .maximum ? 5 : 3),
+            "retryCount": String(config.securityLevel == .maximum ? 5 : 3)
         ]
 
         // Add any custom options
@@ -243,7 +259,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
             keySizeInBits: Int(safeOptions["keySizeInBits"] ?? "256") ?? 256,
             initializationVector: nil,
             additionalAuthenticatedData: nil,
-            iterations: Int(safeOptions["iterations"] ?? "10000") ?? 10000,
+            iterations: Int(safeOptions["iterations"] ?? "10000") ?? 10_000,
             options: safeOptions,
             keyIdentifier: safeOptions["keyIdentifier"],
             inputData: nil,
@@ -260,7 +276,7 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
             "debugMode": String(config.debugMode),
             "testMode": String(config.debugMode),
             "allowUnsafeOperations": String(config.requiresAuthentication),
-            "retryCount": String(config.securityLevel == .maximum ? 5 : 3),
+            "retryCount": String(config.securityLevel == .maximum ? 5 : 3)
         ]
 
         // Add any custom options
@@ -318,14 +334,28 @@ public class StandardSecurityProviderFactory: SecurityProviderFactory {
         }
     }
 
-    private func createModernSecurityProvider(config: ProviderFactoryConfiguration) -> SecurityProvider {
+    /// Create a modern security provider
+    /// - Parameter config: The provider configuration
+    /// - Returns: A SecurityProvider instance
+    private static func createModernSecurityProvider(config: ProviderFactoryConfiguration) -> SecurityProvider {
         // Create modern provider
-        SecurityProviderAdapterFactory.shared.createModernProvider(config: config)
+        let adapter = SecurityProviderAdapterFactory.shared.createModernProvider(config: config)
+
+        // Convert the adapter to SecurityProvider
+        let service = adapter.service as! XPCServiceProtocolStandard
+        return SecurityProvider(bridge: adapter, service: service)
     }
 
-    private func createLegacySecurityProvider(config: ProviderFactoryConfiguration) -> SecurityProvider {
+    /// Create a legacy security provider
+    /// - Parameter config: The provider configuration
+    /// - Returns: A SecurityProvider instance
+    private static func createLegacySecurityProvider(config: ProviderFactoryConfiguration) -> SecurityProvider {
         // Create legacy provider
-        SecurityProviderAdapterFactory.shared.createLegacyProvider(config: config)
+        let adapter = SecurityProviderAdapterFactory.shared.createLegacyProvider(config: config)
+
+        // Convert the adapter to SecurityProvider
+        let service = adapter.service as! XPCServiceProtocolStandard
+        return SecurityProvider(bridge: adapter, service: service)
     }
 }
 
@@ -368,7 +398,7 @@ public final class DummySecurityProvider: SecurityProtocolsCore.SecurityProvider
     ) async -> SecurityProtocolsCore.SecurityResultDTO {
         // Default implementation
         SecurityProtocolsCore.SecurityResultDTO.failure(
-            code: 1001,
+            code: 1_001,
             message: "Not implemented in dummy provider"
         )
     }
@@ -380,7 +410,7 @@ public final class DummySecurityProvider: SecurityProtocolsCore.SecurityProvider
             keySizeInBits: 256,
             initializationVector: nil,
             additionalAuthenticatedData: nil,
-            iterations: 10000,
+            iterations: 10_000,
             options: options as? [String: String] ?? [:],
             keyIdentifier: nil,
             inputData: nil,

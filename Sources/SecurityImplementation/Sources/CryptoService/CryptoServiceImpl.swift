@@ -112,8 +112,7 @@ public final class CryptoServiceImpl: CryptoServiceProtocol {
     // MARK: - Extended Protocol Methods
 
     public func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
-    {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Generate secure random data of specified length
         var randomBytes = [UInt8](repeating: 0, count: length)
         let status = SecRandomCopyBytes(kSecRandomDefault, length, &randomBytes)

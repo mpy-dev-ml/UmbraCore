@@ -41,7 +41,7 @@ private final class MockXPCServiceStandardAdapter: XPCServiceProtocolStandard {
         // Generate random bytes for testing
         var bytes = [UInt8](repeating: 0, count: count)
         for i in 0 ..< count {
-            bytes[i] = UInt8.random(in: 0...255)
+            bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(Data(bytes))
     }
@@ -59,11 +59,11 @@ private final class MockXPCServiceStandardAdapter: XPCServiceProtocolStandard {
         let result = await TaskCompletionSource<Result<String, Error>> {
             service.getHostIdentifier(completion: $0)
         }
-        
+
         switch result {
-        case .success(let id):
+        case let .success(id):
             return .success(id)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(.internalError(operation: "getHardwareIdentifier", details: error.localizedDescription))
         }
     }

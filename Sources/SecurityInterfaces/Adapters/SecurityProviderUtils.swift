@@ -61,7 +61,7 @@ public enum SecurityProviderUtils {
     /// - Parameter error: The XPCSecurityError to convert
     /// - Returns: A SecurityInterfacesError
     public static func mapXPCError(_ error: XPCSecurityError) -> SecurityInterfacesError {
-        return convertXPCError(error)
+        convertXPCError(error)
     }
 
     /// Map a CoreErrors SecurityError to a SecurityInterfacesError
@@ -85,7 +85,7 @@ public enum SecurityProviderUtils {
         case let .internalError(description):
             .operationFailed("Internal error: \(description)")
         }
-        
+
         return securityInterfacesError
     }
 
@@ -94,20 +94,28 @@ public enum SecurityProviderUtils {
     /// - Returns: A SecurityInterfacesError representation of the input error
     public static func mapToSecurityInterfacesError(_ error: Error) -> SecurityInterfacesError {
         if let securityError = error as? SecurityInterfacesError {
-            return securityError
+            securityError
         } else if let coreError = error as? CoreErrors.SecurityError {
-            return convertError(coreError)
+            convertError(coreError)
         } else if let xpcError = error as? XPCSecurityError {
             switch xpcError {
-            case .operationFailed(let message):
-                return .operationFailed(message)
-            case .keyError(let message):
-                return .keyError(message)
+            case let .internalError(reason):
+                .operationFailed(reason)
+            case let .invalidData(reason):
+                .keyError(reason)
+            case let .keyNotFound(identifier):
+                .keyError("Key not found: \(identifier)")
+            case let .encryptionFailed(reason), let .decryptionFailed(reason):
+                .operationFailed("Crypto operation failed: \(reason)")
             case .authenticationFailed:
-                return .authenticationFailed
+                .authenticationFailed
+            case let .invalidInput(details):
+                .operationFailed("Invalid input: \(details)")
+            default:
+                .operationFailed("XPC error: \(xpcError)")
             }
         } else {
-            return .operationFailed("Unknown error: \(error.localizedDescription)")
+            .operationFailed("Unknown error: \(error.localizedDescription)")
         }
     }
 
@@ -123,8 +131,7 @@ public enum SecurityProviderUtils {
 
         // Copy additional options from the status dictionary
         for (key, value) in status where
-            !["securityLevel", "encryptionAlgorithm", "hashAlgorithm"].contains(key)
-        {
+            !["securityLevel", "encryptionAlgorithm", "hashAlgorithm"].contains(key) {
             options[key] = value
         }
 

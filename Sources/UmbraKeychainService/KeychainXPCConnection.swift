@@ -26,8 +26,7 @@ final class KeychainXPCConnection {
         // Check existing connection
         if
             let existingConnection = connection,
-            let proxy = existingConnection.remoteObjectProxy as? any KeychainXPCProtocol
-        {
+            let proxy = existingConnection.remoteObjectProxy as? any KeychainXPCProtocol {
             return proxy
         }
 

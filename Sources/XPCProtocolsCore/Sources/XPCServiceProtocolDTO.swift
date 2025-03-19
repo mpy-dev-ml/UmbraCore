@@ -86,7 +86,7 @@ public extension XPCServiceProtocolDTO {
     /// Default implementation that creates an operation failure
     func generateRandomDataWithDTO(length: Int) async -> OperationResultDTO<SecureBytes> {
         OperationResultDTO(
-            errorCode: 1001,
+            errorCode: 1_001,
             errorMessage: "Random data generation not implemented",
             details: ["requestedLength": "\(length)"]
         )
@@ -240,7 +240,7 @@ public extension XPCServiceWithKeyExchangeDTO {
     func getServiceInfoWithDTO() async -> OperationResultDTO<[String: String]> {
         let info: [String: String] = [
             "protocolVersion": Self.protocolIdentifier,
-            "implementationTimestamp": "\(Int64(CFAbsoluteTimeGetCurrent()))",
+            "implementationTimestamp": "\(Int64(CFAbsoluteTimeGetCurrent()))"
         ]
 
         return OperationResultDTO(value: info)

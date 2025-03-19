@@ -367,7 +367,7 @@ final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, KeychainXP
         let statusInfo: [String: Any] = [
             "available": isStarted,
             "version": "1.0.0",
-            "protocol": Self.protocolIdentifier,
+            "protocol": Self.protocolIdentifier
         ]
         return .success(statusInfo)
     }

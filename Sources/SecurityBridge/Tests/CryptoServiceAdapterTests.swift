@@ -637,7 +637,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
             data: plaintext,
             publicKey: publicKey,
             algorithm: "RSA",
-            keySizeInBits: 2048,
+            keySizeInBits: 2_048,
             options: [:]
         )
 
@@ -658,7 +658,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
             data: ciphertext,
             privateKey: privateKey,
             algorithm: "RSA",
-            keySizeInBits: 2048,
+            keySizeInBits: 2_048,
             options: [:]
         )
 

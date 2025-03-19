@@ -1,30 +1,30 @@
 import CoreDTOs
+import ErrorHandling
 import Foundation
 import UmbraCoreTypes
-import ErrorHandling
 
 /// An adapter for security utilities that uses Foundation-independent DTOs
 public struct SecurityUtilsDTOAdapter {
     // MARK: - Properties
-    
+
     /// Access to the security utilities implementation
     private let securityUtils: any SecurityUtilsProtocol
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize the adapter with a security utilities implementation
     /// - Parameter securityUtils: The security utilities to adapt
     public init(securityUtils: any SecurityUtilsProtocol) {
         self.securityUtils = securityUtils
     }
-    
+
     /// Initialize the adapter with the default security utilities
     public init() {
-        self.securityUtils = DefaultSecurityUtils()
+        securityUtils = DefaultSecurityUtils()
     }
-    
+
     // MARK: - Public Methods
-    
+
     /// Generate a random key based on the provided configuration
     /// - Parameter config: The security configuration
     /// - Returns: Result containing the generated key or an error
@@ -33,12 +33,12 @@ public struct SecurityUtilsDTOAdapter {
     ) -> OperationResultDTO<[UInt8]> {
         do {
             // Generate key based on configuration
-            let keySize = config.keySizeInBits / 8  // Convert bits to bytes
+            let keySize = config.keySizeInBits / 8 // Convert bits to bytes
             var keyData = [UInt8](repeating: 0, count: keySize)
-            
+
             // Use SecRandomCopyBytes for secure random generation
             let result = SecRandomCopyBytes(kSecRandomDefault, keySize, &keyData)
-            
+
             guard result == errSecSuccess else {
                 return .failure(
                     .init(
@@ -49,7 +49,7 @@ public struct SecurityUtilsDTOAdapter {
                     )
                 )
             }
-            
+
             return .success(keyData)
         } catch {
             return .failure(
@@ -62,7 +62,7 @@ public struct SecurityUtilsDTOAdapter {
             )
         }
     }
-    
+
     /// Hash data using the specified algorithm
     /// - Parameters:
     ///   - data: The data to hash
@@ -75,16 +75,16 @@ public struct SecurityUtilsDTOAdapter {
         do {
             // Convert data to Data type
             let inputData = Data(data)
-            
+
             // Get hash algorithm from config
             let algorithm = config.algorithm
-            
+
             // Hash data using security utils
             let hashData = try securityUtils.hashData(inputData, using: algorithm)
-            
+
             // Convert result to [UInt8]
             let hashBytes = [UInt8](hashData)
-            
+
             return .success(hashBytes)
         } catch {
             return .failure(
@@ -99,7 +99,7 @@ public struct SecurityUtilsDTOAdapter {
             )
         }
     }
-    
+
     /// Encrypt data using the configured algorithm and key
     /// - Parameters:
     ///   - data: The data to encrypt
@@ -112,10 +112,10 @@ public struct SecurityUtilsDTOAdapter {
         do {
             // Convert data to Data type
             let inputData = Data(data)
-            
+
             // Get algorithm and key from config
             let algorithm = config.algorithm
-            
+
             // Check if we have a key in the options
             guard let keyBase64 = config.options["key"] else {
                 return .failure(
@@ -127,7 +127,7 @@ public struct SecurityUtilsDTOAdapter {
                     )
                 )
             }
-            
+
             // Convert key from Base64
             guard let keyData = Data(base64Encoded: keyBase64) else {
                 return .failure(
@@ -139,13 +139,13 @@ public struct SecurityUtilsDTOAdapter {
                     )
                 )
             }
-            
+
             // Encrypt data using security utils
             let encryptedData = try securityUtils.encryptData(inputData, using: algorithm, key: keyData)
-            
+
             // Convert result to [UInt8]
             let encryptedBytes = [UInt8](encryptedData)
-            
+
             return .success(encryptedBytes)
         } catch {
             return .failure(
@@ -158,7 +158,7 @@ public struct SecurityUtilsDTOAdapter {
             )
         }
     }
-    
+
     /// Decrypt data using the configured algorithm and key
     /// - Parameters:
     ///   - data: The encrypted data
@@ -171,10 +171,10 @@ public struct SecurityUtilsDTOAdapter {
         do {
             // Convert data to Data type
             let inputData = Data(data)
-            
+
             // Get algorithm and key from config
             let algorithm = config.algorithm
-            
+
             // Check if we have a key in the options
             guard let keyBase64 = config.options["key"] else {
                 return .failure(
@@ -186,7 +186,7 @@ public struct SecurityUtilsDTOAdapter {
                     )
                 )
             }
-            
+
             // Convert key from Base64
             guard let keyData = Data(base64Encoded: keyBase64) else {
                 return .failure(
@@ -198,13 +198,13 @@ public struct SecurityUtilsDTOAdapter {
                     )
                 )
             }
-            
+
             // Decrypt data using security utils
             let decryptedData = try securityUtils.decryptData(inputData, using: algorithm, key: keyData)
-            
+
             // Convert result to [UInt8]
             let decryptedBytes = [UInt8](decryptedData)
-            
+
             return .success(decryptedBytes)
         } catch {
             return .failure(
@@ -228,7 +228,7 @@ public extension SecurityConfigDTO {
     static func hash(algorithm: String = "SHA256") -> SecurityConfigDTO {
         SecurityConfigDTO(
             algorithm: algorithm,
-            keySizeInBits: 0  // No key required for hashing
+            keySizeInBits: 0 // No key required for hashing
         )
     }
 }
@@ -243,7 +243,7 @@ public protocol SecurityUtilsProtocol {
     ///   - algorithm: The hashing algorithm to use
     /// - Returns: The hashed data
     func hashData(_ data: Data, using algorithm: String) throws -> Data
-    
+
     /// Encrypt data using the specified algorithm and key
     /// - Parameters:
     ///   - data: The data to encrypt
@@ -251,7 +251,7 @@ public protocol SecurityUtilsProtocol {
     ///   - key: The encryption key
     /// - Returns: The encrypted data
     func encryptData(_ data: Data, using algorithm: String, key: Data) throws -> Data
-    
+
     /// Decrypt data using the specified algorithm and key
     /// - Parameters:
     ///   - data: The encrypted data
@@ -275,7 +275,7 @@ public enum SecurityUtilsError: Error, LocalizedError {
     case invalidAlgorithm(name: String, operation: String)
     /// Invalid key format or size
     case invalidKey(algorithm: String, reason: String)
-    
+
     public var errorDescription: String? {
         switch self {
         case let .hashingFailed(algorithm, reason):
@@ -297,46 +297,46 @@ public enum SecurityUtilsError: Error, LocalizedError {
 /// Default implementation of SecurityUtilsProtocol
 public struct DefaultSecurityUtils: SecurityUtilsProtocol {
     public init() {}
-    
+
     /// Hash data using the specified algorithm
     /// - Parameters:
     ///   - data: The data to hash
     ///   - algorithm: The hashing algorithm to use
     /// - Returns: The hashed data
-    public func hashData(_ data: Data, using algorithm: String) throws -> Data {
+    public func hashData(_: Data, using _: String) throws -> Data {
         // Simple implementation using Common Crypto
         // In a real implementation, this would use CommonCrypto directly
         // or CryptoKit for modern Swift apps
-        
+
         // This is a mock implementation for demonstration purposes
-        return Data(repeating: 0x42, count: 32)
+        Data(repeating: 0x42, count: 32)
     }
-    
+
     /// Encrypt data using the specified algorithm and key
     /// - Parameters:
     ///   - data: The data to encrypt
     ///   - algorithm: The encryption algorithm to use
     ///   - key: The encryption key
     /// - Returns: The encrypted data
-    public func encryptData(_ data: Data, using algorithm: String, key: Data) throws -> Data {
+    public func encryptData(_ data: Data, using _: String, key _: Data) throws -> Data {
         // Simple implementation for demo purposes
         // In a real implementation, would use CommonCrypto or CryptoKit
-        
+
         // This is a mock implementation for demonstration purposes
-        return Data(repeating: 0x41, count: data.count + 16)
+        Data(repeating: 0x41, count: data.count + 16)
     }
-    
+
     /// Decrypt data using the specified algorithm and key
     /// - Parameters:
     ///   - data: The encrypted data
     ///   - algorithm: The encryption algorithm used
     ///   - key: The decryption key
     /// - Returns: The decrypted data
-    public func decryptData(_ data: Data, using algorithm: String, key: Data) throws -> Data {
+    public func decryptData(_ data: Data, using _: String, key _: Data) throws -> Data {
         // Simple implementation for demo purposes
         // In a real implementation, would use CommonCrypto or CryptoKit
-        
+
         // This is a mock implementation for demonstration purposes
-        return data.count > 16 ? Data(data.prefix(data.count - 16)) : Data()
+        data.count > 16 ? Data(data.prefix(data.count - 16)) : Data()
     }
 }

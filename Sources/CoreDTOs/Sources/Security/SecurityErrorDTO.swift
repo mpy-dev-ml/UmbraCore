@@ -57,7 +57,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1001,
+            code: 1_001,
             message: message,
             details: details
         )
@@ -73,7 +73,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1002,
+            code: 1_002,
             message: message,
             details: details
         )
@@ -89,7 +89,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1003,
+            code: 1_003,
             message: message,
             details: details
         )
@@ -105,7 +105,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1004,
+            code: 1_004,
             message: message,
             details: details
         )
@@ -121,7 +121,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1005,
+            code: 1_005,
             message: message,
             details: details
         )

@@ -1,3 +1,4 @@
+import CoreErrors
 import CoreTypesInterfaces
 import ErrorHandling
 import ErrorHandlingDomains
@@ -7,7 +8,6 @@ import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
-import CoreErrors
 
 /// Factory for creating security provider adapters
 /// This provides a simplified interface for creating either modern or legacy adapters
@@ -29,13 +29,13 @@ public struct SecurityProviderAdapterFactory: Sendable {
     /// - Returns: A SecurityProviderProtocol instance
     public func createSecurityProvider(config: ProviderFactoryConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol {
         if config.useModernProtocols {
-            createModernProvider(config: config)
+            return createModernProvider(config: config)
         } else {
-            createLegacyProvider(config: config)
+            return createLegacyProvider(config: config)
         }
     }
 
-    /// Create a modern security provider
+    /// Create a modern provider with the specified configuration
     /// - Parameter config: The provider configuration
     /// - Returns: A ModernSecurityProviderAdapter instance
     public func createModernProvider(config: ProviderFactoryConfiguration) -> ModernSecurityProviderAdapter {
@@ -43,7 +43,9 @@ public struct SecurityProviderAdapterFactory: Sendable {
         let securityProvider = SecurityProviderMockImplementation()
 
         // Create the appropriate XPC service
-        let xpcService: any XPCServiceProtocolBasic = config.useMockServices ? SecurityProviderMockXPCService() : SecurityProviderMockXPCService()
+        let xpcService: XPCServiceProtocolBasic = config.useMockServices ?
+            SecurityProviderMockXPCService() :
+            SecurityProviderXPCService()
 
         // Create and return the adapter
         return ModernSecurityProviderAdapter(
@@ -63,13 +65,13 @@ public struct SecurityProviderAdapterFactory: Sendable {
         if config.useMockServices {
             // Create a legacy provider with mock services
             legacyProvider = LegacySecurityProvider()
-            let xpcService: any XPCServiceProtocolBasic = SecurityProviderMockXPCService()
+            let xpcService: XPCServiceProtocolBasic = SecurityProviderMockXPCService()
             let securityProvider = legacyProvider
             return ModernSecurityProviderAdapter(provider: securityProvider, service: xpcService)
         } else {
             // For now, use the mock implementation for all cases
             legacyProvider = LegacySecurityProvider()
-            let xpcService: any XPCServiceProtocolBasic = SecurityProviderMockXPCService()
+            let xpcService: XPCServiceProtocolBasic = SecurityProviderXPCService()
             let securityProvider = legacyProvider
             return ModernSecurityProviderAdapter(provider: securityProvider, service: xpcService)
         }
@@ -130,35 +132,35 @@ public struct ProviderFactoryConfiguration: Sendable {
 @available(macOS 14.0, *)
 private final class LegacySecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
     // MARK: - Required Properties
-    
+
     /// Access to cryptographic service implementation
     public var cryptoService: any SecurityProtocolsCore.CryptoServiceProtocol {
         MockCryptoService()
     }
-    
+
     /// Access to key management service implementation
     public var keyManager: any SecurityProtocolsCore.KeyManagementProtocol {
         MockKeyManager()
     }
-    
+
     // MARK: - Required Methods
-    
+
     /// Perform a secure operation with appropriate error handling
     /// - Parameters:
     ///   - operation: The security operation to perform
     ///   - config: Configuration options
     /// - Returns: Result of the operation
     public func performSecureOperation(
-        operation: SecurityProtocolsCore.SecurityOperation,
-        config: SecurityProtocolsCore.SecurityConfigDTO
+        operation _: SecurityProtocolsCore.SecurityOperation,
+        config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async -> SecurityProtocolsCore.SecurityResultDTO {
         // Mock implementation that returns success for all operations
-        return SecurityProtocolsCore.SecurityResultDTO(
+        SecurityProtocolsCore.SecurityResultDTO(
             success: true,
             data: try? UmbraCoreTypes.SecureBytes(count: 32)
         )
     }
-    
+
     /// Create a secure configuration with appropriate defaults
     /// - Parameter options: Optional dictionary of configuration options
     /// - Returns: A properly configured SecurityConfigDTO
@@ -171,16 +173,16 @@ private final class LegacySecurityProvider: SecurityProtocolsCore.SecurityProvid
                 return "\(value)"
             }
         }
-        
+
         return SecurityProtocolsCore.SecurityConfigDTO(
             algorithm: "AES",
             keySizeInBits: 256,
             options: stringOptions ?? [:]
         )
     }
-    
+
     // MARK: - Legacy Methods
-    
+
     func resetSecurityData() async -> Result<Void, SecurityInterfacesError> {
         .success(())
     }
@@ -202,6 +204,6 @@ private final class LegacySecurityProvider: SecurityProtocolsCore.SecurityProvid
     }
 
     func getSecurityLevel() async -> Result<SecurityLevel, SecurityInterfacesError> {
-        return .success(.standard)
+        .success(.standard)
     }
 }

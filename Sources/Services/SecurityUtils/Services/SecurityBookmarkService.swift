@@ -127,8 +127,7 @@ public actor SecurityBookmarkService {
 
     /// Convert BookmarkOptions to NSURL.BookmarkCreationOptions
     private func getSystemBookmarkOptions(from options: BookmarkOptions) -> NSURL
-        .BookmarkCreationOptions
-    {
+        .BookmarkCreationOptions {
         var systemOptions: NSURL.BookmarkCreationOptions = []
 
         if options.contains(.securityScoped) {
@@ -144,8 +143,7 @@ public actor SecurityBookmarkService {
 
     /// Convert BookmarkOptions to NSURL.BookmarkResolutionOptions
     private func getSystemBookmarkResolutionOptions(from options: BookmarkOptions) -> NSURL
-        .BookmarkResolutionOptions
-    {
+        .BookmarkResolutionOptions {
         var systemOptions: NSURL.BookmarkResolutionOptions = []
 
         if options.contains(.securityScoped) {

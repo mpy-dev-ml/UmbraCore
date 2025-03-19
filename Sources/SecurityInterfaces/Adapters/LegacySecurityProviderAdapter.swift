@@ -1,3 +1,4 @@
+import CoreDTOs
 import CoreTypesInterfaces
 import ErrorHandling
 import ErrorHandlingDomains
@@ -8,7 +9,6 @@ import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
-import CoreDTOs
 
 /// Legacy adapter implementation conforming to SecurityProtocolsCore.SecurityProviderProtocol protocol
 /// This adapter works with older SecurityProviderBase implementations
@@ -66,7 +66,7 @@ public final class LegacySecurityProviderAdapter: SecurityProtocolsCore.Security
             basicService is XPCServiceProtocolStandard,
             "Service must implement XPCServiceProtocolStandard"
         )
-        
+
         self.init(
             legacyProvider: legacyProvider,
             provider: provider,
@@ -80,7 +80,7 @@ public final class LegacySecurityProviderAdapter: SecurityProtocolsCore.Security
     /// - Parameter legacyProvider: The SecurityProviderBase implementation to adapt
     public init(legacyProvider: any SecurityProviderBase) {
         self.legacyProvider = legacyProvider
-        self.provider = legacyProvider as! any SecurityProtocolsCore.SecurityProviderProtocol
+        provider = legacyProvider as! any SecurityProtocolsCore.SecurityProviderProtocol
         // Create a basic service and adapt it to the standard protocol
         let basicService = SecurityProviderMockXPCService()
         service = basicService as! XPCServiceProtocolStandard
@@ -193,7 +193,7 @@ public final class LegacySecurityProviderAdapter: SecurityProtocolsCore.Security
     public func updateSecurityConfiguration(_: SecurityConfiguration) async throws -> Result<Void, SecurityInterfacesError> {
         // Legacy providers don't support security configuration updates,
         // so we just return successfully
-        return .success(())
+        .success(())
     }
 
     public func getHostIdentifier() async -> Result<String, SecurityInterfacesError> {
@@ -262,7 +262,7 @@ public final class LegacySecurityProviderAdapter: SecurityProtocolsCore.Security
         let keyInfo: [String: AnyObject] = [
             "keyId": keyId as AnyObject,
             "type": "unknown" as AnyObject,
-            "creationDate": Date() as AnyObject,
+            "creationDate": Date() as AnyObject
         ]
 
         return .success(keyInfo)
@@ -270,7 +270,7 @@ public final class LegacySecurityProviderAdapter: SecurityProtocolsCore.Security
 
     public func registerNotifications() async -> Result<Void, SecurityInterfacesError> {
         // Legacy providers don't support notifications
-        return .success(())
+        .success(())
     }
 
     public func randomBytes(count: Int) async -> Result<SecureBytes, SecurityInterfacesError> {
@@ -284,7 +284,7 @@ public final class LegacySecurityProviderAdapter: SecurityProtocolsCore.Security
             key: key,
             config: createSecureConfig(options: nil)
         )
-        
+
         switch result {
         case let .success(encryptedData):
             return .success(encryptedData)
@@ -321,7 +321,7 @@ public final class LegacySecurityProviderAdapter: SecurityProtocolsCore.Security
             throw SecurityInterfacesError.operationFailed("Operation failed without specific error")
         }
     }
-    
+
     public func performCustomSecurityOperation(
         operationName: String,
         data: Data?,

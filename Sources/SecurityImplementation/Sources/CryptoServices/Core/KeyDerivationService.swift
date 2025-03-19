@@ -105,7 +105,7 @@ final class KeyDerivationService: Sendable {
     /// - Returns: The generated key
     private func generateRSAKey(bits: Int) async throws -> SecureBytes {
         // RSA keys should be at least 2048 bits
-        guard bits >= 2048 else {
+        guard bits >= 2_048 else {
             throw CryptoError.invalidKeySize(bits)
         }
 

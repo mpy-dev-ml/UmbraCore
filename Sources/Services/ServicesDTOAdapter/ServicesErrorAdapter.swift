@@ -1,11 +1,11 @@
 import CoreDTOs
-import Foundation
 import ErrorHandling
+import Foundation
 
 /// A utility to adapt errors from Services module to Foundation-independent DTOs
-public struct ServicesErrorAdapter {
+public enum ServicesErrorAdapter {
     // MARK: - Public Error Conversion Methods
-    
+
     /// Convert a credential error to a SecurityErrorDTO
     /// - Parameter error: The credential error to convert
     /// - Returns: A SecurityErrorDTO representing the error
@@ -14,30 +14,30 @@ public struct ServicesErrorAdapter {
         if let securityError = error as? SecurityErrorDTO {
             return securityError
         }
-        
+
         // Handle known credential error codes
         let errorCode = Int32(error._code)
         let errorDomain = "security.credential"
-        
+
         // Extract error details for specific credential error codes
         let errorDetails = extractCredentialErrorDetails(error)
-        
+
         // Create appropriate error message based on error code
         var errorMessage = "A credential error occurred"
-        
+
         // Map common credential error codes
         switch errorCode {
-        case -25300:
+        case -25_300:
             errorMessage = "No permission to access keychain item"
-        case -25291:
+        case -25_291:
             errorMessage = "No such keychain item"
-        case -25292:
+        case -25_292:
             errorMessage = "Invalid keychain data"
-        case -25293:
+        case -25_293:
             errorMessage = "Keychain item already exists"
-        case -25294:
+        case -25_294:
             errorMessage = "Keychain is locked"
-        case -25295:
+        case -25_295:
             errorMessage = "User authentication required for keychain access"
         default:
             if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
@@ -46,7 +46,7 @@ public struct ServicesErrorAdapter {
                 errorMessage = "Credential error: \(error.localizedDescription)"
             }
         }
-        
+
         return SecurityErrorDTO(
             code: errorCode,
             domain: errorDomain,
@@ -54,7 +54,7 @@ public struct ServicesErrorAdapter {
             details: errorDetails
         )
     }
-    
+
     /// Convert a security error to a SecurityErrorDTO
     /// - Parameter error: The security error to convert
     /// - Returns: A SecurityErrorDTO representing the error
@@ -63,43 +63,43 @@ public struct ServicesErrorAdapter {
         if let securityError = error as? SecurityErrorDTO {
             return securityError
         }
-        
+
         // Handle known security error codes
         let errorCode = Int32(error._code)
         let errorDomain = "security.utils"
-        
+
         // Extract error details for specific security error types
         let errorDetails = extractSecurityErrorDetails(error)
-        
+
         // Create appropriate error message based on error code
         var errorMessage: String
-        
-        // Map common security error codes
-        switch errorCode {
-        case -25240:
-            errorMessage = "Invalid algorithm"
-        case -25241:
-            errorMessage = "Invalid key"
-        case -25242:
-            errorMessage = "Invalid key size"
-        case -25243:
-            errorMessage = "Invalid data format"
-        case -25244:
-            errorMessage = "Invalid operation"
+
+            // Map common security error codes
+            = switch errorCode {
+        case -25_240:
+            "Invalid algorithm"
+        case -25_241:
+            "Invalid key"
+        case -25_242:
+            "Invalid key size"
+        case -25_243:
+            "Invalid data format"
+        case -25_244:
+            "Invalid operation"
         case Int32(OSStatus(errSecAllocate)):
-            errorMessage = "Failed to allocate memory for security operation"
+            "Failed to allocate memory for security operation"
         case Int32(OSStatus(errSecDecode)):
-            errorMessage = "Failed to decode data for security operation"
+            "Failed to decode data for security operation"
         case Int32(OSStatus(errSecAuthFailed)):
-            errorMessage = "Authentication failed for security operation"
+            "Authentication failed for security operation"
         default:
             if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
-                errorMessage = description
+                description
             } else {
-                errorMessage = "Security error: \(error.localizedDescription)"
+                "Security error: \(error.localizedDescription)"
             }
         }
-        
+
         return SecurityErrorDTO(
             code: errorCode,
             domain: errorDomain,
@@ -107,7 +107,7 @@ public struct ServicesErrorAdapter {
             details: errorDetails
         )
     }
-    
+
     /// Convert any error to a SecurityErrorDTO
     /// - Parameter error: The error to convert
     /// - Returns: A SecurityErrorDTO representing the error
@@ -116,14 +116,14 @@ public struct ServicesErrorAdapter {
         if let securityError = error as? SecurityErrorDTO {
             return securityError
         }
-        
+
         // Check if we have a specialized conversion for this error type
         if error._domain.contains("credential") {
             return convertCredentialError(error)
         } else if error._domain.contains("security") {
             return convertSecurityError(error)
         }
-        
+
         // Generic error conversion
         return SecurityErrorDTO(
             code: Int32(error._code),
@@ -132,20 +132,20 @@ public struct ServicesErrorAdapter {
             details: ["errorType": String(describing: type(of: error))]
         )
     }
-    
+
     // MARK: - Private Helper Methods
-    
+
     /// Extract detailed information from a credential error
     /// - Parameter error: The error to extract details from
     /// - Returns: A dictionary of error details
     private static func extractCredentialErrorDetails(_ error: Error) -> [String: String] {
         var details: [String: String] = [:]
-        
+
         // Add general error information
         details["errorType"] = String(describing: type(of: error))
         details["errorCode"] = "\(error._code)"
         details["errorDomain"] = error._domain
-        
+
         // Extract specific information for certain error types
         if let nsError = error as NSError {
             // Add userInfo keys that might be useful
@@ -155,27 +155,27 @@ public struct ServicesErrorAdapter {
             if let recoverySuggestion = nsError.localizedRecoverySuggestion {
                 details["recoverySuggestion"] = recoverySuggestion
             }
-            
+
             // Extract any service or account information that might be in the userInfo
             for (key, value) in nsError.userInfo where key.contains("service") || key.contains("account") {
                 details[key] = String(describing: value)
             }
         }
-        
+
         return details
     }
-    
+
     /// Extract detailed information from a security error
     /// - Parameter error: The error to extract details from
     /// - Returns: A dictionary of error details
     private static func extractSecurityErrorDetails(_ error: Error) -> [String: String] {
         var details: [String: String] = [:]
-        
+
         // Add general error information
         details["errorType"] = String(describing: type(of: error))
         details["errorCode"] = "\(error._code)"
         details["errorDomain"] = error._domain
-        
+
         // Extract specific information for certain error types
         if let nsError = error as NSError {
             // Add userInfo keys that might be useful
@@ -185,13 +185,13 @@ public struct ServicesErrorAdapter {
             if let recoverySuggestion = nsError.localizedRecoverySuggestion {
                 details["recoverySuggestion"] = recoverySuggestion
             }
-            
+
             // Extract any algorithm or operation information that might be in the userInfo
             for (key, value) in nsError.userInfo where key.contains("algorithm") || key.contains("operation") {
                 details[key] = String(describing: value)
             }
         }
-        
+
         return details
     }
 }
@@ -209,13 +209,13 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25300, // General credential error code
+            code: -25_300, // General credential error code
             domain: "security.credential",
             message: message,
             details: details
         )
     }
-    
+
     /// Create a key error with the specified message and details
     /// - Parameters:
     ///   - message: The error message
@@ -226,13 +226,13 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25241, // Key error code
+            code: -25_241, // Key error code
             domain: "security.key",
             message: message,
             details: details
         )
     }
-    
+
     /// Create an encryption error with the specified message and details
     /// - Parameters:
     ///   - message: The error message
@@ -243,13 +243,13 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25240, // Encryption error code
+            code: -25_240, // Encryption error code
             domain: "security.encryption",
             message: message,
             details: details
         )
     }
-    
+
     /// Create a decryption error with the specified message and details
     /// - Parameters:
     ///   - message: The error message
@@ -260,13 +260,13 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25243, // Decryption error code
+            code: -25_243, // Decryption error code
             domain: "security.decryption",
             message: message,
             details: details
         )
     }
-    
+
     /// Create a permission error with the specified message and details
     /// - Parameters:
     ///   - message: The error message
@@ -277,13 +277,13 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25300, // Permission error code
+            code: -25_300, // Permission error code
             domain: "security.permission",
             message: message,
             details: details
         )
     }
-    
+
     /// Create an authentication error with the specified message and details
     /// - Parameters:
     ///   - message: The error message

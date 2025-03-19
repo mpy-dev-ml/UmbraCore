@@ -245,7 +245,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
         let statusInfo: [String: Any] = [
             "available": true,
             "version": "1.0.0",
-            "protocol": Self.protocolIdentifier,
+            "protocol": Self.protocolIdentifier
         ]
         return .success(statusInfo)
     }
@@ -284,7 +284,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, @unch
         let metrics: [String: Any] = [
             "operations_count": 0,
             "errors_count": 0,
-            "average_operation_time_ms": 0.0,
+            "average_operation_time_ms": 0.0
         ]
         return .success(metrics)
     }

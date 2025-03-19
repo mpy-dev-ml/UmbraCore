@@ -272,7 +272,7 @@ public final actor TestKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
 
 /// A test implementation of XPCServiceProtocolStandard for testing
 @available(macOS 14.0, *)
-public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProtocol, KeyManagementProtocol {
+public final class TestXPCService: XPCProtocolsCore.XPCServiceProtocolStandard, CryptoServiceProtocol, KeyManagementProtocol {
     private let cryptoService: TestCryptoService
     private let keyManager: TestKeyManager
 
@@ -325,7 +325,7 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
         await cryptoService.hash(data: data)
     }
 
-    public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+    public func verifyHash(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
         await cryptoService.verify(data: data, against: hash)
     }
 

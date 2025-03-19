@@ -40,6 +40,10 @@ public protocol XPCServiceProtocolBasic: Sendable {
     /// - Parameter syncData: Secure bytes for key synchronisation
     /// - Throws: XPCSecurityError if synchronisation fails
     func synchroniseKeys(_ syncData: SecureBytes) async throws
+
+    /// Get the current status of the XPC service
+    /// - Returns: Result containing status information or error
+    func status() async -> Result<[String: Any], XPCSecurityError>
 }
 
 /// Default protocol implementation with baseline functionality.

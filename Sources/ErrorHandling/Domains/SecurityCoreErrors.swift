@@ -4,8 +4,7 @@ import Foundation
 public extension UmbraErrors.Security {
     /// Core security errors related to authentication, authorisation, encryption, etc.
     enum Core: Error, UmbraError, StandardErrorCapabilities, AuthenticationErrors,
-        SecurityOperationErrors
-    {
+        SecurityOperationErrors {
         // Authentication errors
         /// Authentication failed due to invalid credentials or expired session
         case authenticationFailed(reason: String)

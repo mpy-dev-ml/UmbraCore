@@ -47,7 +47,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
             return OperationResultDTO(value: VoidResult())
         } catch {
             return OperationResultDTO(
-                errorCode: 1002,
+                errorCode: 1_002,
                 errorMessage: "Key synchronisation failed: \(error.localizedDescription)",
                 details: ["errorType": String(describing: type(of: error))]
             )
@@ -148,7 +148,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
                 errorMessage: "Key generation failed: \(error.localizedDescription)",
                 details: [
                     "errorCode": "\(error.code)",
-                    "errorDomain": error.domain,
+                    "errorDomain": error.domain
                 ]
             )
         }
@@ -162,7 +162,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
 
         // Convert legacy status to DTO
         return OperationResultDTO(value: XPCProtocolDTOs.ServiceStatusDTO(
-            timestamp: Int64(Date().timeIntervalSince1970 * 1000),
+            timestamp: Int64(Date().timeIntervalSince1970 * 1_000),
             protocolVersion: "1.0",
             serviceVersion: "1.0",
             deviceIdentifier: "",
@@ -350,7 +350,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
                             errorMessage: "Encryption failed: \(error.localizedDescription)",
                             details: [
                                 "errorCode": "\(error.code)",
-                                "errorDomain": error.domain,
+                                "errorDomain": error.domain
                             ]
                         )
                     }
@@ -377,7 +377,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
         default:
             // For unknown operations, return an error
             return OperationResultDTO(
-                errorCode: 1013,
+                errorCode: 1_013,
                 errorMessage: "Unsupported operation",
                 details: ["operation": operation]
             )
@@ -467,7 +467,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
         let result = await completeService.deriveKey(
             password: passwordString,
             salt: SecureBytes(bytes: []),
-            iterations: Int(config.options["iterations"] ?? "10000") ?? 10000,
+            iterations: Int(config.options["iterations"] ?? "10000") ?? 10_000,
             keySize: config.keySizeInBits
         )
 
@@ -524,7 +524,7 @@ public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, 
                 errorMessage: "Security reset failed: \(error.localizedDescription)",
                 details: [
                     "errorCode": "\(error.code)",
-                    "errorDomain": error.domain,
+                    "errorDomain": error.domain
                 ]
             )
         }

@@ -113,7 +113,7 @@ class ProviderFactoryAdapterTests: XCTestCase {
             "algorithm": "RSA",
             "keySizeInBits": "2048",
             "iterations": "1000",
-            "keyIdentifier": "test-key",
+            "keyIdentifier": "test-key"
         ]
 
         // Create a config
@@ -121,8 +121,8 @@ class ProviderFactoryAdapterTests: XCTestCase {
 
         // Verify config
         XCTAssertEqual(config.algorithm, "RSA")
-        XCTAssertEqual(config.keySizeInBits, 2048)
-        XCTAssertEqual(config.iterations, 1000)
+        XCTAssertEqual(config.keySizeInBits, 2_048)
+        XCTAssertEqual(config.iterations, 1_000)
         XCTAssertEqual(config.keyIdentifier, "test-key")
     }
 

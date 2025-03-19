@@ -8,7 +8,7 @@ import XPCProtocolsCore
 @available(macOS 14.0, *)
 public final class DummyXPCService: XPCServiceProtocolStandard {
     public init() {}
-    
+
     public static var protocolIdentifier: String {
         "com.umbra.test.dummy.xpc"
     }
@@ -27,7 +27,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
         )
     }
 
-    public func generateRandomBytes(count: Int) async -> Result<Data, SecurityInterfacesError> {
+    public func generateRandomBytes(count: Int) async -> Result<Data, XPCSecurityError> {
         // Generate random bytes for testing
         var bytes = [UInt8](repeating: 0, count: count)
         for i in 0 ..< count {
@@ -36,53 +36,66 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
         return .success(Data(bytes))
     }
 
+    public func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+        // Dummy implementation, does nothing
+    }
+
     // MARK: - XPCServiceProtocolStandard Implementation
 
-    public func status() async -> Result<[String: AnyObject], SecurityInterfacesError> {
-        let statusDict: [String: AnyObject] = [
-            "status": "active" as NSString,
-            "version": "1.0.0" as NSString,
+    public func status() async -> Result<[String: Any], XPCSecurityError> {
+        let statusDict: [String: Any] = [
+            "status": "active",
+            "version": "1.0.0"
         ]
         return .success(statusDict)
     }
 
-    public func getHardwareIdentifier() async -> Result<String, SecurityInterfacesError> {
+    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
         let hardwareId = "TEST-HARDWARE-ID-\(UUID().uuidString)"
         return .success(hardwareId)
     }
 
-    public func resetSecurity() async -> Result<Void, SecurityInterfacesError> {
+    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
         // Simple dummy implementation that always succeeds
-        return .success(())
+        .success(())
+    }
+    
+    /// Get the service version
+    /// - Returns: Result with version string on success or XPCSecurityError on failure
+    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+        .success("1.0.0")
     }
 
-    public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityInterfacesError> {
-        // Generate predictable "random" data for tests
+    /// Generate random data for cryptographic operations
+    /// - Parameter length: Length in bytes of random data to generate
+    /// - Returns: Result with SecureBytes on success or XPCSecurityError on failure
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        // Generate random data for testing purposes
         var bytes = [UInt8](repeating: 0, count: length)
         for i in 0 ..< length {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
-        return .success(SecureBytes(bytes: bytes))
+        return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
     }
 
-    public func listKeys() async -> Result<[String], SecurityInterfacesError> {
-        return .success(["test-key-1", "test-key-2"])
+    public func listKeys() async -> Result<[String], XPCSecurityError> {
+        .success(["test-key-1", "test-key-2"])
     }
 
-    public func getKeyInfo(keyId: String) async -> Result<[String: AnyObject], SecurityInterfacesError> {
-        let info: [String: AnyObject] = [
-            "id": keyId as NSString,
-            "type": "symmetric" as NSString,
-            "status": "active" as NSString,
+    public func getKeyInfo(keyId: String) async -> Result<[String: Any], XPCSecurityError> {
+        let info: [String: Any] = [
+            "id": keyId,
+            "type": "symmetric",
+            "status": "active"
         ]
         return .success(info)
     }
 
-    public func deleteKey(keyId: String) async -> Result<Void, SecurityInterfacesError> {
-        return .success(())
+    public func deleteKey(keyId _: String) async -> Result<Void, XPCSecurityError> {
+        .success(())
     }
 
-    public func encryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, SecurityInterfacesError> {
+    public func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
         // For testing, create a new SecureBytes with a marker at the end
         let marker: [UInt8] = [0xDE, 0xAD, 0xBE, 0xEF]
 
@@ -92,7 +105,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
             do {
                 try bytes.append(data.byte(at: i))
             } catch {
-                return .failure(SecurityInterfacesError.encryptionFailed(reason: "Error accessing data bytes"))
+                return .failure(XPCSecurityError.encryptionFailed(reason: "Error accessing data bytes"))
             }
         }
 
@@ -103,33 +116,33 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
         return .success(SecureBytes(bytes: bytes))
     }
 
-    public func decryptSecureData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, SecurityInterfacesError> {
+    public func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
         // Simple dummy implementation
-        return .success(data)
+        .success(data)
     }
 
-    public func sign(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, SecurityInterfacesError> {
+    public func sign(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
         // Create a dummy signature
         let signatureString = "SIGNATURE-\(keyIdentifier)-\(data.count)"
         let signatureData = signatureString.data(using: .utf8)!
         return .success(SecureBytes(bytes: [UInt8](signatureData)))
     }
 
-    public func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, SecurityInterfacesError> {
+    public func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
         // Always return true for verification in dummy implementation
-        return .success(true)
+        .success(true)
     }
 
-    public func resetSecurityData() async -> Result<Void, SecurityInterfacesError> {
-        return .success(())
+    public func resetSecurityData() async -> Result<Void, XPCSecurityError> {
+        .success(())
     }
 
     public func importKey(
-        keyData: SecureBytes,
-        keyType: XPCProtocolTypeDefs.KeyType,
+        keyData _: SecureBytes,
+        keyType _: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
-        metadata: [String: String]?
-    ) async -> Result<String, SecurityInterfacesError> {
+        metadata _: [String: String]?
+    ) async -> Result<String, XPCSecurityError> {
         // For testing, just use the provided ID or generate one
         let id = keyIdentifier ?? "imported-key-\(UUID().uuidString)"
         return .success(id)
@@ -137,7 +150,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
 
     public func exportKey(
         keyIdentifier: String
-    ) async -> Result<(SecureBytes, XPCProtocolTypeDefs.KeyType), SecurityInterfacesError> {
+    ) async -> Result<(SecureBytes, XPCProtocolTypeDefs.KeyType), XPCSecurityError> {
         // For testing, create dummy key data
         let keyBytes = Array("DUMMY-KEY-DATA-\(keyIdentifier)".utf8)
         return .success((SecureBytes(bytes: keyBytes), .symmetric))

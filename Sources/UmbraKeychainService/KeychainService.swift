@@ -45,7 +45,7 @@ public actor KeychainService {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
             kSecAttrService as String: service,
-            kSecValueData as String: data,
+            kSecValueData as String: data
         ]
 
         if let accessGroup {
@@ -61,7 +61,7 @@ public actor KeychainService {
                 "operation": "addItem",
                 "account": account,
                 "service": service,
-                "accessGroup": accessGroup ?? "none",
+                "accessGroup": accessGroup ?? "none"
             ])
             await logger.error("Failed to add keychain item", metadata: metadata)
             throw error
@@ -71,7 +71,7 @@ public actor KeychainService {
             "operation": "addItem",
             "account": account,
             "service": service,
-            "accessGroup": accessGroup ?? "none",
+            "accessGroup": accessGroup ?? "none"
         ])
         await logger.info("Successfully added keychain item", metadata: metadata)
     }
@@ -93,7 +93,7 @@ public actor KeychainService {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
-            kSecAttrService as String: service,
+            kSecAttrService as String: service
         ]
 
         if let accessGroup {
@@ -101,7 +101,7 @@ public actor KeychainService {
         }
 
         let attributes: [String: Any] = [
-            kSecValueData as String: data,
+            kSecValueData as String: data
         ]
 
         let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
@@ -113,7 +113,7 @@ public actor KeychainService {
                 "operation": "updateItem",
                 "account": account,
                 "service": service,
-                "accessGroup": accessGroup ?? "none",
+                "accessGroup": accessGroup ?? "none"
             ])
             await logger.error("Failed to update keychain item", metadata: metadata)
             throw error
@@ -123,7 +123,7 @@ public actor KeychainService {
             "operation": "updateItem",
             "account": account,
             "service": service,
-            "accessGroup": accessGroup ?? "none",
+            "accessGroup": accessGroup ?? "none"
         ])
         await logger.info("Successfully updated keychain item", metadata: metadata)
     }
@@ -143,7 +143,7 @@ public actor KeychainService {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
-            kSecAttrService as String: service,
+            kSecAttrService as String: service
         ]
 
         if let accessGroup {
@@ -159,7 +159,7 @@ public actor KeychainService {
                 "operation": "removeItem",
                 "account": account,
                 "service": service,
-                "accessGroup": accessGroup ?? "none",
+                "accessGroup": accessGroup ?? "none"
             ])
             await logger.error("Failed to remove keychain item", metadata: metadata)
             throw error
@@ -169,7 +169,7 @@ public actor KeychainService {
             "operation": "removeItem",
             "account": account,
             "service": service,
-            "accessGroup": accessGroup ?? "none",
+            "accessGroup": accessGroup ?? "none"
         ])
         await logger.info("Successfully removed keychain item", metadata: metadata)
     }
@@ -191,7 +191,7 @@ public actor KeychainService {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
             kSecAttrService as String: service,
-            kSecReturnData as String: false,
+            kSecReturnData as String: false
         ]
 
         if let accessGroup {
@@ -211,7 +211,7 @@ public actor KeychainService {
                 "operation": "containsItem",
                 "account": account,
                 "service": service,
-                "accessGroup": accessGroup ?? "none",
+                "accessGroup": accessGroup ?? "none"
             ])
             await logger.error("Failed to check keychain item existence", metadata: metadata)
             throw error
@@ -235,7 +235,7 @@ public actor KeychainService {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
             kSecAttrService as String: service,
-            kSecReturnData as String: true,
+            kSecReturnData as String: true
         ]
 
         if let accessGroup {
@@ -252,7 +252,7 @@ public actor KeychainService {
                 "operation": "retrieveItem",
                 "account": account,
                 "service": service,
-                "accessGroup": accessGroup ?? "none",
+                "accessGroup": accessGroup ?? "none"
             ])
             await logger.error("Failed to retrieve keychain item", metadata: metadata)
             throw error
@@ -264,7 +264,7 @@ public actor KeychainService {
                 "account": account,
                 "service": service,
                 "accessGroup": accessGroup ?? "none",
-                "resultType": String(describing: type(of: result)),
+                "resultType": String(describing: type(of: result))
             ])
             await logger.error("Retrieved keychain item is not Data", metadata: metadata)
             throw KeychainError.unexpectedData
@@ -274,7 +274,7 @@ public actor KeychainService {
             "operation": "retrieveItem",
             "account": account,
             "service": service,
-            "accessGroup": accessGroup ?? "none",
+            "accessGroup": accessGroup ?? "none"
         ])
         await logger.info("Successfully retrieved keychain item", metadata: metadata)
         return data

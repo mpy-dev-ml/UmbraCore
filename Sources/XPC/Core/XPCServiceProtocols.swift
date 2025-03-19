@@ -350,8 +350,7 @@ public extension SecurityXPCServiceProtocol {
     }
 
     func resolveBookmarkAsync(_ bookmarkData: [UInt8]) async throws
-        -> (path: String, isStale: Bool)
-    {
+        -> (path: String, isStale: Bool) {
         try await withCheckedThrowingContinuation { continuation in
             resolveBookmark(bookmarkData) { path, isStale, error in
                 if let error {

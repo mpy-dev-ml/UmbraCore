@@ -14,8 +14,7 @@ public enum FoundationConversions {
     /// - Parameter dictionary: Dictionary of strings to SecureBytes
     /// - Returns: Dictionary of strings to Data
     public static func toFoundation(dictionary: [String: UmbraCoreTypes.SecureBytes])
-        -> [String: Data]
-    {
+        -> [String: Data] {
         dictionary.mapValues { secureBytes -> Data in
             let bytes = Array(secureBytes)
             let nsData = NSData(bytes: bytes, length: bytes.count)
@@ -28,8 +27,7 @@ public enum FoundationConversions {
     /// - Parameter dictionary: Dictionary of strings to Data
     /// - Returns: Dictionary of strings to SecureBytes
     public static func fromFoundation(dictionary: [String: Data])
-        -> [String: UmbraCoreTypes.SecureBytes]
-    {
+        -> [String: UmbraCoreTypes.SecureBytes] {
         dictionary.mapValues { data -> UmbraCoreTypes.SecureBytes in
             let bytes = [UInt8](data)
             return UmbraCoreTypes.SecureBytes(bytes: bytes)
@@ -111,7 +109,7 @@ public enum FoundationConversions {
             code: Int(errorDTO.code),
             userInfo: [
                 NSLocalizedDescriptionKey: errorDTO.message,
-                "details": errorDTO.details,
+                "details": errorDTO.details
             ]
         )
     }
@@ -149,7 +147,7 @@ public enum FoundationConversions {
         var result: [String: Any] = [
             "algorithm": configDTO.algorithm,
             "keySizeInBits": configDTO.keySizeInBits,
-            "options": configDTO.options,
+            "options": configDTO.options
         ]
 
         // Convert input data to Foundation Data if present
@@ -200,7 +198,7 @@ public enum FoundationConversions {
     /// - Returns: A [String: Any] dictionary suitable for serialization
     public static func toFoundationDictionary(result: OperationResultDTO<some Encodable>) -> [String: Any] {
         var dictionary: [String: Any] = [
-            "success": result.isSuccess,
+            "success": result.isSuccess
         ]
 
         // Add value if successful and encodable
@@ -226,7 +224,7 @@ public enum FoundationConversions {
                 "code": error.code,
                 "domain": error.domain,
                 "message": error.message,
-                "details": error.details,
+                "details": error.details
             ]
         }
 

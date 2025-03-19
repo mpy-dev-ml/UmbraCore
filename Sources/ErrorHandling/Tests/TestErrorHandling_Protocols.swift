@@ -181,7 +181,7 @@ final class TestErrorHandling_Protocols: XCTestCase {
         func getRecoveryOptions(for _: some UmbraError) -> [any RecoveryOption] {
             [
                 TestRecoveryOption(title: "Retry"),
-                TestRecoveryOption(title: "Cancel"),
+                TestRecoveryOption(title: "Cancel")
             ]
         }
 
@@ -259,7 +259,7 @@ final class TestErrorHandling_Protocols: XCTestCase {
         func recoveryOptions(for _: some Error) -> [any ErrorHandlingInterfaces.RecoveryOption] {
             [
                 TestRecoveryOption(title: "Retry Operation"),
-                TestRecoveryOption(title: "Cancel Operation"),
+                TestRecoveryOption(title: "Cancel Operation")
             ]
         }
     }

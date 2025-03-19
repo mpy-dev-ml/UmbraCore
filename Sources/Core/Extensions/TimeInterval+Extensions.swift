@@ -5,7 +5,7 @@ public extension TimeInterval {
     /// - Parameter value: Number of hours
     /// - Returns: TimeInterval representing the specified hours
     static func hours(_ value: Double) -> TimeInterval {
-        value * 3600
+        value * 3_600
     }
 
     /// Convert minutes to TimeInterval

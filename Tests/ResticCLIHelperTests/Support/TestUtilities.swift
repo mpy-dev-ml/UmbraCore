@@ -26,7 +26,7 @@ enum TestUtilities {
             "media/images",
             "media/videos",
             "config",
-            "data",
+            "data"
         ]
 
         // Create directories
@@ -38,7 +38,7 @@ enum TestUtilities {
         // Create sample text files
         let textContent = fileContent ?? [
             "This is a sample text file for testing ",
-            "Restic backup and restore functionality.\n",
+            "Restic backup and restore functionality.\n"
         ].joined()
         try directories.forEach { directory in
             let path = (baseDirectory as NSString).appendingPathComponent(directory)
@@ -48,7 +48,7 @@ enum TestUtilities {
         }
 
         // Create binary files of different sizes
-        let sizes = [1024, 2048, 4096, 8192] // Different file sizes in bytes
+        let sizes = [1_024, 2_048, 4_096, 8_192] // Different file sizes in bytes
         try sizes.forEach { size in
             let data = generateTestData(size: size)
             let path = (baseDirectory as NSString).appendingPathComponent("data")
