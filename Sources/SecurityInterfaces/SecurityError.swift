@@ -1,15 +1,79 @@
 import ErrorHandling
 import ErrorHandlingDomains
 import SecurityInterfacesBase
-import UmbraCoreTypes /// Errors that can occur during security operations
+import UmbraCoreTypes
 import XPCProtocolsCore
 
+/// Errors that can occur during security operations.
+///
+/// This enum provides a comprehensive set of error cases for security-related operations
+/// in the UmbraCore framework. It includes cases for common security errors such as
+/// authentication failures, encryption/decryption errors, and access control issues.
+///
+/// ## Error Conversion
+///
+/// SecurityInterfacesError can be converted to UmbraErrors.Security.Core using the
+/// `toCoreError()` method:
+///
+/// ```swift
+/// let error = SecurityInterfacesError.authenticationFailed
+/// let coreError = error.toCoreError() // Returns UmbraErrors.Security.Core.authenticationFailed
+/// ```
+///
+/// ## Error Categories
+///
+/// - Access Control: Errors related to permissions and access to resources
+/// - Cryptographic Operations: Errors during encryption, decryption, and hashing
+/// - Authentication: Errors related to user authentication
+/// - System Integration: Errors with system services and XPC communication
+///
+/// ## Topics
+///
+/// ### Bookmark Errors
+///
+/// - ``bookmarkCreationFailed(_:)``
+/// - ``bookmarkResolutionFailed``
+/// - ``bookmarkStale``
+/// - ``bookmarkError(_:)``
+///
+/// ### Cryptographic Errors
+///
+/// - ``encryptionFailed(reason:)``
+/// - ``decryptionFailed(reason:)``
+/// - ``keyGenerationFailed(reason:)``
+/// - ``hashingFailed``
+/// - ``signatureFailed(reason:)``
+/// - ``verificationFailed(reason:)``
+///
+/// ### Authentication Errors
+///
+/// - ``authenticationFailed``
+/// - ``authorizationFailed(_:)``
+///
+/// ### Conversion
+///
+/// - ``toCoreError()``
+/// - ``wrapped(_:)``
 public enum SecurityInterfacesError: Error, Sendable {
     /// Bookmark creation failed
+    ///
+    /// This error occurs when the system fails to create a security-scoped bookmark
+    /// for the specified path. Bookmarks are used to maintain access to files outside
+    /// the application's sandbox.
+    ///
+    /// - Parameter path: The file system path for which bookmark creation failed
     case bookmarkCreationFailed(path: String)
+    
     /// Bookmark resolution failed
+    ///
+    /// This error occurs when a previously created security-scoped bookmark
+    /// cannot be resolved to a file URL.
     case bookmarkResolutionFailed
-    /// Bookmark is stale and needs to be recreated
+    
+    /// Bookmark has become stale
+    ///
+    /// This error occurs when a security-scoped bookmark is no longer valid,
+    /// typically because the target file has been moved or deleted.
     case bookmarkStale(path: String)
     /// Bookmark not found
     case bookmarkNotFound(path: String)
@@ -119,10 +183,24 @@ public enum SecurityInterfacesError: Error, Sendable {
         }
     }
 
+    /// Initializes a SecurityInterfacesError from a core error
+    ///
+    /// This initializer creates a SecurityInterfacesError by wrapping an UmbraErrors.Security.Core error.
+    /// This is useful when you need to convert between error domains while preserving the original error.
+    ///
+    /// - Parameter coreError: The UmbraErrors.Security.Core error to wrap
+    /// - Returns: A SecurityInterfacesError that wraps the core error
     public init(from coreError: UmbraErrors.Security.Core) {
         self = .wrapped(coreError)
     }
 
+    /// Converts this error to a core error type if possible
+    ///
+    /// This method attempts to convert the SecurityInterfacesError to an UmbraErrors.Security.Core error.
+    /// If the error was created by wrapping a core error, returns that error.
+    /// For other error types, returns nil as they cannot be directly mapped to core errors.
+    ///
+    /// - Returns: The equivalent UmbraErrors.Security.Core error if available, nil otherwise
     public func toCoreError() -> UmbraErrors.Security.Core? {
         switch self {
         case let .wrapped(coreError):

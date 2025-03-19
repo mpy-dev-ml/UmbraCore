@@ -26,5 +26,6 @@ use_repo(
     swift_deps,
     "swift_package",
     "swiftpkg_cryptoswift",
+    "swiftpkg_swift_docc_plugin",
     "swiftpkg_swiftybeaver",
 )

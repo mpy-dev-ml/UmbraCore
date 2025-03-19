@@ -1,0 +1,13 @@
+load("//tools/swift:build_rules.bzl", "umbracore_swift_library")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "SecurityInterfacesDocC",
+    srcs = glob([
+        "**/*.md",
+        "**/*.docc",
+        "Resources/**/*",
+    ]),
+    visibility = ["//visibility:public"],
+)

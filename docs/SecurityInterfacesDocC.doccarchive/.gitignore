@@ -1,0 +1,2 @@
+# Ignore DocC build artifacts
+.docc-build/

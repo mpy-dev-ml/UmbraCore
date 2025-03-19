@@ -1,0 +1,23 @@
+@Tutorials(name: "SecurityInterfaces") {
+    @Intro(title: "Working with SecurityInterfaces") {
+        This module provides security infrastructure for UmbraCore.
+        
+        @Image(source: placeholder-480x270.png, alt: "SecurityInterfaces Logo")
+    }
+    
+    @Chapter(name: "Getting Started") {
+        @Image(source: placeholder-480x270.png, alt: "Chapter 1 image")
+        
+        Learn the basics of using SecurityInterfaces in your projects.
+        
+        @TutorialReference(tutorial: "doc:GettingStarted")
+    }
+    
+    @Chapter(name: "Advanced Usage") {
+        @Image(source: placeholder-480x270.png, alt: "Chapter 2 image")
+        
+        Discover advanced patterns and techniques.
+        
+        @TutorialReference(tutorial: "doc:AdvancedUsage")
+    }
+}

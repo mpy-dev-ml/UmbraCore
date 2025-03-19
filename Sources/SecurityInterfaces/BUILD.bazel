@@ -1,6 +1,7 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 load("//tools/swift:build_rules.bzl", "umbracore_swift_library", "umbracore_swift_test_library")
+load("//tools/swift:docc_rules.bzl", "umbracore_docc_documentation")
 
 # Security interfaces module using Swift 6 compatibility options
 umbracore_swift_library(
@@ -16,6 +17,15 @@ umbracore_swift_library(
         "//Sources/XPCProtocolsCore",
     ],
     swift_mode = "default",
+    visibility = ["//visibility:public"],
+)
+
+# DocC documentation for SecurityInterfaces
+umbracore_docc_documentation(
+    name = "SecurityInterfacesDocC",
+    srcs = ["Documentation.docc"],
+    module_name = "SecurityInterfaces",
+    deps = [":SecurityInterfaces"],
     visibility = ["//visibility:public"],
 )
 

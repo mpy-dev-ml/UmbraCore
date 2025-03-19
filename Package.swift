@@ -39,6 +39,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0"),
         .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", from: "2.0.0"),
+        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
     ],
     targets: [
         // Base Types
@@ -164,6 +165,28 @@ let package = Package(
                 "SwiftyBeaver",
             ],
             exclude: ["BUILD.bazel", "BUILD.bazel.bak"]
+        ),
+        
+        // Security Interfaces
+        .target(
+            name: "SecurityInterfaces",
+            dependencies: [
+                "SecurityTypes",
+                "UmbraXPC",
+                "ErrorHandling",
+                "UmbraCoreTypes"
+            ],
+            exclude: [
+                "BUILD.bazel",
+                "Bridge/BUILD.bazel",
+                "Models/BUILD.bazel",
+                "Adapters/BUILD.bazel",
+                "Tests/BUILD.bazel",
+                "Implementations/BUILD.bazel"
+            ],
+            swiftSettings: [
+                .define("ENABLE_DOCC")
+            ]
         ),
 
         // Test Targets
