@@ -1,7 +1,10 @@
 import CoreDTOs
+import CoreErrors
 import Foundation
+import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import XPCProtocolsCore
 
 /// Adapters for converting between Security module's types and Foundation-independent CoreDTOs
 public enum SecurityDTOAdapter {
@@ -295,7 +298,7 @@ public enum SecurityDTOAdapter {
                 if let rawCode = dto.details["raw_code"], let code = Int(rawCode),
                    let rawDomain = dto.details["raw_domain"]
                 {
-                    let coreError = UmbraErrors.Security.Core(code: code, domain: rawDomain)
+                    let coreError = UmbraErrors.Security.Core.internalError(reason: dto.message)
                     return .wrapped(coreError)
                 }
             }
@@ -316,106 +319,107 @@ public enum SecurityDTOAdapter {
 
     // MARK: - XPC SecurityError <-> SecurityErrorDTO
 
-    /// Convert a XPC SecurityError to a SecurityErrorDTO
-    /// - Parameter error: The XPC SecurityError to convert
-    /// - Returns: A Foundation-independent SecurityErrorDTO
-    public static func toXPCErrorDTO(_ error: SecurityError) -> CoreDTOs.SecurityErrorDTO {
-        switch error {
-        case .serviceUnavailable:
-            CoreDTOs.SecurityErrorDTO(
-                code: 2001,
-                domain: "xpc.service",
-                message: "XPC service unavailable",
-                details: [:]
-            )
-        case let .operationFailed(message):
-            CoreDTOs.SecurityErrorDTO(
-                code: 2002,
-                domain: "xpc.operation",
-                message: message,
-                details: [:]
-            )
-        case let .operationNotSupported(name):
-            CoreDTOs.SecurityErrorDTO(
-                code: 2003,
-                domain: "xpc.operation",
-                message: "Operation not supported: \(name)",
-                details: ["operation": name]
-            )
-        case .invalidInput:
-            CoreDTOs.SecurityErrorDTO(
-                code: 2004,
-                domain: "xpc.input",
-                message: "Invalid input data",
-                details: [:]
-            )
-        case .invalidConfiguration:
-            CoreDTOs.SecurityErrorDTO(
-                code: 2005,
-                domain: "xpc.configuration",
-                message: "Invalid configuration",
-                details: [:]
-            )
-        case .securityViolation:
-            CoreDTOs.SecurityErrorDTO(
-                code: 2006,
-                domain: "xpc.security",
-                message: "Security violation",
-                details: [:]
-            )
-        case .authenticationFailed:
-            CoreDTOs.SecurityErrorDTO(
-                code: 2007,
-                domain: "xpc.auth",
-                message: "Authentication failed",
-                details: [:]
-            )
-        case let .internalError(message):
-            CoreDTOs.SecurityErrorDTO(
-                code: 2008,
-                domain: "xpc.internal",
-                message: message,
-                details: [:]
-            )
-        }
-    }
-
     /// Convert a SecurityErrorDTO to a XPC SecurityError
     /// - Parameter dto: The SecurityErrorDTO to convert
     /// - Returns: A XPC SecurityError compatible with the existing API
-    public static func toXPCError(_ dto: CoreDTOs.SecurityErrorDTO) -> SecurityError {
+    public static func toXPCError(_ dto: CoreDTOs.SecurityErrorDTO) -> SecurityInterfacesError {
         if dto.domain.hasPrefix("xpc.") {
             switch dto.code {
+            // Operation failures
             case 2001:
-                return .serviceUnavailable
+                return .operationFailed("Service unavailable")
             case 2002:
                 return .operationFailed(dto.message)
+                
+            // Parameter issues
             case 2003:
-                return .operationNotSupported(name: dto.details["operation"] ?? dto.message)
+                return .invalidParameters("Operation not supported: \(dto.details["operation"] ?? dto.message)")
             case 2004:
-                return .invalidInput
+                return .invalidParameters("Invalid input data")
             case 2005:
-                return .invalidConfiguration
-            case 2006:
-                return .securityViolation
-            case 2007:
+                return .invalidParameters(dto.details["details"] as? String ?? dto.message)
+                
+            // Authentication issues
+            case 2010:
                 return .authenticationFailed
-            case 2008:
-                return .internalError(dto.message)
+                
+            // Bookmark issues
+            case 2020:
+                let path = dto.details["path"] as? String ?? "unknown"
+                return .bookmarkCreationFailed(path: path)
+            case 2021:
+                return .bookmarkResolutionFailed
+            case 2022:
+                let path = dto.details["path"] as? String ?? "unknown"
+                return .bookmarkStale(path: path)
+            case 2023:
+                let path = dto.details["path"] as? String ?? "unknown"
+                return .bookmarkNotFound(path: path)
+            case 2060:
+                let errorMsg = dto.details["error"] ?? dto.message
+                return .bookmarkError(errorMsg)
+                
+            // Resource issues
+            case 2030:
+                let path = dto.details["path"] as? String ?? "unknown"
+                return .resourceAccessFailed(path: path)
+            case 2061:
+                let errorMsg = dto.details["error"] ?? dto.message
+                return .accessError(errorMsg)
+                
+            // Item issues
+            case 2050:
+                return .itemNotFound
+                
+            // Cryptographic issues
+            case 2040:
+                return .randomGenerationFailed
+            case 2041:
+                return .hashingFailed
+            case 2070:
+                let reason = dto.details["reason"] ?? dto.message
+                return .serializationFailed(reason: reason)
+            case 2071:
+                let reason = dto.details["reason"] ?? dto.message
+                return .encryptionFailed(reason: reason)
+            case 2072:
+                let reason = dto.details["reason"] ?? dto.message
+                return .decryptionFailed(reason: reason)
+            case 2073:
+                let reason = dto.details["reason"] ?? dto.message
+                return .signatureFailed(reason: reason)
+            case 2074:
+                let reason = dto.details["reason"] ?? dto.message
+                return .verificationFailed(reason: reason)
+            case 2075:
+                let reason = dto.details["reason"] ?? dto.message
+                return .keyGenerationFailed(reason: reason)
+                
+            // Other issues
+            case 2099:
+                let reason = dto.details["reason"] ?? dto.message
+                return .unknown(reason: reason)
+            case 2100:
+                // For wrapped errors, we create a generic error since we can't reconstruct the original
+                return .operationFailed("Wrapped error: \(dto.message)")
             default:
-                return .internalError("Unknown XPC error: \(dto.message)")
+                return .operationFailed("Unknown XPC error: \(dto.message)")
             }
         }
 
-        // Convert non-XPC errors to appropriate XPC errors
+        // Convert non-XPC errors to appropriate XPC errors based on domain
         if dto.domain.contains("crypto") {
             return .operationFailed("Crypto operation failed: \(dto.message)")
         } else if dto.domain.contains("auth") {
             return .authenticationFailed
         } else if dto.domain.contains("parameters") || dto.domain.contains("configuration") {
-            return .invalidConfiguration
+            return .invalidParameters(dto.message)
+        } else if dto.domain.contains("bookmark") {
+            return .bookmarkError(dto.message)
+        } else if dto.domain.contains("resource") || dto.domain.contains("access") {
+            return .accessError(dto.message)
         } else {
-            return .internalError(dto.message)
+            return .operationFailed(dto.message)
         }
     }
 }

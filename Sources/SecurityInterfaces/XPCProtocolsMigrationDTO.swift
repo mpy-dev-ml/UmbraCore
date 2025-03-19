@@ -6,9 +6,6 @@ import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
 
-/// Type aliases for convenience
-public typealias SecureBytes = UmbraCoreTypes.SecureBytes
-
 // MARK: - Modern XPC Service Protocol with DTOs
 
 /// XPC Service protocol that uses Foundation-independent DTOs
@@ -30,10 +27,10 @@ public protocol XPCServiceProtocolDTO: XPCServiceProtocolComplete {
     ///   - config: Configuration options
     /// - Returns: Encrypted data or an error
     func encryptDTO(
-        data: SecureBytes,
-        key: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
+        key: UmbraCoreTypes.SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO>
+    ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO>
 
     /// Decrypt data using the DTO-based approach
     /// - Parameters:
@@ -42,10 +39,10 @@ public protocol XPCServiceProtocolDTO: XPCServiceProtocolComplete {
     ///   - config: Configuration options
     /// - Returns: Decrypted data or an error
     func decryptDTO(
-        data: SecureBytes,
-        key: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
+        key: UmbraCoreTypes.SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO>
+    ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO>
 
     /// Perform a hash operation using the DTO-based approach
     /// - Parameters:
@@ -53,16 +50,16 @@ public protocol XPCServiceProtocolDTO: XPCServiceProtocolComplete {
     ///   - config: Configuration options
     /// - Returns: Hash data or an error
     func hashDTO(
-        data: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO>
+    ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO>
 
     /// Generate a key using the DTO-based approach
     /// - Parameter config: Key generation configuration
     /// - Returns: Generated key or an error
     func generateKeyDTO(
         config: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO>
+    ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO>
 }
 
 // MARK: - XPC Adapter for DTO Protocol
@@ -93,7 +90,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
         try await service.ping()
     }
 
-    public func synchroniseKeys(_ syncData: SecureBytes) async throws {
+    public func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
         try await service.synchroniseKeys(syncData)
     }
 
@@ -102,53 +99,53 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
     }
 
     public func encrypt(
-        data: SecureBytes,
-        key: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
+        key: UmbraCoreTypes.SecureBytes,
         config: SecurityConfig
-    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.encrypt(data: data, key: key, config: config)
     }
 
     public func decrypt(
-        data: SecureBytes,
-        key: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
+        key: UmbraCoreTypes.SecureBytes,
         config: SecurityConfig
-    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.decrypt(data: data, key: key, config: config)
     }
 
     public func hash(
-        data: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
         config: SecurityConfig
-    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.hash(data: data, config: config)
     }
 
     public func generateKey(
         config: SecurityConfig
-    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.generateKey(config: config)
     }
 
     public func authenticatedEncrypt(
-        data: SecureBytes,
-        key: SecureBytes,
-        authData: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
+        key: UmbraCoreTypes.SecureBytes,
+        authData: UmbraCoreTypes.SecureBytes,
         config: SecurityConfig
-    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.authenticatedEncrypt(data: data, key: key, authData: authData, config: config)
     }
 
     public func authenticatedDecrypt(
-        data: SecureBytes,
-        key: SecureBytes,
-        authData: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
+        key: UmbraCoreTypes.SecureBytes,
+        authData: UmbraCoreTypes.SecureBytes,
         config: SecurityConfig
-    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.authenticatedDecrypt(data: data, key: key, authData: authData, config: config)
     }
 
-    public func secureRandom(length: Int) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    public func secureRandom(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.secureRandom(length: length)
     }
 
@@ -173,7 +170,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
             ))
 
         case let .failure(error):
-            return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
+            return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
 
@@ -184,100 +181,98 @@ public final class XPCServiceDTOAdapter: XPCServiceProtocolDTO {
             keySizeInBits: config.keySizeInBits
         )
 
-        // Apply configuration through the status endpoint
-        let result = await service.status()
+        // Call the underlying service
+        let result = await service.updateSecurityConfig(securityConfig)
         switch result {
         case .success:
-            // We don't have a direct way to update configuration in the protocol,
-            // so we'll consider this a success if the service is available
             return .success(())
         case let .failure(error):
-            return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
+            return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
 
     public func encryptDTO(
-        data: SecureBytes,
-        key: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
+        key: UmbraCoreTypes.SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO> {
         // Convert DTO to SecurityConfig
         let securityConfig = SecurityConfig(
             algorithm: config.algorithm,
-            keySizeInBits: config.keySizeInBits,
-            options: config.options
+            keySizeInBits: config.keySizeInBits
         )
 
         // Call the underlying service
-        let result = await service.encrypt(data: data, key: key, config: securityConfig)
+        let result = await service.encrypt(data: data)
         switch result {
         case let .success(encryptedData):
             return .success(encryptedData)
         case let .failure(error):
-            return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
+            return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
 
     public func decryptDTO(
-        data: SecureBytes,
-        key: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
+        key: UmbraCoreTypes.SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO> {
         // Convert DTO to SecurityConfig
         let securityConfig = SecurityConfig(
             algorithm: config.algorithm,
-            keySizeInBits: config.keySizeInBits,
-            options: config.options
+            keySizeInBits: config.keySizeInBits
         )
 
         // Call the underlying service
-        let result = await service.decrypt(data: data, key: key, config: securityConfig)
+        let result = await service.decrypt(data: data)
         switch result {
         case let .success(decryptedData):
             return .success(decryptedData)
         case let .failure(error):
-            return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
+            return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
 
     public func hashDTO(
-        data: SecureBytes,
+        data: UmbraCoreTypes.SecureBytes,
         config: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO> {
         // Convert DTO to SecurityConfig
         let securityConfig = SecurityConfig(
             algorithm: config.algorithm,
-            keySizeInBits: config.keySizeInBits,
-            options: config.options
+            keySizeInBits: config.keySizeInBits
         )
 
         // Call the underlying service
-        let result = await service.hash(data: data, config: securityConfig)
+        let result = await service.generateHash(data: data)
         switch result {
         case let .success(hashData):
             return .success(hashData)
         case let .failure(error):
-            return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
+            return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
 
     public func generateKeyDTO(
         config: SecurityProtocolsCore.SecurityConfigDTO
-    ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, CoreDTOs.SecurityErrorDTO> {
         // Convert DTO to SecurityConfig
         let securityConfig = SecurityConfig(
             algorithm: config.algorithm,
-            keySizeInBits: config.keySizeInBits,
-            options: config.options
+            keySizeInBits: config.keySizeInBits
         )
 
-        // Call the underlying service
-        let result = await service.generateKey(config: securityConfig)
+        // Call the underlying service with appropriate parameters
+        let result = await service.generateKey(
+            algorithm: config.algorithm,
+            keySize: config.keySizeInBits,
+            purpose: config.options["purpose"] ?? "general"
+        )
         switch result {
         case let .success(keyData):
             return .success(keyData)
         case let .failure(error):
-            return .failure(CoreDTOs.SecurityDTOAdapter.toDTO(error))
+            return .failure(SecurityDTOAdapter.toDTO(error))
         }
     }
 }
@@ -297,7 +292,7 @@ public extension XPCProtocolMigrationFactory {
     /// - Parameter service: The legacy XPC service
     /// - Returns: An XPCServiceProtocolDTO adapter
     static func createDTOAdapterFromLegacy(_ service: any XPCServiceProtocol) -> any XPCServiceProtocolDTO {
-        let completeAdapter = createCompleteAdapter(service)
+        let completeAdapter = createCompleteAdapter(wrapping: service)
         return XPCServiceDTOAdapter(completeAdapter)
     }
 }

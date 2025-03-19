@@ -4,7 +4,7 @@ import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import XPCProtocolsCore
+@_exported import XPCProtocolsCore
 
 /// Mock implementation of CryptoServiceProtocol for testing SecurityProvider
 @available(macOS 14.0, *)
@@ -379,52 +379,55 @@ public final class SecurityProviderMockKeyManager: SecurityProtocolsCore.KeyMana
 
 /// Mock implementation of XPCServiceProtocol for testing SecurityProvider
 @available(macOS 14.0, *)
-public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
+public final class SecurityProviderMockXPCService: XPCProtocolsCore.XPCServiceProtocolBasic {
     // MARK: - Properties
-
-    /// Static protocol identifier
-    public static let protocolIdentifier: String = "com.umbra.security.mock"
-
+    
+    public static var protocolIdentifier: String {
+        "com.umbra.security.mock.service"
+    }
+    
     /// Flag to force operations to fail for testing error paths
-    public var failAllOperations: Bool = false
-
+    public let failAllOperations: Bool
+    
     // MARK: - Initialization
-
+    
+    /// Initialize the mock service
+    /// - Parameter failAllOperations: Whether all operations should fail
     public init(failAllOperations: Bool = false) {
         self.failAllOperations = failAllOperations
     }
-
+    
     // MARK: - XPCServiceProtocolBasic
-
+    
     public func ping() async -> Bool {
         !failAllOperations
     }
-
+    
     public func getServiceInfo() async -> [String: String] {
         if failAllOperations {
             return [:]
         }
-
+        
         return [
             "name": "SecurityProviderMockXPCService",
             "version": "1.0.0",
             "status": "operational",
         ]
     }
-
+    
     public func checkConnection() async -> XPCServiceStatusType {
         if failAllOperations {
             return .degraded
         }
-
+        
         return .operational
     }
-
+    
     public func synchroniseKeys(_: UmbraCoreTypes.SecureBytes) async throws {
         if failAllOperations {
-            throw XPCProtocolsCore.SecurityError.serviceUnavailable
+            throw SecurityInterfacesError.operationFailed("Service unavailable")
         }
-
+        
         // In a real implementation, this would store the sync data for later use
         // For the mock, we just return successful completion if not set to fail
     }

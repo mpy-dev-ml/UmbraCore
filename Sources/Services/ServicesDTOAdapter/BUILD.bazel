@@ -1,0 +1,15 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "ServicesDTOAdapter",
+    srcs = glob(["*.swift"]),
+    module_name = "ServicesDTOAdapter",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/CoreDTOs",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/ErrorHandling",
+        "//Sources/Services/CredentialManager",
+        "//Sources/Services/SecurityUtils",
+    ],
+)

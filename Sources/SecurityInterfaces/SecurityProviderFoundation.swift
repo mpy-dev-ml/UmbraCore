@@ -20,31 +20,31 @@ public protocol SecurityProviderFoundation {
     ///   - data: Data to encrypt
     ///   - key: Encryption key
     /// - Returns: Encrypted data or error
-    func encrypt(_ data: SecureBytes, key: SecureBytes) async -> Result<SecureBytes, SecurityError>
+    func encrypt(_ data: SecureBytes, key: SecureBytes) async -> Result<SecureBytes, SecurityInterfacesError>
 
     /// Decrypt binary data using the provider's decryption mechanism
     /// - Parameters:
     ///   - data: Data to decrypt
     ///   - key: Decryption key
     /// - Returns: Decrypted data or error
-    func decrypt(_ data: SecureBytes, key: SecureBytes) async -> Result<SecureBytes, SecurityError>
+    func decrypt(_ data: SecureBytes, key: SecureBytes) async -> Result<SecureBytes, SecurityInterfacesError>
 
     /// Generate a cryptographically secure random key
     /// - Parameter length: Length of the key in bytes
     /// - Returns: Generated key as SecureBytes or error
-    func generateKey(length: Int) async -> Result<SecureBytes, SecurityError>
+    func generateKey(length: Int) async -> Result<SecureBytes, SecurityInterfacesError>
 
     /// Hash binary data using the provider's hashing mechanism
     /// - Parameter data: Data to hash
     /// - Returns: Hash of the data or error
-    func hash(_ data: SecureBytes) async -> Result<SecureBytes, SecurityError>
+    func hash(_ data: SecureBytes) async -> Result<SecureBytes, SecurityInterfacesError>
 
     // MARK: - Resource Access
 
     /// Create a security-scoped resource identifier
     /// - Parameter identifier: String identifier for the resource
     /// - Returns: Resource bookmark data or error
-    func createResourceBookmark(for identifier: String) async -> Result<SecureBytes, SecurityError>
+    func createResourceBookmark(for identifier: String) async -> Result<SecureBytes, SecurityInterfacesError>
 
     /// Resolve a previously created security-scoped resource bookmark
     /// - Parameter bookmarkData: Bookmark data to resolve
@@ -52,19 +52,19 @@ public protocol SecurityProviderFoundation {
     func resolveResourceBookmark(_ bookmarkData: SecureBytes) async -> Result<(
         identifier: String,
         isStale: Bool
-    ), SecurityError>
+    ), SecurityInterfacesError>
 
     /// Validate a resource bookmark to ensure it's still valid
     /// - Parameter bookmarkData: Bookmark data to validate
     /// - Returns: True if bookmark is valid, false otherwise, or error
-    func validateResourceBookmark(_ bookmarkData: SecureBytes) async -> Result<Bool, SecurityError>
+    func validateResourceBookmark(_ bookmarkData: SecureBytes) async -> Result<Bool, SecurityInterfacesError>
 
     // MARK: - Bookmark Management
 
     /// Create a security-scoped bookmark for a resource
     /// - Parameter identifier: String identifier for the resource
     /// - Returns: Bookmark data that can be persisted, or error
-    func createBookmark(for identifier: String) async -> Result<SecureBytes, SecurityError>
+    func createBookmark(for identifier: String) async -> Result<SecureBytes, SecurityInterfacesError>
 
     /// Resolve a previously created security-scoped bookmark
     /// - Parameter bookmarkData: Bookmark data to resolve
@@ -72,19 +72,19 @@ public protocol SecurityProviderFoundation {
     func resolveBookmark(_ bookmarkData: SecureBytes) async -> Result<(
         identifier: String,
         isStale: Bool
-    ), SecurityError>
+    ), SecurityInterfacesError>
 
     /// Validate a bookmark to ensure it's still valid
     /// - Parameter bookmarkData: Bookmark data to validate
     /// - Returns: Boolean indicating if the bookmark is valid, or error
-    func validateBookmark(_ bookmarkData: SecureBytes) async -> Result<Bool, SecurityError>
+    func validateBookmark(_ bookmarkData: SecureBytes) async -> Result<Bool, SecurityInterfacesError>
 
     // MARK: - Resource Access Control
 
     /// Start accessing a security-scoped resource
     /// - Parameter identifier: String identifier for the resource
     /// - Returns: A boolean indicating if access was granted, or error
-    func startAccessingResource(identifier: String) async -> Result<Bool, SecurityError>
+    func startAccessingResource(identifier: String) async -> Result<Bool, SecurityInterfacesError>
 
     /// Stop accessing a security-scoped resource
     /// - Parameter identifier: String identifier for the resource to stop accessing
@@ -111,7 +111,7 @@ public protocol SecurityProviderFoundation {
     ///   - account: Account identifier
     /// - Returns: Success or error
     func storeInKeychain(data: SecureBytes, service: String, account: String) async
-        -> Result<Void, SecurityError>
+        -> Result<Void, SecurityInterfacesError>
 
     /// Retrieve data from the keychain
     /// - Parameters:
@@ -119,14 +119,14 @@ public protocol SecurityProviderFoundation {
     ///   - account: Account identifier
     /// - Returns: Retrieved data or error
     func retrieveFromKeychain(service: String, account: String) async
-        -> Result<SecureBytes, SecurityError>
+        -> Result<SecureBytes, SecurityInterfacesError>
 
     /// Delete data from the keychain
     /// - Parameters:
     ///   - service: Service identifier
     ///   - account: Account identifier
     /// - Returns: Success or error
-    func deleteFromKeychain(service: String, account: String) async -> Result<Void, SecurityError>
+    func deleteFromKeychain(service: String, account: String) async -> Result<Void, SecurityInterfacesError>
 }
 
 /// Extension to provide default implementations for SecurityProviderFoundation

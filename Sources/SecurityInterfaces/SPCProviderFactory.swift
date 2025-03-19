@@ -13,28 +13,25 @@ public enum SPCProviderFactory {
     /// - Parameter type: The type of provider to create
     /// - Returns: A SecurityProtocolsCore provider instance
     public static func createProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol {
-        // Create an instance of the standard factory
-        let factory = StandardSecurityProviderFactory()
-
+        // Get the shared instance of the provider adapter factory
+        let factory = SecurityProviderAdapterFactory.shared
+        
         // Create a configuration based on the type
-        let config = SecurityConfiguration(
+        let config = ProviderFactoryConfiguration(
+            useModernProtocols: true,
+            useMockServices: false,
             securityLevel: .standard,
-            encryptionAlgorithm: "AES-256",
-            hashAlgorithm: "SHA-256",
             options: ["providerType": type]
         )
-
+        
         // Use the factory to create the provider
         return factory.createSecurityProvider(config: config)
     }
-
+    
     /// Create a default provider
     /// - Returns: A SecurityProtocolsCore provider instance
     public static func createDefaultProvider() -> any SecurityProtocolsCore.SecurityProviderProtocol {
-        // Create an instance of the standard factory
-        let factory = StandardSecurityProviderFactory()
-
-        // Use the factory to create a default provider
-        return factory.createDefaultSecurityProvider()
+        // Use the factory to create a provider with default configuration
+        return createProvider(ofType: "standard")
     }
 }

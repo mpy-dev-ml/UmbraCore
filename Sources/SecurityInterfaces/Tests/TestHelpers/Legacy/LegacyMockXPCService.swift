@@ -1,10 +1,10 @@
 import Foundation
-import SecurityInterfaces
 
 /// A mock implementation of XPCServiceProtocol for testing
 /// Provides predictable responses without requiring actual XPC communication
-@available(*, deprecated, message: "Use MockXPCService instead")
-public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
+/// Replaces the deprecated DummyXPCService
+@available(*, deprecated, message: "Use MockXPCService from XPCProtocolsCore instead")
+public final class LegacyMockXPCService: XPCServiceProtocol {
     /// Protocol identifier for this service
     public static var protocolIdentifier: String { "com.umbracore.testing.xpc" }
 
@@ -14,7 +14,7 @@ public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
     /// The fixed identifier to return
     private let hostIdentifier: String
 
-    /// Creates a new dummy XPC service
+    /// Creates a new mock XPC service
     /// - Parameters:
     ///   - shouldSucceed: Whether operations should succeed (default: true)
     ///   - hostIdentifier: The host identifier to return (default: "test-host-12345")
@@ -24,7 +24,7 @@ public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
     }
 
     /// Ping the service to check if it's responsive
-    /// - Returns: Always returns true for the dummy implementation
+    /// - Returns: Always returns true for the mock implementation
     public func ping() async -> Bool {
         true
     }
@@ -54,7 +54,7 @@ public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
     /// Basic key synchronization mechanism
     /// - Parameter data: The secure bytes to synchronize
     /// - Returns: Success flag
-    public func synchronizeKeys(_: SecurityInterfaces.SecureBytes) async -> Bool {
+    public func synchronizeKeys(_: SecureBytes) async -> Bool {
         shouldSucceed
     }
 
