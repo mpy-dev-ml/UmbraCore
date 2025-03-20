@@ -2,7 +2,10 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 swift_library(
     name = "XPCBridge",
-    srcs = glob(["*.swift"]),
+    srcs = [
+        "XPCServiceDTOAdapter.swift",
+        "XPCServiceDTOFactory.swift",
+    ],
     module_name = "XPCBridge",
     copts = [
         "-target", "arm64-apple-macos15.4",
@@ -11,8 +14,10 @@ swift_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "//Sources/CoreDTOs",
         "//Sources/CoreTypesInterfaces",
         "//Sources/SecureBytes",
+        "//Sources/SecurityInterfaces",
         "//Sources/SecurityProtocolsCore",
         "//Sources/UmbraCoreTypes",
         "//Sources/XPCProtocolsCore",
