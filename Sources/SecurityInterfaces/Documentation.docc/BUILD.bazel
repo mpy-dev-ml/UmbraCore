@@ -10,8 +10,6 @@ docc_documentation(
         "**/*.jpg",
         "**/*.docc",
         "Info.plist",
-    ]) + [
-        "//Sources/SecurityInterfaces:srcs",
-    ],
+    ], allow_empty = True),
     visibility = ["//visibility:public"],
 )

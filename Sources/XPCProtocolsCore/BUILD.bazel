@@ -49,6 +49,7 @@ umbracore_foundation_free_module(
         "//Sources/CoreErrors",           # Required for error handling
         "//Sources/ErrorHandling",        # Required for error handling
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains", # Required for error domains
+        "//Sources/SecurityBridgeTypes",  # Common types shared with CoreDTOs
         "//Sources/CoreDTOs",            # Required for DTO-based protocols
     ],
     copts = [

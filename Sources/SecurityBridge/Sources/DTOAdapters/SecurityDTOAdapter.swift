@@ -1,3 +1,7 @@
+// DEPRECATED: SecurityDTOAdapter
+// This entire file is deprecated and should not be used in new code.
+// File marked as deprecated/legacy by naming convention
+
 import CoreDTOs
 import ErrorHandling
 import ErrorHandlingDomains

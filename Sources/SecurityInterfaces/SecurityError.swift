@@ -1,5 +1,6 @@
 import ErrorHandling
 import ErrorHandlingDomains
+import Foundation
 import SecurityInterfacesBase
 import UmbraCoreTypes /// Errors that can occur during security operations
 import XPCProtocolsCore
@@ -43,14 +44,18 @@ public enum SecurityInterfacesError: Error, Sendable {
     case authenticationFailed
     /// Authorization failed with reason
     case authorizationFailed(String)
+    /// Authorization denied with operation
+    case authorizationDenied(operation: String)
     /// Operation timed out
-    case timeout
+    case timeout(after: TimeInterval)
     /// Invalid parameters with details
     case invalidParameters(String)
     /// Security protocol violation
     case securityViolation(String)
     /// Service is not available
     case serviceNotAvailable
+    /// Service unavailable
+    case serviceUnavailable
     /// Key-related error with reason
     case keyError(String)
     /// Internal error that should not occur in normal operation
@@ -59,6 +64,16 @@ public enum SecurityInterfacesError: Error, Sendable {
     case unknown(reason: String)
     /// Wrapped UmbraErrors.Security.Core
     case wrapped(UmbraErrors.Security.Core)
+    /// Invalid input with details
+    case invalidInput(details: String)
+    /// Invalid key type
+    case invalidKeyType(expected: String, received: String)
+    /// Key not found
+    case keyNotFound(identifier: String)
+    /// Operation not supported
+    case operationNotSupported(name: String)
+    /// Invalid state
+    case invalidState(details: String)
 
     public var errorDescription: String? {
         switch self {
@@ -100,14 +115,18 @@ public enum SecurityInterfacesError: Error, Sendable {
             "Authentication failed"
         case let .authorizationFailed(message):
             "Authorization failed: \(message)"
-        case .timeout:
-            "Operation timed out"
+        case let .authorizationDenied(operation):
+            "Authorization denied for operation: \(operation)"
+        case let .timeout(after):
+            "Operation timed out after \(after) seconds"
         case let .invalidParameters(details):
             "Invalid parameters: \(details)"
         case let .securityViolation(message):
             "Security protocol violation: \(message)"
         case .serviceNotAvailable:
             "Security service is not available"
+        case .serviceUnavailable:
+            "Security service is unavailable"
         case let .keyError(message):
             "Key operation error: \(message)"
         case let .internalError(reason):
@@ -116,6 +135,16 @@ public enum SecurityInterfacesError: Error, Sendable {
             "Unknown error: \(reason)"
         case let .wrapped(error):
             "Wrapped security error: \(error.localizedDescription)"
+        case let .invalidInput(details):
+            "Invalid input: \(details)"
+        case let .invalidKeyType(expected, received):
+            "Invalid key type: expected \(expected), received \(received)"
+        case let .keyNotFound(identifier):
+            "Key not found: \(identifier)"
+        case let .operationNotSupported(name):
+            "Operation not supported: \(name)"
+        case let .invalidState(details):
+            "Invalid state: \(details)"
         }
     }
 
@@ -130,7 +159,11 @@ public enum SecurityInterfacesError: Error, Sendable {
         case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
              .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
              .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError,
-             .serializationFailed, .encryptionFailed, .decryptionFailed, .signatureFailed, .verificationFailed, .keyGenerationFailed, .authenticationFailed, .invalidParameters, .unknown, .authorizationFailed, .timeout, .securityViolation, .serviceNotAvailable, .internalError, .keyError:
+             .serializationFailed, .encryptionFailed, .decryptionFailed, .signatureFailed, 
+             .verificationFailed, .keyGenerationFailed, .authenticationFailed, .invalidParameters, 
+             .unknown, .authorizationFailed, .timeout, .securityViolation, .serviceNotAvailable, 
+             .internalError, .keyError, .invalidInput, .invalidKeyType, .keyNotFound, 
+             .operationNotSupported, .invalidState, .authorizationDenied, .serviceUnavailable:
             nil
         }
     }
@@ -166,32 +199,38 @@ public func mapSPCError(_ error: XPCProtocolsCore.SecurityError) -> SecurityInte
         default:
             .operationFailed("\(operation) failed: \(details)")
         }
-    case let .authenticationFailed(details):
+    case .authenticationFailed:
         .authenticationFailed
-    case let .authorizationFailed(details):
-        .authorizationFailed(details)
-    case let .invalidFormat(details):
-        .invalidParameters("Invalid format: \(details)")
-    case let .invalidKey(details):
-        .invalidParameters("Invalid key: \(details)")
-    case let .invalidParameters(details):
-        .invalidParameters(details)
+    case let .authorizationDenied(details):
+        .authorizationDenied(operation: details)
+    case let .invalidInput(details):
+        .invalidInput(details: details)
+    case let .invalidKeyType(expected, received):
+        .invalidKeyType(expected: expected, received: received)
     case let .keyNotFound(identifier):
-        .invalidParameters("Key not found: \(identifier)")
+        .keyNotFound(identifier: identifier)
     case let .operationNotSupported(name):
-        .operationFailed("Operation not supported: \(name)")
+        .operationNotSupported(name: name)
     case .serviceUnavailable:
-        .serviceNotAvailable
-    case let .timeout(details):
-        .timeout
+        .serviceUnavailable
+    case .timeout:
+        .timeout(after: 30.0)  // Use default timeout value
     case let .invalidState(details):
-        .operationFailed("Invalid state: \(details)")
-    case let .protocolViolation(details):
-        .securityViolation(details)
+        .invalidState(details: details)
     case let .internalError(details):
         .internalError(reason: details)
-    case let .unknownError(details):
-        .unknown(reason: details)
+    case .connectionInterrupted:
+        .operationFailed("XPC connection interrupted")
+    case let .connectionInvalidated(reason):
+        .operationFailed("XPC connection invalidated: \(reason)")
+    case let .serviceNotReady(reason):
+        .operationFailed("Service not ready: \(reason)")
+    case let .notImplemented(reason):
+        .operationFailed("Not implemented: \(reason)")
+    case let .operationFailed(operation, reason):
+        .operationFailed("\(operation): \(reason)")
+    @unknown default:
+        .unknown(reason: "Unknown security error")
     }
 }
 

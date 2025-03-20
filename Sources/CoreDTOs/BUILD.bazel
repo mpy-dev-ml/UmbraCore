@@ -11,7 +11,9 @@ umbracore_swift_library(
         "//Sources/UmbraCoreTypes",
         "//Sources/ErrorHandling",
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
-        # Removed dependency on SecurityProtocolsCore to break the cycle
+        "//Sources/SecurityBridgeTypes",
+        "//Sources/CoreErrors",
+        # Removed dependency on XPCProtocolsCore to break the cycle
     ],
     module_name = "CoreDTOs",
     visibility = ["//visibility:public"],

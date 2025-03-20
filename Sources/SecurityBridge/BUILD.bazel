@@ -6,7 +6,7 @@ swift_library(
         "Sources/**/*.swift",
     ], exclude = [
         "Sources/ProviderBridge/SecurityProviderFoundationBridge.swift",
-        "Sources/XPCBridge/*.swift",  # Temporarily exclude XPCBridge module
+        "Sources/XPCBridge/*.swift",  # Temporarily exclude all XPCBridge files until we can fix them individually
     ]),
     module_name = "SecurityBridge",
     copts = [
@@ -19,6 +19,7 @@ swift_library(
     visibility = ["//visibility:public"],
     deps = [
         # Foundation-free dependencies
+        "//Sources/CoreDTOs",
         "//Sources/SecureBytes",
         "//Sources/SecurityProtocolsCore",
         "//Sources/UmbraCoreTypes",
