@@ -1,4 +1,4 @@
-// DEPRECATED: URLAdapter
+// DEPRECATED: // DEPRECATED: URLAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -9,7 +9,7 @@ import UmbraCoreTypes
 ///
 /// This adapter serves as the bridge for resource locations between Foundation-dependent
 /// and Foundation-independent code.
-public enum URLAdapter {
+// DEPRECATED: public enum URLAdapter {
     /// Convert Foundation URL to ResourceLocator
     /// - Parameter url: Foundation URL instance
     /// - Returns: A new ResourceLocator instance representing the same resource

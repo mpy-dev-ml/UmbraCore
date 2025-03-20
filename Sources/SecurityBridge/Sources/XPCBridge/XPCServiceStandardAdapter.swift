@@ -1,4 +1,4 @@
-// DEPRECATED: XPCServiceStandardAdapter
+// DEPRECATED: // DEPRECATED: XPCServiceStandardAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -16,7 +16,7 @@ import XPCProtocolsCore
 /// This adapter handles low-level XPC operations by delegating to an XPC service,
 /// providing a clean Objective-C compatible interface.
 @objc
-public final class XPCServiceStandardAdapter: NSObject, @unchecked Sendable {
+// DEPRECATED: // DEPRECATED: public final class XPCServiceStandardAdapter: NSObject, @unchecked Sendable {
     // MARK: - Properties
 
     /// Protocol identifier for XPC service protocol identification
@@ -59,25 +59,25 @@ public final class XPCServiceStandardAdapter: NSObject, @unchecked Sendable {
     ///
     /// - Parameter error: The NSError from the XPC service
     /// - Returns: A SecurityError representation of the error
-    private func handleXPCError(_ error: NSError) -> XPCSecurityError {
-        if let xpcError = error as? XPCSecurityError {
+    // DEPRECATED: private func handleXPCError(_ error: NSError) -> XPCSecurityError {
+        // DEPRECATED: if let xpcError = error as? XPCSecurityError {
             return xpcError
         }
 
         // Use different error codes to determine the type of error
-        if error.domain == NSCocoaErrorDomain {
-            switch error.code {
+        // DEPRECATED: if error.domain == NSCocoaErrorDomain {
+            // DEPRECATED: switch error.code {
             case 1001:
-                return .internalError(reason: "Network error: \(error.localizedDescription)")
+                // DEPRECATED: return .internalError(reason: "Network error: \(error.localizedDescription)")
             case 1002:
-                return .invalidInput(details: error.localizedDescription)
+                // DEPRECATED: return .invalidInput(details: error.localizedDescription)
             case 1003:
                 return .serviceUnavailable
             default:
-                return .internalError(reason: error.localizedDescription)
+                // DEPRECATED: return .internalError(reason: error.localizedDescription)
             }
         } else {
-            return .internalError(reason: error.localizedDescription)
+            // DEPRECATED: return .internalError(reason: error.localizedDescription)
         }
     }
 
@@ -93,37 +93,37 @@ public final class XPCServiceStandardAdapter: NSObject, @unchecked Sendable {
     public func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData {
         // Access the bytes through the appropriate method or property
         // This needs to be adjusted based on the actual SecureBytes implementation
-        let bytes = [UInt8](secureBytes) // Assuming SecureBytes conforms to Sequence
+        // DEPRECATED: let bytes = [UInt8](secureBytes) // Assuming SecureBytes conforms to Sequence
         return NSData(bytes: bytes, length: bytes.count)
     }
 
     /// Map security errors to UmbraErrors
-    public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
+    // DEPRECATED: public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
         // Check for known error domains and codes
-        if error.domain == NSURLErrorDomain {
-            return .connectionFailed(reason: error.localizedDescription)
-        } else if error.domain == "XPCServiceErrorDomain" {
+        // DEPRECATED: if error.domain == NSURLErrorDomain {
+            // DEPRECATED: return .connectionFailed(reason: error.localizedDescription)
+        // DEPRECATED: } else if error.domain == "XPCServiceErrorDomain" {
             // Map specific error codes to appropriate UmbraErrors
-            switch error.code {
+            // DEPRECATED: switch error.code {
             case 1001:
-                return .connectionFailed(reason: error.localizedDescription)
+                // DEPRECATED: return .connectionFailed(reason: error.localizedDescription)
             case 1002:
-                return .invalidMessageFormat(reason: error.localizedDescription)
+                // DEPRECATED: return .invalidMessageFormat(reason: error.localizedDescription)
             case 1003:
                 return .serviceUnavailable(serviceName: "XPC Service")
             default:
-                return .internalError(error.localizedDescription)
+                // DEPRECATED: return .internalError(error.localizedDescription)
             }
         }
 
         // Default error mapping
-        return .internalError(error.localizedDescription)
+        // DEPRECATED: return .internalError(error.localizedDescription)
     }
 }
 
 // MARK: - XPCServiceProtocolStandard Implementation
 
-extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
+// DEPRECATED: extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
     @objc
     public func ping() async -> Bool {
         // Perform the XPC call to ping the service
@@ -156,9 +156,9 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
             }
 
             // Use the Objective-C compatible method
-            proxy.synchroniseKeys(syncBytes) { error in
-                if let error {
-                    let xpcError = self.handleXPCError(error)
+            // DEPRECATED: proxy.synchroniseKeys(syncBytes) { error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: let xpcError = self.handleXPCError(error)
                     continuation.resume(throwing: xpcError)
                 } else {
                     continuation.resume(returning: ())
@@ -182,8 +182,8 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
             Task {
                 // Use the existing method but convert result to Result<SecureBytes, XPCSecurityError>
                 if let result = await proxy.generateRandomData(length: length) {
-                    if let error = result as? NSError {
-                        continuation.resume(returning: .failure(self.handleXPCError(error)))
+                    // DEPRECATED: if let error = result as? NSError {
+                        // DEPRECATED: continuation.resume(returning: .failure(self.handleXPCError(error)))
                     } else if let data = result as? NSData {
                         let secureBytes = self.convertNSDataToSecureBytes(data)
                         continuation.resume(returning: .success(secureBytes))
@@ -209,8 +209,8 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
 
             Task {
                 if let result = await proxy.encryptData(nsData, keyIdentifier: keyIdentifier) {
-                    if let error = result as? NSError {
-                        continuation.resume(returning: .failure(self.handleXPCError(error)))
+                    // DEPRECATED: if let error = result as? NSError {
+                        // DEPRECATED: continuation.resume(returning: .failure(self.handleXPCError(error)))
                     } else if let resultData = result as? NSData {
                         let secureBytes = self.convertNSDataToSecureBytes(resultData)
                         continuation.resume(returning: .success(secureBytes))
@@ -236,8 +236,8 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
 
             Task {
                 if let result = await proxy.decryptData(nsData, keyIdentifier: keyIdentifier) {
-                    if let error = result as? NSError {
-                        continuation.resume(returning: .failure(self.handleXPCError(error)))
+                    // DEPRECATED: if let error = result as? NSError {
+                        // DEPRECATED: continuation.resume(returning: .failure(self.handleXPCError(error)))
                     } else if let resultData = result as? NSData {
                         let secureBytes = self.convertNSDataToSecureBytes(resultData)
                         continuation.resume(returning: .success(secureBytes))
@@ -263,8 +263,8 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
 
             Task {
                 if let result = await proxy.signData(nsData, keyIdentifier: keyIdentifier) {
-                    if let error = result as? NSError {
-                        continuation.resume(returning: .failure(self.handleXPCError(error)))
+                    // DEPRECATED: if let error = result as? NSError {
+                        // DEPRECATED: continuation.resume(returning: .failure(self.handleXPCError(error)))
                     } else if let resultData = result as? NSData {
                         let secureBytes = self.convertNSDataToSecureBytes(resultData)
                         continuation.resume(returning: .success(secureBytes))
@@ -278,7 +278,7 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
         }
     }
 
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    // DEPRECATED: public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
         // Convert SecureBytes to NSData for the XPC call
         let signatureData = convertSecureBytesToNSData(signature)
         let contentData = convertSecureBytesToNSData(data)
@@ -290,9 +290,9 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
             }
 
             Task {
-                if let result = await proxy.verifySignature(signatureData, for: contentData, keyIdentifier: keyIdentifier) {
-                    if let error = result as? NSError {
-                        continuation.resume(returning: .failure(self.handleXPCError(error)))
+                // DEPRECATED: if let result = await proxy.verifySignature(signatureData, for: contentData, keyIdentifier: keyIdentifier) {
+                    // DEPRECATED: if let error = result as? NSError {
+                        // DEPRECATED: continuation.resume(returning: .failure(self.handleXPCError(error)))
                     } else if let boolValue = result as? NSNumber {
                         continuation.resume(returning: .success(boolValue.boolValue))
                     } else {
@@ -315,8 +315,8 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
 
             Task {
                 if let result = await proxy.resetSecurity() {
-                    if let error = result as? NSError {
-                        continuation.resume(returning: .failure(self.handleXPCError(error)))
+                    // DEPRECATED: if let error = result as? NSError {
+                        // DEPRECATED: continuation.resume(returning: .failure(self.handleXPCError(error)))
                     } else {
                         continuation.resume(returning: .success(()))
                     }
@@ -336,8 +336,8 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
 
             Task {
                 if let result = await proxy.getServiceVersion() {
-                    if let error = result as? NSError {
-                        continuation.resume(returning: .failure(self.handleXPCError(error)))
+                    // DEPRECATED: if let error = result as? NSError {
+                        // DEPRECATED: continuation.resume(returning: .failure(self.handleXPCError(error)))
                     } else if let version = result as? NSString {
                         continuation.resume(returning: .success(version as String))
                     } else {
@@ -360,8 +360,8 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
 
             Task {
                 if let result = await proxy.getHardwareIdentifier() {
-                    if let error = result as? NSError {
-                        continuation.resume(returning: .failure(self.handleXPCError(error)))
+                    // DEPRECATED: if let error = result as? NSError {
+                        // DEPRECATED: continuation.resume(returning: .failure(self.handleXPCError(error)))
                     } else if let identifier = result as? NSString {
                         continuation.resume(returning: .success(identifier as String))
                     } else {
@@ -384,8 +384,8 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
 
             Task {
                 if let result = await proxy.getServiceStatus() {
-                    if let error = result as? NSError {
-                        continuation.resume(returning: .failure(self.handleXPCError(error)))
+                    // DEPRECATED: if let error = result as? NSError {
+                        // DEPRECATED: continuation.resume(returning: .failure(self.handleXPCError(error)))
                     } else if let statusDict = result as? NSDictionary {
                         let swiftDict = statusDict as? [String: Any] ?? [:]
                         continuation.resume(returning: .success(swiftDict))
@@ -413,9 +413,9 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
         switch result {
         case let .success(secureBytes):
             return convertSecureBytesToNSData(secureBytes)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             return NSError(domain: "com.umbra.xpc.security", code: 1001, userInfo: [
-                NSLocalizedDescriptionKey: "Failed to generate random data: \(error.localizedDescription)",
+                // DEPRECATED: NSLocalizedDescriptionKey: "Failed to generate random data: \(error.localizedDescription)",
             ])
         }
     }
@@ -427,9 +427,9 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
         switch result {
         case let .success(encryptedBytes):
             return convertSecureBytesToNSData(encryptedBytes)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             return NSError(domain: "com.umbra.xpc.security", code: 1001, userInfo: [
-                NSLocalizedDescriptionKey: "Encryption failed: \(error.localizedDescription)",
+                // DEPRECATED: NSLocalizedDescriptionKey: "Encryption failed: \(error.localizedDescription)",
             ])
         }
     }
@@ -441,9 +441,9 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
         switch result {
         case let .success(decryptedBytes):
             return convertSecureBytesToNSData(decryptedBytes)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             return NSError(domain: "com.umbra.xpc.security", code: 1001, userInfo: [
-                NSLocalizedDescriptionKey: "Decryption failed: \(error.localizedDescription)",
+                // DEPRECATED: NSLocalizedDescriptionKey: "Decryption failed: \(error.localizedDescription)",
             ])
         }
     }
@@ -467,18 +467,18 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
         switch result {
         case let .success(signatureBytes):
             return convertSecureBytesToNSData(signatureBytes)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             return NSError(domain: "com.umbra.xpc.security", code: 1001, userInfo: [
-                NSLocalizedDescriptionKey: "Signing failed: \(error.localizedDescription)",
+                // DEPRECATED: NSLocalizedDescriptionKey: "Signing failed: \(error.localizedDescription)",
             ])
         }
     }
 
     @objc
-    public func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) async -> NSNumber? {
+    // DEPRECATED: public func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) async -> NSNumber? {
         let signatureBytes = convertNSDataToSecureBytes(signature)
         let dataBytes = convertNSDataToSecureBytes(data)
-        let result = await verify(signature: signatureBytes, for: dataBytes, keyIdentifier: keyIdentifier)
+        // DEPRECATED: let result = await verify(signature: signatureBytes, for: dataBytes, keyIdentifier: keyIdentifier)
         switch result {
         case let .success(isValid):
             return NSNumber(value: isValid)
@@ -495,7 +495,7 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
             return statusDict as NSDictionary
         case .failure:
             // Return a basic error status
-            return ["status": "error", "timestamp": Date().timeIntervalSince1970] as NSDictionary
+            // DEPRECATED: return ["status": "error", "timestamp": Date().timeIntervalSince1970] as NSDictionary
         }
     }
 }

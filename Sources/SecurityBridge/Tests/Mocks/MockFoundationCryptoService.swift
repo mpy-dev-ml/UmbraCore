@@ -4,7 +4,7 @@ import SecurityProtocolsCore
 /// A mock implementation of FoundationCryptoService for testing
 /// This mock provides predetermined responses for testing the adapter
 /// pattern without requiring real cryptographic operations.
-final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked Sendable {
+// DEPRECATED: final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked Sendable {
     // These properties can be set in tests to control the behavior of the mock
 
     /// Track method calls for verification
@@ -116,7 +116,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
     /// Helper function to generate random key data
     private func generateRandomKey() -> Data {
         var bytes = [UInt8](repeating: 0, count: 32)
-        for i in 0 ..< bytes.count {
+        // DEPRECATED: for i in 0 ..< bytes.count {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return Data(bytes)
@@ -144,7 +144,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
             // Create a simple mock encryption by XORing with the first byte of the key
             if let firstByte = key.first {
                 var result = Data(count: data.count)
-                for i in 0 ..< data.count {
+                // DEPRECATED: for i in 0 ..< data.count {
                     result[i] = data[i] ^ firstByte
                 }
                 return .success(result)
@@ -347,7 +347,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
             // Create a different pattern based on the algorithm
             let seed = "MockHash".utf8.reduce(0) { $0 &+ UInt8($1) }
 
-            for i in 0 ..< hashData.count {
+            // DEPRECATED: for i in 0 ..< hashData.count {
                 hashData[i] = data.reduce(seed + UInt8(i)) { $0 &+ $1 }
             }
         }
@@ -362,13 +362,13 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
         var bytes = [UInt8](repeating: 0, count: data.count + 32)
 
         // Copy the actual data, slightly modified
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             let index = i + 16 // After IV
             bytes[index] = data[i] ^ 0x42 // Simple XOR with a constant
         }
 
         // Simulated auth tag at the end (just some garbage bytes)
-        for i in 0 ..< 16 {
+        // DEPRECATED: for i in 0 ..< 16 {
             bytes[data.count + 16 + i] = UInt8(i * 10)
         }
 

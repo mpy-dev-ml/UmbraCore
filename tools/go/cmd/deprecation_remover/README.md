@@ -1,68 +1,89 @@
 # Deprecation Remover
 
-This tool identifies and removes deprecated items from the UmbraCore codebase. It can identify deprecated items from two sources:
-
-1. The `deprecated_inventory.md` file that lists all deprecated items
-2. Deprecated typealiases marked with `@available(*, deprecated, message: "...")` annotations
-
-## Features
-
-- Identifies deprecated items from inventory markdown file
-- Finds references to deprecated items in Swift code
-- Can comment out or replace deprecated declarations
-- Generates detailed reports of deprecated items and their references
-- Supports dry-run mode for safe testing before making actual changes
+A tool to analyse, report on, and remove/comment out deprecated items in the UmbraCore codebase.
 
 ## Usage
 
 ```
-./deprecation_remover [options]
+./deprecation_remover -module=ModuleName -inventory=/path/to/deprecated_inventory.md [flags]
 ```
 
-### Options
+### Flags
 
-- `-inventory`: Path to the deprecated_inventory.md file (default: "deprecated_inventory.md")
-- `-dry-run`: Perform a dry run without making any changes (default: false)
-- `-verbose`: Enable verbose logging (default: false)
-- `-report`: Generate a detailed report of deprecated items (default: false)
-- `-module`: Process only a specific module (default: all modules)
+- `-module`: The module to process (required)
+- `-inventory`: Path to the deprecated inventory file (required)
+- `-dry-run`: Run without making changes to files
+- `-verbose`: Enable verbose logging
+- `-report`: Generate a detailed report at the specified path
+- `-file`: Target a specific file (base name only)
 
 ### Examples
 
-Run in dry-run mode with verbose logging:
+Process all files in the XPCProtocolsCore module:
 ```
-./deprecation_remover -inventory=/path/to/deprecated_inventory.md -dry-run -verbose
-```
-
-Generate a report without making changes:
-```
-./deprecation_remover -inventory=/path/to/deprecated_inventory.md -dry-run -report
+./deprecation_remover -module=XPCProtocolsCore -inventory=/path/to/deprecated_inventory.md
 ```
 
-Process only a specific module:
+Dry-run on a specific module without making changes:
 ```
-./deprecation_remover -inventory=/path/to/deprecated_inventory.md -module=SecurityBridge
-```
-
-Remove all deprecated items and update references:
-```
-./deprecation_remover -inventory=/path/to/deprecated_inventory.md
+./deprecation_remover -module=SecurityBridge -inventory=/path/to/deprecated_inventory.md -dry-run
 ```
 
-## Report Format
+Process a specific file in a module:
+```
+./deprecation_remover -module=SecurityInterfaces -file=SecurityProviderBridge.swift -inventory=/path/to/deprecated_inventory.md
+```
 
-The tool generates a markdown report that includes:
+Generate a detailed report:
+```
+./deprecation_remover -module=XPCProtocolsCore -inventory=/path/to/deprecated_inventory.md -report=report.md
+```
 
-- Summary of deprecated items and references found
-- Deprecated items grouped by module and type
-- List of all references to deprecated items
-- Information about available replacements
+## Features
 
-## How It Works
+The tool:
 
-1. The tool parses the `deprecated_inventory.md` file to extract information about deprecated items
-2. It scans Swift files in the specified modules to find references to these items
-3. It comments out or modifies the declaration lines for deprecated items
-4. For references to deprecated items, it replaces them with the recommended replacement if available
+1. Parses a deprecated inventory file to identify deprecated items
+2. Locates the files containing these items, even in nested directory structures
+3. Finds references to deprecated items across the codebase
+4. Comments out deprecated item declarations (adding a "DEPRECATED:" prefix)
+5. Replaces uses of deprecated items with their recommended replacements, if available
+6. Generates a detailed report of what it found and what actions it took
 
-For items from the inventory file without specific line numbers, the tool uses regular expressions to locate the appropriate declarations in the code.
+## Enhanced File Path Handling
+
+The tool has robust file path handling that can find files in various directory structures:
+- Standard path (Sources/ModuleName/File.swift)
+- Nested paths (Sources/ModuleName/Subdirectory/File.swift)
+- Test files (Tests/ModuleName/File.swift)
+- Adapter paths (Sources/ModuleName/Adapters/File.swift)
+
+If a file cannot be found at the expected path, the tool will use the `find` command to locate it anywhere in the module directory.
+
+## Report Generation
+
+When using the `-report` flag, the tool generates a comprehensive report including:
+- A list of all deprecated items identified in the module, with their types and impact levels
+- If running without the dry-run flag, a list of files that were modified
+- Information about any replacements that were made
+
+## Error Handling
+
+The tool provides detailed error messages and robust error handling, especially for:
+- Files that cannot be found
+- Parsing errors in the inventory file
+- Problems updating references to deprecated items
+
+## Helper Script
+
+A helper script `run_deprecation_removal.sh` is provided in the project root to simplify running the tool:
+
+```
+./run_deprecation_removal.sh <module_name> [dry-run]
+```
+
+This script:
+1. Builds the latest version of the tool
+2. Creates a reports directory
+3. Runs the tool with appropriate flags
+4. For non-dry-run mode, asks for confirmation before proceeding

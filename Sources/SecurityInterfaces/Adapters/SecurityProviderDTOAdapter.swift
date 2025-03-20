@@ -1,4 +1,4 @@
-// DEPRECATED: SecurityProviderDTOAdapter
+// DEPRECATED: // DEPRECATED: SecurityProviderDTOAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -12,7 +12,7 @@ import XPCProtocolsCore
 /// Adapter that converts a legacy SecurityProvider to the modern SecurityProviderDTO
 /// This adapter allows existing SecurityProvider implementations to be used
 /// with the new Foundation-independent DTO interfaces.
-public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProtocolsCore.SecurityProviderProtocol {
+// DEPRECATED: // DEPRECATED: public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProtocolsCore.SecurityProviderProtocol {
     // MARK: - Properties
 
     private let provider: any SecurityProtocolsCore.SecurityProviderProtocol
@@ -58,7 +58,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             hashAlgorithm: "SHA-256",
             options: nil
         )
-        return .success(SecurityDTOAdapter.toDTO(secConfig))
+        // DEPRECATED: return .success(SecurityDTOAdapter.toDTO(secConfig))
     }
 
     public func updateSecurityConfigDTO(_ configuration: CoreDTOs.SecurityConfigDTO) async -> Result<Void, CoreDTOs.SecurityErrorDTO> {
@@ -75,7 +75,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             inputData: configuration.inputData
         )
         let parameters = configuration.options
-        for (key, value) in parameters {
+        // DEPRECATED: for (key, value) in parameters {
             options[key] = value
         }
 
@@ -142,7 +142,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         {
             return .success(success)
         } else {
-            return .success(true) // Default to success if we can't parse the result
+            // DEPRECATED: return .success(true) // Default to success if we can't parse the result
         }
     }
 
@@ -219,7 +219,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         ]
 
         // Add all parameters to the options dictionary
-        for (key, value) in parameters {
+        // DEPRECATED: for (key, value) in parameters {
             options[key] = value
         }
 
@@ -293,7 +293,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         ]
 
         // Add all parameters to the options dictionary
-        for (key, value) in parameters {
+        // DEPRECATED: for (key, value) in parameters {
             options[key] = value
         }
 
@@ -343,7 +343,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         var result = [String: String]()
 
         // Extract parameters from options dictionary
-        for (key, value) in optionsDict {
+        // DEPRECATED: for (key, value) in optionsDict {
             // Value is already a string, so we can use it directly
             result[key] = value
         }
@@ -361,7 +361,7 @@ extension CoreDTOs.SecurityConfigDTO {
         var params = [String: String]()
 
         // Add options from the options dictionary
-        for (key, value) in options {
+        // DEPRECATED: for (key, value) in options {
             // All values are already strings, just add them directly
             params[key] = value
         }
@@ -385,7 +385,7 @@ extension SecurityProtocolsCore.SecurityConfigDTO {
         var result = [String: String]()
 
         // Extract parameters from options dictionary
-        for (key, value) in options {
+        // DEPRECATED: for (key, value) in options {
             result[key] = value
         }
 
@@ -426,7 +426,7 @@ public enum SecurityProviderDTOFactory {
             securityLevel: .standard,
             options: [:]
         )
-        let provider = SecurityProviderAdapterFactory.shared.createSecurityProvider(config: config)
-        return SecurityProviderDTOAdapter(provider: provider)
+        // DEPRECATED: let provider = SecurityProviderAdapterFactory.shared.createSecurityProvider(config: config)
+        // DEPRECATED: return SecurityProviderDTOAdapter(provider: provider)
     }
 }

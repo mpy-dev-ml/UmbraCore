@@ -1,9 +1,9 @@
-// DEPRECATED: SecurityProviderAdapterTests
+// DEPRECATED: // DEPRECATED: SecurityProviderAdapterTests
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
 import Foundation
-@testable import SecurityBridge
+// DEPRECATED: @testable import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
@@ -12,9 +12,9 @@ import XCTest
 
 /// Simple test class that focuses only on the config creation functionality
 final class SecurityConfigCreationTests: XCTestCase {
-    func testSimpleConfigCreation() {
+    // DEPRECATED: // DEPRECATED: func testSimpleConfigCreation() {
         // Create a simple adapter directly without any mocks
-        let adapter = SecurityProviderAdapter(implementation: MockFoundationSecurityProvider())
+        // DEPRECATED: // DEPRECATED: let adapter = SecurityProviderAdapter(implementation: MockFoundationSecurityProvider())
 
         // Create a very simple options dictionary
         let options: [String: Any] = ["algorithm": "AES-GCM", "keySizeInBits": 256]
@@ -39,7 +39,7 @@ final class SecurityOperationTests: XCTestCase {
         mock.dataToReturn = Data([1, 2, 3])
 
         // Create adapter with the configured mock
-        let adapter = SecurityProviderAdapter(implementation: mock)
+        // DEPRECATED: let adapter = SecurityProviderAdapter(implementation: mock)
 
         // Create minimal config with default values
         let config = SecurityConfigDTO(algorithm: "AES", keySizeInBits: 128)
@@ -64,7 +64,7 @@ final class SecurityOperationTests: XCTestCase {
         mock.shouldFail = true
         mock.errorToReturn = NSError(domain: "MockSecurityError", code: 42, userInfo: nil)
 
-        let adapter = SecurityProviderAdapter(implementation: mock)
+        // DEPRECATED: let adapter = SecurityProviderAdapter(implementation: mock)
         let config = SecurityConfigDTO(algorithm: "AES", keySizeInBits: 128)
 
         // When: Perform operation
@@ -79,11 +79,11 @@ final class SecurityOperationTests: XCTestCase {
 }
 
 /// Tests for the Security Provider Adapter
-final class SecurityProviderAdapterTests: XCTestCase {
+// DEPRECATED: // DEPRECATED: final class SecurityProviderAdapterTests: XCTestCase {
     // MARK: - Properties
 
     private var mockFoundationProvider: MockFoundationSecurityProvider!
-    private var adapter: SecurityProviderAdapter!
+    // DEPRECATED: private var adapter: SecurityProviderAdapter!
 
     // MARK: - Setup & Teardown
 
@@ -91,7 +91,7 @@ final class SecurityProviderAdapterTests: XCTestCase {
         super.setUp()
         // Create fresh instance for each test - prevents state leaking between tests
         mockFoundationProvider = MockFoundationSecurityProvider()
-        adapter = SecurityProviderAdapter(implementation: mockFoundationProvider)
+        // DEPRECATED: adapter = SecurityProviderAdapter(implementation: mockFoundationProvider)
     }
 
     override func tearDown() {
@@ -108,15 +108,15 @@ final class SecurityProviderAdapterTests: XCTestCase {
         let secureBytes = SecureBytes(bytes: [0, 1, 2, 3, 4, 5])
 
         // Act
-        let data = DataAdapter.data(from: secureBytes)
-        let convertedBack = DataAdapter.secureBytes(from: data)
+        // DEPRECATED: let data = DataAdapter.data(from: secureBytes)
+        // DEPRECATED: let convertedBack = DataAdapter.secureBytes(from: data)
 
         // Assert
         XCTAssertEqual(secureBytes.count, data.count)
         XCTAssertEqual(secureBytes.count, convertedBack.count)
 
         // Verify the bytes are the same
-        for i in 0 ..< secureBytes.count {
+        // DEPRECATED: for i in 0 ..< secureBytes.count {
             XCTAssertEqual(secureBytes[i], data[i])
             XCTAssertEqual(secureBytes[i], convertedBack[i])
         }

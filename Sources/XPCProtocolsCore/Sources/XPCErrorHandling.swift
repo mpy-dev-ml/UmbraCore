@@ -7,7 +7,7 @@
 
  ## Features
 
- * Comprehensive error type hierarchy for XPC communications
+ // DEPRECATED: * Comprehensive error type hierarchy for XPC communications
  * Error conversion utilities between different domains
  * Structured error types with descriptive information
  * Support for error serialisation across process boundaries
@@ -258,7 +258,7 @@ public enum XPCErrorUtilities {
         let nsError = error as NSError
 
         // Check for common error domains and convert appropriately
-        switch nsError.domain {
+        // DEPRECATED: switch nsError.domain {
         case NSURLErrorDomain:
             if nsError.code == NSURLErrorTimedOut {
                 return .timeout(after: 30.0) // Default timeout
@@ -274,6 +274,5 @@ public enum XPCErrorUtilities {
 
         default:
             return .internalError(reason: "Unknown error: \(nsError.localizedDescription)")
-        }
     }
 }

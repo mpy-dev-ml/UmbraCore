@@ -403,7 +403,7 @@ private final class FailingMockXPCService: NSObject, XPCServiceProtocolComplete 
     @objc
     func synchroniseKeys(_: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
         // Always fail with an error
-        let error = NSError(domain: "TestErrorDomain", code: -1, userInfo: [NSLocalizedDescriptionKey: "Test error"])
+        // DEPRECATED: let error = NSError(domain: "TestErrorDomain", code: -1, userInfo: [NSLocalizedDescriptionKey: "Test error"])
         completionHandler(error)
     }
 

@@ -27,7 +27,7 @@ public enum SecurityBridge {
 }
 
 // Explicit type aliases to resolve ambiguities
-public extension SecurityBridge {
+// DEPRECATED: public extension SecurityBridge {
     /// Type alias to disambiguate the SecurityConfigDTO from CoreDTOs
     typealias ConfigDTO = CoreDTOs.SecurityConfigDTO
 
@@ -42,7 +42,7 @@ public extension SecurityBridge {
 }
 
 /// Extension to provide access to the DTO adapters
-public extension SecurityBridge {
+// DEPRECATED: public extension SecurityBridge {
     /// Functions related to Data Transfer Objects (DTOs) for security operations
     enum DTOAdapters {
         // MARK: - Error Conversions
@@ -51,16 +51,16 @@ public extension SecurityBridge {
         ///
         /// - Parameter error: The SecurityErrorDTO to convert
         /// - Returns: An ErrorDTO with equivalent information
-        public static func toDTO(error: SecurityError) -> ErrorDTO {
-            SecurityDTOAdapter.toDTO(error: error)
+        // DEPRECATED: public static func toDTO(error: SecurityError) -> ErrorDTO {
+            // DEPRECATED: SecurityDTOAdapter.toDTO(error: error)
         }
 
         /// Convert ErrorDTO to SecurityErrorDTO
         ///
         /// - Parameter dto: The ErrorDTO to convert
         /// - Returns: A SecurityErrorDTO with equivalent information
-        public static func fromDTO(error dto: ErrorDTO) -> SecurityError {
-            SecurityDTOAdapter.fromDTO(error: dto)
+        // DEPRECATED: public static func fromDTO(error dto: ErrorDTO) -> SecurityError {
+            // DEPRECATED: SecurityDTOAdapter.fromDTO(error: dto)
         }
 
         // MARK: - XPC Conversions
@@ -70,7 +70,7 @@ public extension SecurityBridge {
         /// - Parameter config: The SecurityConfigDTO to convert
         /// - Returns: A dictionary suitable for XPC transfer
         public static func toXPC(config: ConfigDTO) -> [String: Any] {
-            XPCSecurityDTOAdapter.fromConfigDTO(config: config)
+            // DEPRECATED: XPCSecurityDTOAdapter.fromConfigDTO(config: config)
         }
 
         /// Convert XPC dictionary to SecurityConfigDTO
@@ -78,7 +78,7 @@ public extension SecurityBridge {
         /// - Parameter dictionary: The XPC dictionary to convert
         /// - Returns: A SecurityConfigDTO with equivalent settings
         public static func configFromXPC(dictionary: [String: Any]) -> ConfigDTO {
-            XPCSecurityDTOAdapter.toConfigDTO(dictionary: dictionary)
+            // DEPRECATED: XPCSecurityDTOAdapter.toConfigDTO(dictionary: dictionary)
         }
 
         /// Convert OperationResultDTO to XPC dictionary
@@ -87,13 +87,13 @@ public extension SecurityBridge {
         /// - Returns: A dictionary suitable for XPC transfer
         public static func toXPC(result: OperationResultDTO<some Codable & Equatable & Sendable>) -> [String: Any] {
             do {
-                return try XPCSecurityDTOAdapter.convertResultToXPC(result)
+                // DEPRECATED: return try XPCSecurityDTOAdapter.convertResultToXPC(result)
             } catch {
                 // If conversion fails, return a basic error dictionary
                 return [
                     "status": "failure",
                     "errorCode": -1,
-                    "errorMessage": "Failed to convert result to XPC: \(error.localizedDescription)",
+                    // DEPRECATED: "errorMessage": "Failed to convert result to XPC: \(error.localizedDescription)",
                     "details": [:],
                 ]
             }
@@ -107,9 +107,9 @@ public extension SecurityBridge {
         /// - Returns: An OperationResultDTO with equivalent information
         public static func operationResultFromXPC<T: Codable & Equatable & Sendable>(
             dictionary: [String: Any],
-            type: T.Type
+            // DEPRECATED: type: T.Type
         ) -> OperationResultDTO<T> {
-            XPCSecurityDTOAdapter.convertXPCToResult(dictionary, type: type)
+            // DEPRECATED: XPCSecurityDTOAdapter.convertXPCToResult(dictionary, type: type)
         }
 
         // MARK: - Protocol Conversions
@@ -141,7 +141,7 @@ public extension SecurityBridge {
 }
 
 /// Extension to provide Foundation <-> FoundationIndependent conversions for security types
-public extension SecurityBridge {
+// DEPRECATED: public extension SecurityBridge {
     // MARK: - Secure Bytes Conversions
 
     /// Convert Foundation Data to SecureBytes
@@ -160,7 +160,7 @@ public extension SecurityBridge {
     static func toData(secureBytes: SecureBytes) -> Data {
         var buffer = [UInt8](repeating: 0, count: secureBytes.count)
         secureBytes.withUnsafeBytes { sourceBuffer in
-            for i in 0 ..< sourceBuffer.count {
+            // DEPRECATED: for i in 0 ..< sourceBuffer.count {
                 buffer[i] = sourceBuffer[i]
             }
         }
@@ -169,7 +169,7 @@ public extension SecurityBridge {
 }
 
 /// Extension to provide XPC communication utilities
-public extension SecurityBridge {
+// DEPRECATED: public extension SecurityBridge {
     /// Functions related to XPC communication
     enum XPCUtilities {
         // XPC service names

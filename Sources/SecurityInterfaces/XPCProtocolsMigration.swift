@@ -19,7 +19,7 @@ public enum XPCProtocolsMigration {
         wrapping service: any XPCServiceProtocolBasic
     ) -> any XPCServiceProtocolStandard {
         // Forward to the modern factory - this is only a compatibility layer
-        XPCStandardAdapter(service)
+        // DEPRECATED: XPCStandardAdapter(service)
     }
 
     /// Create a complete protocol adapter
@@ -31,7 +31,7 @@ public enum XPCProtocolsMigration {
         wrapping service: any XPCServiceProtocolBasic
     ) -> any XPCServiceProtocolComplete {
         // Forward to the modern factory - this is only a compatibility layer
-        XPCCompleteAdapter(service)
+        // DEPRECATED: XPCCompleteAdapter(service)
     }
 }
 
@@ -58,7 +58,7 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
     }
 
     public func pingStandard() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
-        .success(true) // Always return success for backward compatibility
+        // DEPRECATED: .success(true) // Always return success for backward compatibility
     }
 
     public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
@@ -97,9 +97,9 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
         }
     }
 
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+    // DEPRECATED: public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolStandard {
-            await standardService.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
+            // DEPRECATED: await standardService.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
         } else {
             // Fallback implementation if needed
             .failure(.operationNotSupported(name: "verify"))
@@ -153,10 +153,10 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
 /// Adapter that combines multiple protocol adapters to implement XPCServiceProtocolComplete
 @available(*, deprecated, message: "Use XPCProtocolMigrationFactory.createCompleteAdapter() instead")
 private final class XPCCompleteAdapter: XPCServiceProtocolComplete {
-    private let standardAdapter: XPCStandardAdapter
+    // DEPRECATED: private let standardAdapter: XPCStandardAdapter
 
     init(_ service: any XPCServiceProtocolBasic) {
-        standardAdapter = XPCStandardAdapter(service)
+        // DEPRECATED: standardAdapter = XPCStandardAdapter(service)
     }
 
     // Delegate all XPCServiceProtocolBasic methods to standardAdapter
@@ -189,8 +189,8 @@ private final class XPCCompleteAdapter: XPCServiceProtocolComplete {
         await standardAdapter.sign(data, keyIdentifier: keyIdentifier)
     }
 
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
-        await standardAdapter.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
+    // DEPRECATED: public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+        // DEPRECATED: await standardAdapter.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
     }
 
     // Delegate all XPCServiceProtocolStandard methods to standardAdapter
@@ -262,7 +262,7 @@ private final class XPCCompleteAdapter: XPCServiceProtocolComplete {
     ) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // Convert parameters to match the required format
         let keyIdentifier = "\(key.hashValue)_\(config.algorithm)"
-        return await standardAdapter.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
+        // DEPRECATED: return await standardAdapter.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
     }
 }
 
@@ -276,6 +276,6 @@ public extension XPCServiceProtocolBasic {
     /// 2. Replace extension methods with modern equivalents
     @available(*, deprecated, message: "Use XPCProtocolMigrationFactory.createCompleteAdapter() instead")
     func asXPCServiceProtocolComplete() -> any XPCServiceProtocolComplete {
-        XPCProtocolsMigration.createCompleteAdapter(wrapping: self)
+        // DEPRECATED: XPCProtocolsMigration.createCompleteAdapter(wrapping: self)
     }
 }

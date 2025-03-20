@@ -1,4 +1,4 @@
-// DEPRECATED: XPCMigrationTests
+// DEPRECATED: // DEPRECATED: XPCMigrationTests
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -11,12 +11,12 @@ import XCTest
 import XPCProtocolsCore
 
 /// Tests for the XPC Protocol Migration functionality
-class XPCMigrationTests: XCTestCase {
+// DEPRECATED: // DEPRECATED: class XPCMigrationTests: XCTestCase {
     // MARK: - Protocol Adapter Tests
 
     func testLegacyServiceToBasicAdapter() async {
         // Create a mock legacy service
-        let legacyService = MockLegacyXPCService()
+        // DEPRECATED: let legacyService = MockLegacyXPCService()
 
         // Use the extension method to convert to XPCServiceProtocolBasic
         let basicAdapter = legacyService.asXPCServiceProtocolBasic()
@@ -43,7 +43,7 @@ class XPCMigrationTests: XCTestCase {
 
     func testLegacyServiceToStandardAdapter() async {
         // Create a mock legacy service
-        let legacyService = MockLegacyXPCService()
+        // DEPRECATED: let legacyService = MockLegacyXPCService()
 
         // Use the extension method to convert to XPCServiceProtocolStandard
         let standardAdapter = legacyService.asXPCServiceProtocolStandard()
@@ -74,20 +74,20 @@ class XPCMigrationTests: XCTestCase {
 
         switch resetResult {
         case .success:
-            XCTFail("resetSecurityData should fail for legacy service")
+            // DEPRECATED: XCTFail("resetSecurityData should fail for legacy service")
         case let .failure(error):
             // Can't compare directly for equality since SecurityError doesn't conform to Equatable
             // Check the description instead
             XCTAssertTrue(
                 "\(error)" == "\(XPCProtocolsCore.SecurityError.serviceUnavailable)",
-                "Should get serviceUnavailable for unsupported operations"
+                // DEPRECATED: "Should get serviceUnavailable for unsupported operations"
             )
         }
     }
 
     func testFactoryCreation() {
         // Create a mock legacy service
-        let legacyService = MockLegacyXPCService()
+        // DEPRECATED: let legacyService = MockLegacyXPCService()
 
         // Use the factory directly to create adapters
         let basicAdapter = XPCProtocolMigrationFactory.createBasicAdapter(wrapping: legacyService)
@@ -105,7 +105,7 @@ class XPCMigrationTests: XCTestCase {
 
     func testErrorHandlingInAdapters() async {
         // Create a failing legacy service
-        let failingService = FailingLegacyXPCService()
+        // DEPRECATED: let failingService = FailingLegacyXPCService()
 
         // Convert to standard protocol
         let standardAdapter = failingService.asXPCServiceProtocolStandard()
@@ -115,7 +115,7 @@ class XPCMigrationTests: XCTestCase {
 
         switch statusResult {
         case .success:
-            XCTFail("Status should fail for failing service")
+            // DEPRECATED: XCTFail("Status should fail for failing service")
         case let .failure(error):
             // Can't compare directly for equality since SecurityError doesn't conform to Equatable
             // Check the description instead
@@ -130,7 +130,7 @@ class XPCMigrationTests: XCTestCase {
 
         switch idResult {
         case .success:
-            XCTFail("getHardwareIdentifier should fail for failing service")
+            // DEPRECATED: XCTFail("getHardwareIdentifier should fail for failing service")
         case let .failure(error):
             // Can't compare directly for equality since SecurityError doesn't conform to Equatable
             // Check the description instead

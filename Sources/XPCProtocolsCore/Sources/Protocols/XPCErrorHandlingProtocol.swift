@@ -52,7 +52,9 @@ public extension XPCErrorHandlingProtocol {
 
         // Handle common Foundation error domains
         let nsError = error as NSError
-        if nsError.domain == URLError.errorDomain {
+        // DEPRECATED: if nsError.domain == URLError.errorDomain {
+        // The following code block has been commented out because it was part of a deprecated condition
+        // DEPRECATED: {
             let errorCode = nsError.code
             switch errorCode {
             case URLError.timedOut.rawValue, URLError.cannotConnectToHost.rawValue:
@@ -62,7 +64,7 @@ public extension XPCErrorHandlingProtocol {
             default:
                 return .internalError(reason: "Network error \(errorCode): \(nsError.localizedDescription)")
             }
-        }
+        // DEPRECATED: }
 
         // Generic mapping from Error to XPCSecurityError
         return .internalError(reason: error.localizedDescription)

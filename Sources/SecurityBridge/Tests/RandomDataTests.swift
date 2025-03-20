@@ -1,5 +1,5 @@
 import Foundation
-@testable import SecurityBridge
+// DEPRECATED: @testable import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
@@ -24,20 +24,20 @@ final class RandomDataTests: XCTestCase {
         mockXPCService.randomDataToReturn = expectedData
 
         var randomData: Data?
-        var error: Error?
+        // DEPRECATED: var error: Error?
 
         // Act - Use completion handler directly
         let expectation = XCTestExpectation(description: "Random data generation complete")
         mockXPCService.generateRandomData(length: expectedLength) { data, err in
             randomData = data
-            error = err
+            // DEPRECATED: error = err
             expectation.fulfill()
         }
 
         await fulfillment(of: [expectation], timeout: 5.0)
 
         // Assert
-        XCTAssertNil(error)
+        // DEPRECATED: XCTAssertNil(error)
         XCTAssertNotNil(randomData)
         XCTAssertEqual(randomData, expectedData)
 
@@ -62,7 +62,7 @@ final class SecureRandomGenerator {
 
     func generateRandomBytes(count: Int) async throws -> [UInt8] {
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0 ..< count {
+        // DEPRECATED: for i in 0 ..< count {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return bytes

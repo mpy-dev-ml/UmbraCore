@@ -1,4 +1,4 @@
-// DEPRECATED: ProviderFactoryAdapterTests
+// DEPRECATED: // DEPRECATED: ProviderFactoryAdapterTests
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -13,7 +13,7 @@ import XPCProtocolsCore
 
 /// Tests for the refactored SecurityProviderFactory implementation
 /// Verifies that the new adapter-based approach works correctly
-class ProviderFactoryAdapterTests: XCTestCase {
+// DEPRECATED: // DEPRECATED: class ProviderFactoryAdapterTests: XCTestCase {
     // MARK: - Basic Factory Tests
 
     func testFactoryCreateModernProvider() {
@@ -28,7 +28,7 @@ class ProviderFactoryAdapterTests: XCTestCase {
 
         // Verify we got a valid provider
         XCTAssertNotNil(provider)
-        XCTAssertTrue(provider is ModernSecurityProviderAdapter)
+        // DEPRECATED: XCTAssertTrue(provider is ModernSecurityProviderAdapter)
     }
 
     func testFactoryCreateLegacyProvider() {

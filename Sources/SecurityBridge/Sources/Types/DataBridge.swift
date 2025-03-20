@@ -1,4 +1,4 @@
-// DEPRECATED: DataBridge
+// DEPRECATED: // DEPRECATED: DataBridge
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -6,7 +6,7 @@ import Foundation
 import UmbraCoreTypes
 
 /// Extension to the SecurityBridge namespace
-public extension SecurityBridge {
+// DEPRECATED: public extension SecurityBridge {
     /// A bridge type that encapsulates data without exposing Foundation
     /// but can be converted to Foundation types internally.
     struct DataBridge: Sendable, Equatable {
@@ -32,7 +32,7 @@ public extension SecurityBridge {
         /// Initialize with secure bytes
         /// - Parameter secureBytes: SecureBytes object
         public init(_ secureBytes: SecureBytes) {
-            data = DataAdapter.data(from: secureBytes)
+            // DEPRECATED: data = DataAdapter.data(from: secureBytes)
         }
 
         // MARK: - Conversion Methods
@@ -57,7 +57,7 @@ public extension SecurityBridge {
 
         // MARK: - Equatable
 
-        public static func == (lhs: DataBridge, rhs: DataBridge) -> Bool {
+        // DEPRECATED: public static func == (lhs: DataBridge, rhs: DataBridge) -> Bool {
             lhs.data == rhs.data
         }
     }

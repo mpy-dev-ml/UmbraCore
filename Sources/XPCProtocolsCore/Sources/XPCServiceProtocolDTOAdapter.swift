@@ -15,7 +15,7 @@ import Foundation
 import UmbraCoreTypes
 
 /// Adapter to wrap a standard XPC service protocol implementation with the DTO protocol interface
-public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sendable {
+// DEPRECATED: public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sendable {
     /// The underlying service protocol implementation
     private let service: XPCServiceProtocolStandard
 
@@ -50,7 +50,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: error.localizedDescription,
-                details: ["domain": error.domain]
+                // DEPRECATED: details: ["domain": error.domain]
             )
         }
     }
@@ -75,7 +75,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: error.localizedDescription,
-                details: ["domain": error.domain]
+                // DEPRECATED: details: ["domain": error.domain]
             )
         }
     }
@@ -94,7 +94,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: error.localizedDescription,
-                details: ["domain": error.domain]
+                // DEPRECATED: details: ["domain": error.domain]
             )
         }
     }
@@ -161,7 +161,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Key synchronisation failed: \(error.localizedDescription)",
-                details: ["domain": error.domain]
+                // DEPRECATED: details: ["domain": error.domain]
             )
         }
     }
@@ -250,13 +250,13 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             return OperationResultDTO(
                 errorCode: Int32(error.code),
                 errorMessage: "Failed to retrieve service status: \(error.localizedDescription)",
-                details: ["domain": error.domain]
+                // DEPRECATED: details: ["domain": error.domain]
             )
         }
     }
 
     /// Adapter to wrap a complete XPC service protocol implementation with the complete DTO protocol interface
-    public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTOAdapter, XPCServiceWithKeyExchangeDTO, KeyExchangeDTOProtocol, @unchecked Sendable {
+    // DEPRECATED: public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTOAdapter, XPCServiceWithKeyExchangeDTO, KeyExchangeDTOProtocol, @unchecked Sendable {
         /// The underlying complete service protocol implementation
         private let completeService: XPCServiceProtocolComplete
 
@@ -302,7 +302,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                     return OperationResultDTO(
                         errorCode: Int32(error.code),
                         errorMessage: "Failed to delete key: \(error.localizedDescription)",
-                        details: ["domain": error.domain]
+                        // DEPRECATED: details: ["domain": error.domain]
                     )
                 }
             } else {
@@ -619,7 +619,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             config: SecurityConfigDTO
         ) async -> OperationResultDTO<KeyExchangeParametersDTO> {
             // Create a KeyExchangeDTOAdapter using self as the service
-            let adapter = KeyExchangeDTOAdapter(service: self)
+            // DEPRECATED: let adapter = KeyExchangeDTOAdapter(service: self)
             return await adapter.generateKeyExchangeParametersWithDTO(config: config)
         }
 
@@ -635,7 +635,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             config: SecurityConfigDTO
         ) async -> OperationResultDTO<SecureBytes> {
             // Create a KeyExchangeDTOAdapter using self as the service
-            let adapter = KeyExchangeDTOAdapter(service: self)
+            // DEPRECATED: let adapter = KeyExchangeDTOAdapter(service: self)
             return await adapter.calculateSharedSecretWithDTO(
                 publicKey: publicKey,
                 privateKey: privateKey,

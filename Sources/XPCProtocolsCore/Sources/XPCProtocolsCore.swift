@@ -7,7 +7,7 @@
 
  ## Features
 
- * Protocol hierarchy with clear abstraction levels
+ // DEPRECATED: * Protocol hierarchy with clear abstraction levels
  * Type-safe message passing between processes
  * Comprehensive error handling
  * Support for both legacy and modern interfaces

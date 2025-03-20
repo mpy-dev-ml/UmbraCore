@@ -124,7 +124,7 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
 /// See `XPCProtocolMigrationGuide` in XPCProtocolsCore for comprehensive migration guidance.
 @available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 @objc
-// REMOVED: public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol { (Removed by deprecation_remover)
+// DEPRECATED: // DEPRECATED: // REMOVED: public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol { (Removed by deprecation_remover)
     /// Protocol identifier - used for protocol negotiation
     static var protocolIdentifier: String { get }
 
@@ -196,7 +196,7 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
 /// See `XPCProtocolMigrationGuide` in XPCProtocolsCore for comprehensive migration guidance.
 @available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 public final class CoreTypesToFoundationBridgeAdapter: NSObject,
-    XPCServiceProtocolFoundationBridge, @unchecked Sendable {
+    // DEPRECATED: XPCServiceProtocolFoundationBridge, @unchecked Sendable {
     public static var protocolIdentifier: String = "com.umbra.xpc.service.adapter.foundation.outgoing"
 
     private let coreService: any ComprehensiveSecurityServiceProtocol
@@ -230,8 +230,8 @@ public final class CoreTypesToFoundationBridgeAdapter: NSObject,
 
             // Use the @objc compatible version that takes NSData
             var errorToReturn: NSError?
-            coreService.synchroniseKeys(bytes) { error in
-                errorToReturn = error
+            // DEPRECATED: coreService.synchroniseKeys(bytes) { error in
+                // DEPRECATED: errorToReturn = error
             }
 
             // Process the result
@@ -243,55 +243,55 @@ public final class CoreTypesToFoundationBridgeAdapter: NSObject,
         _: Int,
         withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-        let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+        // DEPRECATED: let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
             NSLocalizedDescriptionKey: "Method 'generateRandomData' not available in XPCServiceProtocolBasic"
         ])
-        reply(nil, error)
+        // DEPRECATED: reply(nil, error)
     }
 
     public func resetSecurityDataFoundation(withReply reply: @escaping @Sendable (Error?) -> Void) {
-        let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+        // DEPRECATED: let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
             NSLocalizedDescriptionKey: "Method 'resetSecurityData' not available in XPCServiceProtocolBasic"
         ])
-        reply(error)
+        // DEPRECATED: reply(error)
     }
 
     public func getVersionFoundation(
         withReply reply: @escaping @Sendable (String?, Error?) -> Void
     ) {
-        let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+        // DEPRECATED: let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
             NSLocalizedDescriptionKey: "Method 'getVersion' not available in XPCServiceProtocolBasic"
         ])
-        reply(nil, error)
+        // DEPRECATED: reply(nil, error)
     }
 
     public func getHostIdentifierFoundation(
         withReply reply: @escaping @Sendable (String?, Error?) -> Void
     ) {
-        let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+        // DEPRECATED: let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
             NSLocalizedDescriptionKey: "Method 'getHostIdentifier' not available in XPCServiceProtocolBasic"
         ])
-        reply(nil, error)
+        // DEPRECATED: reply(nil, error)
     }
 
     public func encryptFoundation(
         data _: Data,
         withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-        let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+        // DEPRECATED: let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
             NSLocalizedDescriptionKey: "Method 'encrypt' not available in XPCServiceProtocolBasic"
         ])
-        reply(nil, error)
+        // DEPRECATED: reply(nil, error)
     }
 
     public func decryptFoundation(
         data _: Data,
         withReply reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-        let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
+        // DEPRECATED: let error = NSError(domain: "com.umbra.xpc.service", code: 1, userInfo: [
             NSLocalizedDescriptionKey: "Method 'decrypt' not available in XPCServiceProtocolBasic"
         ])
-        reply(nil, error)
+        // DEPRECATED: reply(nil, error)
     }
 }
 
@@ -312,9 +312,9 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     @unchecked Sendable {
     public static var protocolIdentifier: String = "com.umbra.xpc.service.adapter.foundation.bridge"
 
-    private let foundation: any XPCServiceProtocolFoundationBridge
+    // DEPRECATED: private let foundation: any XPCServiceProtocolFoundationBridge
 
-    public init(wrapping foundation: any XPCServiceProtocolFoundationBridge) {
+    // DEPRECATED: public init(wrapping foundation: any XPCServiceProtocolFoundationBridge) {
         self.foundation = foundation
         super.init()
     }
@@ -333,8 +333,8 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
         // Convert [UInt8] to Data
         let data = Data(bytes)
 
-        foundation.synchroniseKeysFoundation(data) { error in
-            completionHandler(error as NSError?)
+        // DEPRECATED: foundation.synchroniseKeysFoundation(data) { error in
+            // DEPRECATED: completionHandler(error as NSError?)
         }
     }
 
@@ -351,9 +351,9 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
             // Convert SecureBytes to [UInt8]
             let bytes = [UInt8](syncData)
 
-            synchroniseKeys(bytes) { error in
-                if let error {
-                    continuation.resume(returning: .failure(self.mapXPCError(error)))
+            // DEPRECATED: synchroniseKeys(bytes) { error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: .failure(self.mapXPCError(error)))
                 } else {
                     continuation.resume(returning: .success(()))
                 }
@@ -364,9 +364,9 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     @objc
     public func resetSecurityData() async -> NSObject? {
         await withCheckedContinuation { continuation in
-            foundation.resetSecurityDataFoundation { error in
-                if let error {
-                    continuation.resume(returning: error as NSError)
+            // DEPRECATED: foundation.resetSecurityDataFoundation { error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: error as NSError)
                 } else {
                     continuation.resume(returning: NSNull())
                 }
@@ -377,18 +377,18 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     @objc
     public func getServiceVersion() async -> NSObject? {
         await withCheckedContinuation { continuation in
-            foundation.getVersionFoundation { versionString, error in
-                if let error {
-                    continuation.resume(returning: error as NSError)
+            // DEPRECATED: foundation.getVersionFoundation { versionString, error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: error as NSError)
                 } else if let versionString {
                     continuation.resume(returning: versionString as NSString)
                 } else {
-                    let error = NSError(
+                    // DEPRECATED: let error = NSError(
                         domain: "XPCErrorDomain",
                         code: -1,
                         userInfo: [NSLocalizedDescriptionKey: "Version not available"]
                     )
-                    continuation.resume(returning: error)
+                    // DEPRECATED: continuation.resume(returning: error)
                 }
             }
         }
@@ -412,18 +412,18 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     @objc
     public func getHostIdentifier() async -> NSObject? {
         await withCheckedContinuation { continuation in
-            foundation.getHostIdentifierFoundation { hostIdentifier, error in
-                if let error {
-                    continuation.resume(returning: error as NSError)
+            // DEPRECATED: foundation.getHostIdentifierFoundation { hostIdentifier, error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: error as NSError)
                 } else if let hostIdentifier {
                     continuation.resume(returning: hostIdentifier as NSString)
                 } else {
-                    let error = NSError(
+                    // DEPRECATED: let error = NSError(
                         domain: "XPCErrorDomain",
                         code: -1,
                         userInfo: [NSLocalizedDescriptionKey: "Host identifier not available"]
                     )
-                    continuation.resume(returning: error)
+                    // DEPRECATED: continuation.resume(returning: error)
                 }
             }
         }
@@ -432,9 +432,9 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     public func generateRandomData(length: Int) async
         -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await withCheckedContinuation { continuation in
-            self.foundation.generateRandomDataFoundation(length) { data, error in
-                if let error {
-                    continuation.resume(returning: .failure(self.mapXPCError(error)))
+            // DEPRECATED: self.foundation.generateRandomDataFoundation(length) { data, error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: .failure(self.mapXPCError(error)))
                 } else if let data {
                     continuation.resume(returning: .success(XPCDataAdapter.secureBytes(from: data)))
                 } else {
@@ -459,10 +459,10 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     ///
     /// - Parameter error: The error to map
     /// - Returns: A properly mapped XPCProtocolsCore.SecurityError
-    private func mapXPCError(_ error: Error) -> XPCProtocolsCore.SecurityError {
-        if let securityError = error as? XPCProtocolsCore.SecurityError {
+    // DEPRECATED: private func mapXPCError(_ error: Error) -> XPCProtocolsCore.SecurityError {
+        // DEPRECATED: if let securityError = error as? XPCProtocolsCore.SecurityError {
             return securityError
-        } else if let securityError = error as? UmbraErrors.Security.Protocols {
+        // DEPRECATED: } else if let securityError = error as? UmbraErrors.Security.Protocols {
             // Convert from UmbraErrors.Security.Protocols to XPCProtocolsCore.SecurityError
             switch securityError {
             case .encryptionFailed:
@@ -485,9 +485,9 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
                  .storageOperationFailed:
                 return .serviceNotReady(reason: "Service is not in correct state")
             @unknown default:
-                return .internalError(reason: error.localizedDescription)
+                // DEPRECATED: return .internalError(reason: error.localizedDescription)
             }
-        } else if let xpcSecurityError = error as? XPCSecurityError {
+        // DEPRECATED: } else if let xpcSecurityError = error as? XPCSecurityError {
             switch xpcSecurityError {
             case .serviceUnavailable:
                 return .serviceUnavailable
@@ -498,7 +498,7 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
             case let .invalidState(details):
                 return .serviceNotReady(reason: "Invalid state: \(details)")
             case let .invalidKeyType(expected, received):
-                return .invalidInput(details: "Expected key type \(expected), received \(received)")
+                // DEPRECATED: return .invalidInput(details: "Expected key type \(expected), received \(received)")
             case let .keyNotFound(identifier):
                 return .invalidInput(details: "Key not found: \(identifier)")
             case let .cryptographicError(operation, details):
@@ -518,11 +518,11 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
             case let .authorizationDenied(operation):
                 return .authorizationDenied(operation: operation)
             @unknown default:
-                return .internalError(reason: "Unknown XPC security error")
+                // DEPRECATED: return .internalError(reason: "Unknown XPC security error")
             }
         } else {
             // Map generic error to appropriate error
-            return .internalError(reason: error.localizedDescription)
+            // DEPRECATED: return .internalError(reason: error.localizedDescription)
         }
     }
 
@@ -533,12 +533,12 @@ public final class FoundationToCoreTypesBridgeAdapter: NSObject, XPCServiceProto
     ///
     /// - Parameter error: The protocol error to map
     /// - Returns: A properly mapped XPCProtocolsCore.SecurityError
-    private func mapSecurityProtocolError(_ error: Error) -> XPCProtocolsCore.SecurityError {
+    // DEPRECATED: private func mapSecurityProtocolError(_ error: Error) -> XPCProtocolsCore.SecurityError {
         // If SecurityProtocolError is unavailable, we use a general mapping approach
-        if let xpcError = error as? XPCProtocolsCore.SecurityError {
+        // DEPRECATED: if let xpcError = error as? XPCProtocolsCore.SecurityError {
             xpcError
         } else {
-            .internalError(reason: error.localizedDescription)
+            // DEPRECATED: .internalError(reason: error.localizedDescription)
         }
     }
 }
@@ -552,7 +552,7 @@ private enum XPCDataAdapter {
 
     static func secureBytes(from data: Data) -> SecureBytes {
         data.withUnsafeBytes { bytes -> SecureBytes in
-            let bufferPointer = bytes.bindMemory(to: UInt8.self)
+            // DEPRECATED: let bufferPointer = bytes.bindMemory(to: UInt8.self)
             return SecureBytes(bytes: Array(bufferPointer))
         }
     }
@@ -562,7 +562,7 @@ private enum XPCDataAdapter {
 
 /// Extension to provide migration assistance for Foundation-based XPC services
 @available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
-public extension XPCServiceProtocolFoundationBridge {
+// DEPRECATED: public extension XPCServiceProtocolFoundationBridge {
     /// Convert this legacy Foundation-based service to a modern XPCServiceProtocolComplete
     ///
     /// This helper method simplifies the migration from legacy to modern protocols
@@ -586,16 +586,16 @@ public enum SecurityBridgeXPCMigrationGuide {
     /// Comprehensive guide for migrating from Foundation-based bridges to XPCProtocolsCore
     public static var migrationSteps: String {
         """
-        # SecurityBridge XPC Migration Guide
+        // DEPRECATED: # SecurityBridge XPC Migration Guide
 
         ## Overview
 
-        This guide provides steps to migrate from Foundation-based XPC bridges to the modern
+        // DEPRECATED: This guide provides steps to migrate from Foundation-based XPC bridges to the modern
         XPCProtocolsCore protocol hierarchy.
 
         ## Migration Steps
 
-        1. Replace all usages of `XPCServiceProtocolFoundationBridge` with
+        // DEPRECATED: 1. Replace all usages of `XPCServiceProtocolFoundationBridge` with
            `XPCServiceProtocolComplete` from XPCProtocolsCore.
 
         2. For existing services:
@@ -616,10 +616,10 @@ public enum SecurityBridgeXPCMigrationGuide {
            let adapter = XPCProtocolMigrationFactory.createCompleteAdapter()
            ```
 
-        4. Update all method calls to use async/await syntax and Result types:
+        // DEPRECATED: 4. Update all method calls to use async/await syntax and Result types:
            ```swift
            // Instead of using explicit Objective-C style callbacks:
-           foundationService.encryptFoundation(data: someData) { data, error in
+           // DEPRECATED: foundationService.encryptFoundation(data: someData) { data, error in
                // Handle callback
            }
 
@@ -628,14 +628,14 @@ public enum SecurityBridgeXPCMigrationGuide {
            switch result {
            case .success(let encryptedData):
                // Handle success
-           case .failure(let error):
+           // DEPRECATED: case .failure(let error):
                // Handle error
            }
            ```
 
         ## Complete Documentation
 
-        For more detailed migration guidance, refer to the `XPCProtocolMigrationGuide` in
+        // DEPRECATED: For more detailed migration guidance, refer to the `XPCProtocolMigrationGuide` in
         XPCProtocolsCore.
         """
     }

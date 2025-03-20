@@ -147,8 +147,8 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
         await service.sign(data, keyIdentifier: keyIdentifier)
     }
 
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
-        await service.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
+    // DEPRECATED: public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+        // DEPRECATED: await service.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
     }
 
     public func generateKey(algorithm: String, keySize: Int, purpose: String) async -> Result<String, XPCProtocolsCore.SecurityError> {
@@ -282,7 +282,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
             }
 
             // Add all other string values
-            for (key, value) in statusDict {
+            // DEPRECATED: for (key, value) in statusDict {
                 if key != "algorithm", key != "status", key != "version" {
                     if let stringValue = value as? String {
                         options[key] = stringValue
@@ -320,7 +320,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
         )
 
         // Call the underlying service
-        return .success(()) // Return success for now until a proper implementation is available
+        // DEPRECATED: return .success(()) // Return success for now until a proper implementation is available
     }
 
     public func encryptDTO(
@@ -429,6 +429,6 @@ public enum XPCProtocolDTOFactory {
     /// - Parameter service: The underlying XPC service
     /// - Returns: An XPCServiceProtoDTO adapter
     public static func createDTOAdapter(_ service: any XPCServiceProtocolComplete) -> any XPCServiceProtoDTO {
-        XPCServiceDTOAdapter(service)
+        // DEPRECATED: XPCServiceDTOAdapter(service)
     }
 }

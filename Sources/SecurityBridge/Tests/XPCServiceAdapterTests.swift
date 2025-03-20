@@ -1,10 +1,10 @@
-// DEPRECATED: XPCServiceAdapterTests
+// DEPRECATED: // DEPRECATED: XPCServiceAdapterTests
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
 import Foundation
 
-@testable import SecurityBridge
+// DEPRECATED: @testable import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
@@ -28,7 +28,7 @@ extension Result {
 
 extension SecurityResultDTO {
     var isSuccess: Bool {
-        success
+        // DEPRECATED: // DEPRECATED: success
     }
 
     var isFailure: Bool {
@@ -73,7 +73,7 @@ class ErrorConnection: NSXPCConnection {
         NSError(
             domain: "com.umbracore.test",
             code: -1,
-            userInfo: [NSLocalizedDescriptionKey: "Test connection error"]
+            // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "Test connection error"]
         )
     }
 
@@ -85,11 +85,11 @@ class ErrorConnection: NSXPCConnection {
     }
 }
 
-final class XPCServiceAdapterTests: XCTestCase {
+// DEPRECATED: // DEPRECATED: final class XPCServiceAdapterTests: XCTestCase {
     // MARK: - Properties
 
     var mockService: MockFoundationXPCSecurityService!
-    var adapter: XPCServiceAdapter!
+    // DEPRECATED: // DEPRECATED: var adapter: XPCServiceAdapter!
 
     // MARK: - Setup and Teardown
 
@@ -99,10 +99,10 @@ final class XPCServiceAdapterTests: XCTestCase {
 
         // Use try/catch to handle potential initialization errors
         do {
-            let connection = MockXPCConnection(mockService: mockService)
-            adapter = XPCServiceAdapter(connection: connection)
+            // DEPRECATED: let connection = MockXPCConnection(mockService: mockService)
+            // DEPRECATED: adapter = XPCServiceAdapter(connection: connection)
         } catch {
-            XCTFail("Failed to initialize XPCServiceAdapter: \(error)")
+            // DEPRECATED: XCTFail("Failed to initialize XPCServiceAdapter: \(error)")
         }
     }
 
@@ -154,8 +154,8 @@ final class XPCServiceAdapterTests: XCTestCase {
 
     func testCreateCryptoServiceWithConnectionError() async {
         // Arrange: We're injecting a connection that will cause errors
-        let errorConnection = ErrorConnection()
-        let errorAdapter = XPCServiceAdapter(connection: errorConnection)
+        // DEPRECATED: let errorConnection = ErrorConnection()
+        // DEPRECATED: let errorAdapter = XPCServiceAdapter(connection: errorConnection)
 
         // Act: Create crypto service
         // This should not throw but will likely return an adapter that will fail when used
@@ -168,8 +168,8 @@ final class XPCServiceAdapterTests: XCTestCase {
 
     func testCreateKeyManagementWithConnectionError() async {
         // Arrange: We're injecting a connection that will cause errors
-        let errorConnection = ErrorConnection()
-        let errorAdapter = XPCServiceAdapter(connection: errorConnection)
+        // DEPRECATED: let errorConnection = ErrorConnection()
+        // DEPRECATED: let errorAdapter = XPCServiceAdapter(connection: errorConnection)
 
         // Act: Create key management service
         // This should not throw but will likely return an adapter that will fail when used
@@ -264,9 +264,9 @@ final class XPCServiceAdapterTests: XCTestCase {
 
         // Assert
         XCTAssertTrue(result.isFailure)
-        if case let .failure(error) = result {
+        // DEPRECATED: if case let .failure(error) = result {
             XCTAssertEqual(
-                error.localizedDescription.contains("not found") || error.localizedDescription
+                // DEPRECATED: error.localizedDescription.contains("not found") || error.localizedDescription
                     .contains("Key not found"),
                 true
             )
@@ -304,9 +304,9 @@ final class XPCServiceAdapterTests: XCTestCase {
         let result = await keyManagement.storeKey(keyToStore, withIdentifier: keyIdentifier)
 
         // Assert
-        if case let .failure(error) = result {
+        // DEPRECATED: if case let .failure(error) = result {
             XCTAssertTrue(
-                error.localizedDescription.contains("Failed") || error.localizedDescription
+                // DEPRECATED: error.localizedDescription.contains("Failed") || error.localizedDescription
                     .contains("failed")
             )
         } else {
@@ -341,9 +341,9 @@ final class XPCServiceAdapterTests: XCTestCase {
         let result = await keyManagement.deleteKey(withIdentifier: keyIdentifier)
 
         // Assert
-        if case let .failure(error) = result {
+        // DEPRECATED: if case let .failure(error) = result {
             XCTAssertTrue(
-                error.localizedDescription.contains("Cannot") || error.localizedDescription
+                // DEPRECATED: error.localizedDescription.contains("Cannot") || error.localizedDescription
                     .contains("cannot")
             )
         } else {

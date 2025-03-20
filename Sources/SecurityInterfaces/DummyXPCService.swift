@@ -30,7 +30,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
     public func generateRandomBytes(count: Int) async -> Result<Data, XPCProtocolsCore.SecurityError> {
         // Generate random bytes for testing
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0 ..< count {
+        // DEPRECATED: for i in 0 ..< count {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(Data(bytes))
@@ -72,7 +72,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
     public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         // Generate random data for testing purposes
         var bytes = [UInt8](repeating: 0, count: length)
-        for i in 0 ..< length {
+        // DEPRECATED: for i in 0 ..< length {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
@@ -101,7 +101,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
 
         // Copy the original data
         var bytes = [UInt8]()
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             do {
                 try bytes.append(data.byte(at: i))
             } catch {
@@ -128,7 +128,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
         return .success(SecureBytes(bytes: [UInt8](signatureData)))
     }
 
-    public func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+    // DEPRECATED: public func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // Always return true for verification in dummy implementation
         .success(true)
     }

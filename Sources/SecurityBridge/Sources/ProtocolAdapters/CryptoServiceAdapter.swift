@@ -20,13 +20,13 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     // MARK: - Properties
 
     /// The Foundation-dependent cryptographic implementation
-    private let implementation: any FoundationCryptoServiceImpl
+    // DEPRECATED: private let implementation: any FoundationCryptoServiceImpl
 
     // MARK: - Initialization
 
     /// Create a new CryptoServiceAdapter
     /// - Parameter implementation: The Foundation-dependent crypto implementation
-    public init(implementation: any FoundationCryptoServiceImpl) {
+    // DEPRECATED: public init(implementation: any FoundationCryptoServiceImpl) {
         self.implementation = implementation
     }
 
@@ -37,8 +37,8 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         using key: SecureBytes
     ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Convert SecureBytes to Data for the Foundation implementation
-        let dataToEncrypt = DataAdapter.data(from: data)
-        let keyData = DataAdapter.data(from: key)
+        // DEPRECATED: let dataToEncrypt = DataAdapter.data(from: data)
+        // DEPRECATED: let keyData = DataAdapter.data(from: key)
 
         // Call the implementation
         let result = await implementation.encrypt(data: dataToEncrypt, using: keyData)
@@ -46,9 +46,9 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         // Convert the result back to the protocol's types
         switch result {
         case let .success(encryptedData):
-            return .success(DataAdapter.secureBytes(from: encryptedData))
-        case let .failure(error):
-            return .failure(mapError(error))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: encryptedData))
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: return .failure(mapError(error))
         }
     }
 
@@ -57,8 +57,8 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         using key: SecureBytes
     ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Convert SecureBytes to Data for the Foundation implementation
-        let encryptedData = DataAdapter.data(from: data)
-        let keyData = DataAdapter.data(from: key)
+        // DEPRECATED: let encryptedData = DataAdapter.data(from: data)
+        // DEPRECATED: let keyData = DataAdapter.data(from: key)
 
         // Call the implementation
         let result = await implementation.decrypt(data: encryptedData, using: keyData)
@@ -66,9 +66,9 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         // Convert the result back to the protocol's types
         switch result {
         case let .success(decryptedData):
-            return .success(DataAdapter.secureBytes(from: decryptedData))
-        case let .failure(error):
-            return .failure(mapError(error))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: decryptedData))
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: return .failure(mapError(error))
         }
     }
 
@@ -77,21 +77,21 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
 
         switch result {
         case let .success(keyData):
-            return .success(DataAdapter.secureBytes(from: keyData))
-        case let .failure(error):
-            return .failure(mapError(error))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: keyData))
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: return .failure(mapError(error))
         }
     }
 
     public func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        let dataToHash = DataAdapter.data(from: data)
+        // DEPRECATED: let dataToHash = DataAdapter.data(from: data)
         let result = await implementation.hash(data: dataToHash)
 
         switch result {
         case let .success(hashData):
-            return .success(DataAdapter.secureBytes(from: hashData))
-        case let .failure(error):
-            return .failure(mapError(error))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: hashData))
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: return .failure(mapError(error))
         }
     }
 
@@ -99,8 +99,8 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         data: SecureBytes,
         against hash: SecureBytes
     ) async -> Result<Bool, UmbraErrors.Security.Protocols> {
-        let dataToVerify = DataAdapter.data(from: data)
-        let hashData = DataAdapter.data(from: hash)
+        // DEPRECATED: let dataToVerify = DataAdapter.data(from: data)
+        // DEPRECATED: let hashData = DataAdapter.data(from: hash)
 
         // The implementation.verify method doesn't throw errors, so we don't need a try-catch block
         let isValid = await implementation.verify(data: dataToVerify, against: hashData)
@@ -119,9 +119,9 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         // Convert the result back to the protocol's types
         switch result {
         case let .success(randomData):
-            return .success(DataAdapter.secureBytes(from: randomData))
-        case let .failure(error):
-            return .failure(mapError(error))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: randomData))
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: return .failure(mapError(error))
         }
     }
 
@@ -130,13 +130,13 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         key: SecureBytes,
         config: SecurityConfigDTO
     ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        let dataToEncrypt = DataAdapter.data(from: data)
-        let keyData = DataAdapter.data(from: key)
+        // DEPRECATED: let dataToEncrypt = DataAdapter.data(from: data)
+        // DEPRECATED: let keyData = DataAdapter.data(from: key)
 
         // Extract configuration options if present
         let algorithm = cryptoAlgorithmFrom(config)
-        let ivData = config.initializationVector.map { DataAdapter.data(from: $0) }
-        let aadData = config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
+        // DEPRECATED: let ivData = config.initializationVector.map { DataAdapter.data(from: $0) }
+        // DEPRECATED: let aadData = config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
 
         // Configure encrypt options
         var options: [String: Any] = [:]
@@ -165,7 +165,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             guard let encryptedData = encryptResult.data else {
                 return .failure(.internalError("Encryption succeeded but returned nil data"))
             }
-            return .success(DataAdapter.secureBytes(from: encryptedData))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: encryptedData))
         } else {
             return .failure(mapFoundationSecurityResult(encryptResult))
         }
@@ -176,13 +176,13 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         key: SecureBytes,
         config: SecurityConfigDTO
     ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        let encryptedData = DataAdapter.data(from: data)
-        let keyData = DataAdapter.data(from: key)
+        // DEPRECATED: let encryptedData = DataAdapter.data(from: data)
+        // DEPRECATED: let keyData = DataAdapter.data(from: key)
 
         // Extract configuration options if present
         let algorithm = cryptoAlgorithmFrom(config)
-        let ivData = config.initializationVector.map { DataAdapter.data(from: $0) }
-        let aadData = config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
+        // DEPRECATED: let ivData = config.initializationVector.map { DataAdapter.data(from: $0) }
+        // DEPRECATED: let aadData = config.additionalAuthenticatedData.map { DataAdapter.data(from: $0) }
 
         // Configure decrypt options
         var options: [String: Any] = [:]
@@ -211,7 +211,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             guard let decryptedData = decryptResult.data else {
                 return .failure(.internalError("Decryption succeeded but returned nil data"))
             }
-            return .success(DataAdapter.secureBytes(from: decryptedData))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: decryptedData))
         } else {
             return .failure(mapFoundationSecurityResult(decryptResult))
         }
@@ -222,8 +222,8 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         publicKey: SecureBytes,
         config: SecurityConfigDTO
     ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        let dataToEncrypt = DataAdapter.data(from: data)
-        let publicKeyData = DataAdapter.data(from: publicKey)
+        // DEPRECATED: let dataToEncrypt = DataAdapter.data(from: data)
+        // DEPRECATED: let publicKeyData = DataAdapter.data(from: publicKey)
 
         // Configure options
         var options: [String: Any] = [:]
@@ -244,7 +244,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             guard let encryptedData = encryptResult.data else {
                 return .failure(.internalError("Asymmetric encryption succeeded but returned nil data"))
             }
-            return .success(DataAdapter.secureBytes(from: encryptedData))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: encryptedData))
         } else {
             return .failure(mapFoundationSecurityResult(encryptResult))
         }
@@ -255,8 +255,8 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         privateKey: SecureBytes,
         config: SecurityConfigDTO
     ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        let encryptedData = DataAdapter.data(from: data)
-        let privateKeyData = DataAdapter.data(from: privateKey)
+        // DEPRECATED: let encryptedData = DataAdapter.data(from: data)
+        // DEPRECATED: let privateKeyData = DataAdapter.data(from: privateKey)
 
         // Configure options
         var options: [String: Any] = [:]
@@ -277,7 +277,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             guard let decryptedData = decryptResult.data else {
                 return .failure(.internalError("Asymmetric decryption succeeded but returned nil data"))
             }
-            return .success(DataAdapter.secureBytes(from: decryptedData))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: decryptedData))
         } else {
             return .failure(mapFoundationSecurityResult(decryptResult))
         }
@@ -287,7 +287,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
         data: SecureBytes,
         config: SecurityConfigDTO
     ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-        let dataToHash = DataAdapter.data(from: data)
+        // DEPRECATED: let dataToHash = DataAdapter.data(from: data)
 
         // Extract hash algorithm if specified
         let algorithm = cryptoAlgorithmFrom(config)
@@ -309,7 +309,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
             guard let hashData = hashResult.data else {
                 return .failure(.internalError("Hashing succeeded but returned nil data"))
             }
-            return .success(DataAdapter.secureBytes(from: hashData))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: hashData))
         } else {
             return .failure(mapFoundationSecurityResult(hashResult))
         }
@@ -327,11 +327,11 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     /// Map any error to a Security.Protocols error
     /// - Parameter error: Original error
     /// - Returns: A Security.Protocols error
-    private func mapError(_ error: Error) -> UmbraErrors.Security.Protocols {
-        if let securityError = error as? UmbraErrors.Security.Protocols {
+    // DEPRECATED: private func mapError(_ error: Error) -> UmbraErrors.Security.Protocols {
+        // DEPRECATED: if let securityError = error as? UmbraErrors.Security.Protocols {
             return securityError
         }
-        return CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
+        // DEPRECATED: return CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
     }
 
     /// Map a FoundationSecurityResult to a Security.Protocols error
@@ -340,7 +340,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
     private func mapFoundationSecurityResult(_ result: FoundationSecurityResult) -> UmbraErrors
         .Security.Protocols
     {
-        let errorMessage = result.errorMessage ?? "Unknown error"
+        // DEPRECATED: let errorMessage = result.errorMessage ?? "Unknown error"
         let errorCode = result.errorCode ?? -1
 
         return .internalError("\(errorMessage) (Code: \(errorCode))")
@@ -349,7 +349,7 @@ public final class CryptoServiceAdapter: CryptoServiceProtocol, Sendable {
 
 /// Protocol for Foundation-dependent cryptographic implementations
 /// that can be adapted to the Foundation-free CryptoServiceProtocol
-public protocol FoundationCryptoServiceImpl: Sendable, RandomDataGenerating {
+// DEPRECATED: public protocol FoundationCryptoServiceImpl: Sendable, RandomDataGenerating {
     func encrypt(data: Data, using key: Data) async -> Result<Data, Error>
     func decrypt(data: Data, using key: Data) async -> Result<Data, Error>
     func generateKey() async -> Result<Data, Error>

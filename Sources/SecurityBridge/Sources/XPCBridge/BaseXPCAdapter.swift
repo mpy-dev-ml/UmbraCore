@@ -1,4 +1,4 @@
-// DEPRECATED: BaseXPCAdapter
+// DEPRECATED: // DEPRECATED: BaseXPCAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -10,7 +10,7 @@ import XPCProtocolsCore
 
 /// Base protocol for XPC adapters that defines common functionality
 /// for handling XPC connections and conversions.
-public protocol BaseXPCAdapter {
+// DEPRECATED: // DEPRECATED: public protocol BaseXPCAdapter {
     /// The NSXPCConnection used to communicate with the XPC service
     var connection: NSXPCConnection { get }
 
@@ -21,7 +21,7 @@ public protocol BaseXPCAdapter {
     func convertSecureBytesToNSData(_ secureBytes: SecureBytes) -> NSData
 
     /// Map NSError to XPCSecurityError
-    func mapSecurityError(_ error: NSError) -> XPCSecurityError
+    // DEPRECATED: func mapSecurityError(_ error: NSError) -> XPCSecurityError
 
     /// Handle the XPC connection invalidation
     func setupInvalidationHandler()
@@ -31,7 +31,7 @@ public protocol BaseXPCAdapter {
 }
 
 /// Default implementations for common adapter functionality
-public extension BaseXPCAdapter {
+// DEPRECATED: public extension BaseXPCAdapter {
     /// Convert NSData to SecureBytes
     func convertNSDataToSecureBytes(_ data: NSData) -> SecureBytes {
         let bytes = [UInt8](Data(referencing: data))
@@ -55,8 +55,8 @@ public extension BaseXPCAdapter {
         _ result: NSObject?,
         transform: (NSData) -> T
     ) -> Result<T, XPCSecurityError> {
-        if let error = result as? NSError {
-            .failure(mapSecurityError(error))
+        // DEPRECATED: if let error = result as? NSError {
+            // DEPRECATED: .failure(mapSecurityError(error))
         } else if let nsData = result as? NSData {
             .success(transform(nsData))
         } else {
@@ -103,10 +103,10 @@ public extension BaseXPCAdapter {
                 case 3:
                     // Fix the syntax for calling a method with three arguments
                     let target = connection.remoteObjectProxy as AnyObject
-                    let methodImp = target.method(for: selector)
+                    // DEPRECATED: let methodImp = target.method(for: selector)
                     let methodCall = unsafeBitCast(
                         methodImp,
-                        to: (
+                        // DEPRECATED: to: (
                             @convention(c) (AnyObject, Selector, AnyObject, AnyObject, AnyObject)
                                 -> Unmanaged<AnyObject>?
                         ).self
@@ -131,9 +131,9 @@ public extension BaseXPCAdapter {
     }
 
     /// Map NSError to XPCSecurityError
-    func mapSecurityError(_ error: NSError) -> XPCSecurityError {
-        if error.domain == "com.umbra.security.xpc" {
-            if let message = error.userInfo[NSLocalizedDescriptionKey] as? String {
+    // DEPRECATED: func mapSecurityError(_ error: NSError) -> XPCSecurityError {
+        // DEPRECATED: if error.domain == "com.umbra.security.xpc" {
+            // DEPRECATED: if let message = error.userInfo[NSLocalizedDescriptionKey] as? String {
                 if message.contains("invalid format") || message.contains("Invalid format") {
                     return .invalidInput(details: message)
                 } else if message.contains("encryption failed") {
@@ -145,7 +145,7 @@ public extension BaseXPCAdapter {
                 }
             }
 
-            switch error.code {
+            // DEPRECATED: switch error.code {
             case 1001:
                 return .serviceUnavailable
             case 1002:
@@ -154,20 +154,20 @@ public extension BaseXPCAdapter {
                 return .operationNotSupported(name: "Invalid operation")
             default:
                 return .internalError(
-                    reason: "Unknown error (code: \(error.code), message: \(error.localizedDescription))"
+                    // DEPRECATED: reason: "Unknown error (code: \(error.code), message: \(error.localizedDescription))"
                 )
             }
         }
 
         return .internalError(
-            reason: "External error (domain: \(error.domain), code: \(error.code), message: \(error.localizedDescription))"
+            // DEPRECATED: reason: "External error (domain: \(error.domain), code: \(error.code), message: \(error.localizedDescription))"
         )
     }
 
     /// Maps XPCSecurityError to UmbraErrors.Security.Protocols
-    func mapToProtocolError(_ error: XPCSecurityError) -> UmbraErrors.Security.Protocols {
+    // DEPRECATED: func mapToProtocolError(_ error: XPCSecurityError) -> UmbraErrors.Security.Protocols {
         // Map XPC error to Protocol error based on case
-        switch error {
+        // DEPRECATED: switch error {
         case let .cryptographicError(operation, details):
             if operation == "encryption" {
                 .encryptionFailed("\(details)")
@@ -187,7 +187,7 @@ public extension BaseXPCAdapter {
         case let .operationNotSupported(name):
             .unsupportedOperation(name: name)
         default:
-            .internalError("Unknown error: \(error)")
+            // DEPRECATED: .internalError("Unknown error: \(error)")
         }
     }
 }

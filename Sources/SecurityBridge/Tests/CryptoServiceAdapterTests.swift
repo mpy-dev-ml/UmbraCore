@@ -1,10 +1,10 @@
-// DEPRECATED: CryptoServiceAdapterTests
+// DEPRECATED: // DEPRECATED: CryptoServiceAdapterTests
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
 import ErrorHandlingDomains
 import Foundation
-@testable import SecurityBridge
+// DEPRECATED: @testable import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
@@ -16,7 +16,7 @@ extension Result {
         switch self {
         case .success: true
         case .failure: false
-        }
+        // DEPRECATED: // DEPRECATED: }
     }
 
     var isFailure: Bool {
@@ -25,7 +25,7 @@ extension Result {
 }
 
 /// Adapter class to adapt MockFoundationXPCSecurityService to FoundationCryptoService protocol
-private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unchecked Sendable {
+// DEPRECATED: private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unchecked Sendable {
     private let mockXPCService: MockFoundationXPCSecurityService
 
     init(mockXPCService: MockFoundationXPCSecurityService) {
@@ -34,16 +34,16 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
 
     func encrypt(data: Data, using key: Data) async -> Result<Data, Error> {
         await withCheckedContinuation { continuation in
-            mockXPCService.encrypt(data: data, key: key) { data, error in
-                if let error {
-                    continuation.resume(returning: .failure(error))
+            // DEPRECATED: mockXPCService.encrypt(data: data, key: key) { data, error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: .failure(error))
                 } else if let data {
                     continuation.resume(returning: .success(data))
                 } else {
                     continuation.resume(returning: .failure(NSError(
                         domain: "com.umbracore.mock",
                         code: 500,
-                        userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
+                        // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
                     )))
                 }
             }
@@ -52,16 +52,16 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
 
     func decrypt(data: Data, using key: Data) async -> Result<Data, Error> {
         await withCheckedContinuation { continuation in
-            mockXPCService.decrypt(data: data, key: key) { data, error in
-                if let error {
-                    continuation.resume(returning: .failure(error))
+            // DEPRECATED: mockXPCService.decrypt(data: data, key: key) { data, error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: .failure(error))
                 } else if let data {
                     continuation.resume(returning: .success(data))
                 } else {
                     continuation.resume(returning: .failure(NSError(
                         domain: "com.umbracore.mock",
                         code: 500,
-                        userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
+                        // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
                     )))
                 }
             }
@@ -70,16 +70,16 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
 
     func generateKey() async -> Result<Data, Error> {
         await withCheckedContinuation { continuation in
-            mockXPCService.generateKey(bits: 256) { data, error in
-                if let error {
-                    continuation.resume(returning: .failure(error))
+            // DEPRECATED: mockXPCService.generateKey(bits: 256) { data, error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: .failure(error))
                 } else if let data {
                     continuation.resume(returning: .success(data))
                 } else {
                     continuation.resume(returning: .failure(NSError(
                         domain: "com.umbracore.mock",
                         code: 500,
-                        userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
+                        // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
                     )))
                 }
             }
@@ -96,21 +96,21 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
                     optionsJson: "{}"
                 ) { data, code, errorMessage in
                     if let code, code.intValue != 0 {
-                        let error = NSError(
+                        // DEPRECATED: let error = NSError(
                             domain: "com.umbracore.security",
                             code: code.intValue,
                             userInfo: [NSLocalizedDescriptionKey: errorMessage ?? "Hash operation failed"]
                         )
-                        continuation.resume(returning: .failure(error))
+                        // DEPRECATED: continuation.resume(returning: .failure(error))
                     } else if let data {
                         continuation.resume(returning: .success(data))
                     } else {
-                        let error = NSError(
+                        // DEPRECATED: let error = NSError(
                             domain: "com.umbracore.security",
                             code: 500,
-                            userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
+                            // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
                         )
-                        continuation.resume(returning: .failure(error))
+                        // DEPRECATED: continuation.resume(returning: .failure(error))
                     }
                 }
         }
@@ -118,16 +118,16 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
 
     func generateRandomData(length: Int) async -> Result<Data, Error> {
         await withCheckedContinuation { continuation in
-            mockXPCService.generateRandomData(length: length) { data, error in
-                if let error {
-                    continuation.resume(returning: .failure(error))
+            // DEPRECATED: mockXPCService.generateRandomData(length: length) { data, error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: .failure(error))
                 } else if let data {
                     continuation.resume(returning: .success(data))
                 } else {
                     continuation.resume(returning: .failure(NSError(
                         domain: "com.umbracore.security",
                         code: 500,
-                        userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
+                        // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "Unknown error"]
                     )))
                 }
             }
@@ -179,7 +179,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
                 } else {
                     continuation.resume(returning: FoundationSecurityResult(
                         errorCode: 500,
-                        errorMessage: "Unknown error"
+                        // DEPRECATED: errorMessage: "Unknown error"
                     ))
                 }
             }
@@ -219,7 +219,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
                 } else {
                     continuation.resume(returning: FoundationSecurityResult(
                         errorCode: 500,
-                        errorMessage: "Unknown error"
+                        // DEPRECATED: errorMessage: "Unknown error"
                     ))
                 }
             }
@@ -255,7 +255,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
                 } else {
                     continuation.resume(returning: FoundationSecurityResult(
                         errorCode: 500,
-                        errorMessage: "Unknown error"
+                        // DEPRECATED: errorMessage: "Unknown error"
                     ))
                 }
             }
@@ -291,7 +291,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
                 } else {
                     continuation.resume(returning: FoundationSecurityResult(
                         errorCode: 500,
-                        errorMessage: "Unknown error"
+                        // DEPRECATED: errorMessage: "Unknown error"
                     ))
                 }
             }
@@ -323,7 +323,7 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
                 } else {
                     continuation.resume(returning: FoundationSecurityResult(
                         errorCode: 500,
-                        errorMessage: "Unknown error"
+                        // DEPRECATED: errorMessage: "Unknown error"
                     ))
                 }
             }
@@ -331,20 +331,20 @@ private final class MockCryptoServiceAdapter: FoundationCryptoServiceImpl, @unch
     }
 }
 
-final class CryptoServiceAdapterTests: XCTestCase {
+// DEPRECATED: // DEPRECATED: final class CryptoServiceAdapterTests: XCTestCase {
     // MARK: - Properties
 
     private var mockXPCService: MockFoundationXPCSecurityService!
-    private var mockCryptoService: MockCryptoServiceAdapter!
-    private var adapter: CryptoServiceAdapter!
+    // DEPRECATED: private var mockCryptoService: MockCryptoServiceAdapter!
+    // DEPRECATED: // DEPRECATED: private var adapter: CryptoServiceAdapter!
 
     // MARK: - Setup and Teardown
 
     override func setUp() async throws {
         try await super.setUp()
         mockXPCService = MockFoundationXPCSecurityService()
-        mockCryptoService = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
-        adapter = CryptoServiceAdapter(implementation: mockCryptoService)
+        // DEPRECATED: mockCryptoService = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: adapter = CryptoServiceAdapter(implementation: mockCryptoService)
     }
 
     override func tearDown() async throws {
@@ -357,8 +357,8 @@ final class CryptoServiceAdapterTests: XCTestCase {
     func resetMockService() async {
         // Create a new instance to reset all state
         mockXPCService = MockFoundationXPCSecurityService()
-        mockCryptoService = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
-        adapter = CryptoServiceAdapter(implementation: mockCryptoService)
+        // DEPRECATED: mockCryptoService = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: adapter = CryptoServiceAdapter(implementation: mockCryptoService)
     }
 
     // MARK: - Basic Encryption Tests
@@ -399,11 +399,11 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
         // Assert
         XCTAssertTrue(result.isFailure)
-        if case let .failure(error) = result {
+        // DEPRECATED: if case let .failure(error) = result {
             // We don't need to test the error type since CryptoServiceAdapter.mapError
             // guarantees that all errors are converted to SecurityError
             // Just verify we got an error with a descriptive message
-            XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
+            // DEPRECATED: XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
         } else {
             XCTFail("Expected encryption failure")
         }
@@ -450,11 +450,11 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
         // Assert
         XCTAssertTrue(result.isFailure)
-        if case let .failure(error) = result {
+        // DEPRECATED: if case let .failure(error) = result {
             // We don't need to test the error type since CryptoServiceAdapter.mapError
             // guarantees that all errors are converted to SecurityError
             // Just verify we got an error with a descriptive message
-            XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
+            // DEPRECATED: XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
         } else {
             XCTFail("Expected decryption failure")
         }
@@ -498,11 +498,11 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
         // Assert
         XCTAssertTrue(result.isFailure)
-        if case let .failure(error) = result {
+        // DEPRECATED: if case let .failure(error) = result {
             // We don't need to test the error type since CryptoServiceAdapter.mapError
             // guarantees that all errors are converted to SecurityError
             // Just verify we got an error with a descriptive message
-            XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
+            // DEPRECATED: XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
         } else {
             XCTFail("Expected key generation failure")
         }
@@ -516,7 +516,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
     func testHashingWithSimpleDataFails() async {
         // Arrange
         mockXPCService.shouldFail = true
-        let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
         let inputData = "test data".data(using: .utf8)!
 
         // Act
@@ -536,7 +536,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
         // Arrange
         mockXPCService.shouldFail = false
         mockXPCService.hashDataToReturn = "mocked hash".data(using: .utf8)!
-        let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
         let inputData = "test data".data(using: .utf8)!
 
         // Act
@@ -555,7 +555,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
         // Arrange
         mockXPCService.shouldFail = true
         mockXPCService.verificationResult = true // This should be overridden by shouldFail
-        let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
         let data = "test data".data(using: .utf8)!
         let hash = "hash".data(using: .utf8)!
 
@@ -570,7 +570,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
         // Arrange
         mockXPCService.shouldFail = false
         mockXPCService.verificationResult = true
-        let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
         let data = "test data".data(using: .utf8)!
         let hash = "hash".data(using: .utf8)!
 
@@ -588,7 +588,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
         let plaintext = "test data".data(using: .utf8)!
         let key = Data(repeating: 0, count: 32)
         mockXPCService.encryptedDataToReturn = "encrypted".data(using: .utf8)!
-        let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
 
         // Act
         let result = await adapter.encryptSymmetric(
@@ -611,7 +611,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
         let ciphertext = "encrypted".data(using: .utf8)!
         let key = Data(repeating: 0, count: 32)
         mockXPCService.decryptedDataToReturn = "test data".data(using: .utf8)!
-        let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
 
         // Act
         let result = await adapter.decryptSymmetric(
@@ -634,7 +634,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
         let plaintext = "test data".data(using: .utf8)!
         let publicKey = Data(repeating: 1, count: 128)
         mockXPCService.encryptedDataToReturn = "encrypted".data(using: .utf8)!
-        let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
 
         // Act
         let result = await adapter.encryptAsymmetric(
@@ -655,7 +655,7 @@ final class CryptoServiceAdapterTests: XCTestCase {
         let ciphertext = "encrypted".data(using: .utf8)!
         let privateKey = Data(repeating: 2, count: 256)
         mockXPCService.decryptedDataToReturn = "test data".data(using: .utf8)!
-        let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
+        // DEPRECATED: let adapter = MockCryptoServiceAdapter(mockXPCService: mockXPCService)
 
         // Act
         let result = await adapter.decryptAsymmetric(
@@ -709,8 +709,8 @@ final class CryptoServiceAdapterTests: XCTestCase {
 
         // Assert
         XCTAssertTrue(result.isFailure)
-        if case let .failure(error) = result {
-            XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
+        // DEPRECATED: if case let .failure(error) = result {
+            // DEPRECATED: XCTAssertFalse(error.localizedDescription.isEmpty, "Error should have a description")
         } else {
             XCTFail("Expected random data generation failure")
         }

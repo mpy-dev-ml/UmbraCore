@@ -130,34 +130,34 @@ public struct FoundationCryptoResult {
     public let data: Data?
 
     /// Error if operation failed
-    public let error: Error?
+    // DEPRECATED: public let error: Error?
 
     /// Initialize with data
     /// - Parameter data: Result data
     public init(data: Data?) {
         self.data = data
-        error = nil
+        // DEPRECATED: error = nil
     }
 
     /// Initialize with error
     /// - Parameter error: Result error
-    public init(error: Error) {
+    // DEPRECATED: public init(error: Error) {
         data = nil
-        self.error = error
+        // DEPRECATED: self.error = error
     }
 
     /// Convert to Swift Result type
     /// - Returns: Swift Result containing data or error
     public func toResult() -> Result<Data, Error> {
-        if let error {
-            .failure(error)
+        // DEPRECATED: if let error {
+            // DEPRECATED: .failure(error)
         } else if let data {
             .success(data)
         } else {
             .failure(NSError(
                 domain: "com.umbrasecurity",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "No data or error provided"]
+                // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "No data or error provided"]
             ))
         }
     }
@@ -171,8 +171,8 @@ public extension Result where Success == Data, Failure == Error {
         switch self {
         case let .success(data):
             FoundationCryptoResult(data: data)
-        case let .failure(error):
-            FoundationCryptoResult(error: error)
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: FoundationCryptoResult(error: error)
         }
     }
 }
@@ -187,7 +187,7 @@ public extension Result where Success == Data, Failure == Error {
     }
 }
 
-extension SecurityBridge {
+// DEPRECATED: extension SecurityBridge {
     /// Helper to convert a Foundation.Result to a domain result
     static func mapResult<T>(_ result: Result<T, Error>)
         -> Result<T, UmbraErrors.Security.Protocols>
@@ -195,8 +195,8 @@ extension SecurityBridge {
         switch result {
         case let .success(value):
             .success(value)
-        case let .failure(error):
-            .failure(UmbraErrors.Security.Protocols.internalError(error.localizedDescription))
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: .failure(UmbraErrors.Security.Protocols.internalError(error.localizedDescription))
         }
     }
 }

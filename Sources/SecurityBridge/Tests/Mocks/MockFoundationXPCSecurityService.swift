@@ -1,5 +1,5 @@
 import Foundation
-@testable import SecurityBridge
+// DEPRECATED: @testable import SecurityBridge
 import SecurityProtocolsCore
 
 final class MockFoundationXPCSecurityService: NSObject, @unchecked Sendable {

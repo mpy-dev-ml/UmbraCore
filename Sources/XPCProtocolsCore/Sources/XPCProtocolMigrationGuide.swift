@@ -52,7 +52,7 @@ public enum XPCProtocolMigration {
 /**
  * The XPCProtocolsCore module now exclusively uses modern implementations.
  * All code should use the ModernXPCService class or factory methods from
- * XPCProtocolMigrationFactory to create protocol-compliant service objects.
+ // DEPRECATED: * XPCProtocolMigrationFactory to create protocol-compliant service objects.
  *
  * For examples of usage, see XPCMigrationExamples.swift.
  */

@@ -1,4 +1,4 @@
-// DEPRECATED: SecureStorageXPCAdapter
+// DEPRECATED: // DEPRECATED: SecureStorageXPCAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -13,7 +13,7 @@ import XPCProtocolsCore
 ///
 /// This adapter handles secure storage operations by delegating to an XPC service,
 /// while managing the type conversions between Foundation types and SecureBytes.
-public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendable {
+// DEPRECATED: // DEPRECATED: public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendable {
     // MARK: - Properties
 
     /// The NSXPCConnection used to communicate with the XPC service
@@ -92,15 +92,15 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
         result: NSObject?,
         transform: (NSData) -> T
     ) {
-        if let error = result as? NSError {
-            continuation.resume(returning: .failure(mapSecurityError(error)))
+        // DEPRECATED: if let error = result as? NSError {
+            // DEPRECATED: continuation.resume(returning: .failure(mapSecurityError(error)))
         } else if let nsData = result as? NSData {
             continuation.resume(returning: .success(transform(nsData)))
         } else if result is NSNull {
             // Some operations return NSNull for success with no data
             // We need to handle this case for operations like delete
             // This is a placeholder that needs to be updated based on the actual type T
-            fatalError("Unable to convert NSNull to required return type")
+            // DEPRECATED: fatalError("Unable to convert NSNull to required return type")
         } else {
             continuation
                 .resume(returning: .failure(
@@ -111,33 +111,33 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
     }
 
     /// Map security errors to UmbraErrors
-    public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
+    // DEPRECATED: public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
         // Check for known error domains and codes
-        if error.domain == NSURLErrorDomain {
-            return .connectionFailed(reason: error.localizedDescription)
-        } else if error.domain == "SecureStorageErrorDomain" {
+        // DEPRECATED: if error.domain == NSURLErrorDomain {
+            // DEPRECATED: return .connectionFailed(reason: error.localizedDescription)
+        // DEPRECATED: } else if error.domain == "SecureStorageErrorDomain" {
             // Map specific storage error codes to appropriate UmbraErrors
-            switch error.code {
+            // DEPRECATED: switch error.code {
             case 1001:
                 return .insufficientPrivileges(service: "SecureStorage", requiredPrivilege: "read")
             case 1002:
                 return .serviceError(
-                    code: error.code,
-                    reason: error.userInfo["identifier"] as? String ?? "unknown"
+                    // DEPRECATED: code: error.code,
+                    // DEPRECATED: reason: error.userInfo["identifier"] as? String ?? "unknown"
                 )
             case 1003:
-                return .serviceError(code: error.code, reason: error.localizedDescription)
+                // DEPRECATED: return .serviceError(code: error.code, reason: error.localizedDescription)
             case 1004:
-                return .serviceError(code: error.code, reason: error.localizedDescription)
+                // DEPRECATED: return .serviceError(code: error.code, reason: error.localizedDescription)
             case 1005:
-                return .serviceError(code: error.code, reason: error.localizedDescription)
+                // DEPRECATED: return .serviceError(code: error.code, reason: error.localizedDescription)
             default:
-                return .internalError(error.localizedDescription)
+                // DEPRECATED: return .internalError(error.localizedDescription)
             }
         }
 
         // Default error mapping
-        return .internalError(error.localizedDescription)
+        // DEPRECATED: return .internalError(error.localizedDescription)
     }
 
     /// Setup invalidation handler for the XPC connection
@@ -146,7 +146,7 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
             guard let self else { return }
 
             // Log the invalidation
-            print("XPC connection invalidated for SecureStorageXPCAdapter")
+            // DEPRECATED: print("XPC connection invalidated for SecureStorageXPCAdapter")
 
             // Call the custom invalidation handler if set
             invalidationHandler?()
@@ -156,7 +156,7 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
 
 // MARK: - SecureStorageServiceProtocol Conformance
 
-extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
+// DEPRECATED: extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
     public func storeData(
         _ data: UmbraCoreTypes.SecureBytes,
         identifier: String,
@@ -196,8 +196,8 @@ extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
                 switch result {
                 case let .success(data):
                     continuation.resume(returning: .success(data))
-                case let .failure(error):
-                    continuation.resume(returning: .failure(error))
+                // DEPRECATED: case let .failure(error):
+                    // DEPRECATED: continuation.resume(returning: .failure(error))
                 }
             }
         }
@@ -227,7 +227,7 @@ extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
         }
     }
 
-    public func getDataMetadata(for identifier: String) async
+    // DEPRECATED: public func getDataMetadata(for identifier: String) async
         -> Result<[String: String]?, XPCSecurityError>
     {
         // First check if service is available
@@ -238,7 +238,7 @@ extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
 
         return await withCheckedContinuation { continuation in
             Task {
-                let result = await serviceProxy.getDataMetadata(for: identifier)
+                // DEPRECATED: let result = await serviceProxy.getDataMetadata(for: identifier)
                 continuation.resume(returning: result)
             }
         }

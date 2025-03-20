@@ -362,7 +362,7 @@ public final class SecurityProvider: SecurityProtocolsCore.SecurityProviderProto
 
         // Use a standard operation type
         let result = await bridge.performSecureOperation(
-            operation: .keyStorage, // Using keyStorage for registration
+            // DEPRECATED: operation: .keyStorage, // Using keyStorage for registration
             config: config
         )
 
@@ -374,7 +374,7 @@ public final class SecurityProvider: SecurityProtocolsCore.SecurityProviderProto
         } else {
             return .failure(
                 SecurityInterfacesError
-                    .operationFailed("Failed to register for notifications")
+                    // DEPRECATED: .operationFailed("Failed to register for notifications")
             )
         }
     }

@@ -36,7 +36,7 @@ public final class MockXPCService: XPCServiceProtocolStandard {
     public func generateRandomBytes(count: Int) async -> Result<Data, XPCProtocolsCore.SecurityError> {
         // Generate random bytes for testing
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0 ..< count {
+        // DEPRECATED: for i in 0 ..< count {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(Data(bytes))
@@ -48,7 +48,7 @@ public final class MockXPCService: XPCServiceProtocolStandard {
     public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         // Generate predictable "random" data for tests
         var bytes = [UInt8](repeating: 0, count: length)
-        for i in 0 ..< length {
+        // DEPRECATED: for i in 0 ..< length {
             bytes[i] = UInt8((i % 256))
         }
         return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
@@ -120,7 +120,7 @@ public final class MockXPCService: XPCServiceProtocolStandard {
         return .success(signature)
     }
 
-    public func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+    // DEPRECATED: public func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // Always verify successfully in mock
         .success(true)
     }

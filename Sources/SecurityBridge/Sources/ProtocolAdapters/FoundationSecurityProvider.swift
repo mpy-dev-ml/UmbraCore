@@ -51,7 +51,7 @@ public protocol SecurityProviderFoundationImpl: FoundationSecurityProviderObjC {
     /// - Parameter url: URL to create bookmark for
     /// - Returns: Bookmark data
     @objc
-    func createBookmark(for url: URL) async throws -> Foundation.Data
+    // DEPRECATED: func createBookmark(for url: URL) async throws -> Foundation.Data
 
     /// Resolve a bookmark to a URL
     /// - Parameter bookmarkData: Bookmark data to resolve
@@ -72,7 +72,7 @@ public protocol SecurityProviderFoundationImpl: FoundationSecurityProviderObjC {
 public protocol FoundationOperationResult: NSObjectProtocol {
     var isSuccess: Bool { get }
     var resultData: Data? { get }
-    var error: Error? { get }
+    // DEPRECATED: var error: Error? { get }
 }
 
 /// Objective-C compatible operation result
@@ -94,8 +94,8 @@ public final class FoundationOperationResultImpl: NSObject, FoundationOperationR
         FoundationOperationResultImpl(.success(data))
     }
 
-    public static func failure(_ error: Error) -> FoundationOperationResultImpl {
-        FoundationOperationResultImpl(.failure(error))
+    // DEPRECATED: public static func failure(_ error: Error) -> FoundationOperationResultImpl {
+        // DEPRECATED: FoundationOperationResultImpl(.failure(error))
     }
 
     public var isSuccess: Bool {
@@ -116,12 +116,12 @@ public final class FoundationOperationResultImpl: NSObject, FoundationOperationR
         }
     }
 
-    public var error: Error? {
+    // DEPRECATED: public var error: Error? {
         switch result {
         case .success:
             nil
-        case let .failure(error):
-            error
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: error
         }
     }
 }
@@ -139,9 +139,9 @@ public extension SecurityProviderFoundationImpl {
                     return FoundationOperationResultImpl.failure(NSError(
                         domain: "SecurityProvider",
                         code: 100,
-                        userInfo: [NSLocalizedDescriptionKey: "Invalid parameters for encrypt operation"]
+                        // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "Invalid parameters for encrypt operation"]
                     ))
-                }
+                // DEPRECATED: }
                 let result = try await encryptData(data, key: key)
                 return FoundationOperationResultImpl.success(result)
 
@@ -150,14 +150,14 @@ public extension SecurityProviderFoundationImpl {
                     return FoundationOperationResultImpl.failure(NSError(
                         domain: "SecurityProvider",
                         code: 101,
-                        userInfo: [NSLocalizedDescriptionKey: "Invalid parameters for decrypt operation"]
+                        // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "Invalid parameters for decrypt operation"]
                     ))
                 }
                 let result = try await decryptData(data, key: key)
                 return FoundationOperationResultImpl.success(result)
 
             case "generateKey":
-                let length = options["length"] as? Int ?? 32 // Default to 32 bytes (256 bits)
+                // DEPRECATED: let length = options["length"] as? Int ?? 32 // Default to 32 bytes (256 bits)
                 let result = try await generateDataKey(length: length)
                 return FoundationOperationResultImpl.success(result)
 
@@ -167,7 +167,7 @@ public extension SecurityProviderFoundationImpl {
                         domain: "SecurityProvider",
                         code: 102,
                         userInfo: [
-                            NSLocalizedDescriptionKey: "Invalid parameters for generateRandomData operation",
+                            // DEPRECATED: NSLocalizedDescriptionKey: "Invalid parameters for generateRandomData operation",
                         ]
                     ))
                 }
@@ -179,7 +179,7 @@ public extension SecurityProviderFoundationImpl {
                     return FoundationOperationResultImpl.failure(NSError(
                         domain: "SecurityProvider",
                         code: 103,
-                        userInfo: [NSLocalizedDescriptionKey: "Invalid parameters for hash operation"]
+                        // DEPRECATED: userInfo: [NSLocalizedDescriptionKey: "Invalid parameters for hash operation"]
                     ))
                 }
                 let result = try await hashData(data)
@@ -191,11 +191,11 @@ public extension SecurityProviderFoundationImpl {
                         domain: "SecurityProvider",
                         code: 104,
                         userInfo: [
-                            NSLocalizedDescriptionKey: "Invalid parameters for createBookmark operation",
+                            // DEPRECATED: NSLocalizedDescriptionKey: "Invalid parameters for createBookmark operation",
                         ]
                     ))
                 }
-                let result = try await createBookmark(for: url)
+                // DEPRECATED: let result = try await createBookmark(for: url)
                 return FoundationOperationResultImpl.success(result)
 
             case "resolveBookmark":
@@ -204,7 +204,7 @@ public extension SecurityProviderFoundationImpl {
                         domain: "SecurityProvider",
                         code: 105,
                         userInfo: [
-                            NSLocalizedDescriptionKey: "Invalid parameters for resolveBookmark operation",
+                            // DEPRECATED: NSLocalizedDescriptionKey: "Invalid parameters for resolveBookmark operation",
                         ]
                     ))
                 }
@@ -217,7 +217,7 @@ public extension SecurityProviderFoundationImpl {
                         domain: "SecurityProvider",
                         code: 106,
                         userInfo: [
-                            NSLocalizedDescriptionKey: "Invalid parameters for validateBookmark operation",
+                            // DEPRECATED: NSLocalizedDescriptionKey: "Invalid parameters for validateBookmark operation",
                         ]
                     ))
                 }
@@ -233,7 +233,7 @@ public extension SecurityProviderFoundationImpl {
                 ))
             }
         } catch {
-            return FoundationOperationResultImpl.failure(error)
+            // DEPRECATED: return FoundationOperationResultImpl.failure(error)
         }
     }
 }

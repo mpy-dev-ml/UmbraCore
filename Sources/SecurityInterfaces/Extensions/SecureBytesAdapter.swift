@@ -11,7 +11,7 @@ public extension SecureBytes {
         // we need to convert our SecureBytes to SecureData
         // Create a buffer of bytes from the SecureBytes
         var bytes = [UInt8]()
-        for i in 0 ..< count {
+        // DEPRECATED: for i in 0 ..< count {
             bytes.append(self[i])
         }
         return BinaryData(bytes: bytes)

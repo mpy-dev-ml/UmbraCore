@@ -1,4 +1,4 @@
-// DEPRECATED: SecurityDTOAdapter
+// DEPRECATED: // DEPRECATED: SecurityDTOAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -11,7 +11,7 @@ import UmbraCoreTypes
 import XPCProtocolsCore
 
 /// Adapters for converting between Security module's types and Foundation-independent CoreDTOs
-public enum SecurityDTOAdapter {
+// DEPRECATED: public enum SecurityDTOAdapter {
     // MARK: - SecurityConfiguration <-> SecurityConfigDTO
 
     /// Convert a SecurityConfiguration to a SecurityConfigDTO
@@ -85,7 +85,7 @@ public enum SecurityDTOAdapter {
             CoreDTOs.SecurityErrorDTO(
                 code: 1001,
                 domain: "security.bookmark",
-                message: "Failed to create bookmark for \(path)",
+                // DEPRECATED: message: "Failed to create bookmark for \(path)",
                 details: ["path": path]
             )
         case .bookmarkResolutionFailed:
@@ -99,21 +99,21 @@ public enum SecurityDTOAdapter {
             CoreDTOs.SecurityErrorDTO(
                 code: 1003,
                 domain: "security.bookmark",
-                message: "Bookmark is stale for \(path)",
+                // DEPRECATED: message: "Bookmark is stale for \(path)",
                 details: ["path": path]
             )
         case let .bookmarkNotFound(path):
             CoreDTOs.SecurityErrorDTO(
                 code: 1004,
                 domain: "security.bookmark",
-                message: "Bookmark not found for \(path)",
+                // DEPRECATED: message: "Bookmark not found for \(path)",
                 details: ["path": path]
             )
         case let .resourceAccessFailed(path):
             CoreDTOs.SecurityErrorDTO(
                 code: 1005,
                 domain: "security.access",
-                message: "Security-scoped resource access failed for \(path)",
+                // DEPRECATED: message: "Security-scoped resource access failed for \(path)",
                 details: ["path": path]
             )
         case .randomGenerationFailed:
@@ -218,7 +218,7 @@ public enum SecurityDTOAdapter {
             CoreDTOs.SecurityErrorDTO(
                 code: 1020,
                 domain: "security.auth",
-                message: "Authorization denied for operation: \(operation)",
+                // DEPRECATED: message: "Authorization denied for operation: \(operation)",
                 details: ["operation": operation]
             )
         case let .timeout(after):
@@ -555,7 +555,7 @@ public enum SecurityDTOAdapter {
             return CoreDTOs.SecurityErrorDTO(
                 code: 3004,
                 domain: "security.xpc.auth",
-                message: "Authorization denied for operation: \(operation)",
+                // DEPRECATED: message: "Authorization denied for operation: \(operation)",
                 details: ["operation": operation]
             )
         case let .operationNotSupported(name):

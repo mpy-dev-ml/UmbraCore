@@ -1,4 +1,4 @@
-// DEPRECATED: TestSecurityProviderAdapter
+// DEPRECATED: // DEPRECATED: TestSecurityProviderAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -17,16 +17,16 @@ import XPCProtocolsCore
 /// A test-specific adapter that allows the bridge pattern to work in tests
 /// This adapter mimics the real SecurityProviderAdapter but works with our
 /// SecurityProviderBridge type instead of directly with SecurityProtocolsCore.
-public final class TestSecurityProviderAdapter: SecurityInterfaces.SecurityProvider {
+// DEPRECATED: // DEPRECATED: public final class TestSecurityProviderAdapter: SecurityInterfaces.SecurityProvider {
     // MARK: - Properties
 
-    private let bridge: SecurityProviderBridge
+    // DEPRECATED: private let bridge: SecurityProviderBridge
     private let service: any SecurityInterfaces.XPCServiceProtocolStandard
 
     // MARK: - Initialization
 
     public init(
-        bridge: SecurityProviderBridge,
+        // DEPRECATED: bridge: SecurityProviderBridge,
         service: any SecurityInterfaces.XPCServiceProtocolStandard
     ) {
         self.bridge = bridge
@@ -103,7 +103,7 @@ public final class TestSecurityProviderAdapter: SecurityInterfaces.SecurityProvi
     public func generateRandomData(length: Int) async -> Result<SecureBytes, SecurityInterfacesError> {
         // Generate simple test data
         var bytes = [UInt8](repeating: 0, count: length)
-        for i in 0 ..< length {
+        // DEPRECATED: for i in 0 ..< length {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(SecureBytes(bytes: bytes))
@@ -135,7 +135,7 @@ public final class TestSecurityProviderAdapter: SecurityInterfaces.SecurityProvi
     ) async -> Result<SecureBytes, SecurityInterfacesError> {
         // Simple mock implementation - in a real system this would use actual encryption
         var bytes = [UInt8](repeating: 0, count: data.count)
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             bytes[i] = data[i] ^ (i < key.count ? key[i] : 0)
         }
         return .success(SecureBytes(bytes: bytes))
@@ -154,7 +154,7 @@ public final class TestSecurityProviderAdapter: SecurityInterfaces.SecurityProvi
 
         // Create a configuration with the parameters
         var options = [String: Any]()
-        for (key, value) in parameters {
+        // DEPRECATED: for (key, value) in parameters {
             options[key] = value
         }
 

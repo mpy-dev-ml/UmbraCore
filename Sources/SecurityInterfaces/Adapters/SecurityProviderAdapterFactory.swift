@@ -1,4 +1,4 @@
-// DEPRECATED: SecurityProviderAdapterFactory
+// DEPRECATED: // DEPRECATED: SecurityProviderAdapterFactory
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -21,7 +21,7 @@ public struct SecurityProviderAdapterFactory: Sendable {
     // MARK: - Properties
 
     /// Singleton instance of the adapter factory
-    public static let shared = SecurityProviderAdapterFactory()
+    // DEPRECATED: public static let shared = SecurityProviderAdapterFactory()
 
     // MARK: - Initialization
 
@@ -32,11 +32,11 @@ public struct SecurityProviderAdapterFactory: Sendable {
     /// Mock provider implementation for testing
     private final class AdapterMockProvider: SecurityProtocolsCore.SecurityProviderProtocol {
         public var cryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
-            AdapterMockCryptoService()
+            // DEPRECATED: AdapterMockCryptoService()
         }
 
         public var keyManager: SecurityProtocolsCore.KeyManagementProtocol {
-            AdapterMockKeyManager()
+            // DEPRECATED: AdapterMockKeyManager()
         }
 
         public func performSecureOperation(operation _: SecurityProtocolsCore.SecurityOperation, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> SecurityProtocolsCore.SecurityResultDTO {
@@ -160,17 +160,17 @@ public struct SecurityProviderAdapterFactory: Sendable {
     /// Create a modern provider with the specified configuration
     /// - Parameter config: The provider configuration
     /// - Returns: A ModernSecurityProviderAdapter instance
-    public func createModernProvider(config: ProviderFactoryConfiguration) -> ModernSecurityProviderAdapter {
+    // DEPRECATED: public func createModernProvider(config: ProviderFactoryConfiguration) -> ModernSecurityProviderAdapter {
         // Create the required components
-        let securityProvider = AdapterMockProvider()
+        // DEPRECATED: let securityProvider = AdapterMockProvider()
 
         // Create the appropriate XPC service
         let xpcService: XPCServiceProtocolBasic = config.useMockServices ?
-            AdapterMockXPCService() :
-            AdapterMockXPCService() // Using mock for both cases for simplicity
+            // DEPRECATED: AdapterMockXPCService() :
+            // DEPRECATED: AdapterMockXPCService() // Using mock for both cases for simplicity
 
         // Create and return the adapter
-        return ModernSecurityProviderAdapter(
+        // DEPRECATED: return ModernSecurityProviderAdapter(
             provider: securityProvider,
             service: xpcService
         )

@@ -1,4 +1,4 @@
-// DEPRECATED: ComprehensiveSecurityXPCAdapter
+// DEPRECATED: // DEPRECATED: ComprehensiveSecurityXPCAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -15,7 +15,7 @@ import XPCProtocolsCore
 /// This adapter handles comprehensive security operations by delegating to an XPC service,
 /// providing a unified API for service-level operations.
 @objc
-public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
+// DEPRECATED: // DEPRECATED: public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
     XPCServiceProtocolBasic, @unchecked Sendable
 {
     // MARK: - Properties
@@ -61,19 +61,19 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
     // MARK: - BaseXPCAdapter Protocol Implementation
 
     /// Map NSError to UmbraErrors.Security.XPC
-    public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
+    // DEPRECATED: public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
         // Check for known error domains and codes
-        switch error.domain {
+        // DEPRECATED: switch error.domain {
         case "XPCSecurityService":
-            switch error.code {
-            case 1: .connectionFailed(reason: error.localizedDescription)
-            case 2: .invalidMessageFormat(reason: error.localizedDescription)
-            case 3: .timeout(operation: error.localizedDescription, timeoutMs: 30000)
+            // DEPRECATED: switch error.code {
+            // DEPRECATED: case 1: .connectionFailed(reason: error.localizedDescription)
+            // DEPRECATED: case 2: .invalidMessageFormat(reason: error.localizedDescription)
+            // DEPRECATED: case 3: .timeout(operation: error.localizedDescription, timeoutMs: 30000)
             case 4: .serviceUnavailable(serviceName: "ComprehensiveSecurityService")
-            default: .serviceError(code: error.code, reason: error.localizedDescription)
+            // DEPRECATED: default: .serviceError(code: error.code, reason: error.localizedDescription)
             }
         default:
-            .internalError(error.localizedDescription)
+            // DEPRECATED: .internalError(error.localizedDescription)
         }
     }
 
@@ -81,7 +81,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
     public func setupInvalidationHandler() {
         connection.invalidationHandler = {
             // Handle connection invalidation, e.g., by logging or notifying observers
-            print("XPC connection invalidated for ComprehensiveSecurityService")
+            // DEPRECATED: print("XPC connection invalidated for ComprehensiveSecurityService")
         }
     }
 
@@ -134,12 +134,12 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
         // Implementation for synchroniseKeys
         // This would typically involve sending the keys to the XPC service for synchronisation
         guard let remoteObject = connection.remoteObjectProxy as? NSObject else {
-            let error = NSError(
+            // DEPRECATED: let error = NSError(
                 domain: "XPCSecurityService",
                 code: 4,
                 userInfo: [NSLocalizedDescriptionKey: "Service unavailable"]
             )
-            completionHandler(error)
+            // DEPRECATED: completionHandler(error)
             return
         }
 
@@ -147,19 +147,19 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
         let data = Data(bytes) as NSData
 
         // Call the remote method with the appropriate selector
-        if remoteObject.responds(to: NSSelectorFromString("synchroniseKeys:completionHandler:")) {
+        // DEPRECATED: if remoteObject.responds(to: NSSelectorFromString("synchroniseKeys:completionHandler:")) {
             remoteObject.perform(
                 NSSelectorFromString("synchroniseKeys:completionHandler:"),
                 with: data,
                 with: completionHandler
             )
         } else {
-            let error = NSError(
+            // DEPRECATED: let error = NSError(
                 domain: "XPCSecurityService",
                 code: 2,
                 userInfo: [NSLocalizedDescriptionKey: "Method not available"]
             )
-            completionHandler(error)
+            // DEPRECATED: completionHandler(error)
         }
     }
 
@@ -167,7 +167,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
     @objc
     public func ping() async -> Bool {
         let proxy = connection.remoteObjectProxy as? NSObject
-        return proxy?.responds(to: NSSelectorFromString("ping")) ?? false
+        // DEPRECATED: return proxy?.responds(to: NSSelectorFromString("ping")) ?? false
     }
 
     // MARK: - ComprehensiveSecurityServiceProtocol Implementation
@@ -211,7 +211,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
 
                 let statusMethod = NSSelectorFromString("getServiceStatusCode")
 
-                guard service.responds(to: statusMethod) else {
+                // DEPRECATED: guard service.responds(to: statusMethod) else {
                     continuation
                         .resume(returning: .failure(.invalidMessageFormat(reason: "Method not implemented")))
                     return
@@ -222,7 +222,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                     Selector,
                     @escaping (NSNumber) -> Void
                 ) -> Void
-                let getStatus = unsafeBitCast(service.method(for: statusMethod), to: GetStatusCallback.self)
+                // DEPRECATED: let getStatus = unsafeBitCast(service.method(for: statusMethod), to: GetStatusCallback.self)
 
                 getStatus(service, statusMethod) { result in
                     // Map the integer value to a valid ServiceStatus case
@@ -261,8 +261,8 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                     with: key as NSData
                 )?.takeRetainedValue()
 
-                if let error = result as? NSError {
-                    continuation.resume(returning: .failure(mapSecurityError(error)))
+                // DEPRECATED: if let error = result as? NSError {
+                    // DEPRECATED: continuation.resume(returning: .failure(mapSecurityError(error)))
                 } else if let nsData = result as? NSData {
                     continuation.resume(returning: .success(Data(referencing: nsData)))
                 } else {
@@ -289,8 +289,8 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                     with: key as NSData
                 )?.takeRetainedValue()
 
-                if let error = result as? NSError {
-                    continuation.resume(returning: .failure(mapSecurityError(error)))
+                // DEPRECATED: if let error = result as? NSError {
+                    // DEPRECATED: continuation.resume(returning: .failure(mapSecurityError(error)))
                 } else if let nsData = result as? NSData {
                     continuation.resume(returning: .success(Data(referencing: nsData)))
                 } else {
@@ -313,8 +313,8 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                     with: data as NSData
                 )?.takeRetainedValue()
 
-                if let error = result as? NSError {
-                    continuation.resume(returning: .failure(mapSecurityError(error)))
+                // DEPRECATED: if let error = result as? NSError {
+                    // DEPRECATED: continuation.resume(returning: .failure(mapSecurityError(error)))
                 } else if let nsData = result as? NSData {
                     continuation.resume(returning: .success(Data(referencing: nsData)))
                 } else {
@@ -335,8 +335,8 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 let result = (connection.remoteObjectProxy as AnyObject).perform(selector)?
                     .takeRetainedValue()
 
-                if let error = result as? NSError {
-                    continuation.resume(returning: .failure(mapSecurityError(error)))
+                // DEPRECATED: if let error = result as? NSError {
+                    // DEPRECATED: continuation.resume(returning: .failure(mapSecurityError(error)))
                 } else if let nsData = result as? NSData {
                     let bytes = [UInt8](Data(referencing: nsData))
                     let secureBytes = SecureBytes(bytes: bytes)
@@ -365,8 +365,8 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                     with: signature as NSData
                 )?.takeRetainedValue()
 
-                if let error = result as? NSError {
-                    continuation.resume(returning: .failure(mapSecurityError(error)))
+                // DEPRECATED: if let error = result as? NSError {
+                    // DEPRECATED: continuation.resume(returning: .failure(mapSecurityError(error)))
                 } else if let verified = result as? NSNumber {
                     continuation.resume(returning: .success(verified.boolValue))
                 } else {
@@ -409,22 +409,22 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 let selector = NSSelectorFromString("generateKeyWithParams:completionHandler:")
 
                 // Create the completion handler
-                let completionHandler: (NSString?, NSError?) -> Void = { keyID, error in
-                    if let error {
+                // DEPRECATED: let completionHandler: (NSString?, NSError?) -> Void = { keyID, error in
+                    // DEPRECATED: if let error {
                         continuation.resume(returning: .failure(.cryptographicError(
                             operation: "generateKey",
-                            details: error.localizedDescription
+                            // DEPRECATED: details: error.localizedDescription
                         )))
                     } else if let keyID = keyID as String? {
                         continuation.resume(returning: .success(keyID))
                     } else {
                         continuation
-                            .resume(returning: .failure(.internalError(reason: "Failed to generate key")))
+                            // DEPRECATED: .resume(returning: .failure(.internalError(reason: "Failed to generate key")))
                     }
                 }
 
                 // Invoke the method if available
-                if service.responds(to: selector) {
+                // DEPRECATED: if service.responds(to: selector) {
                     service.perform(
                         selector,
                         with: paramDict as NSDictionary,
@@ -433,7 +433,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 } else {
                     // Try an alternative method with fewer parameters if available
                     let altSelector = NSSelectorFromString("generateKeyOfType:completion:")
-                    if service.responds(to: altSelector) {
+                    // DEPRECATED: if service.responds(to: altSelector) {
                         service.perform(
                             altSelector,
                             with: keyType.rawValue as NSString,
@@ -472,25 +472,25 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 }
 
                 let selector = NSSelectorFromString("exportKey:completionHandler:")
-                let completionHandler: (NSData?, NSError?) -> Void = { [self] data, error in
-                    if let error {
-                        if error.domain.contains("key"), error.code == 1 {
+                // DEPRECATED: let completionHandler: (NSData?, NSError?) -> Void = { [self] data, error in
+                    // DEPRECATED: if let error {
+                        // DEPRECATED: if error.domain.contains("key"), error.code == 1 {
                             continuation.resume(returning: .failure(.keyNotFound(identifier: keyIdentifier)))
                         } else {
                             continuation.resume(returning: .failure(.cryptographicError(
                                 operation: "exportKey",
-                                details: error.localizedDescription
+                                // DEPRECATED: details: error.localizedDescription
                             )))
                         }
                     } else if let data {
                         let secureBytes = convertNSDataToSecureBytes(data)
                         continuation.resume(returning: .success(secureBytes))
                     } else {
-                        continuation.resume(returning: .failure(.internalError(reason: "Failed to export key")))
+                        // DEPRECATED: continuation.resume(returning: .failure(.internalError(reason: "Failed to export key")))
                     }
                 }
 
-                if service.responds(to: selector) {
+                // DEPRECATED: if service.responds(to: selector) {
                     service.perform(
                         selector,
                         with: keyIdentifier as NSString,
@@ -534,21 +534,21 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 let selector = NSSelectorFromString("importKeyWithParams:completionHandler:")
 
                 // Create the completion handler
-                let completionHandler: (NSString?, NSError?) -> Void = { keyID, error in
-                    if let error {
+                // DEPRECATED: let completionHandler: (NSString?, NSError?) -> Void = { keyID, error in
+                    // DEPRECATED: if let error {
                         continuation.resume(returning: .failure(.cryptographicError(
                             operation: "importKey",
-                            details: error.localizedDescription
+                            // DEPRECATED: details: error.localizedDescription
                         )))
                     } else if let keyID = keyID as String? {
                         continuation.resume(returning: .success(keyID))
                     } else {
-                        continuation.resume(returning: .failure(.internalError(reason: "Failed to import key")))
+                        // DEPRECATED: continuation.resume(returning: .failure(.internalError(reason: "Failed to import key")))
                     }
                 }
 
                 // Invoke the method if available
-                if service.responds(to: selector) {
+                // DEPRECATED: if service.responds(to: selector) {
                     service.perform(
                         selector,
                         with: paramDict as NSDictionary,
@@ -557,7 +557,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 } else {
                     // Try an alternative method with fewer parameters if available
                     let altSelector = NSSelectorFromString("importKey:withType:completion:")
-                    if service.responds(to: altSelector) {
+                    // DEPRECATED: if service.responds(to: altSelector) {
                         service.perform(
                             altSelector,
                             with: data,
@@ -596,24 +596,24 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 }
 
                 let selector = NSSelectorFromString("deleteKey:completionHandler:")
-                let completionHandler: (NSNumber?, NSError?) -> Void = { success, error in
-                    if let error {
-                        if error.domain.contains("key"), error.code == 1 {
+                // DEPRECATED: let completionHandler: (NSNumber?, NSError?) -> Void = { success, error in
+                    // DEPRECATED: if let error {
+                        // DEPRECATED: if error.domain.contains("key"), error.code == 1 {
                             continuation.resume(returning: .failure(.keyNotFound(identifier: keyIdentifier)))
                         } else {
                             continuation.resume(returning: .failure(.cryptographicError(
                                 operation: "deleteKey",
-                                details: error.localizedDescription
+                                // DEPRECATED: details: error.localizedDescription
                             )))
                         }
                     } else if let success, success.boolValue {
                         continuation.resume(returning: .success(()))
                     } else {
-                        continuation.resume(returning: .failure(.internalError(reason: "Failed to delete key")))
+                        // DEPRECATED: continuation.resume(returning: .failure(.internalError(reason: "Failed to delete key")))
                     }
                 }
 
-                if service.responds(to: selector) {
+                // DEPRECATED: if service.responds(to: selector) {
                     service.perform(
                         selector,
                         with: keyIdentifier as NSString,
@@ -639,21 +639,21 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 }
 
                 let selector = NSSelectorFromString("listKeyIdentifiers:")
-                let completionHandler: (NSArray?, NSError?) -> Void = { array, error in
-                    if let error {
+                // DEPRECATED: let completionHandler: (NSArray?, NSError?) -> Void = { array, error in
+                    // DEPRECATED: if let error {
                         continuation.resume(returning: .failure(.cryptographicError(
                             operation: "listKeyIdentifiers",
-                            details: error.localizedDescription
+                            // DEPRECATED: details: error.localizedDescription
                         )))
                     } else if let array = array as? [String] {
                         continuation.resume(returning: .success(array))
                     } else {
                         continuation
-                            .resume(returning: .failure(.internalError(reason: "Failed to list key identifiers")))
+                            // DEPRECATED: .resume(returning: .failure(.internalError(reason: "Failed to list key identifiers")))
                     }
                 }
 
-                if service.responds(to: selector) {
+                // DEPRECATED: if service.responds(to: selector) {
                     service.perform(
                         selector,
                         with: completionHandler
@@ -667,7 +667,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
     }
 
     /// Get metadata for a specific key
-    public func getKeyMetadata(for keyIdentifier: String) async
+    // DEPRECATED: public func getKeyMetadata(for keyIdentifier: String) async
         -> Result<[String: String]?, XPCSecurityError>
     {
         await withCheckedContinuation { continuation in
@@ -681,14 +681,14 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 }
 
                 let selector = NSSelectorFromString("getKeyMetadata:completionHandler:")
-                let completionHandler: (NSDictionary?, NSError?) -> Void = { dict, error in
-                    if let error {
-                        if error.domain.contains("key"), error.code == 1 {
+                // DEPRECATED: let completionHandler: (NSDictionary?, NSError?) -> Void = { dict, error in
+                    // DEPRECATED: if let error {
+                        // DEPRECATED: if error.domain.contains("key"), error.code == 1 {
                             continuation.resume(returning: .failure(.keyNotFound(identifier: keyIdentifier)))
                         } else {
                             continuation.resume(returning: .failure(.cryptographicError(
                                 operation: "getKeyMetadata",
-                                details: error.localizedDescription
+                                // DEPRECATED: details: error.localizedDescription
                             )))
                         }
                     } else {
@@ -697,7 +697,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                     }
                 }
 
-                if service.responds(to: selector) {
+                // DEPRECATED: if service.responds(to: selector) {
                     service.perform(
                         selector,
                         with: keyIdentifier as NSString,

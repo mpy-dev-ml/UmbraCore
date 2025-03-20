@@ -1,4 +1,4 @@
-// DEPRECATED: DataAdapter
+// DEPRECATED: // DEPRECATED: DataAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -10,7 +10,7 @@ import UmbraCoreTypes
 /// This adapter serves as the primary bridge for binary data between Foundation-dependent
 /// and Foundation-independent code. It ensures that conversions are efficient and maintain
 /// the security properties of SecureBytes when converting to and from Data.
-public enum DataAdapter {
+// DEPRECATED: public enum DataAdapter {
     /// Convert Foundation Data to SecureBytes
     /// - Parameter data: Foundation Data instance
     /// - Returns: A new SecureBytes instance containing the same bytes

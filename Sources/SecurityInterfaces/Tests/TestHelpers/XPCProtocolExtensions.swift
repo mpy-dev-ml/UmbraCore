@@ -7,7 +7,7 @@ public extension MockXPCService {
     /// Convert this mock service to an XPCServiceProtocolStandard
     /// - Returns: An adapter implementing XPCServiceProtocolStandard
     func asXPCServiceProtocolStandard() -> any XPCServiceProtocolStandard {
-        MockXPCServiceStandardAdapter(wrapping: self)
+        // DEPRECATED: MockXPCServiceStandardAdapter(wrapping: self)
     }
 }
 
@@ -40,7 +40,7 @@ private final class MockXPCServiceStandardAdapter: XPCServiceProtocolStandard {
     public func generateRandomBytes(count: Int) async -> Result<Data, XPCProtocolsCore.SecurityError> {
         // Generate random bytes for testing
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0 ..< count {
+        // DEPRECATED: for i in 0 ..< count {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(Data(bytes))

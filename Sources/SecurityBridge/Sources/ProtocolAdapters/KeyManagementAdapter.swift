@@ -1,4 +1,4 @@
-// DEPRECATED: KeyManagementAdapter
+// DEPRECATED: // DEPRECATED: KeyManagementAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -23,17 +23,17 @@ private enum KMError: Error {
 ///
 /// This adapter allows Foundation-dependent code to conform to the Foundation-independent
 /// KeyManagementProtocol interface.
-public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
+// DEPRECATED: // DEPRECATED: public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     // MARK: - Properties
 
     /// The Foundation-dependent key management implementation
-    private let implementation: any FoundationKeyManagementImpl
+    // DEPRECATED: private let implementation: any FoundationKeyManagementImpl
 
     // MARK: - Initialization
 
     /// Create a new KeyManagementAdapter
     /// - Parameter implementation: The Foundation-dependent key management implementation
-    public init(implementation: any FoundationKeyManagementImpl) {
+    // DEPRECATED: public init(implementation: any FoundationKeyManagementImpl) {
         self.implementation = implementation
     }
 
@@ -46,7 +46,7 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
 
         switch result {
         case let .success(keyData):
-            return .success(DataAdapter.secureBytes(from: keyData))
+            // DEPRECATED: return .success(DataAdapter.secureBytes(from: keyData))
         case .failure:
             return .failure(mapError(KMError.keyNotFound))
         }
@@ -56,14 +56,14 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
         _ key: SecureBytes,
         withIdentifier identifier: String
     ) async -> Result<Void, UmbraErrors.Security.Protocols> {
-        let keyData = DataAdapter.data(from: key)
+        // DEPRECATED: let keyData = DataAdapter.data(from: key)
         let result = await implementation.storeKey(keyData, withIdentifier: identifier)
 
         switch result {
         case .success:
             return .success(())
-        case let .failure(error):
-            let message = error.localizedDescription
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: let message = error.localizedDescription
             let kmError = KMError.keyStorageFailed(reason: message)
             return .failure(mapError(kmError))
         }
@@ -77,8 +77,8 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
         switch result {
         case .success:
             return .success(())
-        case let .failure(error):
-            return .failure(mapError(error))
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: return .failure(mapError(error))
         }
     }
 
@@ -90,7 +90,7 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
         reencryptedData: SecureBytes?
     ), UmbraErrors.Security.Protocols> {
         // Convert SecureBytes to Data for the Foundation implementation
-        let dataToReencryptData = dataToReencrypt.map { DataAdapter.data(from: $0) }
+        // DEPRECATED: let dataToReencryptData = dataToReencrypt.map { DataAdapter.data(from: $0) }
 
         // Call the implementation
         let result = await implementation.rotateKey(
@@ -105,13 +105,13 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
             let keyResult = await implementation.retrieveKey(withIdentifier: identifier)
             switch keyResult {
             case let .success(keyData):
-                let newKey = DataAdapter.secureBytes(from: keyData)
+                // DEPRECATED: let newKey = DataAdapter.secureBytes(from: keyData)
                 return .success((newKey: newKey, reencryptedData: nil))
-            case let .failure(error):
-                return .failure(mapError(error))
+            // DEPRECATED: case let .failure(error):
+                // DEPRECATED: return .failure(mapError(error))
             }
-        case let .failure(error):
-            return .failure(mapError(error))
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: return .failure(mapError(error))
         }
     }
 
@@ -121,8 +121,8 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
         switch result {
         case let .success(identifiers):
             return .success(identifiers)
-        case let .failure(error):
-            return .failure(mapError(error))
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: return .failure(mapError(error))
         }
     }
 
@@ -131,8 +131,8 @@ public final class KeyManagementAdapter: KeyManagementProtocol, Sendable {
     /// Map any error to a SecurityError
     /// - Parameter error: Original error
     /// - Returns: A SecurityError representing the original error.
-    private func mapError(_ error: Error) -> UmbraErrors.Security.Protocols {
-        CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
+    // DEPRECATED: private func mapError(_ error: Error) -> UmbraErrors.Security.Protocols {
+        // DEPRECATED: CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
     }
 }
 

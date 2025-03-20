@@ -1,4 +1,4 @@
-// DEPRECATED: SecurityProviderBridge
+// DEPRECATED: // DEPRECATED: SecurityProviderBridge
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -11,7 +11,7 @@ import UmbraCoreTypes
 /// Bridge interface between SecurityProtocolsCore providers and SecurityInterfaces adapters.
 /// This bridge enables type-safe use of SecurityProtocolsCore providers through SecurityInterfaces
 /// without introducing namespace conflicts or direct dependencies.
-public protocol SecurityProviderBridge: AnyObject, Sendable {
+// DEPRECATED: // DEPRECATED: public protocol SecurityProviderBridge: AnyObject, Sendable {
     /// Get the crypto service from the provider
     var cryptoService: SecurityProtocolsCore.CryptoServiceProtocol { get }
 
@@ -35,7 +35,7 @@ public protocol SecurityProviderBridge: AnyObject, Sendable {
 }
 
 /// Adapter for SecurityProtocolsCore provider that conforms to SecurityProviderBridge
-public final class SecurityProviderBridgeAdapter: SecurityProviderBridge {
+// DEPRECATED: public final class SecurityProviderBridgeAdapter: SecurityProviderBridge {
     private let provider: SecurityProtocolsCore.SecurityProviderProtocol
 
     public init(provider: SecurityProtocolsCore.SecurityProviderProtocol) {

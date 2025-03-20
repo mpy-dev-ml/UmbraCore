@@ -218,7 +218,7 @@ public enum SecurityProviderUtils {
         var options: [String: String] = [:]
 
         // Copy additional options from the status dictionary
-        for (key, value) in status where
+        // DEPRECATED: for (key, value) in status where
             !["securityLevel", "encryptionAlgorithm", "hashAlgorithm"].contains(key)
         {
             options[key] = value

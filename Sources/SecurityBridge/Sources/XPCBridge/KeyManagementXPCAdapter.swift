@@ -1,4 +1,4 @@
-// DEPRECATED: KeyManagementXPCAdapter
+// DEPRECATED: // DEPRECATED: KeyManagementXPCAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -16,8 +16,8 @@ import XPCProtocolsCore
 /// This adapter handles key management operations by delegating to an XPC service,
 /// providing a unified API for key-related operations.
 @objc
-public final class KeyManagementXPCAdapter: NSObject, KeyManagementServiceProtocol,
-    BaseXPCAdapter, @unchecked Sendable
+// DEPRECATED: // DEPRECATED: public final class KeyManagementXPCAdapter: NSObject, KeyManagementServiceProtocol,
+    // DEPRECATED: BaseXPCAdapter, @unchecked Sendable
 {
     // MARK: - Properties
 
@@ -51,7 +51,7 @@ public final class KeyManagementXPCAdapter: NSObject, KeyManagementServiceProtoc
     public func setupInvalidationHandler() {
         connection.invalidationHandler = {
             // Handle connection invalidation
-            print("XPC connection to KeyManagementService was invalidated")
+            // DEPRECATED: print("XPC connection to KeyManagementService was invalidated")
             // Optional: Take recovery action or notify observers
         }
     }
@@ -82,7 +82,7 @@ public final class KeyManagementXPCAdapter: NSObject, KeyManagementServiceProtoc
 
             // Check if the selector is supported
             let sel = NSSelectorFromString(selector)
-            guard proxy.responds(to: sel) else {
+            // DEPRECATED: guard proxy.responds(to: sel) else {
                 continuation.resume(returning: nil)
                 return
             }
@@ -102,7 +102,7 @@ public final class KeyManagementXPCAdapter: NSObject, KeyManagementServiceProtoc
 
         // Check if the service responds to a basic method
         let selector = NSSelectorFromString("listKeyIdentifiers")
-        return proxy.responds(to: selector)
+        // DEPRECATED: return proxy.responds(to: selector)
     }
 
     // MARK: - KeyManagementServiceProtocol Implementation
@@ -240,7 +240,7 @@ public final class KeyManagementXPCAdapter: NSObject, KeyManagementServiceProtoc
     }
 
     public func getKeyMetadata(
-        for keyIdentifier: String
+        // DEPRECATED: for keyIdentifier: String
     ) async -> Result<[String: String]?, XPCSecurityError> {
         // First check if the service is available
         guard await isServiceAvailable() else {
@@ -257,7 +257,7 @@ public final class KeyManagementXPCAdapter: NSObject, KeyManagementServiceProtoc
 
             // Call the getKeyMetadata method asynchronously
             Task {
-                let result = await proxy.getKeyMetadata(for: keyIdentifier)
+                // DEPRECATED: let result = await proxy.getKeyMetadata(for: keyIdentifier)
                 continuation.resume(returning: result)
             }
         }

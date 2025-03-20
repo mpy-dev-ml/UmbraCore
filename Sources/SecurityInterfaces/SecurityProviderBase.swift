@@ -213,7 +213,7 @@ private final class InternalDummyCryptoService: SecurityProtocolsCore.CryptoServ
 
     func verify(
         signature _: UmbraCoreTypes.SecureBytes,
-        for _: UmbraCoreTypes.SecureBytes,
+        // DEPRECATED: for _: UmbraCoreTypes.SecureBytes,
         using _: UmbraCoreTypes.SecureBytes
     ) async
         -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols>

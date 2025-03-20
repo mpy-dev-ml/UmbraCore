@@ -19,7 +19,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         // Extract key bytes
         var keyBytes = [UInt8]()
         do {
-            for i in 0 ..< key.count {
+            // DEPRECATED: for i in 0 ..< key.count {
                 try keyBytes.append(key.byte(at: i))
             }
         } catch {
@@ -27,7 +27,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         }
 
         // XOR data with key
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             do {
                 let keyByte = keyBytes[i % keyBytes.count]
                 try bytes.append(data.byte(at: i) ^ keyByte)
@@ -47,7 +47,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
     public func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Generate a random key
         var keyBytes = [UInt8](repeating: 0, count: 32)
-        for i in 0 ..< keyBytes.count {
+        // DEPRECATED: for i in 0 ..< keyBytes.count {
             keyBytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(SecureBytes(bytes: keyBytes))
@@ -58,13 +58,13 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         var hash = [UInt8](repeating: 0, count: 32)
 
         do {
-            for i in 0 ..< data.count {
+            // DEPRECATED: for i in 0 ..< data.count {
                 let byte = try data.byte(at: i)
                 hash[i % 32] ^= byte
             }
 
             // Add some minimal avalanche effect
-            for i in 0 ..< hash.count - 1 {
+            // DEPRECATED: for i in 0 ..< hash.count - 1 {
                 hash[i + 1] ^= hash[i]
             }
 
@@ -82,7 +82,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
     public func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Generate random data
         var randomBytes = [UInt8](repeating: 0, count: length)
-        for i in 0 ..< length {
+        // DEPRECATED: for i in 0 ..< length {
             randomBytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(SecureBytes(bytes: randomBytes))
@@ -101,7 +101,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
             }
 
             do {
-                for i in 0 ..< computedHash.count {
+                // DEPRECATED: for i in 0 ..< computedHash.count {
                     if try computedHash.byte(at: i) != hash.byte(at: i) {
                         return .success(false)
                     }
@@ -124,7 +124,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         // Extract key bytes
         var keyBytes = [UInt8]()
         do {
-            for i in 0 ..< key.count {
+            // DEPRECATED: for i in 0 ..< key.count {
                 try keyBytes.append(key.byte(at: i))
             }
         } catch {
@@ -132,7 +132,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         }
 
         // XOR data with key
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             do {
                 let keyByte = keyBytes[i % keyBytes.count]
                 try bytes.append(data.byte(at: i) ^ keyByte)
@@ -151,7 +151,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         // Extract key bytes
         var keyBytes = [UInt8]()
         do {
-            for i in 0 ..< key.count {
+            // DEPRECATED: for i in 0 ..< key.count {
                 try keyBytes.append(key.byte(at: i))
             }
         } catch {
@@ -159,7 +159,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         }
 
         // XOR data with key
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             do {
                 let keyByte = keyBytes[i % keyBytes.count]
                 try bytes.append(data.byte(at: i) ^ keyByte)
@@ -176,7 +176,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         var bytes = [UInt8]()
 
         // Simple mock transformation - reverse the bytes
-        for i in (0 ..< data.count).reversed() {
+        // DEPRECATED: for i in (0 ..< data.count).reversed() {
             do {
                 try bytes.append(data.byte(at: i))
             } catch {
@@ -191,7 +191,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         // Reverse the bytes back
         var bytes = [UInt8]()
 
-        for i in (0 ..< data.count).reversed() {
+        // DEPRECATED: for i in (0 ..< data.count).reversed() {
             do {
                 try bytes.append(data.byte(at: i))
             } catch {
@@ -207,7 +207,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         var signatureBytes = [UInt8](repeating: 0, count: 64)
 
         // Mix in some data from the original data
-        for i in 0 ..< min(data.count, 32) {
+        // DEPRECATED: for i in 0 ..< min(data.count, 32) {
             do {
                 signatureBytes[i] = try data.byte(at: i)
             } catch {
@@ -216,7 +216,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         }
 
         // Add a simple signature pattern
-        for i in 32 ..< 64 {
+        // DEPRECATED: for i in 32 ..< 64 {
             signatureBytes[i] = UInt8(i)
         }
 
@@ -232,7 +232,7 @@ public final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         }
 
         // Check the pattern in the last part of the signature
-        for i in 32 ..< 64 {
+        // DEPRECATED: for i in 32 ..< 64 {
             do {
                 if try signature.byte(at: i) != UInt8(i) {
                     isValid = false
@@ -283,7 +283,7 @@ public final class MockKeyManager: @unchecked Sendable, SecurityProtocolsCore.Ke
 
         // Generate a new key
         var keyBytes = [UInt8](repeating: 0, count: 32)
-        for i in 0 ..< keyBytes.count {
+        // DEPRECATED: for i in 0 ..< keyBytes.count {
             keyBytes[i] = UInt8.random(in: 0 ... 255)
         }
         let newKey = SecureBytes(bytes: keyBytes)
@@ -298,18 +298,18 @@ public final class MockKeyManager: @unchecked Sendable, SecurityProtocolsCore.Ke
             do {
                 // Extract bytes from data
                 var dataBytes = [UInt8]()
-                for i in 0 ..< dataToReencrypt.count {
+                // DEPRECATED: for i in 0 ..< dataToReencrypt.count {
                     try dataBytes.append(dataToReencrypt.byte(at: i))
                 }
 
                 // Simple XOR encryption with new key
-                for i in 0 ..< dataBytes.count {
+                // DEPRECATED: for i in 0 ..< dataBytes.count {
                     reencryptedBytes.append(dataBytes[i] ^ keyBytes[i % keyBytes.count])
                 }
 
                 return .success((newKey: newKey, reencryptedData: SecureBytes(bytes: reencryptedBytes)))
             } catch {
-                return .failure(.encryptionFailed("Error accessing data bytes for rotation"))
+                // DEPRECATED: return .failure(.encryptionFailed("Error accessing data bytes for rotation"))
             }
         }
 

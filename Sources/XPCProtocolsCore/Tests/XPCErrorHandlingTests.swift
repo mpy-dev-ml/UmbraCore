@@ -149,7 +149,7 @@ class XPCErrorHandlingTests: XCTestCase {
     func testConvertFoundationErrorsToXPCError() {
         // Test URL error conversion
         let urlTimeoutError = NSError(
-            domain: NSURLErrorDomain,
+            // DEPRECATED: domain: NSURLErrorDomain,
             code: NSURLErrorTimedOut,
             userInfo: nil
         )
@@ -162,7 +162,7 @@ class XPCErrorHandlingTests: XCTestCase {
 
         // Test other URL errors
         let urlOtherError = NSError(
-            domain: NSURLErrorDomain,
+            // DEPRECATED: domain: NSURLErrorDomain,
             code: NSURLErrorNetworkConnectionLost,
             userInfo: nil
         )
@@ -175,7 +175,7 @@ class XPCErrorHandlingTests: XCTestCase {
 
         // Test XPC connection error
         let xpcConnectionError = NSError(
-            domain: "XPCConnectionErrorDomain",
+            // DEPRECATED: domain: "XPCConnectionErrorDomain",
             code: 1,
             userInfo: [NSLocalizedDescriptionKey: "Connection lost"]
         )

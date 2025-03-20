@@ -36,11 +36,11 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
     public let connection: NSXPCConnection
 
     // Specialised adapters for each protocol
-    private let serviceStandardAdapter: XPCServiceStandardAdapter
-    private let secureStorageAdapter: SecureStorageXPCAdapter
-    private let cryptoAdapter: CryptoXPCAdapter
-    private let keyManagementAdapter: KeyManagementXPCAdapter
-    private let comprehensiveSecurityAdapter: ComprehensiveSecurityXPCAdapter
+    // DEPRECATED: private let serviceStandardAdapter: XPCServiceStandardAdapter
+    // DEPRECATED: private let secureStorageAdapter: SecureStorageXPCAdapter
+    // DEPRECATED: private let cryptoAdapter: CryptoXPCAdapter
+    // DEPRECATED: private let keyManagementAdapter: KeyManagementXPCAdapter
+    // DEPRECATED: private let comprehensiveSecurityAdapter: ComprehensiveSecurityXPCAdapter
 
     // MARK: - Initialization
 
@@ -54,14 +54,14 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
         connection.resume()
 
         // Create child adapters
-        serviceStandardAdapter = XPCServiceStandardAdapter(connection: connection)
-        secureStorageAdapter = SecureStorageXPCAdapter(connection: connection)
-        cryptoAdapter = CryptoXPCAdapter(
+        // DEPRECATED: serviceStandardAdapter = XPCServiceStandardAdapter(connection: connection)
+        // DEPRECATED: secureStorageAdapter = SecureStorageXPCAdapter(connection: connection)
+        // DEPRECATED: cryptoAdapter = CryptoXPCAdapter(
             connection: connection,
             serviceProxy: connection.remoteObjectProxy as? any ComprehensiveSecurityServiceProtocol
         )
-        keyManagementAdapter = KeyManagementXPCAdapter(connection: connection)
-        comprehensiveSecurityAdapter = ComprehensiveSecurityXPCAdapter(connection: connection)
+        // DEPRECATED: keyManagementAdapter = KeyManagementXPCAdapter(connection: connection)
+        // DEPRECATED: comprehensiveSecurityAdapter = ComprehensiveSecurityXPCAdapter(connection: connection)
 
         super.init()
         setupInvalidationHandler()
@@ -75,7 +75,7 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
     public func setupInvalidationHandler() {
         connection.invalidationHandler = {
             // Log the invalidation
-            print("XPC connection to service was invalidated")
+            // DEPRECATED: print("XPC connection to service was invalidated")
             // Optional: Notify observers of service unavailability
         }
     }
@@ -85,7 +85,7 @@ public final class XPCServiceAdapter: NSObject, @unchecked Sendable {
 
 // MARK: - XPCServiceProtocolBasic Conformance
 
-extension XPCServiceAdapter: XPCServiceProtocolBasic {
+// DEPRECATED: extension XPCServiceAdapter: XPCServiceProtocolBasic {
     public func convertNSDataToSecureBytes(_ nsData: NSData) -> UmbraCoreTypes.SecureBytes {
         let bytes = [UInt8](Data(referencing: nsData))
         return SecureBytes(bytes: bytes)
@@ -103,7 +103,7 @@ extension XPCServiceAdapter: XPCServiceProtocolBasic {
 
 // MARK: - XPCServiceProtocolStandard Conformance
 
-extension XPCServiceAdapter: XPCServiceProtocolStandard {
+// DEPRECATED: extension XPCServiceAdapter: XPCServiceProtocolStandard {
     // Forward all methods to serviceStandardAdapter
 
     @objc
@@ -134,13 +134,13 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
     @objc
     public func verifySignature(
         _ signature: NSData,
-        for data: NSData,
+        // DEPRECATED: for data: NSData,
         keyIdentifier: String
     ) async -> NSNumber? {
         // Convert to NSNumber since we need to return NSNumber?
         await serviceStandardAdapter.verifySignature(
             signature,
-            for: data,
+            // DEPRECATED: for: data,
             keyIdentifier: keyIdentifier
         ) as NSNumber?
     }
@@ -174,7 +174,7 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
 
 // MARK: - SecurityProtocolsCore.CryptoServiceProtocol Conformance
 
-extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
+// DEPRECATED: extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     // Forward all methods to cryptoAdapter
 
     public func ping() async -> Result<Bool, UmbraErrors.Security.Protocols> {
@@ -218,7 +218,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
             var allBytesMatch = true
 
             if sameLength {
-                for (idx, element) in calculatedHash.enumerated() {
+                // DEPRECATED: for (idx, element) in calculatedHash.enumerated() {
                     if element != hash[idx] {
                         allBytesMatch = false
                         break
@@ -230,8 +230,8 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
 
             return .success(sameLength && allBytesMatch)
 
-        case let .failure(error):
-            return .failure(error)
+        // DEPRECATED: case let .failure(error):
+            // DEPRECATED: return .failure(error)
         }
     }
 
@@ -312,7 +312,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
         // Call the standard adapter methods for verification
         let result = await serviceStandardAdapter.verifySignature(
             signatureData,
-            for: messageData,
+            // DEPRECATED: for: messageData,
             keyIdentifier: UUID().uuidString
         )
 
@@ -334,7 +334,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
             let bytes = [UInt8](Data(referencing: randomData))
             return .success(SecureBytes(bytes: bytes))
         } else {
-            return .failure(.internalError("Failed to generate random data"))
+            // DEPRECATED: return .failure(.internalError("Failed to generate random data"))
         }
     }
 
@@ -351,7 +351,7 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
 
 // MARK: - SecureStorageServiceProtocol Conformance
 
-extension XPCServiceAdapter: SecureStorageServiceProtocol {
+// DEPRECATED: extension XPCServiceAdapter: SecureStorageServiceProtocol {
     // Forward all methods to secureStorageAdapter
 
     @objc
@@ -441,7 +441,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
         await listStoredItems()
     }
 
-    public func getDataMetadata(for _: String) async -> Result<[String: String]?, XPCSecurityError> {
+    // DEPRECATED: public func getDataMetadata(for _: String) async -> Result<[String: String]?, XPCSecurityError> {
         // If there's no specific metadata implementation, return empty metadata
         .success([:])
     }
@@ -449,7 +449,7 @@ extension XPCServiceAdapter: SecureStorageServiceProtocol {
 
 // MARK: - KeyManagementServiceProtocol Conformance
 
-extension XPCServiceAdapter: KeyManagementServiceProtocol {
+// DEPRECATED: extension XPCServiceAdapter: KeyManagementServiceProtocol {
     // Forward all methods to keyManagementAdapter
 
     public func generateKey(
@@ -493,17 +493,17 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
         await keyManagementAdapter.listKeyIdentifiers()
     }
 
-    public func getKeyMetadata(for keyIdentifier: String) async
+    // DEPRECATED: public func getKeyMetadata(for keyIdentifier: String) async
         -> Result<[String: String]?, XPCSecurityError>
     {
         // If there's no specific metadata implementation, return from the adapter
-        await keyManagementAdapter.getKeyMetadata(for: keyIdentifier)
+        // DEPRECATED: await keyManagementAdapter.getKeyMetadata(for: keyIdentifier)
     }
 }
 
 // MARK: - ComprehensiveSecurityServiceProtocol Conformance
 
-extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
+// DEPRECATED: extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
     // Protocol conformance implementations - changed to match the required types
 
     public func getServiceVersion() async -> String {
@@ -527,9 +527,9 @@ extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
         switch result {
         case let .success(encryptedData):
             return .success(encryptedData)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             // Map error to XPCSecurityError
-            return .failure(XPCSecurityError.internalError(reason: "Encryption failed: \(error)"))
+            // DEPRECATED: return .failure(XPCSecurityError.internalError(reason: "Encryption failed: \(error)"))
         }
     }
 
@@ -543,9 +543,9 @@ extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
         switch result {
         case let .success(decryptedData):
             return .success(decryptedData)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             // Map error to XPCSecurityError
-            return .failure(XPCSecurityError.internalError(reason: "Decryption failed: \(error)"))
+            // DEPRECATED: return .failure(XPCSecurityError.internalError(reason: "Decryption failed: \(error)"))
         }
     }
 
@@ -556,9 +556,9 @@ extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
         switch result {
         case let .success(hashedData):
             return .success(hashedData)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             // Map error to XPCSecurityError
-            return .failure(XPCSecurityError.internalError(reason: "Hashing failed: \(error)"))
+            // DEPRECATED: return .failure(XPCSecurityError.internalError(reason: "Hashing failed: \(error)"))
         }
     }
 
@@ -572,9 +572,9 @@ extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
         switch result {
         case let .success(verified):
             return .success(verified)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             // Map error to XPCSecurityError
-            return .failure(XPCSecurityError.internalError(reason: "Verification failed: \(error)"))
+            // DEPRECATED: return .failure(XPCSecurityError.internalError(reason: "Verification failed: \(error)"))
         }
     }
 
@@ -585,25 +585,25 @@ extension XPCServiceAdapter: ComprehensiveSecurityServiceProtocol {
         switch result {
         case let .success(key):
             return .success(key)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             // Map error to XPCSecurityError
-            return .failure(XPCSecurityError.internalError(reason: "Key generation failed: \(error)"))
+            // DEPRECATED: return .failure(XPCSecurityError.internalError(reason: "Key generation failed: \(error)"))
         }
     }
 }
 
 // MARK: - Helper Functions for Security Operations
 
-extension XPCServiceAdapter {
+// DEPRECATED: extension XPCServiceAdapter {
     /// Maps NSError to XPCSecurityError
-    private func mapNSErrorToSecurityError(_ error: NSError) -> XPCSecurityError {
+    // DEPRECATED: private func mapNSErrorToSecurityError(_ error: NSError) -> XPCSecurityError {
         // Check for standard error domains
-        if error.domain == NSURLErrorDomain {
-            .invalidInput(details: "Network error: \(error.localizedDescription)")
-        } else if error.domain.contains("security") {
-            .internalError(reason: "Security error: \(error.localizedDescription)")
+        // DEPRECATED: if error.domain == NSURLErrorDomain {
+            // DEPRECATED: .invalidInput(details: "Network error: \(error.localizedDescription)")
+        // DEPRECATED: } else if error.domain.contains("security") {
+            // DEPRECATED: .internalError(reason: "Security error: \(error.localizedDescription)")
         } else {
-            .internalError(reason: error.localizedDescription)
+            // DEPRECATED: .internalError(reason: error.localizedDescription)
         }
     }
 
@@ -612,8 +612,8 @@ extension XPCServiceAdapter {
         _ result: NSObject?,
         transform: (NSObject) -> T
     ) -> Result<T, XPCSecurityError> {
-        if let error = result as? NSError {
-            .failure(mapNSErrorToSecurityError(error))
+        // DEPRECATED: if let error = result as? NSError {
+            // DEPRECATED: .failure(mapNSErrorToSecurityError(error))
         } else if let nsData = result as? NSData {
             .success(transform(nsData))
         } else if let nsObject = result {
@@ -624,7 +624,7 @@ extension XPCServiceAdapter {
     }
 }
 
-extension XPCServiceAdapter {
+// DEPRECATED: extension XPCServiceAdapter {
     // Helper method to convert Data to SecureBytes
     private func secureBytes(from data: Data) -> SecureBytes {
         let bytes = [UInt8](data)
@@ -635,7 +635,7 @@ extension XPCServiceAdapter {
     private func nsData(from secureBytes: SecureBytes) -> NSData {
         let count = secureBytes.count
         var byteArray = [UInt8](repeating: 0, count: count)
-        for i in 0 ..< count {
+        // DEPRECATED: for i in 0 ..< count {
             byteArray[i] = secureBytes[i]
         }
         let data = Data(byteArray)
@@ -651,7 +651,7 @@ extension XPCServiceAdapter {
             return false
         }
 
-        for i in 0 ..< leftBytes.count {
+        // DEPRECATED: for i in 0 ..< leftBytes.count {
             if leftBytes[i] != rightBytes[i] {
                 return false
             }
@@ -663,6 +663,6 @@ extension XPCServiceAdapter {
 
 // MARK: - BaseXPCAdapter Conformance
 
-extension XPCServiceAdapter: BaseXPCAdapter {
+// DEPRECATED: extension XPCServiceAdapter: BaseXPCAdapter {
     // Use default implementations from BaseXPCAdapter extension
 }

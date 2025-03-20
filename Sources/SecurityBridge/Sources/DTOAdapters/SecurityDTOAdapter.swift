@@ -1,4 +1,4 @@
-// DEPRECATED: SecurityDTOAdapter
+// DEPRECATED: // DEPRECATED: SecurityDTOAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -11,7 +11,7 @@ import UmbraCoreTypes
 
 /// SecurityDTOAdapter supports conversions between various error domains and configurations in the
 /// security subsystem and their Foundation-independent DTO representations.
-public enum SecurityDTOAdapter {
+// DEPRECATED: public enum SecurityDTOAdapter {
     // Type aliases for clarity and to avoid ambiguity
     public typealias ConfigDTO = CoreDTOs.SecurityConfigDTO
     public typealias ErrorDTO = CoreDTOs.SecurityErrorDTO
@@ -23,8 +23,8 @@ public enum SecurityDTOAdapter {
     ///
     /// - Parameter error: The UmbraErrors.Security to convert
     /// - Returns: A SecurityErrorDTO with equivalent information
-    public static func toDTO(error: SecurityError) -> ErrorDTO {
-        let details: [String: String] = error.userInfo.compactMapValues { value in
+    // DEPRECATED: public static func toDTO(error: SecurityError) -> ErrorDTO {
+        // DEPRECATED: let details: [String: String] = error.userInfo.compactMapValues { value in
             if let stringValue = value as? String {
                 stringValue
             } else if let intValue = value as? Int {
@@ -38,7 +38,7 @@ public enum SecurityDTOAdapter {
             }
         }
 
-        switch error {
+        // DEPRECATED: switch error {
         case let .encryptionFailed(reason):
             return ErrorDTO.encryptionError(message: reason, details: details)
 
@@ -78,7 +78,7 @@ public enum SecurityDTOAdapter {
             return ErrorDTO(
                 code: 9999,
                 domain: "security.general",
-                message: String(describing: error),
+                // DEPRECATED: message: String(describing: error),
                 details: details
             )
         }
@@ -88,7 +88,7 @@ public enum SecurityDTOAdapter {
     ///
     /// - Parameter dto: The SecurityErrorDTO to convert
     /// - Returns: A UmbraErrors.Security with equivalent information
-    public static func fromDTO(error dto: ErrorDTO) -> SecurityError {
+    // DEPRECATED: public static func fromDTO(error dto: ErrorDTO) -> SecurityError {
         // Map based on the error code and domain
         switch (dto.code, dto.domain) {
         case (1001, _):

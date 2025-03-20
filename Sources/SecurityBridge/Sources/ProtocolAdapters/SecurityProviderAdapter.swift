@@ -16,13 +16,13 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
     // MARK: - Properties
 
     /// The Foundation-dependent security provider implementation
-    private let implementation: any FoundationSecurityProvider
+    // DEPRECATED: private let implementation: any FoundationSecurityProvider
 
     /// The crypto service adapter
-    private let cryptoServiceAdapter: CryptoServiceAdapter
+    // DEPRECATED: private let cryptoServiceAdapter: CryptoServiceAdapter
 
     /// The key management adapter
-    private let keyManagementAdapter: KeyManagementAdapter
+    // DEPRECATED: private let keyManagementAdapter: KeyManagementAdapter
 
     // MARK: - SecurityProviderProtocol Properties
 
@@ -38,10 +38,10 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
 
     /// Create a new SecurityProviderAdapter
     /// - Parameter implementation: The Foundation-dependent security provider implementation
-    public init(implementation: any FoundationSecurityProvider) {
+    // DEPRECATED: public init(implementation: any FoundationSecurityProvider) {
         self.implementation = implementation
-        cryptoServiceAdapter = CryptoServiceAdapter(implementation: implementation.cryptoService)
-        keyManagementAdapter = KeyManagementAdapter(implementation: implementation.keyManager)
+        // DEPRECATED: cryptoServiceAdapter = CryptoServiceAdapter(implementation: implementation.cryptoService)
+        // DEPRECATED: keyManagementAdapter = KeyManagementAdapter(implementation: implementation.keyManager)
     }
 
     // MARK: - SecurityProviderProtocol Implementation
@@ -69,9 +69,9 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
             algorithm: options?["algorithm"] as? String ?? "AES-GCM",
             keySizeInBits: options?["keySizeInBits"] as? Int ?? 256,
             initializationVector: (options?["initializationVector"] as? Data)
-                .flatMap { DataAdapter.secureBytes(from: $0) },
+                // DEPRECATED: .flatMap { DataAdapter.secureBytes(from: $0) },
             additionalAuthenticatedData: (options?["additionalAuthenticatedData"] as? Data)
-                .flatMap { DataAdapter.secureBytes(from: $0) },
+                // DEPRECATED: .flatMap { DataAdapter.secureBytes(from: $0) },
             iterations: options?["iterations"] as? Int,
             options: convertStringDictionary(options?["algorithmOptions"] as? [String: Any])
         )
@@ -88,11 +88,11 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
 
         // Add optional parameters if they exist
         if let iv = config.initializationVector {
-            options["initializationVector"] = DataAdapter.data(from: iv as SecureBytes)
+            // DEPRECATED: options["initializationVector"] = DataAdapter.data(from: iv as SecureBytes)
         }
 
         if let aad = config.additionalAuthenticatedData {
-            options["additionalAuthenticatedData"] = DataAdapter.data(from: aad as SecureBytes)
+            // DEPRECATED: options["additionalAuthenticatedData"] = DataAdapter.data(from: aad as SecureBytes)
         }
 
         if let iterations = config.iterations {
@@ -111,13 +111,13 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
         switch result {
         case let .success(data):
             if let data {
-                return SecurityResultDTO(data: DataAdapter.secureBytes(from: data))
+                // DEPRECATED: return SecurityResultDTO(data: DataAdapter.secureBytes(from: data))
             } else {
                 return SecurityResultDTO()
             }
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             // Convert the error to NSError directly since the cast always succeeds
-            let nsError = error as NSError
+            // DEPRECATED: let nsError = error as NSError
             return SecurityResultDTO(
                 errorCode: nsError.code,
                 errorMessage: nsError.localizedDescription
@@ -130,7 +130,7 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
         guard let dict else { return [:] }
 
         var result: [String: String] = [:]
-        for (key, value) in dict {
+        // DEPRECATED: for (key, value) in dict {
             result[key] = String(describing: value)
         }
 
@@ -143,10 +143,10 @@ public final class SecurityProviderAdapter: SecurityProviderProtocol, Sendable {
 /// SecurityProviderProtocol
 public protocol FoundationSecurityProvider: Sendable {
     /// Access to the Foundation-dependent crypto service
-    var cryptoService: any FoundationCryptoServiceImpl { get }
+    // DEPRECATED: var cryptoService: any FoundationCryptoServiceImpl { get }
 
     /// Access to the Foundation-dependent key manager
-    var keyManager: any FoundationKeyManagementImpl { get }
+    // DEPRECATED: var keyManager: any FoundationKeyManagementImpl { get }
 
     /// Perform a security operation with Foundation types
     /// - Parameters:

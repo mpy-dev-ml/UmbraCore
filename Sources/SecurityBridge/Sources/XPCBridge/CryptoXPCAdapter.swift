@@ -1,4 +1,4 @@
-// DEPRECATED: CryptoXPCAdapter
+// DEPRECATED: // DEPRECATED: CryptoXPCAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -14,7 +14,7 @@ import XPCProtocolsCore
 ///
 /// This adapter handles cryptographic operations by delegating to an XPC service,
 /// providing a unified API for encryption, decryption, and hashing.
-public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendable {
+// DEPRECATED: // DEPRECATED: public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendable {
     // MARK: - Properties
 
     /// The NSXPCConnection used to communicate with the XPC service
@@ -41,40 +41,40 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
     // MARK: - Helper Methods
 
     /// Maps internal XPC errors to SecurityProtocolsCore error types
-    private func mapXPCError(_ error: NSError) -> UmbraErrors.Security.XPC {
-        mapSecurityError(error)
+    // DEPRECATED: private func mapXPCError(_ error: NSError) -> UmbraErrors.Security.XPC {
+        // DEPRECATED: mapSecurityError(error)
     }
 
     /// Maps NSError objects to UmbraErrors.Security.XPC error types
-    public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
+    // DEPRECATED: public func mapSecurityError(_ error: NSError) -> UmbraErrors.Security.XPC {
         // Check for known error domains and codes
-        if error.domain == NSURLErrorDomain {
-            return .connectionFailed(reason: error.localizedDescription)
-        } else if error.domain == "CryptoErrorDomain" {
+        // DEPRECATED: if error.domain == NSURLErrorDomain {
+            // DEPRECATED: return .connectionFailed(reason: error.localizedDescription)
+        // DEPRECATED: } else if error.domain == "CryptoErrorDomain" {
             // Map specific crypto error codes to appropriate UmbraErrors
-            switch error.code {
+            // DEPRECATED: switch error.code {
             case 1001:
-                return .serviceError(code: error.code, reason: error.localizedDescription)
+                // DEPRECATED: return .serviceError(code: error.code, reason: error.localizedDescription)
             case 1002:
-                return .serviceError(code: error.code, reason: error.localizedDescription)
+                // DEPRECATED: return .serviceError(code: error.code, reason: error.localizedDescription)
             case 1003:
-                return .serviceError(code: error.code, reason: error.localizedDescription)
+                // DEPRECATED: return .serviceError(code: error.code, reason: error.localizedDescription)
             case 1004:
-                return .serviceError(code: error.code, reason: error.localizedDescription)
+                // DEPRECATED: return .serviceError(code: error.code, reason: error.localizedDescription)
             default:
-                return .serviceError(code: error.code, reason: error.localizedDescription)
+                // DEPRECATED: return .serviceError(code: error.code, reason: error.localizedDescription)
             }
         }
 
         // Default error mapping
-        return .internalError(error.localizedDescription)
+        // DEPRECATED: return .internalError(error.localizedDescription)
     }
 
     /// Sets up the invalidation handler for the XPC connection
     public func setupInvalidationHandler() {
         connection.invalidationHandler = {
             // Log the invalidation
-            print("XPC connection to CryptoService was invalidated")
+            // DEPRECATED: print("XPC connection to CryptoService was invalidated")
             // Optional: Notify any observers or reset state
         }
     }
@@ -106,11 +106,11 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
     }
 
     // Helper to map XPC-specific errors to protocol errors
-    private func mapToProtocolError(_ error: UmbraErrors.Security.XPC) -> UmbraErrors.Security
+    // DEPRECATED: private func mapToProtocolError(_ error: UmbraErrors.Security.XPC) -> UmbraErrors.Security
         .Protocols
     {
         // Map XPC error to Protocol error based on case
-        switch error {
+        // DEPRECATED: switch error {
         case let .connectionFailed(reason):
             return .serviceError(reason)
         case let .serviceError(code, reason):
@@ -122,13 +122,13 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
         case let .operationCancelled(operation):
             return .serviceError("Operation cancelled: \(operation)")
         case let .insufficientPrivileges(service, privilege):
-            return .serviceError("Insufficient privileges for \(service): requires \(privilege)")
+            // DEPRECATED: return .serviceError("Insufficient privileges for \(service): requires \(privilege)")
         case let .invalidMessageFormat(reason):
             return .invalidFormat(reason: reason)
         case let .internalError(message):
             return .internalError(message)
         @unknown default:
-            return .internalError("Unknown XPC error")
+            // DEPRECATED: return .internalError("Unknown XPC error")
         }
     }
 
@@ -241,7 +241,7 @@ public final class CryptoXPCAdapter: NSObject, BaseXPCAdapter, @unchecked Sendab
 
 // MARK: - CryptoServiceProtocol Implementation
 
-extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
+// DEPRECATED: extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     public func ping() async -> Result<Bool, UmbraErrors.Security.Protocols> {
         // Map XPC error type to Protocols error type for protocol compliance
         let result = await withCheckedContinuation { continuation in
@@ -262,9 +262,9 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
         switch result {
         case let .success(data):
             return .success(data)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             // Map XPC error to Protocol error
-            return .failure(mapToProtocolError(error))
+            // DEPRECATED: return .failure(mapToProtocolError(error))
         }
     }
 
@@ -277,9 +277,9 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
         switch result {
         case let .success(data):
             return .success(data)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             // Map XPC error to Protocol error
-            return .failure(mapToProtocolError(error))
+            // DEPRECATED: return .failure(mapToProtocolError(error))
         }
     }
 
@@ -311,14 +311,14 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
                         continuation
                             .resume(
                                 returning: Result<SecureBytes, UmbraErrors.Security.Protocols>
-                                    .failure(.internalError("Failed to convert key ID to data"))
+                                    // DEPRECATED: .failure(.internalError("Failed to convert key ID to data"))
                             )
                     }
-                case let .failure(error):
+                // DEPRECATED: case let .failure(error):
                     continuation
                         .resume(
                             returning: Result<SecureBytes, UmbraErrors.Security.Protocols>
-                                .failure(mapToProtocolError(error))
+                                // DEPRECATED: .failure(mapToProtocolError(error))
                         )
                 case .none:
                     continuation
@@ -342,14 +342,14 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
                 let nsData = convertSecureBytesToNSData(data)
                 let selector = NSSelectorFromString("hashData:completionHandler:")
 
-                let completionHandler: (NSData?, NSError?) -> Void = { [self] hashData, error in
-                    if let error {
+                // DEPRECATED: let completionHandler: (NSData?, NSError?) -> Void = { [self] hashData, error in
+                    // DEPRECATED: if let error {
                         continuation
                             .resume(
                                 returning: Result<SecureBytes, UmbraErrors.Security.Protocols>
                                     .failure(
                                         .serviceError(
-                                            "Error code: \(error.code), reason: \(error.localizedDescription)"
+                                            // DEPRECATED: "Error code: \(error.code), reason: \(error.localizedDescription)"
                                         )
                                     )
                             )
@@ -371,7 +371,7 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
 
                 if
                     let service = connection.remoteObjectProxy as? NSObject,
-                    service.responds(to: selector)
+                    // DEPRECATED: service.responds(to: selector)
                 {
                     service.perform(
                         selector,
@@ -399,9 +399,9 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
         switch xpcResult {
         case let .success(hashData):
             return .success(hashData)
-        case let .failure(error):
+        // DEPRECATED: case let .failure(error):
             // Map the XPC-specific error to the more general Protocols error
-            return .failure(mapToProtocolError(error))
+            // DEPRECATED: return .failure(mapToProtocolError(error))
         }
     }
 
@@ -429,9 +429,9 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
                     let matches = computedHashData == hash
                     continuation
                         .resume(returning: Result<Bool, UmbraErrors.Security.Protocols>.success(matches))
-                case let .failure(error):
+                // DEPRECATED: case let .failure(error):
                     continuation
-                        .resume(returning: Result<Bool, UmbraErrors.Security.Protocols>.failure(error))
+                        // DEPRECATED: .resume(returning: Result<Bool, UmbraErrors.Security.Protocols>.failure(error))
                 }
             }
         }
@@ -492,7 +492,7 @@ extension CryptoXPCAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
                     continuation
                         .resume(
                             returning: Result<SecureBytes, UmbraErrors.Security.Protocols>
-                                .failure(.internalError("Failed to generate secure random data"))
+                                // DEPRECATED: .failure(.internalError("Failed to generate secure random data"))
                         )
                     return
                 }

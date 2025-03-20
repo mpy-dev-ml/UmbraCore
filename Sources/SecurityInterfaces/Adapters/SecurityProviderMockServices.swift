@@ -33,7 +33,7 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
         var encrypted = [UInt8]()
 
         do {
-            for i in 0 ..< data.count {
+            // DEPRECATED: for i in 0 ..< data.count {
                 let dataByte = try data.byte(at: i)
                 let keyByte = try key.byte(at: i % key.count)
                 encrypted.append(dataByte ^ keyByte)
@@ -78,7 +78,7 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
 
         do {
             // Simple deterministic hash - XOR the input bytes into the result
-            for i in 0 ..< min(data.count, 32) {
+            // DEPRECATED: for i in 0 ..< min(data.count, 32) {
                 let dataByte = try data.byte(at: i)
                 result[i] = dataByte ^ UInt8(i)
             }
@@ -192,7 +192,7 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
         }
 
         var bytes = [UInt8](repeating: 0, count: length)
-        for i in 0 ..< length {
+        // DEPRECATED: for i in 0 ..< length {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
@@ -329,12 +329,12 @@ public final class SecurityProviderMockKeyManager: SecurityProtocolsCore.KeyMana
             return .failure(.internalError("Mock key list retrieval failure"))
         }
 
-        var identifiers: [String] = []
+        // DEPRECATED: var identifiers: [String] = []
         queue.sync {
-            identifiers = Array(keyStore.keys)
+            // DEPRECATED: identifiers = Array(keyStore.keys)
         }
 
-        return .success(identifiers)
+        // DEPRECATED: return .success(identifiers)
     }
 
     public func generateKey(
@@ -367,7 +367,7 @@ public final class SecurityProviderMockKeyManager: SecurityProtocolsCore.KeyMana
         // Validate key size
         let requiredSize = keyType == "aes256" ? 32 : 64
         if keyData.count != requiredSize {
-            return .failure(.invalidFormat(reason: "Invalid key size for \(keyType)"))
+            // DEPRECATED: return .failure(.invalidFormat(reason: "Invalid key size for \(keyType)"))
         }
 
         // Generate a key identifier
@@ -610,7 +610,7 @@ public final class SecurityProviderMockImplementation: SecurityProtocolsCore.Sec
         // Add any options if provided
         if let opts = options {
             var stringOptions = [String: String]()
-            for (key, value) in opts {
+            // DEPRECATED: for (key, value) in opts {
                 stringOptions[key] = String(describing: value)
             }
             // Return a new config with updated options

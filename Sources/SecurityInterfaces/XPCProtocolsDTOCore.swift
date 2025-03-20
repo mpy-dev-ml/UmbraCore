@@ -64,7 +64,7 @@ public protocol XPCServiceProtocolStandardDTO: XPCServiceProtocolDTO {
     ///   - data: The data that was signed
     ///   - keyIdentifier: Key identifier
     /// - Returns: A Result containing a boolean indicating validity or an error
-    func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityErrorDTO>
+    // DEPRECATED: func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityErrorDTO>
 
     /// Get the hardware identifier
     /// - Returns: A Result containing a hardware identifier string or an error

@@ -78,13 +78,13 @@ public enum SecurityInterfacesError: Error, Sendable {
     public var errorDescription: String? {
         switch self {
         case let .bookmarkCreationFailed(path):
-            "Failed to create security bookmark for path: \(path)"
+            // DEPRECATED: "Failed to create security bookmark for path: \(path)"
         case .bookmarkResolutionFailed:
             "Failed to resolve security bookmark"
         case let .bookmarkStale(path):
-            "Security bookmark is stale for path: \(path)"
+            // DEPRECATED: "Security bookmark is stale for path: \(path)"
         case let .bookmarkNotFound(path):
-            "Security bookmark not found for path: \(path)"
+            // DEPRECATED: "Security bookmark not found for path: \(path)"
         case let .resourceAccessFailed(path):
             "Failed to access security-scoped resource: \(path)"
         case .randomGenerationFailed:
@@ -116,7 +116,7 @@ public enum SecurityInterfacesError: Error, Sendable {
         case let .authorizationFailed(message):
             "Authorization failed: \(message)"
         case let .authorizationDenied(operation):
-            "Authorization denied for operation: \(operation)"
+            // DEPRECATED: "Authorization denied for operation: \(operation)"
         case let .timeout(after):
             "Operation timed out after \(after) seconds"
         case let .invalidParameters(details):

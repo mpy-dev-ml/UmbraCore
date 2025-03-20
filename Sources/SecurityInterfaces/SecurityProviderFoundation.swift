@@ -43,7 +43,7 @@ public protocol SecurityProviderFoundation {
     /// Create a security-scoped resource identifier
     /// - Parameter identifier: String identifier for the resource
     /// - Returns: Resource bookmark data or error
-    func createResourceBookmark(for identifier: String) async -> Result<SecureBytes, SecurityInterfacesError>
+    // DEPRECATED: func createResourceBookmark(for identifier: String) async -> Result<SecureBytes, SecurityInterfacesError>
 
     /// Resolve a previously created security-scoped resource bookmark
     /// - Parameter bookmarkData: Bookmark data to resolve
@@ -63,7 +63,7 @@ public protocol SecurityProviderFoundation {
     /// Create a security-scoped bookmark for a resource
     /// - Parameter identifier: String identifier for the resource
     /// - Returns: Bookmark data that can be persisted, or error
-    func createBookmark(for identifier: String) async -> Result<SecureBytes, SecurityInterfacesError>
+    // DEPRECATED: func createBookmark(for identifier: String) async -> Result<SecureBytes, SecurityInterfacesError>
 
     /// Resolve a previously created security-scoped bookmark
     /// - Parameter bookmarkData: Bookmark data to resolve

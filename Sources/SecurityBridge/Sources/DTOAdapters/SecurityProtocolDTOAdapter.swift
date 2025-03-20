@@ -68,14 +68,14 @@ public enum SecurityProtocolDTOAdapter {
     ///
     /// - Parameter error: The error from SecurityProtocolsCore
     /// - Returns: A SecurityErrorDTO representation
-    public static func toDTO(error: Error) -> ErrorDTO {
+    // DEPRECATED: public static func toDTO(error: Error) -> ErrorDTO {
         // Handle UmbraErrors.Security.Core errors
-        if let coreError = error as? SecurityCoreError {
-            return SecurityDTOAdapter.toDTO(error: coreError)
+        // DEPRECATED: if let coreError = error as? SecurityCoreError {
+            // DEPRECATED: return SecurityDTOAdapter.toDTO(error: coreError)
         }
 
         // Handle UmbraErrors.Security.Protocols errors
-        if let protocolError = error as? SecurityProtocolError {
+        // DEPRECATED: if let protocolError = error as? SecurityProtocolError {
             switch protocolError {
             case let .encryptionFailed(reason):
                 return ErrorDTO.encryptionError(message: reason)
@@ -129,7 +129,7 @@ public enum SecurityProtocolDTOAdapter {
         return ErrorDTO(
             code: -1,
             domain: "security.unknown",
-            message: error.localizedDescription,
+            // DEPRECATED: message: error.localizedDescription,
             details: [:]
         )
     }
@@ -138,7 +138,7 @@ public enum SecurityProtocolDTOAdapter {
     ///
     /// - Parameter dto: The SecurityErrorDTO to convert
     /// - Returns: A UmbraErrors.Security.Protocols error
-    public static func fromDTO(error dto: ErrorDTO) -> SecurityProtocolError {
+    // DEPRECATED: public static func fromDTO(error dto: ErrorDTO) -> SecurityProtocolError {
         // Map based on domain and code
         switch (dto.domain, dto.code) {
         case (_, 1001):

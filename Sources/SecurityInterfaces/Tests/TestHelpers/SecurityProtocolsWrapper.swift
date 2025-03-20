@@ -30,9 +30,9 @@ public final class SecurityProtocolsWrapper {
     /// Get access to the raw provider for advanced use cases
     /// Note: Use with caution as this breaks the isolation pattern
     /// - Returns: The raw provider instance as SecurityProviderBridge
-    public func getRawProvider() -> SecurityProviderBridge {
+    // DEPRECATED: public func getRawProvider() -> SecurityProviderBridge {
         // Use the adapter pattern to properly bridge between the types
-        SecurityProviderBridgeAdapter(provider: provider)
+        // DEPRECATED: SecurityProviderBridgeAdapter(provider: provider)
     }
 
     /// Performs a secure operation using the wrapped provider
@@ -83,7 +83,7 @@ public final class SecurityProtocolsWrapper {
         if let secureData = result.data {
             // Create a Data object from the SecureBytes
             var bytes = [UInt8]()
-            for i in 0 ..< secureData.count {
+            // DEPRECATED: for i in 0 ..< secureData.count {
                 bytes.append(secureData[i])
             }
             resultData = Data(bytes)

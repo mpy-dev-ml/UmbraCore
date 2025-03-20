@@ -43,7 +43,7 @@ public enum SPCProviderFactory {
     /// - Returns: A SecurityProtocolsCore provider instance
     public static func createProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol {
         // Get the shared instance of the provider adapter factory
-        let factory = SecurityProviderAdapterFactory.shared
+        // DEPRECATED: let factory = SecurityProviderAdapterFactory.shared
 
         // Create a configuration based on the type
         let config = ProviderFactoryConfiguration(

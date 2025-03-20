@@ -18,10 +18,10 @@ public protocol XPCServiceProtocolStandardDTO: Sendable {
     func synchronizeKeys(_ syncData: SecureBytes) async throws
 }
 
-/// XPCServiceDTOAdapter provides a Foundation-independent implementation
+// DEPRECATED: /// XPCServiceDTOAdapter provides a Foundation-independent implementation
 /// of XPC communication for security services using CoreDTOs.
 @available(*, deprecated, message: "This file is being refactored as part of XPC Protocol Consolidation")
-public final class XPCServiceDTOAdapter: XPCServiceProtocolStandardDTO, @unchecked Sendable {
+// DEPRECATED: public final class XPCServiceDTOAdapter: XPCServiceProtocolStandardDTO, @unchecked Sendable {
     // MARK: - Properties
     
     /// The NSXPCConnection that handles the XPC communication
@@ -105,8 +105,8 @@ public enum XPCSecurityDTOConverter {
     /// Convert a SecurityError to an XPCSecurityErrorDTO
     /// - Parameter error: The error to convert
     /// - Returns: An XPCSecurityErrorDTO representation of the error
-    public static func toDTO(_ error: XPCProtocolsCore.SecurityError) -> XPCSecurityErrorDTO {
-        switch error {
+    // DEPRECATED: public static func toDTO(_ error: XPCProtocolsCore.SecurityError) -> XPCSecurityErrorDTO {
+        // DEPRECATED: switch error {
         case .serviceUnavailable:
             return XPCSecurityErrorDTO(code: .serviceUnavailable, details: ["message": "XPC service is unavailable"])
             
@@ -139,20 +139,20 @@ public enum XPCSecurityDTOConverter {
             
         case .invalidKeyType(let expected, let received):
             return XPCSecurityErrorDTO(code: .cryptographicError, details: [
-                "message": "Invalid key type",
+                // DEPRECATED: "message": "Invalid key type",
                 "expected": expected,
                 "received": received
             ])
             
         case .cryptographicError(let operation, let details):
             return XPCSecurityErrorDTO(code: .cryptographicError, details: [
-                "message": "Cryptographic error",
+                // DEPRECATED: "message": "Cryptographic error",
                 "operation": operation,
                 "details": details
             ])
             
         case .internalError(let reason):
-            return XPCSecurityErrorDTO(code: .unknown, details: ["message": "Internal error", "reason": reason])
+            // DEPRECATED: return XPCSecurityErrorDTO(code: .unknown, details: ["message": "Internal error", "reason": reason])
             
         case .connectionInterrupted:
             return XPCSecurityErrorDTO(code: .serviceUnavailable, details: ["message": "Connection interrupted"])
@@ -169,7 +169,7 @@ public enum XPCSecurityDTOConverter {
             
         @unknown default:
             // Handle future cases that might be added to the SecurityError enum
-            return XPCSecurityErrorDTO(code: .unknown, details: ["message": "Unknown security error"])
+            // DEPRECATED: return XPCSecurityErrorDTO(code: .unknown, details: ["message": "Unknown security error"])
         }
     }
 }

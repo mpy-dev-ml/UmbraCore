@@ -125,63 +125,61 @@ public enum XPCProtocolMigrationFactory {
 
         // Convert to XPCSecurityError with appropriate mapping
         let nsError = error as NSError
-        let domain = nsError.domain
+        // DEPRECATED: let domain = nsError.domain
         let code = nsError.code
 
         // Try to create a more specific error based on domain and code
-        if domain.contains("auth") {
+        // DEPRECATED: if domain.contains("auth") {
             return .authenticationFailed(reason: "Error \(code)")
-        } else if domain.contains("timeout") {
+        // DEPRECATED: } else if domain.contains("timeout") {
             return .timeout(after: 30.0) // Default timeout
-        } else if domain.contains("crypto") || domain.contains("security") {
+        // DEPRECATED: } else if domain.contains("crypto") || domain.contains("security") {
             return .cryptographicError(operation: "unknown", details: "Error \(code)")
         } else {
             return .internalError(reason: nsError.localizedDescription)
         }
-    }
-}
 
 // MARK: - Swift Concurrency Helpers
 
-public extension XPCProtocolMigrationFactory {
-    /// Convert a completion handler-based function to an async function
-    ///
-    /// - Parameters:
-    ///   - operation: The operation to perform with a completion handler
-    /// - Returns: A Result with the operation result or error
-    static func withAsyncErrorHandling<T>(
-        _ operation: (@escaping (Result<T, Error>) -> Void) -> Void
-    ) async -> Result<T, XPCSecurityError> {
-        await withCheckedContinuation { continuation in
-            operation { result in
-                switch result {
-                case let .success(value):
-                    continuation.resume(returning: .success(value))
-                case let .failure(error):
-                    continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
-                }
-            }
-        }
-    }
+// DEPRECATED: public extension XPCProtocolMigrationFactory {
+// DEPRECATED:     /// Convert a completion handler-based function to an async function
+// DEPRECATED:     ///
+// DEPRECATED:     /// - Parameters:
+// DEPRECATED:     ///   - operation: The operation to perform with a completion handler
+// DEPRECATED:     /// - Returns: A Result with the operation result or error
+// DEPRECATED:     static func withAsyncErrorHandling<T>(
+// DEPRECATED:         _ operation: (@escaping (Result<T, Error>) -> Void) -> Void
+// DEPRECATED:     ) async -> Result<T, XPCSecurityError> {
+// DEPRECATED:         await withCheckedContinuation { continuation in
+// DEPRECATED:             operation { result in
+// DEPRECATED:                 switch result {
+// DEPRECATED:                 case let .success(value):
+// DEPRECATED:                     continuation.resume(returning: .success(value))
+// DEPRECATED:                 case let .failure(error):
+// DEPRECATED:                     continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
+// DEPRECATED:                 }
+// DEPRECATED:             }
+// DEPRECATED:         }
+// DEPRECATED:     }
 
-    /// Convert a traditional success/error completion handler to an async function
-    ///
-    /// - Parameters:
-    ///   - operation: The operation with traditional (T?, Error?) completion
-    /// - Returns: A Result with the operation result or error
-    static func withTraditionalAsyncErrorHandling<T>(
-        _ operation: (@escaping (T?, Error?) -> Void) -> Void
-    ) async -> Result<T, XPCSecurityError> {
-        await withCheckedContinuation { continuation in
-            operation { value, error in
-                if let error {
-                    continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
-                } else if let value {
-                    continuation.resume(returning: .success(value))
-                } else {
-                    continuation.resume(returning: .failure(.invalidData(reason: "Both value and error were nil")))
-                }
-            }
-        }
-    }
-}
+// DEPRECATED:     /// Convert a traditional success/error completion handler to an async function
+// DEPRECATED:     ///
+// DEPRECATED:     /// - Parameters:
+// DEPRECATED:     ///   - operation: The operation with traditional (T?, Error?) completion
+// DEPRECATED:     /// - Returns: A Result with the operation result or error
+// DEPRECATED:     static func withTraditionalAsyncErrorHandling<T>(
+// DEPRECATED:         _ operation: (@escaping (T?, Error?) -> Void) -> Void
+// DEPRECATED:     ) async -> Result<T, XPCSecurityError> {
+// DEPRECATED:         await withCheckedContinuation { continuation in
+// DEPRECATED:             operation { value, error in
+// DEPRECATED:                 if let error {
+// DEPRECATED:                     continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
+// DEPRECATED:                 } else if let value {
+// DEPRECATED:                     continuation.resume(returning: .success(value))
+// DEPRECATED:                 } else {
+// DEPRECATED:                     continuation.resume(returning: .failure(.invalidData(reason: "Both value and error were nil")))
+// DEPRECATED:                 }
+// DEPRECATED:             }
+// DEPRECATED:         }
+// DEPRECATED:     }
+// DEPRECATED: }

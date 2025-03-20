@@ -1,24 +1,24 @@
-// DEPRECATED: SecurityProviderFoundationAdapter
+// DEPRECATED: // DEPRECATED: SecurityProviderFoundationAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
 import Foundation
 import SecurityProtocolsCore
 
-public extension SecurityBridge {
+// DEPRECATED: public extension SecurityBridge {
     /// Adapter for converting between Foundation-dependent SecurityProvider and
     /// the Foundation-free SecurityProviderProtocol
-    final class SecurityProviderFoundationAdapter: Sendable {
+    // DEPRECATED: // DEPRECATED: final class SecurityProviderFoundationAdapter: Sendable {
         // MARK: - Properties
 
         /// The Foundation-dependent implementation
-        private let implementation: FoundationSecurityProvider
+        // DEPRECATED: private let implementation: FoundationSecurityProvider
 
         // MARK: - Initialization
 
         /// Initialize with a Foundation-dependent implementation
         /// - Parameter implementation: The Foundation-based implementation
-        public init(implementation: FoundationSecurityProvider) {
+        // DEPRECATED: public init(implementation: FoundationSecurityProvider) {
             self.implementation = implementation
         }
 
@@ -29,7 +29,7 @@ public extension SecurityBridge {
         ///   - data: Data to encrypt
         ///   - key: Encryption key
         /// - Returns: Encrypted data
-        public func encrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
+        // DEPRECATED: public func encrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
             let foundationData = data.toFoundationData()
             let foundationKey = key.toFoundationData()
 
@@ -40,9 +40,9 @@ public extension SecurityBridge {
 
             switch result {
             case let .success(encryptedData):
-                return DataBridge(encryptedData)
-            case let .failure(error):
-                throw SecurityBridgeErrorMapper.mapToBridgeError(error)
+                // DEPRECATED: return DataBridge(encryptedData)
+            // DEPRECATED: case let .failure(error):
+                // DEPRECATED: throw SecurityBridgeErrorMapper.mapToBridgeError(error)
             }
         }
 
@@ -51,7 +51,7 @@ public extension SecurityBridge {
         ///   - data: Data to decrypt
         ///   - key: Decryption key
         /// - Returns: Decrypted data
-        public func decrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
+        // DEPRECATED: public func decrypt(_ data: DataBridge, key: DataBridge) async throws -> DataBridge {
             let foundationData = data.toFoundationData()
             let foundationKey = key.toFoundationData()
 
@@ -62,36 +62,36 @@ public extension SecurityBridge {
 
             switch result {
             case let .success(decryptedData):
-                return DataBridge(decryptedData)
-            case let .failure(error):
-                throw SecurityBridgeErrorMapper.mapToBridgeError(error)
+                // DEPRECATED: return DataBridge(decryptedData)
+            // DEPRECATED: case let .failure(error):
+                // DEPRECATED: throw SecurityBridgeErrorMapper.mapToBridgeError(error)
             }
         }
 
         /// Generate a new encryption key
         /// - Returns: The generated key
-        public func generateKey() async throws -> DataBridge {
+        // DEPRECATED: public func generateKey() async throws -> DataBridge {
             let result = await implementation.cryptoService.generateKey()
 
             switch result {
             case let .success(keyData):
-                return DataBridge(keyData)
-            case let .failure(error):
-                throw SecurityBridgeErrorMapper.mapToBridgeError(error)
+                // DEPRECATED: return DataBridge(keyData)
+            // DEPRECATED: case let .failure(error):
+                // DEPRECATED: throw SecurityBridgeErrorMapper.mapToBridgeError(error)
             }
         }
 
         /// Generate secure random data
         /// - Parameter length: Length of random data to generate
         /// - Returns: Random data
-        public func generateRandomData(length: Int) async throws -> DataBridge {
+        // DEPRECATED: public func generateRandomData(length: Int) async throws -> DataBridge {
             let result = await implementation.cryptoService.generateRandomData(length: length)
 
             switch result {
             case let .success(randomData):
-                return DataBridge(randomData)
-            case let .failure(error):
-                throw SecurityBridgeErrorMapper.mapToBridgeError(error)
+                // DEPRECATED: return DataBridge(randomData)
+            // DEPRECATED: case let .failure(error):
+                // DEPRECATED: throw SecurityBridgeErrorMapper.mapToBridgeError(error)
             }
         }
     }

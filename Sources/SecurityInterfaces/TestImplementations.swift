@@ -17,7 +17,7 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
         // This is a simplistic mock implementation that just returns the input data with first byte XORed
         var encryptedBytes: [UInt8] = []
 
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             do {
                 let dataByte = try data.byte(at: i)
                 let keyByte = try key.byte(at: i % key.count)
@@ -38,7 +38,7 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
     public func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         var hashBytes = [UInt8]()
 
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             do {
                 let dataByte = try data.byte(at: i)
                 hashBytes.append(dataByte ^ 0xAB)
@@ -69,7 +69,7 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
                     return .success(false)
                 }
 
-                for i in 0 ..< calculatedSignature.count {
+                // DEPRECATED: for i in 0 ..< calculatedSignature.count {
                     let calcByte = try calculatedSignature.byte(at: i)
                     let expectedByte = try expectedSignature.byte(at: i)
                     if calcByte != expectedByte {
@@ -89,7 +89,7 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
     public func generateRandomBytes(count: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Generate random bytes (for testing only)
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0 ..< count {
+        // DEPRECATED: for i in 0 ..< count {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(SecureBytes(bytes: bytes))
@@ -112,7 +112,7 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
             if calculatedHash.count != hash.count {
                 matches = false
             } else {
-                for i in 0 ..< calculatedHash.count {
+                // DEPRECATED: for i in 0 ..< calculatedHash.count {
                     do {
                         if try calculatedHash.byte(at: i) != hash.byte(at: i) {
                             matches = false
@@ -164,7 +164,7 @@ public final class TestCryptoService: SecurityProtocolsCore.CryptoServiceProtoco
     public func hash(data: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         var hashBytes = [UInt8]()
 
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             do {
                 let dataByte = try data.byte(at: i)
                 hashBytes.append(dataByte ^ 0xAB)
@@ -224,7 +224,7 @@ public final actor TestKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
         var reencryptedData: SecureBytes?
         if let dataToReencrypt {
             var reencryptedBytes = [UInt8]()
-            for i in 0 ..< dataToReencrypt.count {
+            // DEPRECATED: for i in 0 ..< dataToReencrypt.count {
                 do {
                     let dataByte = try dataToReencrypt.byte(at: i)
                     reencryptedBytes.append(dataByte ^ 0xCC)
@@ -263,7 +263,7 @@ public final actor TestKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
     public func generateRandomData(count: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Generate random bytes (for testing only)
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0 ..< count {
+        // DEPRECATED: for i in 0 ..< count {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(SecureBytes(bytes: bytes))
@@ -361,7 +361,7 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
         }
     }
 
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+    // DEPRECATED: public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         let result = await cryptoService.verify(data: data, against: signature)
         
         switch result {
@@ -402,7 +402,7 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
         await cryptoService.sign(data: data, withAlgorithm: algorithm, using: privateKey)
     }
 
-    public func verify(signature: SecureBytes, for data: SecureBytes, using _: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+    // DEPRECATED: public func verify(signature: SecureBytes, for data: SecureBytes, using _: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
         await cryptoService.verify(data: data, against: signature)
     }
 

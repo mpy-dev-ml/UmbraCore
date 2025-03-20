@@ -3,7 +3,7 @@ import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
 import FoundationBridgeTypes
-import SecurityBridge
+// DEPRECATED: import SecurityBridge
 import SecurityBridgeProtocolAdapters
 import SecurityProtocolsCore
 import UmbraCoreTypes
@@ -18,33 +18,33 @@ protocol ServiceProtocolBasic {
     func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols>
 }
 
-final class SecurityBridgeMigrationTests: XCTestCase {
+// DEPRECATED: // DEPRECATED: final class SecurityBridgeMigrationTests: XCTestCase {
     // MARK: - XPCServiceBridge Tests
 
     func testXPCServiceBridgeProtocolIdentifier() {
         XCTAssertEqual(
-            CoreTypesToFoundationBridgeAdapter.protocolIdentifier,
+            // DEPRECATED: CoreTypesToFoundationBridgeAdapter.protocolIdentifier,
             "com.umbra.xpc.service.adapter.coretypes.bridge"
         )
     }
 
     func testCoreToBridgeAdapter() throws {
         let mockXPCService = MockXPCServiceProtocolBasic()
-        let adapter = CoreTypesToFoundationBridgeAdapter(wrapping: mockXPCService)
+        // DEPRECATED: let adapter = CoreTypesToFoundationBridgeAdapter(wrapping: mockXPCService)
 
         let expectation = XCTestExpectation(description: "Ping response received")
-        adapter.pingFoundation { success, error in
+        // DEPRECATED: adapter.pingFoundation { success, error in
             XCTAssertTrue(success)
-            XCTAssertNil(error)
+            // DEPRECATED: XCTAssertNil(error)
             expectation.fulfill()
         }
 
-        wait(for: [expectation], timeout: 1.0)
+        // DEPRECATED: wait(for: [expectation], timeout: 1.0)
     }
 
     func testBridgeToCoreAdapter() async {
         let mockFoundationService = MockFoundationXPCService()
-        let adapter = FoundationToCoreTypesAdapter(wrapping: mockFoundationService)
+        // DEPRECATED: let adapter = FoundationToCoreTypesAdapter(wrapping: mockFoundationService)
 
         let result = await adapter.ping()
         switch result {
@@ -58,7 +58,7 @@ final class SecurityBridgeMigrationTests: XCTestCase {
     // MARK: - SecurityProvider Tests
 
     func testSecurityProviderAdapterEncryptionDecryption() async throws {
-        let mockBridge = MockSecurityProviderBridge()
+        // DEPRECATED: let mockBridge = MockSecurityProviderBridge()
         let adapter = SecurityBridgeProtocolAdapters.SecurityProviderProtocolAdapter(bridge: mockBridge)
 
         // Create test data using SecureBytes instead of legacy BinaryData
@@ -92,7 +92,7 @@ final class SecurityBridgeMigrationTests: XCTestCase {
     }
 
     func testSecurityProviderAdapterGenerateRandomData() async throws {
-        let mockBridge = MockSecurityProviderBridge()
+        // DEPRECATED: let mockBridge = MockSecurityProviderBridge()
         let adapter = SecurityBridgeProtocolAdapters.SecurityProviderProtocolAdapter(bridge: mockBridge)
 
         // Test the generateKey method with the required length parameter
@@ -120,7 +120,7 @@ private class MockXPCServiceProtocolBasic: ServiceProtocolBasic,
         -> Result<SecureBytes, UmbraErrors.Security.Protocols>
     {
         var bytes = [UInt8]()
-        for i in 0 ..< length {
+        // DEPRECATED: for i in 0 ..< length {
             bytes.append(UInt8(i % 256))
         }
         return .success(SecureBytes(bytes: bytes))
@@ -133,7 +133,7 @@ private class MockFoundationXPCService: NSObject, @unchecked Sendable {
     }
 
     func synchronizeKeys(_: Data, completion: @escaping (Error?) -> Void) {
-        completion(nil) // No error means success
+        // DEPRECATED: completion(nil) // No error means success
     }
 }
 
@@ -155,8 +155,8 @@ private class CoreTypesToFoundationBridgeAdapter: NSObject {
             switch result {
             case let .success(value):
                 completion(value, nil)
-            case let .failure(error):
-                completion(false, error)
+            // DEPRECATED: case let .failure(error):
+                // DEPRECATED: completion(false, error)
             }
         }
     }
@@ -175,9 +175,9 @@ private class FoundationToCoreTypesAdapter: ServiceProtocolBasic {
 
     func ping() async -> Result<Bool, UmbraErrors.Security.Protocols> {
         await withCheckedContinuation { continuation in
-            service.pingFoundation { success, error in
-                if let error {
-                    continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
+            // DEPRECATED: service.pingFoundation { success, error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
                 } else {
                     continuation.resume(returning: .success(success))
                 }
@@ -192,9 +192,9 @@ private class FoundationToCoreTypesAdapter: ServiceProtocolBasic {
                 keyData = Data(buffer)
             }
 
-            service.synchronizeKeys(keyData) { error in
-                if let error {
-                    continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
+            // DEPRECATED: service.synchronizeKeys(keyData) { error in
+                // DEPRECATED: if let error {
+                    // DEPRECATED: continuation.resume(returning: .failure(.internalError(error.localizedDescription)))
                 } else {
                     continuation.resume(returning: .success(()))
                 }
@@ -206,7 +206,7 @@ private class FoundationToCoreTypesAdapter: ServiceProtocolBasic {
         -> Result<SecureBytes, UmbraErrors.Security.Protocols>
     {
         var bytes = [UInt8]()
-        for i in 0 ..< length {
+        // DEPRECATED: for i in 0 ..< length {
             bytes.append(UInt8(i % 256))
         }
         return .success(SecureBytes(bytes: bytes))
@@ -221,35 +221,35 @@ private final class MockSecurityProviderBridge: SecurityBridgeProtocolAdapters
     static var protocolIdentifier: String = "mock.security.provider.bridge"
 
     func encrypt(
-        _ data: FoundationBridgeTypes.DataBridge,
-        key _: FoundationBridgeTypes.DataBridge
-    ) async throws -> FoundationBridgeTypes.DataBridge {
+        // DEPRECATED: _ data: FoundationBridgeTypes.DataBridge,
+        // DEPRECATED: key _: FoundationBridgeTypes.DataBridge
+    // DEPRECATED: ) async throws -> FoundationBridgeTypes.DataBridge {
         var dataBytes: [UInt8] = []
         dataBytes = data.bytes
         let encryptedData = Array(dataBytes.reversed())
-        return FoundationBridgeTypes.DataBridge(encryptedData)
+        // DEPRECATED: return FoundationBridgeTypes.DataBridge(encryptedData)
     }
 
     func decrypt(
-        _ data: FoundationBridgeTypes.DataBridge,
-        key _: FoundationBridgeTypes.DataBridge
-    ) async throws -> FoundationBridgeTypes.DataBridge {
+        // DEPRECATED: _ data: FoundationBridgeTypes.DataBridge,
+        // DEPRECATED: key _: FoundationBridgeTypes.DataBridge
+    // DEPRECATED: ) async throws -> FoundationBridgeTypes.DataBridge {
         var dataBytes: [UInt8] = []
         dataBytes = data.bytes
         let decryptedData = Array(dataBytes.reversed())
-        return FoundationBridgeTypes.DataBridge(decryptedData)
+        // DEPRECATED: return FoundationBridgeTypes.DataBridge(decryptedData)
     }
 
-    func generateKey(sizeInBytes: Int) async throws -> FoundationBridgeTypes.DataBridge {
+    // DEPRECATED: func generateKey(sizeInBytes: Int) async throws -> FoundationBridgeTypes.DataBridge {
         let keyData = Array((0 ..< sizeInBytes).map { UInt8($0 % 256) })
-        return FoundationBridgeTypes.DataBridge(keyData)
+        // DEPRECATED: return FoundationBridgeTypes.DataBridge(keyData)
     }
 
-    func hash(_ data: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes
-        .DataBridge
+    // DEPRECATED: func hash(_ data: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes
+        // DEPRECATED: .DataBridge
     {
         var hashedData: [UInt8] = []
         hashedData = data.bytes
-        return FoundationBridgeTypes.DataBridge(hashedData)
+        // DEPRECATED: return FoundationBridgeTypes.DataBridge(hashedData)
     }
 }

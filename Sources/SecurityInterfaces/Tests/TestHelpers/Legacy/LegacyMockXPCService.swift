@@ -1,4 +1,4 @@
-// DEPRECATED: LegacyMockXPCService
+// DEPRECATED: // DEPRECATED: LegacyMockXPCService
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -8,7 +8,7 @@ import Foundation
 /// Provides predictable responses without requiring actual XPC communication
 /// Replaces the deprecated DummyXPCService
 @available(*, deprecated, message: "Use MockXPCService from XPCProtocolsCore instead")
-public final class LegacyMockXPCService: XPCServiceProtocol {
+// DEPRECATED: public final class LegacyMockXPCService: XPCServiceProtocol {
     /// Protocol identifier for this service
     public static var protocolIdentifier: String { "com.umbracore.testing.xpc" }
 

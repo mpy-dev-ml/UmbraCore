@@ -85,17 +85,17 @@ public extension SecurityProviderDTO {
         let result = await getSecurityConfigDTO()
         switch result {
         case let .success(dto):
-            return .success(SecurityDTOAdapter.fromDTO(dto))
+            // DEPRECATED: return .success(SecurityDTOAdapter.fromDTO(dto))
         case let .failure(errorDTO):
-            return .failure(SecurityDTOAdapter.fromDTO(errorDTO))
+            // DEPRECATED: return .failure(SecurityDTOAdapter.fromDTO(errorDTO))
         }
     }
 
     func updateSecurityConfiguration(_ configuration: SecurityConfiguration) async throws {
-        let dto = SecurityDTOAdapter.toDTO(configuration)
+        // DEPRECATED: let dto = SecurityDTOAdapter.toDTO(configuration)
         let result = await updateSecurityConfigDTO(dto)
         if case let .failure(errorDTO) = result {
-            throw SecurityDTOAdapter.fromDTO(errorDTO)
+            // DEPRECATED: throw SecurityDTOAdapter.fromDTO(errorDTO)
         }
     }
 

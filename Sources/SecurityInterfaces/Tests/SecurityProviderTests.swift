@@ -70,7 +70,7 @@ class SecurityProviderTests: XCTestCase {
         // Create an adapter using the provider's raw reference
         // This approach maintains isolation while still allowing creation of adapter
         let rawProvider = wrappedProvider.getRawProvider()
-        let adapter = SecurityTestHelpers.TestSecurityProviderAdapter(
+        // DEPRECATED: let adapter = SecurityTestHelpers.TestSecurityProviderAdapter(
             bridge: rawProvider,
             service: standardService
         )
@@ -92,7 +92,7 @@ class SecurityProviderTests: XCTestCase {
 
         // Create adapter using the provider's raw reference
         let rawProvider = wrappedProvider.getRawProvider()
-        let adapter = SecurityTestHelpers.TestSecurityProviderAdapter(
+        // DEPRECATED: let adapter = SecurityTestHelpers.TestSecurityProviderAdapter(
             bridge: rawProvider,
             service: standardService
         )
@@ -135,7 +135,7 @@ class SecurityProviderTests: XCTestCase {
 
         // Create adapter using the provider's raw reference
         let rawProvider = wrappedProvider.getRawProvider()
-        let adapter = SecurityTestHelpers.TestSecurityProviderAdapter(
+        // DEPRECATED: let adapter = SecurityTestHelpers.TestSecurityProviderAdapter(
             bridge: rawProvider,
             service: standardService
         )

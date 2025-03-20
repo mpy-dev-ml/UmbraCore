@@ -10,7 +10,7 @@ final class ModernXPCMigrationTests: XCTestCase {
     // Test ping functionality
     func testPing() async throws {
         // Use the factory to create a modern service
-        let service = XPCProtocolMigrationFactory.createCompleteAdapter()
+        // DEPRECATED: let service = XPCProtocolMigrationFactory.createCompleteAdapter()
 
         // Test the ping operation with the modern service
         let result = await service.pingAsync()
@@ -47,7 +47,7 @@ final class ModernXPCMigrationTests: XCTestCase {
 
     // Test random data generation
     func testRandomDataGeneration() async {
-        let service = XPCProtocolMigrationFactory.createCompleteAdapter()
+        // DEPRECATED: let service = XPCProtocolMigrationFactory.createCompleteAdapter()
         let result = await service.generateRandomData(length: 32)
 
         switch result {
@@ -60,7 +60,7 @@ final class ModernXPCMigrationTests: XCTestCase {
 
     // Test encryption and decryption
     func testEncryptDecrypt() async {
-        let service = XPCProtocolMigrationFactory.createCompleteAdapter()
+        // DEPRECATED: let service = XPCProtocolMigrationFactory.createCompleteAdapter()
         let originalData = SecureBytes(bytes: [10, 20, 30, 40, 50])
 
         // Encrypt

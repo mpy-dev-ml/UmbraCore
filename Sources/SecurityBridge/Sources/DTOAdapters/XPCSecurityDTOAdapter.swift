@@ -1,4 +1,4 @@
-// DEPRECATED: XPCSecurityDTOAdapter
+// DEPRECATED: // DEPRECATED: XPCSecurityDTOAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -11,7 +11,7 @@ import UmbraCoreTypes
 
 /// XPCSecurityDTOAdapter enables conversion between CoreDTOs types
 /// and XPC-compatible types for security operations.
-public enum XPCSecurityDTOAdapter {
+// DEPRECATED: public enum XPCSecurityDTOAdapter {
     // Type aliases for clarity
     public typealias ConfigDTO = CoreDTOs.SecurityConfigDTO
     public typealias ErrorDTO = CoreDTOs.SecurityErrorDTO
@@ -49,7 +49,7 @@ public enum XPCSecurityDTOAdapter {
                 dictionary["valueData"] = data
             } catch {
                 // If encoding fails, return a failure result instead
-                throw error
+                // DEPRECATED: throw error
             }
         }
 
@@ -64,7 +64,7 @@ public enum XPCSecurityDTOAdapter {
     /// - Returns: The deserialized OperationResultDTO
     public static func convertXPCToResult<T: Codable & Sendable & Equatable>(
         _ dictionary: [String: Any],
-        type: T.Type
+        // DEPRECATED: type: T.Type
     ) -> OperationResultDTO<T> {
         // Extract common fields
         let statusString = dictionary["status"] as? String ?? "failure"
@@ -77,13 +77,13 @@ public enum XPCSecurityDTOAdapter {
             if let data = dictionary["valueData"] as? Data {
                 do {
                     let decoder = JSONDecoder()
-                    let value = try decoder.decode(type, from: data)
+                    // DEPRECATED: let value = try decoder.decode(type, from: data)
                     return .success(value, details: details)
                 } catch {
                     // If decoding fails, return a failure result
                     return .failure(
                         errorCode: -1,
-                        errorMessage: "Failed to decode value: \(error.localizedDescription)",
+                        // DEPRECATED: errorMessage: "Failed to decode value: \(error.localizedDescription)",
                         details: details
                     )
                 }
@@ -98,7 +98,7 @@ public enum XPCSecurityDTOAdapter {
                     // Otherwise, return a failure
                     return .failure(
                         errorCode: -1,
-                        errorMessage: "Missing value data for non-optional type",
+                        // DEPRECATED: errorMessage: "Missing value data for non-optional type",
                         details: details
                     )
                 }
@@ -107,7 +107,7 @@ public enum XPCSecurityDTOAdapter {
         case .failure:
             // For failure status, extract error details
             let errorCode = dictionary["errorCode"] as? Int32 ?? -1
-            let errorMessage = dictionary["errorMessage"] as? String ?? "Unknown error"
+            // DEPRECATED: let errorMessage = dictionary["errorMessage"] as? String ?? "Unknown error"
 
             return .failure(
                 errorCode: errorCode,
@@ -181,15 +181,15 @@ public enum XPCSecurityDTOAdapter {
     ///
     /// - Parameter error: The SecurityErrorDTO to convert
     /// - Returns: A dictionary for XPC transport
-    public static func fromErrorDTO(error: ErrorDTO) -> [String: Any] {
+    // DEPRECATED: public static func fromErrorDTO(error: ErrorDTO) -> [String: Any] {
         var dictionary: [String: Any] = [
-            "code": error.code,
-            "domain": error.domain,
-            "message": error.message,
+            // DEPRECATED: "code": error.code,
+            // DEPRECATED: "domain": error.domain,
+            // DEPRECATED: "message": error.message,
         ]
 
-        if !error.details.isEmpty {
-            dictionary["details"] = error.details
+        // DEPRECATED: if !error.details.isEmpty {
+            // DEPRECATED: dictionary["details"] = error.details
         }
 
         return dictionary
@@ -202,7 +202,7 @@ public enum XPCSecurityDTOAdapter {
     public static func toErrorDTO(dictionary: [String: Any]) -> ErrorDTO {
         let code = (dictionary["code"] as? Int).flatMap { Int32($0) } ?? -1
         let domain = dictionary["domain"] as? String ?? "unknown"
-        let message = dictionary["message"] as? String ?? "Unknown error"
+        // DEPRECATED: let message = dictionary["message"] as? String ?? "Unknown error"
         let details = dictionary["details"] as? [String: String] ?? [:]
 
         return ErrorDTO(

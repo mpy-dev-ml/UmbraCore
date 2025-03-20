@@ -18,7 +18,7 @@ public enum XPCServiceDTOFactory {
         options _: XPCConnectionOptions = []
     ) -> XPCServiceProtocolStandardDTO {
         let connection = NSXPCConnection(serviceName: serviceName)
-        return XPCServiceDTOAdapter(connection: connection)
+        // DEPRECATED: return XPCServiceDTOAdapter(connection: connection)
     }
 
     /// Create an adapter for an XPC service with a machService name
@@ -31,7 +31,7 @@ public enum XPCServiceDTOFactory {
         options _: XPCConnectionOptions = []
     ) -> XPCServiceProtocolStandardDTO {
         let connection = NSXPCConnection(machServiceName: machServiceName)
-        return XPCServiceDTOAdapter(connection: connection)
+        // DEPRECATED: return XPCServiceDTOAdapter(connection: connection)
     }
 
     /// Create an adapter for an endpoint
@@ -44,7 +44,7 @@ public enum XPCServiceDTOFactory {
         options _: XPCConnectionOptions = []
     ) -> XPCServiceProtocolStandardDTO {
         let connection = NSXPCConnection(listenerEndpoint: endpoint)
-        return XPCServiceDTOAdapter(connection: connection)
+        // DEPRECATED: return XPCServiceDTOAdapter(connection: connection)
     }
 }
 

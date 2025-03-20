@@ -96,7 +96,7 @@ class XPCProtocolExtensionsTests: XCTestCase {
         // Test creating an adapter from a legacy service
         // Comment out problematic code
         /*
-         let legacyAdapter = XPCProtocolMigrationFactory.createLegacyAdapter(
+         // DEPRECATED: let legacyAdapter = XPCProtocolMigrationFactory.createLegacyAdapter(
              connection: MockXPCConnection()
          )
 
@@ -274,7 +274,7 @@ private final class FailingMockImplementationService: NSObject, XPCServiceProtoc
 
     @objc
     func synchroniseKeys(_: [UInt8], completionHandler: @escaping (NSError?) -> Void) {
-        let error = NSError(domain: "com.test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Test error"])
+        // DEPRECATED: let error = NSError(domain: "com.test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Test error"])
         completionHandler(error)
     }
 

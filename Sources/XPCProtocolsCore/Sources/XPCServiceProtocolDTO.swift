@@ -199,7 +199,7 @@ public protocol AdvancedSecurityDTOProtocol: Sendable {
 // MARK: - XPCServiceWithKeyExchangeDTO Protocol
 
 /// Complete protocol combining all DTO-based protocols including key exchange
-public protocol XPCServiceWithKeyExchangeDTO: XPCServiceProtocolDTO, KeyManagementDTOProtocol, AdvancedSecurityDTOProtocol, KeyExchangeDTOProtocol {
+// DEPRECATED: public protocol XPCServiceWithKeyExchangeDTO: XPCServiceProtocolDTO, KeyManagementDTOProtocol, AdvancedSecurityDTOProtocol, KeyExchangeDTOProtocol {
     /// Get detailed service information
     /// - Returns: Operation result with service info or error
     func getServiceInfoWithDTO() async -> OperationResultDTO<[String: String]>
@@ -227,7 +227,6 @@ public protocol XPCServiceWithKeyExchangeDTO: XPCServiceProtocolDTO, KeyManageme
         backupData: SecureBytes,
         config: SecurityConfigDTO
     ) async -> OperationResultDTO<Bool>
-}
 
 /// Default implementations for the complete DTO protocol
 public extension XPCServiceWithKeyExchangeDTO {

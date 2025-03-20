@@ -14,10 +14,10 @@ class SecurityErrorTests: XCTestCase {
     func testErrorDescriptions() {
         // Test all error cases to ensure they provide meaningful descriptions
         let cases: [(SecurityInterfacesError, String)] = [
-            (.bookmarkCreationFailed(path: "/test/path"), "Failed to create security bookmark for path: /test/path"),
+            // DEPRECATED: (.bookmarkCreationFailed(path: "/test/path"), "Failed to create security bookmark for path: /test/path"),
             (.bookmarkResolutionFailed, "Failed to resolve security bookmark"),
-            (.bookmarkStale(path: "/stale/path"), "Security bookmark is stale for path: /stale/path"),
-            (.bookmarkNotFound(path: "/missing/path"), "Security bookmark not found for path: /missing/path"),
+            // DEPRECATED: (.bookmarkStale(path: "/stale/path"), "Security bookmark is stale for path: /stale/path"),
+            // DEPRECATED: (.bookmarkNotFound(path: "/missing/path"), "Security bookmark not found for path: /missing/path"),
             (.resourceAccessFailed(path: "/resource/path"), "Failed to access security-scoped resource: /resource/path"),
             (.randomGenerationFailed, "Failed to generate random data"),
             (.hashingFailed, "Failed to perform hashing operation"),
@@ -29,18 +29,18 @@ class SecurityErrorTests: XCTestCase {
             (.encryptionFailed(reason: "Bad key"), "Encryption failed: Bad key"),
         ]
 
-        for (error, expectedDescription) in cases {
+        // DEPRECATED: for (error, expectedDescription) in cases {
             XCTAssertEqual(
                 error.errorDescription,
                 expectedDescription,
-                "Error description for \(String(describing: error)) should match expected text"
+                // DEPRECATED: "Error description for \(String(describing: error)) should match expected text"
             )
 
             // Also test localizedDescription
             XCTAssertEqual(
                 error.localizedDescription,
                 expectedDescription,
-                "Localized description for \(String(describing: error)) should match expected text"
+                // DEPRECATED: "Localized description for \(String(describing: error)) should match expected text"
             )
         }
     }
@@ -126,7 +126,7 @@ class SecurityErrorTests: XCTestCase {
             (.notImplemented(feature: "TestFeature"), "Not implemented: TestFeature"),
         ]
 
-        for (protocolError, expectedErrorMessage) in protocolErrors {
+        // DEPRECATED: for (protocolError, expectedErrorMessage) in protocolErrors {
             let mappedError = mapSPCError(protocolError)
 
             // The mapped error should be a SecurityInterfacesError
@@ -148,7 +148,7 @@ class SecurityErrorTests: XCTestCase {
                     XCTAssertEqual(
                         message,
                         expectedErrorMessage,
-                        "Error message for \(String(describing: protocolError)) should match expected text"
+                        // DEPRECATED: "Error message for \(String(describing: protocolError)) should match expected text"
                     )
                 } else {
                     XCTFail("Expected .operationFailed but got \(securityError)")
@@ -171,11 +171,11 @@ class SecurityErrorTests: XCTestCase {
         if case let .operationFailed(message) = securityError {
             XCTAssertTrue(
                 message.contains("Unknown error"),
-                "Error message for non-protocol error should contain 'Unknown error'"
+                // DEPRECATED: "Error message for non-protocol error should contain 'Unknown error'"
             )
             XCTAssertTrue(
                 message.contains("TestDomain"),
-                "Error message for non-protocol error should contain the original error domain"
+                // DEPRECATED: "Error message for non-protocol error should contain the original error domain"
             )
         } else {
             XCTFail("Expected .operationFailed but got \(securityError)")

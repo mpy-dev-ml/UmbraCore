@@ -76,7 +76,7 @@ public struct SecurityConfiguration: Sendable, Codable {
         ]
 
         if let options {
-            for (key, value) in options {
+            // DEPRECATED: for (key, value) in options {
                 result[key] = value
             }
         }

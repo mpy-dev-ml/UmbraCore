@@ -1,4 +1,4 @@
-// DEPRECATED: CryptoXPCServiceAdapterTests
+// DEPRECATED: // DEPRECATED: CryptoXPCServiceAdapterTests
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -9,17 +9,17 @@ import XCTest
 @testable import XPCProtocolsCore
 
 @available(macOS 14.0, *)
-final class CryptoXPCServiceAdapterTests: XCTestCase {
+// DEPRECATED: // DEPRECATED: final class CryptoXPCServiceAdapterTests: XCTestCase {
     // Mock crypto service for testing
-    private var mockCryptoService: MockCryptoXPCService!
+    // DEPRECATED: private var mockCryptoService: MockCryptoXPCService!
 
     // The adapter to test
-    private var adapter: CryptoXPCServiceAdapter!
+    // DEPRECATED: // DEPRECATED: private var adapter: CryptoXPCServiceAdapter!
 
     override func setUp() async throws {
         try await super.setUp()
-        mockCryptoService = MockCryptoXPCService()
-        adapter = CryptoXPCServiceAdapter(service: mockCryptoService)
+        // DEPRECATED: mockCryptoService = MockCryptoXPCService()
+        // DEPRECATED: adapter = CryptoXPCServiceAdapter(service: mockCryptoService)
     }
 
     override func tearDown() async throws {
@@ -67,7 +67,7 @@ final class CryptoXPCServiceAdapterTests: XCTestCase {
         XCTAssertTrue(encryptCalled, "encrypt should be called")
     }
 
-    /// Test decrypt functionality
+    // DEPRECATED: // DEPRECATED: /// Test decrypt functionality
     func testDecrypt() async {
         let testData = SecureBytes(bytes: [1, 2, 3, 4, 5])
         let decryptedData = await adapter.decrypt(data: testData)
@@ -380,7 +380,7 @@ extension SecureBytes {
 // MARK: - Mock Crypto XPC Service Implementation
 
 @available(macOS 14.0, *)
-class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Sendable {
+// DEPRECATED: class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Sendable {
     private let state = MockState()
 
     // Methods to check if methods were called
@@ -529,7 +529,7 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
                 errorReason = "Unknown error"
             }
 
-            throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: errorReason])
+            // DEPRECATED: throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: errorReason])
         }
 
         // Generate a mock key with the requested bit size (1 byte per 8 bits)
@@ -582,7 +582,7 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
                 errorReason = "Unknown error"
             }
 
-            throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: errorReason])
+            // DEPRECATED: throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: errorReason])
         }
 
         // Mock encryption - just prepend 12 bytes for IV and return
@@ -607,7 +607,7 @@ class MockCryptoXPCService: NSObject, CryptoXPCServiceProtocol, @unchecked Senda
                 errorReason = "Unknown error"
             }
 
-            throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: errorReason])
+            // DEPRECATED: throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: errorReason])
         }
 
         // Mock decryption - just skip first 12 bytes (IV)
@@ -850,7 +850,7 @@ enum CryptoAdapterErrorType {
     case internalError
 
     func toNSError() -> NSError {
-        let domain = "com.umbra.mock.crypto"
+        // DEPRECATED: let domain = "com.umbra.mock.crypto"
         let code: Int
         let description: String
 
@@ -884,6 +884,6 @@ enum CryptoAdapterErrorType {
             description = "Internal error occurred"
         }
 
-        return NSError(domain: domain, code: code, userInfo: [NSLocalizedDescriptionKey: description])
+        // DEPRECATED: return NSError(domain: domain, code: code, userInfo: [NSLocalizedDescriptionKey: description])
     }
 }

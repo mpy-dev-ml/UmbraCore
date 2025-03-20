@@ -32,14 +32,14 @@ public enum XPCProtocolDTOs {
             case .serviceUnavailable:
                 SecurityErrorDTO(
                     code: 10001,
-                    domain: "xpc.service",
+                    // DEPRECATED: domain: "xpc.service",
                     message: "Service is unavailable"
                 )
 
             case let .serviceNotReady(reason):
                 SecurityErrorDTO(
                     code: 10002,
-                    domain: "xpc.service",
+                    // DEPRECATED: domain: "xpc.service",
                     message: "Service is not ready",
                     details: ["reason": reason]
                 )
@@ -47,7 +47,7 @@ public enum XPCProtocolDTOs {
             case let .timeout(after):
                 SecurityErrorDTO(
                     code: 10003,
-                    domain: "xpc.service",
+                    // DEPRECATED: domain: "xpc.service",
                     message: "Operation timed out",
                     details: ["timeoutInterval": String(after)]
                 )
@@ -55,7 +55,7 @@ public enum XPCProtocolDTOs {
             case let .authenticationFailed(reason):
                 SecurityErrorDTO(
                     code: 10004,
-                    domain: "xpc.security",
+                    // DEPRECATED: domain: "xpc.security",
                     message: "Authentication failed",
                     details: ["reason": reason]
                 )
@@ -63,7 +63,7 @@ public enum XPCProtocolDTOs {
             case let .authorizationDenied(operation):
                 SecurityErrorDTO(
                     code: 10005,
-                    domain: "xpc.security",
+                    // DEPRECATED: domain: "xpc.security",
                     message: "Authorization denied",
                     details: ["operation": operation]
                 )
@@ -71,7 +71,7 @@ public enum XPCProtocolDTOs {
             case let .operationNotSupported(name):
                 SecurityErrorDTO(
                     code: 10006,
-                    domain: "xpc.operation",
+                    // DEPRECATED: domain: "xpc.operation",
                     message: "Operation not supported",
                     details: ["operation": name]
                 )
@@ -79,7 +79,7 @@ public enum XPCProtocolDTOs {
             case let .invalidInput(details):
                 SecurityErrorDTO(
                     code: 10007,
-                    domain: "xpc.input",
+                    // DEPRECATED: domain: "xpc.input",
                     message: "Invalid input parameters",
                     details: ["details": details]
                 )
@@ -87,7 +87,7 @@ public enum XPCProtocolDTOs {
             case let .invalidState(details):
                 SecurityErrorDTO(
                     code: 10008,
-                    domain: "xpc.state",
+                    // DEPRECATED: domain: "xpc.state",
                     message: "Invalid state for operation",
                     details: ["details": details]
                 )
@@ -95,7 +95,7 @@ public enum XPCProtocolDTOs {
             case let .keyNotFound(identifier):
                 SecurityErrorDTO(
                     code: 10009,
-                    domain: "xpc.key",
+                    // DEPRECATED: domain: "xpc.key",
                     message: "Key not found",
                     details: ["identifier": identifier]
                 )
@@ -103,7 +103,7 @@ public enum XPCProtocolDTOs {
             case let .invalidKeyType(expected, received):
                 SecurityErrorDTO(
                     code: 10010,
-                    domain: "xpc.key",
+                    // DEPRECATED: domain: "xpc.key",
                     message: "Invalid key type",
                     details: ["expected": expected, "received": received]
                 )
@@ -111,7 +111,7 @@ public enum XPCProtocolDTOs {
             case let .cryptographicError(operation, details):
                 SecurityErrorDTO(
                     code: 10011,
-                    domain: "xpc.crypto",
+                    // DEPRECATED: domain: "xpc.crypto",
                     message: "Cryptographic error",
                     details: ["operation": operation, "details": details]
                 )
@@ -119,7 +119,7 @@ public enum XPCProtocolDTOs {
             case let .keyManagementError(operation, details):
                 SecurityErrorDTO(
                     code: 10017,
-                    domain: "xpc.key.management",
+                    // DEPRECATED: domain: "xpc.key.management",
                     message: "Key management error",
                     details: ["operation": operation, "details": details]
                 )
@@ -127,7 +127,7 @@ public enum XPCProtocolDTOs {
             case let .internalError(reason):
                 SecurityErrorDTO(
                     code: 10012,
-                    domain: "xpc.internal",
+                    // DEPRECATED: domain: "xpc.internal",
                     message: "Internal service error",
                     details: ["reason": reason]
                 )
@@ -135,14 +135,14 @@ public enum XPCProtocolDTOs {
             case .connectionInterrupted:
                 SecurityErrorDTO(
                     code: 10013,
-                    domain: "xpc.connection",
+                    // DEPRECATED: domain: "xpc.connection",
                     message: "Connection interrupted"
                 )
 
             case let .connectionInvalidated(reason):
                 SecurityErrorDTO(
                     code: 10014,
-                    domain: "xpc.connection",
+                    // DEPRECATED: domain: "xpc.connection",
                     message: "Connection invalidated",
                     details: ["reason": reason]
                 )
@@ -150,7 +150,7 @@ public enum XPCProtocolDTOs {
             case let .operationFailed(operation, reason):
                 SecurityErrorDTO(
                     code: 10015,
-                    domain: "xpc.operation",
+                    // DEPRECATED: domain: "xpc.operation",
                     message: "Operation failed",
                     details: ["operation": operation, "reason": reason]
                 )
@@ -158,7 +158,7 @@ public enum XPCProtocolDTOs {
             case let .notImplemented(reason):
                 SecurityErrorDTO(
                     code: 10016,
-                    domain: "xpc.implementation",
+                    // DEPRECATED: domain: "xpc.implementation",
                     message: "Feature not implemented",
                     details: ["reason": reason]
                 )
@@ -170,7 +170,7 @@ public enum XPCProtocolDTOs {
         /// - Returns: An XPCSecurityError
         public static func fromDTO(_ dto: SecurityErrorDTO) -> XPCProtocolsCore.XPCSecurityError {
             // Parse the domain and code to determine the appropriate XPCSecurityError
-            switch dto.domain {
+            // DEPRECATED: switch dto.domain {
             case "xpc.service":
                 if dto.code == 10001 {
                     return .serviceUnavailable

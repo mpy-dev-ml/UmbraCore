@@ -79,7 +79,7 @@ public enum FoundationConversions {
             return data
         } catch {
             throw UmbraErrors.Security.Protocols
-                .invalidFormat(reason: "Data is not valid JSON: \(error.localizedDescription)")
+                // DEPRECATED: .invalidFormat(reason: "Data is not valid JSON: \(error.localizedDescription)")
         }
     }
 
@@ -95,7 +95,7 @@ public enum FoundationConversions {
             return UmbraCoreTypes.SecureBytes(bytes: bytes)
         } catch {
             throw UmbraErrors.Security.Protocols
-                .invalidFormat(reason: "Could not convert object to JSON: \(error.localizedDescription)")
+                // DEPRECATED: .invalidFormat(reason: "Could not convert object to JSON: \(error.localizedDescription)")
         }
     }
 
@@ -120,23 +120,23 @@ public enum FoundationConversions {
     ///
     /// - Parameter error: The NSError to convert
     /// - Returns: A SecurityErrorDTO representation
-    public static func toErrorDTO(error: NSError) -> SecurityErrorDTO {
+    // DEPRECATED: public static func toErrorDTO(error: NSError) -> SecurityErrorDTO {
         // Extract details from user info if available
         var details: [String: String] = [:]
 
-        if let detailsDict = error.userInfo["details"] as? [String: String] {
+        // DEPRECATED: if let detailsDict = error.userInfo["details"] as? [String: String] {
             details = detailsDict
         } else {
             // Convert other user info to string details
-            for (key, value) in error.userInfo where key != NSLocalizedDescriptionKey {
+            // DEPRECATED: for (key, value) in error.userInfo where key != NSLocalizedDescriptionKey {
                 details[key] = String(describing: value)
             }
         }
 
         return SecurityErrorDTO(
-            code: Int32(error.code),
-            domain: error.domain,
-            message: error.localizedDescription,
+            // DEPRECATED: code: Int32(error.code),
+            // DEPRECATED: domain: error.domain,
+            // DEPRECATED: message: error.localizedDescription,
             details: details
         )
     }
@@ -175,7 +175,7 @@ public enum FoundationConversions {
             options = optionsDict
         } else if let optionsDict = dictionary["options"] as? [String: Any] {
             // Convert non-string values to strings
-            for (key, value) in optionsDict {
+            // DEPRECATED: for (key, value) in optionsDict {
                 options[key] = String(describing: value)
             }
         }
@@ -215,18 +215,18 @@ public enum FoundationConversions {
                 }
             } catch {
                 // If encoding fails, add error information
-                dictionary["encodingError"] = error.localizedDescription
+                // DEPRECATED: dictionary["encodingError"] = error.localizedDescription
             }
         }
 
         // Add error information if failed
-        if !result.isSuccess, let error = result.error {
-            dictionary["error"] = toNSError(errorDTO: error)
+        // DEPRECATED: if !result.isSuccess, let error = result.error {
+            // DEPRECATED: dictionary["error"] = toNSError(errorDTO: error)
             dictionary["errorInfo"] = [
-                "code": error.code,
-                "domain": error.domain,
-                "message": error.message,
-                "details": error.details,
+                // DEPRECATED: "code": error.code,
+                // DEPRECATED: "domain": error.domain,
+                // DEPRECATED: "message": error.message,
+                // DEPRECATED: "details": error.details,
             ]
         }
 

@@ -1,4 +1,4 @@
-// DEPRECATED: SecurityBridgeError
+// DEPRECATED: // DEPRECATED: SecurityBridgeError
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -8,9 +8,9 @@ import Foundation
 import SecurityProtocolsCore
 
 /// Error types that can be thrown by the SecurityBridge module
-public extension SecurityBridge {
+// DEPRECATED: public extension SecurityBridge {
     /// Error types specific to the bridge layer
-    enum SecurityBridgeError: Error, Sendable, Equatable {
+    // DEPRECATED: enum SecurityBridgeError: Error, Sendable, Equatable {
         /// Bookmark resolution failed
         case bookmarkResolutionFailed
         /// Implementation is missing
@@ -31,35 +31,35 @@ public enum SecurityBridgeErrorMapper {
     ///
     /// - Parameter error: The error to map
     /// - Returns: A SecurityBridgeError representation
-    public static func mapToBridgeError(_ error: Error) -> Error {
+    // DEPRECATED: public static func mapToBridgeError(_ error: Error) -> Error {
         // First, ensure we have a consistent UmbraErrors.Security.Protocols
-        let securityError = CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
+        // DEPRECATED: let securityError = CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
 
         // Convert to a bridge-specific error with appropriate message
         switch securityError {
         case let .invalidFormat(reason):
-            return SecurityBridge.SecurityBridgeError.general("Invalid format: \(reason)")
+            // DEPRECATED: return SecurityBridge.SecurityBridgeError.general("Invalid format: \(reason)")
         case let .unsupportedOperation(name):
-            return SecurityBridge.SecurityBridgeError.general("Unsupported operation: \(name)")
+            // DEPRECATED: return SecurityBridge.SecurityBridgeError.general("Unsupported operation: \(name)")
         case let .incompatibleVersion(version):
-            return SecurityBridge.SecurityBridgeError.general("Incompatible version: \(version)")
+            // DEPRECATED: return SecurityBridge.SecurityBridgeError.general("Incompatible version: \(version)")
         case let .missingProtocolImplementation(protocolName):
-            return SecurityBridge.SecurityBridgeError
+            // DEPRECATED: return SecurityBridge.SecurityBridgeError
                 .serviceUnavailable("Missing protocol: \(protocolName)")
         case let .invalidState(state, expectedState):
-            return SecurityBridge.SecurityBridgeError
+            // DEPRECATED: return SecurityBridge.SecurityBridgeError
                 .general("Invalid state: \(state) (expected: \(expectedState))")
         case let .internalError(message):
-            return SecurityBridge.SecurityBridgeError.general(message)
+            // DEPRECATED: return SecurityBridge.SecurityBridgeError.general(message)
         default:
             // For any other error cases, create a generic message
             let message: String = if
-                let localizedError = error as? LocalizedError,
+                // DEPRECATED: let localizedError = error as? LocalizedError,
                 let errorDescription = localizedError.errorDescription
             {
                 errorDescription
             } else {
-                "\(error)"
+                // DEPRECATED: "\(error)"
             }
             // Create a basic SecurityError with the message
             return UmbraErrors.Security.Protocols.internalError(message)
@@ -73,9 +73,9 @@ public enum SecurityBridgeErrorMapper {
     ///
     /// - Parameter error: The bridge error to map
     /// - Returns: A SecurityError
-    public static func mapToSecurityError(_ error: Error) -> Error {
+    // DEPRECATED: public static func mapToSecurityError(_ error: Error) -> Error {
         // If it's already a SecurityBridgeError, create a basic error message
-        if let bridgeError = error as? SecurityBridge.SecurityBridgeError {
+        // DEPRECATED: if let bridgeError = error as? SecurityBridge.SecurityBridgeError {
             let message: String = switch bridgeError {
             case .bookmarkResolutionFailed:
                 "Bookmark resolution failed"
@@ -91,6 +91,6 @@ public enum SecurityBridgeErrorMapper {
         }
 
         // For all other error types, use our canonical mapper
-        return CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
+        // DEPRECATED: return CoreErrors.SecurityErrorMapper.mapToProtocolError(error)
     }
 }

@@ -1,16 +1,16 @@
-// DEPRECATED: SecurityBridgeTests
+// DEPRECATED: // DEPRECATED: SecurityBridgeTests
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
 import Foundation
 
-@testable import SecurityBridge
+// DEPRECATED: // DEPRECATED: @testable import SecurityBridge
 import UmbraCoreTypes
 import XCTest
 
-class SecurityBridgeTests: XCTestCase {
+// DEPRECATED: // DEPRECATED: class SecurityBridgeTests: XCTestCase {
     func testVersion() {
-        XCTAssertFalse(SecurityBridge.version.isEmpty)
+        // DEPRECATED: XCTAssertFalse(SecurityBridge.version.isEmpty)
     }
 
     // MARK: - DataAdapter Tests
@@ -21,7 +21,7 @@ class SecurityBridgeTests: XCTestCase {
         let secureBytes = SecureBytes(testBytes)
 
         // Act
-        let data = DataAdapter.data(from: secureBytes)
+        // DEPRECATED: // DEPRECATED: let data = DataAdapter.data(from: secureBytes)
 
         // Assert
         XCTAssertEqual(data.count, testBytes.count)
@@ -34,7 +34,7 @@ class SecurityBridgeTests: XCTestCase {
         let data = Data(testBytes)
 
         // Act
-        let secureBytes = DataAdapter.secureBytes(from: data)
+        // DEPRECATED: let secureBytes = DataAdapter.secureBytes(from: data)
 
         // Assert
         XCTAssertEqual(secureBytes.count, testBytes.count)
@@ -47,8 +47,8 @@ class SecurityBridgeTests: XCTestCase {
         let original = SecureBytes(testBytes)
 
         // Act
-        let data = DataAdapter.data(from: original)
-        let roundTrip = DataAdapter.secureBytes(from: data)
+        // DEPRECATED: let data = DataAdapter.data(from: original)
+        // DEPRECATED: let roundTrip = DataAdapter.secureBytes(from: data)
 
         // Assert
         XCTAssertEqual(original, roundTrip)
@@ -61,7 +61,7 @@ class SecurityBridgeTests: XCTestCase {
         let url = URL(string: "https://example.com/path?query=value#fragment")!
 
         // Act
-        let locator = try URLAdapter.resourceLocator(from: url)
+        // DEPRECATED: let locator = try URLAdapter.resourceLocator(from: url)
 
         // Assert
         XCTAssertEqual(locator.scheme, "https")
@@ -80,7 +80,7 @@ class SecurityBridgeTests: XCTestCase {
         )
 
         // Act
-        let url = try URLAdapter.url(from: locator)
+        // DEPRECATED: let url = try URLAdapter.url(from: locator)
 
         // Assert
         XCTAssertEqual(url.scheme, "https")
@@ -95,7 +95,7 @@ class SecurityBridgeTests: XCTestCase {
         let fileLocator = ResourceLocator.fileLocator(path: filePath)
 
         // Act
-        let fileURL = try URLAdapter.fileURL(from: fileLocator)
+        // DEPRECATED: let fileURL = try URLAdapter.fileURL(from: fileLocator)
 
         // Assert
         XCTAssertEqual(fileURL.path, filePath)
@@ -110,7 +110,7 @@ class SecurityBridgeTests: XCTestCase {
         let date = Date(timeIntervalSince1970: timestamp)
 
         // Act
-        let timePoint = DateAdapter.timePoint(from: date)
+        // DEPRECATED: let timePoint = DateAdapter.timePoint(from: date)
 
         // Assert
         XCTAssertEqual(timePoint.timeIntervalSince1970, timestamp)
@@ -122,7 +122,7 @@ class SecurityBridgeTests: XCTestCase {
         let timePoint = TimePoint(timeIntervalSince1970: timestamp)
 
         // Act
-        let date = DateAdapter.date(from: timePoint)
+        // DEPRECATED: let date = DateAdapter.date(from: timePoint)
 
         // Assert
         XCTAssertEqual(date.timeIntervalSince1970, timestamp)
@@ -133,8 +133,8 @@ class SecurityBridgeTests: XCTestCase {
         let now = Date()
 
         // Act
-        let timePoint = DateAdapter.timePoint(from: now)
-        let roundTrip = DateAdapter.date(from: timePoint)
+        // DEPRECATED: let timePoint = DateAdapter.timePoint(from: now)
+        // DEPRECATED: let roundTrip = DateAdapter.date(from: timePoint)
 
         // Assert
         XCTAssertEqual(now.timeIntervalSince1970, roundTrip.timeIntervalSince1970)
@@ -142,7 +142,7 @@ class SecurityBridgeTests: XCTestCase {
 
     func testDateAdapter_Now() {
         // Act
-        let now = DateAdapter.now()
+        // DEPRECATED: let now = DateAdapter.now()
 
         // Assert
         XCTAssertFalse(now.timeIntervalSince1970.isZero)

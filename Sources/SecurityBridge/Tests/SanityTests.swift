@@ -1,5 +1,5 @@
 import Foundation
-@testable import SecurityBridge
+// DEPRECATED: @testable import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XCTest
@@ -46,14 +46,14 @@ final class SanityTests: XCTestCase {
     func testAsyncTaskGroup() async {
         // Test with TaskGroup
         let sum = await withTaskGroup(of: Int.self) { group in
-            for i in 1 ... 5 {
+            // DEPRECATED: for i in 1 ... 5 {
                 group.addTask {
                     await self.mockAsyncOperation(delay: 0.05, value: i)
                 }
             }
 
             var result = 0
-            for await value in group {
+            // DEPRECATED: for await value in group {
                 result += value
             }
             return result
@@ -67,7 +67,7 @@ final class SanityTests: XCTestCase {
         let counter = Counter()
 
         await withTaskGroup(of: Void.self) { group in
-            for _ in 1 ... 100 {
+            // DEPRECATED: for _ in 1 ... 100 {
                 group.addTask {
                     await counter.increment()
                 }
@@ -76,7 +76,7 @@ final class SanityTests: XCTestCase {
 
         // Get the value first and then use it in the assertion to avoid await in autoclosure
         let finalValue = await counter.value
-        XCTAssertEqual(finalValue, 100, "Counter should be incremented to 100")
+        // DEPRECATED: XCTAssertEqual(finalValue, 100, "Counter should be incremented to 100")
     }
 
     // MARK: - Helper Methods

@@ -17,7 +17,7 @@ public final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtoc
         // Extract key bytes
         var keyBytes = [UInt8]()
         do {
-            for i in 0 ..< key.count {
+            // DEPRECATED: for i in 0 ..< key.count {
                 try keyBytes.append(key.byte(at: i))
             }
         } catch {
@@ -25,7 +25,7 @@ public final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtoc
         }
 
         // XOR data with key
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             do {
                 let keyByte = keyBytes[i % keyBytes.count]
                 try bytes.append(data.byte(at: i) ^ keyByte)
@@ -44,7 +44,7 @@ public final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtoc
         // Extract key bytes
         var keyBytes = [UInt8]()
         do {
-            for i in 0 ..< key.count {
+            // DEPRECATED: for i in 0 ..< key.count {
                 try keyBytes.append(key.byte(at: i))
             }
         } catch {
@@ -52,7 +52,7 @@ public final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtoc
         }
 
         // XOR data with key
-        for i in 0 ..< data.count {
+        // DEPRECATED: for i in 0 ..< data.count {
             do {
                 let keyByte = keyBytes[i % keyBytes.count]
                 try bytes.append(data.byte(at: i) ^ keyByte)
@@ -68,7 +68,7 @@ public final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtoc
         // Simple mock hash implementation - not cryptographically secure
         var hashBytes = [UInt8](repeating: 0, count: 32)
 
-        for i in 0 ..< min(data.count, 32) {
+        // DEPRECATED: for i in 0 ..< min(data.count, 32) {
             do {
                 let dataByte = try data.byte(at: i)
                 hashBytes[i % 32] = hashBytes[i % 32] ^ dataByte
@@ -87,7 +87,7 @@ public final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtoc
     public func generateRandomBytes(count: Int) async -> Result<Data, UmbraErrors.Security.Protocols> {
         // Generate random bytes for testing
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0 ..< count {
+        // DEPRECATED: for i in 0 ..< count {
             bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return .success(Data(bytes))
@@ -128,11 +128,11 @@ public final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtoc
         var signatureBytes = [UInt8](repeating: 0, count: 64)
 
         // Mix in some data from the original data
-        for i in 0 ..< min(data.count, 32) {
+        // DEPRECATED: for i in 0 ..< min(data.count, 32) {
             do {
                 signatureBytes[i % 64] = try data.byte(at: i)
             } catch {
-                return .failure(.encryptionFailed("Error accessing data bytes for signing"))
+                // DEPRECATED: return .failure(.encryptionFailed("Error accessing data bytes for signing"))
             }
         }
 
@@ -160,7 +160,7 @@ public final class DummyCryptoService: SecurityProtocolsCore.CryptoServiceProtoc
         // Simple mock hash implementation - not cryptographically secure
         var hashBytes = [UInt8](repeating: 0, count: 32)
 
-        for i in 0 ..< min(data.count, 32) {
+        // DEPRECATED: for i in 0 ..< min(data.count, 32) {
             do {
                 let dataByte = try data.byte(at: i)
                 hashBytes[i % 32] = hashBytes[i % 32] ^ dataByte
@@ -229,7 +229,7 @@ public final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol 
         // Generate a random key
         let keyLength = type == .symmetric ? 32 : 16
         var keyBytes = [UInt8](repeating: 0, count: keyLength)
-        for i in 0 ..< keyLength {
+        // DEPRECATED: for i in 0 ..< keyLength {
             keyBytes[i] = UInt8.random(in: 0 ... 255)
         }
 
@@ -314,7 +314,7 @@ public final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol 
 
         // Generate a new key
         var newKeyBytes = [UInt8](repeating: 0, count: 32)
-        for i in 0 ..< 32 {
+        // DEPRECATED: for i in 0 ..< 32 {
             newKeyBytes[i] = UInt8.random(in: 0 ... 255)
         }
         let newKey = SecureBytes(bytes: newKeyBytes)
@@ -328,7 +328,7 @@ public final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol 
             // Extract bytes from SecureBytes
             var dataBytes = [UInt8]()
             do {
-                for i in 0 ..< dataToReencrypt.count {
+                // DEPRECATED: for i in 0 ..< dataToReencrypt.count {
                     try dataBytes.append(dataToReencrypt.byte(at: i))
                 }
                 // For a dummy implementation, we'll just append a marker to indicate re-encryption

@@ -1,4 +1,4 @@
-// DEPRECATED: ModernSecurityProviderAdapter
+// DEPRECATED: // DEPRECATED: ModernSecurityProviderAdapter
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -10,7 +10,7 @@ import XPCProtocolsCore
 /// Modern adapter implementation that wraps a security provider and service
 /// and implements the SecurityProviderProtocol using both components.
 @available(macOS 14.0, *)
-public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.SecurityProviderProtocol {
+// DEPRECATED: // DEPRECATED: public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.SecurityProviderProtocol {
     // MARK: - Properties
 
     /// The security provider
@@ -433,7 +433,7 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
         case let .success(result):
             // Convert the dictionary to string-string dictionary
             var stringDict: [String: String] = [:]
-            for (key, value) in result {
+            // DEPRECATED: for (key, value) in result {
                 stringDict[key] = String(describing: value)
             }
             return .success(stringDict)

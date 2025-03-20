@@ -1,10 +1,10 @@
 import Foundation
-import SecurityBridge
+// DEPRECATED: import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes
 
 /// A mock implementation of FoundationCryptoServiceImpl for testing
-final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked Sendable {
+// DEPRECATED: final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked Sendable {
     // MARK: - Test Control Properties
 
     /// Track method calls for verification
@@ -112,7 +112,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
 
         // Default implementation: create a Data object filled with repeating pattern
         var randomData = Data(count: length)
-        for i in 0 ..< randomData.count {
+        // DEPRECATED: for i in 0 ..< randomData.count {
             randomData[i] = UInt8(i % 256)
         }
         return .success(randomData)
@@ -247,7 +247,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
         case "sha512":
             64
         default:
-            32 // Default to SHA-256 length
+            // DEPRECATED: 32 // Default to SHA-256 length
         }
 
         return FoundationSecurityResult(data: dataToReturn ?? Data(repeating: 0xAA, count: hashLength))
@@ -255,17 +255,17 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
 }
 
 /// A mock implementation of FoundationSecurityProvider for testing
-final class MockFoundationSecurityProvider: FoundationSecurityProvider, @unchecked Sendable {
+// DEPRECATED: final class MockFoundationSecurityProvider: FoundationSecurityProvider, @unchecked Sendable {
     // MARK: - Service Properties
 
     private let mockKeyManager: MockFoundationKeyManagement
     private let mockCryptoService: MockFoundationCryptoService
 
-    public var cryptoService: any FoundationCryptoServiceImpl {
+    // DEPRECATED: public var cryptoService: any FoundationCryptoServiceImpl {
         mockCryptoService
     }
 
-    public var keyManager: any FoundationKeyManagementImpl {
+    // DEPRECATED: public var keyManager: any FoundationKeyManagementImpl {
         mockKeyManager
     }
 
@@ -357,7 +357,7 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
 }
 
 /// A mock implementation of FoundationKeyManagementImpl for testing
-final class MockFoundationKeyManagement: FoundationKeyManagementImpl, @unchecked Sendable {
+// DEPRECATED: final class MockFoundationKeyManagement: FoundationKeyManagementImpl, @unchecked Sendable {
     // MARK: - Test Control Properties
 
     /// Track method calls for verification
@@ -410,7 +410,7 @@ final class MockFoundationKeyManagement: FoundationKeyManagementImpl, @unchecked
 
     // MARK: - FoundationKeyManagement Implementation
 
-    func generateKey(type _: String, size: Int) async -> Result<Data, Error> {
+    // DEPRECATED: func generateKey(type _: String, size: Int) async -> Result<Data, Error> {
         recordMethodCall("generateKey")
         if shouldFail {
             return .failure(errorToReturn)
