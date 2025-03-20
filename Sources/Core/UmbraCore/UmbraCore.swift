@@ -12,11 +12,11 @@ public enum UmbraCore {
         public var verboseLogging: Bool
 
         /// The default security level for cryptographic operations
-        public var defaultSecurityLevel: SecurityLevel
+        public var defaultSecurityLevel: SecurityInterfaces.SecurityLevel
 
         public init(
             verboseLogging: Bool = false,
-            defaultSecurityLevel: SecurityLevel = .standard
+            defaultSecurityLevel: SecurityInterfaces.SecurityLevel = .standard
         ) {
             self.verboseLogging = verboseLogging
             self.defaultSecurityLevel = defaultSecurityLevel

@@ -124,7 +124,7 @@ public protocol FoundationXPCSecurityService: NSObjectProtocol, Sendable {
 /// See `XPCProtocolMigrationGuide` in XPCProtocolsCore for comprehensive migration guidance.
 @available(*, deprecated, message: "Use XPCServiceProtocolComplete from XPCProtocolsCore instead")
 @objc
-// REMOVED: public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol { (Removed by deprecation_remover)
+// REMOVED: // REMOVED: public protocol XPCServiceProtocolFoundationBridge: NSObjectProtocol { (Removed by deprecation_remover) (Removed by deprecation_remover)
     /// Protocol identifier - used for protocol negotiation
     static var protocolIdentifier: String { get }
 
