@@ -67,7 +67,7 @@ public extension UmbraErrors.Security.Core {
             .authenticationFailed(reason: reason)
         case let .authorizationFailed(reason):
             .authorizationDenied(operation: reason)
-        case let .secureConnectionFailed(reason):
+        case .secureConnectionFailed:
             .serviceUnavailable
         case let .internalError(reason) where reason.contains("timed out"):
             .timeout(after: 30.0) // Default timeout

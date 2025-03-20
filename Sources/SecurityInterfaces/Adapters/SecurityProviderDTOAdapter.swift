@@ -1,6 +1,9 @@
+// DEPRECATED: SecurityProviderDTOAdapter
+// This entire file is deprecated and should not be used in new code.
+// File marked as deprecated/legacy by naming convention
+
 import CoreDTOs
 import Foundation
-import SecurityBridge
 import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
@@ -63,7 +66,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         var options: [String: Any] = [
             "operation": "updateConfiguration"
         ]
-
+        
         // Add all parameters from the configuration
         _ = CoreDTOs.SecurityConfigDTO(
             algorithm: configuration.algorithm.isEmpty ? "AES" : configuration.algorithm,
@@ -75,7 +78,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         for (key, value) in parameters {
             options[key] = value
         }
-
+        
         // Create a security configuration directly from the DTO
         let securityConfig = SecurityConfiguration(
             securityLevel: .standard,
@@ -83,7 +86,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             hashAlgorithm: configuration.options["hashAlgorithm"] ?? "SHA-256",
             options: configuration.options
         )
-
+        
         // Update the provider with the new configuration
         do {
             if let securityProvider = provider as? SecurityProvider {
@@ -405,61 +408,23 @@ extension SecureBytes {
     }
 }
 
-// MARK: - Adapter for SecurityProviderFactory
+// MARK: - Utility class for creating DTO-compatible security providers
 
-/// Extension to SecurityProviderFactory to support creating DTO-compatible providers
-public extension SecurityProviderFactory {
+/// Utility class for creating DTO-compatible security providers
+public enum SecurityProviderDTOFactory {
     /// Create a SecurityProviderDTO instance
     /// - Parameter environment: Optional environment parameters
     /// - Returns: A Foundation-independent SecurityProviderDTO
-    static func createSecurityProviderDTO(environment _: [String: String]? = nil) -> any SecurityProviderDTO {
-        // Create a provider using the standard factory
-        let config = ProviderFactoryConfiguration()
-        let provider = StandardSecurityProviderFactory.shared.createSecurityProvider(config: config)
+    @MainActor
+    public static func createSecurityProviderDTO(environment _: [String: String]? = nil) -> any SecurityProviderDTO {
+        // Create a provider using the security provider adapter
+        let config = ProviderFactoryConfiguration(
+            useModernProtocols: true,
+            useMockServices: false,
+            securityLevel: .standard,
+            options: [:]
+        )
+        let provider = SecurityProviderAdapterFactory.shared.createSecurityProvider(config: config)
         return SecurityProviderDTOAdapter(provider: provider)
-    }
-}
-
-public func updateSecurityConfigDTO(_ configuration: CoreDTOs.SecurityConfigDTO) async -> Result<Void, CoreDTOs.SecurityErrorDTO> {
-    // We'll create a security config and execute a configuration update operation
-    var options: [String: Any] = [
-        "operation": "updateConfiguration"
-    ]
-
-    // Add all parameters from the configuration
-    _ = CoreDTOs.SecurityConfigDTO(
-        algorithm: configuration.algorithm.isEmpty ? "AES" : configuration.algorithm,
-        keySizeInBits: configuration.keySizeInBits == 0 ? 256 : configuration.keySizeInBits,
-        options: configuration.options,
-        inputData: configuration.inputData
-    )
-    let parameters = configuration.options
-    for (key, value) in parameters {
-        options[key] = value
-    }
-
-    // Create a security configuration directly from the DTO
-    let securityConfig = SecurityConfiguration(
-        securityLevel: .standard,
-        encryptionAlgorithm: configuration.algorithm,
-        hashAlgorithm: configuration.options["hashAlgorithm"] ?? "SHA-256",
-        options: configuration.options
-    )
-
-    // Update the provider with the new configuration
-    do {
-        if let securityProvider = provider as? SecurityProvider {
-            try await securityProvider.updateSecurityConfiguration(securityConfig)
-        } else if let dtoProvider = provider as? SecurityProviderDTO {
-            try await dtoProvider.updateSecurityConfiguration(securityConfig)
-        }
-        return .success(())
-    } catch {
-        return .failure(CoreDTOs.SecurityErrorDTO(
-            code: 1_100,
-            domain: "security.configuration",
-            message: "Failed to update security configuration: \(error.localizedDescription)",
-            details: [:]
-        ))
     }
 }

@@ -280,8 +280,8 @@ public final class SecurityProvider: SecurityProtocolsCore.SecurityProviderProto
         statusDict["configData"] = configData
         statusDict["updateTimestamp"] = Date().timeIntervalSince1970
 
-        // Use resetSecurityData as a proxy to update configuration
-        let result = await service.resetSecurityData()
+        // Use resetSecurity as a proxy to update configuration
+        let result = await service.resetSecurity()
 
         switch result {
         case .success:

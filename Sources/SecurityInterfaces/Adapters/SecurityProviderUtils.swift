@@ -11,50 +11,48 @@ public enum SecurityProviderUtils {
     /// - Parameter error: The XPCSecurityError to convert
     /// - Returns: A SecurityInterfacesError
     public static func convertXPCError(_ error: XPCSecurityError) -> SecurityInterfacesError {
-        let securityInterfacesError: SecurityInterfacesError = switch error {
+        switch error {
         case .serviceUnavailable:
-            .operationFailed("XPC service unavailable")
+            return .operationFailed("XPC service unavailable")
         case let .serviceNotReady(reason):
-            .operationFailed("Service not ready: \(reason)")
-        case let .authenticationFailed(reason):
-            .operationFailed("Authentication failed: \(reason)")
-        case let .invalidInput(details):
-            .invalidParameters(details)
-        case let .encryptionFailed(reason):
-            .encryptionFailed(reason: reason)
-        case let .decryptionFailed(reason):
-            .decryptionFailed(reason: reason)
-        case let .keyGenerationFailed(reason):
-            .keyGenerationFailed(reason: reason)
-        case let .cryptographicError(operation, details):
-            .operationFailed("Cryptographic error in \(operation): \(details)")
-        case .timeout:
-            .operationFailed("Operation timed out")
-        case let .operationNotSupported(name):
-            .operationFailed("Operation not supported: \(name)")
-        case let .invalidState(details):
-            .operationFailed("Invalid state: \(details)")
-        case let .keyNotFound(identifier):
-            .operationFailed("Key not found: \(identifier)")
-        case let .invalidKeyType(expected, received):
-            .operationFailed("Invalid key type. Expected: \(expected), Received: \(received)")
-        case let .invalidData(reason):
-            .operationFailed("Invalid data: \(reason)")
+            return .operationFailed("Service not ready: \(reason)")
+        case let .timeout(after):
+            return .timeout(after: after)
+        case .authenticationFailed:
+            return .authenticationFailed
         case let .authorizationDenied(operation):
-            .operationFailed("Authorization denied for operation: \(operation)")
+            return .authorizationDenied(operation: operation)
+        case let .operationNotSupported(name):
+            return .operationNotSupported(name: name)
         case let .notImplemented(reason):
-            .operationFailed("Not implemented: \(reason)")
+            return .operationFailed("Not implemented: \(reason)")
+        case let .invalidInput(details):
+            return .invalidInput(details: details)
+        case let .invalidData(reason):
+            return .operationFailed("Invalid data: \(reason)")
+        case let .encryptionFailed(reason):
+            return .encryptionFailed(reason: reason)
+        case let .invalidState(details):
+            return .operationFailed("Invalid state: \(details)")
+        case let .keyNotFound(identifier):
+            return .keyNotFound(identifier: identifier)
+        case let .invalidKeyType(expected, received):
+            return .invalidKeyType(expected: expected, received: received)
+        case let .cryptographicError(operation, details):
+            return .operationFailed("Cryptographic error in \(operation): \(details)")
+        case let .decryptionFailed(reason):
+            return .decryptionFailed(reason: reason)
+        case let .keyGenerationFailed(reason):
+            return .keyGenerationFailed(reason: reason)
         case let .internalError(reason):
-            .operationFailed("Internal error: \(reason)")
+            return .operationFailed("Internal error: \(reason)")
         case .connectionInterrupted:
-            .operationFailed("Connection interrupted")
+            return .operationFailed("Connection interrupted")
         case let .connectionInvalidated(reason):
-            .operationFailed("Connection invalidated: \(reason)")
+            return .operationFailed("Connection invalidated: \(reason)")
         @unknown default:
-            .operationFailed("Unknown XPC error: \(error.localizedDescription)")
+            return .operationFailed("Unknown XPC error: \(error.localizedDescription)")
         }
-
-        return securityInterfacesError
     }
 
     /// Alias for convertXPCError - maps an XPCSecurityError to a SecurityInterfacesError
@@ -64,29 +62,109 @@ public enum SecurityProviderUtils {
         convertXPCError(error)
     }
 
+    /// Map an XPCProtocolsCore.SecurityError to a SecurityInterfacesError
+    /// - Parameter error: The SecurityError to convert
+    /// - Returns: A SecurityInterfacesError
+    public static func mapSPCError(_ error: XPCProtocolsCore.SecurityError) -> SecurityInterfacesError {
+        // Convert from XPCProtocolsCore.SecurityError to SecurityInterfacesError
+        switch error {
+        case .serviceUnavailable:
+            return .serviceUnavailable
+        case let .serviceNotReady(reason):
+            return .operationFailed("Service not ready: \(reason)")
+        case let .timeout(after):
+            return .timeout(after: after)
+        case .authenticationFailed:
+            return .authenticationFailed
+        case let .authorizationDenied(operation):
+            return .authorizationDenied(operation: operation)
+        case let .operationNotSupported(name):
+            return .operationNotSupported(name: name)
+        case let .notImplemented(reason):
+            return .operationFailed("Not implemented: \(reason)")
+        case let .invalidInput(details):
+            return .invalidInput(details: details)
+        case let .invalidState(details):
+            return .operationFailed("Invalid state: \(details)")
+        case let .keyNotFound(identifier):
+            return .keyNotFound(identifier: identifier)
+        case let .invalidKeyType(expected, received):
+            return .invalidKeyType(expected: expected, received: received)
+        case let .cryptographicError(operation, details):
+            return .operationFailed("Cryptographic error in \(operation): \(details)")
+        case let .internalError(reason):
+            return .operationFailed("Internal error: \(reason)")
+        case .connectionInterrupted:
+            return .operationFailed("Connection interrupted")
+        case let .connectionInvalidated(reason):
+            return .operationFailed("Connection invalidated: \(reason)")
+        case let .operationFailed(operation, reason):
+            return .operationFailed("\(operation) failed: \(reason)")
+        @unknown default:
+            return .operationFailed("Unknown security error: \(error.localizedDescription)")
+        }
+    }
+
+    /// Map UmbraErrors.Security.Protocols to a SecurityInterfacesError
+    /// - Parameter error: The UmbraErrors.Security.Protocols to convert
+    /// - Returns: A SecurityInterfacesError
+    public static func mapSPCError(_ error: UmbraErrors.Security.Protocols) -> SecurityInterfacesError {
+        // Convert from UmbraErrors.Security.Protocols to SecurityInterfacesError
+        switch error {
+        case .serviceError:
+            return .serviceUnavailable
+        case let .notImplemented(reason):
+            return .operationFailed("Not implemented: \(reason)")
+        case let .invalidInput(details):
+            return .invalidInput(details: details)
+        case let .invalidState(state, expectedState):
+            return .operationFailed("Invalid state: \(state), expected: \(expectedState)")
+        case let .invalidFormat(reason):
+            return .invalidInput(details: "Invalid format: \(reason)")
+        case let .missingProtocolImplementation(protocolName):
+            return .operationFailed("Missing protocol implementation: \(protocolName)")
+        case let .unsupportedOperation(name):
+            return .operationNotSupported(name: name)
+        case let .incompatibleVersion(version):
+            return .operationFailed("Incompatible version: \(version)")
+        case let .internalError(reason):
+            return .operationFailed("Internal error: \(reason)")
+        case let .encryptionFailed(reason):
+            return .operationFailed("Encryption failed: \(reason)")
+        case let .decryptionFailed(reason):
+            return .operationFailed("Decryption failed: \(reason)")
+        case let .randomGenerationFailed(reason):
+            return .operationFailed("Random generation failed: \(reason)")
+        case let .storageOperationFailed(reason):
+            return .operationFailed("Storage operation failed: \(reason)")
+        @unknown default:
+            return .operationFailed("Unknown security protocol error")
+        }
+    }
+
     /// Map a CoreErrors SecurityError to a SecurityInterfacesError
     /// - Parameter error: The error to map
     /// - Returns: A SecurityInterfacesError equivalent
     public static func convertError(_ error: CoreErrors.SecurityError) -> SecurityInterfacesError {
         // Convert the error to a SecurityInterfacesError instance
-        let securityInterfacesError: SecurityInterfacesError = switch error {
+        switch error {
         case let .invalidKey(reason):
-            .keyError("Invalid key: \(reason)")
+            return .keyError("Invalid key: \(reason)")
         case let .invalidContext(reason):
-            .operationFailed("Invalid context: \(reason)")
+            return .operationFailed("Invalid context: \(reason)")
         case let .invalidParameter(name, reason):
-            .operationFailed("Invalid parameter '\(name)': \(reason)")
+            return .operationFailed("Invalid parameter '\(name)': \(reason)")
         case let .operationFailed(operation, reason):
-            .operationFailed("\(operation) failed: \(reason)")
+            return .operationFailed("\(operation) failed: \(reason)")
         case let .unsupportedAlgorithm(name):
-            .operationFailed("Unsupported algorithm: \(name)")
+            return .operationFailed("Unsupported algorithm: \(name)")
         case let .missingImplementation(component):
-            .operationFailed("Missing implementation: \(component)")
+            return .operationFailed("Missing implementation: \(component)")
         case let .internalError(description):
-            .operationFailed("Internal error: \(description)")
+            return .operationFailed("Internal error: \(description)")
+        @unknown default:
+            return .operationFailed("Unknown security error: \(error.localizedDescription)")
         }
-
-        return securityInterfacesError
     }
 
     /// Maps a general Error to a SecurityInterfacesError
@@ -94,28 +172,36 @@ public enum SecurityProviderUtils {
     /// - Returns: A SecurityInterfacesError representation of the input error
     public static func mapToSecurityInterfacesError(_ error: Error) -> SecurityInterfacesError {
         if let securityError = error as? SecurityInterfacesError {
-            securityError
+            return securityError
         } else if let coreError = error as? CoreErrors.SecurityError {
-            convertError(coreError)
+            return convertError(coreError)
         } else if let xpcError = error as? XPCSecurityError {
             switch xpcError {
             case let .internalError(reason):
-                .operationFailed(reason)
+                return .operationFailed(reason)
             case let .invalidData(reason):
-                .keyError(reason)
+                return .keyError(reason)
             case let .keyNotFound(identifier):
-                .keyError("Key not found: \(identifier)")
+                return .keyError("Key not found: \(identifier)")
             case let .encryptionFailed(reason), let .decryptionFailed(reason):
-                .operationFailed("Crypto operation failed: \(reason)")
+                return .operationFailed("Crypto operation failed: \(reason)")
             case .authenticationFailed:
-                .authenticationFailed
+                return .authenticationFailed
             case let .invalidInput(details):
-                .operationFailed("Invalid input: \(details)")
+                return .operationFailed("Invalid input: \(details)")
+            case .connectionInterrupted:
+                return .operationFailed("Connection interrupted")
+            case let .connectionInvalidated(reason):
+                return .operationFailed("Connection invalidated: \(reason)")
             default:
-                .operationFailed("XPC error: \(xpcError)")
+                return .operationFailed("XPC error: \(xpcError)")
             }
+        } else if let spcError = error as? XPCProtocolsCore.SecurityError {
+            return mapSPCError(spcError)
+        } else if let umbraError = error as? UmbraErrors.Security.Protocols {
+            return mapSPCError(umbraError)
         } else {
-            .operationFailed("Unknown error: \(error.localizedDescription)")
+            return .operationFailed("Unknown error: \(error.localizedDescription)")
         }
     }
 

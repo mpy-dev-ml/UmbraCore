@@ -174,7 +174,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
     ) async -> OperationResultDTO<String> {
         // Convert to legacy key type if possible
         let keyTypeStr = config.algorithm.lowercased()
-        var keyType: XPCProtocolTypeDefs.KeyType = switch keyTypeStr {
+        let keyType: XPCProtocolTypeDefs.KeyType = switch keyTypeStr {
         case "aes", "chacha20":
             .symmetric
         case "rsa", "ecc", "ec":
@@ -328,7 +328,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             if let keyService = completeService as? KeyManagementServiceProtocol {
                 // Convert to legacy key type if possible
                 let keyTypeStr = config.algorithm.lowercased()
-                var keyType: XPCProtocolTypeDefs.KeyType = switch keyTypeStr {
+                let keyType: XPCProtocolTypeDefs.KeyType = switch keyTypeStr {
                 case "aes", "chacha20":
                     .symmetric
                 case "rsa", "ecc", "ec":
@@ -380,7 +380,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             if let keyService = completeService as? KeyManagementServiceProtocol {
                 // Determine format from config
                 let formatStr = config.options["format"]?.lowercased() ?? "raw"
-                var format: XPCProtocolTypeDefs.KeyFormat = switch formatStr {
+                let format: XPCProtocolTypeDefs.KeyFormat = switch formatStr {
                 case "pkcs8":
                     .pkcs8
                 case "pem":
