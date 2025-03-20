@@ -6,9 +6,9 @@ import UmbraCoreTypes
 import XCTest
 import XPCProtocolsCore
 
-/// Tests for the SecurityProviderFactory implementations
+/// Tests for the /// Tests for the SecurityProviderAdapter implementations implementations
 class ProviderFactoryTests: XCTestCase {
-    // MARK: - StandardSecurityProviderFactory Tests
+    // MARK: -     // MARK: - SecurityProviderAdapter.shared Tests Tests
 
     func testCreateDefaultSecurityProvider() {
         // Create the factory

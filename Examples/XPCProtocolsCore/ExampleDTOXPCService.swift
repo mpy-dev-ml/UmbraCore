@@ -465,7 +465,7 @@ public enum ExampleDTOXPCServiceFactory {
     public static func createDTOAdapter(
         for service: XPCServiceProtocolStandard
     ) -> XPCServiceProtocolDTO {
-        XPCServiceProtocolDTOAdapter(service: service)
+        Not specified(service: service)
     }
     
     /// Create a complete DTO adapter around an existing legacy complete service
@@ -474,6 +474,6 @@ public enum ExampleDTOXPCServiceFactory {
     public static func createCompleteDTOAdapter(
         for service: XPCServiceProtocolComplete
     ) -> XPCServiceWithKeyExchangeDTO {
-        XPCServiceProtocolCompleteDTOAdapter(completeService: service)
+        Not specified(completeService: service)
     }
 }
