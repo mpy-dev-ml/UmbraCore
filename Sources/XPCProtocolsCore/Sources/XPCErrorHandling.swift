@@ -258,21 +258,19 @@ public enum XPCErrorUtilities {
         let nsError = error as NSError
 
         // Check for common error domains and convert appropriately
-        // DEPRECATED: switch nsError.domain {
-        case NSURLErrorDomain:
+        if nsError.domain == NSURLErrorDomain {
             if nsError.code == NSURLErrorTimedOut {
                 return .timeout(after: 30.0) // Default timeout
             } else {
                 return .connectionInterrupted
             }
-
-        case "XPCConnectionErrorDomain":
+        } else if nsError.domain == "XPCConnectionErrorDomain" {
             return .connectionInvalidated(reason: nsError.localizedDescription)
-
-        case "CryptoErrorDomain":
+        } else if nsError.domain == "CryptoErrorDomain" {
             return .cryptographicError(operation: "Unspecified", details: nsError.localizedDescription)
-
-        default:
-            return .internalError(reason: "Unknown error: \(nsError.localizedDescription)")
+        }
+        
+        // Default fallback for unknown errors
+        return .internalError(reason: nsError.localizedDescription)
     }
 }

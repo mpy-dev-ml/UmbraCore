@@ -2,9 +2,6 @@ import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
 
-// Removed import SecurityProtocolsCore to break circular dependency
-import UmbraCoreTypes
-
 // Type alias to disambiguate SecurityError types
 typealias SPCSecurityError = UmbraErrors.Security.Protocols
 
@@ -42,16 +39,19 @@ public enum XPCProtocolMigrationFactory {
 
     /// Convert from legacy error to XPCSecurityError
     ///
-    /// - Parameter error: Legacy error to convert
-    /// - Returns: Standardised XPCSecurityError
-    public static func convertToStandardError(_ error: Error) -> XPCSecurityError {
-        // If the error is already an XPCSecurityError, return it directly
-        if let xpcError = error as? XPCSecurityError {
-            return xpcError
+    /// - Parameter error: Error to convert
+    /// - Returns: XPCSecurityError representation
+    public static func convertLegacyError(_ error: Error) -> XPCSecurityError {
+        // First check if it's already the right type
+        if let securityError = error as? XPCSecurityError {
+            return securityError
         }
-
-        // Otherwise create a general error with the original error's description
-        return .internalError(reason: error.localizedDescription)
+        
+        // Convert to XPCSecurityError with appropriate mapping
+        let nsError = error as NSError
+        
+        // Try to create a more specific error based on domain and code
+        return .internalError(reason: nsError.localizedDescription)
     }
 
     /// Convert any error to XPCSecurityError
@@ -66,6 +66,22 @@ public enum XPCProtocolMigrationFactory {
 
         // Otherwise create a general error with the original error's description
         return .internalError(reason: error.localizedDescription)
+    }
+
+    /// Map any NSError to an XPCSecurityError
+    /// - Parameter error: The error to map
+    /// - Returns: An XPCSecurityError representing the given error
+    public static func mapError(_ error: Error) -> XPCSecurityError {
+        // NSError properties
+        let nsError = error as NSError
+        let domain = nsError.domain
+        
+        // Map specific error domains
+        if domain == NSURLErrorDomain {
+            return .connectionInterrupted
+        } else {
+            return .internalError(reason: nsError.localizedDescription)
+        }
     }
 
     // MARK: - Migration Helper Methods
@@ -125,61 +141,10 @@ public enum XPCProtocolMigrationFactory {
 
         // Convert to XPCSecurityError with appropriate mapping
         let nsError = error as NSError
-        // DEPRECATED: let domain = nsError.domain
-        let code = nsError.code
-
+        
         // Try to create a more specific error based on domain and code
-        // DEPRECATED: if domain.contains("auth") {
-            return .authenticationFailed(reason: "Error \(code)")
-        // DEPRECATED: } else if domain.contains("timeout") {
-            return .timeout(after: 30.0) // Default timeout
-        // DEPRECATED: } else if domain.contains("crypto") || domain.contains("security") {
-            return .cryptographicError(operation: "unknown", details: "Error \(code)")
-        } else {
-            return .internalError(reason: nsError.localizedDescription)
-        }
+        return .internalError(reason: nsError.localizedDescription)
+    }
 
 // MARK: - Swift Concurrency Helpers
-
-// DEPRECATED: public extension XPCProtocolMigrationFactory {
-// DEPRECATED:     /// Convert a completion handler-based function to an async function
-// DEPRECATED:     ///
-// DEPRECATED:     /// - Parameters:
-// DEPRECATED:     ///   - operation: The operation to perform with a completion handler
-// DEPRECATED:     /// - Returns: A Result with the operation result or error
-// DEPRECATED:     static func withAsyncErrorHandling<T>(
-// DEPRECATED:         _ operation: (@escaping (Result<T, Error>) -> Void) -> Void
-// DEPRECATED:     ) async -> Result<T, XPCSecurityError> {
-// DEPRECATED:         await withCheckedContinuation { continuation in
-// DEPRECATED:             operation { result in
-// DEPRECATED:                 switch result {
-// DEPRECATED:                 case let .success(value):
-// DEPRECATED:                     continuation.resume(returning: .success(value))
-// DEPRECATED:                 case let .failure(error):
-// DEPRECATED:                     continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
-// DEPRECATED:                 }
-// DEPRECATED:             }
-// DEPRECATED:         }
-// DEPRECATED:     }
-
-// DEPRECATED:     /// Convert a traditional success/error completion handler to an async function
-// DEPRECATED:     ///
-// DEPRECATED:     /// - Parameters:
-// DEPRECATED:     ///   - operation: The operation with traditional (T?, Error?) completion
-// DEPRECATED:     /// - Returns: A Result with the operation result or error
-// DEPRECATED:     static func withTraditionalAsyncErrorHandling<T>(
-// DEPRECATED:         _ operation: (@escaping (T?, Error?) -> Void) -> Void
-// DEPRECATED:     ) async -> Result<T, XPCSecurityError> {
-// DEPRECATED:         await withCheckedContinuation { continuation in
-// DEPRECATED:             operation { value, error in
-// DEPRECATED:                 if let error {
-// DEPRECATED:                     continuation.resume(returning: .failure(convertErrorToXPCSecurityError(error)))
-// DEPRECATED:                 } else if let value {
-// DEPRECATED:                     continuation.resume(returning: .success(value))
-// DEPRECATED:                 } else {
-// DEPRECATED:                     continuation.resume(returning: .failure(.invalidData(reason: "Both value and error were nil")))
-// DEPRECATED:                 }
-// DEPRECATED:             }
-// DEPRECATED:         }
-// DEPRECATED:     }
-// DEPRECATED: }
+}
