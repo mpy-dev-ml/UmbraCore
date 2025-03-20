@@ -5,16 +5,16 @@ import Foundation
 public struct SecurityKeyDTO: Sendable, Equatable {
     /// Unique identifier for the key
     public let id: String
-    
+
     /// Algorithm used for this key (e.g., "AES256", "RSA2048")
     public let algorithm: String
-    
+
     /// The actual key data
     public let keyData: BinaryData
-    
+
     /// Additional metadata associated with the key
     public let metadata: [String: String]
-    
+
     /// Initialize a new SecurityKeyDTO
     /// - Parameters:
     ///   - id: Unique identifier for the key

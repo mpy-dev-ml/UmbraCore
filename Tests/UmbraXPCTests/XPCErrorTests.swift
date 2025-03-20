@@ -6,13 +6,13 @@ final class XPCErrorTests: XCTestCase {
         let errors: [XPCError] = [
             .connectionFailed("Failed to connect"),
             .messageFailed("Failed to send"),
-            .invalidMessage("Invalid format")
+            .invalidMessage("Invalid format"),
         ]
 
         let expectedDescriptions = [
             "XPC connection failed: Failed to connect",
             "Failed to send XPC message: Failed to send",
-            "Invalid XPC message format: Invalid format"
+            "Invalid XPC message format: Invalid format",
         ]
 
         for (error, expectedDescription) in zip(errors, expectedDescriptions) {

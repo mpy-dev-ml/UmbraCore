@@ -9,16 +9,16 @@ import XPCProtocolsCore
 public struct ProviderFactoryConfiguration {
     /// Whether to use modern protocols
     public let useModernProtocols: Bool
-    
+
     /// Whether to use mock services
     public let useMockServices: Bool
-    
+
     /// Security level for the provider
     public let securityLevel: SecurityLevel
-    
+
     /// Additional options
     public let options: [String: String]
-    
+
     /// Initialize a new configuration
     public init(useModernProtocols: Bool, useMockServices: Bool, securityLevel: SecurityLevel, options: [String: String]) {
         self.useModernProtocols = useModernProtocols
@@ -26,7 +26,7 @@ public struct ProviderFactoryConfiguration {
         self.securityLevel = securityLevel
         self.options = options
     }
-    
+
     /// Security level enum
     public enum SecurityLevel {
         case standard
@@ -44,7 +44,7 @@ public enum SPCProviderFactory {
     public static func createProvider(ofType type: String) -> any SecurityProtocolsCore.SecurityProviderProtocol {
         // Get the shared instance of the provider adapter factory
         let factory = SecurityProviderAdapterFactory.shared
-        
+
         // Create a configuration based on the type
         let config = ProviderFactoryConfiguration(
             useModernProtocols: true,
@@ -52,11 +52,11 @@ public enum SPCProviderFactory {
             securityLevel: .standard,
             options: ["providerType": type]
         )
-        
+
         // Use the factory to create the provider
         return factory.createSecurityProvider(config: config)
     }
-    
+
     /// Create a default provider
     /// - Returns: A SecurityProtocolsCore provider instance
     public static func createDefaultProvider() -> any SecurityProtocolsCore.SecurityProviderProtocol {

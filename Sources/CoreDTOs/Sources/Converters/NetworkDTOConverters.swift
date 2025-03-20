@@ -80,7 +80,8 @@ public extension NetworkRequestDTO {
         // Extract query parameters
         var queryParams: [String: String] = [:]
         if let url = urlRequest.url, let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
-           let queryItems = components.queryItems {
+           let queryItems = components.queryItems
+        {
             for item in queryItems {
                 queryParams[item.name] = item.value ?? ""
             }

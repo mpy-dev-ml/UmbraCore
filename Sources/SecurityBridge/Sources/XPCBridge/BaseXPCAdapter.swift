@@ -146,11 +146,11 @@ public extension BaseXPCAdapter {
             }
 
             switch error.code {
-            case 1_001:
+            case 1001:
                 return .serviceUnavailable
-            case 1_002:
+            case 1002:
                 return .authorizationDenied(operation: "SecurityService operation")
-            case 1_003:
+            case 1003:
                 return .operationNotSupported(name: "Invalid operation")
             default:
                 return .internalError(

@@ -17,7 +17,7 @@ import XPCProtocolsCore
 class MockXPCServiceDTOAdapter: XPCServiceProtocolStandardDTO {
     // Record of method calls for verification
     var methodCalls: [String: Int] = [:]
-    
+
     // Configurable responses for testing
     var pingResponse: Result<Bool, XPCSecurityErrorDTO> = .success(true)
     var randomDataResponse: Result<SecureBytes, XPCSecurityErrorDTO> = .success(SecureBytes(bytes: [1, 2, 3, 4]))
@@ -31,74 +31,74 @@ class MockXPCServiceDTOAdapter: XPCServiceProtocolStandardDTO {
     var versionResponse: Result<String, XPCSecurityErrorDTO> = .success("1.0.0")
     var hardwareIdentifierResponse: Result<String, XPCSecurityErrorDTO> = .success("test-hardware")
     var resetSecurityResponse: Result<Void, XPCSecurityErrorDTO> = .success(())
-    
+
     // Implementation of XPCServiceProtocolDTO methods
-    
+
     func ping() async -> Result<Bool, XPCSecurityErrorDTO> {
         recordMethodCall("ping")
         return pingResponse
     }
-    
+
     func getServiceStatus() async -> Result<XPCServiceDTO.ServiceStatusDTO, XPCSecurityErrorDTO> {
         recordMethodCall("getServiceStatus")
         return statusResponse
     }
-    
+
     func getServiceVersion() async -> Result<String, XPCSecurityErrorDTO> {
         recordMethodCall("getServiceVersion")
         return versionResponse
     }
-    
+
     func resetSecurity() async -> Result<Void, XPCSecurityErrorDTO> {
         recordMethodCall("resetSecurity")
         return resetSecurityResponse
     }
-    
+
     // Implementation of XPCServiceProtocolStandardDTO methods
-    
-    func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
+
+    func generateRandomData(length _: Int) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
         recordMethodCall("generateRandomData")
         return randomDataResponse
     }
-    
-    func encryptData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
+
+    func encryptData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
         recordMethodCall("encryptData")
         return encryptResponse
     }
-    
-    func decryptData(_ data: SecureBytes, keyIdentifier: String?) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
+
+    func decryptData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
         recordMethodCall("decryptData")
         return decryptResponse
     }
-    
-    func sign(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
+
+    func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
         recordMethodCall("sign")
         return signResponse
     }
-    
-    func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityErrorDTO> {
+
+    func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityErrorDTO> {
         recordMethodCall("verify")
         return verifyResponse
     }
-    
+
     func getHardwareIdentifier() async -> Result<String, XPCSecurityErrorDTO> {
         recordMethodCall("getHardwareIdentifier")
         return hardwareIdentifierResponse
     }
-    
-    func synchronizeKeys(_ syncData: SecureBytes) async throws {
+
+    func synchronizeKeys(_: SecureBytes) async throws {
         recordMethodCall("synchronizeKeys")
         // This can be configured to throw an error if needed for testing
     }
-    
+
     // Helper method to record method calls
     private func recordMethodCall(_ method: String) {
         methodCalls[method] = (methodCalls[method] ?? 0) + 1
     }
-    
+
     // Helper method to verify method calls
     func verifyMethodCall(_ method: String, callCount: Int = 1) -> Bool {
-        return methodCalls[method] == callCount
+        methodCalls[method] == callCount
     }
 }
 
@@ -107,11 +107,11 @@ class MockXPCServiceDTOAdapter: XPCServiceProtocolStandardDTO {
 /// A service that uses the XPCServiceProtocolStandardDTO interface
 class SecurityService {
     private let adapter: XPCServiceProtocolStandardDTO
-    
+
     init(adapter: XPCServiceProtocolStandardDTO) {
         self.adapter = adapter
     }
-    
+
     /// Encrypt sensitive data
     /// - Parameters:
     ///   - data: The data to encrypt
@@ -123,13 +123,13 @@ class SecurityService {
         guard case .success(true) = pingResult else {
             return .failure(XPCSecurityErrorDTO.serviceUnavailable())
         }
-        
+
         // Convert input data to SecureBytes
         let secureData = SecureBytes(bytes: data)
-        
+
         // Encrypt the data
         let result = await adapter.encryptData(secureData, keyIdentifier: keyId)
-        
+
         // Convert the result back to [UInt8]
         return result.flatMap { encryptedBytes in
             var bytesArray = [UInt8]()
@@ -139,16 +139,16 @@ class SecurityService {
             return .success(bytesArray)
         }.mapError { $0 as Error }
     }
-    
+
     /// Check if the service is healthy
     /// - Returns: A boolean indicating if the service is healthy
     func isServiceHealthy() async -> Bool {
         let statusResult = await adapter.getServiceStatus()
-        
-        guard case .success(let status) = statusResult else {
+
+        guard case let .success(status) = statusResult else {
             return false
         }
-        
+
         return status.status == "healthy"
     }
 }
@@ -159,63 +159,63 @@ class SecurityService {
 class SecurityServiceTests: XCTestCase {
     var mockAdapter: MockXPCServiceDTOAdapter!
     var securityService: SecurityService!
-    
+
     override func setUp() {
         super.setUp()
         mockAdapter = MockXPCServiceDTOAdapter()
         securityService = SecurityService(adapter: mockAdapter)
     }
-    
+
     override func tearDown() {
         mockAdapter = nil
         securityService = nil
         super.tearDown()
     }
-    
+
     func testEncryptSensitiveData_Success() async {
         // Configure the mock to return success responses
         mockAdapter.pingResponse = .success(true)
         mockAdapter.encryptResponse = .success(SecureBytes(bytes: [5, 6, 7, 8]))
-        
+
         // Call the method under test
         let result = await securityService.encryptSensitiveData([1, 2, 3, 4])
-        
+
         // Verify the result
         switch result {
-        case .success(let data):
+        case let .success(data):
             XCTAssertEqual(data, [5, 6, 7, 8])
         case .failure:
             XCTFail("Expected success but got failure")
         }
-        
+
         // Verify method calls
         XCTAssertTrue(mockAdapter.verifyMethodCall("ping"))
         XCTAssertTrue(mockAdapter.verifyMethodCall("encryptData"))
     }
-    
+
     func testEncryptSensitiveData_ServiceUnavailable() async {
         // Configure the mock to return a failure response for ping
         mockAdapter.pingResponse = .failure(.serviceUnavailable())
-        
+
         // Call the method under test
         let result = await securityService.encryptSensitiveData([1, 2, 3, 4])
-        
+
         // Verify the result
         switch result {
         case .success:
             XCTFail("Expected failure but got success")
-        case .failure(let error):
+        case let .failure(error):
             XCTAssertTrue(error is XPCSecurityErrorDTO)
             if let errorDTO = error as? XPCSecurityErrorDTO {
                 XCTAssertEqual(errorDTO.code, .serviceUnavailable)
             }
         }
-        
+
         // Verify method calls
         XCTAssertTrue(mockAdapter.verifyMethodCall("ping"))
         XCTAssertFalse(mockAdapter.verifyMethodCall("encryptData"))
     }
-    
+
     func testEncryptSensitiveData_EncryptionFails() async {
         // Configure the mock
         mockAdapter.pingResponse = .success(true)
@@ -223,44 +223,44 @@ class SecurityServiceTests: XCTestCase {
             operation: "encryption",
             details: "Failed to encrypt data"
         ))
-        
+
         // Call the method under test
         let result = await securityService.encryptSensitiveData([1, 2, 3, 4])
-        
+
         // Verify the result
         switch result {
         case .success:
             XCTFail("Expected failure but got success")
-        case .failure(let error):
+        case let .failure(error):
             XCTAssertTrue(error is XPCSecurityErrorDTO)
             if let errorDTO = error as? XPCSecurityErrorDTO {
                 XCTAssertEqual(errorDTO.code, .cryptographicError)
                 XCTAssertEqual(errorDTO.details["operation"], "encryption")
             }
         }
-        
+
         // Verify method calls
         XCTAssertTrue(mockAdapter.verifyMethodCall("ping"))
         XCTAssertTrue(mockAdapter.verifyMethodCall("encryptData"))
     }
-    
+
     func testIsServiceHealthy_Success() async {
         // Configure the mock
         mockAdapter.statusResponse = .success(XPCServiceDTO.ServiceStatusDTO(
             status: "healthy",
             version: "1.0.0"
         ))
-        
+
         // Call the method under test
         let isHealthy = await securityService.isServiceHealthy()
-        
+
         // Verify the result
         XCTAssertTrue(isHealthy)
-        
+
         // Verify method calls
         XCTAssertTrue(mockAdapter.verifyMethodCall("getServiceStatus"))
     }
-    
+
     func testIsServiceHealthy_NotHealthy() async {
         // Configure the mock
         mockAdapter.statusResponse = .success(XPCServiceDTO.ServiceStatusDTO(
@@ -268,27 +268,27 @@ class SecurityServiceTests: XCTestCase {
             version: "1.0.0",
             stringInfo: ["reason": "High load"]
         ))
-        
+
         // Call the method under test
         let isHealthy = await securityService.isServiceHealthy()
-        
+
         // Verify the result
         XCTAssertFalse(isHealthy)
-        
+
         // Verify method calls
         XCTAssertTrue(mockAdapter.verifyMethodCall("getServiceStatus"))
     }
-    
+
     func testIsServiceHealthy_Error() async {
         // Configure the mock
         mockAdapter.statusResponse = .failure(.serviceUnavailable())
-        
+
         // Call the method under test
         let isHealthy = await securityService.isServiceHealthy()
-        
+
         // Verify the result
         XCTAssertFalse(isHealthy)
-        
+
         // Verify method calls
         XCTAssertTrue(mockAdapter.verifyMethodCall("getServiceStatus"))
     }
@@ -301,10 +301,10 @@ extension Result {
     /// - Returns: A Result with the same success type but a different error type
     func mapError<NewFailure>(_ transform: (Failure) -> NewFailure) -> Result<Success, NewFailure> {
         switch self {
-        case .success(let value):
-            return .success(value)
-        case .failure(let error):
-            return .failure(transform(error))
+        case let .success(value):
+            .success(value)
+        case let .failure(error):
+            .failure(transform(error))
         }
     }
 }

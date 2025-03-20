@@ -126,7 +126,7 @@ final class ResourceLocatorTests: XCTestCase {
             .resourceNotFound,
             .accessDenied,
             .unsupportedScheme,
-            .generalError("Test error message")
+            .generalError("Test error message"),
         ]
 
         // When mapping to CoreErrors
@@ -138,7 +138,8 @@ final class ResourceLocatorTests: XCTestCase {
             case .invalidPath:
                 if
                     let resourceError = mappedError as? CEResourceError,
-                    case .invalidState = resourceError {
+                    case .invalidState = resourceError
+                {
                     // Success
                 } else {
                     XCTFail("Expected invalidPath to map to CEResourceError.invalidState")
@@ -147,7 +148,8 @@ final class ResourceLocatorTests: XCTestCase {
             case .resourceNotFound:
                 if
                     let resourceError = mappedError as? CEResourceError,
-                    case .resourceNotFound = resourceError {
+                    case .resourceNotFound = resourceError
+                {
                     // Success
                 } else {
                     XCTFail("Expected resourceNotFound to map to CEResourceError.resourceNotFound")
@@ -156,7 +158,8 @@ final class ResourceLocatorTests: XCTestCase {
             case .accessDenied:
                 if
                     let securityError = mappedError as? CESecurityError,
-                    case .invalidInput = securityError {
+                    case .invalidInput = securityError
+                {
                     // Success
                 } else {
                     XCTFail("Expected accessDenied to map to CESecurityError.invalidInput")
@@ -165,7 +168,8 @@ final class ResourceLocatorTests: XCTestCase {
             case .unsupportedScheme:
                 if
                     let resourceError = mappedError as? CEResourceError,
-                    case .operationFailed = resourceError {
+                    case .operationFailed = resourceError
+                {
                     // Success
                 } else {
                     XCTFail("Expected unsupportedScheme to map to CEResourceError.operationFailed")
@@ -174,7 +178,8 @@ final class ResourceLocatorTests: XCTestCase {
             case .generalError:
                 if
                     let resourceError = mappedError as? CEResourceError,
-                    case .operationFailed = resourceError {
+                    case .operationFailed = resourceError
+                {
                     // Success
                 } else {
                     XCTFail("Expected generalError to map to CEResourceError.operationFailed")
@@ -190,7 +195,7 @@ final class ResourceLocatorTests: XCTestCase {
             .resourceNotFound,
             .operationFailed,
             .acquisitionFailed,
-            .poolExhausted
+            .poolExhausted,
         ]
 
         // When mapping from CoreErrors
@@ -220,7 +225,8 @@ final class ResourceLocatorTests: XCTestCase {
             case .poolExhausted:
                 if
                     let resourceError = mappedError as? ResourceLocatorError,
-                    case let .generalError(message) = resourceError {
+                    case let .generalError(message) = resourceError
+                {
                     XCTAssertEqual(message, "Resource pool exhausted")
                 } else {
                     XCTFail("Expected poolExhausted to map to ResourceLocatorError.generalError")

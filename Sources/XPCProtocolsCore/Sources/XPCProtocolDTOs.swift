@@ -31,14 +31,14 @@ public enum XPCProtocolDTOs {
             switch error {
             case .serviceUnavailable:
                 SecurityErrorDTO(
-                    code: 10_001,
+                    code: 10001,
                     domain: "xpc.service",
                     message: "Service is unavailable"
                 )
 
             case let .serviceNotReady(reason):
                 SecurityErrorDTO(
-                    code: 10_002,
+                    code: 10002,
                     domain: "xpc.service",
                     message: "Service is not ready",
                     details: ["reason": reason]
@@ -46,7 +46,7 @@ public enum XPCProtocolDTOs {
 
             case let .timeout(after):
                 SecurityErrorDTO(
-                    code: 10_003,
+                    code: 10003,
                     domain: "xpc.service",
                     message: "Operation timed out",
                     details: ["timeoutInterval": String(after)]
@@ -54,7 +54,7 @@ public enum XPCProtocolDTOs {
 
             case let .authenticationFailed(reason):
                 SecurityErrorDTO(
-                    code: 10_004,
+                    code: 10004,
                     domain: "xpc.security",
                     message: "Authentication failed",
                     details: ["reason": reason]
@@ -62,7 +62,7 @@ public enum XPCProtocolDTOs {
 
             case let .authorizationDenied(operation):
                 SecurityErrorDTO(
-                    code: 10_005,
+                    code: 10005,
                     domain: "xpc.security",
                     message: "Authorization denied",
                     details: ["operation": operation]
@@ -70,7 +70,7 @@ public enum XPCProtocolDTOs {
 
             case let .operationNotSupported(name):
                 SecurityErrorDTO(
-                    code: 10_006,
+                    code: 10006,
                     domain: "xpc.operation",
                     message: "Operation not supported",
                     details: ["operation": name]
@@ -78,7 +78,7 @@ public enum XPCProtocolDTOs {
 
             case let .invalidInput(details):
                 SecurityErrorDTO(
-                    code: 10_007,
+                    code: 10007,
                     domain: "xpc.input",
                     message: "Invalid input parameters",
                     details: ["details": details]
@@ -86,7 +86,7 @@ public enum XPCProtocolDTOs {
 
             case let .invalidState(details):
                 SecurityErrorDTO(
-                    code: 10_008,
+                    code: 10008,
                     domain: "xpc.state",
                     message: "Invalid state for operation",
                     details: ["details": details]
@@ -94,7 +94,7 @@ public enum XPCProtocolDTOs {
 
             case let .keyNotFound(identifier):
                 SecurityErrorDTO(
-                    code: 10_009,
+                    code: 10009,
                     domain: "xpc.key",
                     message: "Key not found",
                     details: ["identifier": identifier]
@@ -102,7 +102,7 @@ public enum XPCProtocolDTOs {
 
             case let .invalidKeyType(expected, received):
                 SecurityErrorDTO(
-                    code: 10_010,
+                    code: 10010,
                     domain: "xpc.key",
                     message: "Invalid key type",
                     details: ["expected": expected, "received": received]
@@ -110,7 +110,7 @@ public enum XPCProtocolDTOs {
 
             case let .cryptographicError(operation, details):
                 SecurityErrorDTO(
-                    code: 10_011,
+                    code: 10011,
                     domain: "xpc.crypto",
                     message: "Cryptographic error",
                     details: ["operation": operation, "details": details]
@@ -118,7 +118,7 @@ public enum XPCProtocolDTOs {
 
             case let .internalError(reason):
                 SecurityErrorDTO(
-                    code: 10_012,
+                    code: 10012,
                     domain: "xpc.internal",
                     message: "Internal service error",
                     details: ["reason": reason]
@@ -126,14 +126,14 @@ public enum XPCProtocolDTOs {
 
             case .connectionInterrupted:
                 SecurityErrorDTO(
-                    code: 10_013,
+                    code: 10013,
                     domain: "xpc.connection",
                     message: "Connection interrupted"
                 )
 
             case let .connectionInvalidated(reason):
                 SecurityErrorDTO(
-                    code: 10_014,
+                    code: 10014,
                     domain: "xpc.connection",
                     message: "Connection invalidated",
                     details: ["reason": reason]
@@ -141,7 +141,7 @@ public enum XPCProtocolDTOs {
 
             case let .operationFailed(operation, reason):
                 SecurityErrorDTO(
-                    code: 10_015,
+                    code: 10015,
                     domain: "xpc.operation",
                     message: "Operation failed",
                     details: ["operation": operation, "reason": reason]
@@ -149,7 +149,7 @@ public enum XPCProtocolDTOs {
 
             case let .notImplemented(reason):
                 SecurityErrorDTO(
-                    code: 10_016,
+                    code: 10016,
                     domain: "xpc.implementation",
                     message: "Feature not implemented",
                     details: ["reason": reason]
@@ -164,26 +164,26 @@ public enum XPCProtocolDTOs {
             // Parse the domain and code to determine the appropriate XPCSecurityError
             switch dto.domain {
             case "xpc.service":
-                if dto.code == 10_001 {
+                if dto.code == 10001 {
                     return .serviceUnavailable
-                } else if dto.code == 10_002 {
+                } else if dto.code == 10002 {
                     return .serviceNotReady(reason: dto.details["reason"] ?? dto.message)
-                } else if dto.code == 10_003 {
+                } else if dto.code == 10003 {
                     let interval = Double(dto.details["timeoutInterval"] ?? "0") ?? 0
                     return .timeout(after: interval)
                 }
 
             case "xpc.security":
-                if dto.code == 10_004 {
+                if dto.code == 10004 {
                     return .authenticationFailed(reason: dto.details["reason"] ?? dto.message)
-                } else if dto.code == 10_005 {
+                } else if dto.code == 10005 {
                     return .authorizationDenied(operation: dto.details["operation"] ?? "unknown")
                 }
 
             case "xpc.operation":
-                if dto.code == 10_006 {
+                if dto.code == 10006 {
                     return .operationNotSupported(name: dto.details["operation"] ?? "unknown")
-                } else if dto.code == 10_015 {
+                } else if dto.code == 10015 {
                     return .operationFailed(
                         operation: dto.details["operation"] ?? "unknown",
                         reason: dto.details["reason"] ?? dto.message
@@ -197,9 +197,9 @@ public enum XPCProtocolDTOs {
                 return .invalidState(details: dto.details["details"] ?? dto.message)
 
             case "xpc.key":
-                if dto.code == 10_009 {
+                if dto.code == 10009 {
                     return .keyNotFound(identifier: dto.details["identifier"] ?? "unknown")
-                } else if dto.code == 10_010 {
+                } else if dto.code == 10010 {
                     return .invalidKeyType(
                         expected: dto.details["expected"] ?? "unknown",
                         received: dto.details["received"] ?? "unknown"
@@ -216,9 +216,9 @@ public enum XPCProtocolDTOs {
                 return .internalError(reason: dto.details["reason"] ?? dto.message)
 
             case "xpc.connection":
-                if dto.code == 10_013 {
+                if dto.code == 10013 {
                     return .connectionInterrupted
-                } else if dto.code == 10_014 {
+                } else if dto.code == 10014 {
                     return .connectionInvalidated(reason: dto.details["reason"] ?? dto.message)
                 }
 

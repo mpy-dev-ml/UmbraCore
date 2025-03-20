@@ -27,7 +27,7 @@ class SecurityProviderTests: XCTestCase {
             operationName: "symmetricEncryption",
             options: [
                 "key": "test_key",
-                "algorithm": "AES-GCM"
+                "algorithm": "AES-GCM",
             ]
         )
 
@@ -115,7 +115,7 @@ class SecurityProviderTests: XCTestCase {
             operationName: "symmetricEncryption",
             options: [
                 "key": "test_encryption_key",
-                "data": "Test secure data".data(using: .utf8)!
+                "data": "Test secure data".data(using: .utf8)!,
             ]
         )
 

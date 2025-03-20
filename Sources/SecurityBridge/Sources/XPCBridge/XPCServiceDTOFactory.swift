@@ -15,12 +15,12 @@ public enum XPCServiceDTOFactory {
     /// - Returns: An adapter conforming to XPCServiceProtocolStandardDTO
     public static func createStandardAdapter(
         forService serviceName: String,
-        options: XPCConnectionOptions = []
+        options _: XPCConnectionOptions = []
     ) -> XPCServiceProtocolStandardDTO {
         let connection = NSXPCConnection(serviceName: serviceName)
         return XPCServiceDTOAdapter(connection: connection)
     }
-    
+
     /// Create an adapter for an XPC service with a machService name
     /// - Parameters:
     ///   - machServiceName: The mach service name of the XPC service
@@ -28,12 +28,12 @@ public enum XPCServiceDTOFactory {
     /// - Returns: An adapter conforming to XPCServiceProtocolStandardDTO
     public static func createStandardAdapter(
         forMachService machServiceName: String,
-        options: XPCConnectionOptions = []
+        options _: XPCConnectionOptions = []
     ) -> XPCServiceProtocolStandardDTO {
         let connection = NSXPCConnection(machServiceName: machServiceName)
         return XPCServiceDTOAdapter(connection: connection)
     }
-    
+
     /// Create an adapter for an endpoint
     /// - Parameters:
     ///   - endpoint: The NSXPCListenerEndpoint to connect to
@@ -41,7 +41,7 @@ public enum XPCServiceDTOFactory {
     /// - Returns: An adapter conforming to XPCServiceProtocolStandardDTO
     public static func createStandardAdapter(
         forEndpoint endpoint: NSXPCListenerEndpoint,
-        options: XPCConnectionOptions = []
+        options _: XPCConnectionOptions = []
     ) -> XPCServiceProtocolStandardDTO {
         let connection = NSXPCConnection(listenerEndpoint: endpoint)
         return XPCServiceDTOAdapter(connection: connection)
@@ -51,14 +51,14 @@ public enum XPCServiceDTOFactory {
 /// Options for XPC connections
 public struct XPCConnectionOptions: OptionSet {
     public let rawValue: UInt
-    
+
     public init(rawValue: UInt) {
         self.rawValue = rawValue
     }
-    
+
     /// No options
     public static let none: XPCConnectionOptions = []
-    
+
     /// Privileged option
     public static let privileged = XPCConnectionOptions(rawValue: 1 << 0)
 }

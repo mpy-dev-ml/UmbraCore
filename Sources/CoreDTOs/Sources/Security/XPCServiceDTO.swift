@@ -1,27 +1,27 @@
 import UmbraCoreTypes
 #if canImport(Darwin)
-import Darwin
+    import Darwin
 #endif
 
 /// Foundation-independent DTO for representing XPC Service operations and status
 /// Provides structured data types for XPC communication without using Foundation types
 public struct XPCServiceDTO: Sendable, Equatable {
     // MARK: - Service Status DTO
-    
+
     /// Status information for an XPC service
     public struct ServiceStatusDTO: Sendable, Equatable {
         /// Current operating status
         public let status: String
-        
+
         /// Service version
         public let version: String
-        
+
         /// Performance metrics
         public let metrics: [String: Double]
-        
+
         /// Additional string information
         public let stringInfo: [String: String]
-        
+
         /// Create a service status DTO
         /// - Parameters:
         ///   - status: Current operating status
@@ -39,7 +39,7 @@ public struct XPCServiceDTO: Sendable, Equatable {
             self.metrics = metrics
             self.stringInfo = stringInfo
         }
-        
+
         /// Create a status DTO representing a healthy service
         /// - Parameter version: Version string
         /// - Returns: A healthy service status
@@ -49,7 +49,7 @@ public struct XPCServiceDTO: Sendable, Equatable {
                 version: version
             )
         }
-        
+
         /// Create a status DTO representing a degraded service
         /// - Parameters:
         ///   - version: Version string
@@ -65,7 +65,7 @@ public struct XPCServiceDTO: Sendable, Equatable {
                 stringInfo: ["degradedReason": reason]
             )
         }
-        
+
         /// Create a status DTO representing an unavailable service
         /// - Parameters:
         ///   - version: Version string
@@ -82,29 +82,29 @@ public struct XPCServiceDTO: Sendable, Equatable {
             )
         }
     }
-    
+
     // MARK: - Key Information DTO
-    
+
     /// Information about a cryptographic key
     public struct KeyInfoDTO: Sendable, Equatable {
         /// Key identifier
         public let keyId: String
-        
+
         /// Key algorithm
         public let algorithm: String
-        
+
         /// Key size in bits
         public let keySizeInBits: Int
-        
+
         /// Key usage (encryption, signing, etc.)
         public let keyUsage: String
-        
+
         /// Key creation timestamp (seconds since epoch)
         public let createdAt: Int64
-        
+
         /// Key metadata
         public let metadata: [String: String]
-        
+
         /// Create a key info DTO
         /// - Parameters:
         ///   - keyId: Key identifier
@@ -129,9 +129,9 @@ public struct XPCServiceDTO: Sendable, Equatable {
             self.metadata = metadata
         }
     }
-    
+
     // MARK: - Key Types DTO
-    
+
     /// Key type enumeration
     public enum KeyTypeDTO: String, Sendable, Equatable {
         /// Symmetric key
@@ -147,7 +147,7 @@ public struct XPCServiceDTO: Sendable, Equatable {
         /// Verification key
         case verification
     }
-    
+
     /// Key format enumeration
     public enum KeyFormatDTO: String, Sendable, Equatable {
         /// Raw key format (binary)
@@ -170,7 +170,7 @@ public extension XPCServiceDTO {
     static func defaultServiceStatus() -> XPCServiceDTO.ServiceStatusDTO {
         .healthy(version: "1.0.0")
     }
-    
+
     /// Create a key info DTO for a symmetric key
     /// - Parameters:
     ///   - keyId: Key identifier
@@ -184,11 +184,11 @@ public extension XPCServiceDTO {
     ) -> XPCServiceDTO.KeyInfoDTO {
         let timestamp: Int64
         do {
-            timestamp = Int64(try currentTimestamp())
+            timestamp = try Int64(currentTimestamp())
         } catch {
             timestamp = 0
         }
-        
+
         return XPCServiceDTO.KeyInfoDTO(
             keyId: keyId,
             algorithm: algorithm,
@@ -197,7 +197,7 @@ public extension XPCServiceDTO {
             createdAt: timestamp
         )
     }
-    
+
     /// Create a key info DTO for a signing key
     /// - Parameters:
     ///   - keyId: Key identifier
@@ -211,11 +211,11 @@ public extension XPCServiceDTO {
     ) -> XPCServiceDTO.KeyInfoDTO {
         let timestamp: Int64
         do {
-            timestamp = Int64(try currentTimestamp())
+            timestamp = try Int64(currentTimestamp())
         } catch {
             timestamp = 0
         }
-        
+
         return XPCServiceDTO.KeyInfoDTO(
             keyId: keyId,
             algorithm: algorithm,
@@ -224,20 +224,20 @@ public extension XPCServiceDTO {
             createdAt: timestamp
         )
     }
-    
+
     /// Helper function to get current timestamp
     private static func currentTimestamp() throws -> Int {
         #if canImport(Darwin)
-        var tv = timeval()
-        guard gettimeofday(&tv, nil) == 0 else {
-            throw TimestampError.notAvailable
-        }
-        return Int(tv.tv_sec)
+            var tv = timeval()
+            guard gettimeofday(&tv, nil) == 0 else {
+                throw TimestampError.notAvailable
+            }
+            return Int(tv.tv_sec)
         #else
-        throw TimestampError.notAvailable
+            throw TimestampError.notAvailable
         #endif
     }
-    
+
     enum TimestampError: Error {
         case notAvailable
     }

@@ -257,7 +257,8 @@ private final class MockCryptoService: SecurityProtocolsCore.CryptoServiceProtoc
     }
 
     func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         let randomBytes = [UInt8](repeating: 0, count: length).map { _ in UInt8.random(in: 0 ... 255) }
         return .success(SecureBytes(bytes: randomBytes))
     }
@@ -281,7 +282,8 @@ private final class MockKeyManager: SecurityProtocolsCore.KeyManagementProtocol 
     }
 
     func retrieveKey(withIdentifier _: String) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         let key = SecureBytes(bytes: [UInt8](Data("retrievedKey".utf8)))
         return .success(key)
     }

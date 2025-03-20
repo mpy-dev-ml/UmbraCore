@@ -24,7 +24,7 @@ final class DTOConvertersTests: XCTestCase {
 
         // Arrange - Failure case
         let failureResult = OperationResultDTO<SecureBytes>.failure(
-            errorCode: 1_002,
+            errorCode: 1002,
             errorMessage: "Operation failed"
         )
 
@@ -34,7 +34,7 @@ final class DTOConvertersTests: XCTestCase {
         // Assert
         XCTAssertFalse(failureSecurityResult.success)
         XCTAssertNil(failureSecurityResult.data)
-        XCTAssertEqual(failureSecurityResult.errorCode, 1_002)
+        XCTAssertEqual(failureSecurityResult.errorCode, 1002)
         XCTAssertEqual(failureSecurityResult.errorMessage, "Operation failed")
     }
 
@@ -54,7 +54,7 @@ final class DTOConvertersTests: XCTestCase {
 
         // Arrange - Failure case
         let failureSecurityResult = SecurityProtocolsCore.SecurityResultDTO(
-            errorCode: 1_002,
+            errorCode: 1002,
             errorMessage: "Operation failed"
         )
 
@@ -64,7 +64,7 @@ final class DTOConvertersTests: XCTestCase {
         // Assert
         XCTAssertEqual(failureOperationResult.status, .failure)
         XCTAssertNil(failureOperationResult.value)
-        XCTAssertEqual(failureOperationResult.errorCode, 1_002)
+        XCTAssertEqual(failureOperationResult.errorCode, 1002)
         XCTAssertEqual(failureOperationResult.errorMessage, "Operation failed")
     }
 
@@ -75,7 +75,7 @@ final class DTOConvertersTests: XCTestCase {
                 "algorithm": "AES-GCM",
                 "keySizeInBits": "256",
                 "keyIdentifier": "test-key-id",
-                "iterations": "10000"
+                "iterations": "10000",
             ],
             inputData: [1, 2, 3, 4, 5]
         )
@@ -87,7 +87,7 @@ final class DTOConvertersTests: XCTestCase {
         XCTAssertEqual(protocolsConfig.algorithm, "AES-GCM")
         XCTAssertEqual(protocolsConfig.keySizeInBits, 256)
         XCTAssertEqual(protocolsConfig.keyIdentifier, "test-key-id")
-        XCTAssertEqual(protocolsConfig.iterations, 10_000)
+        XCTAssertEqual(protocolsConfig.iterations, 10000)
 
         // Convert input data to SecureBytes for comparison
         let secureBytes = SecureBytes(bytes: [1, 2, 3, 4, 5])
@@ -173,10 +173,10 @@ final class DTOConvertersTests: XCTestCase {
         XCTAssertEqual(schedule.startTimestamp, UInt64(now.timeIntervalSince1970))
 
         // Window start should be 8 AM = 8 hours * 3600 seconds = 28800 seconds from midnight
-        XCTAssertEqual(schedule.windowStartTime, 8 * 3_600)
+        XCTAssertEqual(schedule.windowStartTime, 8 * 3600)
 
         // Window end should be 6 PM = 18 hours * 3600 seconds = 64800 seconds from midnight
-        XCTAssertEqual(schedule.windowEndTime, 18 * 3_600)
+        XCTAssertEqual(schedule.windowEndTime, 18 * 3600)
 
         // Test conversion back to dates
         let startDate = schedule.startDate()
@@ -201,8 +201,8 @@ final class DTOConvertersTests: XCTestCase {
     func testScheduledTaskDTODateConversion() {
         // Arrange
         let now = Date()
-        let lastRun = now.addingTimeInterval(-86_400) // Yesterday
-        let nextRun = now.addingTimeInterval(86_400) // Tomorrow
+        let lastRun = now.addingTimeInterval(-86400) // Yesterday
+        let nextRun = now.addingTimeInterval(86400) // Tomorrow
 
         let schedule = ScheduleDTO.daily(
             startTimestamp: UInt64(now.timeIntervalSince1970 - 604_800) // A week ago

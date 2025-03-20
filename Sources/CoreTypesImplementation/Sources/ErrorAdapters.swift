@@ -76,7 +76,8 @@ public func mapSecureBytesToCoreError(_ error: SecureBytesError) -> CESecurityEr
 /// - Parameter result: A Result with any Error type
 /// - Returns: A Result with CoreErrors.SecurityError
 public func mapToSecurityResult<T>(_ result: Result<T, Error>)
-    -> Result<T, CESecurityError> {
+    -> Result<T, CESecurityError>
+{
     switch result {
     case let .success(value):
         .success(value)

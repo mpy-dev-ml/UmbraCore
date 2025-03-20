@@ -43,22 +43,22 @@ public enum ResourceLocatorError: Error, Sendable, Equatable, Hashable {
     public var errorCode: Int {
         switch self {
         case .invalidPath:
-            1_001
+            1001
         case .resourceNotFound:
-            1_002
+            1002
         case .accessDenied:
-            1_003
+            1003
         case .unsupportedScheme:
-            1_004
+            1004
         case .generalError:
-            1_099
+            1099
         }
     }
 
     /// Get the user info dictionary for this error when converted to NSError
     public var userInfo: [String: Any] {
         var info: [String: Any] = [
-            "NSLocalizedDescription": errorDescription
+            "NSLocalizedDescription": errorDescription,
         ]
 
         if case let .generalError(message) = self {

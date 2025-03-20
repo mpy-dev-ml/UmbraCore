@@ -69,7 +69,8 @@ public struct SecurityErrorMapper: ErrorMapper {
             return .permissionDenied(reason: "Permission denied: \(errorDescription)")
         } else if
             errorDescription.contains("unauthorized") || errorDescription
-            .contains("unauthorised") {
+            .contains("unauthorised")
+        {
             return .unauthorizedAccess(reason: "Unauthorized access: \(errorDescription)")
         } else if errorDescription.contains("encrypt") {
             return .encryptionFailed(reason: "Encryption failed: \(errorDescription)")
@@ -116,7 +117,7 @@ public struct SecurityErrorMapper: ErrorMapper {
             case let .signatureInvalid(reason):
                 return .hashVerificationFailed(reason: reason)
             case .domainProtocolError, .domainXPCError:
-                return .serviceError(code: 1_001, reason: "Protocol or XPC error: \(securityError)")
+                return .serviceError(code: 1001, reason: "Protocol or XPC error: \(securityError)")
             case let .internalError(reason):
                 return .internalError(reason)
             default:
@@ -152,7 +153,8 @@ extension SecurityErrorMapper: BidirectionalErrorMapper {
     /// - Parameter error: The source error
     /// - Returns: The mapped error
     public func mapAtoB(_ error: UmbraErrors.GeneralSecurity.Core) -> ErrorHandlingTypes
-        .SecurityError {
+        .SecurityError
+    {
         mapError(error)
     }
 
@@ -160,7 +162,8 @@ extension SecurityErrorMapper: BidirectionalErrorMapper {
     /// - Parameter error: The target error
     /// - Returns: The mapped source error
     public func mapBtoA(_ error: ErrorHandlingTypes.SecurityError) -> UmbraErrors.GeneralSecurity
-        .Core {
+        .Core
+    {
         switch error {
         case let .domainCoreError(coreError):
             coreError
@@ -183,7 +186,7 @@ extension SecurityErrorMapper: BidirectionalErrorMapper {
         case let .certificateInvalid(reason):
             .invalidInput(reason: reason)
         case let .secureChannelFailed(reason):
-            .serviceError(code: 1_002, reason: reason)
+            .serviceError(code: 1002, reason: reason)
         case let .securityConfigurationError(reason):
             .internalError("Configuration error: \(reason)")
         case let .internalError(reason):

@@ -27,17 +27,17 @@ public enum ServicesErrorAdapter {
 
         // Map common credential error codes
         switch errorCode {
-        case -25_300:
+        case -25300:
             errorMessage = "No permission to access keychain item"
-        case -25_291:
+        case -25291:
             errorMessage = "No such keychain item"
-        case -25_292:
+        case -25292:
             errorMessage = "Invalid keychain data"
-        case -25_293:
+        case -25293:
             errorMessage = "Keychain item already exists"
-        case -25_294:
+        case -25294:
             errorMessage = "Keychain is locked"
-        case -25_295:
+        case -25295:
             errorMessage = "User authentication required for keychain access"
         default:
             if let localizedError = error as? LocalizedError, let description = localizedError.errorDescription {
@@ -75,16 +75,17 @@ public enum ServicesErrorAdapter {
         var errorMessage: String
 
             // Map common security error codes
-            = switch errorCode {
-        case -25_240:
+            = switch errorCode
+        {
+        case -25240:
             "Invalid algorithm"
-        case -25_241:
+        case -25241:
             "Invalid key"
-        case -25_242:
+        case -25242:
             "Invalid key size"
-        case -25_243:
+        case -25243:
             "Invalid data format"
-        case -25_244:
+        case -25244:
             "Invalid operation"
         case Int32(OSStatus(errSecAllocate)):
             "Failed to allocate memory for security operation"
@@ -209,7 +210,7 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25_300, // General credential error code
+            code: -25300, // General credential error code
             domain: "security.credential",
             message: message,
             details: details
@@ -226,7 +227,7 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25_241, // Key error code
+            code: -25241, // Key error code
             domain: "security.key",
             message: message,
             details: details
@@ -243,7 +244,7 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25_240, // Encryption error code
+            code: -25240, // Encryption error code
             domain: "security.encryption",
             message: message,
             details: details
@@ -260,7 +261,7 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25_243, // Decryption error code
+            code: -25243, // Decryption error code
             domain: "security.decryption",
             message: message,
             details: details
@@ -277,7 +278,7 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: -25_300, // Permission error code
+            code: -25300, // Permission error code
             domain: "security.permission",
             message: message,
             details: details

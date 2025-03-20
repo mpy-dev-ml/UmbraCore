@@ -31,7 +31,7 @@ public enum XPCSecurityDTOAdapter {
     ) throws -> [String: Any] {
         var dictionary: [String: Any] = [
             "status": result.status.rawValue,
-            "details": result.details
+            "details": result.details,
         ]
 
         // Add error information if present
@@ -91,7 +91,8 @@ public enum XPCSecurityDTOAdapter {
                 // If no value data is present but we have a success status and T is Optional,
                 // return success with nil
                 if let optionalType = T.self as? ExpressibleByNilLiteral.Type,
-                   let nilValue = optionalType.init(nilLiteral: ()) as? T {
+                   let nilValue = optionalType.init(nilLiteral: ()) as? T
+                {
                     return .success(nilValue, details: details)
                 } else {
                     // Otherwise, return a failure
@@ -166,7 +167,7 @@ public enum XPCSecurityDTOAdapter {
         var dictionary: [String: Any] = [
             "algorithm": config.algorithm,
             "keySizeInBits": config.keySizeInBits,
-            "options": config.options
+            "options": config.options,
         ]
 
         if let inputData = config.inputData {
@@ -184,7 +185,7 @@ public enum XPCSecurityDTOAdapter {
         var dictionary: [String: Any] = [
             "code": error.code,
             "domain": error.domain,
-            "message": error.message
+            "message": error.message,
         ]
 
         if !error.details.isEmpty {

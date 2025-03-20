@@ -47,7 +47,7 @@ public final class MockXPCService: XPCServiceProtocolStandard, XPCServiceProtoco
     public func status() async -> Result<[String: Any], SecurityError> {
         let statusDict: [String: Any] = [
             "status": "active",
-            "version": "1.0.0"
+            "version": "1.0.0",
         ]
         return .success(statusDict)
     }

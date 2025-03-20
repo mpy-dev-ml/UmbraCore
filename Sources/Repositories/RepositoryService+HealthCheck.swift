@@ -53,7 +53,7 @@ public extension RepositoryService {
         let metadata = LogMetadata([
             "repository_id": identifier,
             "read_data": String(options.readData),
-            "check_unused": String(options.checkUnused)
+            "check_unused": String(options.checkUnused),
         ])
 
         await logger.info("Starting repository health check", metadata: metadata)
@@ -98,7 +98,7 @@ public extension RepositoryService {
             "repository_count": String(repositories.count),
             "read_data": String(options.readData),
             "check_unused": String(options.checkUnused),
-            "force": String(force)
+            "force": String(force),
         ])
 
         await logger.info(
@@ -110,7 +110,7 @@ public extension RepositoryService {
 
         for (identifier, repository) in repositories {
             let repoMetadata = LogMetadata([
-                "repository_id": identifier
+                "repository_id": identifier,
             ])
 
             do {

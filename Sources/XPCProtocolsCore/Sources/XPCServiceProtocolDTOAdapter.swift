@@ -38,7 +38,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
     /// - Returns: DTO-based operation result
     private func convertToDTO<T: Equatable>(
         _ result: Result<T, XPCSecurityError>,
-        defaultErrorCode _: Int32 = 10_000,
+        defaultErrorCode _: Int32 = 10000,
         defaultErrorMessage _: String = "Operation failed"
     ) -> OperationResultDTO<T> {
         switch result {
@@ -63,7 +63,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
     /// - Returns: DTO-based operation result
     private func convertAnyToDTO<T>(
         _ result: Result<T, XPCSecurityError>,
-        defaultErrorCode _: Int32 = 10_000,
+        defaultErrorCode _: Int32 = 10000,
         defaultErrorMessage _: String = "Operation failed"
     ) -> OperationResultDTO<T> {
         switch result {
@@ -203,11 +203,11 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                 keyIdentifier: keyIdentifier,
                 metadata: metadata.isEmpty ? nil : metadata
             )
-            return convertToDTO(result, defaultErrorCode: 10_002, defaultErrorMessage: "Key generation failed")
+            return convertToDTO(result, defaultErrorCode: 10002, defaultErrorMessage: "Key generation failed")
         } else {
             // Service doesn't support key management
             return OperationResultDTO(
-                errorCode: 10_006,
+                errorCode: 10006,
                 errorMessage: "Operation not supported",
                 details: ["operation": "generateKey"]
             )
@@ -276,11 +276,11 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             // If service conforms to key management protocol, use it
             if let keyService = service as? KeyManagementServiceProtocol {
                 let result = await keyService.listKeys()
-                return convertAnyToDTO(result, defaultErrorCode: 10_004, defaultErrorMessage: "Failed to list keys")
+                return convertAnyToDTO(result, defaultErrorCode: 10004, defaultErrorMessage: "Failed to list keys")
             } else {
                 // Service doesn't support key management
                 return OperationResultDTO(
-                    errorCode: 10_006,
+                    errorCode: 10006,
                     errorMessage: "Operation not supported",
                     details: ["operation": "listKeys"]
                 )
@@ -308,7 +308,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             } else {
                 // Service doesn't support key management
                 return OperationResultDTO(
-                    errorCode: 10_006,
+                    errorCode: 10006,
                     errorMessage: "Operation not supported",
                     details: ["operation": "deleteKey"]
                 )
@@ -356,11 +356,11 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                     keyIdentifier: keyIdentifier,
                     metadata: metadata.isEmpty ? nil : metadata
                 )
-                return convertAnyToDTO(result, defaultErrorCode: 10_002, defaultErrorMessage: "Key import failed")
+                return convertAnyToDTO(result, defaultErrorCode: 10002, defaultErrorMessage: "Key import failed")
             } else {
                 // Service doesn't support key management
                 return OperationResultDTO(
-                    errorCode: 10_006,
+                    errorCode: 10006,
                     errorMessage: "Operation not supported",
                     details: ["operation": "importKey"]
                 )
@@ -393,11 +393,11 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                     keyIdentifier: keyIdentifier,
                     format: format
                 )
-                return convertAnyToDTO(result, defaultErrorCode: 10_007, defaultErrorMessage: "Key export failed")
+                return convertAnyToDTO(result, defaultErrorCode: 10007, defaultErrorMessage: "Key export failed")
             } else {
                 // Service doesn't support key management
                 return OperationResultDTO(
-                    errorCode: 10_006,
+                    errorCode: 10006,
                     errorMessage: "Operation not supported",
                     details: ["operation": "exportKey"]
                 )
@@ -411,7 +411,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             keyIdentifier: String
         ) async -> OperationResultDTO<[String: String]> {
             let result = await completeService.getKeyInfo(keyIdentifier: keyIdentifier)
-            return convertAnyToDTO(result, defaultErrorCode: 10_008, defaultErrorMessage: "Failed to retrieve key info")
+            return convertAnyToDTO(result, defaultErrorCode: 10008, defaultErrorMessage: "Failed to retrieve key info")
         }
 
         /// Sign data with DTO
@@ -432,7 +432,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                 keyIdentifier: keyIdentifier,
                 algorithm: algorithm
             )
-            return convertAnyToDTO(result, defaultErrorCode: 10_009, defaultErrorMessage: "Signing failed")
+            return convertAnyToDTO(result, defaultErrorCode: 10009, defaultErrorMessage: "Signing failed")
         }
 
         /// Verify signature with DTO
@@ -456,7 +456,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                 keyIdentifier: keyIdentifier,
                 algorithm: algorithm
             )
-            return convertAnyToDTO(result, defaultErrorCode: 10_010, defaultErrorMessage: "Verification failed")
+            return convertAnyToDTO(result, defaultErrorCode: 10010, defaultErrorMessage: "Verification failed")
         }
 
         /// Derive key from password with DTO
@@ -474,7 +474,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                 let saltData = config.inputData
             else {
                 return OperationResultDTO(
-                    errorCode: 10_007,
+                    errorCode: 10007,
                     errorMessage: "Invalid input parameters for key derivation",
                     details: ["reason": "Missing required parameters"]
                 )
@@ -483,7 +483,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             let salt = SecureBytes(bytes: saltData)
             let keySize = config.keySizeInBits / 8 // Convert bits to bytes
 
-            let iterations = Int(config.options["iterations"] ?? "10000") ?? 10_000
+            let iterations = Int(config.options["iterations"] ?? "10000") ?? 10000
 
             let result = await completeService.deriveKey(
                 password: passwordString,
@@ -491,7 +491,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                 iterations: iterations,
                 keySize: keySize
             )
-            return convertSecurityResult(result, defaultErrorCode: 10_011, defaultErrorMessage: "Key derivation failed")
+            return convertSecurityResult(result, defaultErrorCode: 10011, defaultErrorMessage: "Key derivation failed")
         }
 
         /// Derive key from another key with DTO
@@ -511,14 +511,14 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                 algorithm: algorithm,
                 keySize: keySize
             )
-            return convertSecurityResult(result, defaultErrorCode: 10_012, defaultErrorMessage: "Key derivation failed")
+            return convertSecurityResult(result, defaultErrorCode: 10012, defaultErrorMessage: "Key derivation failed")
         }
 
         /// Reset security with DTO
         /// - Returns: Operation result indicating success or detailed error
         public func resetSecurityWithDTO() async -> OperationResultDTO<Bool> {
             let result = await completeService.resetService()
-            return convertSecurityResult(result, defaultErrorCode: 10_013, defaultErrorMessage: "Security reset failed")
+            return convertSecurityResult(result, defaultErrorCode: 10013, defaultErrorMessage: "Security reset failed")
         }
 
         /// Get service info with DTO
@@ -530,7 +530,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
 
             var info: [String: String] = [
                 "protocolIdentifier": Self.completeProtocolIdentifier,
-                "timestamp": "\(Date().timeIntervalSince1970)"
+                "timestamp": "\(Date().timeIntervalSince1970)",
             ]
 
             if case let .success(version) = versionResult {
@@ -557,7 +557,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
             config: [String: String]
         ) async -> OperationResultDTO<Bool> {
             let result = await completeService.setConfiguration(config)
-            return convertSecurityResult(result, defaultErrorCode: 10_014, defaultErrorMessage: "Service configuration failed")
+            return convertSecurityResult(result, defaultErrorCode: 10014, defaultErrorMessage: "Service configuration failed")
         }
 
         /// Create secure backup with DTO
@@ -572,14 +572,14 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                 let password = String(bytes: passwordData, encoding: .ascii)
             else {
                 return OperationResultDTO(
-                    errorCode: 10_007,
+                    errorCode: 10007,
                     errorMessage: "Invalid input parameters for secure backup",
                     details: ["reason": "Missing or invalid password"]
                 )
             }
 
             let result = await completeService.createSecureBackup(password: password)
-            return convertSecurityResult(result, defaultErrorCode: 10_015, defaultErrorMessage: "Secure backup creation failed")
+            return convertSecurityResult(result, defaultErrorCode: 10015, defaultErrorMessage: "Secure backup creation failed")
         }
 
         /// Restore from secure backup with DTO
@@ -597,7 +597,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                 let password = String(bytes: passwordData, encoding: .ascii)
             else {
                 return OperationResultDTO(
-                    errorCode: 10_007,
+                    errorCode: 10007,
                     errorMessage: "Invalid input parameters for secure restore",
                     details: ["reason": "Missing or invalid password"]
                 )
@@ -607,7 +607,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
                 backup: backupData,
                 password: password
             )
-            return convertSecurityResult(result, defaultErrorCode: 10_016, defaultErrorMessage: "Secure restore failed")
+            return convertSecurityResult(result, defaultErrorCode: 10016, defaultErrorMessage: "Secure restore failed")
         }
 
         // MARK: - KeyExchangeDTOProtocol

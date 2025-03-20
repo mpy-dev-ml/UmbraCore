@@ -1,10 +1,10 @@
 import CoreErrors
+import CoreTypesInterfaces
 import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import CoreTypesInterfaces
 import XPCProtocolsCore
 
 /// Mock implementation of CryptoServiceProtocol for testing SecurityProvider
@@ -23,7 +23,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     // MARK: - Core Cryptographic Methods
 
     public func encrypt(data: UmbraCoreTypes.SecureBytes, using key: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.encryptionFailed("Mock encryption failure"))
         }
@@ -45,7 +46,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     }
 
     public func decrypt(data: UmbraCoreTypes.SecureBytes, using key: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.decryptionFailed("Mock decryption failure"))
         }
@@ -55,7 +57,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     }
 
     public func generateKey() async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.internalError("Mock failure"))
         }
@@ -64,7 +67,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     }
 
     public func hash(data: UmbraCoreTypes.SecureBytes) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.internalError("Mock hash failure"))
         }
@@ -86,7 +90,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
     }
 
     public func verify(data: UmbraCoreTypes.SecureBytes, against signature: UmbraCoreTypes.SecureBytes) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.internalError("Mock verification failure"))
         }
@@ -102,7 +107,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
         key: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.encryptionFailed("Mock encryption failure"))
         }
@@ -121,7 +127,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
         key: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.decryptionFailed("Mock decryption failure"))
         }
@@ -140,7 +147,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
         publicKey _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.encryptionFailed("Mock asymmetric encryption failure"))
         }
@@ -154,7 +162,8 @@ public final class SecurityProviderMockCryptoService: SecurityProtocolsCore.Cryp
         privateKey _: UmbraCoreTypes.SecureBytes,
         config _: SecurityProtocolsCore.SecurityConfigDTO
     ) async
-        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols>
+    {
         if failAllOperations {
             return .failure(.decryptionFailed("Mock asymmetric decryption failure"))
         }
@@ -406,7 +415,7 @@ public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
         return [
             "name": "SecurityProviderMockXPCService",
             "version": "1.0.0",
-            "status": "operational"
+            "status": "operational",
         ]
     }
 
@@ -430,23 +439,23 @@ public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
         // In a real implementation, this would actually do something with the sync data
         // For this mock, we just return successful completion if not set to fail
     }
-    
+
     // MARK: - Extended methods beyond basic protocol
-    
+
     /// Get the current status of the XPC service
     /// - Returns: Dictionary containing status information
     public func status() async -> Result<[String: Any], XPCSecurityError> {
         if failAllOperations {
             return .failure(.internalError(reason: "Service not available"))
         }
-        
+
         let statusDict: [String: Any] = [
             "name": "SecurityProviderMockXPCService",
             "version": "1.0.0",
             "status": "operational",
-            "uptime": 3600
+            "uptime": 3600,
         ]
-        
+
         return .success(statusDict)
     }
 }

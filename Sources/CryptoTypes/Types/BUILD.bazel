@@ -6,6 +6,7 @@ umbra_swift_library(
     srcs = glob(["*.swift"]),
     deps = [
         "//Sources/SecurityInterfaces",
+        "//Sources/SecurityProtocolsCore",
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
         "@swiftpkg_cryptoswift//:CryptoSwift",

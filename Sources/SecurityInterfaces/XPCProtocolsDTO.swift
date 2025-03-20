@@ -1,9 +1,9 @@
 import CoreDTOs
+import Foundation
 import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
-import Foundation
 
 // MARK: - XPC Service Protocol with DTOs
 
@@ -96,7 +96,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
     public func status() async -> Result<UmbraCoreTypes.SecurityServiceStatus, XPCProtocolsCore.SecurityError> {
         let result = await service.status()
         switch result {
-        case .success(let statusDict):
+        case let .success(statusDict):
             // Convert dictionary to SecurityServiceStatus
             let status = statusDict["status"] as? String ?? "unknown"
             let version = statusDict["version"] as? String ?? "0.0.0"
@@ -108,7 +108,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
                 metrics: metrics,
                 stringInfo: stringInfo
             ))
-        case .failure(let error):
+        case let .failure(error):
             // Convert XPCSecurityError to XPCProtocolsCore.SecurityError
             return .failure(.internalError(reason: "Status retrieval failed: \(error.localizedDescription)"))
         }
@@ -117,75 +117,75 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
     public func resetSecurity() async -> Result<Void, XPCSecurityError> {
         await service.resetSecurity()
     }
-    
+
     public func getServiceVersion() async -> Result<String, XPCSecurityError> {
         await service.getServiceVersion()
     }
-    
+
     public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
         await service.getHardwareIdentifier()
     }
-    
+
     public func pingStandard() async -> Result<Bool, XPCSecurityError> {
         await service.pingStandard()
     }
-    
+
     public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         await service.generateRandomData(length: length)
     }
-    
+
     public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         await service.encryptSecureData(data, keyIdentifier: keyIdentifier)
     }
-    
+
     public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         await service.decryptSecureData(data, keyIdentifier: keyIdentifier)
     }
-    
+
     public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         await service.sign(data, keyIdentifier: keyIdentifier)
     }
-    
+
     public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
         await service.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
     }
-    
+
     public func generateKey(algorithm: String, keySize: Int, purpose: String) async -> Result<String, XPCSecurityError> {
         await service.generateKey(algorithm: algorithm, keySize: keySize, purpose: purpose)
     }
-    
+
     public func deleteKey(keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
         await service.deleteKey(keyIdentifier: keyIdentifier)
     }
-    
+
     public func exportKey(keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         let result = await service.exportKey(keyIdentifier: keyIdentifier)
         switch result {
-        case .success(let keyData):
+        case let .success(keyData):
             // Return the key data directly
             return .success(keyData)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
-    
+
     public func generateSignature(data: UmbraCoreTypes.SecureBytes, keyIdentifier: String, algorithm: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         await service.generateSignature(data: data, keyIdentifier: keyIdentifier, algorithm: algorithm)
     }
-    
+
     public func verifySignature(signature: UmbraCoreTypes.SecureBytes, data: UmbraCoreTypes.SecureBytes, keyIdentifier: String, algorithm: String) async -> Result<Bool, XPCSecurityError> {
         await service.verifySignature(signature: signature, data: data, keyIdentifier: keyIdentifier, algorithm: algorithm)
     }
 
     // MARK: - SecurityAPI Implementation
-    
+
     public func encrypt(
         data: UmbraCoreTypes.SecureBytes,
-        key: UmbraCoreTypes.SecureBytes,
-        config: SecurityConfig
+        key _: UmbraCoreTypes.SecureBytes,
+        config _: SecurityConfig
     ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         let result = await service.encryptSecureData(data, keyIdentifier: nil)
-        
+
         switch result {
         case let .success(encryptedData):
             return .success(encryptedData)
@@ -196,11 +196,11 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
 
     public func decrypt(
         data: UmbraCoreTypes.SecureBytes,
-        key: UmbraCoreTypes.SecureBytes,
-        config: SecurityConfig
+        key _: UmbraCoreTypes.SecureBytes,
+        config _: SecurityConfig
     ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         let result = await service.decryptSecureData(data, keyIdentifier: nil)
-        
+
         switch result {
         case let .success(decryptedData):
             return .success(decryptedData)
@@ -219,7 +219,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
             keyIdentifier: "hash-operation",
             algorithm: config.algorithm
         )
-        
+
         switch result {
         case let .success(hashData):
             return .success(hashData)
@@ -237,17 +237,17 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
             keySize: config.keySizeInBits,
             purpose: "general"
         )
-        
+
         switch result {
         case let .success(keyId):
             // Export the key to get the actual key data
             let exportResult = await service.exportKey(keyIdentifier: keyId)
-            
+
             switch exportResult {
             case let .success(exportedData):
                 // Clean up the key since we've exported it
                 _ = await service.deleteKey(keyIdentifier: keyId)
-                return .success(exportedData)  // Access first element of the tuple
+                return .success(exportedData) // Access first element of the tuple
             case let .failure(error):
                 return .failure(convertXPCSecurityErrorToSecurityError(error))
             }
@@ -255,7 +255,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
             return .failure(convertXPCSecurityErrorToSecurityError(error))
         }
     }
-    
+
     // Helper method to convert XPCSecurityError to SecurityError
     private func convertXPCSecurityErrorToSecurityError(_ error: XPCSecurityError) -> XPCProtocolsCore.SecurityError {
         switch error {
@@ -307,28 +307,28 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
     public func getSecurityConfigDTO() async -> Result<SecurityProtocolsCore.SecurityConfigDTO, CoreDTOs.SecurityErrorDTO> {
         let result = await service.status()
         switch result {
-        case .success(let statusDict):
+        case let .success(statusDict):
             // Extract config information from status
             var options: [String: String] = [:]
-            
+
             // Add common status fields
             options["status"] = statusDict["status"] as? String ?? "unknown"
             options["version"] = statusDict["version"] as? String ?? "unknown"
-            
+
             // Extract algorithm info from the status dictionary
             if let algorithm = statusDict["algorithm"] as? String {
                 options["algorithm"] = algorithm
             }
-            
+
             if let keySizeStr = statusDict["keySizeInBits"] as? String {
                 options["keySizeInBits"] = keySizeStr
             } else if let keySize = statusDict["keySizeInBits"] as? Int {
                 options["keySizeInBits"] = String(keySize)
             }
-            
+
             // Add all other string values
             for (key, value) in statusDict {
-                if key != "algorithm" && key != "status" && key != "version" {
+                if key != "algorithm", key != "status", key != "version" {
                     if let stringValue = value as? String {
                         options[key] = stringValue
                     } else if let numValue = value as? Double {
@@ -338,17 +338,17 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
                     }
                 }
             }
-            
+
             // Default values if not found
             let algorithm = options["algorithm"] ?? "AES-GCM"
             let keySizeInBits = Int(options["keySizeInBits"] ?? "256") ?? 256
-            
+
             return .success(SecurityProtocolsCore.SecurityConfigDTO(
                 algorithm: algorithm,
                 keySizeInBits: keySizeInBits,
                 options: options
             ))
-        case .failure(let error):
+        case let .failure(error):
             return .failure(CoreDTOs.SecurityErrorDTO(
                 code: 500,
                 message: "Failed to get security config: \(error.localizedDescription)",

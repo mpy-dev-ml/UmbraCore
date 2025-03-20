@@ -104,7 +104,8 @@ final class SecurityBridgeMigrationTests: XCTestCase {
 // MARK: - Test Mocks
 
 private class MockXPCServiceProtocolBasic: ServiceProtocolBasic,
-    @unchecked Sendable {
+    @unchecked Sendable
+{
     static var protocolIdentifier: String = "mock.protocol"
 
     func ping() async -> Result<Bool, UmbraErrors.Security.Protocols> {
@@ -116,7 +117,8 @@ private class MockXPCServiceProtocolBasic: ServiceProtocolBasic,
     }
 
     func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         var bytes = [UInt8]()
         for i in 0 ..< length {
             bytes.append(UInt8(i % 256))
@@ -201,7 +203,8 @@ private class FoundationToCoreTypesAdapter: ServiceProtocolBasic {
     }
 
     func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         var bytes = [UInt8]()
         for i in 0 ..< length {
             bytes.append(UInt8(i % 256))
@@ -212,7 +215,8 @@ private class FoundationToCoreTypesAdapter: ServiceProtocolBasic {
 
 /// Add mock implementation of MockSecurityProviderBridge to replace the previous incomplete version
 private final class MockSecurityProviderBridge: SecurityBridgeProtocolAdapters
-    .SecurityProviderBridge {
+    .SecurityProviderBridge
+{
     // Add required protocol identifier
     static var protocolIdentifier: String = "mock.security.provider.bridge"
 
@@ -242,7 +246,8 @@ private final class MockSecurityProviderBridge: SecurityBridgeProtocolAdapters
     }
 
     func hash(_ data: FoundationBridgeTypes.DataBridge) async throws -> FoundationBridgeTypes
-        .DataBridge {
+        .DataBridge
+    {
         var hashedData: [UInt8] = []
         hashedData = data.bytes
         return FoundationBridgeTypes.DataBridge(hashedData)

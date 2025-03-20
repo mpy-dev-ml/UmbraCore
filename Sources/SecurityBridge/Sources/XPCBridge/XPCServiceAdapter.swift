@@ -156,7 +156,7 @@ extension XPCServiceAdapter: XPCServiceProtocolStandard {
         // Implementing it with a more appropriate error handling approach
         Task {
             completionHandler(NSError(domain: "com.umbra.security.xpc", code: 501, userInfo: [
-                NSLocalizedDescriptionKey: "Operation not supported: synchroniseKeys"
+                NSLocalizedDescriptionKey: "Operation not supported: synchroniseKeys",
             ]))
         }
     }
@@ -326,7 +326,8 @@ extension XPCServiceAdapter: SecurityProtocolsCore.CryptoServiceProtocol {
     }
 
     public func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         // Convert from NSObject to SecureBytes
         let randomDataResult = await serviceStandardAdapter.generateRandomBytes(length: length)
         if let randomData = randomDataResult as? NSData {
@@ -493,7 +494,8 @@ extension XPCServiceAdapter: KeyManagementServiceProtocol {
     }
 
     public func getKeyMetadata(for keyIdentifier: String) async
-        -> Result<[String: String]?, XPCSecurityError> {
+        -> Result<[String: String]?, XPCSecurityError>
+    {
         // If there's no specific metadata implementation, return from the adapter
         await keyManagementAdapter.getKeyMetadata(for: keyIdentifier)
     }

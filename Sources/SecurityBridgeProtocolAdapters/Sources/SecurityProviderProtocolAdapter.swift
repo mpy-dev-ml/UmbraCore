@@ -49,7 +49,8 @@ public protocol SecurityProviderBridge: Sendable {
 /// Adapter that connects a foundation-free security provider to a Foundation-based interface
 /// Implementing the SecurityProviderProtocol while delegating to a foundation-free bridge
 public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols
-    .SecurityProviderProtocol {
+    .SecurityProviderProtocol
+{
     /// The underlying bridge implementation
     private let adapter: any SecurityProviderBridge
 
@@ -136,7 +137,8 @@ public final class SecurityProviderProtocolAdapter: SecurityInterfacesProtocols
     /// - Returns: Hash of the data
     /// - Throws: UmbraErrors.Security.Protocols if hashing fails
     public func hash(_ data: CoreTypesInterfaces.BinaryData) async throws -> CoreTypesInterfaces
-        .BinaryData {
+        .BinaryData
+    {
         do {
             // Use the standardised converter from SecurityTypeConverters
             let bridgeData = data.toDataBridge()

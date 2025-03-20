@@ -75,33 +75,33 @@ public struct SecurityResultDTO: Sendable, Equatable {
         if let error {
             switch error {
             case .invalidFormat:
-                errorCode = 1_001
+                errorCode = 1001
             case .unsupportedOperation:
-                errorCode = 1_002
+                errorCode = 1002
             case .incompatibleVersion:
-                errorCode = 1_003
+                errorCode = 1003
             case .missingProtocolImplementation:
-                errorCode = 1_004
+                errorCode = 1004
             case .invalidState:
-                errorCode = 1_005
+                errorCode = 1005
             case .internalError:
-                errorCode = 1_006
+                errorCode = 1006
             case .invalidInput:
-                errorCode = 1_007
+                errorCode = 1007
             case .encryptionFailed:
-                errorCode = 1_008
+                errorCode = 1008
             case .decryptionFailed:
-                errorCode = 1_009
+                errorCode = 1009
             case .randomGenerationFailed:
-                errorCode = 1_010
+                errorCode = 1010
             case .storageOperationFailed:
-                errorCode = 1_011
+                errorCode = 1011
             case .serviceError:
-                errorCode = 1_012
+                errorCode = 1012
             case .notImplemented:
-                errorCode = 1_013
+                errorCode = 1013
             @unknown default:
-                errorCode = 1_099
+                errorCode = 1099
             }
 
             // Set error description

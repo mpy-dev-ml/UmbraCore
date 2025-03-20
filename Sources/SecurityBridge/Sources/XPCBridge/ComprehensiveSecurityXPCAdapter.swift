@@ -16,7 +16,8 @@ import XPCProtocolsCore
 /// providing a unified API for service-level operations.
 @objc
 public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
-    XPCServiceProtocolBasic, @unchecked Sendable {
+    XPCServiceProtocolBasic, @unchecked Sendable
+{
     // MARK: - Properties
 
     /// Static identifier for the protocol
@@ -67,7 +68,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
             switch error.code {
             case 1: .connectionFailed(reason: error.localizedDescription)
             case 2: .invalidMessageFormat(reason: error.localizedDescription)
-            case 3: .timeout(operation: error.localizedDescription, timeoutMs: 30_000)
+            case 3: .timeout(operation: error.localizedDescription, timeoutMs: 30000)
             case 4: .serviceUnavailable(serviceName: "ComprehensiveSecurityService")
             default: .serviceError(code: error.code, reason: error.localizedDescription)
             }
@@ -194,7 +195,8 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
 
     /// Set the service status code
     private func getServiceStatus() async
-        -> Result<XPCProtocolTypeDefs.ServiceStatus, UmbraErrors.Security.XPC> {
+        -> Result<XPCProtocolTypeDefs.ServiceStatus, UmbraErrors.Security.XPC>
+    {
         await withCheckedContinuation { continuation in
             Task {
                 guard let service = connection.remoteObjectProxy as? NSObject else {
@@ -401,7 +403,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                 let paramDict: [String: Any] = [
                     "keyType": keyType.rawValue,
                     "keyIdentifier": keyIdentifier as Any,
-                    "metadata": metadata as Any
+                    "metadata": metadata as Any,
                 ]
 
                 let selector = NSSelectorFromString("generateKeyWithParams:completionHandler:")
@@ -526,7 +528,7 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
                     "data": data,
                     "keyType": keyType.rawValue,
                     "keyIdentifier": keyIdentifier as Any,
-                    "metadata": metadata as Any
+                    "metadata": metadata as Any,
                 ]
 
                 let selector = NSSelectorFromString("importKeyWithParams:completionHandler:")
@@ -666,7 +668,8 @@ public final class ComprehensiveSecurityXPCAdapter: NSObject, BaseXPCAdapter,
 
     /// Get metadata for a specific key
     public func getKeyMetadata(for keyIdentifier: String) async
-        -> Result<[String: String]?, XPCSecurityError> {
+        -> Result<[String: String]?, XPCSecurityError>
+    {
         await withCheckedContinuation { continuation in
             Task {
                 guard let service = connection.remoteObjectProxy as? NSObject else {

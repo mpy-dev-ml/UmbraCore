@@ -66,7 +66,8 @@ public protocol CryptoXPCServiceProtocol: AnyObject, Sendable {
 @available(macOS 14.0, *)
 public final class CryptoXPCServiceAdapter: NSObject,
     XPCServiceProtocolStandard,
-    XPCServiceProtocolComplete {
+    XPCServiceProtocolComplete
+{
     /// The underlying crypto service being adapted
     private let service: any CryptoXPCServiceProtocol
 

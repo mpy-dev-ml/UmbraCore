@@ -2,8 +2,8 @@
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
-import CoreErrors
 import CoreDTOs
+import CoreErrors
 import CoreTypesInterfaces
 import ErrorHandling
 import ErrorHandlingDomains
@@ -28,119 +28,119 @@ public struct SecurityProviderAdapterFactory: Sendable {
     private init() {}
 
     // MARK: - Mock Implementations
-    
+
     /// Mock provider implementation for testing
     private final class AdapterMockProvider: SecurityProtocolsCore.SecurityProviderProtocol {
         public var cryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
-            return AdapterMockCryptoService()
+            AdapterMockCryptoService()
         }
-        
+
         public var keyManager: SecurityProtocolsCore.KeyManagementProtocol {
-            return AdapterMockKeyManager()
+            AdapterMockKeyManager()
         }
-        
-        public func performSecureOperation(operation: SecurityProtocolsCore.SecurityOperation, config: SecurityProtocolsCore.SecurityConfigDTO) async -> SecurityProtocolsCore.SecurityResultDTO {
-            return SecurityProtocolsCore.SecurityResultDTO.success()
+
+        public func performSecureOperation(operation _: SecurityProtocolsCore.SecurityOperation, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> SecurityProtocolsCore.SecurityResultDTO {
+            SecurityProtocolsCore.SecurityResultDTO.success()
         }
-        
-        public func createSecureConfig(options: [String : Any]?) -> SecurityProtocolsCore.SecurityConfigDTO {
-            return SecurityProtocolsCore.SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256, options: [:])
+
+        public func createSecureConfig(options _: [String: Any]?) -> SecurityProtocolsCore.SecurityConfigDTO {
+            SecurityProtocolsCore.SecurityConfigDTO(algorithm: "AES", keySizeInBits: 256, options: [:])
         }
     }
 
     private final class AdapterMockCryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
-        func encrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+        func encrypt(data _: SecureBytes, using _: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func decrypt(data: SecureBytes, using key: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func decrypt(data _: SecureBytes, using _: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
+
         func generateKey() async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+            .success(SecureBytes(bytes: []))
         }
-        
-        func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func hash(data _: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
-            return .success(true)
+
+        func verify(data _: SecureBytes, against _: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
+            .success(true)
         }
-        
-        func encryptSymmetric(data: SecureBytes, key: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func encryptSymmetric(data _: SecureBytes, key _: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func decryptSymmetric(data: SecureBytes, key: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func decryptSymmetric(data _: SecureBytes, key _: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func encryptAsymmetric(data: SecureBytes, publicKey: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func encryptAsymmetric(data _: SecureBytes, publicKey _: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func decryptAsymmetric(data: SecureBytes, privateKey: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func decryptAsymmetric(data _: SecureBytes, privateKey _: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func hash(data: SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func hash(data _: SecureBytes, config _: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func generateRandomData(length: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func generateRandomData(length _: Int) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func hash(data: SecureBytes, algorithm: String) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func hash(data _: SecureBytes, algorithm _: String) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func encrypt(data: UmbraCoreTypes.SecureBytes, options: SecurityProtocolsCore.SecurityConfigDTO?) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func encrypt(data _: UmbraCoreTypes.SecureBytes, options _: SecurityProtocolsCore.SecurityConfigDTO?) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func decrypt(data: UmbraCoreTypes.SecureBytes, options: SecurityProtocolsCore.SecurityConfigDTO?) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+
+        func decrypt(data _: UmbraCoreTypes.SecureBytes, options _: SecurityProtocolsCore.SecurityConfigDTO?) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
     }
 
     private final class AdapterMockKeyManager: SecurityProtocolsCore.KeyManagementProtocol {
-        func retrieveKey(withIdentifier identifier: String) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
-            return .success(SecureBytes(bytes: []))
+        func retrieveKey(withIdentifier _: String) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+            .success(SecureBytes(bytes: []))
         }
-        
-        func storeKey(_ key: SecureBytes, withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
-            return .success(())
+
+        func storeKey(_: SecureBytes, withIdentifier _: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
+            .success(())
         }
-        
-        func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
-            return .success(())
+
+        func deleteKey(withIdentifier _: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
+            .success(())
         }
-        
-        func rotateKey(withIdentifier identifier: String, dataToReencrypt: SecureBytes?) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), UmbraErrors.Security.Protocols> {
-            return .success((newKey: SecureBytes(bytes: []), reencryptedData: nil))
+
+        func rotateKey(withIdentifier _: String, dataToReencrypt _: SecureBytes?) async -> Result<(newKey: SecureBytes, reencryptedData: SecureBytes?), UmbraErrors.Security.Protocols> {
+            .success((newKey: SecureBytes(bytes: []), reencryptedData: nil))
         }
-        
+
         func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
-            return .success([])
+            .success([])
         }
     }
 
     private final class AdapterMockXPCService: XPCServiceProtocolBasic {
         static let protocolIdentifier: String = "mock.protocol"
-        
+
         func ping() async -> Bool {
-            return true
+            true
         }
-        
-        func synchroniseKeys(_ syncData: SecureBytes) async throws {
+
+        func synchroniseKeys(_: SecureBytes) async throws {
             // No implementation needed for mock
         }
-        
-        func status() async -> Result<[String : Any], XPCSecurityError> {
-            return .success([:])
+
+        func status() async -> Result<[String: Any], XPCSecurityError> {
+            .success([:])
         }
     }
 
@@ -151,9 +151,9 @@ public struct SecurityProviderAdapterFactory: Sendable {
     /// - Returns: A SecurityProviderProtocol instance
     public func createSecurityProvider(config: ProviderFactoryConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol {
         if config.useModernProtocols {
-            return createModernProvider(config: config)
+            createModernProvider(config: config)
         } else {
-            return createLegacyProvider(config: config)
+            createLegacyProvider(config: config)
         }
     }
 
@@ -181,6 +181,6 @@ public struct SecurityProviderAdapterFactory: Sendable {
     /// - Returns: A SecurityProvider instance that uses the legacy interface
     public func createLegacyProvider(config: ProviderFactoryConfiguration) -> any SecurityProtocolsCore.SecurityProviderProtocol {
         // For legacy providers, we'll also use the modern implementation but through a different adapter
-        return createModernProvider(config: config)
+        createModernProvider(config: config)
     }
 }

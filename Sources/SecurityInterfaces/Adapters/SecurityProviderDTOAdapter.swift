@@ -64,9 +64,9 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
     public func updateSecurityConfigDTO(_ configuration: CoreDTOs.SecurityConfigDTO) async -> Result<Void, CoreDTOs.SecurityErrorDTO> {
         // We'll create a security config and execute a configuration update operation
         var options: [String: Any] = [
-            "operation": "updateConfiguration"
+            "operation": "updateConfiguration",
         ]
-        
+
         // Add all parameters from the configuration
         _ = CoreDTOs.SecurityConfigDTO(
             algorithm: configuration.algorithm.isEmpty ? "AES" : configuration.algorithm,
@@ -78,7 +78,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         for (key, value) in parameters {
             options[key] = value
         }
-        
+
         // Create a security configuration directly from the DTO
         let securityConfig = SecurityConfiguration(
             securityLevel: .standard,
@@ -86,7 +86,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             hashAlgorithm: configuration.options["hashAlgorithm"] ?? "SHA-256",
             options: configuration.options
         )
-        
+
         // Update the provider with the new configuration
         do {
             if let securityProvider = provider as? SecurityProvider {
@@ -97,7 +97,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             return .success(())
         } catch {
             return .failure(CoreDTOs.SecurityErrorDTO(
-                code: 1_100,
+                code: 1100,
                 domain: "security.configuration",
                 message: "Failed to update security configuration: \(error.localizedDescription)",
                 details: [:]
@@ -113,11 +113,12 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             config: config
         )
         if let data = result.data,
-           let hostId = String(data: data.toData(), encoding: .utf8) {
+           let hostId = String(data: data.toData(), encoding: .utf8)
+        {
             return .success(hostId)
         } else {
             return .failure(CoreDTOs.SecurityErrorDTO(
-                code: 3_005,
+                code: 3005,
                 domain: "security.adapter",
                 message: "Invalid host identifier format",
                 details: [:]
@@ -129,7 +130,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         // Use secure operation to register client
         let config = provider.createSecureConfig(options: [
             "operation": "registerClient",
-            "bundleIdentifier": bundleIdentifier
+            "bundleIdentifier": bundleIdentifier,
         ])
         let result = await provider.performSecureOperation(
             operation: .keyStorage,
@@ -137,7 +138,8 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         )
         if let data = result.data,
            let successString = String(data: data.toData(), encoding: .utf8),
-           let success = Bool(successString) {
+           let success = Bool(successString)
+        {
             return .success(success)
         } else {
             return .success(true) // Default to success if we can't parse the result
@@ -148,9 +150,9 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         // Use secure operation for key rotation
         let config = provider.createSecureConfig(options: [
             "operation": "requestKeyRotation",
-            "keyId": keyId
+            "keyId": keyId,
         ])
-        let _ = await provider.performSecureOperation(
+        _ = await provider.performSecureOperation(
             operation: .keyRotation,
             config: config
         )
@@ -161,9 +163,9 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         // Use secure operation for compromised key notification
         let config = provider.createSecureConfig(options: [
             "operation": "notifyKeyCompromise",
-            "keyId": keyId
+            "keyId": keyId,
         ])
-        let _ = await provider.performSecureOperation(
+        _ = await provider.performSecureOperation(
             operation: .keyDeletion,
             config: config
         )
@@ -183,7 +185,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             return .success(data)
         case let .failure(error):
             return .failure(CoreDTOs.SecurityErrorDTO(
-                code: 3_009,
+                code: 3009,
                 domain: "security.adapter",
                 message: "Error generating random bytes: \(error.localizedDescription)",
                 details: [:]
@@ -199,7 +201,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             return .success(encryptedData)
         case let .failure(error):
             return .failure(CoreDTOs.SecurityErrorDTO(
-                code: 3_010,
+                code: 3010,
                 domain: "security.adapter",
                 message: "Error encrypting data: \(error.localizedDescription)",
                 details: [:]
@@ -213,7 +215,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         parameters: [String: String]
     ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
         var options: [String: Any] = [
-            "operation": operationName
+            "operation": operationName,
         ]
 
         // Add all parameters to the options dictionary
@@ -273,7 +275,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             return .success(resultData)
         } else {
             return .failure(CoreDTOs.SecurityErrorDTO(
-                code: 3_001,
+                code: 3001,
                 domain: "security.adapter",
                 message: "Operation returned no data",
                 details: [:]
@@ -287,7 +289,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
         parameters: [String: String]
     ) async -> Result<SecureBytes, CoreDTOs.SecurityErrorDTO> {
         var options: [String: Any] = [
-            "operation": operation.rawValue
+            "operation": operation.rawValue,
         ]
 
         // Add all parameters to the options dictionary
@@ -312,7 +314,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             return .success(resultData)
         } else {
             return .failure(CoreDTOs.SecurityErrorDTO(
-                code: 3_001,
+                code: 3001,
                 domain: "security.adapter",
                 message: "Operation returned no data",
                 details: [:]
@@ -330,7 +332,7 @@ public final class SecurityProviderDTOAdapter: SecurityProviderDTO, SecurityProt
             keySizeInBits: Int(options?["keySizeInBits"] ?? "256") ?? 256,
             options: options ?? [:]
         )
-        
+
         return .success(config)
     }
 

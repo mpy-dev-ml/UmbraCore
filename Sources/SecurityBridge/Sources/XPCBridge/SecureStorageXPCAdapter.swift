@@ -118,18 +118,18 @@ public final class SecureStorageXPCAdapter: NSObject, BaseXPCAdapter, @unchecked
         } else if error.domain == "SecureStorageErrorDomain" {
             // Map specific storage error codes to appropriate UmbraErrors
             switch error.code {
-            case 1_001:
+            case 1001:
                 return .insufficientPrivileges(service: "SecureStorage", requiredPrivilege: "read")
-            case 1_002:
+            case 1002:
                 return .serviceError(
                     code: error.code,
                     reason: error.userInfo["identifier"] as? String ?? "unknown"
                 )
-            case 1_003:
+            case 1003:
                 return .serviceError(code: error.code, reason: error.localizedDescription)
-            case 1_004:
+            case 1004:
                 return .serviceError(code: error.code, reason: error.localizedDescription)
-            case 1_005:
+            case 1005:
                 return .serviceError(code: error.code, reason: error.localizedDescription)
             default:
                 return .internalError(error.localizedDescription)
@@ -182,7 +182,8 @@ extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
     }
 
     public func retrieveData(identifier: String) async
-        -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+        -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError>
+    {
         // First check if service is available
         let serviceAvailable = await isServiceAvailable()
         if !serviceAvailable {
@@ -227,7 +228,8 @@ extension SecureStorageXPCAdapter: SecureStorageServiceProtocol {
     }
 
     public func getDataMetadata(for identifier: String) async
-        -> Result<[String: String]?, XPCSecurityError> {
+        -> Result<[String: String]?, XPCSecurityError>
+    {
         // First check if service is available
         let serviceAvailable = await isServiceAvailable()
         if !serviceAvailable {

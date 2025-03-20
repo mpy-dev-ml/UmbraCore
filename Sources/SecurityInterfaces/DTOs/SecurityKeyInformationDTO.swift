@@ -4,22 +4,22 @@ import Foundation
 public struct SecurityKeyInformationDTO: Sendable, Equatable {
     /// The unique identifier for the key
     public let keyID: String
-    
+
     /// Algorithm used for this key (e.g., "AES256", "RSA2048")
     public let algorithm: String
-    
+
     /// Date when the key was created
     public let creationDate: Date
-    
+
     /// Optional expiry date for the key
     public let expiryDate: Date?
-    
+
     /// Current status of the key (e.g., "active", "expired", "compromised")
     public let status: String
-    
+
     /// Additional metadata associated with the key
     public let metadata: [String: String]
-    
+
     /// Initialize a new SecurityKeyInformationDTO
     /// - Parameters:
     ///   - keyID: The unique identifier for the key

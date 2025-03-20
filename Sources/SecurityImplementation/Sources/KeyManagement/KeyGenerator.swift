@@ -165,7 +165,7 @@ public final class KeyGenerator: Sendable {
             validSize = [128, 192, 256].contains(bits)
         case "rsa":
             // RSA typically uses 2048, 3072, or 4096 bit keys
-            validSize = bits >= 2_048 && bits % 64 == 0
+            validSize = bits >= 2048 && bits % 64 == 0
         case "hmac-sha256":
             // HMAC-SHA256 can use variable key sizes, but we'll limit to common ones
             validSize = bits >= 128 && bits % 8 == 0
@@ -223,7 +223,8 @@ public final class KeyGenerator: Sendable {
     /// - Parameter length: Length of the random data in bytes
     /// - Returns: The generated random data or an error
     public func generateRandomData(length: Int) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         guard length > 0 else {
             return .failure(.invalidInput("Random data length must be greater than 0"))
         }
@@ -289,7 +290,7 @@ public final class KeyGenerator: Sendable {
         case .asymmetric:
             // RSA typically uses 2048, 3072, or 4096-bit keys
             // ECC typically uses 256, 384, or 521-bit keys
-            [2_048, 3_072, 4_096, 256, 384, 521].contains(bits)
+            [2048, 3072, 4096, 256, 384, 521].contains(bits)
 
         case .hmac:
             // HMAC typically uses 256, 384, or 512-bit keys

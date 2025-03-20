@@ -6,16 +6,16 @@ import UmbraCoreTypes
 public struct ServiceStatusDTO: Sendable, Equatable {
     /// Current service status
     public let status: String
-    
+
     /// Service version
     public let version: String
-    
+
     /// String information about the service
     public let stringInfo: [String: String]
-    
+
     /// Integer information about the service
     public let intInfo: [String: Int]
-    
+
     /// Create a service status DTO
     /// - Parameters:
     ///   - status: Current service status
@@ -33,15 +33,15 @@ public struct ServiceStatusDTO: Sendable, Equatable {
         self.stringInfo = stringInfo
         self.intInfo = intInfo
     }
-    
+
     /// Returns whether the current service is available
     public var isAvailable: Bool {
-        return status.lowercased() == "available" || status.lowercased() == "online"
+        status.lowercased() == "available" || status.lowercased() == "online"
     }
-    
+
     /// Returns the service version as components
     public func versionComponents() -> [Int] {
-        return version.split(separator: ".").compactMap { Int($0) }
+        version.split(separator: ".").compactMap { Int($0) }
     }
 }
 
@@ -51,36 +51,36 @@ public extension ServiceStatusDTO {
     /// - Parameter version: Service version
     /// - Returns: A service status DTO
     static func available(version: String = "1.0.0") -> ServiceStatusDTO {
-        return ServiceStatusDTO(
+        ServiceStatusDTO(
             status: "Available",
             version: version,
             stringInfo: ["state": "running"]
         )
     }
-    
+
     /// Returns a service status indicating the service is unavailable
     /// - Parameter reason: Reason for unavailability
     /// - Returns: A service status DTO
     static func unavailable(reason: String) -> ServiceStatusDTO {
-        return ServiceStatusDTO(
+        ServiceStatusDTO(
             status: "Unavailable",
             version: "0.0.0",
             stringInfo: ["reason": reason]
         )
     }
-    
+
     /// Returns a service status indicating the service is in maintenance
     /// - Parameter estimatedCompletionTime: Estimated completion time
     /// - Returns: A service status DTO
     static func maintenance(estimatedCompletionTime: String? = nil) -> ServiceStatusDTO {
-        var info: [String: String] = ["state": "maintenance"]
+        var info = ["state": "maintenance"]
         if let time = estimatedCompletionTime {
             info["estimatedCompletion"] = time
         }
-        
+
         return ServiceStatusDTO(
             status: "Maintenance",
-            version: "1.0.0", 
+            version: "1.0.0",
             stringInfo: info
         )
     }

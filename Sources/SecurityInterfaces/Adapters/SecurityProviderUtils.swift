@@ -172,36 +172,36 @@ public enum SecurityProviderUtils {
     /// - Returns: A SecurityInterfacesError representation of the input error
     public static func mapToSecurityInterfacesError(_ error: Error) -> SecurityInterfacesError {
         if let securityError = error as? SecurityInterfacesError {
-            return securityError
+            securityError
         } else if let coreError = error as? CoreErrors.SecurityError {
-            return convertError(coreError)
+            convertError(coreError)
         } else if let xpcError = error as? XPCSecurityError {
             switch xpcError {
             case let .internalError(reason):
-                return .operationFailed(reason)
+                .operationFailed(reason)
             case let .invalidData(reason):
-                return .keyError(reason)
+                .keyError(reason)
             case let .keyNotFound(identifier):
-                return .keyError("Key not found: \(identifier)")
+                .keyError("Key not found: \(identifier)")
             case let .encryptionFailed(reason), let .decryptionFailed(reason):
-                return .operationFailed("Crypto operation failed: \(reason)")
+                .operationFailed("Crypto operation failed: \(reason)")
             case .authenticationFailed:
-                return .authenticationFailed
+                .authenticationFailed
             case let .invalidInput(details):
-                return .operationFailed("Invalid input: \(details)")
+                .operationFailed("Invalid input: \(details)")
             case .connectionInterrupted:
-                return .operationFailed("Connection interrupted")
+                .operationFailed("Connection interrupted")
             case let .connectionInvalidated(reason):
-                return .operationFailed("Connection invalidated: \(reason)")
+                .operationFailed("Connection invalidated: \(reason)")
             default:
-                return .operationFailed("XPC error: \(xpcError)")
+                .operationFailed("XPC error: \(xpcError)")
             }
         } else if let spcError = error as? XPCProtocolsCore.SecurityError {
-            return mapSPCError(spcError)
+            mapSPCError(spcError)
         } else if let umbraError = error as? UmbraErrors.Security.Protocols {
-            return mapSPCError(umbraError)
+            mapSPCError(umbraError)
         } else {
-            return .operationFailed("Unknown error: \(error.localizedDescription)")
+            .operationFailed("Unknown error: \(error.localizedDescription)")
         }
     }
 
@@ -217,7 +217,8 @@ public enum SecurityProviderUtils {
 
         // Copy additional options from the status dictionary
         for (key, value) in status where
-            !["securityLevel", "encryptionAlgorithm", "hashAlgorithm"].contains(key) {
+            !["securityLevel", "encryptionAlgorithm", "hashAlgorithm"].contains(key)
+        {
             options[key] = value
         }
 
