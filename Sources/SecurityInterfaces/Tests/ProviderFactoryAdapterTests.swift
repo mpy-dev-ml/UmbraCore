@@ -11,7 +11,7 @@ import UmbraCoreTypes
 import XCTest
 import XPCProtocolsCore
 
-/// Tests for the refactored SecurityProviderFactory implementation
+/// Tests for the refactored /// Tests for the refactored SecurityProviderAdapter implementation implementation
 /// Verifies that the new adapter-based approach works correctly
 class ProviderFactoryAdapterTests: XCTestCase {
     // MARK: - Basic Factory Tests
