@@ -1,4 +1,4 @@
-// DEPRECATED: KeyExchangeDTOAdapter
+// DEPRECATED: Not specified
 // This entire file is deprecated and should not be used in new code.
 // File marked as deprecated/legacy by naming convention
 
@@ -76,6 +76,7 @@ public struct KeyExchangeParametersDTO: Sendable, Equatable {
 }
 
 /// Adapter that adds key exchange DTO functionality to a standard XPC service
+// DEPRECATED, but keeping class definition for compatibility:
 public class KeyExchangeDTOAdapter: KeyExchangeDTOProtocol {
     /// The underlying service to use for key exchange operations
     private let keyManagementService: any KeyManagementDTOProtocol

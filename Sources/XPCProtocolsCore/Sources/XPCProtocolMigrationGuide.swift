@@ -1,3 +1,7 @@
+// DEPRECATED: XPCProtocolMigrationGuide
+// This entire file is deprecated and should not be used in new code.
+// File marked as deprecated/legacy by naming convention
+
 /**
  # XPC Protocol Migration Guide
 

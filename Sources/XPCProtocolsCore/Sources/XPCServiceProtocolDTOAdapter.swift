@@ -15,6 +15,7 @@ import Foundation
 import UmbraCoreTypes
 
 /// Adapter to wrap a standard XPC service protocol implementation with the DTO protocol interface
+// DEPRECATED, but keeping class definition for compatibility:
 public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sendable {
     /// The underlying service protocol implementation
     private let service: XPCServiceProtocolStandard
@@ -256,6 +257,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
     }
 
     /// Adapter to wrap a complete XPC service protocol implementation with the complete DTO protocol interface
+    // DEPRECATED, but keeping class definition for compatibility:
     public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTOAdapter, XPCServiceWithKeyExchangeDTO, KeyExchangeDTOProtocol, @unchecked Sendable {
         /// The underlying complete service protocol implementation
         private let completeService: XPCServiceProtocolComplete

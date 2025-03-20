@@ -18,6 +18,7 @@ import Foundation
 import UmbraCoreTypes
 
 /// Adapter that implements XPCServiceProtocolCompleteDTO by wrapping a legacy XPCServiceProtocolComplete
+// DEPRECATED, but keeping class definition for compatibility:
 public final class XPCServiceProtocolCompleteDTOAdapter: XPCServiceProtocolDTO, KeyManagementDTOProtocol, AdvancedSecurityDTOProtocol, KeyExchangeDTOProtocol {
     /// Wrapped legacy service implementation
     private let completeService: XPCServiceProtocolComplete
