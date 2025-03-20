@@ -16,9 +16,18 @@ swift_library(
     srcs = glob(["**/*.swift"]),
 )
 
-test_suite(
+# Collect all example targets
+filegroup(
     name = "all_examples",
-    tests = [
+    srcs = [
         "//Examples/Services:ServicesDTOExample",
+    ],
+)
+
+# Test suite for any example tests
+test_suite(
+    name = "example_tests",
+    tests = [
+        # Add any actual test targets here
     ],
 )
