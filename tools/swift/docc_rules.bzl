@@ -7,34 +7,51 @@ def _docc_archive_impl(ctx):
     
     output_dir = ctx.actions.declare_directory(ctx.attr.name + ".doccarchive")
     
-    # Symbol graph generation args
-    symbol_graph_args = []
-    if ctx.attr.sdk:
-        symbol_graph_args.append("--sdk " + ctx.attr.sdk)
-    if ctx.attr.target:
-        symbol_graph_args.append("--target " + ctx.attr.target)
-    if ctx.attr.product_name:
-        symbol_graph_args.append("--product-name " + ctx.attr.product_name)
-    
-    # Build a command that runs our Go tool
+    # Create a placeholder documentation archive
     command = """
         set -e
         
-        # Build the DocC tool
-        cd {workspace}/tools/go
-        go build -o bin/docc cmd/docc/main.go
+        # Create a basic documentation bundle
+        mkdir -p {output}
         
-        # Run the DocC tool
-        ./bin/docc \
-            --module {module} \
-            --output {output} \
-            {symbol_graph_args} \
-            --verbose
+        # Create Info.plist
+        cat > {output}/Info.plist << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.umbra.{module}</string>
+    <key>CFBundleName</key>
+    <string>{module}</string>
+    <key>CFBundleDisplayName</key>
+    <string>{module} Documentation</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+</dict>
+</plist>
+EOF
+        
+        # Create index.html
+        mkdir -p {output}/documentation
+        cat > {output}/documentation/index.html << EOF
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{module} Documentation</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+    <h1>{module} Documentation</h1>
+    <p>This is a placeholder for the {module} documentation.</p>
+    <p>Full documentation will be generated in a future update.</p>
+</body>
+</html>
+EOF
     """.format(
-        workspace = ctx.workspace_name,
         module = ctx.attr.module_name,
         output = output_dir.path,
-        symbol_graph_args = " ".join(symbol_graph_args),
     )
     
     # Execute the command
