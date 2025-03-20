@@ -1,6 +1,8 @@
 import ErrorHandling
+import UmbraCoreTypes
 import ErrorHandlingDomains
 import Foundation
+import CoreErrors
 
 // Type alias to disambiguate SecurityError types
 typealias SPCSecurityError = UmbraErrors.Security.Protocols
@@ -37,51 +39,85 @@ public enum XPCProtocolMigrationFactory {
         ModernXPCService()
     }
 
-    /// Convert from legacy error to XPCSecurityError
+    /// Convert from legacy error to CoreErrors.SecurityError
     ///
     /// - Parameter error: Error to convert
-    /// - Returns: XPCSecurityError representation
-    public static func convertLegacyError(_ error: Error) -> XPCSecurityError {
+    /// - Returns: CoreErrors.SecurityError representation
+    public static func convertLegacyError(_ error: Error) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         // First check if it's already the right type
-        if let securityError = error as? XPCSecurityError {
-            return securityError
+        if let securityError = error as? CoreErrors.SecurityError {
+            return convertErrorToSecurityProtocolError(securityError)
         }
         
-        // Convert to XPCSecurityError with appropriate mapping
+        // Convert to CoreErrors.SecurityError with appropriate mapping
         let nsError = error as NSError
         
         // Try to create a more specific error based on domain and code
-        return .internalError(reason: nsError.localizedDescription)
+        return .internalError(nsError.localizedDescription)
     }
 
-    /// Convert any error to XPCSecurityError
+    /// Convert any error to CoreErrors.SecurityError
     ///
     /// - Parameter error: Any error
-    /// - Returns: XPCSecurityError representation
-    public static func anyErrorToXPCError(_ error: Error) -> XPCSecurityError {
-        // If the error is already an XPCSecurityError, return it directly
-        if let xpcError = error as? XPCSecurityError {
-            return xpcError
+    /// - Returns: CoreErrors.SecurityError representation
+    public static func anyErrorToXPCError(_ error: Error) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+        // If the error is already an CoreErrors.SecurityError, return it directly
+        if let xpcError = error as? CoreErrors.SecurityError {
+            return convertErrorToSecurityProtocolError(xpcError)
         }
 
         // Otherwise create a general error with the original error's description
-        return .internalError(reason: error.localizedDescription)
+        return .internalError(error.localizedDescription)
     }
 
-    /// Map any NSError to an XPCSecurityError
+    /// Map a Foundation error to an XPC security error
     /// - Parameter error: The error to map
-    /// - Returns: An XPCSecurityError representing the given error
-    public static func mapError(_ error: Error) -> XPCSecurityError {
+    /// - Returns: An XPC security error
+    public static func mapFoundationError(_ error: Error) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+        // First check if it's already the right type
+        if let securityError = error as? ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+            return securityError
+        }
+        
+        // Convert to NSError and extract domain and code
+        let nsError = error as NSError
+        let domain = nsError.domain
+        
+        // Map specific error domains
+        if domain == NSURLErrorDomain {
+            return .internalError("Connection interrupted")
+        } else {
+            return .internalError(nsError.localizedDescription)
+        }
+    }
+
+    /// Map any NSError to an CoreErrors.SecurityError
+    /// - Parameter error: The error to map
+    /// - Returns: An CoreErrors.SecurityError representing the given error
+    public static func mapError(_ error: Error) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         // NSError properties
         let nsError = error as NSError
         let domain = nsError.domain
         
         // Map specific error domains
         if domain == NSURLErrorDomain {
-            return .connectionInterrupted
+            return .internalError("Connection interrupted")
         } else {
-            return .internalError(reason: nsError.localizedDescription)
+            return .internalError(nsError.localizedDescription)
         }
+    }
+
+    /// Map any error to a security protocol error
+    /// - Parameter error: The error to convert
+    /// - Returns: Converted error
+    public static func mapGenericError(_ error: Error) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+        // If the error is already an CoreErrors.SecurityError, convert it
+        if let xpcError = error as? CoreErrors.SecurityError {
+            return convertErrorToSecurityProtocolError(xpcError)
+        }
+        
+        // Otherwise create a general error with the original error's description
+        return .internalError(error.localizedDescription)
     }
 
     // MARK: - Migration Helper Methods
@@ -127,24 +163,25 @@ public enum XPCProtocolMigrationFactory {
         Data(secureBytes)
     }
 
-    /// Convert a generic Error to XPCSecurityError
+    /// Convert a generic Error to CoreErrors.SecurityError
     ///
     /// - Parameter error: The error to convert
-    /// - Returns: Equivalent XPCSecurityError
-    public static func convertErrorToXPCSecurityError(
+    /// - Returns: Equivalent CoreErrors.SecurityError
+// MARK: - Swift Concurrency Helpers
+    /// Convert an error to a SecurityError
+    /// - Parameter error: The error to convert
+    /// - Returns: Equivalent ErrorHandlingDomains.UmbraErrors.Security.Protocols
+    public static func convertErrorToSecurityProtocolError(
         _ error: Error
-    ) -> XPCSecurityError {
-        // If it's already an XPCSecurityError, return it
-        if let securityError = error as? XPCSecurityError {
+    ) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+        // First check if it's already the right type
+        if let securityError = error as? ErrorHandlingDomains.UmbraErrors.Security.Protocols {
             return securityError
         }
-
-        // Convert to XPCSecurityError with appropriate mapping
-        let nsError = error as NSError
         
+        // Convert NSError
+        let nsError = error as NSError
         // Try to create a more specific error based on domain and code
-        return .internalError(reason: nsError.localizedDescription)
+        return .internalError(nsError.localizedDescription)
     }
-
-// MARK: - Swift Concurrency Helpers
 }

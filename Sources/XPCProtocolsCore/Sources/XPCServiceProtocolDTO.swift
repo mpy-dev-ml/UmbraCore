@@ -11,6 +11,7 @@ import CoreDTOs
 @_exported import struct CoreDTOs.SecurityErrorDTO
 @_exported import struct CoreDTOs.SecurityConfigDTO
 import UmbraCoreTypes
+import ErrorHandlingDomains
 
 /// Basic XPC service protocol with DTO support
 public protocol XPCServiceProtocolDTO {
@@ -99,7 +100,7 @@ public extension XPCServiceProtocolDTO {
         let status = XPCProtocolDTOs.ServiceStatusDTO.current(
             protocolVersion: Self.protocolIdentifier,
             serviceVersion: "1.0.0",
-            additionalInfo: ["serviceType": "XPC"]
+            details: ["serviceType": "XPC"]
         )
         
         return OperationResultDTO(value: status)

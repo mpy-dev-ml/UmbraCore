@@ -18,6 +18,8 @@
 
 import Foundation
 import UmbraCoreTypes
+import CoreErrors
+import ErrorHandlingDomains
 
 /// Extension methods for easier implementation of XPC service protocols
 public extension XPCServiceProtocolBasic {
@@ -103,7 +105,7 @@ public extension XPCServiceProtocolComplete {
     func bridgeEncryption(
         data: SecureBytes,
         keyIdentifier: String?
-    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    ) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         await encryptSecureData(data, keyIdentifier: keyIdentifier)
     }
 
@@ -115,7 +117,7 @@ public extension XPCServiceProtocolComplete {
     func bridgeDecryption(
         data: SecureBytes,
         keyIdentifier: String?
-    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+    ) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         await decryptSecureData(data, keyIdentifier: keyIdentifier)
     }
 }

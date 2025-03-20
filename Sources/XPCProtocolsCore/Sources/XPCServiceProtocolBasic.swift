@@ -21,6 +21,7 @@ import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
 import UmbraCoreTypes
+import CoreErrors
 
 /// Protocol defining the base XPC service interface without Foundation dependencies.
 /// This protocol serves as the foundation for all XPC services in UmbraCore and
@@ -38,12 +39,12 @@ public protocol XPCServiceProtocolBasic: Sendable {
     /// Basic synchronisation of keys between XPC service and client.
     /// This method allows secure key material to be shared across process boundaries.
     /// - Parameter syncData: Secure bytes for key synchronisation
-    /// - Throws: XPCProtocolsCore.SecurityError if synchronisation fails
+    /// - Throws: ErrorHandlingDomains.UmbraErrors.Security.Protocols if synchronisation fails
     func synchroniseKeys(_ syncData: SecureBytes) async throws
 
     /// Get the current status of the XPC service
     /// - Returns: Result containing status information or error
-    func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError>
+    func status() async -> Result<[String: Any], ErrorHandlingDomains.UmbraErrors.Security.Protocols>
 }
 
 /// Default protocol implementation with baseline functionality.
@@ -57,7 +58,7 @@ public extension XPCServiceProtocolBasic {
 
     /// Default implementation of the basic ping method.
     /// - Returns: Always returns true for basic implementations
-    func pingBasic() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+    func pingBasic() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple implementation that doesn't throw
         let pingResult = await ping()
         return .success(pingResult)
@@ -66,14 +67,14 @@ public extension XPCServiceProtocolBasic {
     /// Extended synchronisation implementation with Result type return.
     /// - Parameter syncData: Secure bytes for key synchronisation
     /// - Returns: Result with success or failure with error information
-    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCProtocolsCore.SecurityError> {
+    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         do {
             try await synchroniseKeys(syncData)
             return .success(())
-        } catch let error as XPCProtocolsCore.SecurityError {
+        } catch let error as ErrorHandlingDomains.UmbraErrors.Security.Protocols {
             return .failure(error)
         } catch {
-            return .failure(.internalError(reason: error.localizedDescription))
+            return .failure(.internalError(error.localizedDescription))
         }
     }
 }
