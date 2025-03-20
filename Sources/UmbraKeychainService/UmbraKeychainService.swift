@@ -49,101 +49,73 @@
 ///
 /// # Access Control
 ///
-/// ## Policies
-/// Access control policies:
-/// - User presence
-/// - Biometric auth
-/// - Application auth
+/// Access control provides:
+/// - User prompt management
+/// - Privilege escalation
+/// - Permissions handling
 ///
-/// ## Authentication
-/// Authentication methods:
-/// - Password auth
-/// - Touch ID
-/// - Watch unlock
+/// # Integration
 ///
-/// # Item Management
+/// Integration with other modules:
+/// - Core integration
+/// - Security interface implementation
+/// - Credential management
 ///
-/// ## Lifecycle
-/// Item lifecycle management:
-/// - Creation
-/// - Update
-/// - Deletion
+/// # Error Handling
 ///
-/// ## Synchronisation
-/// iCloud keychain sync:
-/// - Sync settings
-/// - Conflict resolution
-/// - Version control
+/// Error handling strategy:
+/// - Specific error types
+/// - Recovery suggestions
+/// - User-facing messages
 ///
-/// # Usage Example
+/// # Usage
+///
 /// ```swift
-/// let service = UmbraKeychainService(
-///     identifier: "com.example.app",
-///     accessGroup: "com.example.group",
-///     logger: Logger(label: "com.example.keychain")
-/// )
+/// let service = UmbraKeychainService(identifier: "com.umbra.app")
 ///
-/// try await service.store(
-///     password: password,
-///     for: account
-/// )
+/// // Store a password
+/// try service.storePassword("SecurePassword123", for: "user@example.com")
+///
+/// // Retrieve a password
+/// let password = try service.retrievePassword(for: "user@example.com")
+///
+/// // Delete a password
+/// try service.deletePassword(for: "user@example.com")
 /// ```
 ///
-/// # Migration Support
+/// # Security Best Practices
 ///
-/// ## Version Migration
-/// Migration capabilities:
-/// - Schema updates
-/// - Data migration
-/// - Backup support
+/// Follow these best practices:
+/// - Use strong, unique identifiers
+/// - Handle errors appropriately
+/// - Clean up keychain items when no longer needed
+/// - Use appropriate access control
 ///
-/// ## Legacy Support
-/// Legacy system support:
-/// - Old format support
-/// - Data conversion
-/// - Clean-up tools
-///
-/// # Thread Safety
-/// Keychain operations are thread-safe:
-/// - Concurrent access
-/// - Operation queuing
-/// - State protection
 import Foundation
 import SecurityTypes
 import SecurityUtils
 import UmbraLogging
 
-/// UmbraKeychainService Module
-///
-/// Provides secure keychain access and management for UmbraCore.
-/// This module handles all interactions with the macOS Keychain,
-/// ensuring secure credential storage and retrieval.
+/// UmbraKeychainService provides a simplified interface for storing and retrieving
+/// secure credentials in the system keychain.
 public final class UmbraKeychainService: @unchecked Sendable {
     /// Current version of the UmbraKeychainService module
     public static let version = "1.0.0"
 
     /// Service identifier used for keychain items
-    private let identifier: String
+    public let identifier: String
 
-    /// Optional access group for shared keychain access
-    private let accessGroup: String?
-
-    /// Logger instance for keychain operations
+    /// Logger instance for capturing keychain operations (without sensitive data)
     private let logger: LoggingProtocol
 
-    /// Initialize a new keychain service instance
-    /// - Parameters:
-    ///   - identifier: Service identifier for keychain items
-    ///   - accessGroup: Optional access group for shared keychain access
-    ///   - logger: Logger instance for keychain operations
-    public init(
-        identifier: String,
-        accessGroup: String? = nil,
-        logger: LoggingProtocol
-    ) {
+    /// Initialize a keychain service with the given identifier
+    /// - Parameter identifier: Service identifier used for keychain items
+    public init(identifier: String) {
         self.identifier = identifier
-        self.accessGroup = accessGroup
-        self.logger = logger
+        logger = UmbraLogging.createLogger()
+        Task {
+            await logger.debug("Initialized UmbraKeychainService with identifier: \(identifier)", metadata: nil)
+        }
     }
 
     /// Store a password in the keychain
@@ -151,19 +123,75 @@ public final class UmbraKeychainService: @unchecked Sendable {
     ///   - password: Password to store
     ///   - account: Account identifier
     /// - Throws: KeychainError if storage fails
-    public func store(password: String, for account: String) throws {
+    public func storePassword(_ password: String, for account: String) throws {
+        guard let passwordData = password.data(using: .utf8) else {
+            Task {
+                await logger.error("Failed to convert password to data", metadata: nil)
+            }
+            throw KeychainError.itemEncodingFailed
+        }
+
+        Task {
+            await logger.debug("Storing password for account: \(account)", metadata: nil)
+        }
+
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
             kSecAttrAccount as String: account,
-            kSecValueData as String: password.data(using: .utf8)!
+            kSecValueData as String: passwordData,
         ]
+
+        // Check if item already exists
+        var existingItem: CFTypeRef?
+        let checkStatus = SecItemCopyMatching([
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: identifier,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: false,
+        ] as CFDictionary, &existingItem)
+
+        if checkStatus == errSecSuccess {
+            // Item exists, update it
+            let updateStatus = SecItemUpdate([
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: identifier,
+                kSecAttrAccount as String: account,
+            ] as CFDictionary, [
+                kSecValueData as String: passwordData,
+            ] as CFDictionary)
+
+            guard updateStatus == errSecSuccess else {
+                Task {
+                    await logger.error("Failed to update existing password: \(updateStatus)", metadata: nil)
+                }
+                throw KeychainError.storeFailed(
+                    "Failed to update password: \(updateStatus)"
+                )
+            }
+
+            Task {
+                await logger.debug("Updated existing password for account: \(account)", metadata: nil)
+            }
+            return
+        } else if checkStatus != errSecItemNotFound {
+            Task {
+                await logger.error("Unexpected error checking for existing item: \(checkStatus)", metadata: nil)
+            }
+        }
 
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
+            Task {
+                await logger.error("Failed to store password: \(status)", metadata: nil)
+            }
             throw KeychainError.storeFailed(
                 "Failed to store password: \(status)"
             )
+        }
+
+        Task {
+            await logger.debug("Stored new password for account: \(account)", metadata: nil)
         }
     }
 
@@ -176,7 +204,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
             kSecAttrAccount as String: account,
-            kSecReturnData as String: true
+            kSecReturnData as String: true,
         ]
 
         var item: CFTypeRef?
@@ -187,11 +215,17 @@ public final class UmbraKeychainService: @unchecked Sendable {
             let data = item as? Data,
             let password = String(data: data, encoding: .utf8)
         else {
+            Task {
+                await logger.error("Failed to retrieve password: \(status)", metadata: nil)
+            }
             throw KeychainError.retrieveFailed(
                 "Failed to retrieve password: \(status)"
             )
         }
 
+        Task {
+            await logger.debug("Retrieved password for account: \(account)", metadata: nil)
+        }
         return password
     }
 
@@ -202,14 +236,21 @@ public final class UmbraKeychainService: @unchecked Sendable {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
-            kSecAttrAccount as String: account
+            kSecAttrAccount as String: account,
         ]
 
         let status = SecItemDelete(query as CFDictionary)
         guard status == errSecSuccess else {
+            Task {
+                await logger.error("Failed to delete password: \(status)", metadata: nil)
+            }
             throw KeychainError.deleteFailed(
                 "Failed to delete password: \(status)"
             )
+        }
+
+        Task {
+            await logger.debug("Deleted password for account: \(account)", metadata: nil)
         }
     }
 }

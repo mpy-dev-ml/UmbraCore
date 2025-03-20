@@ -156,4 +156,50 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
             }
         }
     }
+
+    func deleteItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Error?) -> Void
+    ) {
+        let keychain = keychain
+        let queue = queue
+
+        Task { @Sendable in
+            do {
+                try await keychain.removeItem(
+                    account: account,
+                    service: service,
+                    accessGroup: accessGroup
+                )
+                queue.async { reply(nil) }
+            } catch {
+                queue.async { reply(error as? KeychainError ?? KeychainError.unhandledError(status: 0)) }
+            }
+        }
+    }
+
+    func getItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Data?, Error?) -> Void
+    ) {
+        let keychain = keychain
+        let queue = queue
+
+        Task { @Sendable in
+            do {
+                let data = try await keychain.retrieveItem(
+                    account: account,
+                    service: service,
+                    accessGroup: accessGroup
+                )
+                queue.async { reply(data, nil) }
+            } catch {
+                queue.async { reply(nil, error as? KeychainError ?? KeychainError.unhandledError(status: 0)) }
+            }
+        }
+    }
 }

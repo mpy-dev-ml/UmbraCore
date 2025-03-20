@@ -10,6 +10,8 @@ public enum KeychainError: LocalizedError, Equatable {
     case authenticationFailed
     /// Unexpected data type returned from keychain
     case unexpectedData
+    /// Failed to encode item for keychain storage
+    case itemEncodingFailed
     /// Failed to store item in keychain
     case storeFailed(String)
     /// Failed to retrieve item from keychain
@@ -35,6 +37,8 @@ public enum KeychainError: LocalizedError, Equatable {
             "Authentication failed for the keychain operation"
         case .unexpectedData:
             "The keychain returned data in an unexpected format"
+        case .itemEncodingFailed:
+            "Failed to encode item for keychain storage"
         case let .storeFailed(message):
             "Failed to store item in keychain: \(message)"
         case let .retrieveFailed(message):
@@ -62,6 +66,8 @@ public enum KeychainError: LocalizedError, Equatable {
             "Verify that you have the necessary permissions to access this item"
         case .unexpectedData:
             "Contact support if this issue persists"
+        case .itemEncodingFailed:
+            "Check the data format and try again"
         case .storeFailed:
             "Check that you have write permissions and try again"
         case .retrieveFailed:
@@ -85,6 +91,7 @@ public enum KeychainError: LocalizedError, Equatable {
              (.duplicateItem, .duplicateItem),
              (.authenticationFailed, .authenticationFailed),
              (.unexpectedData, .unexpectedData),
+             (.itemEncodingFailed, .itemEncodingFailed),
              (.xpcConnectionFailed, .xpcConnectionFailed),
              (.xpcConnectionInterrupted, .xpcConnectionInterrupted),
              (.xpcConnectionInvalidated, .xpcConnectionInvalidated):
