@@ -291,85 +291,84 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
         // This is a test implementation that does nothing
     }
 
-    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    public func getServiceVersion() async -> Result<String, XPCProtocolsCore.SecurityError> {
         .success("1.0.0-test")
     }
 
-    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+    public func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
         .success("test-hardware-id")
     }
 
-    public func status() async -> Result<[String: Any], XPCSecurityError> {
+    public func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
         .success([
-            "status": "ok",
-            "version": "1.0.0-test",
-            "features": ["encrypt", "decrypt", "sign", "verify"],
+            "name": "TestXPCService",
+            "status": "operational",
         ])
     }
 
-    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
+    public func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
         // Just a test implementation that does nothing
         .success(())
     }
 
-    public func pingStandard() async -> Result<Bool, XPCSecurityError> {
+    public func pingStandard() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         .success(true)
     }
 
-    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         let result = await cryptoService.generateRandomBytes(count: length)
         switch result {
-        case let .success(bytes):
-            return .success(bytes)
+        case let .success(data):
+            return .success(data)
         case let .failure(error):
-            return .failure(.cryptographicError(operation: "generateRandomData", details: error.localizedDescription))
+            return .failure(.internalError(reason: error.localizedDescription))
         }
     }
 
-    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
-        // For test purposes, we'll use a fixed key
-        let key = SecureBytes(bytes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
+        let key = SecureBytes(bytes: [UInt8](repeating: 0x42, count: 32))
         let result = await cryptoService.encrypt(data: data, using: key)
+        
         switch result {
         case let .success(encrypted):
             return .success(encrypted)
         case let .failure(error):
-            return .failure(.cryptographicError(operation: "encrypt", details: error.localizedDescription))
+            return .failure(.cryptographicError(operation: "encryption", details: error.localizedDescription))
         }
     }
 
-    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
-        // For test purposes, we'll use a fixed key
-        let key = SecureBytes(bytes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
+        let key = SecureBytes(bytes: [UInt8](repeating: 0x42, count: 32))
         let result = await cryptoService.decrypt(data: data, using: key)
+        
         switch result {
         case let .success(decrypted):
             return .success(decrypted)
         case let .failure(error):
-            return .failure(.cryptographicError(operation: "decrypt", details: error.localizedDescription))
+            return .failure(.cryptographicError(operation: "decryption", details: error.localizedDescription))
         }
     }
 
-    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
-        // For test purposes, we'll use a fixed key
-        let key = SecureBytes(bytes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
+        let key = SecureBytes(bytes: [UInt8](repeating: 0x42, count: 32))
         let result = await cryptoService.sign(data: data, using: key)
+        
         switch result {
         case let .success(signature):
             return .success(signature)
         case let .failure(error):
-            return .failure(.cryptographicError(operation: "sign", details: error.localizedDescription))
+            return .failure(.cryptographicError(operation: "signing", details: error.localizedDescription))
         }
     }
 
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
-        // For testing, we ignore the keyIdentifier parameter
+    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         let result = await cryptoService.verify(data: data, against: signature)
+        
         switch result {
-        case let .success(isValid):
-            return .success(isValid)
+        case let .success(verified):
+            return .success(verified)
         case let .failure(error):
-            return .failure(.cryptographicError(operation: "verify", details: error.localizedDescription))
+            return .failure(.cryptographicError(operation: "verification", details: error.localizedDescription))
         }
     }
 

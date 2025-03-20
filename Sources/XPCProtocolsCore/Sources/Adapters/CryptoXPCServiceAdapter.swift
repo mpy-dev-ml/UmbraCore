@@ -56,6 +56,9 @@ public protocol CryptoXPCServiceProtocol: AnyObject, Sendable {
 
     /// Get the hardware identifier
     func getHardwareIdentifier() async throws -> String
+
+    /// Get the status of the cryptographic service
+    func status() async throws -> [String: Any]
 }
 
 /// Adapter that bridges between CryptoXPCServiceProtocol and XPCProtocolsCore protocols.
@@ -96,8 +99,8 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// Maps an error from the crypto service domain to the XPC protocol domain
     /// - Parameter error: Original error from the crypto service
     /// - Returns: Equivalent error in the XPC protocol domain
-    private func mapError(_ error: Error) -> XPCSecurityError {
-        if let xpcError = error as? XPCSecurityError {
+    private func mapError(_ error: Error) -> XPCProtocolsCore.SecurityError {
+        if let xpcError = error as? XPCProtocolsCore.SecurityError {
             return xpcError
         }
 
@@ -112,17 +115,17 @@ public final class CryptoXPCServiceAdapter: NSObject,
                 let callStackSymbols = Thread.callStackSymbols
 
                 if callStackSymbols.contains(where: { $0.contains("encrypt") }) {
-                    return .encryptionFailed(reason: description)
+                    return .cryptographicError(operation: "encryption", details: description)
                 } else if callStackSymbols.contains(where: { $0.contains("decrypt") }) {
-                    return .decryptionFailed(reason: description)
+                    return .cryptographicError(operation: "decryption", details: description)
                 } else if callStackSymbols.contains(where: { $0.contains("generateKey") }) {
-                    return .keyGenerationFailed(reason: description)
+                    return .keyManagementError(operation: "key_generation", details: description)
                 }
             }
         }
 
         // For any other error, create a general error with the description
-        return XPCSecurityError.internalError(reason: description)
+        return XPCProtocolsCore.SecurityError.internalError(reason: description)
     }
 
     /// Protocol identifier for this adapter
@@ -130,20 +133,30 @@ public final class CryptoXPCServiceAdapter: NSObject,
         "com.umbra.crypto.xpc.adapter.service"
     }
 
-    /// Ping the underlying crypto service to test connectivity
-    public func pingComplete() async -> Result<Bool, XPCSecurityError> {
-        let result = await service.ping()
-        return .success(result)
+    /// Ping the underlying crypto service to test connectivity (XPCServiceProtocolBasic implementation)
+    /// - Returns: true if the service is responsive, false otherwise
+    public func ping() async -> Bool {
+        do {
+            return try await service.ping()
+        } catch {
+            return false
+        }
     }
 
-    /// Pass-through implementation of the basic ping method
-    public func ping() async -> Bool {
-        await service.ping()
+    /// Ping the underlying crypto service to test connectivity (XPCServiceProtocolStandard implementation)
+    /// - Returns: Result with boolean indicating service responsiveness
+    public func pingStandard() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+        do {
+            let result = try await service.ping()
+            return .success(result)
+        } catch {
+            return .failure(mapError(error))
+        }
     }
 
     /// Synchronise keys with the underlying crypto service
     /// - Parameter syncData: Data for key synchronisation
-    /// - Throws: XPCSecurityError if synchronisation fails
+    /// - Throws: XPCProtocolsCore.SecurityError if synchronisation fails
     public func synchroniseKeys(_ syncData: SecureBytes) async throws {
         do {
             let data = convertToData(syncData)
@@ -156,7 +169,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// Synchronise keys with the underlying crypto service using modern Swift interface
     /// - Parameter syncData: Key synchronisation data
     /// - Returns: Success or descriptive error
-    public func synchronizeKeys(_: SecureBytes) async -> Result<Void, XPCSecurityError> {
+    public func synchronizeKeys(_: SecureBytes) async -> Result<Void, XPCProtocolsCore.SecurityError> {
         // Simple implementation without direct dependency
         .success(())
     }
@@ -164,7 +177,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// Encrypt data using the underlying crypto service
     /// - Parameter data: Data to encrypt
     /// - Returns: Encrypted data or descriptive error
-    public func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         do {
             let inputData = convertToData(data)
 
@@ -181,7 +194,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// Decrypt data using the underlying crypto service
     /// - Parameter data: Data to decrypt
     /// - Returns: Decrypted data or descriptive error
-    public func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         do {
             let inputData = convertToData(data)
 
@@ -197,7 +210,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
 
     /// Generate a cryptographic key using the default parameters of the service
     /// - Returns: Generated key or descriptive error
-    public func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
+    public func generateKey() async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         do {
             let key = try await service.generateKey(bits: 256)
             return .success(convertToSecureBytes(key))
@@ -214,7 +227,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     public func generateKey(
         type _: XPCProtocolTypeDefs.KeyType,
         bits: Int
-    ) async -> Result<SecureBytes, XPCSecurityError> {
+    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         do {
             let key = try await service.generateKey(bits: bits)
             return .success(convertToSecureBytes(key))
@@ -226,7 +239,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// Hash data using the service's hashing implementation
     /// - Parameter data: Data to hash
     /// - Returns: Hash value or descriptive error
-    public func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func hash(data: SecureBytes) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // Simple mock implementation as this adapter doesn't have direct access to hash
         // Avoiding unused variable warning
         _ = convertToData(data)
@@ -237,7 +250,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// Export a key from the service in secure format
     /// - Parameter keyIdentifier: Key to export
     /// - Returns: Secure data containing exported key or error
-    public func exportKey(keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
+    public func exportKey(keyIdentifier _: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // Mock implementation
         .failure(.internalError(reason: "Key export not implemented in adapter"))
     }
@@ -250,7 +263,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     public func importKey(
         keyData _: SecureBytes,
         keyIdentifier _: String?
-    ) async -> Result<Void, XPCSecurityError> {
+    ) async -> Result<Void, XPCProtocolsCore.SecurityError> {
         // Mock implementation
         .failure(.internalError(reason: "Key import not implemented in adapter"))
     }
@@ -260,7 +273,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     ///   - data: Data to sign
     ///   - keyIdentifier: Identifier for the key to use for signing
     /// - Returns: Signature data or descriptive error
-    public func sign(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+    public func sign(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         do {
             let inputData = convertToData(data)
 
@@ -297,7 +310,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
     ///   - for data: Original data that was signed
     ///   - keyIdentifier: Key identifier for verification
     /// - Returns: Boolean result indicating if signature is valid
-    public func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    public func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         do {
             let signatureData = convertToData(signature)
             let inputData = convertToData(data)
@@ -317,9 +330,20 @@ public final class CryptoXPCServiceAdapter: NSObject,
 
     /// Get the current status of the service
     /// - Returns: Service status or error with detailed failure information
-    public func getStatus() async -> Result<XPCProtocolTypeDefs.ServiceStatus, XPCSecurityError> {
+    public func getStatus() async -> Result<XPCProtocolTypeDefs.ServiceStatus, XPCProtocolsCore.SecurityError> {
         // Mock implementation
         .success(.operational)
+    }
+
+    /// Get the status of the cryptographic service
+    /// - Returns: Status dictionary or error
+    public func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
+        do {
+            let status = try await service.status()
+            return .success(status)
+        } catch {
+            return .failure(mapError(error))
+        }
     }
 
     // MARK: - XPCServiceProtocolComplete Requirements
@@ -327,14 +351,14 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// Delete a key
     /// - Parameter keyIdentifier: Identifier of key to delete
     /// - Returns: Success or error
-    public func deleteKey(keyIdentifier _: String) async -> Result<Void, XPCSecurityError> {
+    public func deleteKey(keyIdentifier _: String) async -> Result<Void, XPCProtocolsCore.SecurityError> {
         // Mock implementation
         .success(())
     }
 
     /// List all key identifiers
     /// - Returns: Array of key identifiers
-    public func listKeys() async -> Result<[String], XPCSecurityError> {
+    public func listKeys() async -> Result<[String], XPCProtocolsCore.SecurityError> {
         // Mock implementation
         .success(["mock-key-1", "mock-key-2"])
     }
@@ -351,7 +375,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
         keyType _: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
         metadata _: [String: String]?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, XPCProtocolsCore.SecurityError> {
         // Mock implementation
         .success(keyIdentifier ?? "generated-key-id")
     }
@@ -366,13 +390,13 @@ public final class CryptoXPCServiceAdapter: NSObject,
         keyType _: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
         metadata _: [String: String]?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, XPCProtocolsCore.SecurityError> {
         // Mock implementation
         .success(keyIdentifier ?? "generated-key-id")
     }
 
     /// Generate random data with specified length
-    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         do {
             let randomData = try await service.generateRandomData(length: length)
             return .success(SecureBytes(bytes: [UInt8](randomData)))
@@ -503,7 +527,7 @@ public final class CryptoXPCServiceAdapter: NSObject,
         iterations: Int,
         keyLength: Int,
         targetKeyIdentifier: String?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, XPCProtocolsCore.SecurityError> {
         do {
             // Get source key using the identifier
             guard let sourceKey = try await retrieveKeyData(forIdentifier: sourceKeyIdentifier) else {
@@ -574,8 +598,8 @@ public final class CryptoXPCServiceAdapter: NSObject,
         print("Would store key with identifier: \(identifier)")
     }
 
-    // Helper method to map SecurityError to XPCSecurityError
-    private func mapToXPCSecurityError(_ error: SecurityError) -> XPCSecurityError {
+    // Helper method to map SecurityError to XPCProtocolsCore.SecurityError
+    private func mapToXPCSecurityError(_ error: SecurityError) -> XPCProtocolsCore.SecurityError {
         switch error {
         case let .invalidKey(reason):
             .invalidKeyType(expected: "valid", received: reason)
@@ -596,8 +620,8 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// - Parameters:
     ///   - data: Data to encrypt
     ///   - keyIdentifier: Optional identifier for the encryption key
-    /// - Returns: Result with encrypted SecureBytes on success or XPCSecurityError on failure
-    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    /// - Returns: Result with encrypted SecureBytes on success or XPCProtocolsCore.SecurityError on failure
+    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         do {
             let inputData = convertToData(data)
 
@@ -618,8 +642,8 @@ public final class CryptoXPCServiceAdapter: NSObject,
     /// - Parameters:
     ///   - data: Data to decrypt
     ///   - keyIdentifier: Optional identifier for the decryption key
-    /// - Returns: Result with decrypted SecureBytes on success or XPCSecurityError on failure
-    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    /// - Returns: Result with decrypted SecureBytes on success or XPCProtocolsCore.SecurityError on failure
+    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         do {
             let inputData = convertToData(data)
 
@@ -636,8 +660,8 @@ public final class CryptoXPCServiceAdapter: NSObject,
     }
 
     /// Reset the security state of the service
-    /// - Returns: Result with void on success or XPCSecurityError on failure
-    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
+    /// - Returns: Result with void on success or XPCProtocolsCore.SecurityError on failure
+    public func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
         do {
             try await service.resetSecurity()
             return .success(())
@@ -647,8 +671,8 @@ public final class CryptoXPCServiceAdapter: NSObject,
     }
 
     /// Get the service version
-    /// - Returns: Result with version string on success or XPCSecurityError on failure
-    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    /// - Returns: Result with version string on success or XPCProtocolsCore.SecurityError on failure
+    public func getServiceVersion() async -> Result<String, XPCProtocolsCore.SecurityError> {
         do {
             let version = try await service.getVersion()
             return .success(version)
@@ -658,8 +682,8 @@ public final class CryptoXPCServiceAdapter: NSObject,
     }
 
     /// Get the hardware identifier
-    /// - Returns: Result with identifier string on success or XPCSecurityError on failure
-    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+    /// - Returns: Result with identifier string on success or XPCProtocolsCore.SecurityError on failure
+    public func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
         do {
             let identifier = try await service.getHardwareIdentifier()
             return .success(identifier)

@@ -22,7 +22,7 @@ public final class MockXPCService: XPCServiceProtocolStandard {
         // Mock implementation that does nothing
     }
 
-    public func status() async -> Result<[String: Any], XPCSecurityError> {
+    public func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
         let statusDict: [String: Any] = [
             "name": "MockXPCService",
             "version": "1.0.0",
@@ -33,7 +33,7 @@ public final class MockXPCService: XPCServiceProtocolStandard {
         return .success(statusDict)
     }
 
-    public func generateRandomBytes(count: Int) async -> Result<Data, XPCSecurityError> {
+    public func generateRandomBytes(count: Int) async -> Result<Data, XPCProtocolsCore.SecurityError> {
         // Generate random bytes for testing
         var bytes = [UInt8](repeating: 0, count: count)
         for i in 0 ..< count {
@@ -44,110 +44,104 @@ public final class MockXPCService: XPCServiceProtocolStandard {
 
     /// Generate random data for cryptographic operations
     /// - Parameter length: Length in bytes of random data to generate
-    /// - Returns: Result with SecureBytes on success or XPCSecurityError on failure
-    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    /// - Returns: Result with SecureBytes on success or XPCProtocolsCore.SecurityError on failure
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         // Generate predictable "random" data for tests
         var bytes = [UInt8](repeating: 0, count: length)
         for i in 0 ..< length {
-            bytes[i] = UInt8((i * 3) % 256)
+            bytes[i] = UInt8((i % 256))
         }
         return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
     }
 
     // MARK: - XPCServiceProtocolStandard Implementation
 
-    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    public func getServiceVersion() async -> Result<String, XPCProtocolsCore.SecurityError> {
         .success("1.0.0")
     }
 
-    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
-        let hardwareId = "MOCK-HARDWARE-ID-\(UUID().uuidString)"
-        return .success(hardwareId)
+    public func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
+        .success("MOCK-HARDWARE-ID")
     }
 
-    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
-        // Simple mock implementation that always succeeds
+    public func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
+        // Mock implementation that does nothing
         .success(())
     }
 
-    public func listKeys() async -> Result<[String], XPCSecurityError> {
-        .success(["test-key-1", "test-key-2"])
+    public func listKeys() async -> Result<[String], XPCProtocolsCore.SecurityError> {
+        .success(["mock-key-1", "mock-key-2"])
     }
 
-    public func getKeyInfo(keyId: String) async -> Result<[String: Any], XPCSecurityError> {
-        let keyInfo: [String: Any] = [
+    public func getKeyInfo(keyId: String) async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
+        let info: [String: Any] = [
             "id": keyId,
             "type": "symmetric",
-            "created": Date().timeIntervalSince1970,
+            "created": Date(),
         ]
-        return .success(keyInfo)
+        return .success(info)
     }
 
-    public func deleteKey(keyId _: String) async -> Result<Void, XPCSecurityError> {
+    public func deleteKey(keyId _: String) async -> Result<Void, XPCProtocolsCore.SecurityError> {
+        // Mock implementation that always succeeds
         .success(())
     }
 
     public func importKey(
-        keyData _: SecureBytes,
+        _: SecureBytes,
         keyType _: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
         metadata _: [String: String]?
-    ) async -> Result<String, XPCSecurityError> {
-        .success(keyIdentifier ?? "generated-key-id")
+    ) async -> Result<String, XPCProtocolsCore.SecurityError> {
+        let id = keyIdentifier ?? "mock-imported-key-\(UUID().uuidString)"
+        return .success(id)
     }
 
     public func exportKey(
         keyIdentifier _: String
-    ) async -> Result<(SecureBytes, XPCProtocolTypeDefs.KeyType), XPCSecurityError> {
-        let mockKeyData = SecureBytes(bytes: Array(repeating: UInt8(42), count: 32))
-        return .success((mockKeyData, .symmetric))
+    ) async -> Result<(SecureBytes, XPCProtocolTypeDefs.KeyType), XPCProtocolsCore.SecurityError> {
+        // For testing, create mock key data
+        return .success((SecureBytes(bytes: Array(repeating: 0x42, count: 32)), .symmetric))
     }
 
-    public func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
-        // Just create a copy of the data for testing
-        let bytes = data.withUnsafeBytes { Array($0) }
-        return .success(SecureBytes(bytes: bytes))
+    public func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+        // Simple mock implementation - just return the data
+        .success(data)
     }
 
-    public func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
-        // Just create a copy of the data for testing
-        let bytes = data.withUnsafeBytes { Array($0) }
-        return .success(SecureBytes(bytes: bytes))
+    public func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+        // Simple mock implementation - just return the data
+        .success(data)
     }
 
-    public func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
-        // Create a mock signature
-        let mockSignature = SecureBytes(bytes: Array(repeating: UInt8(0x55), count: 64))
-        return .success(mockSignature)
+    public func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
+        // Return dummy signature
+        let signature = SecureBytes(bytes: Array(repeating: 0x55, count: 64))
+        return .success(signature)
     }
 
-    public func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
-        // Always verify successfully in this mock
+    public func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+        // Always verify successfully in mock
         .success(true)
     }
 
-    public func getSecurityStatus() async -> Result<[String: Any], XPCSecurityError> {
-        let status: [String: Any] = [
-            "securityEnabled": true,
-            "hardwareSecurity": true,
-            "softwareSecurity": true,
-        ]
-        return .success(status)
+    public func getSecurityStatus() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
+        .success(["status": "secure"])
     }
 
     // The following methods were removed due to unsupported types in XPCProtocolTypeDefs
     // Public API should be extended properly once these types are defined
     /*
-     public func getSupportedKeyTypes() async -> Result<[XPCProtocolTypeDefs.KeyType], XPCSecurityError> {
+     public func getSupportedKeyTypes() async -> Result<[XPCProtocolTypeDefs.KeyType], XPCProtocolsCore.SecurityError> {
          return .success([.symmetric, .asymmetric])
      }
 
-     public func getSupportedEncryptionAlgorithms() async -> Result<[XPCProtocolTypeDefs.EncryptionAlgorithm], XPCSecurityError> {
-         return .success([.aesGcm, .chachaPoly])
+     public func getSupportedEncryptionAlgorithms() async -> Result<[XPCProtocolTypeDefs.EncryptionAlgorithm], XPCProtocolsCore.SecurityError> {
+         return .success([.aes256])
      }
 
-     public func getSupportedSignatureAlgorithms() async -> Result<[XPCProtocolTypeDefs.SignatureAlgorithm], XPCSecurityError> {
-         return .success([.ecdsa, .eddsa])
+     public func getSupportedSignatureAlgorithms() async -> Result<[XPCProtocolTypeDefs.SignatureAlgorithm], XPCProtocolsCore.SecurityError> {
+         return .success([.ed25519])
      }
      */
 }

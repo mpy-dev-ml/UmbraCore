@@ -150,7 +150,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
 
     /// Synchronize keys with provided data
     /// - Parameter syncData: The data to synchronize with
-    /// - Throws: XPCSecurityError if synchronization fails
+    /// - Throws: XPCProtocolsCore.SecurityError if synchronization fails
     public func synchroniseKeys(_ syncData: SecureBytes) async throws {
         do {
             // Get the exported object from actor state
@@ -161,12 +161,12 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
                     }
                 )
             } else {
-                throw KeychainXPCError.serviceUnavailable
+                throw XPCProtocolsCore.SecurityError.serviceUnavailable
             }
         } catch let error as KeychainXPCError {
             throw mapKeychainErrorToXPCSecurityError(error, operation: "synchronise")
         } catch {
-            throw XPCSecurityError.internalError(reason: "Failed to synchronize keys: \(error.localizedDescription)")
+            throw XPCProtocolsCore.SecurityError.internalError(reason: "Failed to synchronize keys: \(error.localizedDescription)")
         }
     }
 
@@ -175,7 +175,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     /// Generate random data of specified length
     /// - Parameter length: Length in bytes of random data to generate
     /// - Returns: Result with SecureBytes on success or error on failure
-    public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+    public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         var bytes = [UInt8](repeating: 0, count: length)
         let status = SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
 
@@ -191,7 +191,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
 
     /// Reset the security state of the service
     /// - Returns: Result with void on success or error on failure
-    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
+    public func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
         // For a keychain service, resetting would mean clearing keychain items
         // This is a simplified version for demonstration
         .success(())
@@ -199,13 +199,13 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
 
     /// Get the service version
     /// - Returns: Result with version string on success or error on failure
-    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    public func getServiceVersion() async -> Result<String, XPCProtocolsCore.SecurityError> {
         .success("1.0.0")
     }
 
     /// Get the hardware identifier
     /// - Returns: Result with identifier string on success or error on failure
-    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+    public func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
         .success("keychain-xpc-service-hardware-id")
     }
 
@@ -214,10 +214,10 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     ///   - data: The data to store
     ///   - key: The key to store data under
     /// - Returns: Result with success or error
-    public func storeSecureData(_ data: SecureBytes, key: String) async -> Result<Void, XPCSecurityError> {
+    public func storeSecureData(_ data: SecureBytes, key: String) async -> Result<Void, XPCProtocolsCore.SecurityError> {
         do {
             // Use Swift Concurrency task to handle the XPC call instead of semaphores
-            return try await withCheckedThrowingContinuation { [self] (continuation: CheckedContinuation<Result<Void, XPCSecurityError>, Error>) in
+            return try await withCheckedThrowingContinuation { [self] (continuation: CheckedContinuation<Result<Void, XPCProtocolsCore.SecurityError>, Error>) in
                 Task {
                     // Get the exported object
                     if let obj = await state.getExportedObject() {
@@ -254,10 +254,10 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     /// Retrieve secure data by key
     /// - Parameter key: The key to retrieve data for
     /// - Returns: Result with the secure data or error
-    public func retrieveSecureData(key: String) async -> Result<SecureBytes, XPCSecurityError> {
+    public func retrieveSecureData(key: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         do {
             // Use Swift Concurrency task to handle the XPC call instead of semaphores
-            return try await withCheckedThrowingContinuation { [self] (continuation: CheckedContinuation<Result<SecureBytes, XPCSecurityError>, Error>) in
+            return try await withCheckedThrowingContinuation { [self] (continuation: CheckedContinuation<Result<SecureBytes, XPCProtocolsCore.SecurityError>, Error>) in
                 Task {
                     // Get the exported object
                     if let obj = await state.getExportedObject() {
@@ -293,10 +293,10 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     /// Delete secure data by key
     /// - Parameter key: The key to delete data for
     /// - Returns: Result with success or error
-    public func deleteSecureData(key: String) async -> Result<Void, XPCSecurityError> {
+    public func deleteSecureData(key: String) async -> Result<Void, XPCProtocolsCore.SecurityError> {
         do {
             // Use Swift Concurrency task to handle the XPC call instead of semaphores
-            return try await withCheckedThrowingContinuation { [self] (continuation: CheckedContinuation<Result<Void, XPCSecurityError>, Error>) in
+            return try await withCheckedThrowingContinuation { [self] (continuation: CheckedContinuation<Result<Void, XPCProtocolsCore.SecurityError>, Error>) in
                 Task {
                     // Get the exported object
                     if let obj = await state.getExportedObject() {
@@ -329,7 +329,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
 
     /// The service status returns a dictionary with information about the service's status
     /// - Returns: Result with status dictionary or error
-    public func status() async -> Result<[String: Any], XPCSecurityError> {
+    public func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
         let statusInfo: [String: Any] = [
             "available": await state.isStartedState(),
             "version": "1.0.0",
@@ -345,7 +345,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     ///   - data: SecureBytes to encrypt
     ///   - keyIdentifier: Optional identifier for the encryption key
     /// - Returns: Result with encrypted SecureBytes on success or error on failure
-    public func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    public func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // This is a placeholder implementation - in a real implementation, we would
         // use the actual keychain to perform encryption
         let encryptedData = data.withUnsafeBytes { bytes in
@@ -364,7 +364,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     ///   - data: SecureBytes to decrypt
     ///   - keyIdentifier: Optional identifier for the decryption key
     /// - Returns: Result with decrypted SecureBytes on success or error on failure
-    public func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    public func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // This is a placeholder implementation - in a real implementation, we would
         // use the actual keychain to perform decryption
         let decryptedData = data.withUnsafeBytes { bytes in
@@ -383,7 +383,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     ///   - data: SecureBytes to sign
     ///   - keyIdentifier: Identifier for the signing key
     /// - Returns: Result with signature as SecureBytes on success or error on failure
-    public func sign(_ data: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
+    public func sign(_ data: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // This is a placeholder implementation - in a real implementation, we would
         // use the actual keychain to generate a signature
         let signature = data.withUnsafeBytes { bytes in
@@ -403,7 +403,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     ///   - data: SecureBytes containing the data to verify
     ///   - keyIdentifier: Identifier for the verification key
     /// - Returns: Result with boolean indicating validity on success or error on failure
-    public func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
+    public func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // This is a placeholder implementation - in a real implementation, we would
         // use the actual keychain to verify the signature
         let isValid = signature.withUnsafeBytes { sigBytes in
@@ -571,7 +571,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     ///   - error: The keychain error
     ///   - operation: The operation that failed
     /// - Returns: The corresponding XPC security error
-    private func mapKeychainErrorToXPCSecurityError(_ error: KeychainXPCError, operation: String) -> XPCSecurityError {
+    private func mapKeychainErrorToXPCSecurityError(_ error: KeychainXPCError, operation: String) -> XPCProtocolsCore.SecurityError {
         switch error {
         case .duplicateItem:
             .invalidState(details: "Duplicate item exists")

@@ -114,51 +114,52 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
         }
     }
 
-    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
+    public func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
         await service.resetSecurity()
     }
 
-    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    public func getServiceVersion() async -> Result<String, XPCProtocolsCore.SecurityError> {
         await service.getServiceVersion()
     }
 
-    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+    public func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
         await service.getHardwareIdentifier()
     }
 
-    public func pingStandard() async -> Result<Bool, XPCSecurityError> {
-        await service.pingStandard()
+    public func pingStandard() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
+        let result = await service.ping()
+        return .success(result)
     }
 
-    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.generateRandomData(length: length)
     }
 
-    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.encryptSecureData(data, keyIdentifier: keyIdentifier)
     }
 
-    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.decryptSecureData(data, keyIdentifier: keyIdentifier)
     }
 
-    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.sign(data, keyIdentifier: keyIdentifier)
     }
 
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         await service.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
     }
 
-    public func generateKey(algorithm: String, keySize: Int, purpose: String) async -> Result<String, XPCSecurityError> {
+    public func generateKey(algorithm: String, keySize: Int, purpose: String) async -> Result<String, XPCProtocolsCore.SecurityError> {
         await service.generateKey(algorithm: algorithm, keySize: keySize, purpose: purpose)
     }
 
-    public func deleteKey(keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    public func deleteKey(keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         await service.deleteKey(keyIdentifier: keyIdentifier)
     }
 
-    public func exportKey(keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func exportKey(keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         let result = await service.exportKey(keyIdentifier: keyIdentifier)
         switch result {
         case let .success(keyData):
@@ -169,11 +170,11 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
         }
     }
 
-    public func generateSignature(data: UmbraCoreTypes.SecureBytes, keyIdentifier: String, algorithm: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func generateSignature(data: UmbraCoreTypes.SecureBytes, keyIdentifier: String, algorithm: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await service.generateSignature(data: data, keyIdentifier: keyIdentifier, algorithm: algorithm)
     }
 
-    public func verifySignature(signature: UmbraCoreTypes.SecureBytes, data: UmbraCoreTypes.SecureBytes, keyIdentifier: String, algorithm: String) async -> Result<Bool, XPCSecurityError> {
+    public func verifySignature(signature: UmbraCoreTypes.SecureBytes, data: UmbraCoreTypes.SecureBytes, keyIdentifier: String, algorithm: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         await service.verifySignature(signature: signature, data: data, keyIdentifier: keyIdentifier, algorithm: algorithm)
     }
 
@@ -190,7 +191,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
         case let .success(encryptedData):
             return .success(encryptedData)
         case let .failure(error):
-            return .failure(convertXPCSecurityErrorToSecurityError(error))
+            return .failure(error)
         }
     }
 
@@ -205,7 +206,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
         case let .success(decryptedData):
             return .success(decryptedData)
         case let .failure(error):
-            return .failure(convertXPCSecurityErrorToSecurityError(error))
+            return .failure(error)
         }
     }
 
@@ -224,7 +225,7 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
         case let .success(hashData):
             return .success(hashData)
         case let .failure(error):
-            return .failure(convertXPCSecurityErrorToSecurityError(error))
+            return .failure(error)
         }
     }
 
@@ -249,56 +250,10 @@ public final class XPCServiceDTOAdapter: XPCServiceProtoDTO {
                 _ = await service.deleteKey(keyIdentifier: keyId)
                 return .success(exportedData) // Access first element of the tuple
             case let .failure(error):
-                return .failure(convertXPCSecurityErrorToSecurityError(error))
+                return .failure(error)
             }
         case let .failure(error):
-            return .failure(convertXPCSecurityErrorToSecurityError(error))
-        }
-    }
-
-    // Helper method to convert XPCSecurityError to SecurityError
-    private func convertXPCSecurityErrorToSecurityError(_ error: XPCSecurityError) -> XPCProtocolsCore.SecurityError {
-        switch error {
-        case let .operationNotSupported(name):
-            return .operationNotSupported(name: name)
-        case let .invalidKeyType(expected, received):
-            return .invalidKeyType(expected: expected, received: received)
-        case let .keyNotFound(identifier):
-            return .keyNotFound(identifier: identifier)
-        case .serviceUnavailable:
-            return .serviceUnavailable
-        case let .authorizationDenied(operation):
-            return .authorizationDenied(operation: operation)
-        case .connectionInterrupted:
-            return .connectionInterrupted
-        case let .connectionInvalidated(reason):
-            return .connectionInvalidated(reason: reason)
-        case let .internalError(reason):
-            return .internalError(reason: reason)
-        case let .notImplemented(reason):
-            return .notImplemented(reason: reason)
-        case let .encryptionFailed(reason):
-            return .cryptographicError(operation: "encryption", details: reason)
-        case let .decryptionFailed(reason):
-            return .cryptographicError(operation: "decryption", details: reason)
-        case let .cryptographicError(operation, details):
-            return .cryptographicError(operation: operation, details: details)
-        case let .invalidData(reason):
-            return .invalidInput(details: "Invalid data: \(reason)")
-        case let .invalidInput(details):
-            return .invalidInput(details: details)
-        case let .invalidState(details):
-            return .invalidState(details: details)
-        case let .keyGenerationFailed(reason):
-            return .cryptographicError(operation: "key generation", details: reason)
-        case let .serviceNotReady(reason):
-            return .serviceNotReady(reason: reason)
-        case let .timeout(after):
-            return .timeout(after: after)
-        case let .authenticationFailed(reason):
-            return .authenticationFailed(reason: reason)
-        @unknown default:
-            return .internalError(reason: "Unknown error")
+            return .failure(error)
         }
     }
 

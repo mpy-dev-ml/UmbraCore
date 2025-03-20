@@ -151,6 +151,9 @@ public enum XPCProtocolsCore {
         /// A cryptographic operation failed
         case cryptographicError(operation: String, details: String)
 
+        /// Key management operation failed
+        case keyManagementError(operation: String, details: String)
+
         /// An internal error occurred in the service
         case internalError(reason: String)
 

@@ -61,14 +61,14 @@ public final class KeychainSecureStorageAdapter: SecureStorageProtocol {
         }
     }
     
-    /// Maps XPCSecurityError to KeyStorageError
+    /// Maps XPCProtocolsCore.SecurityError to KeyStorageError
     /// - Parameter error: The XPC security error to map
     /// - Returns: The mapped KeyStorageError
-    private func mapXPCErrorToKeyStorageError(_ error: XPCSecurityError) -> KeyStorageError {
+    private func mapXPCErrorToKeyStorageError(_ error: XPCProtocolsCore.SecurityError) -> KeyStorageError {
         switch error {
         case .keyNotFound:
             return .keyNotFound
-        case .authenticationFailed, .invalidState:
+        case .authenticationFailed, .invalidState, .operationNotSupported, .cryptographicError, .invalidKeyType:
             return .storageFailure
         case .serviceUnavailable, .internalError:
             return .unknown

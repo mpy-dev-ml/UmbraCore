@@ -116,6 +116,14 @@ public enum XPCProtocolDTOs {
                     details: ["operation": operation, "details": details]
                 )
 
+            case let .keyManagementError(operation, details):
+                SecurityErrorDTO(
+                    code: 10017,
+                    domain: "xpc.key.management",
+                    message: "Key management error",
+                    details: ["operation": operation, "details": details]
+                )
+
             case let .internalError(reason):
                 SecurityErrorDTO(
                     code: 10012,
@@ -208,6 +216,12 @@ public enum XPCProtocolDTOs {
 
             case "xpc.crypto":
                 return .cryptographicError(
+                    operation: dto.details["operation"] ?? "unknown",
+                    details: dto.details["details"] ?? dto.message
+                )
+
+            case "xpc.key.management":
+                return .keyManagementError(
                     operation: dto.details["operation"] ?? "unknown",
                     details: dto.details["details"] ?? dto.message
                 )

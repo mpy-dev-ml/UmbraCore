@@ -433,7 +433,7 @@ public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
     public func synchroniseKeys(_: UmbraCoreTypes.SecureBytes) async throws {
         // Mock implementation for testing purposes
         if failAllOperations {
-            throw XPCSecurityError.internalError(reason: "Mock service is configured to fail all operations")
+            throw XPCProtocolsCore.SecurityError.internalError(reason: "Mock service is configured to fail all operations")
         }
 
         // In a real implementation, this would actually do something with the sync data
@@ -444,7 +444,7 @@ public final class SecurityProviderMockXPCService: XPCServiceProtocolBasic {
 
     /// Get the current status of the XPC service
     /// - Returns: Dictionary containing status information
-    public func status() async -> Result<[String: Any], XPCSecurityError> {
+    public func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
         if failAllOperations {
             return .failure(.internalError(reason: "Service not available"))
         }

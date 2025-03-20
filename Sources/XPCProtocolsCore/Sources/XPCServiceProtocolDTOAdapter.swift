@@ -30,16 +30,16 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
         self.service = service
     }
 
-    /// Convert from standard result to DTO result for types that are Equatable
+    /// Convert from standard result to DTO result
     /// - Parameters:
     ///   - result: Standard result to convert
     ///   - defaultErrorCode: Default error code to use if none provided
     ///   - defaultErrorMessage: Default error message to use if none provided
     /// - Returns: DTO-based operation result
     private func convertToDTO<T: Equatable>(
-        _ result: Result<T, XPCSecurityError>,
-        defaultErrorCode _: Int32 = 10000,
-        defaultErrorMessage _: String = "Operation failed"
+        _ result: Result<T, XPCProtocolsCore.SecurityError>,
+        defaultErrorCode: Int32 = 10000,
+        defaultErrorMessage: String = "Operation failed"
     ) -> OperationResultDTO<T> {
         switch result {
         case let .success(value):
@@ -62,7 +62,7 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
     ///   - defaultErrorMessage: Default error message to use if none provided
     /// - Returns: DTO-based operation result
     private func convertAnyToDTO<T>(
-        _ result: Result<T, XPCSecurityError>,
+        _ result: Result<T, XPCProtocolsCore.SecurityError>,
         defaultErrorCode _: Int32 = 10000,
         defaultErrorMessage _: String = "Operation failed"
     ) -> OperationResultDTO<T> {
@@ -80,13 +80,13 @@ public class XPCServiceProtocolDTOAdapter: XPCServiceProtocolDTO, @unchecked Sen
         }
     }
 
-    /// Helper to convert a Result with XPCSecurityError failure to OperationResultDTO
+    /// Helper to convert a Result with XPCProtocolsCore.SecurityError failure to OperationResultDTO
     /// - Parameters:
     ///   - result: The result to convert
     ///   - defaultErrorCode: Error code to use if conversion fails
     ///   - defaultErrorMessage: Error message to use if conversion fails
     /// - Returns: Converted OperationResultDTO
-    private func convertSecurityResult<T>(_ result: Result<T, XPCSecurityError>, defaultErrorCode _: Int32, defaultErrorMessage _: String) -> OperationResultDTO<T> {
+    private func convertSecurityResult<T>(_ result: Result<T, XPCProtocolsCore.SecurityError>, defaultErrorCode _: Int32, defaultErrorMessage _: String) -> OperationResultDTO<T> {
         switch result {
         case let .success(value):
             OperationResultDTO(value: value)

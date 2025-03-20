@@ -199,6 +199,8 @@ public func mapSPCError(_ error: XPCProtocolsCore.SecurityError) -> SecurityInte
         default:
             .operationFailed("\(operation) failed: \(details)")
         }
+    case let .keyManagementError(operation, details):
+        .keyError("\(operation) failed: \(details)")
     case .authenticationFailed:
         .authenticationFailed
     case let .authorizationDenied(details):
