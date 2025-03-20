@@ -5,6 +5,7 @@ umbra_swift_library(
     name = "UmbraKeychainService",
     srcs = [
         "KeychainError.swift",
+        "KeychainSecureStorage.swift",
         "KeychainSecureStorageAdapter.swift",
         "KeychainService.swift",
         "KeychainServiceProtocol.swift",

@@ -3,56 +3,34 @@ import ErrorHandlingDomains
 import SecurityInterfacesProtocols
 import UmbraCoreTypes
 import XPCProtocolsCore
+import SecurityBridgeTypes
 
 /// This file was previously defining a duplicated SecurityError enum
 /// It now uses the canonical UmbraErrors.Security.Core type directly
-/// and provides mapping functions to/from XPCSecurityError for compatibility
+/// and provides mapping functions to/from CoreErrors.XPCErrors.SecurityError for compatibility
 
-/// Mapping functions for converting between UmbraErrors.Security.Core and XPCSecurityError
+/// Mapping functions for converting between UmbraErrors.Security.Core and CoreErrors.XPCErrors.SecurityError
 public extension UmbraErrors.Security.Core {
     /// Initialize from a protocol error
-    init(from protocolError: XPCSecurityError) {
+    init(from protocolError: CoreErrors.XPCErrors.SecurityError) {
         // Map from XPC error to core error
         switch protocolError {
-        case .serviceUnavailable:
-            self = .secureConnectionFailed(reason: "XPC service unavailable")
-        case let .serviceNotReady(reason):
-            self = .internalError(reason: "XPC service not ready: \(reason)")
-        case let .timeout(after: interval):
-            self = .internalError(reason: "XPC operation timed out after \(interval) seconds")
+        case let .serverUnavailable(serviceName):
+            self = .secureConnectionFailed(reason: "XPC service unavailable: \(serviceName)")
+        case let .connectionFailed(reason):
+            self = .internalError(reason: "XPC connection failed: \(reason)")
+        case let .messagingError(description):
+            self = .internalError(reason: "XPC messaging error: \(description)")
         case let .authenticationFailed(reason):
             self = .authenticationFailed(reason: reason)
-        case let .authorizationDenied(operation):
+        case let .permissionDenied(operation):
             self = .authorizationFailed(reason: "XPC authorization denied for operation: \(operation)")
-        case let .operationNotSupported(name):
-            self = .internalError(reason: "XPC operation not supported: \(name)")
-        case let .invalidInput(details):
-            self = .internalError(reason: "XPC invalid input: \(details)")
-        case let .invalidState(details):
-            self = .internalError(reason: "XPC invalid state: \(details)")
-        case let .keyNotFound(identifier):
-            self = .internalError(reason: "XPC key not found: \(identifier)")
-        case let .invalidKeyType(expected, received):
-            self =
-                .internalError(reason: "XPC invalid key type: expected \(expected), received \(received)")
-        case let .cryptographicError(operation, details):
-            self = .internalError(reason: "XPC cryptographic error: \(operation) - \(details)")
-        case let .internalError(reason):
-            self = .internalError(reason: "XPC internal error: \(reason)")
-        case let .invalidData(reason):
-            self = .internalError(reason: "XPC invalid data: \(reason)")
-        case let .encryptionFailed(reason):
-            self = .internalError(reason: "XPC encryption failed: \(reason)")
-        case let .decryptionFailed(reason):
-            self = .internalError(reason: "XPC decryption failed: \(reason)")
-        case let .keyGenerationFailed(reason):
-            self = .internalError(reason: "XPC key generation failed: \(reason)")
-        case let .notImplemented(reason):
-            self = .internalError(reason: "XPC operation not implemented: \(reason)")
-        case .connectionInterrupted:
-            self = .secureConnectionFailed(reason: "XPC connection interrupted")
-        case let .connectionInvalidated(reason):
-            self = .secureConnectionFailed(reason: "XPC connection invalidated: \(reason)")
+        case let .invalidRequest(reason):
+            self = .internalError(reason: "XPC invalid request: \(reason)")
+        case let .incompatibleProtocolVersion(clientVersion, serverVersion):
+            self = .internalError(reason: "XPC incompatible protocol version: client \(clientVersion), server \(serverVersion)")
+        case let .internalError(description):
+            self = .internalError(reason: description)
         @unknown default:
             self = .internalError(reason: "Unknown XPC security error: \(protocolError)")
         }
@@ -60,27 +38,27 @@ public extension UmbraErrors.Security.Core {
 
     /// Convert to a protocol error
     /// - Returns: A protocol error representation of this error, or nil if no good match
-    func toProtocolError() -> XPCSecurityError? {
+    func toProtocolError() -> CoreErrors.XPCErrors.SecurityError? {
         // Map from core error to XPC error
         switch self {
         case let .authenticationFailed(reason):
-            .authenticationFailed(reason: reason)
+            return .authenticationFailed(reason: reason)
         case let .authorizationFailed(reason):
-            .authorizationDenied(operation: reason)
+            return .permissionDenied(operation: reason)
         case .secureConnectionFailed:
-            .serviceUnavailable
+            return .serverUnavailable(serviceName: "unknown")
         case let .internalError(reason) where reason.contains("timed out"):
-            .timeout(after: 30.0) // Default timeout
+            return .internalError(description: "Operation timed out")
         case let .internalError(reason):
-            .internalError(reason: reason)
+            return .internalError(description: reason)
         default:
-            .internalError(reason: localizedDescription)
+            return .internalError(description: localizedDescription)
         }
     }
 }
 
-/// Extension on XPCSecurityError to provide mapping back to UmbraErrors.Security.Core
-public extension XPCSecurityError {
+/// Extension on CoreErrors.XPCErrors.SecurityError to provide mapping back to UmbraErrors.Security.Core
+public extension CoreErrors.XPCErrors.SecurityError {
     /// Convert to a core error
     /// - Returns: A core error representation of this protocol error
     func toCoreError() -> UmbraErrors.Security.Core {

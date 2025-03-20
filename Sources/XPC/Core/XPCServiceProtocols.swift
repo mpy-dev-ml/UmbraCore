@@ -87,76 +87,68 @@ public protocol ModernCryptoXPCServiceProtocol: XPCServiceProtocol {
 /// Extension to provide async/await wrappers for the Objective-C compatible methods
 public extension ModernCryptoXPCServiceProtocol {
     /// Async wrapper for encrypt
-    func encrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError> {
+    func encrypt(_ data: Data, key: Data) async -> Result<Data, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             encrypt(data, key: key) { data, error in
-                if let data {
-                    continuation.resume(returning: .success(data))
-                } else if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
+                } else if let error {
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
+                } else if let data {
+                    continuation.resume(returning: .success(data))
                 } else {
-                    continuation
-                        .resume(returning: .failure(.internalError(
-                            reason: error?
-                                .localizedDescription ?? "Unknown error"
-                        )))
+                    continuation.resume(returning: .failure(.internalError(description: "Unknown error in encrypt")))
                 }
             }
         }
     }
 
     /// Async wrapper for decrypt
-    func decrypt(_ data: Data, key: Data) async -> Result<Data, XPCSecurityError> {
+    func decrypt(_ data: Data, key: Data) async -> Result<Data, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             decrypt(data, key: key) { data, error in
-                if let data {
-                    continuation.resume(returning: .success(data))
-                } else if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
+                } else if let error {
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
+                } else if let data {
+                    continuation.resume(returning: .success(data))
                 } else {
-                    continuation
-                        .resume(returning: .failure(.internalError(
-                            reason: error?
-                                .localizedDescription ?? "Unknown error"
-                        )))
+                    continuation.resume(returning: .failure(.internalError(description: "Unknown error in decrypt")))
                 }
             }
         }
     }
 
     /// Async wrapper for generateKey
-    func generateKey(bits: Int) async -> Result<Data, XPCSecurityError> {
+    func generateKey(bits: Int) async -> Result<Data, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             generateKey(bits: bits) { data, error in
-                if let data {
-                    continuation.resume(returning: .success(data))
-                } else if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
+                } else if let error {
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
+                } else if let data {
+                    continuation.resume(returning: .success(data))
                 } else {
-                    continuation
-                        .resume(returning: .failure(.internalError(
-                            reason: error?
-                                .localizedDescription ?? "Unknown error"
-                        )))
+                    continuation.resume(returning: .failure(.internalError(description: "Unknown error in generateKey")))
                 }
             }
         }
     }
 
     /// Async wrapper for generateSecureRandomData
-    func generateSecureRandomData(length: Int) async -> Result<Data, XPCSecurityError> {
+    func generateSecureRandomData(length: Int) async -> Result<Data, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             generateSecureRandomData(length: length) { data, error in
-                if let data {
-                    continuation.resume(returning: .success(data))
-                } else if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
+                } else if let error {
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
+                } else if let data {
+                    continuation.resume(returning: .success(data))
                 } else {
-                    continuation
-                        .resume(returning: .failure(.internalError(
-                            reason: error?
-                                .localizedDescription ?? "Unknown error"
-                        )))
+                    continuation.resume(returning: .failure(.internalError(description: "Unknown error in generateSecureRandomData")))
                 }
             }
         }
@@ -166,14 +158,13 @@ public extension ModernCryptoXPCServiceProtocol {
     func storeSecurely(
         _ credential: Data,
         identifier: String
-    ) async -> Result<Void, XPCSecurityError> {
+    ) async -> Result<Void, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             storeSecurely(credential, identifier: identifier) { error in
-                if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
                 } else if let error {
-                    continuation
-                        .resume(returning: .failure(.internalError(reason: error.localizedDescription)))
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
                 } else {
                     continuation.resume(returning: .success(()))
                 }
@@ -182,33 +173,30 @@ public extension ModernCryptoXPCServiceProtocol {
     }
 
     /// Async wrapper for retrieveSecurely
-    func retrieveSecurely(identifier: String) async -> Result<Data, XPCSecurityError> {
+    func retrieveSecurely(identifier: String) async -> Result<Data, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             retrieveSecurely(identifier: identifier) { data, error in
-                if let data {
-                    continuation.resume(returning: .success(data))
-                } else if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
+                } else if let error {
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
+                } else if let data {
+                    continuation.resume(returning: .success(data))
                 } else {
-                    continuation
-                        .resume(returning: .failure(.internalError(
-                            reason: error?
-                                .localizedDescription ?? "Unknown error"
-                        )))
+                    continuation.resume(returning: .failure(.internalError(description: "Unknown error in retrieveSecurely")))
                 }
             }
         }
     }
 
     /// Async wrapper for deleteSecurely
-    func deleteSecurely(identifier: String) async -> Result<Void, XPCSecurityError> {
+    func deleteSecurely(identifier: String) async -> Result<Void, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             deleteSecurely(identifier: identifier) { error in
-                if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
                 } else if let error {
-                    continuation
-                        .resume(returning: .failure(.internalError(reason: error.localizedDescription)))
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
                 } else {
                     continuation.resume(returning: .success(()))
                 }
@@ -217,14 +205,13 @@ public extension ModernCryptoXPCServiceProtocol {
     }
 
     /// Async wrapper for validateConnection
-    func validateConnection() async -> Result<Bool, XPCSecurityError> {
+    func validateConnection() async -> Result<Bool, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             validateConnection { isValid, error in
-                if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
                 } else if let error {
-                    continuation
-                        .resume(returning: .failure(.internalError(reason: error.localizedDescription)))
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
                 } else {
                     continuation.resume(returning: .success(isValid))
                 }
@@ -233,14 +220,13 @@ public extension ModernCryptoXPCServiceProtocol {
     }
 
     /// Async wrapper for getServiceVersion
-    func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    func getServiceVersion() async -> Result<String, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             getServiceVersion { version, error in
-                if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
                 } else if let error {
-                    continuation
-                        .resume(returning: .failure(.internalError(reason: error.localizedDescription)))
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
                 } else {
                     continuation.resume(returning: .success(version))
                 }
@@ -393,7 +379,7 @@ public extension SecurityXPCServiceProtocol {
         }
     }
 
-    func getServiceVersionAsync() async throws -> String? {
+    func getServiceVersionAsync() async throws -> String {
         try await withCheckedThrowingContinuation { continuation in
             getServiceVersion { version, error in
                 if let error {
@@ -401,7 +387,11 @@ public extension SecurityXPCServiceProtocol {
                 } else if let version {
                     continuation.resume(returning: version)
                 } else {
-                    continuation.resume(returning: nil)
+                    continuation.resume(throwing: NSError(
+                        domain: "SecurityXPCService",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "Unknown error getting service version"]
+                    ))
                 }
             }
         }

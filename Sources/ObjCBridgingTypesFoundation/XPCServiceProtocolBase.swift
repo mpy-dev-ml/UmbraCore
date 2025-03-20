@@ -61,13 +61,13 @@ public extension XPCServiceProtocolBaseFoundation {
     }
 
     /// Async ping implementation
-    func ping() async -> Result<Bool, XPCSecurityError> {
+    func ping() async -> Result<Bool, CoreErrors.XPCErrors.SecurityError> {
         await withCheckedContinuation { continuation in
             ping { success, error in
-                if let error = error as? XPCSecurityError {
+                if let error = error as? CoreErrors.XPCErrors.SecurityError {
                     continuation.resume(returning: .failure(error))
                 } else if let error {
-                    continuation.resume(returning: .failure(.internalError(reason: error.localizedDescription)))
+                    continuation.resume(returning: .failure(.internalError(description: error.localizedDescription)))
                 } else {
                     continuation.resume(returning: .success(success))
                 }

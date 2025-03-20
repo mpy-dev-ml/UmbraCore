@@ -15,7 +15,7 @@ public protocol SecurityProviderBase: Sendable {
     /// Test if the security provider is available
     /// - Returns: True if the provider is available, false otherwise
     /// - Throws: SecurityError if the check fails
-    func isAvailable() async -> Result<Bool, XPCSecurityError>
+    func isAvailable() async -> Result<Bool, CoreErrors.XPCErrors.SecurityError>
     /// Get the provider's version information
     /// - Returns: Version string
     func getVersion() async -> String
@@ -29,7 +29,7 @@ public extension SecurityProviderBase {
     }
 
     /// Default implementation that assumes the provider is available
-    func isAvailable() async -> Result<Bool, XPCSecurityError> {
+    func isAvailable() async -> Result<Bool, CoreErrors.XPCErrors.SecurityError> {
         .success(true)
     }
 
@@ -51,7 +51,7 @@ public final class SecurityProviderBaseAdapter: SecurityProviderBase {
         "com.umbra.security.provider.base.adapter"
     }
 
-    public func isAvailable() async -> Result<Bool, XPCSecurityError> {
+    public func isAvailable() async -> Result<Bool, CoreErrors.XPCErrors.SecurityError> {
         // This is a simple implementation that assumes the provider is available
         // In a real implementation, you might want to perform some checks
         .success(true)

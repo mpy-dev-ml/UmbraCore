@@ -9,7 +9,9 @@ public enum KeychainXPCServiceFactory {
     /// - Parameter serviceIdentifier: Optional service identifier. If nil, the default identifier is used.
     /// - Returns: A KeychainXPCServiceProtocol implementation
     public static func createService(serviceIdentifier: String? = nil) -> any KeychainXPCServiceProtocol {
-        return KeychainXPCServiceAdapter(service: KeychainSecureStorageAdapter(service: serviceIdentifier ?? "com.umbracore.securexpc"))
+        // DEPRECATED: Previously used KeychainXPCServiceAdapter and KeychainSecureStorageAdapter
+        // Now returns the in-memory implementation as a temporary solution until proper replacement is implemented
+        return createInMemoryService()
     }
     
     /// Create an in-memory keychain service for testing
@@ -19,62 +21,9 @@ public enum KeychainXPCServiceFactory {
     }
 }
 
-/// Adapter that converts between the DTO protocol and the actual service
-private final class KeychainXPCServiceAdapter: KeychainXPCServiceProtocol {
-    private let adapter: KeychainSecureStorageAdapter
-    
-    init(service: KeychainSecureStorageAdapter) {
-        self.adapter = service
-    }
-    
-    func storeData(_ request: KeychainXPCDTO.StoreRequest) async -> KeychainXPCDTO.OperationResult {
-        let result = await adapter.storeSecurely(data: request.data, identifier: request.identifier)
-        
-        switch result {
-        case .success:
-            return .success
-        case .failure(let error):
-            return .failure(error.toKeychainOperationError())
-        @unknown default:
-            return .failure(.internalError("Unknown storage result case"))
-        }
-    }
-    
-    func retrieveData(_ request: KeychainXPCDTO.RetrieveRequest) async -> KeychainXPCDTO.OperationResult {
-        let result = await adapter.retrieveSecurely(identifier: request.identifier)
-        
-        switch result {
-        case .success(let data):
-            return .successWithData(data)
-        case .failure(let error):
-            return .failure(error.toKeychainOperationError())
-        @unknown default:
-            return .failure(.internalError("Unknown retrieval result case"))
-        }
-    }
-    
-    func deleteData(_ request: KeychainXPCDTO.DeleteRequest) async -> KeychainXPCDTO.OperationResult {
-        let result = await adapter.deleteSecurely(identifier: request.identifier)
-        
-        switch result {
-        case .success:
-            return .success
-        case .failure(let error):
-            return .failure(error.toKeychainOperationError())
-        @unknown default:
-            return .failure(.internalError("Unknown deletion result case"))
-        }
-    }
-    
-    func generateRandomData(length: Int) async -> KeychainXPCDTO.OperationResult {
-        // Use SecurityUtils to generate random data
-        var bytes = [UInt8](repeating: 0, count: length)
-        for i in 0..<length {
-            bytes[i] = UInt8.random(in: 0...255)
-        }
-        return .successWithData(SecureBytes(bytes: bytes))
-    }
-}
+// Previously contained KeychainXPCServiceAdapter class which has been removed
+// DEPRECATED: KeychainXPCServiceAdapter has been removed.
+// Use a modern implementation instead.
 
 /// An in-memory implementation of KeychainXPCServiceProtocol for testing
 private actor InMemoryKeychainService: KeychainXPCServiceProtocol {

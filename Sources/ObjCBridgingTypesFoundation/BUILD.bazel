@@ -6,6 +6,7 @@ umbra_swift_library(
     name = "ObjCBridgingTypesFoundation",
     srcs = glob(["**/*.swift"]),
     deps = [
+        "//Sources/CoreErrors",
         "//Sources/CoreTypesInterfaces",
         "//Sources/XPCProtocolsCore",  # Added for XPCSecurityError
         # Removed dependency on ObjCBridgingTypes to break circular dependency
@@ -27,6 +28,7 @@ swift_library(
     module_name = "ObjCBridgingTypesFoundationTest",
     visibility = ["//visibility:public"],
     deps = [
+        "//Sources/CoreErrors",
         "//Sources/CoreTypesInterfaces",
         "//Sources/XPCProtocolsCore",  # Added for XPCSecurityError
         # Removed dependency on ObjCBridgingTypes to break circular dependency

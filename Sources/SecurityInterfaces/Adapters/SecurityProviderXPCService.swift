@@ -39,7 +39,7 @@ public final class SecurityProviderXPCService: XPCServiceProtocolBasic {
 
     /// Get the current status of the XPC service
     /// - Returns: Dictionary containing status information
-    public func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
+    public func status() async -> Result<[String: Any], ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // In a real implementation, we would collect actual status information
         let statusDict: [String: Any] = [
             "name": "SecurityProviderXPCService",

@@ -1,6 +1,8 @@
 import Foundation
 import XPCProtocolsCore
 import SecurityProtocolsCore
+import UmbraCoreTypes
+import ErrorHandlingDomains
 
 /// DTOs used for KeychainXPCService operations
 public enum KeychainXPCDTO {
@@ -96,38 +98,40 @@ public enum KeychainXPCDTO {
     }
 }
 
-/// Map KeychainXPCDTO.KeychainOperationError to XPCSecurityError
+/// Protocol extension to convert keychain errors to XPC errors
 extension KeychainXPCDTO.KeychainOperationError {
-    /// Convert to XPCSecurityError
-    public func toXPCSecurityError() -> XPCSecurityError {
+    /// Convert to XPC security error
+    /// - Returns: The XPC security error
+    public func toXPCSecurityError() -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         switch self {
-        case .itemNotFound:
-            return .keyNotFound(identifier: "unknown")
         case .duplicateItem:
-            return .internalError(reason: "A duplicate item was found")
-        case .authenticationFailed:
-            return .authenticationFailed(reason: "Authentication failed")
+            return .internalError("Duplicate item exists")
+        case .itemNotFound:
+            return .missingProtocolImplementation(protocolName: "unknown")
         case .internalError(let message):
-            return .internalError(reason: message)
+            return .internalError(message)
         case .serviceUnavailable:
-            return .serviceUnavailable
+            return .invalidState(state: "unavailable", expectedState: "available")
+        case .authenticationFailed:
+            return .invalidInput("Authentication failed")
         }
     }
 }
 
-/// Map XPCSecurityError to KeychainXPCDTO.KeychainOperationError
-extension XPCSecurityError {
-    /// Convert to KeychainXPCDTO.KeychainOperationError
+/// Protocol extension to convert XPC errors to keychain errors
+extension ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+    /// Convert to keychain operation error
+    /// - Returns: The keychain operation error
     public func toKeychainOperationError() -> KeychainXPCDTO.KeychainOperationError {
         switch self {
-        case .keyNotFound:
+        case .missingProtocolImplementation:
             return .itemNotFound
-        case .authenticationFailed:
+        case .invalidInput where self.description.contains("Authentication"):
             return .authenticationFailed
-        case .serviceUnavailable:
+        case .invalidState(let state, _) where state == "unavailable":
             return .serviceUnavailable
-        case .internalError(let reason):
-            return .internalError(reason)
+        case .internalError(let description):
+            return .internalError(description)
         default:
             return .internalError("Unknown XPC security error: \(self)")
         }
