@@ -46,10 +46,12 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
         Task { @Sendable in
             do {
                 try await keychain.addItem(
+                    data,
                     account: account,
                     service: service,
                     accessGroup: accessGroup,
-                    data: data
+                    accessibility: kSecAttrAccessibleAfterFirstUnlock,
+                    flags: []
                 )
                 queue.async { reply(nil) }
             } catch {
@@ -71,10 +73,10 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
         Task { @Sendable in
             do {
                 try await keychain.updateItem(
+                    data,
                     account: account,
                     service: service,
-                    accessGroup: accessGroup,
-                    data: data
+                    accessGroup: accessGroup
                 )
                 queue.async { reply(nil) }
             } catch {
@@ -94,7 +96,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
 
         Task { @Sendable in
             do {
-                try await keychain.removeItem(
+                try await keychain.deleteItem(
                     account: account,
                     service: service,
                     accessGroup: accessGroup
@@ -117,7 +119,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
 
         Task { @Sendable in
             do {
-                let exists = try await keychain.containsItem(
+                let exists = await keychain.containsItem(
                     account: account,
                     service: service,
                     accessGroup: accessGroup
@@ -144,7 +146,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
 
         Task { @Sendable in
             do {
-                let data = try await keychain.retrieveItem(
+                let data = try await keychain.readItem(
                     account: account,
                     service: service,
                     accessGroup: accessGroup
@@ -168,7 +170,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
 
         Task { @Sendable in
             do {
-                try await keychain.removeItem(
+                try await keychain.deleteItem(
                     account: account,
                     service: service,
                     accessGroup: accessGroup
@@ -191,7 +193,7 @@ final class KeychainXPCImplementation: NSObject, KeychainXPCProtocol {
 
         Task { @Sendable in
             do {
-                let data = try await keychain.retrieveItem(
+                let data = try await keychain.readItem(
                     account: account,
                     service: service,
                     accessGroup: accessGroup

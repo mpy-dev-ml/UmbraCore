@@ -18,7 +18,7 @@ import UmbraLogging
 ///     data: "secret".data(using: .utf8)!
 /// )
 /// ```
-public actor KeychainService {
+public actor KeychainService: KeychainServiceProtocol {
     /// Logger instance for tracking operations.
     private let logger: LoggingProtocol
 
@@ -27,25 +27,31 @@ public actor KeychainService {
         self.logger = logger
     }
 
-    /// Adds a new item to the keychain.
-    ///
+    // MARK: - KeychainServiceProtocol Implementation
+
+    /// Add a new item to the keychain
     /// - Parameters:
-    ///   - account: The account identifier for the item.
-    ///   - service: The service identifier for the item.
-    ///   - accessGroup: Optional access group for sharing items between apps.
-    ///   - data: The sensitive data to store.
-    /// - Throws: `KeychainError` if the operation fails, with specific error information.
+    ///   - data: Data to store
+    ///   - account: Account identifier
+    ///   - service: Service identifier
+    ///   - accessGroup: Optional access group
+    ///   - accessibility: Keychain accessibility
+    ///   - flags: Access control flags
+    /// - Throws: KeychainError if operation fails
     public func addItem(
+        _ data: Data,
         account: String,
         service: String,
         accessGroup: String?,
-        data: Data
+        accessibility: CFString,
+        flags: SecAccessControlCreateFlags
     ) async throws {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
             kSecAttrService as String: service,
             kSecValueData as String: data,
+            kSecAttrAccessible as String: accessibility
         ]
 
         if let accessGroup {
@@ -76,19 +82,18 @@ public actor KeychainService {
         await logger.info("Successfully added keychain item", metadata: metadata)
     }
 
-    /// Updates an existing item in the keychain.
-    ///
+    /// Update an existing keychain item
     /// - Parameters:
-    ///   - account: The account identifier for the item.
-    ///   - service: The service identifier for the item.
-    ///   - accessGroup: Optional access group for sharing items between apps.
-    ///   - data: The new sensitive data to store.
-    /// - Throws: `KeychainError` if the operation fails, with specific error information.
+    ///   - data: New data to store
+    ///   - account: Account identifier
+    ///   - service: Service identifier
+    ///   - accessGroup: Optional access group
+    /// - Throws: KeychainError if operation fails
     public func updateItem(
+        _ data: Data,
         account: String,
         service: String,
-        accessGroup: String?,
-        data: Data
+        accessGroup: String?
     ) async throws {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -128,14 +133,13 @@ public actor KeychainService {
         await logger.info("Successfully updated keychain item", metadata: metadata)
     }
 
-    /// Removes an item from the keychain.
-    ///
+    /// Delete an item from the keychain
     /// - Parameters:
-    ///   - account: The account identifier for the item.
-    ///   - service: The service identifier for the item.
-    ///   - accessGroup: Optional access group for sharing items between apps.
-    /// - Throws: `KeychainError` if the operation fails, with specific error information.
-    public func removeItem(
+    ///   - account: Account identifier
+    ///   - service: Service identifier
+    ///   - accessGroup: Optional access group
+    /// - Throws: KeychainError if operation fails
+    public func deleteItem(
         account: String,
         service: String,
         accessGroup: String?
@@ -156,77 +160,32 @@ public actor KeychainService {
             let metadata = LogMetadata([
                 "error": String(describing: error),
                 "status": String(status),
-                "operation": "removeItem",
+                "operation": "deleteItem",
                 "account": account,
                 "service": service,
                 "accessGroup": accessGroup ?? "none",
             ])
-            await logger.error("Failed to remove keychain item", metadata: metadata)
+            await logger.error("Failed to delete keychain item", metadata: metadata)
             throw error
         }
 
         let metadata = LogMetadata([
-            "operation": "removeItem",
+            "operation": "deleteItem",
             "account": account,
             "service": service,
             "accessGroup": accessGroup ?? "none",
         ])
-        await logger.info("Successfully removed keychain item", metadata: metadata)
+        await logger.info("Successfully deleted keychain item", metadata: metadata)
     }
 
-    /// Checks if an item exists in the keychain.
-    ///
+    /// Read an item from the keychain
     /// - Parameters:
-    ///   - account: The account identifier to check.
-    ///   - service: The service identifier to check.
-    ///   - accessGroup: Optional access group for shared items.
-    /// - Returns: `true` if the item exists, `false` otherwise.
-    /// - Throws: `KeychainError` if the query operation fails.
-    public func containsItem(
-        account: String,
-        service: String,
-        accessGroup: String?
-    ) async throws -> Bool {
-        var query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: account,
-            kSecAttrService as String: service,
-            kSecReturnData as String: false,
-        ]
-
-        if let accessGroup {
-            query[kSecAttrAccessGroup as String] = accessGroup
-        }
-
-        let status = SecItemCopyMatching(query as CFDictionary, nil)
-        switch status {
-        case errSecSuccess, errSecItemNotFound:
-            // Item exists if errSecSuccess, doesn't exist if errSecItemNotFound
-            return status == errSecSuccess
-        default:
-            let error = convertError(status)
-            let metadata = LogMetadata([
-                "error": String(describing: error),
-                "status": String(status),
-                "operation": "containsItem",
-                "account": account,
-                "service": service,
-                "accessGroup": accessGroup ?? "none",
-            ])
-            await logger.error("Failed to check keychain item existence", metadata: metadata)
-            throw error
-        }
-    }
-
-    /// Retrieves an item from the keychain.
-    ///
-    /// - Parameters:
-    ///   - account: The account identifier for the item.
-    ///   - service: The service identifier for the item.
-    ///   - accessGroup: Optional access group for sharing items between apps.
-    /// - Returns: The stored sensitive data.
-    /// - Throws: `KeychainError` if the operation fails, with specific error information.
-    public func retrieveItem(
+    ///   - account: Account identifier
+    ///   - service: Service identifier
+    ///   - accessGroup: Optional access group
+    /// - Returns: Stored data
+    /// - Throws: KeychainError if operation fails
+    public func readItem(
         account: String,
         service: String,
         accessGroup: String?
@@ -249,35 +208,63 @@ public actor KeychainService {
             let metadata = LogMetadata([
                 "error": String(describing: error),
                 "status": String(status),
-                "operation": "retrieveItem",
+                "operation": "readItem",
                 "account": account,
                 "service": service,
                 "accessGroup": accessGroup ?? "none",
             ])
-            await logger.error("Failed to retrieve keychain item", metadata: metadata)
+            await logger.error("Failed to read keychain item", metadata: metadata)
             throw error
         }
 
         guard let data = result as? Data else {
             let metadata = LogMetadata([
-                "operation": "retrieveItem",
+                "operation": "readItem",
                 "account": account,
                 "service": service,
                 "accessGroup": accessGroup ?? "none",
                 "resultType": String(describing: type(of: result)),
             ])
-            await logger.error("Retrieved keychain item is not Data", metadata: metadata)
+            await logger.error("Read keychain item is not Data", metadata: metadata)
             throw KeychainError.unexpectedData
         }
 
         let metadata = LogMetadata([
-            "operation": "retrieveItem",
+            "operation": "readItem",
             "account": account,
             "service": service,
             "accessGroup": accessGroup ?? "none",
         ])
-        await logger.info("Successfully retrieved keychain item", metadata: metadata)
+        await logger.info("Successfully read keychain item", metadata: metadata)
         return data
+    }
+
+    /// Check if an item exists in the keychain
+    /// - Parameters:
+    ///   - account: Account identifier
+    ///   - service: Service identifier
+    ///   - accessGroup: Optional access group
+    /// - Returns: True if item exists
+    public func containsItem(
+        account: String,
+        service: String,
+        accessGroup: String?
+    ) async -> Bool {
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: account,
+            kSecAttrService as String: service,
+            kSecReturnData as String: false,
+        ]
+
+        if let accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+
+        let status = SecItemCopyMatching(query as CFDictionary, nil)
+
+        // Most important: don't throw, just return a boolean
+        return status == errSecSuccess
     }
 
     /// Converts a `SecItemError` to a `KeychainError`.

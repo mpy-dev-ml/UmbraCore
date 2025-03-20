@@ -1,15 +1,46 @@
 import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
+import UmbraLogging
+import os
 
 /// Factory for creating SecureStorageProtocol implementations
 public enum SecureStorageFactory {
+    /// Service name for the keychain in the system keychain
+    public static let systemKeychainServiceName = "UmbraSystemKeychain"
+    
+    /// A simple implementation of LoggingProtocol that uses OSLog internally
+    private final class SimpleLogger: LoggingProtocol {
+        private let osLog: OSLog
+        
+        init(category: String) {
+            self.osLog = OSLog(subsystem: "dev.mpy.UmbraCore", category: category)
+        }
+        
+        func debug(_ message: String, metadata: LogMetadata?) async {
+            os_log(.debug, log: osLog, "%{public}@", message)
+        }
+        
+        func info(_ message: String, metadata: LogMetadata?) async {
+            os_log(.info, log: osLog, "%{public}@", message)
+        }
+        
+        func warning(_ message: String, metadata: LogMetadata?) async {
+            os_log(.fault, log: osLog, "%{public}@", message)
+        }
+        
+        func error(_ message: String, metadata: LogMetadata?) async {
+            os_log(.error, log: osLog, "%{public}@", message)
+        }
+    }
+    
     /// Create a SecureStorageProtocol implementation using the system keychain
-    /// - Parameter serviceIdentifier: Service identifier for keychain items
     /// - Returns: A SecureStorageProtocol implementation
     @available(macOS 14.0, *)
-    public static func createKeychainStorage(serviceIdentifier: String) -> any SecureStorageProtocol {
-        createSecureStorage(serviceIdentifier: serviceIdentifier)
+    public static func createKeychainStorage() -> any SecureStorageProtocol {
+        let logger = SimpleLogger(category: "KeychainStorage")
+        let keychainService = KeychainService(logger: logger)
+        return KeychainSecureStorage(keychainService: keychainService)
     }
     
     /// Create a SecureStorageProtocol implementation using in-memory storage (for testing)
