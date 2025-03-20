@@ -1,89 +1,108 @@
 import Foundation
 
-final class KeychainXPCConnection {
-    private var connection: NSXPCConnection?
+@available(macOS 14.0, *)
+final class KeychainXPCConnection: @unchecked Sendable {
+    // Using actor to make this thread-safe
+    private actor ConnectionState {
+        var connection: NSXPCConnection?
+        var isInvalidated = false
+        
+        func setConnection(_ newConnection: NSXPCConnection?) {
+            connection = newConnection
+        }
+        
+        func getConnection() -> NSXPCConnection? {
+            return connection
+        }
+        
+        func invalidate() {
+            isInvalidated = true
+            connection?.invalidate()
+            connection = nil
+        }
+        
+        func isInvalidatedState() -> Bool {
+            return isInvalidated
+        }
+        
+        // Add a synchronized proxy retrieval method to isolate non-Sendable types
+        func getProxyFromConnection() -> (any KeychainXPCProtocol)? {
+            guard let connection = connection else { return nil }
+            
+            return connection.remoteObjectProxyWithErrorHandler { error in
+                print("XPC connection error: \(error)")
+                // Invalidate directly from within the actor
+                self.invalidate()
+            } as? any KeychainXPCProtocol
+        }
+    }
+    
+    private let state = ConnectionState()
     private let queue = DispatchQueue(
         label: "com.umbracore.keychain.connection",
         qos: .userInitiated
     )
-    private let semaphore = DispatchSemaphore(value: 1)
     private let listener: NSXPCListener?
-    private var isInvalidated = false
 
     init(listener: NSXPCListener? = nil) {
         self.listener = listener
     }
 
-    func connect() throws -> any KeychainXPCProtocol {
-        semaphore.wait()
-        defer { semaphore.signal() }
+    func connect() async throws -> any KeychainXPCProtocol {
+        // Replace semaphore with Task-based synchronization
+        return try await Task { () -> any KeychainXPCProtocol in
+            // Check if connection was invalidated
+            if await state.isInvalidatedState() {
+                throw NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
+                    NSLocalizedDescriptionKey: "Connection was invalidated",
+                ])
+            }
 
-        // Check if connection was invalidated
-        if isInvalidated {
-            throw KeychainError.xpcConnectionFailed
-        }
+            // Try to get proxy from existing connection
+            if let proxy = await state.getProxyFromConnection() {
+                return proxy
+            }
 
-        // Check existing connection
-        if
-            let existingConnection = connection,
-            let proxy = existingConnection.remoteObjectProxy as? any KeychainXPCProtocol {
+            // Create new connection
+            let newConnection: NSXPCConnection
+            if listener != nil {
+                // No connection for listener mode
+                throw NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
+                    NSLocalizedDescriptionKey: "Cannot connect in listener mode",
+                ])
+            } else {
+                // Create connection to service
+                newConnection = NSXPCConnection(serviceName: "com.umbracore.keychain")
+            }
+
+            newConnection.remoteObjectInterface = NSXPCInterface(with: KeychainXPCProtocol.self)
+            newConnection.invalidationHandler = { [weak self] in
+                Task { [weak self] in
+                    if let self = self {
+                        await self.state.invalidate()
+                    }
+                }
+            }
+            newConnection.resume()
+
+            // Store connection
+            await state.setConnection(newConnection)
+
+            // Get proxy using the actor-isolated method
+            guard let proxy = await state.getProxyFromConnection() else {
+                throw NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
+                    NSLocalizedDescriptionKey: "Failed to get remote proxy",
+                ])
+            }
+
             return proxy
-        }
-
-        // Create new connection
-        let newConnection = if let listener {
-            NSXPCConnection(listenerEndpoint: listener.endpoint)
-        } else {
-            NSXPCConnection(serviceName: "com.umbracore.keychain")
-        }
-
-        newConnection.remoteObjectInterface = NSXPCInterface(with: KeychainXPCProtocol.self)
-
-        // Set up error handling
-        newConnection.invalidationHandler = { [weak self] in
-            self?.handleConnectionError()
-        }
-
-        newConnection.interruptionHandler = { [weak self] in
-            self?.handleConnectionError()
-        }
-
-        // Start the connection
-        newConnection.resume()
-
-        guard let proxy = newConnection.remoteObjectProxy as? any KeychainXPCProtocol else {
-            throw KeychainError.xpcConnectionFailed
-        }
-
-        connection = newConnection
-        isInvalidated = false
-        return proxy
+        }.value
     }
 
-    private func handleConnectionError() {
-        semaphore.wait()
-        defer { semaphore.signal() }
-
-        if let connection {
-            connection.invalidate()
+    func invalidate() {
+        Task {
+            await state.invalidate()
         }
-        connection = nil
-        isInvalidated = true
-    }
-
-    func disconnect() {
-        semaphore.wait()
-        defer { semaphore.signal() }
-
-        if let connection {
-            connection.invalidate()
-        }
-        connection = nil
-        isInvalidated = true
-    }
-
-    deinit {
-        disconnect()
     }
 }
 
@@ -91,49 +110,52 @@ final class KeychainXPCConnection {
 
 extension KeychainXPCConnection: KeychainXPCProtocol {
     func addItem(
-        account _: String,
-        service _: String,
-        accessGroup _: String?,
-        data _: Data,
-        reply _: @escaping @Sendable (Error?) -> Void
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping @Sendable (Error?) -> Void
     ) {
         // Implementation
+        reply(NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
+            NSLocalizedDescriptionKey: "Not implemented",
+        ]))
     }
 
     func updateItem(
-        account _: String,
-        service _: String,
-        accessGroup _: String?,
-        data _: Data,
-        reply _: @escaping @Sendable (Error?) -> Void
+        account: String,
+        service: String,
+        accessGroup: String?,
+        data: Data,
+        reply: @escaping @Sendable (Error?) -> Void
     ) {
         // Implementation
+        reply(NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
+            NSLocalizedDescriptionKey: "Not implemented",
+        ]))
     }
 
-    func removeItem(
-        account _: String,
-        service _: String,
-        accessGroup _: String?,
-        reply _: @escaping @Sendable (Error?) -> Void
+    func getItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
         // Implementation
+        reply(nil, NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
+            NSLocalizedDescriptionKey: "Not implemented",
+        ]))
     }
 
-    func containsItem(
-        account _: String,
-        service _: String,
-        accessGroup _: String?,
-        reply _: @escaping @Sendable (Bool, Error?) -> Void
+    func deleteItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Error?) -> Void
     ) {
         // Implementation
-    }
-
-    func retrieveItem(
-        account _: String,
-        service _: String,
-        accessGroup _: String?,
-        reply _: @escaping @Sendable (Data?, Error?) -> Void
-    ) {
-        // Implementation
+        reply(NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
+            NSLocalizedDescriptionKey: "Not implemented",
+        ]))
     }
 }
