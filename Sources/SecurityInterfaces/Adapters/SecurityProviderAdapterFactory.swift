@@ -139,7 +139,7 @@ public struct SecurityProviderAdapterFactory: Sendable {
             // No implementation needed for mock
         }
 
-        func status() async -> Result<[String: Any], XPCSecurityError> {
+        func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
             .success([:])
         }
     }

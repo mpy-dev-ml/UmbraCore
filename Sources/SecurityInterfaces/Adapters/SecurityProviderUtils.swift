@@ -100,6 +100,8 @@ public enum SecurityProviderUtils {
             return .operationFailed("Connection invalidated: \(reason)")
         case let .operationFailed(operation, reason):
             return .operationFailed("\(operation) failed: \(reason)")
+        case let .keyManagementError(operation, details):
+            return .keyError("\(operation) failed: \(details)")
         @unknown default:
             return .operationFailed("Unknown security error: \(error.localizedDescription)")
         }

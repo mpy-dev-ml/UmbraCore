@@ -38,12 +38,12 @@ public protocol XPCServiceProtocolBasic: Sendable {
     /// Basic synchronisation of keys between XPC service and client.
     /// This method allows secure key material to be shared across process boundaries.
     /// - Parameter syncData: Secure bytes for key synchronisation
-    /// - Throws: XPCSecurityError if synchronisation fails
+    /// - Throws: XPCProtocolsCore.SecurityError if synchronisation fails
     func synchroniseKeys(_ syncData: SecureBytes) async throws
 
     /// Get the current status of the XPC service
     /// - Returns: Result containing status information or error
-    func status() async -> Result<[String: Any], XPCSecurityError>
+    func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError>
 }
 
 /// Default protocol implementation with baseline functionality.
@@ -57,7 +57,7 @@ public extension XPCServiceProtocolBasic {
 
     /// Default implementation of the basic ping method.
     /// - Returns: Always returns true for basic implementations
-    func pingBasic() async -> Result<Bool, XPCSecurityError> {
+    func pingBasic() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // Simple implementation that doesn't throw
         let pingResult = await ping()
         return .success(pingResult)
@@ -66,11 +66,11 @@ public extension XPCServiceProtocolBasic {
     /// Extended synchronisation implementation with Result type return.
     /// - Parameter syncData: Secure bytes for key synchronisation
     /// - Returns: Result with success or failure with error information
-    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
+    func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCProtocolsCore.SecurityError> {
         do {
             try await synchroniseKeys(syncData)
             return .success(())
-        } catch let error as XPCSecurityError {
+        } catch let error as XPCProtocolsCore.SecurityError {
             return .failure(error)
         } catch {
             return .failure(.internalError(reason: error.localizedDescription))

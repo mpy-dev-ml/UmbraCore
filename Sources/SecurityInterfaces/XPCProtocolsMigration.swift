@@ -57,62 +57,62 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
         try await service.synchroniseKeys(syncData)
     }
 
-    public func pingStandard() async -> Result<Bool, XPCSecurityError> {
+    public func pingStandard() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         .success(true) // Always return success for backward compatibility
     }
 
-    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolStandard {
             await standardService.generateRandomData(length: length)
         } else {
             // Fallback implementation if needed
-            .failure(.notImplemented(reason: "generateRandomData not implemented"))
+            .failure(.operationNotSupported(name: "generateRandomData"))
         }
     }
 
-    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolStandard {
             await standardService.encryptSecureData(data, keyIdentifier: keyIdentifier)
         } else {
             // Fallback implementation if needed
-            .failure(.notImplemented(reason: "encryptSecureData not implemented"))
+            .failure(.operationNotSupported(name: "encryptSecureData"))
         }
     }
 
-    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolStandard {
             await standardService.decryptSecureData(data, keyIdentifier: keyIdentifier)
         } else {
             // Fallback implementation if needed
-            .failure(.notImplemented(reason: "decryptSecureData not implemented"))
+            .failure(.operationNotSupported(name: "decryptSecureData"))
         }
     }
 
-    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolStandard {
             await standardService.sign(data, keyIdentifier: keyIdentifier)
         } else {
             // Fallback implementation if needed
-            .failure(.notImplemented(reason: "sign not implemented"))
+            .failure(.operationNotSupported(name: "sign"))
         }
     }
 
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolStandard {
             await standardService.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
         } else {
             // Fallback implementation if needed
-            .failure(.notImplemented(reason: "verify not implemented"))
+            .failure(.operationNotSupported(name: "verify"))
         }
     }
 
     // MARK: - XPCServiceProtocolStandard Implementation
 
-    public func status() async -> Result<[String: Any], XPCSecurityError> {
+    public func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
         await service.status()
     }
 
-    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
+    public func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolStandard {
             await standardService.resetSecurity()
         } else {
@@ -121,7 +121,7 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
         }
     }
 
-    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    public func getServiceVersion() async -> Result<String, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolStandard {
             await standardService.getServiceVersion()
         } else {
@@ -130,7 +130,7 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
         }
     }
 
-    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+    public func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolStandard {
             await standardService.getHardwareIdentifier()
         } else {
@@ -139,13 +139,13 @@ private final class XPCStandardAdapter: XPCServiceProtocolStandard {
         }
     }
 
-    public func exportKey(keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func exportKey(keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         if let standardService = service as? any XPCServiceProtocolComplete {
             // The complete protocol only supports the standard exportKey method without format
             await standardService.exportKey(keyIdentifier: keyIdentifier)
         } else {
             // Fallback implementation
-            .failure(.notImplemented(reason: "exportKey not implemented"))
+            .failure(.operationNotSupported(name: "exportKey"))
         }
     }
 }
@@ -169,77 +169,77 @@ private final class XPCCompleteAdapter: XPCServiceProtocolComplete {
         try await standardAdapter.synchroniseKeys(syncData)
     }
 
-    public func pingStandard() async -> Result<Bool, XPCSecurityError> {
+    public func pingStandard() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         await standardAdapter.pingStandard()
     }
 
-    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await standardAdapter.generateRandomData(length: length)
     }
 
-    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await standardAdapter.encryptSecureData(data, keyIdentifier: keyIdentifier)
     }
 
-    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await standardAdapter.decryptSecureData(data, keyIdentifier: keyIdentifier)
     }
 
-    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await standardAdapter.sign(data, keyIdentifier: keyIdentifier)
     }
 
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         await standardAdapter.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)
     }
 
     // Delegate all XPCServiceProtocolStandard methods to standardAdapter
 
-    public func status() async -> Result<[String: Any], XPCSecurityError> {
+    public func status() async -> Result<[String: Any], XPCProtocolsCore.SecurityError> {
         await standardAdapter.status()
     }
 
-    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
+    public func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
         await standardAdapter.resetSecurity()
     }
 
-    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    public func getServiceVersion() async -> Result<String, XPCProtocolsCore.SecurityError> {
         await standardAdapter.getServiceVersion()
     }
 
-    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+    public func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
         await standardAdapter.getHardwareIdentifier()
     }
 
-    public func exportKey(keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func exportKey(keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         await standardAdapter.exportKey(keyIdentifier: keyIdentifier)
     }
 
     // MARK: - XPCServiceProtocolComplete Implementation
 
-    public func resetService() async -> Result<Bool, XPCSecurityError> {
+    public func resetService() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // Use default implementation for now
         .success(true)
     }
 
-    public func backup() async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func backup() async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         // Use default implementation for now
-        .failure(.notImplemented(reason: "Backup not implemented"))
+        .failure(.operationNotSupported(name: "Backup"))
     }
 
-    public func restore(from _: UmbraCoreTypes.SecureBytes) async -> Result<Bool, XPCSecurityError> {
+    public func restore(from _: UmbraCoreTypes.SecureBytes) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // Use default implementation for now
-        .failure(.notImplemented(reason: "Restore not implemented"))
+        .failure(.operationNotSupported(name: "Restore"))
     }
 
     // Compatibility layer for clients that still use the old API
 
-    public func encrypt(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func encrypt(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         // Use the modern implementation for this operation
         await standardAdapter.encryptSecureData(data, keyIdentifier: nil)
     }
 
-    public func decrypt(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func decrypt(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         // Use the modern implementation for this operation
         await standardAdapter.decryptSecureData(data, keyIdentifier: nil)
     }
@@ -248,7 +248,7 @@ private final class XPCCompleteAdapter: XPCServiceProtocolComplete {
         data: UmbraCoreTypes.SecureBytes,
         key: UmbraCoreTypes.SecureBytes,
         config: SecurityConfig
-    ) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    ) async -> Result<UmbraCoreTypes.SecureBytes, XPCProtocolsCore.SecurityError> {
         // Convert parameters to match the required format
         let keyIdentifier = "\(key.hashValue)_\(config.algorithm)"
         return await standardAdapter.sign(data, keyIdentifier: keyIdentifier)
@@ -259,7 +259,7 @@ private final class XPCCompleteAdapter: XPCServiceProtocolComplete {
         signature: UmbraCoreTypes.SecureBytes,
         key: UmbraCoreTypes.SecureBytes,
         config: SecurityConfig
-    ) async -> Result<Bool, XPCSecurityError> {
+    ) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         // Convert parameters to match the required format
         let keyIdentifier = "\(key.hashValue)_\(config.algorithm)"
         return await standardAdapter.verify(signature: signature, for: data, keyIdentifier: keyIdentifier)

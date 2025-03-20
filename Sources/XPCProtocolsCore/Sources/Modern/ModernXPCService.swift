@@ -32,22 +32,22 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     public func synchroniseKeys(_ data: SecureBytes) async throws {
         // In a real implementation, this would securely store the key material
         if data.isEmpty {
-            throw XPCSecurityError.invalidData(reason: "Empty synchronisation data")
+            throw XPCProtocolsCore.SecurityError.invalidInput(details: "Empty synchronisation data")
         }
     }
 
     /// Extended ping implementation with error handling
-    public func pingBasic() async -> Result<Bool, XPCSecurityError> {
+    public func pingBasic() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         .success(true)
     }
 
     /// Get the service version
-    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    public func getServiceVersion() async -> Result<String, XPCProtocolsCore.SecurityError> {
         .success("1.0.0")
     }
 
     /// Get the device identifier
-    public func getDeviceIdentifier() async -> Result<String, XPCSecurityError> {
+    public func getDeviceIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
         // In a real implementation, would access secure device identification
         .success(UUID().uuidString)
     }
@@ -55,20 +55,20 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     // MARK: - XPCServiceProtocolStandard Implementation
 
     /// Ping implementation for standard protocol level
-    public func pingStandard() async -> Result<Bool, XPCSecurityError> {
+    public func pingStandard() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         await pingBasic()
     }
 
     /// Reset security state
-    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
+    public func resetSecurity() async -> Result<Void, XPCProtocolsCore.SecurityError> {
         // Implementation would clear security state
         .success(())
     }
 
     /// Synchronise encryption keys
-    public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
+    public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCProtocolsCore.SecurityError> {
         if syncData.isEmpty {
-            return .failure(.invalidData(reason: "Empty synchronisation data"))
+            return .failure(.invalidInput(details: "Empty synchronisation data"))
         }
 
         // In a real implementation, would securely store the key material
@@ -76,7 +76,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     }
 
     /// Generate random data of specified length
-    public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+    public func generateRandomData(length: Int) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         guard length > 0 else {
             return .failure(.invalidInput(details: "Length must be positive"))
         }
@@ -86,27 +86,27 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     }
 
     /// Encrypt data using the service's encryption mechanism
-    public func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    public func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         guard !data.isEmpty else {
-            return .failure(.invalidData(reason: "Cannot encrypt empty data"))
+            return .failure(.invalidInput(details: "Cannot encrypt empty data"))
         }
 
         return await encrypt(data: data)
     }
 
     /// Decrypt data using the service's decryption mechanism
-    public func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    public func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         guard !data.isEmpty else {
-            return .failure(.invalidData(reason: "Cannot decrypt empty data"))
+            return .failure(.invalidInput(details: "Cannot decrypt empty data"))
         }
 
         return await decrypt(data: data)
     }
 
     /// Sign data using the service's signing mechanism
-    public func sign(_ data: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
+    public func sign(_ data: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         guard !data.isEmpty else {
-            return .failure(.invalidData(reason: "Cannot sign empty data"))
+            return .failure(.invalidInput(details: "Cannot sign empty data"))
         }
 
         // In a real implementation, would perform cryptographic signing
@@ -119,13 +119,13 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
         signature: SecureBytes,
         for data: SecureBytes,
         keyIdentifier _: String
-    ) async -> Result<Bool, XPCSecurityError> {
+    ) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         guard !data.isEmpty else {
-            return .failure(.invalidData(reason: "Cannot verify empty data"))
+            return .failure(.invalidInput(details: "Cannot verify empty data"))
         }
 
         guard !signature.isEmpty else {
-            return .failure(.invalidData(reason: "Cannot verify with empty signature"))
+            return .failure(.invalidInput(details: "Cannot verify with empty signature"))
         }
 
         // In a real implementation, would verify the signature against the data
@@ -135,7 +135,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     /// Delete a key from the service's key store
     public func deleteKey(
         keyIdentifier: String
-    ) async -> Result<Bool, XPCSecurityError> {
+    ) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         guard !keyIdentifier.isEmpty else {
             return .failure(.invalidInput(details: "Key identifier cannot be empty"))
         }
@@ -145,7 +145,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     }
 
     /// List all key identifiers
-    public func listKeys() async -> Result<[String], XPCSecurityError> {
+    public func listKeys() async -> Result<[String], XPCProtocolsCore.SecurityError> {
         // In a real implementation, would return actual keys from storage
         .success(["key-1", "key-2", "key-3"])
     }
@@ -153,14 +153,14 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     // MARK: - XPCServiceProtocolComplete Implementation
 
     /// Complete protocol ping implementation
-    public func pingComplete() async -> Result<Bool, XPCSecurityError> {
+    public func pingComplete() async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         await pingStandard()
     }
 
     /// Encrypt data with modern implementation
-    public func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         if data.isEmpty {
-            return .failure(.invalidData(reason: "Cannot encrypt empty data"))
+            return .failure(.invalidInput(details: "Cannot encrypt empty data"))
         }
 
         // In a real implementation, would use proper cryptographic algorithms
@@ -174,9 +174,9 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     }
 
     /// Decrypt data with modern implementation
-    public func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         if data.isEmpty {
-            return .failure(.invalidData(reason: "Cannot decrypt empty data"))
+            return .failure(.invalidInput(details: "Cannot decrypt empty data"))
         }
 
         // In a real implementation, would use proper cryptographic algorithms
@@ -190,7 +190,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     }
 
     /// Generate a cryptographic key - modern implementation
-    public func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
+    public func generateKey() async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // In a real implementation, would use secure random generation
         let keyLength = 32 // 256 bits
         var keyBytes = [UInt8](repeating: 0, count: keyLength)
@@ -203,9 +203,9 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     }
 
     /// Hash data with modern implementation
-    public func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func hash(data: SecureBytes) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         if data.isEmpty {
-            return .failure(.invalidData(reason: "Cannot hash empty data"))
+            return .failure(.invalidInput(details: "Cannot hash empty data"))
         }
 
         // In a real implementation, would use a cryptographic hash function
@@ -229,7 +229,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
         keyType _: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
         metadata _: [String: String]?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, XPCProtocolsCore.SecurityError> {
         let identifier = keyIdentifier ?? "key-\(UUID().uuidString)"
 
         // In a real implementation, would generate an appropriate key based on the type
@@ -244,9 +244,9 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
         keyType _: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
         metadata _: [String: String]?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, XPCProtocolsCore.SecurityError> {
         if keyData.isEmpty {
-            return .failure(.invalidData(reason: "Cannot import empty key data"))
+            return .failure(.invalidInput(details: "Cannot import empty key data"))
         }
 
         let identifier = keyIdentifier ?? "imported-\(UUID().uuidString)"
@@ -258,7 +258,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     }
 
     /// Export a key by identifier
-    public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+    public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         if keyIdentifier.isEmpty {
             return .failure(.invalidInput(details: "Key identifier cannot be empty"))
         }
@@ -274,7 +274,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     public func importKey(
         _ keyData: SecureBytes,
         identifier: String?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, XPCProtocolsCore.SecurityError> {
         // Delegate to the more complete implementation
         await importKey(
             keyData: keyData,
@@ -288,7 +288,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     public func generateKey(
         type _: String,
         bits: Int
-    ) async -> Result<SecureBytes, XPCSecurityError> {
+    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         if bits <= 0 {
             return .failure(.invalidInput(details: "Key size must be positive"))
         }
@@ -306,7 +306,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     }
 
     /// Get the service status
-    public func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError> {
+    public func getServiceStatus() async -> Result<XPCServiceStatus, XPCProtocolsCore.SecurityError> {
         // In a real implementation, would collect actual service metrics
         let isActive = await ping()
         let status = XPCServiceStatus(
@@ -331,7 +331,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
         iterations: Int,
         keyLength: Int,
         targetKeyIdentifier: String?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, XPCProtocolsCore.SecurityError> {
         // Validate inputs
         guard !sourceKeyIdentifier.isEmpty else {
             return .failure(.invalidInput(details: "Source key identifier cannot be empty"))
@@ -360,13 +360,13 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
 
     /// Get the hardware identifier
     /// - Returns: Result with identifier string on success or XPCSecurityError on failure
-    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+    public func getHardwareIdentifier() async -> Result<String, XPCProtocolsCore.SecurityError> {
         // In a real implementation, would return actual hardware identifier
         .success("MODERN-HW-12345")
     }
 
     /// Hash secure data
-    public func hashSecureData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func hashSecureData(_ data: SecureBytes) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         // Delegate to the existing hash method
         await hash(data: data)
     }
@@ -376,7 +376,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
         algorithm: String,
         keySize: Int,
         purpose: String
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, XPCProtocolsCore.SecurityError> {
         let identifier = "generated-key-\(algorithm)-\(keySize)-\(purpose)"
 
         // In a real implementation, would generate an appropriate key based on the algorithm,

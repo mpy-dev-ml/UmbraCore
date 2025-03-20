@@ -103,7 +103,7 @@ public extension XPCServiceProtocolComplete {
     func bridgeEncryption(
         data: SecureBytes,
         keyIdentifier: String?
-    ) async -> Result<SecureBytes, XPCSecurityError> {
+    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await encryptSecureData(data, keyIdentifier: keyIdentifier)
     }
 
@@ -115,7 +115,7 @@ public extension XPCServiceProtocolComplete {
     func bridgeDecryption(
         data: SecureBytes,
         keyIdentifier: String?
-    ) async -> Result<SecureBytes, XPCSecurityError> {
+    ) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         await decryptSecureData(data, keyIdentifier: keyIdentifier)
     }
 }
