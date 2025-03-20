@@ -352,7 +352,8 @@ public actor KeyManager {
                 let expirationDate: Date? = if
                     let expirationTimestamp = json[
                         "expirationDate"
-                    ] as? TimeInterval {
+                    ] as? TimeInterval
+                {
                     Date(timeIntervalSince1970: expirationTimestamp)
                 } else {
                     nil
@@ -398,7 +399,7 @@ public actor KeyManager {
                 "purpose": metadata.purpose,
                 "algorithm": metadata.algorithm,
                 "strength": metadata.strength,
-                "creationDate": metadata.creationDate.timeIntervalSince1970
+                "creationDate": metadata.creationDate.timeIntervalSince1970,
             ]
 
             // Add optional expiration date if available
@@ -430,7 +431,7 @@ public actor KeyManager {
                 "algorithm": metadata.algorithm,
                 "strength": metadata.strength,
                 "creationDate": metadata.creationDate.timeIntervalSince1970,
-                "expirationDate": metadata.expirationDate?.timeIntervalSince1970 as Any
+                "expirationDate": metadata.expirationDate?.timeIntervalSince1970 as Any,
             ]
             keys.append(keyData)
         }

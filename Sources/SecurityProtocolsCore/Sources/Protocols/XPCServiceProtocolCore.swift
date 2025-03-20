@@ -54,19 +54,22 @@ public extension XPCServiceProtocolCore {
 
     /// Default implementation that returns a not implemented error
     func synchronizeKeys(_: SecureBytes) async
-        -> Result<Void, UmbraErrors.Security.Protocols> {
+        -> Result<Void, UmbraErrors.Security.Protocols>
+    {
         .failure(.unsupportedOperation(name: "synchronizeKeys"))
     }
 
     /// Default implementation that returns a not implemented error
     func encrypt(data _: SecureBytes) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         .failure(.unsupportedOperation(name: "encrypt"))
     }
 
     /// Default implementation that returns a not implemented error
     func decrypt(data _: SecureBytes) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         .failure(.unsupportedOperation(name: "decrypt"))
     }
 
@@ -77,7 +80,8 @@ public extension XPCServiceProtocolCore {
 
     /// Default implementation that returns a not implemented error
     func hash(data _: SecureBytes) async
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
+    {
         .failure(.unsupportedOperation(name: "hash"))
     }
 }

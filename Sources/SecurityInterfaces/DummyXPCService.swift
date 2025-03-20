@@ -36,7 +36,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
         return .success(Data(bytes))
     }
 
-    public func synchroniseKeys(_ syncData: UmbraCoreTypes.SecureBytes) async throws {
+    public func synchroniseKeys(_: UmbraCoreTypes.SecureBytes) async throws {
         // Dummy implementation, does nothing
     }
 
@@ -45,7 +45,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
     public func status() async -> Result<[String: Any], XPCSecurityError> {
         let statusDict: [String: Any] = [
             "status": "active",
-            "version": "1.0.0"
+            "version": "1.0.0",
         ]
         return .success(statusDict)
     }
@@ -59,7 +59,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
         // Simple dummy implementation that always succeeds
         .success(())
     }
-    
+
     /// Get the service version
     /// - Returns: Result with version string on success or XPCSecurityError on failure
     public func getServiceVersion() async -> Result<String, XPCSecurityError> {
@@ -86,7 +86,7 @@ public final class DummyXPCService: XPCServiceProtocolStandard {
         let info: [String: Any] = [
             "id": keyId,
             "type": "symmetric",
-            "status": "active"
+            "status": "active",
         ]
         return .success(info)
     }

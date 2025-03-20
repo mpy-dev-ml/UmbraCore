@@ -94,7 +94,7 @@ public extension SecurityBridge {
                     "status": "failure",
                     "errorCode": -1,
                     "errorMessage": "Failed to convert result to XPC: \(error.localizedDescription)",
-                    "details": [:]
+                    "details": [:],
                 ]
             }
         }
@@ -184,7 +184,7 @@ public extension SecurityBridge {
         public static func defaultConnectionOptions() -> [String: Any] {
             [
                 "timeout": defaultOperationTimeout,
-                "anonymous": false
+                "anonymous": false,
             ]
         }
     }

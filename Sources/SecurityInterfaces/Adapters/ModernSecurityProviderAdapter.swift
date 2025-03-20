@@ -12,19 +12,19 @@ import XPCProtocolsCore
 @available(macOS 14.0, *)
 public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.SecurityProviderProtocol {
     // MARK: - Properties
-    
+
     /// The security provider
     private let provider: any SecurityProtocolsCore.SecurityProviderProtocol
-    
+
     /// The underlying XPC service
     private let _service: any XPCServiceProtocolBasic
-    
+
     /// The XPC service accessor
     public let service: any XPCServiceProtocolBasic
-    
+
     /// The crypto service from the provider
     public let cryptoService: any SecurityProtocolsCore.CryptoServiceProtocol
-    
+
     /// The key manager from the provider
     public let keyManager: any SecurityProtocolsCore.KeyManagementProtocol
 
@@ -36,10 +36,10 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
     ///   - service: The XPC service to use
     public init(provider: any SecurityProtocolsCore.SecurityProviderProtocol, service: any XPCServiceProtocolBasic) {
         self.provider = provider
-        self._service = service
+        _service = service
         self.service = service
-        self.cryptoService = provider.cryptoService
-        self.keyManager = provider.keyManager
+        cryptoService = provider.cryptoService
+        keyManager = provider.keyManager
     }
 
     // MARK: - SecurityProviderProtocol implementation
@@ -89,7 +89,7 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
         let options = [
             "securityLevel": String(securityLevel),
             "encryptionEnabled": "true",
-            "hashingEnabled": "true"
+            "hashingEnabled": "true",
         ]
 
         let config = provider.createSecureConfig(options: options)
@@ -126,22 +126,22 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
     public func getHostIdentifier() async -> Result<String, SecurityInterfacesError> {
         // Use the status method instead as getHardwareIdentifier is not available
         let statusResult = await _service.status()
-        
+
         switch statusResult {
-        case .success(let statusInfo):
+        case let .success(statusInfo):
             // Try to extract hardware identifier from status info
             if let hostId = statusInfo["hardwareIdentifier"] as? String {
                 return .success(hostId)
             }
-            
+
             // Fallback to a machine identifier if available
             if let machineId = statusInfo["machineIdentifier"] as? String {
                 return .success(machineId)
             }
-            
+
             // If even that fails, use a UUID derived from machine info
             return .success(UUID().uuidString)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapToSecurityInterfacesError(error))
         }
     }
@@ -215,15 +215,15 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
         if length <= 0 {
             return .failure(.invalidParameters("Length must be a positive value"))
         }
-        
+
         // Try to use the crypto service since it has methods for generating random data
         let result = await cryptoService.generateRandomData(length: length)
         switch result {
-        case .success(let data):
+        case let .success(data):
             // Convert Data to SecureBytes
             let bytes = [UInt8](data)
             return .success(SecureBytes(bytes: bytes))
-        case .failure(let error):
+        case let .failure(error):
             // Convert UmbraErrors.Security.Protocols to SecurityInterfacesError directly
             return .failure(SecurityProviderUtils.mapSPCError(error))
         }
@@ -232,13 +232,13 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
     public func getKeyInformation(keyID: String) async -> Result<SecurityKeyInformationDTO, SecurityInterfacesError> {
         // Use the key manager directly
         let keyService = provider.keyManager
-        
+
         // Use retrieveKey instead of getKeyInformation
         let result = await keyService.retrieveKey(withIdentifier: keyID)
-        
+
         // Process the result
         switch result {
-        case .success(_):
+        case .success:
             // Convert to a more structured format
             let keyInfo = SecurityKeyInformationDTO(
                 keyID: keyID,
@@ -249,7 +249,7 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
                 metadata: ["status": "active"]
             )
             return .success(keyInfo)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(SecurityProviderUtils.mapSPCError(error))
         }
     }
@@ -257,13 +257,13 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
     public func registerBundle(bundleIdentifier: String) async -> Result<Bool, SecurityInterfacesError> {
         // Create a configuration for the registration operation
         let options: [String: Any] = ["bundleIdentifier": bundleIdentifier]
-        
+
         // Create a secure config for the operation
         let config = provider.createSecureConfig(options: options)
-        
+
         // Register the bundle with the service using key storage as a proxy for registration
         let result = await provider.performSecureOperation(operation: .keyStorage, config: config)
-        
+
         // Process the result
         if result.success {
             return .success(true)
@@ -281,20 +281,20 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
         let keyOptions: [String: Any] = [
             "algorithm": options["algorithm"] ?? "AES256",
             "keySize": options["keySize"] ?? "256",
-            "keyType": options["keyType"] ?? "symmetric"
+            "keyType": options["keyType"] ?? "symmetric",
         ]
-        
+
         // Create a secure config for the operation
         let config = provider.createSecureConfig(options: keyOptions)
-        
+
         // Perform key generation using the standard operation
         let result = await provider.performSecureOperation(operation: .keyGeneration, config: config)
-        
+
         // Process the result
         if result.success, let output = result.data {
             // Convert to a more structured format
             let keyData = output
-            
+
             // Create a DTO version of the key
             return .success(SecurityKeyDTO(
                 id: UUID().uuidString,
@@ -386,13 +386,13 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
     public func getRandomBytes(length: Int) async -> Result<SecureBytes, SecurityInterfacesError> {
         // Create a configuration for random bytes generation
         let options: [String: Any] = ["length": length]
-        
+
         // Create a secure config for the operation
         let config = provider.createSecureConfig(options: options)
-        
+
         // Get random bytes using the standard operation
         let result = await provider.performSecureOperation(operation: .randomGeneration, config: config)
-        
+
         // Process the result
         if result.success, let data = result.data {
             return .success(data)
@@ -407,20 +407,20 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
 
     private func handleResponse<T>(_ result: Result<T, Error>) -> Result<T, SecurityInterfacesError> {
         switch result {
-        case .success(let value):
-            return .success(value)
-        case .failure(let error):
+        case let .success(value):
+            .success(value)
+        case let .failure(error):
             // Convert error to SecurityInterfacesError
-            return .failure(SecurityProviderUtils.mapToSecurityInterfacesError(error))
+            .failure(SecurityProviderUtils.mapToSecurityInterfacesError(error))
         }
     }
 
     private func handleServiceOperationResult<T>(_ result: Result<T, Error>) -> Result<T, SecurityInterfacesError> {
         switch result {
-        case .success(let value):
-            return .success(value)
-        case .failure(let error):
-            return .failure(SecurityProviderUtils.mapToSecurityInterfacesError(error))
+        case let .success(value):
+            .success(value)
+        case let .failure(error):
+            .failure(SecurityProviderUtils.mapToSecurityInterfacesError(error))
         }
     }
 
@@ -428,16 +428,16 @@ public final class ModernSecurityProviderAdapter: SecurityProtocolsCore.Security
         // For the status, we don't need a cast since we require a service that conforms
         // to XPCServiceProtocolBasic in the constructor
         let statusResult = await _service.status()
-        
+
         switch statusResult {
-        case .success(let result):
+        case let .success(result):
             // Convert the dictionary to string-string dictionary
             var stringDict: [String: String] = [:]
             for (key, value) in result {
                 stringDict[key] = String(describing: value)
             }
             return .success(stringDict)
-        case .failure(let error):
+        case let .failure(error):
             // Use the mapToSecurityInterfacesError directly with the error
             return .failure(SecurityProviderUtils.mapToSecurityInterfacesError(error))
         }

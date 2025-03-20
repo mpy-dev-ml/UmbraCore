@@ -82,7 +82,7 @@ final class ErrorConsolidationTests: XCTestCase {
 
         let testErrors: [Error] = [
             CoreErrors.SecurityError.invalidKey(reason: "Test"),
-            CryptoError.encryptionFailed(reason: "Test")
+            CryptoError.encryptionFailed(reason: "Test"),
         ]
 
         for error in testErrors {
@@ -134,7 +134,7 @@ final class ErrorConsolidationTests: XCTestCase {
             CoreErrors.SecurityError.invalidKey(reason: "Test"),
             CoreErrors.SecurityError.operationFailed(operation: "encrypt", reason: "Test"),
             CryptoError.encryptionFailed(reason: "Test"),
-            CryptoError.decryptionFailed(reason: "Test")
+            CryptoError.decryptionFailed(reason: "Test"),
         ]
 
         // Count by category
@@ -168,7 +168,7 @@ final class ErrorConsolidationTests: XCTestCase {
             "domain": "Security",
             "code": "operationFailed",
             "operation": "key_generation",
-            "reason": "Insufficient entropy"
+            "reason": "Insufficient entropy",
         ]
 
         // Verify dictionary contains essential error information
@@ -234,14 +234,17 @@ final class ErrorConsolidationTests: XCTestCase {
                 let errorDescription = String(describing: error)
                 if errorDescription.contains("security") ||
                     errorDescription.contains("key") ||
-                    errorDescription.contains("authentication") {
+                    errorDescription.contains("authentication")
+                {
                     return ("Security", "Canonical")
                 } else if errorDescription.contains("crypto") ||
                     errorDescription.contains("encryption") ||
-                    errorDescription.contains("decryption") {
+                    errorDescription.contains("decryption")
+                {
                     return ("Crypto", "Canonical")
                 } else if errorDescription.contains("resource") ||
-                    errorDescription.contains("file") {
+                    errorDescription.contains("file")
+                {
                     return ("Resource", "Canonical")
                 }
             }

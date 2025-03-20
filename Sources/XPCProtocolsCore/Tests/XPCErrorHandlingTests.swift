@@ -275,7 +275,7 @@ class XPCErrorHandlingTests: XCTestCase {
                 serviceVersion: "1.0.0",
                 deviceIdentifier: "TEST-ID",
                 additionalInfo: ["serviceType": "UnitTest", "isActive": "false", "maintenanceReason": "Scheduled update"]
-            )
+            ),
         ]
 
         for status in statuses {
@@ -312,7 +312,7 @@ class XPCErrorHandlingTests: XCTestCase {
             .notImplemented(reason: "Feature planned for next release"),
             .internalError(reason: "Unexpected state"),
             .connectionInterrupted,
-            .connectionInvalidated(reason: "Service crashed")
+            .connectionInvalidated(reason: "Service crashed"),
         ]
 
         for error in errors {

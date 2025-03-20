@@ -112,7 +112,7 @@ public extension ErrorContext {
             "message": message,
             "file": file,
             "line": line,
-            "function": function
+            "function": function,
         ])
     }
 

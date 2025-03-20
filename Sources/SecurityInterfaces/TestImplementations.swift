@@ -287,7 +287,7 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
         true
     }
 
-    public func synchroniseKeys(_ syncData: SecureBytes) async throws {
+    public func synchroniseKeys(_: SecureBytes) async throws {
         // This is a test implementation that does nothing
     }
 
@@ -303,7 +303,7 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
         .success([
             "status": "ok",
             "version": "1.0.0-test",
-            "features": ["encrypt", "decrypt", "sign", "verify"]
+            "features": ["encrypt", "decrypt", "sign", "verify"],
         ])
     }
 
@@ -319,56 +319,56 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
     public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         let result = await cryptoService.generateRandomBytes(count: length)
         switch result {
-        case .success(let bytes):
+        case let .success(bytes):
             return .success(bytes)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(.cryptographicError(operation: "generateRandomData", details: error.localizedDescription))
         }
     }
 
-    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         // For test purposes, we'll use a fixed key
         let key = SecureBytes(bytes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
         let result = await cryptoService.encrypt(data: data, using: key)
         switch result {
-        case .success(let encrypted):
+        case let .success(encrypted):
             return .success(encrypted)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(.cryptographicError(operation: "encrypt", details: error.localizedDescription))
         }
     }
 
-    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         // For test purposes, we'll use a fixed key
         let key = SecureBytes(bytes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
         let result = await cryptoService.decrypt(data: data, using: key)
         switch result {
-        case .success(let decrypted):
+        case let .success(decrypted):
             return .success(decrypted)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(.cryptographicError(operation: "decrypt", details: error.localizedDescription))
         }
     }
 
-    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         // For test purposes, we'll use a fixed key
         let key = SecureBytes(bytes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
         let result = await cryptoService.sign(data: data, using: key)
         switch result {
-        case .success(let signature):
+        case let .success(signature):
             return .success(signature)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(.cryptographicError(operation: "sign", details: error.localizedDescription))
         }
     }
-    
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+
+    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
         // For testing, we ignore the keyIdentifier parameter
         let result = await cryptoService.verify(data: data, against: signature)
         switch result {
-        case .success(let isValid):
+        case let .success(isValid):
             return .success(isValid)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(.cryptographicError(operation: "verify", details: error.localizedDescription))
         }
     }
@@ -390,7 +390,7 @@ public final class TestXPCService: XPCServiceProtocolStandard, CryptoServiceProt
     public func hash(data: SecureBytes) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         await cryptoService.hash(data: data)
     }
-    
+
     public func verify(data: SecureBytes, against hash: SecureBytes) async -> Result<Bool, UmbraErrors.Security.Protocols> {
         await cryptoService.verifyHash(data: data, against: hash)
     }

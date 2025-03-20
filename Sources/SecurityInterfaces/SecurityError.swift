@@ -159,10 +159,10 @@ public enum SecurityInterfacesError: Error, Sendable {
         case .bookmarkCreationFailed, .bookmarkResolutionFailed, .bookmarkStale,
              .bookmarkNotFound, .resourceAccessFailed, .randomGenerationFailed,
              .hashingFailed, .itemNotFound, .operationFailed, .bookmarkError, .accessError,
-             .serializationFailed, .encryptionFailed, .decryptionFailed, .signatureFailed, 
-             .verificationFailed, .keyGenerationFailed, .authenticationFailed, .invalidParameters, 
-             .unknown, .authorizationFailed, .timeout, .securityViolation, .serviceNotAvailable, 
-             .internalError, .keyError, .invalidInput, .invalidKeyType, .keyNotFound, 
+             .serializationFailed, .encryptionFailed, .decryptionFailed, .signatureFailed,
+             .verificationFailed, .keyGenerationFailed, .authenticationFailed, .invalidParameters,
+             .unknown, .authorizationFailed, .timeout, .securityViolation, .serviceNotAvailable,
+             .internalError, .keyError, .invalidInput, .invalidKeyType, .keyNotFound,
              .operationNotSupported, .invalidState, .authorizationDenied, .serviceUnavailable:
             nil
         }
@@ -214,7 +214,7 @@ public func mapSPCError(_ error: XPCProtocolsCore.SecurityError) -> SecurityInte
     case .serviceUnavailable:
         .serviceUnavailable
     case .timeout:
-        .timeout(after: 30.0)  // Use default timeout value
+        .timeout(after: 30.0) // Use default timeout value
     case let .invalidState(details):
         .invalidState(details: details)
     case let .internalError(details):

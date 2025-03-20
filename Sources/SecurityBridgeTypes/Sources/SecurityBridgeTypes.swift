@@ -8,7 +8,7 @@ public typealias XPCSecurityError = SecurityError
 /// where Foundation independence is required.
 public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConvertible {
     // MARK: - Error Code Enum
-    
+
     /// Enumeration of XPC security error codes
     public enum ErrorCode: Int32, Sendable, Equatable, CustomStringConvertible {
         /// Unknown error
@@ -25,7 +25,7 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
         case unsupportedOperation = 1005
         /// Permission denied
         case permissionDenied = 1007
-        
+
         /// String description of the error code
         public var description: String {
             switch self {
@@ -46,22 +46,22 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
             }
         }
     }
-    
+
     // MARK: - Properties
-    
+
     /// Error code
     public let code: ErrorCode
-    
+
     /// Error message
     public var message: String {
-        return details["message"] ?? code.description
+        details["message"] ?? code.description
     }
-    
+
     /// Additional details about the error
     public let details: [String: String]
-    
+
     // MARK: - Initialization
-    
+
     /// Create an XPC security error DTO
     /// - Parameters:
     ///   - code: Error code
@@ -70,9 +70,9 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
         self.code = code
         self.details = details
     }
-    
+
     // MARK: - CustomStringConvertible
-    
+
     /// String description of the error
     public var description: String {
         if details.isEmpty {
@@ -80,30 +80,30 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
         }
         return "\(code.description): \(message)"
     }
-    
+
     // MARK: - Factory Methods
-    
+
     /// Create an unknown error
     /// - Parameter details: Optional error details
     /// - Returns: An XPCSecurityErrorDTO
     public static func unknown(details: String? = nil) -> XPCSecurityErrorDTO {
         var detailsDict: [String: String] = [:]
-        if let details = details {
+        if let details {
             detailsDict["message"] = details
         }
         return XPCSecurityErrorDTO(code: .unknown, details: detailsDict)
     }
-    
+
     /// Create an invalid input error
     /// - Parameter details: Description of the invalid input
     /// - Returns: An XPCSecurityErrorDTO
     public static func invalidInput(details: String) -> XPCSecurityErrorDTO {
-        return XPCSecurityErrorDTO(
+        XPCSecurityErrorDTO(
             code: .invalidInput,
             details: ["message": details]
         )
     }
-    
+
     /// Create a cryptographic error
     /// - Parameters:
     ///   - operation: The operation that failed
@@ -113,25 +113,25 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
         operation: String,
         details: String
     ) -> XPCSecurityErrorDTO {
-        return XPCSecurityErrorDTO(
+        XPCSecurityErrorDTO(
             code: .cryptographicError,
             details: [
                 "operation": operation,
-                "message": details
+                "message": details,
             ]
         )
     }
-    
+
     /// Create a key not found error
     /// - Parameter identifier: Key identifier
     /// - Returns: An XPCSecurityErrorDTO
     public static func keyNotFound(identifier: String) -> XPCSecurityErrorDTO {
-        return XPCSecurityErrorDTO(
+        XPCSecurityErrorDTO(
             code: .keyNotFound,
             details: ["keyIdentifier": identifier]
         )
     }
-    
+
     /// Create a service unavailable error
     /// - Parameters:
     ///   - service: Service name
@@ -141,30 +141,30 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
         service: String = "XPC Service",
         reason: String = "Service is not available"
     ) -> XPCSecurityErrorDTO {
-        return XPCSecurityErrorDTO(
+        XPCSecurityErrorDTO(
             code: .serviceUnavailable,
             details: [
                 "service": service,
-                "reason": reason
+                "reason": reason,
             ]
         )
     }
-    
+
     /// Create an unsupported operation error
     /// - Parameter operation: Operation name
     /// - Returns: An XPCSecurityErrorDTO
     public static func unsupportedOperation(operation: String) -> XPCSecurityErrorDTO {
-        return XPCSecurityErrorDTO(
+        XPCSecurityErrorDTO(
             code: .unsupportedOperation,
             details: ["operation": operation]
         )
     }
-    
+
     /// Create a permission denied error
     /// - Parameter details: Error details
     /// - Returns: An XPCSecurityErrorDTO
     public static func permissionDenied(details: String) -> XPCSecurityErrorDTO {
-        return XPCSecurityErrorDTO(
+        XPCSecurityErrorDTO(
             code: .permissionDenied,
             details: ["message": details]
         )
@@ -175,16 +175,16 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
 public struct ServiceStatusDTO: Equatable {
     /// The current service status (e.g., "healthy", "degraded", "unavailable")
     public let status: String
-    
+
     /// The service version
     public let version: String
-    
+
     /// Additional key-value information as strings
     public let stringInfo: [String: String]
-    
+
     /// Additional key-value information as integers
     public let intInfo: [String: Int]
-    
+
     /// Initialize a new ServiceStatusDTO
     /// - Parameters:
     ///   - status: The current service status
@@ -208,16 +208,16 @@ public struct ServiceStatusDTO: Equatable {
 public struct KeyInfoDTO: Equatable {
     /// The key identifier
     public let identifier: String
-    
+
     /// The key type
     public let type: KeyTypeDTO
-    
+
     /// Indicates if the key is protected by secure enclave
     public let isSecureEnclaveProtected: Bool
-    
+
     /// Additional attributes
     public let attributes: [String: String]
-    
+
     /// Initialize a new KeyInfoDTO
     /// - Parameters:
     ///   - identifier: The key identifier

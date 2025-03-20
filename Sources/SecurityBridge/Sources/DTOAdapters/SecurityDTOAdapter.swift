@@ -60,7 +60,7 @@ public enum SecurityDTOAdapter {
             var policyDetails = details
             policyDetails["policy"] = policy
             return ErrorDTO(
-                code: 1_006,
+                code: 1006,
                 domain: "security",
                 message: reason,
                 details: policyDetails
@@ -68,7 +68,7 @@ public enum SecurityDTOAdapter {
 
         case let .internalError(reason):
             return ErrorDTO(
-                code: 1_000,
+                code: 1000,
                 domain: "security",
                 message: reason,
                 details: details
@@ -76,7 +76,7 @@ public enum SecurityDTOAdapter {
 
         default:
             return ErrorDTO(
-                code: 9_999,
+                code: 9999,
                 domain: "security.general",
                 message: String(describing: error),
                 details: details
@@ -91,23 +91,23 @@ public enum SecurityDTOAdapter {
     public static func fromDTO(error dto: ErrorDTO) -> SecurityError {
         // Map based on the error code and domain
         switch (dto.code, dto.domain) {
-        case (1_001, _):
+        case (1001, _):
             return .encryptionFailed(reason: dto.message)
 
-        case (1_002, _):
+        case (1002, _):
             return .decryptionFailed(reason: dto.message)
 
-        case (1_003, _):
+        case (1003, _):
             return .hashingFailed(reason: dto.message)
 
-        case (1_004, _):
+        case (1004, _):
             let operation = dto.details["operation"] ?? "unknown"
             return .secureStorageFailed(operation: operation, reason: dto.message)
 
-        case (1_005, _):
+        case (1005, _):
             return .signatureInvalid(reason: dto.message)
 
-        case (1_006, _):
+        case (1006, _):
             let policy = dto.details["policy"] ?? "unknown"
             return .policyViolation(policy: policy, reason: dto.message)
 

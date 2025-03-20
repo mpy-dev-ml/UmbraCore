@@ -39,7 +39,7 @@ public actor LoggingWrapperService: LoggingProtocol {
         let file = FileDestination()
         file.logFileURL = URL(fileURLWithPath: path)
         file.format = "$Dyyyy-MM-dd HH:mm:ss.SSS$d [$L] $M"
-        file.logFileMaxSize = 10 * 1_024 * 1_024 // 10MB
+        file.logFileMaxSize = 10 * 1024 * 1024 // 10MB
         file.logFileAmount = 10 // Keep up to 10 log files
         logger.addDestination(file)
 

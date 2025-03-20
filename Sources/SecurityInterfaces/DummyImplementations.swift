@@ -281,7 +281,7 @@ public final class DummyKeyManager: SecurityProtocolsCore.KeyManagementProtocol 
             .success([
                 "algorithm": "AES",
                 "keyLength": "256",
-                "created": ISO8601DateFormatter().string(from: Date())
+                "created": ISO8601DateFormatter().string(from: Date()),
             ])
         } else {
             .failure(.storageOperationFailed("No key found with identifier: \(identifier)"))

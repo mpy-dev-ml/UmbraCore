@@ -167,7 +167,7 @@ public extension SecurityProviderFoundationImpl {
                         domain: "SecurityProvider",
                         code: 102,
                         userInfo: [
-                            NSLocalizedDescriptionKey: "Invalid parameters for generateRandomData operation"
+                            NSLocalizedDescriptionKey: "Invalid parameters for generateRandomData operation",
                         ]
                     ))
                 }
@@ -191,7 +191,7 @@ public extension SecurityProviderFoundationImpl {
                         domain: "SecurityProvider",
                         code: 104,
                         userInfo: [
-                            NSLocalizedDescriptionKey: "Invalid parameters for createBookmark operation"
+                            NSLocalizedDescriptionKey: "Invalid parameters for createBookmark operation",
                         ]
                     ))
                 }
@@ -204,7 +204,7 @@ public extension SecurityProviderFoundationImpl {
                         domain: "SecurityProvider",
                         code: 105,
                         userInfo: [
-                            NSLocalizedDescriptionKey: "Invalid parameters for resolveBookmark operation"
+                            NSLocalizedDescriptionKey: "Invalid parameters for resolveBookmark operation",
                         ]
                     ))
                 }
@@ -217,7 +217,7 @@ public extension SecurityProviderFoundationImpl {
                         domain: "SecurityProvider",
                         code: 106,
                         userInfo: [
-                            NSLocalizedDescriptionKey: "Invalid parameters for validateBookmark operation"
+                            NSLocalizedDescriptionKey: "Invalid parameters for validateBookmark operation",
                         ]
                     ))
                 }

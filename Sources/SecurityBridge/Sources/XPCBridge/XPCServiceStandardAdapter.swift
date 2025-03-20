@@ -67,11 +67,11 @@ public final class XPCServiceStandardAdapter: NSObject, @unchecked Sendable {
         // Use different error codes to determine the type of error
         if error.domain == NSCocoaErrorDomain {
             switch error.code {
-            case 1_001:
+            case 1001:
                 return .internalError(reason: "Network error: \(error.localizedDescription)")
-            case 1_002:
+            case 1002:
                 return .invalidInput(details: error.localizedDescription)
-            case 1_003:
+            case 1003:
                 return .serviceUnavailable
             default:
                 return .internalError(reason: error.localizedDescription)
@@ -105,11 +105,11 @@ public final class XPCServiceStandardAdapter: NSObject, @unchecked Sendable {
         } else if error.domain == "XPCServiceErrorDomain" {
             // Map specific error codes to appropriate UmbraErrors
             switch error.code {
-            case 1_001:
+            case 1001:
                 return .connectionFailed(reason: error.localizedDescription)
-            case 1_002:
+            case 1002:
                 return .invalidMessageFormat(reason: error.localizedDescription)
-            case 1_003:
+            case 1003:
                 return .serviceUnavailable(serviceName: "XPC Service")
             default:
                 return .internalError(error.localizedDescription)
@@ -157,7 +157,7 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
 
             // Use the Objective-C compatible method
             proxy.synchroniseKeys(syncBytes) { error in
-                if let error = error {
+                if let error {
                     let xpcError = self.handleXPCError(error)
                     continuation.resume(throwing: xpcError)
                 } else {
@@ -200,7 +200,7 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
     public func encryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         // Convert SecureBytes to NSData for the XPC call
         let nsData = convertSecureBytesToNSData(data)
-        
+
         return await withCheckedContinuation { continuation in
             guard let proxy = connection.remoteObjectProxy as? XPCServiceProtocolStandard else {
                 continuation.resume(returning: .failure(.serviceUnavailable))
@@ -227,7 +227,7 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
     public func decryptSecureData(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String?) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         // Convert SecureBytes to NSData for the XPC call
         let nsData = convertSecureBytesToNSData(data)
-        
+
         return await withCheckedContinuation { continuation in
             guard let proxy = connection.remoteObjectProxy as? XPCServiceProtocolStandard else {
                 continuation.resume(returning: .failure(.serviceUnavailable))
@@ -254,7 +254,7 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
     public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
         // Convert SecureBytes to NSData for the XPC call
         let nsData = convertSecureBytesToNSData(data)
-        
+
         return await withCheckedContinuation { continuation in
             guard let proxy = connection.remoteObjectProxy as? XPCServiceProtocolStandard else {
                 continuation.resume(returning: .failure(.serviceUnavailable))
@@ -282,7 +282,7 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
         // Convert SecureBytes to NSData for the XPC call
         let signatureData = convertSecureBytesToNSData(signature)
         let contentData = convertSecureBytesToNSData(data)
-        
+
         return await withCheckedContinuation { continuation in
             guard let proxy = connection.remoteObjectProxy as? XPCServiceProtocolStandard else {
                 continuation.resume(returning: .failure(.serviceUnavailable))
@@ -397,101 +397,101 @@ extension XPCServiceStandardAdapter: XPCServiceProtocolStandard {
                     let basicStatus: [String: Any] = [
                         "status": "unknown",
                         "version": "1.0.0",
-                        "timestamp": Date().timeIntervalSince1970
+                        "timestamp": Date().timeIntervalSince1970,
                     ]
                     continuation.resume(returning: .success(basicStatus))
                 }
             }
         }
     }
-    
+
     // MARK: - Legacy Methods for Backward Compatibility
-    
+
     @objc
     public func generateRandomBytes(length: Int) async -> NSObject? {
         let result = await generateRandomData(length: length)
         switch result {
-        case .success(let secureBytes):
+        case let .success(secureBytes):
             return convertSecureBytesToNSData(secureBytes)
-        case .failure(let error):
+        case let .failure(error):
             return NSError(domain: "com.umbra.xpc.security", code: 1001, userInfo: [
-                NSLocalizedDescriptionKey: "Failed to generate random data: \(error.localizedDescription)"
+                NSLocalizedDescriptionKey: "Failed to generate random data: \(error.localizedDescription)",
             ])
         }
     }
-    
+
     @objc
     public func encryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
         let secureBytes = convertNSDataToSecureBytes(data)
         let result = await encryptSecureData(secureBytes, keyIdentifier: keyIdentifier)
         switch result {
-        case .success(let encryptedBytes):
+        case let .success(encryptedBytes):
             return convertSecureBytesToNSData(encryptedBytes)
-        case .failure(let error):
+        case let .failure(error):
             return NSError(domain: "com.umbra.xpc.security", code: 1001, userInfo: [
-                NSLocalizedDescriptionKey: "Encryption failed: \(error.localizedDescription)"
+                NSLocalizedDescriptionKey: "Encryption failed: \(error.localizedDescription)",
             ])
         }
     }
-    
+
     @objc
     public func decryptData(_ data: NSData, keyIdentifier: String?) async -> NSObject? {
         let secureBytes = convertNSDataToSecureBytes(data)
         let result = await decryptSecureData(secureBytes, keyIdentifier: keyIdentifier)
         switch result {
-        case .success(let decryptedBytes):
+        case let .success(decryptedBytes):
             return convertSecureBytesToNSData(decryptedBytes)
-        case .failure(let error):
+        case let .failure(error):
             return NSError(domain: "com.umbra.xpc.security", code: 1001, userInfo: [
-                NSLocalizedDescriptionKey: "Decryption failed: \(error.localizedDescription)"
+                NSLocalizedDescriptionKey: "Decryption failed: \(error.localizedDescription)",
             ])
         }
     }
-    
+
     @objc
     public func hashData(_ data: NSData) async -> NSObject? {
         // Implementation using modern SecureBytes interface but returning NSObject for compatibility
         let secureBytes = convertNSDataToSecureBytes(data)
-        
+
         // This is a placeholder - the actual implementation would perform a hash function
         var hashBytes = [UInt8](repeating: 0, count: 32) // SHA-256 size
         let hashResult = SecureBytes(bytes: hashBytes)
-        
+
         return convertSecureBytesToNSData(hashResult)
     }
-    
+
     @objc
     public func signData(_ data: NSData, keyIdentifier: String) async -> NSObject? {
         let secureBytes = convertNSDataToSecureBytes(data)
         let result = await sign(secureBytes, keyIdentifier: keyIdentifier)
         switch result {
-        case .success(let signatureBytes):
+        case let .success(signatureBytes):
             return convertSecureBytesToNSData(signatureBytes)
-        case .failure(let error):
+        case let .failure(error):
             return NSError(domain: "com.umbra.xpc.security", code: 1001, userInfo: [
-                NSLocalizedDescriptionKey: "Signing failed: \(error.localizedDescription)"
+                NSLocalizedDescriptionKey: "Signing failed: \(error.localizedDescription)",
             ])
         }
     }
-    
+
     @objc
     public func verifySignature(_ signature: NSData, for data: NSData, keyIdentifier: String) async -> NSNumber? {
         let signatureBytes = convertNSDataToSecureBytes(signature)
         let dataBytes = convertNSDataToSecureBytes(data)
         let result = await verify(signature: signatureBytes, for: dataBytes, keyIdentifier: keyIdentifier)
         switch result {
-        case .success(let isValid):
+        case let .success(isValid):
             return NSNumber(value: isValid)
         case .failure:
             return NSNumber(value: false)
         }
     }
-    
+
     @objc
     public func getServiceStatus() async -> NSDictionary? {
         let result = await status()
         switch result {
-        case .success(let statusDict):
+        case let .success(statusDict):
             return statusDict as NSDictionary
         case .failure:
             // Return a basic error status

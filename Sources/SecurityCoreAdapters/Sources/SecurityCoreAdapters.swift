@@ -8,7 +8,8 @@ public enum SecurityCoreAdapters {
     /// - Parameter service: The crypto service to wrap
     /// - Returns: A type-erased crypto service
     public static func createAnyCryptoService(_ service: some CryptoServiceProtocol & Sendable)
-        -> AnyCryptoService {
+        -> AnyCryptoService
+    {
         AnyCryptoService(service)
     }
 

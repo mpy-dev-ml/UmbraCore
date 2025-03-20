@@ -163,7 +163,7 @@ public extension UmbraErrors.Security.XPC {
     /// Create a timeout error
     static func makeTimeout(
         operation: String,
-        timeoutMs: Int = 30_000,
+        timeoutMs: Int = 30000,
         file _: String = #file,
         line _: Int = #line,
         function _: String = #function

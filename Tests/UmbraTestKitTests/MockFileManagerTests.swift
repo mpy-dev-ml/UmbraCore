@@ -37,7 +37,8 @@ final class MockFileManagerTests: XCTestCase {
         // Verify content
         if
             let data = try await mockFileManager.simulateContentsAsync(atPath: fileURL.path),
-            let content = String(data: data, encoding: .utf8) {
+            let content = String(data: data, encoding: .utf8)
+        {
             XCTAssertEqual(content, testContent)
         } else {
             XCTFail("Failed to read file content")

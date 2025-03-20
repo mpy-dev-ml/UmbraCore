@@ -153,7 +153,7 @@ public extension SecurityConfigDTO {
     static func rsa() -> SecurityConfigDTO {
         SecurityConfigDTO(
             algorithm: "RSA",
-            keySizeInBits: 2_048
+            keySizeInBits: 2048
         )
     }
 
@@ -161,7 +161,7 @@ public extension SecurityConfigDTO {
     /// - Parameters:
     ///   - iterations: Number of iterations for key derivation
     /// - Returns: A SecurityConfigDTO configured for PBKDF2
-    static func pbkdf2(iterations: Int = 10_000) -> SecurityConfigDTO {
+    static func pbkdf2(iterations: Int = 10000) -> SecurityConfigDTO {
         SecurityConfigDTO(
             algorithm: "PBKDF2",
             keySizeInBits: 256,

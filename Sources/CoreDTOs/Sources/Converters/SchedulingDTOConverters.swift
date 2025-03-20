@@ -51,14 +51,14 @@ public extension ScheduleDTO {
         var windowStart: Int?
         if let windowStartTime {
             let components = calendar.dateComponents([.hour, .minute, .second], from: windowStartTime)
-            let seconds = (components.hour ?? 0) * 3_600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
+            let seconds = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
             windowStart = seconds
         }
 
         var windowEnd: Int?
         if let windowEndTime {
             let components = calendar.dateComponents([.hour, .minute, .second], from: windowEndTime)
-            let seconds = (components.hour ?? 0) * 3_600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
+            let seconds = (components.hour ?? 0) * 3600 + (components.minute ?? 0) * 60 + (components.second ?? 0)
             windowEnd = seconds
         }
 

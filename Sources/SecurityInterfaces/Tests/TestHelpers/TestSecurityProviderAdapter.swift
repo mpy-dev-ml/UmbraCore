@@ -53,7 +53,8 @@ public final class TestSecurityProviderAdapter: SecurityInterfaces.SecurityProvi
     }
 
     public func createSecureConfig(options: [String: Any]?) -> SecurityProtocolsCore
-        .SecurityConfigDTO {
+        .SecurityConfigDTO
+    {
         bridge.createSecureConfig(options: options)
     }
 
@@ -113,7 +114,7 @@ public final class TestSecurityProviderAdapter: SecurityInterfaces.SecurityProvi
         let info: [String: AnyObject] = [
             "algorithm": "AES-256" as NSString,
             "created": Date() as NSDate,
-            "keyId": keyId as NSString
+            "keyId": keyId as NSString,
         ]
         return .success(info)
     }

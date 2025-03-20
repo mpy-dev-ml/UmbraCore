@@ -34,7 +34,7 @@ final class MockFoundationCryptoService: FoundationCryptoServiceImpl, @unchecked
 
     /// Test error to return when shouldFail is true
     var errorToReturn: Error = NSError(domain: "MockCryptoServiceError", code: 200, userInfo: [
-        NSLocalizedDescriptionKey: "Mock crypto operation failed"
+        NSLocalizedDescriptionKey: "Mock crypto operation failed",
     ])
 
     /// Data to return from operations
@@ -302,7 +302,7 @@ final class MockFoundationSecurityProvider: FoundationSecurityProvider, @uncheck
 
     /// Test error to return when shouldFail is true
     var errorToReturn: Error = NSError(domain: "MockSecurityError", code: 100, userInfo: [
-        NSLocalizedDescriptionKey: "Mock security operation failed"
+        NSLocalizedDescriptionKey: "Mock security operation failed",
     ])
 
     /// Data to return from operations
@@ -387,7 +387,7 @@ final class MockFoundationKeyManagement: FoundationKeyManagementImpl, @unchecked
 
     /// Test error to return when shouldFail is true
     var errorToReturn: Error = NSError(domain: "MockKeyManagementError", code: 100, userInfo: [
-        NSLocalizedDescriptionKey: "Mock key management operation failed"
+        NSLocalizedDescriptionKey: "Mock key management operation failed",
     ])
 
     /// Key data to return from operations

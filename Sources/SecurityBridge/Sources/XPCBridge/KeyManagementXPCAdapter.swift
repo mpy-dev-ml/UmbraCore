@@ -17,7 +17,8 @@ import XPCProtocolsCore
 /// providing a unified API for key-related operations.
 @objc
 public final class KeyManagementXPCAdapter: NSObject, KeyManagementServiceProtocol,
-    BaseXPCAdapter, @unchecked Sendable {
+    BaseXPCAdapter, @unchecked Sendable
+{
     // MARK: - Properties
 
     /// The NSXPCConnection used to communicate with the XPC service

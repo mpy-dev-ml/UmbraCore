@@ -144,7 +144,7 @@ class ResourcePoolTests: XCTestCase {
             .invalidState("test"),
             .timeout("test"),
             .poolExhausted("test"),
-            .cleanupFailed("test")
+            .cleanupFailed("test"),
         ]
 
         for error in errors {

@@ -5,7 +5,8 @@ import SecurityBridge
 /// Concrete implementation of SecurityProviderFoundationImpl
 @objc
 public final class DefaultSecurityProviderFoundationImpl: NSObject,
-    SecurityProviderFoundationImpl {
+    SecurityProviderFoundationImpl
+{
     override public init() {
         super.init()
     }
@@ -118,7 +119,7 @@ public final class DefaultSecurityProviderFoundationImpl: NSObject,
                 domain: "SecurityProvider",
                 code: 3,
                 userInfo: [
-                    NSLocalizedDescriptionKey: "Key generation failed: \(error.localizedDescription)"
+                    NSLocalizedDescriptionKey: "Key generation failed: \(error.localizedDescription)",
                 ]
             )
         }
@@ -148,7 +149,7 @@ public final class DefaultSecurityProviderFoundationImpl: NSObject,
                 domain: "SecurityProvider",
                 code: 4,
                 userInfo: [
-                    NSLocalizedDescriptionKey: "Failed to create bookmark for \(url.path): \(error.localizedDescription)"
+                    NSLocalizedDescriptionKey: "Failed to create bookmark for \(url.path): \(error.localizedDescription)",
                 ]
             )
         }
@@ -156,7 +157,8 @@ public final class DefaultSecurityProviderFoundationImpl: NSObject,
 
     @objc
     public func resolveBookmark(_ bookmarkData: Data) async throws
-        -> (url: URL, isStale: Bool) {
+        -> (url: URL, isStale: Bool)
+    {
         do {
             // Resolve a security-scoped bookmark
             var isStale = false
@@ -172,7 +174,7 @@ public final class DefaultSecurityProviderFoundationImpl: NSObject,
                 domain: "SecurityProvider",
                 code: 5,
                 userInfo: [
-                    NSLocalizedDescriptionKey: "Failed to resolve bookmark: \(error.localizedDescription)"
+                    NSLocalizedDescriptionKey: "Failed to resolve bookmark: \(error.localizedDescription)",
                 ]
             )
         }

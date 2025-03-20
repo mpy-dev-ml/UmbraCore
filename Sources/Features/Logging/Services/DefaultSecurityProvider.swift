@@ -20,7 +20,8 @@ public class DefaultSecurityProvider {
     // MARK: - URL-based Security Methods
 
     public func startAccessingResource(identifier: String) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core>
+    {
         let url = URL(fileURLWithPath: identifier)
         let success = url.startAccessingSecurityScopedResource()
         if success {
@@ -42,7 +43,8 @@ public class DefaultSecurityProvider {
     // MARK: - Bookmark Methods
 
     public func createBookmark(for identifier: String) async
-        -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+        -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core>
+    {
         let url = URL(fileURLWithPath: identifier)
         do {
             let bookmarkData = try url.bookmarkData(
@@ -85,7 +87,8 @@ public class DefaultSecurityProvider {
     }
 
     public func validateBookmark(_ bookmarkData: SecureBytes) async
-        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+        -> Result<Bool, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core>
+    {
         let result = await resolveBookmark(bookmarkData)
         switch result {
         case .success:
@@ -116,7 +119,8 @@ public class DefaultSecurityProvider {
         service _: String,
         account _: String
     ) async
-        -> Result<Void, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+        -> Result<Void, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core>
+    {
         // This is a stub implementation as we're focusing on bookmark functionality
         .failure(
             ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core
@@ -128,7 +132,8 @@ public class DefaultSecurityProvider {
         service _: String,
         account _: String
     ) async
-        -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+        -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core>
+    {
         // This is a stub implementation as we're focusing on bookmark functionality
         .failure(
             ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core
@@ -140,7 +145,8 @@ public class DefaultSecurityProvider {
         service _: String,
         account _: String
     ) async
-        -> Result<Void, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core> {
+        -> Result<Void, ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core>
+    {
         // This is a stub implementation as we're focusing on bookmark functionality
         .failure(
             ErrorHandlingDomains.UmbraErrors.GeneralSecurity.Core

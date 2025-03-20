@@ -24,7 +24,7 @@ public extension RepositoryService {
     ) async throws {
         let metadata = LogMetadata([
             "repository_id": identifier,
-            "rebuild_index": String(rebuildIndex)
+            "rebuild_index": String(rebuildIndex),
         ])
 
         await logger.info("Starting repository maintenance", metadata: metadata)
@@ -64,7 +64,7 @@ public extension RepositoryService {
     ///           `UmbraErrors.Repository.Core.internalError` if the compact operation fails
     func compactRepository(_ identifier: String) async throws {
         let metadata = LogMetadata([
-            "repository_id": identifier
+            "repository_id": identifier,
         ])
 
         await logger.info("Compacting repository", metadata: metadata)
@@ -96,7 +96,7 @@ public extension RepositoryService {
     ///           `UmbraErrors.Repository.Core.internalError` if the repair operation fails
     func repairRepository(_ identifier: String) async throws {
         let metadata = LogMetadata([
-            "repository_id": identifier
+            "repository_id": identifier,
         ])
 
         await logger.info("Repairing repository", metadata: metadata)
@@ -128,7 +128,7 @@ public extension RepositoryService {
     ///           `UmbraErrors.Repository.Core.internalError` if the optimize operation fails
     func optimizeRepository(_ identifier: String) async throws {
         let metadata = LogMetadata([
-            "repository_id": identifier
+            "repository_id": identifier,
         ])
 
         await logger.info("Optimizing repository", metadata: metadata)
@@ -161,7 +161,7 @@ public extension RepositoryService {
     func maintainAllRepositories(force: Bool = false) async throws {
         let metadata = LogMetadata([
             "force": String(force),
-            "repository_count": String(repositories.count)
+            "repository_count": String(repositories.count),
         ])
 
         await logger.info("Maintaining all repositories", metadata: metadata)
@@ -170,7 +170,7 @@ public extension RepositoryService {
 
         for (identifier, repository) in repositories {
             let repoMetadata = LogMetadata([
-                "repository_id": identifier
+                "repository_id": identifier,
             ])
 
             do {
@@ -207,7 +207,7 @@ public extension RepositoryService {
     func compactAllRepositories(force: Bool = false) async throws {
         let metadata = LogMetadata([
             "force": String(force),
-            "repository_count": String(repositories.count)
+            "repository_count": String(repositories.count),
         ])
 
         await logger.info("Compacting all repositories", metadata: metadata)
@@ -216,7 +216,7 @@ public extension RepositoryService {
 
         for (identifier, repository) in repositories {
             let repoMetadata = LogMetadata([
-                "repository_id": identifier
+                "repository_id": identifier,
             ])
 
             do {
@@ -253,7 +253,7 @@ public extension RepositoryService {
     func optimizeAllRepositories(force: Bool = false) async throws {
         let metadata = LogMetadata([
             "force": String(force),
-            "repository_count": String(repositories.count)
+            "repository_count": String(repositories.count),
         ])
 
         await logger.info("Optimizing all repositories", metadata: metadata)
@@ -262,7 +262,7 @@ public extension RepositoryService {
 
         for (identifier, repository) in repositories {
             let repoMetadata = LogMetadata([
-                "repository_id": identifier
+                "repository_id": identifier,
             ])
 
             do {
@@ -339,7 +339,7 @@ public extension RepositoryService {
     ///           `UmbraErrors.Repository.Core.internalError` if compaction fails
     func compactRepository(at url: URL) async throws {
         let metadata = LogMetadata([
-            "path": url.path
+            "path": url.path,
         ])
 
         await logger.info("Compacting repository", metadata: metadata)
@@ -371,7 +371,7 @@ public extension RepositoryService {
     ///           `UmbraErrors.Repository.Core.internalError` if optimization fails
     func optimizeRepository(at url: URL) async throws {
         let metadata = LogMetadata([
-            "path": url.path
+            "path": url.path,
         ])
 
         await logger.info("Optimizing repository", metadata: metadata)
