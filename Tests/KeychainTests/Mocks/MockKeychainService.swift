@@ -3,7 +3,32 @@ import Foundation
 
 @objc
 final class MockKeychainService: NSObject, KeychainXPCProtocol {
-    private var storage: [String: Data] = [:]
+    // Use an actor to make the storage Sendable-compliant
+    private actor StorageActor {
+        var storage: [String: Data] = [:]
+        
+        func getValue(for key: String) -> Data? {
+            storage[key]
+        }
+        
+        func setValue(_ value: Data, for key: String) {
+            storage[key] = value
+        }
+        
+        func removeValue(for key: String) {
+            storage.removeValue(forKey: key)
+        }
+        
+        func removeAll() {
+            storage.removeAll()
+        }
+        
+        func hasValue(for key: String) -> Bool {
+            storage[key] != nil
+        }
+    }
+    
+    private let storageActor = StorageActor()
     private let queue = DispatchQueue(label: "com.umbracore.mock-keychain", attributes: .concurrent)
 
     private func key(account: String, service: String, accessGroup: String?) -> String {
@@ -15,16 +40,15 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
         service: String,
         accessGroup: String?,
         data: Data,
-        reply: @escaping (Error?) -> Void
+        reply: @escaping @Sendable (Error?) -> Void
     ) {
-        queue.async(flags: .barrier) { [weak self] in
-            guard let self else { return }
+        Task {
             let key = key(account: account, service: service, accessGroup: accessGroup)
-            if storage[key] != nil {
+            if await storageActor.hasValue(for: key) {
                 reply(KeychainError.duplicateItem)
                 return
             }
-            storage[key] = data
+            await storageActor.setValue(data, for: key)
             reply(nil)
         }
     }
@@ -34,47 +58,75 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
         service: String,
         accessGroup: String?,
         data: Data,
-        reply: @escaping (Error?) -> Void
+        reply: @escaping @Sendable (Error?) -> Void
     ) {
-        queue.async(flags: .barrier) { [weak self] in
-            guard let self else { return }
+        Task {
             let key = key(account: account, service: service, accessGroup: accessGroup)
-            guard storage[key] != nil else {
+            guard await storageActor.hasValue(for: key) else {
                 reply(KeychainError.itemNotFound)
                 return
             }
-            storage[key] = data
+            await storageActor.setValue(data, for: key)
             reply(nil)
         }
     }
+    
+    // Add the missing method from the protocol
+    func getItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Data?, Error?) -> Void
+    ) {
+        Task {
+            let key = key(account: account, service: service, accessGroup: accessGroup)
+            let data = await storageActor.getValue(for: key)
+            if let data = data {
+                reply(data, nil)
+            } else {
+                reply(nil, KeychainError.itemNotFound)
+            }
+        }
+    }
+    
+    // Add the missing method from the protocol
+    func deleteItem(
+        account: String,
+        service: String,
+        accessGroup: String?,
+        reply: @escaping @Sendable (Error?) -> Void
+    ) {
+        Task {
+            let key = key(account: account, service: service, accessGroup: accessGroup)
+            if await storageActor.hasValue(for: key) {
+                await storageActor.removeValue(for: key)
+                reply(nil)
+            } else {
+                reply(KeychainError.itemNotFound)
+            }
+        }
+    }
 
+    // These methods appear to be additional to the protocol, but keeping them for test purposes
     func retrieveItem(
         account: String,
         service: String,
         accessGroup: String?,
-        reply: @escaping (Data?, Error?) -> Void
+        reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
-        queue.async { [weak self] in
-            guard let self else { return }
-            let key = key(account: account, service: service, accessGroup: accessGroup)
-            guard let data = storage[key] else {
-                reply(nil, KeychainError.itemNotFound)
-                return
-            }
-            reply(data, nil)
-        }
+        getItem(account: account, service: service, accessGroup: accessGroup, reply: reply)
     }
 
     func containsItem(
         account: String,
         service: String,
         accessGroup: String?,
-        reply: @escaping (Bool, Error?) -> Void
+        reply: @escaping @Sendable (Bool, Error?) -> Void
     ) {
-        queue.async { [weak self] in
-            guard let self else { return }
+        Task {
             let key = key(account: account, service: service, accessGroup: accessGroup)
-            reply(storage[key] != nil, nil)
+            let exists = await storageActor.hasValue(for: key)
+            reply(exists, nil)
         }
     }
 
@@ -82,31 +134,27 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
         account: String,
         service: String,
         accessGroup: String?,
-        reply: @escaping (Error?) -> Void
+        reply: @escaping @Sendable (Error?) -> Void
     ) {
-        queue.async(flags: .barrier) { [weak self] in
-            guard let self else { return }
-            let key = key(account: account, service: service, accessGroup: accessGroup)
-            guard storage[key] != nil else {
-                reply(KeychainError.itemNotFound)
-                return
-            }
-            storage.removeValue(forKey: key)
+        deleteItem(account: account, service: service, accessGroup: accessGroup, reply: reply)
+    }
+
+    func removeAllItems(reply: @escaping @Sendable (Error?) -> Void) {
+        Task {
+            await storageActor.removeAll()
             reply(nil)
         }
     }
-
-    func removeAllItems(reply: @escaping (Error?) -> Void) {
-        queue.async(flags: .barrier) { [weak self] in
-            self?.storage.removeAll()
-            reply(nil)
-        }
+    
+    // Required by protocol
+    func synchroniseKeys(_ data: Data) async throws {
+        // No-op implementation for mock
     }
 
     // Test helper methods
     func reset() {
-        queue.async(flags: .barrier) { [weak self] in
-            self?.storage.removeAll()
+        Task {
+            await storageActor.removeAll()
         }
     }
 }

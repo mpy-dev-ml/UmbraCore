@@ -23,10 +23,10 @@ final class XPCServiceHelper {
 
     private init() {}
 
-    func stop() {
+    func stop() async {
         _connection?.invalidate()
         _connection = nil
-        service?.stop()
+        await service?.stop()
         service = nil
     }
 
@@ -34,13 +34,13 @@ final class XPCServiceHelper {
         // Clean up any existing service
         let helper = XPCServiceHelper()
         if helper.service != nil {
-            helper.stop()
+            await helper.stop()
         }
 
         // Start new service
         let service = KeychainXPCService()
         helper.service = service
-        service.start()
+        await service.start()
 
         // Wait for startup with timeout
         guard service.waitForStartup(timeout: 5.0) else {
@@ -51,9 +51,9 @@ final class XPCServiceHelper {
         _ = try await getServiceProxy()
     }
 
-    static func stopService() {
+    static func stopService() async {
         let helper = XPCServiceHelper()
-        helper.stop()
+        await helper.stop()
     }
 
     static func getServiceProxy() async throws -> any KeychainXPCProtocol {
@@ -62,8 +62,13 @@ final class XPCServiceHelper {
             throw XPCError.serviceNotAvailable
         }
 
+        // Get the endpoint from the service
+        guard let endpoint = await service.getListenerEndpoint() else {
+            throw XPCError.serviceNotAvailable
+        }
+
         // Create connection
-        let connection = NSXPCConnection(listenerEndpoint: service.listener.endpoint)
+        let connection = NSXPCConnection(listenerEndpoint: endpoint)
         connection.remoteObjectInterface = NSXPCInterface(with: KeychainXPCProtocol.self)
 
         // Set up error handler
@@ -126,7 +131,7 @@ final class XPCServiceHelper {
     }
 
     /// Helper function for timeout
-    private static func withTimeout<T>(
+    private static func withTimeout<T: Sendable>(
         seconds: TimeInterval,
         operation: @escaping () async throws -> T
     ) async throws -> T {

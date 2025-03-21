@@ -164,6 +164,17 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
         startupSemaphore.wait(timeout: .now() + timeout) == .success
     }
 
+    /// Get the listener endpoint for testing purposes
+    /// This allows test code to create an NSXPCConnection to the service
+    /// - Returns: The NSXPCListenerEndpoint of the service listener
+    @available(*, deprecated, message: "For testing purposes only")
+    public func getListenerEndpoint() async -> NSXPCListenerEndpoint? {
+        if let listener = await state.getListener() {
+            return listener.endpoint
+        }
+        return nil
+    }
+
     // MARK: - XPCServiceProtocolBasic Implementation
 
     /// Basic ping method to test if service is responsive
