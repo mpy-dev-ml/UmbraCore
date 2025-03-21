@@ -1,0 +1,15 @@
+load("//tools/swift:docc_rules.bzl", "docc_documentation")
+
+# DocC documentation for CoreDTOs
+docc_documentation(
+    name = "CoreDTOsDocC",
+    module_name = "CoreDTOs",
+    srcs = glob([
+        "*.md",
+        "*.plist",
+        "**/*.md",
+        "**/*.docc",
+        "**/*.plist",
+    ]),
+    visibility = ["//visibility:public"],
+)
