@@ -40,6 +40,34 @@ public enum CryptoError: Error, LocalizedError, Sendable {
     case invalidKeyFormat(reason: String)
     /// Invalid credential identifier
     case invalidCredentialIdentifier(reason: String)
+    /// Encryption error with message - alternative to encryptionFailed
+    case encryptionError(String)
+    /// Decryption error with message - alternative to decryptionFailed
+    case decryptionError(String)
+    /// Key generation error with reason - alternative to keyGenerationFailed
+    case keyGenerationError(reason: String)
+    /// Error during data encoding
+    case encodingError(String)
+    /// Error during data decoding
+    case decodingError(String)
+    /// Error storing a key with reason
+    case keyStorageError(reason: String)
+    /// Error deleting a key with reason
+    case keyDeletionError(reason: String)
+    /// Error during asymmetric encryption
+    case asymmetricEncryptionError(String)
+    /// Error during asymmetric decryption
+    case asymmetricDecryptionError(String)
+    /// Error during hashing operations
+    case hashingError(String)
+    /// Error during digital signature operations
+    case signatureError(reason: String)
+    /// Error when using an unsupported algorithm
+    case unsupportedAlgorithm(String)
+    /// Generic parameter validation error
+    case invalidLength(Int)
+    /// Invalid parameters for operation
+    case invalidParameters(reason: String)
 
     /// Localized description of the error
     public var errorDescription: String? {
@@ -82,6 +110,34 @@ public enum CryptoError: Error, LocalizedError, Sendable {
             "Invalid key format: \(reason)"
         case let .invalidCredentialIdentifier(reason):
             "Invalid credential identifier: \(reason)"
+        case let .encryptionError(message):
+            "Encryption error: \(message)"
+        case let .decryptionError(message):
+            "Decryption error: \(message)"
+        case let .keyGenerationError(reason):
+            "Key generation error: \(reason)"
+        case let .encodingError(message):
+            "Error during data encoding: \(message)"
+        case let .decodingError(message):
+            "Error during data decoding: \(message)"
+        case let .keyStorageError(reason):
+            "Error storing key: \(reason)"
+        case let .keyDeletionError(reason):
+            "Error deleting key: \(reason)"
+        case let .asymmetricEncryptionError(message):
+            "Error during asymmetric encryption: \(message)"
+        case let .asymmetricDecryptionError(message):
+            "Error during asymmetric decryption: \(message)"
+        case let .hashingError(message):
+            "Error during hashing operation: \(message)"
+        case let .signatureError(reason):
+            "Error during signature operation: \(reason)"
+        case let .unsupportedAlgorithm(algorithm):
+            "Unsupported algorithm: \(algorithm)"
+        case let .invalidLength(length):
+            "Invalid data length: \(length)"
+        case let .invalidParameters(reason):
+            "Invalid parameters: \(reason)"
         }
     }
 }
