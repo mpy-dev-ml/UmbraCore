@@ -1,3 +1,4 @@
+import CoreErrors
 import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
@@ -13,7 +14,7 @@ public enum CryptoErrorMapper {
     ///
     /// - Parameter error: Implementation-specific CryptoError to map
     /// - Returns: Equivalent UmbraErrors.Crypto.Core instance
-    public static func mapToCanonicalError(_ error: CryptoError) -> UmbraErrors.Crypto.Core {
+    public static func mapToCanonicalError(_ error: CoreErrors.CryptoError) -> UmbraErrors.Crypto.Core {
         switch error {
         case let .encryptionError(reason):
             .encryptionFailed(
@@ -39,7 +40,7 @@ public enum CryptoErrorMapper {
                 reason: reason
             )
 
-        case let .keyDerivationError(reason):
+        case let .keyDerivationFailed(reason):
             .keyDerivationFailed(
                 algorithm: "unknown",
                 reason: reason
@@ -76,14 +77,20 @@ public enum CryptoErrorMapper {
                 reason: reason
             )
 
-        case let .randomDataGenerationError(reason):
+        case let .randomGenerationFailed(status):
             .randomGenerationFailed(
-                reason: reason
+                reason: "Random number generation failed with status: \(status)"
+            )
+
+        // Add catch-all to handle all other CoreErrors.CryptoError cases
+        default:
+            .internalError(
+                "Unmapped crypto error: \(error.localizedDescription)"
             )
         }
     }
 
-    /// Maps from canonical UmbraErrors.Crypto.Core to SecurityImplementation's CryptoError
+    /// Maps from canonical UmbraErrors.Crypto.Core to legacy CoreErrors.CryptoError
     ///
     /// Note: This mapping is lossy as the canonical error type has more specific cases than the
     /// implementation-specific type.
@@ -91,20 +98,20 @@ public enum CryptoErrorMapper {
     ///
     /// - Parameter error: Canonical UmbraErrors.Crypto.Core error to map
     /// - Returns: Best-fit equivalent CryptoError instance for the SecurityImplementation module
-    public static func mapToImplementationError(_ error: UmbraErrors.Crypto.Core) -> CryptoError {
+    public static func mapToImplementationError(_ error: UmbraErrors.Crypto.Core) -> CoreErrors.CryptoError {
         switch error {
         case let .encryptionFailed(algorithm, reason):
             if algorithm.contains("asymmetric") {
-                return .asymmetricEncryptionError("\(algorithm): \(reason)")
+                return .asymmetricEncryptionError(reason)
             } else {
-                return .encryptionError("\(algorithm): \(reason)")
+                return .encryptionError(reason)
             }
 
         case let .decryptionFailed(algorithm, reason):
             if algorithm.contains("asymmetric") {
-                return .asymmetricDecryptionError("\(algorithm): \(reason)")
+                return .asymmetricDecryptionError(reason)
             } else {
-                return .decryptionError("\(algorithm): \(reason)")
+                return .decryptionError(reason)
             }
 
         case let .invalidCiphertext(reason):
@@ -114,75 +121,77 @@ public enum CryptoErrorMapper {
             return .decryptionError("Padding validation failed with \(algorithm)")
 
         case let .keyGenerationFailed(keyType, reason):
-            return .keyGenerationError("\(keyType): \(reason)")
+            return .keyGenerationError(reason: "\(keyType): \(reason)")
 
         case let .keyDerivationFailed(algorithm, reason):
-            return .keyDerivationError("\(algorithm): \(reason)")
+            return .keyDerivationFailed(reason: "\(algorithm): \(reason)")
 
         case let .invalidKey(keyType, reason):
-            return .keyGenerationError("Invalid key of type \(keyType): \(reason)")
+            return .invalidKey(reason: "Invalid key of type \(keyType): \(reason)")
 
         case .keyNotFound:
-            return .keyGenerationError("Key not found")
+            return .keyGenerationError(reason: "Key not found")
 
         case let .signatureFailed(_, reason),
              let .signatureVerificationFailed(_, reason):
-            return .asymmetricEncryptionError("Signature operation failed: \(reason)")
+            return .signatureError(reason: "Signature operation failed: \(reason)")
 
         case let .invalidSignature(reason):
-            return .asymmetricEncryptionError("Signature operation failed: \(reason)")
+            return .signatureError(reason: "Invalid signature: \(reason)")
 
         case let .hashingFailed(algorithm, reason):
-            return .hashingError("\(algorithm): \(reason)")
+            return .hashingError("Hashing failed with \(algorithm): \(reason)")
 
         case let .hashVerificationFailed(algorithm):
-            return .hashingError("Hash verification failed for \(algorithm)")
+            return .hashingError("Hash verification failed with \(algorithm)")
 
         case let .unsupportedAlgorithm(algorithm):
             return .unsupportedAlgorithm(algorithm)
 
-        case let .invalidParameters(_, parameter, reason):
-            if parameter.contains("keySize") || parameter.contains("key") {
-                return .invalidKeySize(0) // Cannot determine exact size from the reason
+        case let .invalidParameters(algorithm, parameter, reason):
+            if parameter == "keySize" {
+                return .invalidKeySize(reason: "\(algorithm): \(reason)")
+            } else if parameter == "length" {
+                return .invalidLength(0) // Cannot extract specific length from reason
             } else {
-                return .invalidLength(0) // Cannot determine exact length from the reason
+                return .invalidParameters(reason: "\(parameter) for \(algorithm): \(reason)")
             }
 
         case let .incompatibleParameters(algorithm, parameter, reason):
-            return .encryptionError("Incompatible parameter \(parameter) for \(algorithm): \(reason)")
+            return .invalidParameters(reason: "Incompatible \(parameter) for \(algorithm): \(reason)")
 
-        case let .randomGenerationFailed(reason):
-            return .randomDataGenerationError(reason)
+        case let .randomGenerationFailed(_):
+            return .randomGenerationFailed(status: 0) // Cannot convert string reason to OSStatus
 
         case .insufficientEntropy:
-            return .randomDataGenerationError("Insufficient entropy")
+            return .randomGenerationFailed(status: -1)
 
-        case let .internalError(message):
-            return .encryptionFailed(reason: "Internal error: \(message)")
+        case let .internalError(description):
+            return .encryptionError("Internal error: \(description)")
 
         @unknown default:
-            return .encryptionFailed(reason: "Unmapped crypto error: \(error)")
+            return .encryptionError("Unmapped crypto error: \(error.localizedDescription)")
         }
     }
 }
 
-public extension CryptoError {
+public extension CoreErrors.CryptoError {
     /// Converts this implementation-specific CryptoError to the canonical UmbraErrors.Crypto.Core
     /// type
     ///
-    /// - Returns: Equivalent UmbraErrors.Crypto.Core instance
+    /// - Returns: Canonical error type for use with UmbraCore error handling
     func toCanonical() -> UmbraErrors.Crypto.Core {
         CryptoErrorMapper.mapToCanonicalError(self)
     }
 }
 
 public extension UmbraErrors.Crypto.Core {
-    /// Converts this canonical error to the implementation-specific CryptoError type
+    /// Converts a canonical Crypto.Core error to implementation-specific CryptoError
     ///
     /// Note: This is lossy conversion and should only be used where necessary.
     ///
     /// - Returns: Best-fit equivalent CryptoError instance for the SecurityImplementation module
-    func toImplementation() -> CryptoError {
+    func toImplementation() -> CoreErrors.CryptoError {
         CryptoErrorMapper.mapToImplementationError(self)
     }
 }

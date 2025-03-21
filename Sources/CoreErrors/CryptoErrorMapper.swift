@@ -116,14 +116,99 @@ public enum CryptoErrorMapper {
             )
 
         case let .invalidKeyFormat(reason):
-            .invalidKey(
-                keyType: "unknown",
+            .invalidParameters(
+                algorithm: "unknown",
+                parameter: "keyFormat",
                 reason: reason
             )
 
         case let .invalidCredentialIdentifier(reason):
+            .invalidParameters(
+                algorithm: "unknown",
+                parameter: "credentialIdentifier",
+                reason: reason
+            )
+            
+        // New cases
+        case let .encryptionError(message):
+            .encryptionFailed(
+                algorithm: "unknown",
+                reason: message
+            )
+            
+        case let .decryptionError(message):
+            .decryptionFailed(
+                algorithm: "unknown",
+                reason: message
+            )
+            
+        case let .keyGenerationError(reason):
+            .keyGenerationFailed(
+                keyType: "unknown",
+                reason: reason
+            )
+            
+        case let .encodingError(message):
             .internalError(
-                "Invalid credential identifier: \(reason)"
+                "Encoding error: \(message)"
+            )
+            
+        case let .decodingError(message):
+            .internalError(
+                "Decoding error: \(message)"
+            )
+            
+        case let .keyStorageError(reason):
+            .internalError(
+                "Key storage error: \(reason)"
+            )
+            
+        case let .keyDeletionError(reason):
+            .internalError(
+                "Key deletion error: \(reason)"
+            )
+            
+        case let .asymmetricEncryptionError(message):
+            .encryptionFailed(
+                algorithm: "asymmetric",
+                reason: message
+            )
+            
+        case let .asymmetricDecryptionError(message):
+            .decryptionFailed(
+                algorithm: "asymmetric",
+                reason: message
+            )
+            
+        case let .hashingError(message):
+            .hashingFailed(
+                algorithm: "unknown",
+                reason: message
+            )
+            
+        case let .signatureError(reason):
+            .signatureFailed(
+                algorithm: "unknown",
+                reason: reason
+            )
+            
+        case let .unsupportedAlgorithm(algorithm):
+            .unsupportedAlgorithm(
+                algorithm: algorithm
+            )
+            
+        case let .invalidLength(length):
+            .invalidParameters(
+                algorithm: "unknown",
+                parameter: "length",
+                reason: "Invalid data length: \(length)"
+            )
+            
+        case let .invalidParameters(reason):
+            .invalidParameters(
+                algorithm: "unknown",
+                parameter: "generic",
+                reason: reason
             )
         }
     }
@@ -190,22 +275,24 @@ public enum CryptoErrorMapper {
                 .invalidSaltLength(expected: 0, got: 0) // Cannot extract specific values from the reason
             } else if parameter == "keySize" {
                 .invalidKeySize(reason: "\(algorithm): \(reason)")
+            } else if parameter == "length" {
+                .invalidLength(0) // Cannot extract specific value from the reason
             } else {
-                .encryptionFailed(reason: "Invalid parameter \(parameter) for \(algorithm): \(reason)")
+                .invalidParameters(reason: "Invalid parameter \(parameter) for \(algorithm): \(reason)")
             }
 
         case let .incompatibleParameters(algorithm, parameter, reason):
-            .encryptionFailed(reason: "Incompatible parameter \(parameter) for \(algorithm): \(reason)")
+            .invalidParameters(reason: "Incompatible parameter \(parameter) for \(algorithm): \(reason)")
 
-        case .randomGenerationFailed:
-            .randomGenerationFailed(status: 0) // Cannot convert string reason to OSStatus
+        case let .randomGenerationFailed(reason):
+            // We can't use the reason for the OSStatus but we're acknowledging its existence
+            .randomGenerationFailed(status: 0)
 
         case .insufficientEntropy:
             .randomGenerationFailed(status: -1)
 
         case let .internalError(description):
             .encryptionFailed(reason: "Internal error: \(description)")
-
         default:
             .encryptionFailed(reason: "Unmapped crypto error")
         }
