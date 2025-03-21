@@ -35,20 +35,28 @@ public struct CredentialManagerDTOAdapter {
     public func storeCredential(
         _ credential: [UInt8],
         config: SecurityConfigDTO
-    ) async throws -> OperationResultDTO<Void> {
+    ) async throws -> OperationResultDTO<VoidEquatable> {
         do {
             // Extract service and account from config options
             guard let service = config.options["service"],
                   let account = config.options["account"]
             else {
                 return .failure(
-                    .init(
-                        error: SecurityErrorDTO.storageError(
-                            message: "Missing service or account in configuration",
-                            details: ["service": config.options["service"] ?? "missing",
-                                      "account": config.options["account"] ?? "missing"]
-                        )
-                    )
+                    errorCode: SecurityErrorDTO.storageError(
+                        message: "Missing service or account in configuration",
+                        details: ["service": config.options["service"] ?? "missing",
+                                  "account": config.options["account"] ?? "missing"]
+                    ).code,
+                    errorMessage: SecurityErrorDTO.storageError(
+                        message: "Missing service or account in configuration",
+                        details: ["service": config.options["service"] ?? "missing",
+                                  "account": config.options["account"] ?? "missing"]
+                    ).message,
+                    details: SecurityErrorDTO.storageError(
+                        message: "Missing service or account in configuration",
+                        details: ["service": config.options["service"] ?? "missing",
+                                  "account": config.options["account"] ?? "missing"]
+                    ).details
                 )
             }
 
@@ -59,11 +67,15 @@ public struct CredentialManagerDTOAdapter {
             try await credentialManager.store(credentialData, service: service, account: account)
 
             // Return success
-            return .success(())
+            return .success(VoidEquatable())
         } catch let error as CredentialError {
             // Map CredentialError to SecurityErrorDTO
             let securityError = mapCredentialError(error)
-            return .failure(.init(error: securityError))
+            return .failure(
+                errorCode: securityError.code,
+                errorMessage: securityError.message,
+                details: securityError.details
+            )
         } catch {
             // Map other errors to SecurityErrorDTO
             let securityError = SecurityErrorDTO(
@@ -72,7 +84,11 @@ public struct CredentialManagerDTOAdapter {
                 message: "Unknown credential error: \(error.localizedDescription)",
                 details: ["originalError": "\(error)"]
             )
-            return .failure(.init(error: securityError))
+            return .failure(
+                errorCode: securityError.code,
+                errorMessage: securityError.message,
+                details: securityError.details
+            )
         }
     }
 
@@ -88,13 +104,21 @@ public struct CredentialManagerDTOAdapter {
                   let account = config.options["account"]
             else {
                 return .failure(
-                    .init(
-                        error: SecurityErrorDTO.storageError(
-                            message: "Missing service or account in configuration",
-                            details: ["service": config.options["service"] ?? "missing",
-                                      "account": config.options["account"] ?? "missing"]
-                        )
-                    )
+                    errorCode: SecurityErrorDTO.storageError(
+                        message: "Missing service or account in configuration",
+                        details: ["service": config.options["service"] ?? "missing",
+                                  "account": config.options["account"] ?? "missing"]
+                    ).code,
+                    errorMessage: SecurityErrorDTO.storageError(
+                        message: "Missing service or account in configuration",
+                        details: ["service": config.options["service"] ?? "missing",
+                                  "account": config.options["account"] ?? "missing"]
+                    ).message,
+                    details: SecurityErrorDTO.storageError(
+                        message: "Missing service or account in configuration",
+                        details: ["service": config.options["service"] ?? "missing",
+                                  "account": config.options["account"] ?? "missing"]
+                    ).details
                 )
             }
 
@@ -109,7 +133,11 @@ public struct CredentialManagerDTOAdapter {
         } catch let error as CredentialError {
             // Map CredentialError to SecurityErrorDTO
             let securityError = mapCredentialError(error)
-            return .failure(.init(error: securityError))
+            return .failure(
+                errorCode: securityError.code,
+                errorMessage: securityError.message,
+                details: securityError.details
+            )
         } catch {
             // Map other errors to SecurityErrorDTO
             let securityError = SecurityErrorDTO(
@@ -118,7 +146,11 @@ public struct CredentialManagerDTOAdapter {
                 message: "Unknown credential error: \(error.localizedDescription)",
                 details: ["originalError": "\(error)"]
             )
-            return .failure(.init(error: securityError))
+            return .failure(
+                errorCode: securityError.code,
+                errorMessage: securityError.message,
+                details: securityError.details
+            )
         }
     }
 
@@ -127,20 +159,28 @@ public struct CredentialManagerDTOAdapter {
     /// - Returns: A result indicating success or failure
     public func deleteCredential(
         config: SecurityConfigDTO
-    ) async throws -> OperationResultDTO<Void> {
+    ) async throws -> OperationResultDTO<VoidEquatable> {
         do {
             // Extract service and account from config options
             guard let service = config.options["service"],
                   let account = config.options["account"]
             else {
                 return .failure(
-                    .init(
-                        error: SecurityErrorDTO.storageError(
-                            message: "Missing service or account in configuration",
-                            details: ["service": config.options["service"] ?? "missing",
-                                      "account": config.options["account"] ?? "missing"]
-                        )
-                    )
+                    errorCode: SecurityErrorDTO.storageError(
+                        message: "Missing service or account in configuration",
+                        details: ["service": config.options["service"] ?? "missing",
+                                  "account": config.options["account"] ?? "missing"]
+                    ).code,
+                    errorMessage: SecurityErrorDTO.storageError(
+                        message: "Missing service or account in configuration",
+                        details: ["service": config.options["service"] ?? "missing",
+                                  "account": config.options["account"] ?? "missing"]
+                    ).message,
+                    details: SecurityErrorDTO.storageError(
+                        message: "Missing service or account in configuration",
+                        details: ["service": config.options["service"] ?? "missing",
+                                  "account": config.options["account"] ?? "missing"]
+                    ).details
                 )
             }
 
@@ -148,11 +188,15 @@ public struct CredentialManagerDTOAdapter {
             try await credentialManager.delete(service: service, account: account)
 
             // Return success
-            return .success(())
+            return .success(VoidEquatable())
         } catch let error as CredentialError {
             // Map CredentialError to SecurityErrorDTO
             let securityError = mapCredentialError(error)
-            return .failure(.init(error: securityError))
+            return .failure(
+                errorCode: securityError.code,
+                errorMessage: securityError.message,
+                details: securityError.details
+            )
         } catch {
             // Map other errors to SecurityErrorDTO
             let securityError = SecurityErrorDTO(
@@ -161,7 +205,11 @@ public struct CredentialManagerDTOAdapter {
                 message: "Unknown credential error: \(error.localizedDescription)",
                 details: ["originalError": "\(error)"]
             )
-            return .failure(.init(error: securityError))
+            return .failure(
+                errorCode: securityError.code,
+                errorMessage: securityError.message,
+                details: securityError.details
+            )
         }
     }
 
@@ -223,20 +271,20 @@ public protocol CredentialManaging: AnyActor {
     ///   - credential: The credential to store
     ///   - service: The service identifier
     ///   - account: The account identifier
-    func store(_ credential: Data, service: String, account: String) throws
+    func store(_ credential: Data, service: String, account: String) async throws
 
     /// Retrieve a credential
     /// - Parameters:
     ///   - service: The service identifier
     ///   - account: The account identifier
     /// - Returns: The credential data
-    func retrieve(service: String, account: String) throws -> Data
+    func retrieve(service: String, account: String) async throws -> Data
 
     /// Delete a credential
     /// - Parameters:
     ///   - service: The service identifier
     ///   - account: The account identifier
-    func delete(service: String, account: String) throws
+    func delete(service: String, account: String) async throws
 }
 
 // MARK: - CredentialError
@@ -280,7 +328,7 @@ public final actor CredentialManager: CredentialManaging {
     ///   - credential: The credential to store
     ///   - service: The service identifier
     ///   - account: The account identifier
-    public func store(_ credential: Data, service: String, account: String) throws {
+    public func store(_ credential: Data, service: String, account: String) async throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -299,7 +347,7 @@ public final actor CredentialManager: CredentialManaging {
     ///   - service: The service identifier
     ///   - account: The account identifier
     /// - Returns: The stored credential
-    public func retrieve(service: String, account: String) throws -> Data {
+    public func retrieve(service: String, account: String) async throws -> Data {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -325,7 +373,7 @@ public final actor CredentialManager: CredentialManaging {
     /// - Parameters:
     ///   - service: The service identifier
     ///   - account: The account identifier
-    public func delete(service: String, account: String) throws {
+    public func delete(service: String, account: String) async throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,

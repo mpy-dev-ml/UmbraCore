@@ -72,7 +72,7 @@ public enum ServicesErrorAdapter {
         let errorDetails = extractSecurityErrorDetails(error)
 
         // Create appropriate error message based on error code
-        var errorMessage: String
+        let errorMessage: String
 
             // Map common security error codes
             = switch errorCode
@@ -148,7 +148,7 @@ public enum ServicesErrorAdapter {
         details["errorDomain"] = error._domain
 
         // Extract specific information for certain error types
-        if let nsError = error as NSError {
+        if let nsError = error as? NSError {
             // Add userInfo keys that might be useful
             if let failureReason = nsError.localizedFailureReason {
                 details["failureReason"] = failureReason
@@ -178,7 +178,7 @@ public enum ServicesErrorAdapter {
         details["errorDomain"] = error._domain
 
         // Extract specific information for certain error types
-        if let nsError = error as NSError {
+        if let nsError = error as? NSError {
             // Add userInfo keys that might be useful
             if let failureReason = nsError.localizedFailureReason {
                 details["failureReason"] = failureReason

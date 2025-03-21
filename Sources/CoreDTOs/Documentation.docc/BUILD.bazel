@@ -10,6 +10,6 @@ docc_documentation(
         "**/*.md",
         "**/*.docc",
         "**/*.plist",
-    ]),
+    ], allow_empty = True),
     visibility = ["//visibility:public"],
 )

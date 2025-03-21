@@ -113,7 +113,7 @@ public actor LoggingService {
             .Core
     ) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         switch error {
-        case let .storageOperationFailed(operation: _, reason: reason):
+        case let .storageOperationFailed(reason):
             return .invalidInput("Bookmark error: \(reason)")
         case let .internalError(reason):
             return .internalError(reason)

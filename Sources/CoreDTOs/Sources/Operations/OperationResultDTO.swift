@@ -245,3 +245,17 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
         )
     }
 }
+
+// MARK: - VoidEquatable Wrapper
+
+/// A wrapper for Void that conforms to Equatable
+/// This allows OperationResultDTO to be used with Void as a type parameter
+public struct VoidEquatable: Sendable, Equatable {
+    /// Creates a new VoidEquatable
+    public init() {}
+    
+    /// Equality check for VoidEquatable
+    public static func == (lhs: VoidEquatable, rhs: VoidEquatable) -> Bool {
+        return true
+    }
+}
