@@ -25,17 +25,17 @@ extension CoreServicesTypes.ServiceState: CustomStringConvertible {
     public var description: String {
         switch self {
         case .healthy:
-            return "Healthy"
-        case .degraded(let reason):
-            return "Degraded: \(reason)"
-        case .unavailable(let reason):
-            return "Unavailable: \(reason)"
+            "Healthy"
+        case let .degraded(reason):
+            "Degraded: \(reason)"
+        case let .unavailable(reason):
+            "Unavailable: \(reason)"
         case .starting:
-            return "Starting"
+            "Starting"
         case .shuttingDown:
-            return "Shutting Down"
+            "Shutting Down"
         case .maintenance:
-            return "Maintenance"
+            "Maintenance"
         }
     }
 }
@@ -45,7 +45,7 @@ extension CoreServicesTypes.ServiceState: Codable {
         case type
         case reason
     }
-    
+
     private enum StateType: String, Codable {
         case healthy
         case degraded
@@ -54,17 +54,17 @@ extension CoreServicesTypes.ServiceState: Codable {
         case shuttingDown
         case maintenance
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
+
         switch self {
         case .healthy:
             try container.encode(StateType.healthy, forKey: .type)
-        case .degraded(let reason):
+        case let .degraded(reason):
             try container.encode(StateType.degraded, forKey: .type)
             try container.encode(reason, forKey: .reason)
-        case .unavailable(let reason):
+        case let .unavailable(reason):
             try container.encode(StateType.unavailable, forKey: .type)
             try container.encode(reason, forKey: .reason)
         case .starting:
@@ -75,11 +75,11 @@ extension CoreServicesTypes.ServiceState: Codable {
             try container.encode(StateType.maintenance, forKey: .type)
         }
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(StateType.self, forKey: .type)
-        
+
         switch type {
         case .healthy:
             self = .healthy

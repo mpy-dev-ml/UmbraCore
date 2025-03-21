@@ -16,10 +16,10 @@
  by providing reusable functionality.
  */
 
-import Foundation
-import UmbraCoreTypes
 import CoreErrors
 import ErrorHandlingDomains
+import Foundation
+import UmbraCoreTypes
 
 /// Extension methods for easier implementation of XPC service protocols
 public extension XPCServiceProtocolBasic {

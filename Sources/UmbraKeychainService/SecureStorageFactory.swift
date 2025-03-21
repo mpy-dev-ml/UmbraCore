@@ -1,39 +1,39 @@
 import Foundation
+import os
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import UmbraLogging
-import os
 
 /// Factory for creating SecureStorageProtocol implementations
 public enum SecureStorageFactory {
     /// Service name for the keychain in the system keychain
     public static let systemKeychainServiceName = "UmbraSystemKeychain"
-    
+
     /// A simple implementation of LoggingProtocol that uses OSLog internally
     private final class SimpleLogger: LoggingProtocol {
         private let osLog: OSLog
-        
+
         init(category: String) {
-            self.osLog = OSLog(subsystem: "dev.mpy.UmbraCore", category: category)
+            osLog = OSLog(subsystem: "dev.mpy.UmbraCore", category: category)
         }
-        
-        func debug(_ message: String, metadata: LogMetadata?) async {
+
+        func debug(_ message: String, metadata _: LogMetadata?) async {
             os_log(.debug, log: osLog, "%{public}@", message)
         }
-        
-        func info(_ message: String, metadata: LogMetadata?) async {
+
+        func info(_ message: String, metadata _: LogMetadata?) async {
             os_log(.info, log: osLog, "%{public}@", message)
         }
-        
-        func warning(_ message: String, metadata: LogMetadata?) async {
+
+        func warning(_ message: String, metadata _: LogMetadata?) async {
             os_log(.fault, log: osLog, "%{public}@", message)
         }
-        
-        func error(_ message: String, metadata: LogMetadata?) async {
+
+        func error(_ message: String, metadata _: LogMetadata?) async {
             os_log(.error, log: osLog, "%{public}@", message)
         }
     }
-    
+
     /// Create a SecureStorageProtocol implementation using the system keychain
     /// - Returns: A SecureStorageProtocol implementation
     @available(macOS 14.0, *)
@@ -42,7 +42,7 @@ public enum SecureStorageFactory {
         let keychainService = KeychainService(logger: logger)
         return KeychainSecureStorage(keychainService: keychainService)
     }
-    
+
     /// Create a SecureStorageProtocol implementation using in-memory storage (for testing)
     /// - Returns: A SecureStorageProtocol implementation
     public static func createInMemoryStorage() -> any SecureStorageProtocol {
@@ -55,40 +55,40 @@ private final class InMemorySecureStorage: SecureStorageProtocol {
     // Using an actor to make this thread-safe for Swift 6
     private actor StorageActor {
         var storage: [String: SecureBytes] = [:]
-        
+
         func store(_ data: SecureBytes, for identifier: String) {
             storage[identifier] = data
         }
-        
+
         func retrieve(for identifier: String) -> SecureBytes? {
-            return storage[identifier]
+            storage[identifier]
         }
-        
+
         func delete(for identifier: String) -> Bool {
-            return storage.removeValue(forKey: identifier) != nil
+            storage.removeValue(forKey: identifier) != nil
         }
     }
-    
+
     private let storage = StorageActor()
-    
+
     func storeSecurely(data: SecureBytes, identifier: String) async -> KeyStorageResult {
         await storage.store(data, for: identifier)
         return .success
     }
-    
+
     func retrieveSecurely(identifier: String) async -> KeyRetrievalResult {
         if let data = await storage.retrieve(for: identifier) {
-            return .success(data)
+            .success(data)
         } else {
-            return .failure(.keyNotFound)
+            .failure(.keyNotFound)
         }
     }
-    
+
     func deleteSecurely(identifier: String) async -> KeyDeletionResult {
         if await storage.delete(for: identifier) {
-            return .success
+            .success
         } else {
-            return .failure(.keyNotFound)
+            .failure(.keyNotFound)
         }
     }
 }

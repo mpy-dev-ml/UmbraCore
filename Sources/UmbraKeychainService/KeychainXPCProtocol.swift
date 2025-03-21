@@ -10,17 +10,17 @@ public protocol KeychainXPCServiceProtocol: Sendable {
     /// - Parameter request: Store request
     /// - Returns: Result of the operation
     func storeData(_ request: KeychainXPCDTO.StoreRequest) async -> KeychainXPCDTO.OperationResult
-    
+
     /// Retrieve data from the keychain
     /// - Parameter request: Retrieve request
     /// - Returns: Result of the operation with data
     func retrieveData(_ request: KeychainXPCDTO.RetrieveRequest) async -> KeychainXPCDTO.OperationResult
-    
+
     /// Delete data from the keychain
     /// - Parameter request: Delete request
     /// - Returns: Result of the operation
     func deleteData(_ request: KeychainXPCDTO.DeleteRequest) async -> KeychainXPCDTO.OperationResult
-    
+
     /// Generate random data of the specified length
     /// - Parameter length: Length of the data to generate
     /// - Returns: Result of the operation with data
@@ -39,7 +39,7 @@ public protocol KeychainXPCProtocol: Sendable {
     ///   - data: Data to store
     ///   - reply: Result handler
     @objc func addItem(account: String, service: String, accessGroup: String?, data: Data, reply: @escaping @Sendable (Error?) -> Void)
-    
+
     /// Update an item in the keychain
     /// - Parameters:
     ///   - account: Account name
@@ -48,7 +48,7 @@ public protocol KeychainXPCProtocol: Sendable {
     ///   - data: Data to store
     ///   - reply: Result handler
     @objc func updateItem(account: String, service: String, accessGroup: String?, data: Data, reply: @escaping @Sendable (Error?) -> Void)
-    
+
     /// Get an item from the keychain
     /// - Parameters:
     ///   - account: Account name
@@ -56,7 +56,7 @@ public protocol KeychainXPCProtocol: Sendable {
     ///   - accessGroup: Access group (optional)
     ///   - reply: Result handler with data
     @objc func getItem(account: String, service: String, accessGroup: String?, reply: @escaping @Sendable (Data?, Error?) -> Void)
-    
+
     /// Delete an item from the keychain
     /// - Parameters:
     ///   - account: Account name

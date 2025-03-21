@@ -1,12 +1,11 @@
+import ErrorHandlingDomains
 import Foundation
 import SecurityBridge
 import SecurityProtocolsCore
 import UmbraCoreTypes
-import ErrorHandlingDomains
 
 /// Security Bridge examples demonstrating how to use the security operations.
 enum SecurityBridgeDTOExample {
-    
     /// This example demonstrates how to use security operations.
     /// It shows how security types work.
 
@@ -17,7 +16,7 @@ enum SecurityBridgeDTOExample {
         // Create a native security error
         let nativeError = UmbraErrors.Security.Protocols.invalidFormat(reason: "Invalid key format")
         print("Native error: \(nativeError)")
-        
+
         // Convert the error to an NSError for Foundation APIs
         let nsError = NSError(
             domain: "com.umbra.security",
@@ -34,7 +33,7 @@ enum SecurityBridgeDTOExample {
         // Create a security configuration with parameters
         let parameters = [
             "iv_size": "12",
-            "auth_tag_length": "16"
+            "auth_tag_length": "16",
         ]
         print("Security config parameters: \(parameters)")
     }
@@ -42,8 +41,8 @@ enum SecurityBridgeDTOExample {
     // Helper function to create random secure bytes for examples
     static func createRandomSecureBytes(count: Int) -> SecureBytes {
         var bytes = [UInt8](repeating: 0, count: count)
-        for i in 0..<count {
-            bytes[i] = UInt8.random(in: 0...255)
+        for i in 0 ..< count {
+            bytes[i] = UInt8.random(in: 0 ... 255)
         }
         return SecureBytes(bytes: bytes)
     }

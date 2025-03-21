@@ -18,6 +18,6 @@ public extension CoreServicesTypes.ServiceState {
     /// This should only be used during the migration period
     @available(*, deprecated, message: "Use CoreServicesTypes.ServiceState directly")
     static func fromLegacy(_ legacy: CoreServicesTypes.ServiceState) -> CoreServicesTypes.ServiceState {
-        return legacy
+        legacy
     }
 }

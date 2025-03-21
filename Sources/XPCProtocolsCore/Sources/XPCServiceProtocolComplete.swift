@@ -21,9 +21,9 @@
  */
 
 import CoreErrors
+import ErrorHandlingDomains
 import Foundation
 import UmbraCoreTypes
-import ErrorHandlingDomains
 
 /// The most comprehensive XPC service protocol that provides a complete suite
 /// of cryptographic operations and security functionality. This protocol builds

@@ -44,14 +44,14 @@ public actor KeychainService: KeychainServiceProtocol {
         service: String,
         accessGroup: String?,
         accessibility: CFString,
-        flags: SecAccessControlCreateFlags
+        flags _: SecAccessControlCreateFlags
     ) async throws {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: account,
             kSecAttrService as String: service,
             kSecValueData as String: data,
-            kSecAttrAccessible as String: accessibility
+            kSecAttrAccessible as String: accessibility,
         ]
 
         if let accessGroup {

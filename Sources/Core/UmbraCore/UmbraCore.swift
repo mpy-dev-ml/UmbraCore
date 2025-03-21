@@ -52,9 +52,9 @@ public enum UmbraCore {
         /// Convert to XPCProtocolTypeDefs.SecurityLevel
         public func toXPCProtocol() -> XPCProtocolTypeDefs.SecurityLevel {
             switch self {
-            case .high: return .high
-            case .medium: return .standard
-            case .low: return .standard // No direct mapping to lower security
+            case .high: .high
+            case .medium: .standard
+            case .low: .standard // No direct mapping to lower security
             }
         }
 

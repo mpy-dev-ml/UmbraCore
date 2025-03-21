@@ -8,7 +8,7 @@ import XPCProtocolsCore
 
 /// Tests for the /// Tests for the SecurityProviderAdapter implementations implementations
 class ProviderFactoryTests: XCTestCase {
-    // MARK: -     // MARK: - SecurityProviderAdapter.shared Tests Tests
+    // MARK: - // MARK: - SecurityProviderAdapter.shared Tests Tests
 
     func testCreateDefaultSecurityProvider() {
         // Create the factory

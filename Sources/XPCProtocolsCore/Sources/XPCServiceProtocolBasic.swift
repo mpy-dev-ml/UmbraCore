@@ -17,11 +17,11 @@
  and ensures a consistent minimum API across all services.
  */
 
+import CoreErrors
 import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
 import UmbraCoreTypes
-import CoreErrors
 
 /// Protocol defining the base XPC service interface without Foundation dependencies.
 /// This protocol serves as the foundation for all XPC services in UmbraCore and

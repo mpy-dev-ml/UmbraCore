@@ -39,7 +39,7 @@ public final class CryptoServiceListener: NSObject, NSXPCListenerDelegate {
     /// - Parameter dependencies: Dependencies required by the service
     override private init() {
         // Initialize dependencies for the XPC service
-        
+
         // Create keychain service with default logger
         let keychain = UmbraKeychainService(
             identifier: "com.umbracore.xpc.crypto"
