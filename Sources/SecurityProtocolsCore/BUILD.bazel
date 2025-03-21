@@ -32,3 +32,9 @@ swift_test(
         "//Sources/UmbraCoreTypes",
     ],
 )
+
+filegroup(
+    name = "documentation_docc",
+    srcs = glob(["Documentation.docc/**"], allow_empty = True),
+    visibility = ["//visibility:public"],
+)

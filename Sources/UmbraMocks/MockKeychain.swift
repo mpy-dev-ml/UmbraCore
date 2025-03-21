@@ -88,10 +88,29 @@ public final class MockKeychain: @unchecked Sendable, SecureStorageProtocol {
     /// - Parameter identifier: Identifier for the data to delete
     /// - Returns: Result of the deletion operation
     public func deleteSecurely(identifier: String) async -> KeyDeletionResult {
-        storageQueue.async(flags: .barrier) { [self] in
-            storageDict.removeValue(forKey: identifier)
+        var result: KeyDeletionResult = .success
+        
+        storageQueue.sync { [self] in
+            if storageDict[identifier] == nil {
+                result = .failure(.keyNotFound)
+                return
+            }
         }
-        return .success
+        
+        if case .success = result {
+            storageQueue.async(flags: .barrier) { [self] in
+                storageDict.removeValue(forKey: identifier)
+            }
+        }
+        
+        return result
+    }
+    
+    /// Reset the mock keychain by clearing all stored data
+    public func reset() async {
+        storageQueue.async(flags: .barrier) { [self] in
+            storageDict.removeAll()
+        }
     }
 
     // MARK: - Legacy API support

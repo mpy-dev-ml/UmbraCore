@@ -4,18 +4,30 @@ import UmbraCoreTypes
 public enum KeyStorageResult: Sendable {
     case success
     case failure(KeyStorageError)
+    
+    // Swift 6 forward compatibility: handle future enum cases
+    @available(*, unavailable, message: "This case exists only for Swift 6+ forward compatibility")
+    case _unspecified
 }
 
 /// Result type for key retrieval operations
 public enum KeyRetrievalResult: Sendable {
     case success(SecureBytes)
     case failure(KeyStorageError)
+    
+    // Swift 6 forward compatibility: handle future enum cases
+    @available(*, unavailable, message: "This case exists only for Swift 6+ forward compatibility")
+    case _unspecified
 }
 
 /// Result type for key deletion operations
 public enum KeyDeletionResult: Sendable {
     case success
     case failure(KeyStorageError)
+    
+    // Swift 6 forward compatibility: handle future enum cases
+    @available(*, unavailable, message: "This case exists only for Swift 6+ forward compatibility")
+    case _unspecified
 }
 
 /// Error type for secure storage operations
@@ -23,10 +35,18 @@ public enum KeyStorageError: Sendable {
     case keyNotFound
     case storageFailure
     case unknown
+    
+    // Swift 6 forward compatibility: handle future enum cases
+    @available(*, unavailable, message: "This case exists only for Swift 6+ forward compatibility")
+    case _unspecified
 }
 
 /// Protocol defining secure storage operations in a FoundationIndependent manner.
 /// This protocol is used for securely storing cryptographic keys and sensitive data.
+///
+/// - Note: This is the canonical implementation of SecureStorageProtocol in UmbraCore.
+///         It has been unified to eliminate ambiguity and ensure consistent usage across the codebase.
+///         For migration guidance, see the SecureStorageProtocol Migration Guide in the documentation.
 public protocol SecureStorageProtocol: Sendable {
     /// Stores data securely with the given identifier
     /// - Parameters:
