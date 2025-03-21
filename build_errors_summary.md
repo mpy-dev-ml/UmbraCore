@@ -110,15 +110,26 @@ This analysis aligns with the ongoing XPC Protocol Consolidation and Foundation-
 
 ## Remaining Work
 
-1. **Highest Priority: Fix CoreDTOs Module**
-   - Address errors in XPCSecurityErrorDTO.swift and XPCSecurityDTOConverter.swift
-   - Update typealias declarations to match project standards
-   - Fix type references to ErrorHandlingDomains.UmbraErrors.Security.Protocols
+1. **✅ COMPLETED: Fix CoreDTOs Module (21 March 2025)**
+   - Fixed errors in XPCSecurityErrorDTO.swift and XPCSecurityDTOConverter.swift
+   - Updated typealias declarations to match project standards
+   - Corrected type references to ErrorHandlingDomains.UmbraErrors.Security.Protocols
+   - Addressed build errors and ensured module compiles cleanly
 
-2. **Next: Address Foundation Adapters**
+2. **✅ COMPLETED: UmbraSecurity Services (21 March 2025)**
+   - Fixed remaining issues in SecurityService.swift
+   - Updated references to security-related types
+   - Ensured UmbraSecurity module builds successfully
+
+3. **Next: Address Foundation Adapters**
    - Implement missing Foundation adapter types
    - Update modules that need Foundation-independent versions of security types
 
-3. **Final: UmbraSecurity Services**
-   - Fix remaining issues in SecurityService.swift
-   - Address references to FoundationSecurityProvider and related types
+## Current Build Status
+
+As of 21 March 2025, the following key modules now build successfully:
+- SecurityImplementation
+- CoreDTOs
+- UmbraSecurity
+
+Some minor issues may remain in the Examples module and other peripheral components, but the core functionality of the UmbraCore project is now building cleanly.
