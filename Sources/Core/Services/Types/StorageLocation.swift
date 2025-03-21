@@ -3,25 +3,18 @@ import KeyManagementTypes
 
 /// Represents where a cryptographic key is stored
 ///
-/// - Important: This type is deprecated. Please use the canonical `StorageLocation` instead.
+/// - Important: This type is deprecated. Please use the canonical `KeyManagementTypes.StorageLocation` instead.
 ///
 /// The canonical implementation is available in the KeyManagementTypes module and provides
 /// a standardised representation used across the UmbraCore framework.
-@available(*, deprecated, message: "Please use the canonical StorageLocation instead")
-public enum StorageLocation: String, Sendable, Codable {
-    /// Key is stored in the Secure Enclave
-    case secureEnclave
-    /// Key is stored in the keychain
-    case keychain
-    /// Key is stored in memory
-    case memory
-}
+@available(*, deprecated, message: "Please use the canonical KeyManagementTypes.StorageLocation instead")
+// Removed public enum StorageLocation definition in favor of using KeyManagementTypes.StorageLocation directly
 
 // MARK: - Raw Conversion Extension (for KeyManagementTypes)
 
 /// Extension to provide conversion to/from the raw representation
 /// This will be used by KeyManagementTypes module through type extension
-public extension StorageLocation {
+public extension KeyManagementTypes.StorageLocation {
     /// The raw representation that matches the canonical type's raw locations
     enum RawRepresentation: String, Codable, Equatable {
         case secureEnclave

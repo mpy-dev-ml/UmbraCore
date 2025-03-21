@@ -1,27 +1,14 @@
 import Foundation
 import KeyManagementTypes
 
-/// This file provides type aliases to facilitate migration from deprecated types to
-/// their canonical counterparts. Using these aliases instead of the original type names
-/// will suppress Swift 6 deprecation warnings while maintaining compatibility.
+/// This file provides migration helpers between legacy types and
+/// their canonical counterparts in the KeyManagementTypes module.
+/// All legacy type aliases have been removed in favor of fully qualified types.
 
-/// Legacy version of the KeyMetadata type
-///
-/// Use this alias when you need to reference the deprecated KeyMetadata type.
-/// This will silence the Swift 6 deprecation warnings.
-public typealias KeyMetadataLegacy = KeyMetadata
-
-/// Legacy version of the KeyStatus type
-///
-/// Use this alias when you need to reference the deprecated KeyStatus type.
-/// This will silence the Swift 6 deprecation warnings.
-public typealias KeyStatusLegacy = KeyStatus
-
-/// Legacy version of the StorageLocation type
-///
-/// Use this alias when you need to reference the deprecated StorageLocation type.
-/// This will silence the Swift 6 deprecation warnings.
-public typealias StorageLocationLegacy = StorageLocation
+// Removed type aliases:
+// public typealias KeyMetadataLegacy = KeyMetadata
+// public typealias KeyStatusLegacy = KeyStatus
+// public typealias StorageLocationLegacy = StorageLocation
 
 /// Extension to provide migration helpers for the canonical KeyMetadata type
 extension KeyManagementTypes.KeyMetadata {
@@ -29,7 +16,7 @@ extension KeyManagementTypes.KeyMetadata {
     ///
     /// - Parameter legacy: The legacy KeyMetadata instance
     /// - Returns: A new canonical KeyMetadata instance
-    public static func from(legacy: KeyMetadataLegacy) -> KeyManagementTypes.KeyMetadata {
+    public static func from(legacy: KeyManagementTypes.KeyMetadata) -> KeyManagementTypes.KeyMetadata {
         // Create a new instance of the canonical KeyMetadata
         KeyManagementTypes.KeyMetadata(
             status: legacy.status,
@@ -51,9 +38,9 @@ extension KeyManagementTypes.KeyMetadata {
     /// Convert to the legacy KeyMetadata format
     ///
     /// - Returns: A legacy KeyMetadata instance
-    public func toLegacy() -> KeyMetadataLegacy {
+    public func toLegacy() -> KeyManagementTypes.KeyMetadata {
         // Create a new instance of the legacy KeyMetadata
-        KeyMetadataLegacy(
+        KeyManagementTypes.KeyMetadata(
             status: status,
             storageLocation: storageLocation,
             accessControls: translateAccessControlsToLegacy(from: accessControls),
@@ -69,7 +56,7 @@ extension KeyManagementTypes.KeyMetadata {
 
     /// Translate AccessControls from legacy to canonical format
     private static func translateAccessControls(
-        from legacyControls: KeyMetadataLegacy
+        from legacyControls: KeyManagementTypes.KeyMetadata
             .AccessControls
     ) -> KeyManagementTypes.KeyMetadata.AccessControls {
         switch legacyControls {
@@ -88,7 +75,7 @@ extension KeyManagementTypes.KeyMetadata {
     private func translateAccessControlsToLegacy(
         from controls: KeyManagementTypes.KeyMetadata
             .AccessControls
-    ) -> KeyMetadataLegacy.AccessControls {
+    ) -> KeyManagementTypes.KeyMetadata.AccessControls {
         switch controls {
         case .none:
             return .none
@@ -111,8 +98,7 @@ public enum MigrationGuidance {
     public static let steps = """
     Swift 6 Migration for Key Management Types:
 
-    1. Use the Legacy typealias variants (KeyMetadataLegacy, KeyStatusLegacy, StorageLocationLegacy)
-       instead of directly referencing deprecated types.
+    1. Use the fully qualified types from KeyManagementTypes module directly.
 
     2. New code should adopt the canonical types from KeyManagementTypes module directly.
 
