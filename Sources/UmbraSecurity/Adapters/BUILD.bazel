@@ -1,0 +1,16 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "Adapters",
+    srcs = glob(["*.swift"]),
+    module_name = "UmbraSecurityAdapters",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//Sources/CoreDTOs",
+        "//Sources/ErrorHandling",
+        "//Sources/ErrorHandlingDomains",
+        "//Sources/SecurityBridgeTypes",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/UmbraSecurity:UmbraSecurity_lib",
+    ],
+)
