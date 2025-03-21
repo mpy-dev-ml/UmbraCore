@@ -38,6 +38,12 @@ public actor MockKeychain: SecureStorageProvider {
         }
         metadata.removeValue(forKey: key)
     }
+    
+    /// Resets the mock keychain by clearing all stored data and metadata
+    public func reset() async {
+        storage.removeAll()
+        metadata.removeAll()
+    }
 
     public func getMetadata(forKey key: String) async throws -> [String: String]? {
         guard storage[key] != nil else {

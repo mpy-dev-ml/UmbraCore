@@ -1,0 +1,14 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+# Documentation for the SecurityProtocolsCore module
+filegroup(
+    name = "docc_resources",
+    srcs = glob(["Resources/**"], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "docc_sources",
+    srcs = glob(["**/*.md"]) + ["Info.plist"],
+    visibility = ["//visibility:public"],
+)
