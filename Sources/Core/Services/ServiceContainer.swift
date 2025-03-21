@@ -60,8 +60,7 @@ public actor ServiceContainer {
         let identifier = T.serviceIdentifier
 
         guard services[identifier] == nil else {
-            throw ServiceError
-                .configurationError("Service with identifier \(identifier) already registered")
+            throw CoreErrors.ServiceError.configurationError
         }
 
         // Store the service and its dependencies
@@ -79,15 +78,15 @@ public actor ServiceContainer {
         let identifier = T.serviceIdentifier
 
         guard let service = services[identifier] else {
-            throw ServiceError.initialisationFailed("Service \(identifier) not found")
+            throw CoreErrors.ServiceError.initialisationFailed
         }
 
         guard let typedService = service as? T else {
-            throw ServiceError.invalidState("Service \(identifier) is not of the requested type")
+            throw CoreErrors.ServiceError.invalidState
         }
 
         guard await service.isUsable() else {
-            throw ServiceError.invalidState("Service \(identifier) is not in a usable state")
+            throw CoreErrors.ServiceError.invalidState
         }
 
         return typedService
@@ -99,21 +98,20 @@ public actor ServiceContainer {
     /// - Throws: ServiceError if service not found or unusable
     public func resolveById(_ identifier: String) async throws -> any UmbraService {
         guard let service = services[identifier] else {
-            throw ServiceError.initialisationFailed("Service \(identifier) not found")
+            throw CoreErrors.ServiceError.initialisationFailed
         }
 
         guard await service.isUsable() else {
-            throw ServiceError.invalidState("Service \(identifier) is not in a usable state")
+            throw CoreErrors.ServiceError.invalidState
         }
 
         return service
     }
 
-    /// Initialise all registered services in dependency order
-    /// - Throws: ServiceError if initialisation fails
-    public func initialiseAll() async throws {
-        // Get services in initialization order
-        let serviceIds = try sortServicesByDependency()
+    /// Initialise all registered services.
+    /// - Throws: ServiceError if any service fails to initialise.
+    public func initialiseAllServices() async throws {
+        let serviceIds = try topologicalSort()
 
         // Initialise services in order
         for serviceId in serviceIds {
@@ -130,10 +128,7 @@ public actor ServiceContainer {
                     await self?.updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.ready)
                 } catch {
                     await self?.updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.error)
-                    throw ServiceError
-                        .initialisationFailed(
-                            "Failed to initialize \(serviceId): \(error.localizedDescription)"
-                        )
+                    throw CoreErrors.ServiceError.initialisationFailed
                 }
             }
 
@@ -141,12 +136,12 @@ public actor ServiceContainer {
         }
     }
 
-    /// Initialise a specific service and its dependencies
-    /// - Parameter identifier: Unique identifier of the service to initialise
+    /// Initialise a specific service by identifier
+    /// - Parameter identifier: Service identifier
     /// - Throws: ServiceError if initialisation fails
     public func initialiseService(_ identifier: String) async throws {
         guard let service = services[identifier] else {
-            throw ServiceError.initialisationFailed("Service \(identifier) not found")
+            throw CoreErrors.ServiceError.initialisationFailed
         }
 
         // Don't initialise if already initialised
@@ -155,8 +150,7 @@ public actor ServiceContainer {
         }
 
         // Initialise dependencies first
-        let deps = dependencyGraph[identifier] ?? []
-        for depId in deps {
+        for depId in dependencyGraph[identifier] ?? [] {
             try await initialiseService(depId)
         }
 
@@ -167,17 +161,15 @@ public actor ServiceContainer {
             await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.ready)
         } catch {
             await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.error)
-            throw ServiceError
-                .initialisationFailed("Failed to initialize \(identifier): \(error.localizedDescription)")
+            throw CoreErrors.ServiceError.initialisationFailed
         }
     }
 
-    /// Shut down all services in reverse dependency order
-    public func shutdownAll() async {
-        // Get services in reverse dependency order
-        let serviceIds = (try? sortServicesByDependency().reversed()) ?? Array(services.keys)
+    /// Shut down all registered services
+    public func shutdownAllServices() async {
+        // Shut down in reverse topological order (dependencies last)
+        let serviceIds = (try? topologicalSort().reversed()) ?? Array(services.keys)
 
-        // Shut down services in reverse order
         for serviceId in serviceIds {
             guard let service = services[serviceId] else { continue }
 
@@ -187,27 +179,59 @@ public actor ServiceContainer {
         }
     }
 
-    /// Sort services by their dependencies
+    /// Shut down a specific service by identifier
+    /// - Parameter identifier: Service identifier
+    public func shutdownService(_ identifier: String) async {
+        guard let service = services[identifier] else { return }
+
+        // Shut down service
+        await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.shuttingDown)
+        await service.shutdown()
+        await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.shutdown)
+    }
+
+    /// Update the state of a service and notify any observers
+    /// - Parameters:
+    ///   - identifier: Service identifier
+    ///   - newState: New service state
+    public func updateServiceState(_ identifier: String, newState: CoreServicesTypes.ServiceState) async {
+        guard services[identifier] != nil else { return }
+
+        // Update the state
+        serviceStates[identifier] = newState
+
+        // Notify XPC service if available
+        if let xpcService = xpcService {
+            await xpcService.notifyServiceStateChanged(identifier: identifier, state: newState)
+        }
+    }
+
+    // MARK: - Private Methods
+
+    /// Sort services in topological order (dependencies first)
     /// - Returns: Array of service identifiers in dependency order
     /// - Throws: ServiceError if circular dependency detected
-    private func sortServicesByDependency() throws -> [String] {
+    private func topologicalSort() throws -> [String] {
         var visited = Set<String>()
         var visiting = Set<String>()
-        var sorted: [String] = []
+        var sorted = [String]()
 
+        // Visit each service node in the dependency graph
         for serviceId in services.keys {
-            try visit(serviceId, visited: &visited, visiting: &visiting, sorted: &sorted)
+            if !visited.contains(serviceId) {
+                try visit(serviceId, visited: &visited, visiting: &visiting, sorted: &sorted)
+            }
         }
 
         return sorted
     }
 
-    /// Visit service and its dependencies in topological order
+    /// Visit a node in the dependency graph for topological sorting
     /// - Parameters:
-    ///   - serviceId: Current service identifier
-    ///   - visited: Set of already visited services
-    ///   - visiting: Set of services being visited in current recursion
-    ///   - sorted: Output array with topological order
+    ///   - serviceId: Service identifier to visit
+    ///   - visited: Set of visited nodes
+    ///   - visiting: Set of nodes currently being visited (to detect cycles)
+    ///   - sorted: Array of sorted nodes
     /// - Throws: ServiceError if circular dependency detected
     private func visit(
         _ serviceId: String,
@@ -215,13 +239,13 @@ public actor ServiceContainer {
         visiting: inout Set<String>,
         sorted: inout [String]
     ) throws {
+        // Skip if already visited
         if visited.contains(serviceId) {
             return
         }
 
         if visiting.contains(serviceId) {
-            throw ServiceError
-                .dependencyError("Circular dependency detected involving service \(serviceId)")
+            throw CoreErrors.ServiceError.dependencyError
         }
 
         visiting.insert(serviceId)
@@ -229,8 +253,7 @@ public actor ServiceContainer {
         let deps = dependencyGraph[serviceId] ?? []
         for depId in deps {
             if !services.keys.contains(depId) {
-                throw ServiceError
-                    .dependencyError("Service \(serviceId) depends on \(depId) which is not registered")
+                throw CoreErrors.ServiceError.dependencyError
             }
             try visit(depId, visited: &visited, visiting: &visiting, sorted: &sorted)
         }
@@ -238,16 +261,5 @@ public actor ServiceContainer {
         visiting.remove(serviceId)
         visited.insert(serviceId)
         sorted.append(serviceId)
-    }
-
-    /// Update the state of a service
-    /// - Parameters:
-    ///   - serviceId: Identifier of the service to update.
-    ///   - newState: New state to set.
-    private func updateServiceState(
-        _ serviceId: String,
-        newState: CoreServicesTypes.ServiceState
-    ) async {
-        serviceStates[serviceId] = newState
     }
 }

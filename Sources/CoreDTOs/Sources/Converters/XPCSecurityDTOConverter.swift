@@ -3,123 +3,143 @@ import ErrorHandlingDomains
 import SecurityBridgeTypes
 import UmbraCoreTypes
 
-/// Converts between ErrorHandlingDomains.UmbraErrors.Security.Protocols and ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
+/// Converts between CoreErrors.SecurityError and ErrorHandlingDomains.UmbraErrors.Security.Protocols
 public enum XPCSecurityDTOConverter {
-    // MARK: - Convert to DTO
+    // MARK: - Convert to Protocols
 
-    /// Convert an ErrorHandlingDomains.UmbraErrors.Security.Protocols to ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
+    /// Convert a CoreErrors.SecurityError to ErrorHandlingDomains.UmbraErrors.Security.Protocols
     /// - Parameter error: The error to convert
-    /// - Returns: A Foundation-independent ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
-    public static func toDTO(_ error: CoreErrors.SecurityError) -> ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO {
+    /// - Returns: A Foundation-independent ErrorHandlingDomains.UmbraErrors.Security.Protocols error
+    public static func toDTO(_ error: CoreErrors.SecurityError) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         switch error {
         case let .invalidKey(reason):
-            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid key: \(reason)")
+            return ErrorHandlingDomains.UmbraErrors.Security.Protocols.invalidInput("Invalid key: \(reason)")
 
         case let .invalidContext(reason):
-            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid context: \(reason)")
+            return ErrorHandlingDomains.UmbraErrors.Security.Protocols.invalidInput("Invalid context: \(reason)")
 
         case let .invalidParameter(name, reason):
-            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid parameter \(name): \(reason)")
+            return ErrorHandlingDomains.UmbraErrors.Security.Protocols.invalidInput("Invalid parameter \(name): \(reason)")
 
         case let .operationFailed(operation, reason):
-            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.cryptographicError(
-                operation: operation,
-                details: reason
-            )
+            return ErrorHandlingDomains.UmbraErrors.Security.Protocols.serviceError("Operation failed: \(operation) - \(reason)")
 
         case let .unsupportedAlgorithm(name):
-            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.unsupportedOperation(operation: "Algorithm: \(name)")
+            return ErrorHandlingDomains.UmbraErrors.Security.Protocols.unsupportedOperation(name: "Algorithm: \(name)")
 
         case let .missingImplementation(component):
-            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.unsupportedOperation(operation: component)
+            return ErrorHandlingDomains.UmbraErrors.Security.Protocols.missingProtocolImplementation(protocolName: component)
 
         case let .internalError(description):
-            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.unknown(details: description)
+            return ErrorHandlingDomains.UmbraErrors.Security.Protocols.internalError(description)
 
         @unknown default:
-            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.unknown(details: "Unknown security error")
+            return ErrorHandlingDomains.UmbraErrors.Security.Protocols.internalError("Unknown security error")
         }
     }
 
-    // MARK: - Convert from DTO
+    // MARK: - Convert from Protocols
 
-    /// Convert an ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO to ErrorHandlingDomains.UmbraErrors.Security.Protocols
-    /// - Parameter dto: The DTO to convert
-    /// - Returns: A Foundation-dependent ErrorHandlingDomains.UmbraErrors.Security.Protocols
-    public static func fromDTO(_ dto: ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO) -> CoreErrors.SecurityError {
-        switch dto.code {
-        case .invalidInput:
+    /// Convert an ErrorHandlingDomains.UmbraErrors.Security.Protocols to CoreErrors.SecurityError
+    /// - Parameter protocols: The protocols error to convert
+    /// - Returns: A Foundation-dependent CoreErrors.SecurityError
+    public static func fromDTO(_ protocols: ErrorHandlingDomains.UmbraErrors.Security.Protocols) -> CoreErrors.SecurityError {
+        switch protocols {
+        case let .invalidInput(message):
             return .invalidParameter(
-                name: dto.details["parameter"] ?? "unknown",
-                reason: dto.details["message"] ?? "Invalid input"
+                name: "input",
+                reason: message
             )
 
-        case .cryptographicError:
-            let operation = dto.details["operation"] ?? "unknown"
-            let details = dto.details["message"] ?? "Cryptographic error"
-            return .operationFailed(operation: operation, reason: details)
+        case let .encryptionFailed(message), let .decryptionFailed(message):
+            return .operationFailed(operation: "cryptographic operation", reason: message)
 
-        case .keyNotFound:
-            return .invalidKey(reason: "Key not found: \(dto.details["keyIdentifier"] ?? "unknown")")
-
-        case .serviceUnavailable:
+        case let .serviceError(message):
             return .operationFailed(
-                operation: "service connection",
-                reason: "Service unavailable: \(dto.details["service"] ?? "XPC Service")"
+                operation: "service",
+                reason: message
             )
 
-        case .unsupportedOperation:
-            let operation = dto.details["operation"] ?? "unknown"
-            return .missingImplementation(component: operation)
+        case let .unsupportedOperation(name):
+            return .missingImplementation(component: name)
 
-        case .permissionDenied:
-            return .operationFailed(
-                operation: "permission check",
-                reason: dto.details["message"] ?? "Permission denied"
-            )
-
-        default:
-            return .internalError(description: dto.details["message"] ?? "Unknown error")
+        case let .invalidFormat(reason):
+            return .invalidContext(reason: reason)
+            
+        case let .missingProtocolImplementation(protocolName):
+            return .missingImplementation(component: protocolName)
+            
+        case let .incompatibleVersion(version):
+            return .operationFailed(operation: "version check", reason: "Incompatible version: \(version)")
+            
+        case let .invalidState(state, expectedState):
+            return .invalidContext(reason: "Invalid state: \(state), expected: \(expectedState)")
+            
+        case let .internalError(message):
+            return .internalError(description: message)
+            
+        case let .storageOperationFailed(message):
+            return .operationFailed(operation: "storage", reason: message)
+            
+        case let .randomGenerationFailed(message):
+            return .operationFailed(operation: "random generation", reason: message)
+            
+        case let .notImplemented(message):
+            return .missingImplementation(component: message)
+            
+        @unknown default:
+            return .internalError(description: "Unknown error")
         }
     }
 
     // MARK: - Convert to UmbraErrors
 
-    /// Convert ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO to canonical UmbraErrors format
-    /// - Parameter dto: The DTO to convert
+    /// Convert ErrorHandlingDomains.UmbraErrors.Security.Protocols to canonical UmbraErrors.GeneralSecurity.Core error
+    /// - Parameter protocols: The protocols error to convert
     /// - Returns: A canonical UmbraErrors.GeneralSecurity.Core error
-    public static func toCanonicalError(_ dto: ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO) -> UmbraErrors.GeneralSecurity.Core {
-        switch dto.code {
-        case .invalidInput:
-            return .invalidInput(reason: dto.details["message"] ?? "Invalid input")
+    public static func toCanonicalError(_ protocols: ErrorHandlingDomains.UmbraErrors.Security.Protocols) -> UmbraErrors.GeneralSecurity.Core {
+        switch protocols {
+        case let .invalidInput(message):
+            return .internalError("Invalid input: \(message)")
 
-        case .cryptographicError:
-            let operation = dto.details["operation"] ?? "unknown"
-            if operation.contains("encrypt") {
-                return .encryptionFailed(reason: dto.details["message"] ?? "Encryption failed")
-            } else if operation.contains("decrypt") {
-                return .decryptionFailed(reason: dto.details["message"] ?? "Decryption failed")
-            } else {
-                return .internalError("Operation failed: \(operation)")
-            }
+        case let .encryptionFailed(message):
+            return .encryptionFailed(reason: message)
+            
+        case let .decryptionFailed(message):
+            return .decryptionFailed(reason: message)
 
-        case .keyNotFound:
-            return .invalidKey(reason: "Key not found: \(dto.details["keyIdentifier"] ?? "unknown")")
+        case let .serviceError(message):
+            return .internalError("Service error: \(message)")
 
-        case .serviceUnavailable:
-            return .serviceError(
-                code: 503,
-                reason: "Service unavailable: \(dto.details["service"] ?? "XPC Service")"
-            )
+        case let .unsupportedOperation(name):
+            return .internalError("Unsupported operation: \(name)")
 
-        case .unsupportedOperation:
-            return .notImplemented(feature: dto.details["operation"] ?? "unknown operation")
-
-        case .permissionDenied:
-            return .internalError("Permission denied: \(dto.details["message"] ?? "unknown")")
-
-        default:
-            return .internalError(dto.details["message"] ?? "Unknown error")
+        case let .invalidFormat(reason):
+            return .internalError("Invalid format: \(reason)")
+            
+        case let .missingProtocolImplementation(protocolName):
+            return .internalError("Missing protocol: \(protocolName)")
+            
+        case let .incompatibleVersion(version):
+            return .internalError("Incompatible version: \(version)")
+            
+        case let .invalidState(state, expectedState):
+            return .internalError("Invalid state: \(state), expected: \(expectedState)")
+            
+        case let .internalError(message):
+            return .internalError(message)
+            
+        case let .storageOperationFailed(message):
+            return .internalError("Storage operation failed: \(message)")
+            
+        case let .randomGenerationFailed(message):
+            return .internalError("Random generation failed: \(message)")
+            
+        case let .notImplemented(message):
+            return .internalError("Not implemented: \(message)")
+            
+        @unknown default:
+            return .internalError("Unknown error")
         }
     }
 }

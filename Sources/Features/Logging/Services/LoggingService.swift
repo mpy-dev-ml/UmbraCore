@@ -107,21 +107,20 @@ public actor LoggingService {
     }
 
     /// Maps security errors to XPC security errors
-    /// - Parameter error: The security error to map
     /// - Returns: The mapped XPC security error
     private func mapError(
         _ error: ErrorHandlingDomains.UmbraErrors.GeneralSecurity
             .Core
     ) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         switch error {
-        case let .storageOperationFailed(reason):
-            .invalidInput(details: "Bookmark error: \(reason)")
+        case let .storageOperationFailed(operation: _, reason: reason):
+            return .invalidInput("Bookmark error: \(reason)")
         case let .internalError(reason):
-            .internalError(reason: reason)
+            return .internalError(reason)
         case let .notImplemented(feature):
-            .internalError(reason: "Feature not implemented: \(feature)")
+            return .internalError("Feature not implemented: \(feature)")
         default:
-            .internalError(reason: "Security error: \(error)")
+            return .internalError("Security error: \(error)")
         }
     }
 }

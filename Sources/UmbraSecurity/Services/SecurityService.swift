@@ -1,41 +1,53 @@
+import CommonCrypto
+import CoreErrors
 import CoreServicesTypesNoFoundation
+import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
-import ObjCBridgingTypesFoundation
-import SecurityBridge
-import SecurityUtils
-
 import FoundationBridgeTypes
+import SecurityBridge
+import SecurityBridgeTypes
+import SecurityInterfacesProtocols
+import SecurityProtocolsCore
+import SecurityUtils
+import UmbraCoreTypes
+import UmbraLogging
+import XPCProtocolsCore
+
+/// Protocol for random data generation capabilities
+protocol RandomDataGenerating {
+    func generateRandomDouble() -> Double
+    func generateRandomBytes(count: Int) -> [UInt8]
+    func generateSecureToken(byteCount: Int) -> String
+}
 
 /// Simple protocol for bookmark services to break dependency cycles
 protocol BookmarkServiceType {
     func createBookmark(for url: URL) throws -> [UInt8]
-    func resolveBookmark(_ bookmark: [UInt8]) throws -> URL
-    func withSecurityScopedAccess<T>(to url: URL, perform operation: () throws -> T) throws -> T
-    func stopAccessing(url: URL)
+    func resolveBookmark(_ bookmark: [UInt8]) throws -> (URL, Bool)
+    func startAccess(to url: URL) throws -> Bool
+    func stopAccess(to url: URL) throws
 }
 
-/// A service that manages security-scoped resource access and bookmarks
+/// Main implementation of the security service
+///
+/// This class provides cryptographic services and bookmark management
+/// using Foundation-based implementations.
+@available(macOS 12.0, *)
 @MainActor
-public final class SecurityService {
-    /// Shared instance of the SecurityService
+final public class SecurityService {
+    /// Shared instance of the security service
     public static let shared = SecurityService()
-
-    private let bookmarkService: BookmarkServiceType
+    
+    // Dependencies
     private let securityProvider: DefaultSecurityProviderImpl
-    private var activeSecurityScopedResources: Set<String> = []
+    private let bookmarkService: BookmarkServiceType
 
-    /// Initialize the security service
+    /// Initialize the service
     public init() {
         bookmarkService = DefaultBookmarkService()
         securityProvider = DefaultSecurityProviderImpl()
         print("SecurityService initialized with DefaultBookmarkService")
-    }
-
-    /// Security provider adapter that can be used by other components
-    @MainActor
-    var securityProviderAdapter: SecurityBridge.SecurityProviderFoundationAdapter {
-        SecurityBridge.SecurityProviderFoundationAdapter(implementation: securityProvider)
     }
 
     /// Create a security-scoped bookmark for a URL
@@ -47,116 +59,298 @@ public final class SecurityService {
     }
 
     /// Resolve a security-scoped bookmark
-    /// - Parameter bookmark: The bookmark data to resolve
-    /// - Returns: The resolved file URL path
-    public func resolveBookmark(_ bookmark: [UInt8]) async throws -> String {
-        let url = try bookmarkService.resolveBookmark(bookmark)
-        return url.path
+    /// - Parameter bookmarkData: The bookmark data to resolve
+    /// - Returns: The resolved URL and whether the bookmark is stale
+    public func resolveBookmark(_ bookmarkData: [UInt8]) async throws -> (String, Bool) {
+        let (url, isStale) = try bookmarkService.resolveBookmark(bookmarkData)
+        return (url.path, isStale)
     }
 
-    /// Get the list of currently active security-scoped resources
-    /// - Returns: Set of paths with active security scope
-    public func getActiveSecurityScopedResources() -> Set<String> {
-        activeSecurityScopedResources
-    }
-
-    public func withSecurityScopedAccess<T>(
-        to path: String,
-        perform operation: @Sendable @escaping () async throws -> T
-    ) async throws -> T {
+    /// Start accessing a security-scoped resource
+    /// - Parameter path: The path to the security-scoped resource
+    /// - Returns: Whether access was granted
+    public func startAccess(to path: String) async throws -> Bool {
         let url = URL(fileURLWithPath: path)
-        return try bookmarkService.withSecurityScopedAccess(to: url) {
-            activeSecurityScopedResources.insert(path)
-            defer {
-                activeSecurityScopedResources.remove(path)
-            }
-            let operationResult = UmbySecurity.OperationResult<T>()
-
-            Task {
-                do {
-                    let result = try await operation()
-                    operationResult.complete(with: .success(result))
-                } catch {
-                    operationResult.complete(with: .failure(error))
-                }
-            }
-
-            guard let result = operationResult.waitForResult() else {
-                throw NSError(
-                    domain: "com.umbrasecurity.error",
-                    code: -1,
-                    userInfo: [NSLocalizedDescriptionKey: "Operation timed out"]
-                )
-            }
-
-            return try result.get()
-        }
+        return try bookmarkService.startAccess(to: url)
     }
 
-    /// Encrypt data using the security provider
+    /// Stop accessing a security-scoped resource
+    /// - Parameter path: The path to the security-scoped resource
+    public func stopAccess(to path: String) async throws {
+        let url = URL(fileURLWithPath: path)
+        try bookmarkService.stopAccess(to: url)
+    }
+
+    /// Generate a random number between 0.0 and 1.0
+    /// - Returns: Random double value
+    public func generateRandomDouble() -> Double {
+        securityProvider.generateRandomDouble()
+    }
+
+    /// Generate random bytes
+    /// - Parameter count: Number of bytes to generate
+    /// - Returns: Random bytes
+    public func generateRandomBytes(count: Int) -> [UInt8] {
+        securityProvider.generateRandomBytes(count: count)
+    }
+
+    /// Generate a secure random token as a hexadecimal string
+    /// - Parameter byteCount: Number of bytes (before hex encoding)
+    /// - Returns: Hexadecimal string
+    public func generateSecureToken(byteCount: Int) -> String {
+        securityProvider.generateSecureToken(byteCount: byteCount)
+    }
+
+    /// Perform key derivation
+    /// - Parameters:
+    ///   - password: The password to derive from
+    ///   - salt: Salt value
+    ///   - rounds: Number of PBKDF2 rounds
+    ///   - derivedKeyLength: Desired key length in bytes
+    /// - Returns: Derived key bytes
+    public func deriveKey(
+        from password: String,
+        salt: [UInt8],
+        rounds: UInt32,
+        derivedKeyLength: Int
+    ) async throws -> [UInt8] {
+        try await securityProvider.deriveKey(
+            from: password,
+            salt: salt,
+            rounds: rounds,
+            derivedKeyLength: derivedKeyLength
+        )
+    }
+
+    /// Encrypt data using a key
     /// - Parameters:
     ///   - data: Data to encrypt
     ///   - key: Encryption key
     /// - Returns: Encrypted data
-    public func encrypt(_ data: Data, using key: Data) async throws -> Data {
+    public func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
         try await securityProvider.encrypt(data, key: key)
     }
 
-    /// Decrypt data using the security provider
+    /// Decrypt data using a key
     /// - Parameters:
     ///   - data: Data to decrypt
     ///   - key: Decryption key
     /// - Returns: Decrypted data
-    public func decrypt(_ data: Data, using key: Data) async throws -> Data {
+    public func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
         try await securityProvider.decrypt(data, key: key)
     }
 
-    /// Generate a random encryption key
-    /// - Parameter length: Length of the key in bytes
-    /// - Returns: Generated key
-    public func generateKey(length: Int) async throws -> Data {
-        try await securityProvider.generateKey(length: length)
-    }
-
-    /// Generate cryptographically secure random data
-    /// - Parameter length: Length of data to generate in bytes
-    /// - Returns: Random data
-    public func generateRandomData(length: Int) async throws -> Data {
-        let result = await securityProvider.generateRandomData(length: length)
-        switch result {
-        case let .success(data):
-            return data
-        case let .failure(error):
-            throw error
-        }
-    }
-
-    /// Hash data using SHA-256
-    /// - Parameter data: Data to hash
-    /// - Returns: Hashed data
-    public func hash(_ data: Data) async throws -> Data {
+    /// Compute a hash for data
+    /// - Parameter data: Input data
+    /// - Returns: Hash value
+    public func hashData(_ data: [UInt8]) async throws -> [UInt8] {
         try await securityProvider.hashData(data)
     }
 }
 
-/// Helper class for async operations
-public enum UmbySecurity {
-    final class OperationResult<T> {
-        private var result: Result<T, Error>?
-        private let semaphore = DispatchSemaphore(value: 0)
+/// Default implementation of the security provider
+private final class DefaultSecurityProviderImpl: NSObject, RandomDataGenerating {
+    // MARK: - Properties
 
-        func complete(with result: Result<T, Error>) {
-            self.result = result
-            semaphore.signal()
+    /// Random data generator
+    private let randomGenerator: RandomDataGenerator
+
+    // MARK: - Initialization
+
+    override init() {
+        randomGenerator = RandomDataGenerator()
+        super.init()
+        // Setup can be done here if needed
+    }
+
+    // MARK: - Random Generation Methods
+
+    /// Generate a random number between 0.0 and 1.0
+    /// - Returns: Random double value
+    func generateRandomDouble() -> Double {
+        randomGenerator.generateRandomDouble()
+    }
+
+    /// Generate random bytes
+    /// - Parameter count: Number of bytes to generate
+    /// - Returns: Random bytes
+    func generateRandomBytes(count: Int) -> [UInt8] {
+        randomGenerator.generateRandomBytes(count: count)
+    }
+
+    /// Generate a secure random token as a hexadecimal string
+    /// - Parameter byteCount: Number of bytes (before hex encoding)
+    /// - Returns: Hexadecimal string
+    func generateSecureToken(byteCount: Int) -> String {
+        randomGenerator.generateSecureToken(byteCount: byteCount)
+    }
+
+    // MARK: - Cryptographic Operations
+
+    /// Perform key derivation
+    /// - Parameters:
+    ///   - password: The password to derive from
+    ///   - salt: Salt value
+    ///   - rounds: Number of PBKDF2 rounds
+    ///   - derivedKeyLength: Desired key length in bytes
+    /// - Returns: Derived key bytes
+    func deriveKey(
+        from password: String,
+        salt: [UInt8],
+        rounds: UInt32,
+        derivedKeyLength: Int
+    ) async throws -> [UInt8] {
+        // Convert salt to Data
+        let saltData = Data(salt)
+        
+        // Use CommonCrypto for key derivation
+        guard let passwordData = password.data(using: .utf8) else {
+            throw UmbraErrors.Security.Core.internalError(reason: "Failed to convert password to data")
         }
-
-        func waitForResult(timeout: TimeInterval = 30.0) -> Result<T, Error>? {
-            let timeoutResult = semaphore.wait(timeout: .now() + timeout)
-            guard timeoutResult == .success else {
-                return nil
+        
+        var derivedKeyData = Data(count: derivedKeyLength)
+        
+        let derivationStatus = derivedKeyData.withUnsafeMutableBytes { derivedKeyBytes in
+            return passwordData.withUnsafeBytes { passwordBytes in
+                return saltData.withUnsafeBytes { saltBytes in
+                    return CCKeyDerivationPBKDF(
+                        CCPBKDFAlgorithm(kCCPBKDF2),
+                        passwordBytes.baseAddress, passwordData.count,
+                        saltBytes.baseAddress, saltData.count,
+                        CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+                        rounds,
+                        derivedKeyBytes.baseAddress, derivedKeyLength
+                    )
+                }
             }
-            return result
         }
+        
+        guard derivationStatus == kCCSuccess else {
+            throw UmbraErrors.Security.Core.internalError(reason: "PBKDF2 derivation failed with code \(derivationStatus)")
+        }
+        
+        return [UInt8](derivedKeyData)
+    }
+
+    /// Encrypt data using a key
+    /// - Parameters:
+    ///   - data: Data to encrypt
+    ///   - key: Encryption key
+    /// - Returns: Encrypted data
+    func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
+        // Implementation using CommonCrypto
+        let keyData = Data(key)
+        
+        // Prepare for encryption
+        var encryptedData = Data(count: data.count + kCCBlockSizeAES128)
+        var encryptedDataLength = 0
+        
+        let result = keyData.withUnsafeBytes { keyBytes in
+            return encryptedData.withUnsafeMutableBytes { encryptedBytes in
+                return CCCrypt(
+                    CCOperation(kCCEncrypt),
+                    CCAlgorithm(kCCAlgorithmAES),
+                    CCOptions(kCCOptionPKCS7Padding),
+                    keyBytes.baseAddress, min(keyBytes.count, kCCKeySizeAES256),
+                    nil, // IV - should use a proper IV in production
+                    data, data.count,
+                    encryptedBytes.baseAddress, encryptedBytes.count,
+                    &encryptedDataLength
+                )
+            }
+        }
+        
+        guard result == kCCSuccess else {
+            throw UmbraErrors.Security.Core.encryptionFailed(reason: "Encryption failed with code \(result)")
+        }
+        
+        // Resize to actual encrypted data length
+        encryptedData.count = encryptedDataLength
+        
+        return [UInt8](encryptedData)
+    }
+
+    /// Decrypt data using a key
+    /// - Parameters:
+    ///   - data: Data to decrypt
+    ///   - key: Decryption key
+    /// - Returns: Decrypted data
+    func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
+        // Implementation using CommonCrypto
+        let keyData = Data(key)
+        
+        // Prepare for decryption
+        var decryptedData = Data(count: data.count + kCCBlockSizeAES128)
+        var decryptedDataLength = 0
+        
+        let result = keyData.withUnsafeBytes { keyBytes in
+            return decryptedData.withUnsafeMutableBytes { decryptedBytes in
+                return CCCrypt(
+                    CCOperation(kCCDecrypt),
+                    CCAlgorithm(kCCAlgorithmAES),
+                    CCOptions(kCCOptionPKCS7Padding),
+                    keyBytes.baseAddress, min(keyBytes.count, kCCKeySizeAES256),
+                    nil as UnsafeRawPointer?, // IV - should use a proper IV in production
+                    data, data.count,
+                    decryptedBytes.baseAddress, decryptedBytes.count,
+                    &decryptedDataLength
+                )
+            }
+        }
+        
+        guard result == kCCSuccess else {
+            throw UmbraErrors.Security.Core.decryptionFailed(reason: "Decryption failed with code \(result)")
+        }
+        
+        // Resize to actual decrypted data length
+        decryptedData.count = decryptedDataLength
+        
+        return [UInt8](decryptedData)
+    }
+
+    /// Compute a hash for data
+    /// - Parameter data: Input data
+    /// - Returns: Hash value
+    func hashData(_ data: [UInt8]) async throws -> [UInt8] {
+        // Implementation using CommonCrypto
+        // Use SHA-256 hash
+        var hashData = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
+        
+        _ = hashData.withUnsafeMutableBytes { hashBytes in
+            return CC_SHA256(data, CC_LONG(data.count), hashBytes.baseAddress?.assumingMemoryBound(to: UInt8.self))
+        }
+        
+        return [UInt8](hashData)
+    }
+}
+
+/// Implementation of random data generation
+private class RandomDataGenerator {
+    /// Generate a random number between 0.0 and 1.0
+    /// - Returns: Random double value
+    func generateRandomDouble() -> Double {
+        return Double.random(in: 0...1)
+    }
+    
+    /// Generate random bytes
+    /// - Parameter count: Number of bytes to generate
+    /// - Returns: Random bytes
+    func generateRandomBytes(count: Int) -> [UInt8] {
+        var bytes = [UInt8](repeating: 0, count: count)
+        let status = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
+        guard status == errSecSuccess else {
+            // Fallback to less secure method if SecRandomCopyBytes fails
+            return (0..<count).map { _ in UInt8.random(in: UInt8.min...UInt8.max) }
+        }
+        return bytes
+    }
+    
+    /// Generate a secure random token as a hexadecimal string
+    /// - Parameter byteCount: Number of bytes (before hex encoding)
+    /// - Returns: Hexadecimal string
+    func generateSecureToken(byteCount: Int) -> String {
+        let bytes = generateRandomBytes(count: byteCount)
+        return bytes.map { String(format: "%02hhx", $0) }.joined()
     }
 }
 
@@ -171,7 +365,7 @@ private final class DefaultBookmarkService: BookmarkServiceType {
         return Array(bookmark)
     }
 
-    func resolveBookmark(_ bookmark: [UInt8]) throws -> URL {
+    func resolveBookmark(_ bookmark: [UInt8]) throws -> (URL, Bool) {
         let bookmarkData = Data(bookmark)
         var isStale = false
         let url = try URL(
@@ -180,594 +374,18 @@ private final class DefaultBookmarkService: BookmarkServiceType {
             relativeTo: nil,
             bookmarkDataIsStale: &isStale
         )
-        if isStale {
-            print("Warning: Using stale bookmark for \(url.path)")
-        }
-        return url
+        return (url, isStale)
     }
 
-    func withSecurityScopedAccess<T>(to url: URL, perform operation: () throws -> T) throws -> T {
-        let didStartAccessing = url.startAccessingSecurityScopedResource()
-        defer {
-            if didStartAccessing {
-                url.stopAccessingSecurityScopedResource()
-            }
+    func startAccess(to url: URL) throws -> Bool {
+        let granted = url.startAccessingSecurityScopedResource()
+        if !granted {
+            throw UmbraErrors.Security.Core.internalError(reason: "Access not granted to \(url.path)")
         }
-        return try operation()
+        return granted
     }
 
-    func stopAccessing(url: URL) {
+    func stopAccess(to url: URL) throws {
         url.stopAccessingSecurityScopedResource()
-    }
-}
-
-/// Default implementation of the security provider that conforms to both required protocols
-private final class DefaultSecurityProviderImpl: NSObject, SecurityProviderFoundationImpl,
-    FoundationSecurityProvider, FoundationCryptoServiceImpl, FoundationKeyManagementImpl,
-    RandomDataGenerating
-{
-    // MARK: - FoundationSecurityProvider Properties
-
-    /// Implementation of cryptoService for FoundationSecurityProvider protocol
-    public var cryptoService: any FoundationCryptoServiceImpl {
-        self
-    }
-
-    /// Implementation of keyManager for FoundationSecurityProvider protocol
-    public var keyManager: any FoundationKeyManagementImpl {
-        self
-    }
-
-    // MARK: - FoundationSecurityProvider Methods
-
-    /// Perform a security operation with Foundation types (FoundationSecurityProviderObjC protocol)
-    /// - Parameters:
-    ///   - operation: Operation identifier as a string
-    ///   - options: Configuration options dictionary
-    /// - Returns: Result with Foundation types for Objective-C
-    @objc
-    public func performOperation(
-        operation: String,
-        options: [String: Any]
-    ) async -> FoundationOperationResult {
-        do {
-            switch operation {
-            case "encrypt":
-                if let data = options["data"] as? Data, let key = options["key"] as? Data {
-                    let encrypted = try await encrypt(data, key: key)
-                    return FoundationOperationResultImpl.success(encrypted)
-                } else {
-                    return FoundationOperationResultImpl.failure(NSError(
-                        domain: "com.umbrasecurity.error",
-                        code: 6,
-                        userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for encryption"]
-                    ))
-                }
-
-            case "decrypt":
-                if let data = options["data"] as? Data, let key = options["key"] as? Data {
-                    let decrypted = try await decrypt(data, key: key)
-                    return FoundationOperationResultImpl.success(decrypted)
-                } else {
-                    return FoundationOperationResultImpl.failure(NSError(
-                        domain: "com.umbrasecurity.error",
-                        code: 7,
-                        userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for decryption"]
-                    ))
-                }
-
-            default:
-                return FoundationOperationResultImpl.failure(NSError(
-                    domain: "com.umbrasecurity.error",
-                    code: 8,
-                    userInfo: [NSLocalizedDescriptionKey: "Unsupported operation: \(operation)"]
-                ))
-            }
-        } catch {
-            return FoundationOperationResultImpl.failure(error)
-        }
-    }
-
-    /// Perform a security operation with Foundation types (FoundationSecurityProvider protocol)
-    /// - Parameters:
-    ///   - operation: Operation identifier as a string
-    ///   - options: Configuration options dictionary
-    /// - Returns: Result with Foundation types for Swift
-    func performOperationSwift(
-        operation: String,
-        options: [String: Any]
-    ) async -> Result<Data?, Error> {
-        do {
-            switch operation {
-            case "encrypt":
-                if let data = options["data"] as? Data, let key = options["key"] as? Data {
-                    let encrypted = try await encrypt(data, key: key)
-                    return .success(encrypted)
-                } else {
-                    return .failure(NSError(
-                        domain: "com.umbrasecurity.error",
-                        code: 6,
-                        userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for encryption"]
-                    ))
-                }
-
-            case "decrypt":
-                if let data = options["data"] as? Data, let key = options["key"] as? Data {
-                    let decrypted = try await decrypt(data, key: key)
-                    return .success(decrypted)
-                } else {
-                    return .failure(NSError(
-                        domain: "com.umbrasecurity.error",
-                        code: 7,
-                        userInfo: [NSLocalizedDescriptionKey: "Missing required parameters for decryption"]
-                    ))
-                }
-
-            default:
-                return .failure(NSError(
-                    domain: "com.umbrasecurity.error",
-                    code: 8,
-                    userInfo: [NSLocalizedDescriptionKey: "Unsupported operation: \(operation)"]
-                ))
-            }
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    // MARK: - FoundationCryptoServiceImpl Methods
-
-    func encrypt(data: Data, using key: Data) async -> Result<Data, Error> {
-        do {
-            let result = try await encrypt(data, key: key)
-            return .success(result)
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func decrypt(data: Data, using key: Data) async -> Result<Data, Error> {
-        do {
-            let result = try await decrypt(data, key: key)
-            return .success(result)
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func generateKey() async -> Result<Data, Error> {
-        do {
-            let result = try await generateKey(length: 32) // Default length
-            return .success(result)
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func hash(data: Data) async -> Result<Data, Error> {
-        do {
-            let result = try await hashData(data)
-            return .success(result)
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func verify(data: Data, against hash: Data) async -> Bool {
-        do {
-            let computedHash = try await hashData(data)
-            return computedHash == hash
-        } catch {
-            return false
-        }
-    }
-
-    func encryptSymmetric(
-        data: Data,
-        key: Data,
-        algorithm _: String,
-        keySizeInBits _: Int,
-        iv _: Data?,
-        aad _: Data?,
-        options _: [String: String]
-    ) async -> FoundationSecurityResult {
-        do {
-            let encrypted = try await encrypt(data, key: key)
-            return FoundationSecurityResult(data: encrypted)
-        } catch {
-            return FoundationSecurityResult(errorCode: 1, errorMessage: error.localizedDescription)
-        }
-    }
-
-    func decryptSymmetric(
-        data: Data,
-        key: Data,
-        algorithm _: String,
-        keySizeInBits _: Int,
-        iv _: Data?,
-        aad _: Data?,
-        options _: [String: String]
-    ) async -> FoundationSecurityResult {
-        do {
-            let decrypted = try await decrypt(data, key: key)
-            return FoundationSecurityResult(data: decrypted)
-        } catch {
-            return FoundationSecurityResult(errorCode: 2, errorMessage: error.localizedDescription)
-        }
-    }
-
-    // MARK: - FoundationKeyManagementImpl Methods
-
-    func retrieveKey(withIdentifier identifier: String) async -> Result<Data, Error> {
-        do {
-            let data = try await retrieveSecurely(identifier: identifier, options: nil)
-            return .success(data)
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func storeKey(_ key: Data, withIdentifier identifier: String) async -> Result<Void, Error> {
-        do {
-            _ = try await storeSecurely(data: key, identifier: identifier, options: nil)
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func deleteKey(withIdentifier identifier: String) async -> Result<Void, Error> {
-        do {
-            _ = try await deleteSecurely(identifier: identifier)
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func rotateKey(withIdentifier identifier: String, newKey: Data) async -> Result<Void, Error> {
-        do {
-            // Get the old key first (not actually used, just to validate it exists)
-            _ = try await retrieveSecurely(identifier: identifier, options: nil)
-
-            // Store the new key with the same identifier
-            _ = try await storeSecurely(data: newKey, identifier: identifier, options: nil)
-            return .success(())
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    func listKeyIdentifiers() async -> Result<[String], Error> {
-        // This is a simplified implementation since we don't have a real key storage system
-        .success([])
-    }
-
-    // MARK: - SecurityProviderFoundationImpl Methods
-
-    @objc
-    func encrypt(_ data: Data, key: Data) async throws -> Data {
-        do {
-            guard key.count >= 32 else {
-                throw NSError(
-                    domain: "com.umbrasecurity.error",
-                    code: 1,
-                    userInfo: [NSLocalizedDescriptionKey: "Key too short"]
-                )
-            }
-
-            var result = Data(count: data.count)
-            for i in 0 ..< data.count {
-                let keyByte = key[i % key.count]
-                result[i] = data[i] ^ keyByte
-            }
-            return result
-        } catch {
-            throw NSError(
-                domain: "com.umbrasecurity.error",
-                code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "Encryption failed: \(error.localizedDescription)"]
-            )
-        }
-    }
-
-    @objc
-    func decrypt(_ data: Data, key: Data) async throws -> Data {
-        try await encrypt(data, key: key)
-    }
-
-    @objc
-    func generateKey(length: Int) async throws -> Data {
-        var keyData = Data(count: length)
-        let result = keyData.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, length, $0.baseAddress!)
-        }
-
-        if result == errSecSuccess {
-            return keyData
-        } else {
-            throw NSError(
-                domain: "com.umbrasecurity.error",
-                code: 2,
-                userInfo: [NSLocalizedDescriptionKey: "Failed to generate random bytes"]
-            )
-        }
-    }
-
-    @objc
-    func generateDataKey(length: Int) async throws -> Data {
-        // Reuse existing implementation
-        try await generateKey(length: length)
-    }
-
-    @objc
-    func hashData(_ data: Data) async throws -> Data {
-        // Simple SHA-256 implementation for demonstration
-        var hash = Data(count: 32)
-
-        // Create a simple hash by XORing bytes in chunks
-        let chunkSize = 4
-        for i in stride(from: 0, to: data.count, by: chunkSize) {
-            let endIndex = min(i + chunkSize, data.count)
-            let chunk = data[i ..< endIndex]
-
-            var accumulator: UInt8 = 0
-            for byte in chunk {
-                accumulator ^= byte
-            }
-
-            let hashIndex = (i / chunkSize) % 32
-            hash[hashIndex] = accumulator
-        }
-
-        return hash
-    }
-
-    @objc
-    func validateBookmark(_ bookmarkData: Data) async throws -> Bool {
-        do {
-            var isStale = false
-            let url = try URL(
-                resolvingBookmarkData: bookmarkData,
-                options: .withSecurityScope,
-                relativeTo: nil,
-                bookmarkDataIsStale: &isStale
-            )
-
-            let canAccess = url.startAccessingSecurityScopedResource()
-            if canAccess {
-                url.stopAccessingSecurityScopedResource()
-            }
-
-            return canAccess && !isStale
-        } catch {
-            return false
-        }
-    }
-
-    @objc
-    func createBookmark(for url: URL) async throws -> Data {
-        if url.startAccessingSecurityScopedResource() {
-            defer { url.stopAccessingSecurityScopedResource() }
-            return try url.bookmarkData(
-                options: .withSecurityScope,
-                includingResourceValuesForKeys: nil,
-                relativeTo: nil
-            )
-        } else {
-            throw NSError(
-                domain: "com.umbrasecurity.error",
-                code: 3,
-                userInfo: [NSLocalizedDescriptionKey: "Could not access security-scoped resource"]
-            )
-        }
-    }
-
-    @objc
-    func resolveBookmark(_ bookmarkData: Data) async throws -> (url: URL, isStale: Bool) {
-        do {
-            var isStale = false
-            let url = try URL(
-                resolvingBookmarkData: bookmarkData,
-                options: .withSecurityScope,
-                relativeTo: nil,
-                bookmarkDataIsStale: &isStale
-            )
-            return (url: url, isStale: isStale)
-        } catch {
-            throw NSError(
-                domain: "com.umbrasecurity.error",
-                code: 4,
-                userInfo: [NSLocalizedDescriptionKey: "Failed to resolve bookmark"]
-            )
-        }
-    }
-
-    @objc
-    func encryptData(_ data: Data, key: Data) async throws -> Data {
-        try await encrypt(data, key: key)
-    }
-
-    @objc
-    func decryptData(_ data: Data, key: Data) async throws -> Data {
-        try await decrypt(data, key: key)
-    }
-
-    @objc
-    func generateRandomBytes(length: Int) async throws -> Data {
-        try await generateKey(length: length)
-    }
-
-    func generateRandomData(length: Int) async -> Result<Data, Error> {
-        do {
-            let randomData = try await generateKey(length: length)
-            return .success(randomData)
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    @objc
-    func storeSecurely(
-        data: Data,
-        identifier: String,
-        options _: [String: Any]?
-    ) async throws -> Bool {
-        // Simplified implementation
-        UserDefaults.standard.set(data, forKey: "secure_\(identifier)")
-        return true
-    }
-
-    @objc
-    func retrieveSecurely(identifier: String, options _: [String: Any]?) async throws -> Data {
-        if let data = UserDefaults.standard.data(forKey: "secure_\(identifier)") {
-            return data
-        } else {
-            throw NSError(
-                domain: "com.umbrasecurity.error",
-                code: 5,
-                userInfo: [NSLocalizedDescriptionKey: "No data found for identifier"]
-            )
-        }
-    }
-
-    @objc
-    func deleteSecurely(identifier: String) async throws -> Bool {
-        UserDefaults.standard.removeObject(forKey: "secure_\(identifier)")
-        return true
-    }
-
-    @objc
-    func validateSecurityOperation() async throws -> Bool {
-        true
-    }
-
-    @objc
-    func startAccessing(url: URL) -> Bool {
-        url.startAccessingSecurityScopedResource()
-    }
-
-    @objc
-    func stopAccessing(url: URL) {
-        url.stopAccessingSecurityScopedResource()
-    }
-
-    /// Encrypt data using Foundation types directly
-    /// - Parameters:
-    ///   - data: Data to encrypt
-    ///   - key: Encryption key
-    /// - Returns: Result with encrypted data or error
-    func encryptWithFoundation(
-        _ data: Data,
-        key: Data
-    ) async -> Result<Data, Error> {
-        do {
-            let encrypted = try await encrypt(data, key: key)
-            return .success(encrypted)
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    /// Decrypt data using Foundation types directly
-    /// - Parameters:
-    ///   - data: Data to decrypt
-    ///   - key: Decryption key
-    /// - Returns: Result with decrypted data or error
-    func decryptWithFoundation(
-        _ data: Data,
-        key: Data
-    ) async -> Result<Data, Error> {
-        do {
-            let decrypted = try await decrypt(data, key: key)
-            return .success(decrypted)
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    /// Hash data using Foundation types directly
-    /// - Parameter data: Data to hash
-    /// - Returns: Result with hashed data or error
-    func hashWithFoundation(
-        _ data: Data
-    ) async -> Result<Data, Error> {
-        do {
-            let hashed = try await hashData(data)
-            return .success(hashed)
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    // FoundationCryptoServiceImpl additional required methods
-
-    // Asymmetric encryption
-    func encryptAsymmetric(
-        data: Data,
-        publicKey: Data,
-        algorithm _: String,
-        keySizeInBits _: Int,
-        options _: [String: String]
-    ) async -> FoundationSecurityResult {
-        // Simplified implementation that falls back to symmetric encryption
-        do {
-            let encrypted = try await encrypt(data, key: publicKey)
-            return FoundationSecurityResult(data: encrypted)
-        } catch {
-            return FoundationSecurityResult(
-                errorCode: 3,
-                errorMessage: "Asymmetric encryption not supported: \(error.localizedDescription)"
-            )
-        }
-    }
-
-    // Asymmetric decryption
-    func decryptAsymmetric(
-        data: Data,
-        privateKey: Data,
-        algorithm _: String,
-        keySizeInBits _: Int,
-        options _: [String: String]
-    ) async -> FoundationSecurityResult {
-        // Simplified implementation that falls back to symmetric decryption
-        do {
-            let decrypted = try await decrypt(data, key: privateKey)
-            return FoundationSecurityResult(data: decrypted)
-        } catch {
-            return FoundationSecurityResult(
-                errorCode: 4,
-                errorMessage: "Asymmetric decryption not supported: \(error.localizedDescription)"
-            )
-        }
-    }
-
-    // Hashing with specific algorithm
-    func hash(
-        data: Data,
-        algorithm _: String,
-        options _: [String: String]
-    ) async -> FoundationSecurityResult {
-        do {
-            let hashed = try await hashData(data)
-            return FoundationSecurityResult(data: hashed)
-        } catch {
-            return FoundationSecurityResult(
-                errorCode: 5,
-                errorMessage: "Hashing operation failed: \(error.localizedDescription)"
-            )
-        }
-    }
-}
-
-// Implement the FoundationSecurityProvider protocol method separately to avoid confusion
-extension DefaultSecurityProviderImpl {
-    // Implementation of the FoundationSecurityProvider protocol method
-    func performOperation(
-        operation: String,
-        options: [String: Any]
-    ) async -> Result<Data?, Error> {
-        // Reuse the Swift implementation
-        await performOperationSwift(operation: operation, options: options)
     }
 }

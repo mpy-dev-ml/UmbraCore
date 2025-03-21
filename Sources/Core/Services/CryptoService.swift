@@ -83,13 +83,13 @@ public actor CryptoService: UmbraService {
     public private(set) nonisolated(unsafe) var state: ServiceState = .uninitialized
 
     /// The configuration for cryptographic operations.
-    private let config: CryptoConfig
+    private let config: CryptoTypes.CryptoConfig
 
     /// Creates a new crypto service with the specified configuration.
     ///
     /// - Parameter config: The configuration to use for cryptographic operations.
     ///                    Defaults to standard secure parameters.
-    public init(config: CryptoConfig = CryptoConfig.legacyInit()) {
+    public init(config: CryptoTypes.CryptoConfig = CryptoTypes.CryptoConfig.legacyInit()) {
         self.config = config
     }
 

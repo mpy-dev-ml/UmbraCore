@@ -1,10 +1,10 @@
 import Foundation
-import SecurityInterfaces
+import UmbraCoreTypes
 
-/// A mock implementation of XPCServiceProtocol for testing
+/// A mock implementation for testing
 /// Provides predictable responses without requiring actual XPC communication
 @available(*, deprecated, message: "Use MockXPCService instead")
-public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
+public final class DummyXPCService {
     /// Protocol identifier for this service
     public static var protocolIdentifier: String { "com.umbracore.testing.xpc" }
 
@@ -34,6 +34,16 @@ public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
     public func getServiceVersion() async -> String? {
         "1.0.0-test"
     }
+    
+    /// Validates the connection with the service (for compatibility)
+    public func validateConnection(withReply reply: @escaping (Bool, Error?) -> Void) {
+        reply(true, nil)
+    }
+    
+    /// Gets the service version (for compatibility)
+    public func getServiceVersion(withReply reply: @escaping (String) -> Void) {
+        reply("1.0.0-test")
+    }
 
     /// Get the service status dictionary
     /// - Returns: A mock status dictionary
@@ -54,7 +64,7 @@ public final class DummyXPCService: SecurityInterfaces.XPCServiceProtocol {
     /// Basic key synchronization mechanism
     /// - Parameter data: The secure bytes to synchronize
     /// - Returns: Success flag
-    public func synchronizeKeys(_: SecurityInterfaces.SecureBytes) async -> Bool {
+    public func synchronizeKeys(_: UmbraCoreTypes.SecureBytes) async -> Bool {
         shouldSucceed
     }
 

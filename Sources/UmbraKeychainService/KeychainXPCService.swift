@@ -189,7 +189,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
                 throw CoreErrors.XPCErrors.SecurityError.internalError(description: "Service unavailable")
             }
         } catch let error as InternalKeychainXPCError {
-            throw mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols(error, operation: "synchronise")
+            throw mapKeychainErrorToProtocolsError(error, operation: "synchronise")
         } catch {
             throw CoreErrors.XPCErrors.SecurityError.internalError(description: "Failed to synchronize keys: \(error.localizedDescription)")
         }
@@ -253,7 +253,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
                             reply: { [self] error in
                                 if let error {
                                     let mappedError = (error as? InternalKeychainXPCError).map {
-                                        self.mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols($0, operation: "store")
+                                        self.mapKeychainErrorToProtocolsError($0, operation: "store")
                                     } ?? ErrorHandlingDomains.UmbraErrors.Security.Protocols.internalError("Failed to store secure data: \(error.localizedDescription)")
                                     continuation.resume(returning: .failure(mappedError))
                                 } else {
@@ -288,7 +288,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
                             reply: { [self] data, error in
                                 if let error {
                                     let mappedError = (error as? InternalKeychainXPCError).map {
-                                        self.mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols($0, operation: "retrieve")
+                                        self.mapKeychainErrorToProtocolsError($0, operation: "retrieve")
                                     } ?? ErrorHandlingDomains.UmbraErrors.Security.Protocols.internalError("Failed to retrieve secure data: \(error.localizedDescription)")
                                     continuation.resume(returning: .failure(mappedError))
                                 } else if let data {
@@ -325,7 +325,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
                             reply: { [self] error in
                                 if let error {
                                     let mappedError = (error as? InternalKeychainXPCError).map {
-                                        self.mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols($0, operation: "delete")
+                                        self.mapKeychainErrorToProtocolsError($0, operation: "delete")
                                     } ?? ErrorHandlingDomains.UmbraErrors.Security.Protocols.internalError("Failed to delete secure data: \(error.localizedDescription)")
                                     continuation.resume(returning: .failure(mappedError))
                                 } else {
@@ -582,23 +582,23 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
 
     // MARK: - Helper Methods
 
-    /// Maps a keychain error to an XPC security error
+    /// Maps internal keychain errors to ErrorHandlingDomains.UmbraErrors.Security.Protocols
     /// - Parameters:
     ///   - error: The keychain error
     ///   - operation: The operation that failed
     /// - Returns: The corresponding XPC security error
-    private func mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols(_ error: InternalKeychainXPCError, operation: String) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+    private func mapKeychainErrorToProtocolsError(_ error: InternalKeychainXPCError, operation: String) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         switch error {
         case .duplicateItem:
-            .internalError("Duplicate item exists")
+            return .internalError("Duplicate item exists")
         case .itemNotFound:
-            .missingProtocolImplementation(protocolName: operation)
+            return .missingProtocolImplementation(protocolName: operation)
         case let .internalError(message):
-            .internalError("Internal error occurred during \(operation): \(message)")
+            return .internalError("Internal error occurred during \(operation): \(message)")
         case .serviceUnavailable:
-            .invalidState(state: "unavailable", expectedState: "available")
+            return .invalidState(state: "unavailable", expectedState: "available")
         case .authenticationFailed:
-            .invalidInput("Authentication failed for \(operation)")
+            return .invalidInput("Authentication failed for \(operation)")
         }
     }
 

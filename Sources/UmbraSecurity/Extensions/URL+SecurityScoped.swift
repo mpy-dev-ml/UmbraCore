@@ -22,7 +22,7 @@ public extension URL {
         } catch {
             return .failure(
                 ErrorHandlingDomains.UmbraErrors.Security.Protocols
-                    .internalError(description: "Failed to create bookmark for: \(path)")
+                    .internalError("Failed to create bookmark for: \(path)")
             )
         }
     }

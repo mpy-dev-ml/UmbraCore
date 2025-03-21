@@ -1,7 +1,12 @@
 import ErrorHandlingDomains
 import SecurityBridgeTypes
 
-/// Foundation-independent representation of an XPC security error.
-/// This DTO is designed to replace the ErrorHandlingDomains.UmbraErrors.Security.Protocols type in contexts
-/// where Foundation independence is required.
-public typealias ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO = SecurityBridgeTypes.ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
+/// This file previously contained a typealias UmbraErrorsSecurityProtocolsDTO.
+/// 
+/// As per the project's typealias policy:
+/// - Type aliases should only be created where absolutely required
+/// - Direct type references are preferred for clarity
+/// 
+/// MIGRATION GUIDE:
+/// - Use ErrorHandlingDomains.UmbraErrors.Security.Protocols where you previously used UmbraErrorsSecurityProtocolsDTO
+/// - For serializable contexts, use SecurityBridgeTypes.SecurityProtocolsErrorDTO directly

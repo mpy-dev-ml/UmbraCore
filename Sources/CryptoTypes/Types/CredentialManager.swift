@@ -105,35 +105,53 @@ public actor CredentialManager {
     /// Maps ErrorHandlingDomains.UmbraErrors.Security.Protocols to UmbraErrors.Security.Core
     private func mapXPCError(_ error: ErrorHandlingDomains.UmbraErrors.Security.Protocols) -> Error {
         switch error {
-        case .serviceUnavailable:
-            UmbraErrors.Security.Core.secureStorageFailed(
-                operation: "service access",
-                reason: "Service unavailable"
+        case let .serviceError(message):
+            return UmbraErrors.Security.Core.internalError(reason: "Service error: \(message)")
+        
+        case let .invalidInput(message):
+            return UmbraErrors.Security.Core.internalError(reason: "Invalid input: \(message)")
+            
+        case let .encryptionFailed(message):
+            return UmbraErrors.Security.Core.secureStorageFailed(
+                operation: "encryption",
+                reason: message
             )
-        case let .keyNotFound(identifier):
-            UmbraErrors.Security.Core.secureStorageFailed(
-                operation: "retrieval",
-                reason: "Key not found: \(identifier)"
+            
+        case let .decryptionFailed(message):
+            return UmbraErrors.Security.Core.secureStorageFailed(
+                operation: "decryption",
+                reason: message
             )
-        case let .internalError(reason):
-            UmbraErrors.Security.Core.internalError(reason: reason)
-        case let .authenticationFailed(reason):
-            UmbraErrors.Security.Core.authenticationFailed(reason: reason)
-        case let .invalidState(details):
-            UmbraErrors.Security.Core.secureStorageFailed(
-                operation: "state validation",
-                reason: details
-            )
-        case let .cryptographicError(operation, details):
-            UmbraErrors.Security.Core.secureStorageFailed(
-                operation: operation,
-                reason: details
-            )
-        default:
-            UmbraErrors.Security.Core.secureStorageFailed(
-                operation: "unknown",
-                reason: "Unhandled XPC error: \(error)"
-            )
+            
+        case let .invalidFormat(reason):
+            return UmbraErrors.Security.Core.internalError(reason: "Invalid format: \(reason)")
+            
+        case let .invalidState(state, expectedState):
+            return UmbraErrors.Security.Core.internalError(reason: "Invalid state: \(state), expected: \(expectedState)")
+            
+        case let .internalError(message):
+            return UmbraErrors.Security.Core.internalError(reason: message)
+            
+        case let .missingProtocolImplementation(protocolName):
+            return UmbraErrors.Security.Core.internalError(reason: "Missing protocol: \(protocolName)")
+            
+        case let .unsupportedOperation(name):
+            return UmbraErrors.Security.Core.internalError(reason: "Unsupported operation: \(name)")
+            
+        case let .incompatibleVersion(version):
+            return UmbraErrors.Security.Core.internalError(reason: "Incompatible version: \(version)")
+            
+        case let .storageOperationFailed(message):
+            return UmbraErrors.Security.Core.internalError(reason: "Storage operation failed: \(message)")
+            
+        case let .randomGenerationFailed(message):
+            return UmbraErrors.Security.Core.internalError(reason: "Random generation failed: \(message)")
+            
+        case let .notImplemented(message):
+            return UmbraErrors.Security.Core.internalError(reason: "Not implemented: \(message)")
+            
+        @unknown default:
+            return UmbraErrors.Security.Core.internalError(reason: "Unknown error")
         }
     }
 }

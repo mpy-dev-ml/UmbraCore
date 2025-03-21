@@ -26,8 +26,8 @@ typealias SPCSecurityError = UmbraErrors.Security.Protocols
 public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProviderProtocol {
     public static let serviceIdentifier = "com.umbracore.security"
 
-    private var _state: CoreServicesTypes.ServiceState = .uninitialized
-    public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = .uninitialized
+    private var _state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
+    public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = CoreServicesTypes.ServiceState.uninitialized
 
     private let container: ServiceContainer
     private var _cryptoService: CryptoService?
@@ -56,7 +56,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     /// Initialize the service
     public func initialize() async throws {
         guard _state == CoreServicesTypes.ServiceState.uninitialized else {
-            throw ServiceError.configurationError("Service already initialized")
+            throw CoreErrors.ServiceError.configurationError
         }
 
         state = CoreServicesTypes.ServiceState.initializing
@@ -86,7 +86,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
 
     /// Check if the service is in a usable state
     public func isUsable() async -> Bool {
-        _state == CoreServicesTypes.ServiceState.ready
+        state == CoreServicesTypes.ServiceState.ready
     }
 
     // MARK: - Security Provider Implementation
@@ -97,7 +97,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     /// - Throws: SecurityError if verification fails
     public func verifySecurityToken(_ token: SecureBytes) async throws -> Bool {
         guard state == CoreServicesTypes.ServiceState.ready else {
-            throw ServiceError.invalidState("Security service not initialized")
+            throw CoreErrors.ServiceError.invalidState
         }
 
         // Verify the token format (simplified implementation)
@@ -115,7 +115,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     /// - Throws: SecurityError if token generation fails
     public func generateSecurityToken(options: [String: Any]) async throws -> SecureBytes {
         guard state == CoreServicesTypes.ServiceState.ready else {
-            throw ServiceError.invalidState("Security service not initialized")
+            throw CoreErrors.ServiceError.invalidState
         }
 
         // Extract token parameters with defaults
@@ -168,7 +168,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     /// - Throws: SecurityError if access failed
     public func startAccessing(path: String) async throws -> Bool {
         guard state == CoreServicesTypes.ServiceState.ready else {
-            throw ServiceError.invalidState("Security service not initialized")
+            throw CoreErrors.ServiceError.invalidState
         }
 
         // Check if we already have access
@@ -210,7 +210,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
     /// - Throws: SecurityError if bookmark creation failed
     public func createBookmark(for path: String) async throws -> Bool {
         guard state == CoreServicesTypes.ServiceState.ready else {
-            throw ServiceError.invalidState("Security service not initialized")
+            throw CoreErrors.ServiceError.invalidState
         }
 
         // Check if a bookmark already exists
@@ -235,7 +235,7 @@ public actor SecurityService: UmbraService, SecurityProtocolsCore.SecurityProvid
         perform operation: () async throws -> T
     ) async throws -> T {
         guard state == CoreServicesTypes.ServiceState.ready else {
-            throw ServiceError.invalidState("Security service not initialized")
+            throw CoreErrors.ServiceError.invalidState
         }
 
         // Start accessing the path

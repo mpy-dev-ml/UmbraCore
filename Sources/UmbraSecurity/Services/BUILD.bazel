@@ -14,6 +14,9 @@ swift_library(
     deps = [
         "//Sources/CoreErrors",
         "//Sources/CoreServicesTypesNoFoundation",
+        "//Sources/CryptoTypes",
+        "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
+        "//Sources/CryptoTypes/Types:CryptoTypesTypes",
         "//Sources/ErrorHandling",
         "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
         "//Sources/FoundationBridgeTypes",
