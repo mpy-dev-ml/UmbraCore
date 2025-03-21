@@ -1,12 +1,10 @@
 import CoreErrors
-
-/// Type alias for the SecurityError type
-public typealias XPCSecurityError = SecurityError
+import ErrorHandlingDomains
 
 /// Foundation-independent representation of an XPC security error.
-/// This DTO is designed to replace the XPCSecurityError type in contexts
+/// This DTO is designed to replace the ErrorHandlingDomains.UmbraErrors.Security.Protocols type in contexts
 /// where Foundation independence is required.
-public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConvertible {
+public struct SecurityProtocolsErrorDTO: Error, Sendable, Equatable, CustomStringConvertible {
     // MARK: - Error Code Enum
 
     /// Enumeration of XPC security error codes
@@ -85,20 +83,20 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
 
     /// Create an unknown error
     /// - Parameter details: Optional error details
-    /// - Returns: An XPCSecurityErrorDTO
-    public static func unknown(details: String? = nil) -> XPCSecurityErrorDTO {
+    /// - Returns: A SecurityProtocolsErrorDTO
+    public static func unknown(details: String? = nil) -> SecurityProtocolsErrorDTO {
         var detailsDict: [String: String] = [:]
         if let details {
             detailsDict["message"] = details
         }
-        return XPCSecurityErrorDTO(code: .unknown, details: detailsDict)
+        return SecurityProtocolsErrorDTO(code: .unknown, details: detailsDict)
     }
 
     /// Create an invalid input error
     /// - Parameter details: Description of the invalid input
-    /// - Returns: An XPCSecurityErrorDTO
-    public static func invalidInput(details: String) -> XPCSecurityErrorDTO {
-        XPCSecurityErrorDTO(
+    /// - Returns: A SecurityProtocolsErrorDTO
+    public static func invalidInput(details: String) -> SecurityProtocolsErrorDTO {
+        SecurityProtocolsErrorDTO(
             code: .invalidInput,
             details: ["message": details]
         )
@@ -108,12 +106,12 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
     /// - Parameters:
     ///   - operation: The operation that failed
     ///   - details: Error details
-    /// - Returns: An XPCSecurityErrorDTO
+    /// - Returns: A SecurityProtocolsErrorDTO
     public static func cryptographicError(
         operation: String,
         details: String
-    ) -> XPCSecurityErrorDTO {
-        XPCSecurityErrorDTO(
+    ) -> SecurityProtocolsErrorDTO {
+        SecurityProtocolsErrorDTO(
             code: .cryptographicError,
             details: [
                 "operation": operation,
@@ -124,9 +122,9 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
 
     /// Create a key not found error
     /// - Parameter identifier: Key identifier
-    /// - Returns: An XPCSecurityErrorDTO
-    public static func keyNotFound(identifier: String) -> XPCSecurityErrorDTO {
-        XPCSecurityErrorDTO(
+    /// - Returns: A SecurityProtocolsErrorDTO
+    public static func keyNotFound(identifier: String) -> SecurityProtocolsErrorDTO {
+        SecurityProtocolsErrorDTO(
             code: .keyNotFound,
             details: ["keyIdentifier": identifier]
         )
@@ -136,12 +134,12 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
     /// - Parameters:
     ///   - service: Service name
     ///   - reason: Reason for unavailability
-    /// - Returns: An XPCSecurityErrorDTO
+    /// - Returns: A SecurityProtocolsErrorDTO
     public static func serviceUnavailable(
         service: String = "XPC Service",
         reason: String = "Service is not available"
-    ) -> XPCSecurityErrorDTO {
-        XPCSecurityErrorDTO(
+    ) -> SecurityProtocolsErrorDTO {
+        SecurityProtocolsErrorDTO(
             code: .serviceUnavailable,
             details: [
                 "service": service,
@@ -152,9 +150,9 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
 
     /// Create an unsupported operation error
     /// - Parameter operation: Operation name
-    /// - Returns: An XPCSecurityErrorDTO
-    public static func unsupportedOperation(operation: String) -> XPCSecurityErrorDTO {
-        XPCSecurityErrorDTO(
+    /// - Returns: A SecurityProtocolsErrorDTO
+    public static func unsupportedOperation(operation: String) -> SecurityProtocolsErrorDTO {
+        SecurityProtocolsErrorDTO(
             code: .unsupportedOperation,
             details: ["operation": operation]
         )
@@ -162,9 +160,9 @@ public struct XPCSecurityErrorDTO: Error, Sendable, Equatable, CustomStringConve
 
     /// Create a permission denied error
     /// - Parameter details: Error details
-    /// - Returns: An XPCSecurityErrorDTO
-    public static func permissionDenied(details: String) -> XPCSecurityErrorDTO {
-        XPCSecurityErrorDTO(
+    /// - Returns: A SecurityProtocolsErrorDTO
+    public static func permissionDenied(details: String) -> SecurityProtocolsErrorDTO {
+        SecurityProtocolsErrorDTO(
             code: .permissionDenied,
             details: ["message": details]
         )

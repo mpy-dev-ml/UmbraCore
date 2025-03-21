@@ -3,15 +3,16 @@ import KeyManagementTypes
 
 /// Represents the current status of a cryptographic key
 ///
-/// - Important: This type is deprecated. Please use the canonical `KeyStatus` instead.
+/// - Important: This type is deprecated. Please use the canonical `KeyManagementTypes.KeyStatus` instead.
 ///
 /// The canonical implementation is available in the KeyManagementTypes module and provides
 /// a standardised representation used across the UmbraCore framework.
-@available(*, deprecated, message: "Please use the canonical KeyStatus instead")
-public typealias KeyStatus = KeyManagementTypes.KeyStatus
+@available(*, deprecated, message: "Please use the canonical KeyManagementTypes.KeyStatus instead")
+// Type alias removed in favor of using KeyManagementTypes.KeyStatus directly
 
-public extension KeyStatus {
-    static func == (lhs: KeyStatus, rhs: KeyStatus) -> Bool {
+// Migration helper extension for KeyManagementTypes.KeyStatus
+public extension KeyManagementTypes.KeyStatus {
+    static func == (lhs: KeyManagementTypes.KeyStatus, rhs: KeyManagementTypes.KeyStatus) -> Bool {
         switch (lhs, rhs) {
         case (.active, .active),
              (.compromised, .compromised),
@@ -25,15 +26,21 @@ public extension KeyStatus {
     }
 }
 
-extension KeyStatus: Codable {
+// Extension for Codable support
+extension KeyManagementTypes.KeyStatus: Codable {
     private enum CodingKeys: String, CodingKey {
         case type
         case deletionDate
     }
 
-    // Use the StatusType from KeyManagementTypes
+    // Define our own StatusType for encoding/decoding
     @available(*, deprecated, message: "The internal implementation of StatusType will be unified with KeyManagementTypes in a future version")
-    public typealias StatusType = KeyManagementTypes.KeyStatus.StatusType
+    public enum StatusType: String, Codable {
+        case active
+        case compromised
+        case retired
+        case pendingDeletion
+    }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -75,7 +82,7 @@ extension KeyStatus: Codable {
 
 /// Extension to provide conversion to/from the raw representation
 /// This will be used by KeyManagementTypes module through type extension
-public extension KeyStatus {
+public extension KeyManagementTypes.KeyStatus {
     /// The raw representation that matches the canonical type's raw status
     enum RawRepresentation: Equatable {
         case active
