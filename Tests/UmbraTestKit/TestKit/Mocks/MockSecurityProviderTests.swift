@@ -1,5 +1,6 @@
 import Core
 import ErrorHandling
+import ErrorHandlingDomains
 import SecurityInterfaces
 import SecurityProtocolsCore
 import SecurityTypesProtocols
@@ -39,9 +40,9 @@ actor TestMockSecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
 
     // MARK: - Bookmark Management
 
-    func createBookmark(forPath path: String) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfacesError> {
+    func createBookmark(forPath path: String) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         guard !bookmarks.keys.contains(path) else {
-            return .failure(SecurityError.operationFailed("Bookmark already exists for path: \(path)"))
+            return .failure(ErrorHandlingDomains.UmbraErrors.Security.Protocols.makeStorageOperationFailed(message: "Bookmark already exists for path: \(path)"))
         }
 
         let bookmark = "test-bookmark-\(path)".data(using: .utf8)!
@@ -49,30 +50,30 @@ actor TestMockSecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
         return .success(UmbraCoreTypes.SecureBytes(bytes: [UInt8](bookmark)))
     }
 
-    func resolveBookmark(_ bookmarkData: UmbraCoreTypes.SecureBytes) async -> Result<(path: String, isStale: Bool), SecurityInterfacesError> {
+    func resolveBookmark(_ bookmarkData: UmbraCoreTypes.SecureBytes) async -> Result<(path: String, isStale: Bool), ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         let bytes = Array(bookmarkData)
         let data = Data(bytes)
         let bookmarkString = String(data: data, encoding: .utf8) ?? ""
 
         guard bookmarkString.hasPrefix("test-bookmark-") else {
-            return .failure(SecurityError.operationFailed("Invalid bookmark format"))
+            return .failure(ErrorHandlingDomains.UmbraErrors.Security.Protocols.makeStorageOperationFailed(message: "Invalid bookmark format"))
         }
 
         let path = String(bookmarkString.dropFirst("test-bookmark-".count))
 
         guard bookmarks[path] == data else {
-            return .failure(SecurityError.operationFailed("Bookmark not found for path: \(path)"))
+            return .failure(ErrorHandlingDomains.UmbraErrors.Security.Protocols.makeStorageOperationFailed(message: "Bookmark not found for path: \(path)"))
         }
 
         return .success((path, false))
     }
 
-    func startAccessing(path: String) async -> Result<Bool, SecurityInterfacesError> {
+    func startAccessing(path: String) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         lastAccessedFile = path
         accessCount[path] = (accessCount[path] ?? 0) + 1
 
         if let mockedResult = mockedResults["startAccessing-\(path)"] {
-            return mockedResult ? .success(true) : .failure(SecurityError.operationFailed("Mocked failure"))
+            return mockedResult ? .success(true) : .failure(ErrorHandlingDomains.UmbraErrors.Security.Protocols.makeStorageOperationFailed(message: "Mocked failure"))
         }
 
         return .success(true)
@@ -92,23 +93,23 @@ actor TestMockSecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
 
     // MARK: - SecurityProviderProtocol implementation
 
-    func encrypt(_ data: UmbraCoreTypes.SecureBytes, key _: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfacesError> {
+    func encrypt(_ data: UmbraCoreTypes.SecureBytes, key _: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(data)
     }
 
-    func decrypt(_ data: UmbraCoreTypes.SecureBytes, key _: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfacesError> {
+    func decrypt(_ data: UmbraCoreTypes.SecureBytes, key _: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(data)
     }
 
-    func encryptData(_ data: UmbraCoreTypes.SecureBytes, withKey key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfacesError> {
+    func encryptData(_ data: UmbraCoreTypes.SecureBytes, withKey key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         await encrypt(data, key: key)
     }
 
-    func decryptData(_ data: UmbraCoreTypes.SecureBytes, withKey key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfacesError> {
+    func decryptData(_ data: UmbraCoreTypes.SecureBytes, withKey key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         await decrypt(data, key: key)
     }
 
-    func generateKey(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfacesError> {
+    func generateKey(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: 0, count: length)))
     }
 
@@ -116,59 +117,66 @@ actor TestMockSecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
         UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: keySizeInBits / 8))
     }
 
-    func hash(_: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfacesError> {
+    func hash(_: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: 0, count: 8)))
     }
 
-    func getSecurityConfiguration() async -> Result<SecurityConfiguration, SecurityInterfacesError> {
-        .success(SecurityConfiguration(
-            securityLevel: .advanced,
-            encryptionAlgorithm: "AES-256",
-            hashAlgorithm: "SHA-256",
-            options: ["requireAuthentication": "true"]
+    func getSecurityConfig() async -> Result<SecurityConfigDTO, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        .success(SecurityConfigDTO(
+            algorithm: "AES-256",
+            keySizeInBits: 256,
+            initializationVector: nil,
+            additionalAuthenticatedData: nil,
+            iterations: nil,
+            options: ["requireAuthentication": "true"],
+            keyIdentifier: nil,
+            inputData: nil,
+            key: nil,
+            additionalData: nil
         ))
     }
 
-    func updateSecurityConfiguration(_: SecurityConfiguration) async throws {
+    func updateSecurityConfig(_ config: SecurityConfigDTO) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Mock implementation does nothing
+        .success(())
     }
 
-    func getHostIdentifier() async -> Result<String, SecurityInterfacesError> {
+    func getHostIdentifier() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success("test-host-id")
     }
 
-    func registerClient(bundleIdentifier _: String) async -> Result<Bool, SecurityInterfacesError> {
+    func registerClient(bundleIdentifier _: String) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(true)
     }
 
-    func requestKeyRotation(keyId _: String) async -> Result<Void, SecurityInterfacesError> {
+    func requestKeyRotation(keyId _: String) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(())
     }
 
-    func notifyKeyCompromise(keyId _: String) async -> Result<Void, SecurityInterfacesError> {
+    func notifyKeyCompromise(keyId _: String) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(())
     }
 
-    func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfacesError> {
+    func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: length)))
     }
 
-    func randomBytes(count: Int) async -> Result<UmbraCoreTypes.SecureBytes, SecurityInterfacesError> {
+    func randomBytes(count: Int) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         await generateRandomData(length: count)
     }
 
-    nonisolated func getKeyInfo(keyId _: String) async -> Result<[String: AnyObject], SecurityInterfacesError> {
+    nonisolated func getKeyInfo(keyId _: String) async -> Result<[String: AnyObject], ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(["status": "active" as NSString])
     }
 
-    func registerNotifications() async -> Result<Void, SecurityInterfacesError> {
+    func registerNotifications() async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(())
     }
 
     func performSecurityOperation(
         data _: Data?,
         parameters _: [String: String]
-    ) async -> Result<SecurityProtocolsCore.SecurityResult, SecurityInterfacesError> {
+    ) async -> Result<SecurityProtocolsCore.SecurityResult, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simply create a successful result
         let result = SecurityProtocolsCore.SecurityResult(success: true)
         return .success(result)
@@ -178,7 +186,7 @@ actor TestMockSecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
         operation _: String,
         data _: Data?,
         parameters _: [String: String]
-    ) async -> Result<SecurityProtocolsCore.SecurityResult, SecurityInterfacesError> {
+    ) async -> Result<SecurityProtocolsCore.SecurityResult, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simply create a successful result without data
         let result = SecurityProtocolsCore.SecurityResult(success: true)
         return .success(result)

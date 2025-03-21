@@ -49,10 +49,18 @@ public struct ServicesDTOExample {
         print("Generated sample credential bytes: \(sampleCredential.count) bytes")
 
         // Store the credential
+        let storeConfig = SecurityConfigDTO(
+            algorithm: "keychain",
+            keySizeInBits: 0,
+            options: [
+                "service": "com.umbra.example",
+                "account": "test-user"
+            ]
+        )
+        
         let storeResult = credentialAdapter.storeCredential(
             sampleCredential,
-            service: "com.umbra.example",
-            account: "test-user"
+            config: storeConfig
         )
 
         switch storeResult {
@@ -60,9 +68,17 @@ public struct ServicesDTOExample {
             print("✅ Successfully stored credential")
 
             // Retrieve the credential
+            let retrieveConfig = SecurityConfigDTO(
+                algorithm: "keychain",
+                keySizeInBits: 0,
+                options: [
+                    "service": "com.umbra.example",
+                    "account": "test-user"
+                ]
+            )
+            
             let retrieveResult = credentialAdapter.retrieveCredential(
-                service: "com.umbra.example",
-                account: "test-user"
+                config: retrieveConfig
             )
 
             switch retrieveResult {
@@ -70,9 +86,17 @@ public struct ServicesDTOExample {
                 print("✅ Successfully retrieved credential: \(retrievedCredential.count) bytes")
 
                 // Delete the credential
+                let deleteConfig = SecurityConfigDTO(
+                    algorithm: "keychain",
+                    keySizeInBits: 0,
+                    options: [
+                        "service": "com.umbra.example",
+                        "account": "test-user"
+                    ]
+                )
+                
                 let deleteResult = credentialAdapter.deleteCredential(
-                    service: "com.umbra.example",
-                    account: "test-user"
+                    config: deleteConfig
                 )
 
                 switch deleteResult {
@@ -191,9 +215,17 @@ public struct ServicesDTOExample {
         // Example of credential error handling
         do {
             // Attempt to retrieve a non-existent credential
+            let nonExistentConfig = SecurityConfigDTO(
+                algorithm: "keychain",
+                keySizeInBits: 0,
+                options: [
+                    "service": "com.umbra.nonexistent",
+                    "account": "nobody"
+                ]
+            )
+            
             let result = credentialAdapter.retrieveCredential(
-                service: "com.umbra.nonexistent",
-                account: "nobody"
+                config: nonExistentConfig
             )
 
             switch result {
