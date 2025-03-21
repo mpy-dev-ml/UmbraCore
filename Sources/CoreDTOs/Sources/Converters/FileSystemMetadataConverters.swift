@@ -14,11 +14,11 @@ public extension FileSystemMetadataDTO {
         resourceType: FilePathDTO.ResourceType? = nil
     ) -> FileSystemMetadataDTO {
         // Get file size
-        let fileSize = (attributes[.size] as? NSNumber)?.uint64Value ?? 0
+        let fileSize = (attributes[FileAttributeKey.size] as? NSNumber)?.uint64Value ?? 0
         
         // Get dates
-        let creationDate = (attributes[.creationDate] as? Date)?.timeIntervalSince1970 ?? 0
-        let modificationDate = (attributes[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+        let creationDate = (attributes[FileAttributeKey.creationDate] as? Date)?.timeIntervalSince1970 ?? 0
+        let modificationDate = (attributes[FileAttributeKey.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
         
         // macOS supports access date
         var accessDate: UInt64?
@@ -27,21 +27,22 @@ public extension FileSystemMetadataDTO {
         }
         
         // Get owner and group IDs
-        let ownerID = (attributes[.ownerAccountID] as? NSNumber)?.uint32Value
-        let groupID = (attributes[.groupOwnerAccountID] as? NSNumber)?.uint32Value
+        let ownerID = (attributes[FileAttributeKey.ownerAccountID] as? NSNumber)?.uint32Value
+        let groupID = (attributes[FileAttributeKey.groupOwnerAccountID] as? NSNumber)?.uint32Value
         
         // Get permissions 
-        let permissions = (attributes[.posixPermissions] as? NSNumber)?.uint16Value
+        let permissions = (attributes[FileAttributeKey.posixPermissions] as? NSNumber)?.uint16Value
         
         // Determine if hidden (starts with dot on Unix systems)
         let filename = URL(fileURLWithPath: path).lastPathComponent
-        let isHidden = filename.hasPrefix(".") || (attributes[.isHidden] as? Bool) == true
+        // Use filename-based check only, as isHidden is not a standard FileAttributeKey
+        let isHidden = filename.hasPrefix(".")
         
         // Get type from attributes if not provided
         let type: FilePathDTO.ResourceType
         if let providedType = resourceType {
             type = providedType
-        } else if let fileType = attributes[.type] as? String {
+        } else if let fileType = attributes[FileAttributeKey.type] as? String {
             switch fileType {
             case FileAttributeType.typeDirectory.rawValue:
                 type = .directory
@@ -70,10 +71,10 @@ public extension FileSystemMetadataDTO {
         var additionalAttributes = [String: String]()
         
         // Add creator and type codes if available (macOS)
-        if let creator = attributes[.hfsCreatorCode] as? NSNumber {
+        if let creator = attributes[FileAttributeKey.hfsCreatorCode] as? NSNumber {
             additionalAttributes["hfsCreatorCode"] = String(format: "%08X", creator.uint32Value)
         }
-        if let type = attributes[.hfsTypeCode] as? NSNumber {
+        if let type = attributes[FileAttributeKey.hfsTypeCode] as? NSNumber {
             additionalAttributes["hfsTypeCode"] = String(format: "%08X", type.uint32Value)
         }
         
@@ -153,34 +154,34 @@ public extension FileSystemMetadataDTO {
         
         // Set dates
         if creationDate > 0 {
-            attributes[.creationDate] = Date(timeIntervalSince1970: TimeInterval(creationDate))
+            attributes[FileAttributeKey.creationDate] = Date(timeIntervalSince1970: TimeInterval(creationDate))
         }
         if modificationDate > 0 {
-            attributes[.modificationDate] = Date(timeIntervalSince1970: TimeInterval(modificationDate))
+            attributes[FileAttributeKey.modificationDate] = Date(timeIntervalSince1970: TimeInterval(modificationDate))
         }
         
         // Set permissions if available
         if let permissions = permissions {
-            attributes[.posixPermissions] = NSNumber(value: permissions)
+            attributes[FileAttributeKey.posixPermissions] = NSNumber(value: permissions)
         }
         
         // Set owner/group if available
         if let ownerID = ownerID {
-            attributes[.ownerAccountID] = NSNumber(value: ownerID)
+            attributes[FileAttributeKey.ownerAccountID] = NSNumber(value: ownerID)
         }
         if let groupID = groupID {
-            attributes[.groupOwnerAccountID] = NSNumber(value: groupID)
+            attributes[FileAttributeKey.groupOwnerAccountID] = NSNumber(value: groupID)
         }
         
         // Parse HFS codes if present in additional attributes
-        if let creatorCodeHex = attributes["hfsCreatorCode"], 
-           let creatorCode = UInt32(creatorCodeHex, radix: 16) {
-            attributes[.hfsCreatorCode] = NSNumber(value: creatorCode)
+        if let hfsCreator = self.attributes["hfsCreatorCode"], 
+           let creatorCode = UInt32(hfsCreator, radix: 16) {
+            attributes[FileAttributeKey.hfsCreatorCode] = NSNumber(value: creatorCode)
         }
         
-        if let typeCodeHex = attributes["hfsTypeCode"],
-           let typeCode = UInt32(typeCodeHex, radix: 16) {
-            attributes[.hfsTypeCode] = NSNumber(value: typeCode)
+        if let hfsType = self.attributes["hfsTypeCode"],
+           let typeCode = UInt32(hfsType, radix: 16) {
+            attributes[FileAttributeKey.hfsTypeCode] = NSNumber(value: typeCode)
         }
         
         return attributes

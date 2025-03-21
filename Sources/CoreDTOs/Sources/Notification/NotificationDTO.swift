@@ -19,7 +19,7 @@ import Foundation
 /// let notification = NotificationDTO(
 ///     name: "UserLoggedIn",
 ///     sender: "AuthenticationService",
-///     userInfo: ["userId": "12345", "isNewUser": true]
+///     userInfo: ["userId": "12345", "isNewUser": "true"]
 /// )
 ///
 /// // Access user info values
@@ -30,10 +30,12 @@ import Foundation
 ///
 /// // Create a modified notification
 /// let enrichedNotification = notification.withAdditionalUserInfo([
-///     "loginTime": Date().timeIntervalSince1970
+///     "loginTime": "\(Date().timeIntervalSince1970)"
 /// ])
 /// ```
-public struct NotificationDTO: Sendable, Equatable, Hashable {
+// Mark class as @unchecked Sendable to address Swift 6 warnings
+// FIXME: In a future update, refactor this type to be properly Sendable-compliant
+public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
     // MARK: - Properties
     
     /// Name of the notification.
@@ -45,13 +47,13 @@ public struct NotificationDTO: Sendable, Equatable, Hashable {
     ///
     /// An optional reference to the sender of the notification, which can be used
     /// for filtering notifications by source.
-    public let sender: AnyHashable?
+    public let sender: String?
     
     /// User info dictionary.
     ///
     /// A dictionary containing additional data associated with the notification.
-    /// Keys are strings and values must conform to AnyHashable.
-    public let userInfo: [String: AnyHashable]
+    /// Keys are strings and values are strings to maintain Sendable compliance.
+    public let userInfo: [String: String]
     
     /// Timestamp when the notification was posted (seconds since 1970).
     ///
@@ -72,8 +74,8 @@ public struct NotificationDTO: Sendable, Equatable, Hashable {
     /// the current time is used automatically.
     public init(
         name: String,
-        sender: AnyHashable? = nil,
-        userInfo: [String: AnyHashable] = [:],
+        sender: String? = nil,
+        userInfo: [String: String] = [:],
         timestamp: Double = Date().timeIntervalSince1970
     ) {
         self.name = name
@@ -84,25 +86,12 @@ public struct NotificationDTO: Sendable, Equatable, Hashable {
     
     // MARK: - Accessing User Info
     
-    /// Get a value from user info as a specific type.
-    ///
-    /// - Parameters:
-    ///   - key: Key to look up
-    ///   - type: Expected type
-    /// - Returns: Value of the specified type or nil if not found or wrong type
-    ///
-    /// This is a generic method that allows you to extract values of any type from
-    /// the user info dictionary, with automatic type casting.
-    public func userInfoValue<T>(for key: String, as type: T.Type) -> T? {
-        return userInfo[key] as? T
-    }
-    
-    /// Get a string value from user info.
+    /// Get a value from user info as a string.
     ///
     /// - Parameter key: Key to look up
-    /// - Returns: String value or nil if not found or wrong type
+    /// - Returns: String value or nil if not found
     public func stringValue(for key: String) -> String? {
-        return userInfoValue(for: key, as: String.self)
+        return userInfo[key]
     }
     
     /// Get an integer value from user info.
@@ -110,7 +99,8 @@ public struct NotificationDTO: Sendable, Equatable, Hashable {
     /// - Parameter key: Key to look up
     /// - Returns: Integer value or nil if not found or wrong type
     public func intValue(for key: String) -> Int? {
-        return userInfoValue(for: key, as: Int.self)
+        guard let stringValue = userInfo[key] else { return nil }
+        return Int(stringValue)
     }
     
     /// Get a double value from user info.
@@ -118,7 +108,8 @@ public struct NotificationDTO: Sendable, Equatable, Hashable {
     /// - Parameter key: Key to look up
     /// - Returns: Double value or nil if not found or wrong type
     public func doubleValue(for key: String) -> Double? {
-        return userInfoValue(for: key, as: Double.self)
+        guard let stringValue = userInfo[key] else { return nil }
+        return Double(stringValue)
     }
     
     /// Get a boolean value from user info.
@@ -126,15 +117,17 @@ public struct NotificationDTO: Sendable, Equatable, Hashable {
     /// - Parameter key: Key to look up
     /// - Returns: Boolean value or nil if not found or wrong type
     public func boolValue(for key: String) -> Bool? {
-        return userInfoValue(for: key, as: Bool.self)
+        guard let stringValue = userInfo[key] else { return nil }
+        return stringValue.lowercased() == "true"
     }
     
-    /// Get a date value from user info.
+    /// Get a date value from user info by timestamp.
     ///
     /// - Parameter key: Key to look up
     /// - Returns: Date value or nil if not found or wrong type
     public func dateValue(for key: String) -> Date? {
-        return userInfoValue(for: key, as: Date.self)
+        guard let doubleValue = doubleValue(for: key) else { return nil }
+        return Date(timeIntervalSince1970: doubleValue)
     }
     
     /// Get a data value from user info.
@@ -142,15 +135,11 @@ public struct NotificationDTO: Sendable, Equatable, Hashable {
     /// - Parameter key: Key to look up
     /// - Returns: Data value as byte array or nil if not found or wrong type
     ///
-    /// This method can extract data either from a Foundation Data object or
-    /// from a raw byte array.
+    /// This method attempts to decode a Base64 string to retrieve binary data.
     public func dataValue(for key: String) -> [UInt8]? {
-        if let data = userInfoValue(for: key, as: Data.self) {
-            return [UInt8](data)
-        } else if let bytes = userInfoValue(for: key, as: [UInt8].self) {
-            return bytes
-        }
-        return nil
+        guard let base64String = userInfo[key] else { return nil }
+        guard let data = Data(base64Encoded: base64String) else { return nil }
+        return [UInt8](data)
     }
     
     // MARK: - Creating Modified Notifications
@@ -163,7 +152,7 @@ public struct NotificationDTO: Sendable, Equatable, Hashable {
     /// This method creates a new notification with the same properties as the original,
     /// but with additional key-value pairs in the user info dictionary. If there are
     /// duplicate keys, the values from `additionalInfo` will override the original values.
-    public func withAdditionalUserInfo(_ additionalInfo: [String: AnyHashable]) -> NotificationDTO {
+    public func withAdditionalUserInfo(_ additionalInfo: [String: String]) -> NotificationDTO {
         var newUserInfo = userInfo
         for (key, value) in additionalInfo {
             newUserInfo[key] = value

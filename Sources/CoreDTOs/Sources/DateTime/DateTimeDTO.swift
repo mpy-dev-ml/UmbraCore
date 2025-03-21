@@ -200,9 +200,12 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         
         // Create calendar in the desired time zone
         let calendar = Calendar(identifier: .gregorian)
-        var timeZone = TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60) ?? TimeZone(secondsFromGMT: 0)!
+        let timeZoneObj = TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60) ?? TimeZone(secondsFromGMT: 0)!
         
-        var components = calendar.dateComponents(
+        var calendarWithTimeZone = calendar
+        calendarWithTimeZone.timeZone = timeZoneObj
+        
+        let components = calendarWithTimeZone.dateComponents(
             [.year, .month, .day, .hour, .minute, .second, .weekday],
             from: date
         )
@@ -251,7 +254,7 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
     public var timestamp: Double {
         // Convert to Foundation's Date for timestamp calculation
         let calendar = Calendar(identifier: .gregorian)
-        var components = DateComponents(
+        let components = DateComponents(
             calendar: calendar,
             timeZone: TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60),
             year: year,
@@ -300,7 +303,7 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
     ) -> DateTimeDTO {
         // Use Foundation's Date for calendar calculations
         let calendar = Calendar(identifier: .gregorian)
-        var components = DateComponents(
+        let components = DateComponents(
             calendar: calendar,
             timeZone: TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60),
             year: year,

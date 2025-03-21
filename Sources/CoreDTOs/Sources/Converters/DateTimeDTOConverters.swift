@@ -123,7 +123,7 @@ public extension DateFormatterDTO {
         // Configure date style
         switch dateStyle {
         case .none:
-            formatter.dateStyle = .none
+            formatter.dateStyle = DateFormatter.Style.none
         case .short:
             formatter.dateStyle = .short
         case .medium:
@@ -140,7 +140,7 @@ public extension DateFormatterDTO {
         // Configure time style
         switch timeStyle {
         case .none:
-            formatter.timeStyle = .none
+            formatter.timeStyle = DateFormatter.Style.none
         case .short:
             formatter.timeStyle = .short
         case .medium:

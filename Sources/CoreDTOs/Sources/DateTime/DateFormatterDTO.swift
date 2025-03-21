@@ -38,6 +38,9 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
     /// Defines how the date portion should be formatted, with options ranging
     /// from compact representations to fully spelled out forms.
     public enum FormatStyle: Sendable, Equatable, Hashable {
+        /// No style - don't display this component.
+        /// Used when you want to show only the date or only the time.
+        case none
         /// Short style (e.g., "12/31/23").
         /// A compact, numeric representation suitable for space-constrained interfaces.
         case short
@@ -142,6 +145,8 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
         
         // Configure date style
         switch dateStyle {
+        case .none:
+            formatter.dateFormat = ""
         case .short:
             formatter.dateStyle = .short
         case .medium:

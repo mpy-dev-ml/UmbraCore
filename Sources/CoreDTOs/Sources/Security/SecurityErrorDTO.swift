@@ -126,4 +126,90 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
             details: details
         )
     }
+    
+    /// Create an internal error
+    /// - Parameters:
+    ///   - message: Error message
+    ///   - details: Additional details
+    /// - Returns: A SecurityErrorDTO
+    public static func internalError(
+        message: String,
+        details: [String: String] = [:]
+    ) -> SecurityErrorDTO {
+        SecurityErrorDTO(
+            code: 1006,
+            message: message,
+            details: details
+        )
+    }
+    
+    /// Create an unknown error
+    /// - Parameters:
+    ///   - message: Error message
+    ///   - details: Additional details
+    /// - Returns: A SecurityErrorDTO
+    public static func unknown(
+        message: String,
+        details: [String: String] = [:]
+    ) -> SecurityErrorDTO {
+        SecurityErrorDTO(
+            code: 9999,
+            message: message,
+            details: details
+        )
+    }
+    
+    /// Create an invalid path error
+    /// - Parameters:
+    ///   - path: The invalid path
+    ///   - details: Additional details
+    /// - Returns: A SecurityErrorDTO
+    public static func invalidPath(
+        path: String,
+        details: [String: String] = [:]
+    ) -> SecurityErrorDTO {
+        var allDetails = details
+        allDetails["path"] = path
+        return SecurityErrorDTO(
+            code: 1007,
+            domain: "security.bookmark",
+            message: "Invalid path: \(path)",
+            details: allDetails
+        )
+    }
+    
+    /// Create a bookmark creation failed error
+    /// - Parameters:
+    ///   - path: The path for which bookmark creation failed
+    ///   - details: Additional details
+    /// - Returns: A SecurityErrorDTO
+    public static func bookmarkCreationFailed(
+        path: String,
+        details: [String: String] = [:]
+    ) -> SecurityErrorDTO {
+        var allDetails = details
+        allDetails["path"] = path
+        return SecurityErrorDTO(
+            code: 1008,
+            message: "Failed to create bookmark",
+            details: allDetails
+        )
+    }
+    
+    /// Create a bookmark resolution failed error
+    /// - Parameters:
+    ///   - details: Error details
+    /// - Returns: A SecurityErrorDTO
+    public static func bookmarkResolutionFailed(
+        details: [String: String] = [:]
+    ) -> SecurityErrorDTO {
+        SecurityErrorDTO(
+            code: 1009,
+            message: "Failed to resolve bookmark",
+            details: details
+        )
+    }
+    
+    /// Default general error code
+    public static let generalErrorCode: Int32 = 9999
 }
