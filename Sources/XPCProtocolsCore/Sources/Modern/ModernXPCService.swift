@@ -360,7 +360,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
     }
 
     /// Get the hardware identifier
-    /// - Returns: Result with identifier string on success or XPCSecurityError on failure
+    /// - Returns: Result with identifier string on success or ErrorHandlingDomains.UmbraErrors.Security.Protocols on failure
     public func getHardwareIdentifier() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // In a real implementation, would return actual hardware identifier
         .success("MODERN-HW-12345")

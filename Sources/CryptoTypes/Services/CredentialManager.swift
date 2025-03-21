@@ -170,7 +170,7 @@ public actor CredentialManager {
         using key: SecureBytes,
         iv _: SecureBytes,
         service: any (ModernCryptoXPCServiceProtocol & Sendable)
-    ) async -> Result<SecureBytes, XPCSecurityError> {
+    ) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Convert SecureBytes to Data for XPC interface
         var dataBytes = Data()
         var keyBytes = Data()
@@ -198,7 +198,7 @@ public actor CredentialManager {
         using key: SecureBytes,
         iv _: SecureBytes,
         service: any (ModernCryptoXPCServiceProtocol & Sendable)
-    ) async -> Result<SecureBytes, XPCSecurityError> {
+    ) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Convert SecureBytes to Data for XPC interface
         var dataBytes = Data()
         var keyBytes = Data()

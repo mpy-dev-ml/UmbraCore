@@ -2,6 +2,7 @@ import CoreErrors
 import ErrorHandling
 import Foundation
 import UmbraCoreTypes
+import ErrorHandlingDomains
 
 /// Example implementation of XPCServiceProtocolComplete
 ///
@@ -36,11 +37,11 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
 
     /// Synchronise keys between client and service
     /// - Parameter syncData: Data for key synchronisation
-    /// - Throws: XPCSecurityError if synchronisation fails
+    /// - Throws: ErrorHandlingDomains.UmbraErrors.Security.Protocols if synchronisation fails
     public func synchroniseKeys(_ syncData: SecureBytes) async throws {
         // Example implementation - simply verify data is not empty
         guard !syncData.isEmpty else {
-            throw XPCSecurityError.invalidData(reason: "Sync data cannot be empty")
+            throw ErrorHandlingDomains.UmbraErrors.Security.Protocols.invalidData(reason: "Sync data cannot be empty")
         }
 
         // If the code reaches here, synchronisation is considered successful
@@ -48,18 +49,18 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Implementation of ping for extended protocol
-    public func pingBasic() async -> Result<Bool, XPCSecurityError> {
+    public func pingBasic() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple implementation that always succeeds
         .success(true)
     }
 
     /// Get the service version
-    public func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    public func getServiceVersion() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success("1.0.0")
     }
 
     /// Get the device identifier
-    public func getDeviceIdentifier() async -> Result<String, XPCSecurityError> {
+    public func getDeviceIdentifier() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // In a real implementation, you would access secure device identification
         .success("example-device-id")
     }
@@ -67,19 +68,19 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     // MARK: - XPCServiceProtocolStandard Implementation
 
     /// Implementation of ping for standard protocol
-    public func pingStandard() async -> Result<Bool, XPCSecurityError> {
+    public func pingStandard() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // You could implement additional verification here
         await pingBasic()
     }
 
     /// Reset security state
-    public func resetSecurity() async -> Result<Void, XPCSecurityError> {
+    public func resetSecurity() async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Implementation would clear security state
         .success(())
     }
 
     /// Synchronise encryption keys
-    public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, XPCSecurityError> {
+    public func synchronizeKeys(_ syncData: SecureBytes) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // For example purposes, we'll simply validate the data is not empty
         if syncData.isEmpty {
             return .failure(.invalidData(reason: "Empty synchronisation data"))
@@ -90,7 +91,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Generate random data with specified length
-    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple implementation that returns random data
         let bytes = (0 ..< length).map { _ in UInt8.random(in: 0 ... 255) }
         let secureBytes = SecureBytes(bytes: bytes)
@@ -155,7 +156,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     /// - Returns: Success or error
     public func deleteKey(
         keyIdentifier _: String
-    ) async -> Result<Void, XPCSecurityError> {
+    ) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple implementation that always succeeds
         // In a real implementation, this would delete the key from storage
         .success(())
@@ -163,7 +164,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
 
     /// List all key identifiers
     /// - Returns: Array of key identifiers
-    public func listKeys() async -> Result<[String], XPCSecurityError> {
+    public func listKeys() async -> Result<[String], ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple implementation that returns dummy keys
         // In a real implementation, this would return actual keys from storage
         .success(["example-key-1", "example-key-2"])
@@ -172,13 +173,13 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     // MARK: - XPCServiceProtocolComplete Implementation
 
     /// Implementation of ping for complete protocol
-    public func pingComplete() async -> Result<Bool, XPCSecurityError> {
+    public func pingComplete() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Could include more comprehensive validation
         await pingStandard()
     }
 
     /// Encrypt data - example implementation
-    public func encrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func encrypt(data: SecureBytes) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // For example purposes, we'll simply check for empty data
         if data.isEmpty {
             return .failure(.invalidData(reason: "Cannot encrypt empty data"))
@@ -195,7 +196,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Decrypt data - example implementation
-    public func decrypt(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func decrypt(data: SecureBytes) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // For example purposes, we'll simply check for empty data
         if data.isEmpty {
             return .failure(.invalidData(reason: "Cannot decrypt empty data"))
@@ -212,7 +213,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Generate a cryptographic key - example implementation
-    public func generateKey() async -> Result<SecureBytes, XPCSecurityError> {
+    public func generateKey() async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple example key generation (random bytes)
         // In a real implementation, you would use proper key generation
         let keyLength = 32 // 256 bits
@@ -227,7 +228,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Hash data - example implementation
-    public func hash(data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func hash(data: SecureBytes) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // For example purposes, we'll simply check for empty data
         if data.isEmpty {
             return .failure(.invalidData(reason: "Cannot hash empty data"))
@@ -253,7 +254,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         keyType _: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
         metadata _: [String: String]?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple implementation that returns a dummy key identifier
         // In a real implementation, this would generate a real cryptographic key
         let identifier = keyIdentifier ?? "auto-generated-\(UUID().uuidString)"
@@ -272,7 +273,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         keyType _: XPCProtocolTypeDefs.KeyType,
         keyIdentifier: String?,
         metadata _: [String: String]?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple implementation that returns a dummy key identifier
         // In a real implementation, this would import the key data
         let identifier = keyIdentifier ?? "imported-\(UUID().uuidString)"
@@ -282,7 +283,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     /// Export a key by identifier
     /// - Parameter keyIdentifier: Identifier of the key to export
     /// - Returns: Key data or error
-    public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+    public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Example implementation that returns dummy key data
         guard !keyIdentifier.isEmpty else {
             return .failure(.invalidInput(details: "Empty key identifier"))
@@ -297,7 +298,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     public func importKey(
         _ keyData: SecureBytes,
         identifier: String?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Delegate to the more complete implementation
         await importKey(
             keyData: keyData,
@@ -311,7 +312,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     public func generateKey(
         type _: String,
         bits: Int
-    ) async -> Result<SecureBytes, XPCSecurityError> {
+    ) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple example implementation
         guard bits > 0 else {
             return .failure(.invalidInput(details: "Bits must be positive"))
@@ -329,7 +330,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Get service status with detailed information
-    public func getServiceStatus() async -> Result<XPCServiceStatus, XPCSecurityError> {
+    public func getServiceStatus() async -> Result<XPCServiceStatus, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Example implementation returning dummy status information
         let isActive = await ping()
         let status = XPCServiceStatus(
@@ -353,7 +354,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
         iterations: Int,
         keyLength: Int,
         targetKeyIdentifier: String?
-    ) async -> Result<String, XPCSecurityError> {
+    ) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Basic input validation
         guard !sourceKeyIdentifier.isEmpty else {
             return .failure(.invalidInput(details: "Source key identifier cannot be empty"))
@@ -377,25 +378,25 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Encrypt secure data with a specific key
-    public func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    public func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // For the example, just delegate to the basic encrypt method
         await encrypt(data: data)
     }
 
     /// Decrypt secure data with a specific key
-    public func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    public func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // For the example, just delegate to the basic decrypt method
         await decrypt(data: data)
     }
 
     /// Hash secure data
-    public func hashSecureData(_ data: SecureBytes) async -> Result<SecureBytes, XPCSecurityError> {
+    public func hashSecureData(_ data: SecureBytes) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Delegate to the existing hash method
         await hash(data: data)
     }
 
     /// Sign secure data with a specific key
-    public func signSecureData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, XPCSecurityError> {
+    public func signSecureData(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         guard !data.isEmpty else {
             return .failure(.invalidData(reason: "Cannot sign empty data"))
         }
@@ -410,7 +411,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Verify a signature for secure data
-    public func verifySecureSignature(_ signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    public func verifySecureSignature(_ signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         guard !signature.isEmpty else {
             return .failure(.invalidData(reason: "Cannot verify empty signature"))
         }
@@ -428,7 +429,7 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Generate secure random data
-    public func generateSecureRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+    public func generateSecureRandomData(length: Int) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         guard length > 0 else {
             return .failure(.invalidInput(details: "Length must be positive"))
         }
@@ -442,8 +443,8 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     /// - Parameters:
     ///   - data: Data to sign
     ///   - keyIdentifier: Identifier for the signing key
-    /// - Returns: Result with signature as SecureBytes on success or XPCSecurityError on failure
-    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, XPCSecurityError> {
+    /// - Returns: Result with signature as SecureBytes on success or ErrorHandlingDomains.UmbraErrors.Security.Protocols on failure
+    public func sign(_ data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Example implementation - create a dummy signature
         guard !data.isEmpty else {
             return .failure(.invalidData(reason: "Cannot sign empty data"))
@@ -465,8 +466,8 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     ///   - signature: Signature to verify
     ///   - data: Original data that was signed
     ///   - keyIdentifier: Identifier for the verification key
-    /// - Returns: Result with boolean indicating verification result or XPCSecurityError on failure
-    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCSecurityError> {
+    /// - Returns: Result with boolean indicating verification result or ErrorHandlingDomains.UmbraErrors.Security.Protocols on failure
+    public func verify(signature: UmbraCoreTypes.SecureBytes, for data: UmbraCoreTypes.SecureBytes, keyIdentifier: String) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Example implementation - simple validation logic
         guard !signature.isEmpty else {
             return .failure(.invalidData(reason: "Empty signature"))
@@ -487,8 +488,8 @@ public class ExampleXPCService: NSObject, XPCServiceProtocolComplete, @unchecked
     }
 
     /// Get the hardware identifier
-    /// - Returns: Result with identifier string on success or XPCSecurityError on failure
-    public func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+    /// - Returns: Result with identifier string on success or ErrorHandlingDomains.UmbraErrors.Security.Protocols on failure
+    public func getHardwareIdentifier() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Example implementation - return a dummy hardware identifier
         .success("EXAMPLE-HW-ID-12345")
     }

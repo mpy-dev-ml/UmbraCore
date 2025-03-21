@@ -3,50 +3,50 @@ import ErrorHandlingDomains
 import SecurityBridgeTypes
 import UmbraCoreTypes
 
-/// Converts between XPCSecurityError and XPCSecurityErrorDTO
+/// Converts between ErrorHandlingDomains.UmbraErrors.Security.Protocols and ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
 public enum XPCSecurityDTOConverter {
     // MARK: - Convert to DTO
 
-    /// Convert an XPCSecurityError to XPCSecurityErrorDTO
+    /// Convert an ErrorHandlingDomains.UmbraErrors.Security.Protocols to ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
     /// - Parameter error: The error to convert
-    /// - Returns: A Foundation-independent XPCSecurityErrorDTO
-    public static func toDTO(_ error: CoreErrors.SecurityError) -> XPCSecurityErrorDTO {
+    /// - Returns: A Foundation-independent ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
+    public static func toDTO(_ error: CoreErrors.SecurityError) -> ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO {
         switch error {
         case let .invalidKey(reason):
-            return XPCSecurityErrorDTO.invalidInput(details: "Invalid key: \(reason)")
+            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid key: \(reason)")
 
         case let .invalidContext(reason):
-            return XPCSecurityErrorDTO.invalidInput(details: "Invalid context: \(reason)")
+            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid context: \(reason)")
 
         case let .invalidParameter(name, reason):
-            return XPCSecurityErrorDTO.invalidInput(details: "Invalid parameter \(name): \(reason)")
+            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid parameter \(name): \(reason)")
 
         case let .operationFailed(operation, reason):
-            return XPCSecurityErrorDTO.cryptographicError(
+            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.cryptographicError(
                 operation: operation,
                 details: reason
             )
 
         case let .unsupportedAlgorithm(name):
-            return XPCSecurityErrorDTO.unsupportedOperation(operation: "Algorithm: \(name)")
+            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.unsupportedOperation(operation: "Algorithm: \(name)")
 
         case let .missingImplementation(component):
-            return XPCSecurityErrorDTO.unsupportedOperation(operation: component)
+            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.unsupportedOperation(operation: component)
 
         case let .internalError(description):
-            return XPCSecurityErrorDTO.unknown(details: description)
+            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.unknown(details: description)
 
         @unknown default:
-            return XPCSecurityErrorDTO.unknown(details: "Unknown security error")
+            return ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.unknown(details: "Unknown security error")
         }
     }
 
     // MARK: - Convert from DTO
 
-    /// Convert an XPCSecurityErrorDTO to XPCSecurityError
+    /// Convert an ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO to ErrorHandlingDomains.UmbraErrors.Security.Protocols
     /// - Parameter dto: The DTO to convert
-    /// - Returns: A Foundation-dependent XPCSecurityError
-    public static func fromDTO(_ dto: XPCSecurityErrorDTO) -> CoreErrors.SecurityError {
+    /// - Returns: A Foundation-dependent ErrorHandlingDomains.UmbraErrors.Security.Protocols
+    public static func fromDTO(_ dto: ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO) -> CoreErrors.SecurityError {
         switch dto.code {
         case .invalidInput:
             return .invalidParameter(
@@ -85,10 +85,10 @@ public enum XPCSecurityDTOConverter {
 
     // MARK: - Convert to UmbraErrors
 
-    /// Convert XPCSecurityErrorDTO to canonical UmbraErrors format
+    /// Convert ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO to canonical UmbraErrors format
     /// - Parameter dto: The DTO to convert
     /// - Returns: A canonical UmbraErrors.GeneralSecurity.Core error
-    public static func toCanonicalError(_ dto: XPCSecurityErrorDTO) -> UmbraErrors.GeneralSecurity.Core {
+    public static func toCanonicalError(_ dto: ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO) -> UmbraErrors.GeneralSecurity.Core {
         switch dto.code {
         case .invalidInput:
             return .invalidInput(reason: dto.details["message"] ?? "Invalid input")

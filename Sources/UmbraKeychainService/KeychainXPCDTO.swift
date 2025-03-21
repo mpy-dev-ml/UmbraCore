@@ -102,7 +102,7 @@ public enum KeychainXPCDTO {
 extension KeychainXPCDTO.KeychainOperationError {
     /// Convert to XPC security error
     /// - Returns: The XPC security error
-    public func toXPCSecurityError() -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+    public func toErrorHandlingDomains.UmbraErrors.Security.Protocols() -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         switch self {
         case .duplicateItem:
             return .internalError("Duplicate item exists")

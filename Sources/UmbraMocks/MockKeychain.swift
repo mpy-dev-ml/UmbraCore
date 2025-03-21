@@ -2,6 +2,7 @@ import CoreErrors
 import Foundation
 import UmbraCoreTypes
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Mock implementation of a secure storage service for testing
 public final class MockKeychain: @unchecked Sendable, SecureStorageServiceProtocol {
@@ -21,7 +22,7 @@ public final class MockKeychain: @unchecked Sendable, SecureStorageServiceProtoc
         _ data: SecureBytes,
         identifier: String,
         metadata: [String: String]?
-    ) async -> Result<Void, XPCSecurityError> {
+    ) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         storageQueue.async(flags: .barrier) { [self] in
             storageDict[identifier] = (data, metadata)
         }
@@ -33,8 +34,8 @@ public final class MockKeychain: @unchecked Sendable, SecureStorageServiceProtoc
     /// - Returns: The stored data
     public func retrieveData(
         identifier: String
-    ) async -> Result<SecureBytes, XPCSecurityError> {
-        var result: Result<SecureBytes, XPCSecurityError> = .failure(.keyNotFound(identifier: identifier))
+    ) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        var result: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> = .failure(.keyNotFound(identifier: identifier))
 
         storageQueue.sync { [self] in
             if let (data, _) = storageDict[identifier] {
@@ -50,7 +51,7 @@ public final class MockKeychain: @unchecked Sendable, SecureStorageServiceProtoc
     /// - Returns: Success or failure
     public func deleteData(
         identifier: String
-    ) async -> Result<Void, XPCSecurityError> {
+    ) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         storageQueue.async(flags: .barrier) { [self] in
             storageDict.removeValue(forKey: identifier)
         }
@@ -59,7 +60,7 @@ public final class MockKeychain: @unchecked Sendable, SecureStorageServiceProtoc
 
     /// List all data identifiers
     /// - Returns: Array of data identifiers
-    public func listDataIdentifiers() async -> Result<[String], XPCSecurityError> {
+    public func listDataIdentifiers() async -> Result<[String], ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         var keys: [String] = []
 
         storageQueue.sync { [self] in
@@ -74,8 +75,8 @@ public final class MockKeychain: @unchecked Sendable, SecureStorageServiceProtoc
     /// - Returns: Associated metadata
     public func getDataMetadata(
         for identifier: String
-    ) async -> Result<[String: String]?, XPCSecurityError> {
-        var result: Result<[String: String]?, XPCSecurityError> = .failure(.keyNotFound(identifier: identifier))
+    ) async -> Result<[String: String]?, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        var result: Result<[String: String]?, ErrorHandlingDomains.UmbraErrors.Security.Protocols> = .failure(.keyNotFound(identifier: identifier))
 
         storageQueue.sync { [self] in
             if let (_, metadata) = storageDict[identifier] {

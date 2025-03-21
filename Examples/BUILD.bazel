@@ -8,19 +8,34 @@ package(default_visibility = ["//visibility:public"])
 # bazel build //Examples/...
 # bazel test //Examples/...
 
-load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_binary", "swift_library")
 
-# This is a meta-package that includes all examples
+# Library of examples that can be imported elsewhere
 swift_library(
-    name = "Examples",
+    name = "ExamplesLib",
     srcs = glob(["**/*.swift"]),
+    deps = [
+        "//Sources/ErrorHandling",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+        "//Sources/SecurityBridge",
+        "//Sources/SecurityProtocolsCore",
+        "//Sources/UmbraCoreTypes",
+    ],
+)
+
+# Executable example target
+swift_binary(
+    name = "Examples",
+    deps = [":ExamplesLib"],
+    srcs = ["ExamplesMain.swift"],
 )
 
 # Collect all example targets
 filegroup(
     name = "all_examples",
     srcs = [
-        "//Examples/Services:ServicesDTOExample",
+        ":ExamplesLib",
+        ":Examples",
     ],
 )
 

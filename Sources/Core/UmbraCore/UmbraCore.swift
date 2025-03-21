@@ -1,5 +1,5 @@
 import Foundation
-import SecurityInterfaces
+import XPCProtocolsCore
 
 /// UmbraCore provides the foundational types and protocols for the Umbra security framework.
 public enum UmbraCore {
@@ -12,11 +12,11 @@ public enum UmbraCore {
         public var verboseLogging: Bool
 
         /// The default security level for cryptographic operations
-        public var defaultSecurityLevel: SecurityInterfaces.SecurityLevel
+        public var defaultSecurityLevel: XPCProtocolTypeDefs.SecurityLevel
 
         public init(
             verboseLogging: Bool = false,
-            defaultSecurityLevel: SecurityInterfaces.SecurityLevel = .standard
+            defaultSecurityLevel: XPCProtocolTypeDefs.SecurityLevel = .standard
         ) {
             self.verboseLogging = verboseLogging
             self.defaultSecurityLevel = defaultSecurityLevel
@@ -24,12 +24,12 @@ public enum UmbraCore {
     }
 
     /// Security levels for cryptographic operations
-    /// @deprecated This will be replaced by SecurityInterfaces.SecurityLevel in a future version.
-    /// New code should use SecurityInterfaces.SecurityLevel directly.
+    /// @deprecated This will be replaced by XPCProtocolTypeDefs.SecurityLevel in a future version.
+    /// New code should use XPCProtocolTypeDefs.SecurityLevel directly.
     @available(
         *,
         deprecated,
-        message: "This will be replaced by SecurityInterfaces.SecurityLevel in a future version. Use SecurityInterfaces.SecurityLevel directly."
+        message: "This will be replaced by XPCProtocolTypeDefs.SecurityLevel in a future version. Use XPCProtocolTypeDefs.SecurityLevel directly."
     )
     @frozen
     public enum SecurityLevel: Sendable {
@@ -49,21 +49,20 @@ public enum UmbraCore {
             }
         }
 
-        /// Convert to SecurityInterfaces.SecurityLevel
-        public func toSecurityInterfaces() -> SecurityInterfaces.SecurityLevel {
+        /// Convert to XPCProtocolTypeDefs.SecurityLevel
+        public func toXPCProtocol() -> XPCProtocolTypeDefs.SecurityLevel {
             switch self {
-            case .high: .advanced
-            case .medium: .standard
-            case .low: .basic
+            case .high: return .high
+            case .medium: return .standard
+            case .low: return .standard // No direct mapping to lower security
             }
         }
 
-        /// Create from SecurityInterfaces.SecurityLevel
-        public static func from(securityInterfaces level: SecurityInterfaces.SecurityLevel) -> SecurityLevel {
+        /// Create from XPCProtocolTypeDefs.SecurityLevel
+        public static func from(xpcLevel level: XPCProtocolTypeDefs.SecurityLevel) -> SecurityLevel {
             switch level {
-            case .maximum, .advanced: return .high
+            case .maximum, .high: return .high
             case .standard: return .medium
-            case .basic: return .low
             @unknown default: return .medium // Default to medium security for future cases
             }
         }

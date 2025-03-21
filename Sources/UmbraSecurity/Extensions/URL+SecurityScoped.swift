@@ -1,6 +1,7 @@
 import CoreErrors
 import ErrorHandlingDomains
 import Foundation
+import SecurityBridgeTypes
 import SecurityTypes
 import UmbraCoreTypes
 import XPCProtocolsCore
@@ -10,7 +11,7 @@ public extension URL {
     /// Create a security-scoped bookmark for this URL
     /// - Returns: Bookmark data
     /// - Throws: SecurityError if bookmark creation fails
-    func us_createSecurityScopedBookmark() async -> Result<Data, XPCSecurityError> {
+    func us_createSecurityScopedBookmark() async -> Result<Data, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         let path = path
         do {
             return try .success(bookmarkData(
@@ -20,8 +21,8 @@ public extension URL {
             ))
         } catch {
             return .failure(
-                XPCSecurityError
-                    .internalError(reason: "Failed to create bookmark for: \(path)")
+                ErrorHandlingDomains.UmbraErrors.Security.Protocols
+                    .internalError(description: "Failed to create bookmark for: \(path)")
             )
         }
     }

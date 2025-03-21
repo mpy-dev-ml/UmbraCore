@@ -189,7 +189,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
                 throw CoreErrors.XPCErrors.SecurityError.internalError(description: "Service unavailable")
             }
         } catch let error as InternalKeychainXPCError {
-            throw mapKeychainErrorToXPCSecurityError(error, operation: "synchronise")
+            throw mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols(error, operation: "synchronise")
         } catch {
             throw CoreErrors.XPCErrors.SecurityError.internalError(description: "Failed to synchronize keys: \(error.localizedDescription)")
         }
@@ -253,7 +253,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
                             reply: { [self] error in
                                 if let error = error {
                                     let mappedError = (error as? InternalKeychainXPCError).map {
-                                        self.mapKeychainErrorToXPCSecurityError($0, operation: "store")
+                                        self.mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols($0, operation: "store")
                                     } ?? ErrorHandlingDomains.UmbraErrors.Security.Protocols.internalError("Failed to store secure data: \(error.localizedDescription)")
                                     continuation.resume(returning: .failure(mappedError))
                                 } else {
@@ -288,7 +288,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
                             reply: { [self] data, error in
                                 if let error = error {
                                     let mappedError = (error as? InternalKeychainXPCError).map {
-                                        self.mapKeychainErrorToXPCSecurityError($0, operation: "retrieve")
+                                        self.mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols($0, operation: "retrieve")
                                     } ?? ErrorHandlingDomains.UmbraErrors.Security.Protocols.internalError("Failed to retrieve secure data: \(error.localizedDescription)")
                                     continuation.resume(returning: .failure(mappedError))
                                 } else if let data = data {
@@ -325,7 +325,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
                             reply: { [self] error in
                                 if let error = error {
                                     let mappedError = (error as? InternalKeychainXPCError).map {
-                                        self.mapKeychainErrorToXPCSecurityError($0, operation: "delete")
+                                        self.mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols($0, operation: "delete")
                                     } ?? ErrorHandlingDomains.UmbraErrors.Security.Protocols.internalError("Failed to delete secure data: \(error.localizedDescription)")
                                     continuation.resume(returning: .failure(mappedError))
                                 } else {
@@ -587,7 +587,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
     ///   - error: The keychain error
     ///   - operation: The operation that failed
     /// - Returns: The corresponding XPC security error
-    private func mapKeychainErrorToXPCSecurityError(_ error: InternalKeychainXPCError, operation: String) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+    private func mapKeychainErrorToErrorHandlingDomains.UmbraErrors.Security.Protocols(_ error: InternalKeychainXPCError, operation: String) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         switch error {
         case .duplicateItem:
             return .internalError("Duplicate item exists")
