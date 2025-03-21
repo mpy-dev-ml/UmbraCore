@@ -1,9 +1,9 @@
 import CoreErrors
 import ErrorHandlingDomains
+import SecurityBridgeTypes
 import SecurityInterfacesProtocols
 import UmbraCoreTypes
 import XPCProtocolsCore
-import SecurityBridgeTypes
 
 /// This file was previously defining a duplicated SecurityError enum
 /// It now uses the canonical UmbraErrors.Security.Core type directly
@@ -42,17 +42,17 @@ public extension UmbraErrors.Security.Core {
         // Map from core error to XPC error
         switch self {
         case let .authenticationFailed(reason):
-            return .authenticationFailed(reason: reason)
+            .authenticationFailed(reason: reason)
         case let .authorizationFailed(reason):
-            return .permissionDenied(operation: reason)
+            .permissionDenied(operation: reason)
         case .secureConnectionFailed:
-            return .serverUnavailable(serviceName: "unknown")
+            .serverUnavailable(serviceName: "unknown")
         case let .internalError(reason) where reason.contains("timed out"):
-            return .internalError(description: "Operation timed out")
+            .internalError(description: "Operation timed out")
         case let .internalError(reason):
-            return .internalError(description: reason)
+            .internalError(description: reason)
         default:
-            return .internalError(description: localizedDescription)
+            .internalError(description: localizedDescription)
         }
     }
 }

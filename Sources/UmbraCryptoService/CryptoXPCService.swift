@@ -113,16 +113,16 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
 
         // Get the key data
         let keyResult = await retrieveKeyData(identifier: keyId)
-        if case .failure(let error) = keyResult {
+        if case let .failure(error) = keyResult {
             return .failure(error)
         }
-        guard case .success(let keyData) = keyResult else {
+        guard case let .success(keyData) = keyResult else {
             return .failure(.cryptographicError(operation: "encrypt", details: "Failed to get key data"))
         }
 
         // Generate a random IV for AES-GCM
         let iv = CryptoWrapper.generateRandomIV(size: CryptoFormat.ivSize)
-        
+
         do {
             // Perform AES-GCM encryption
             let ciphertext = try CryptoWrapper.encryptAES_GCM(
@@ -130,10 +130,10 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
                 key: keyData,
                 iv: iv
             )
-            
+
             // Pack the IV and ciphertext together
             let packedData = CryptoFormat.packEncryptedData(iv: iv, ciphertext: ciphertext)
-            
+
             return .success(SecureBytes(bytes: packedData))
         } catch {
             return .failure(.cryptographicError(operation: "encrypt", details: error.localizedDescription))
@@ -152,7 +152,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
 
         let keyResult = await retrieveKeyData(identifier: keyId)
         switch keyResult {
-        case .success(let keyData):
+        case let .success(keyData):
             // Unpack the IV and ciphertext
             guard let (iv, ciphertext) = CryptoFormat.unpackEncryptedData(data: data.bytes()) else {
                 return .failure(.invalidInput(details: "Invalid encrypted data format"))
@@ -170,7 +170,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
             } catch {
                 return .failure(.cryptographicError(operation: "decrypt", details: error.localizedDescription))
             }
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -185,15 +185,15 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
         // In a real-world scenario, this would use proper signing algorithms
         let keyResult = await retrieveKeyData(identifier: keyIdentifier)
         switch keyResult {
-        case .success(let keyData):
+        case let .success(keyData):
             // Create a simple HMAC signature using the key
             let signature = CryptoWrapper.hmacSHA256(
                 data: data.bytes(),
                 key: keyData
             )
-            
+
             return .success(SecureBytes(bytes: signature))
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -207,16 +207,16 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
     public func verify(signature: SecureBytes, for data: SecureBytes, keyIdentifier: String) async -> Result<Bool, XPCProtocolsCore.SecurityError> {
         let keyResult = await retrieveKeyData(identifier: keyIdentifier)
         switch keyResult {
-        case .success(let keyData):
+        case let .success(keyData):
             // Verify the HMAC signature using the key
             let computedSignature = CryptoWrapper.hmacSHA256(
                 data: data.bytes(),
                 key: keyData
             )
-            
+
             let isValid = computedSignature == signature.bytes()
             return .success(isValid)
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -304,7 +304,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
 
         // Store the key in the keychain
         let result = await storeKeyData([UInt8](keyData), identifier: keyId)
-        if case .failure(let error) = result {
+        if case let .failure(error) = result {
             return .failure(error)
         }
 
@@ -317,9 +317,9 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
     public func exportKey(keyIdentifier: String) async -> Result<SecureBytes, XPCProtocolsCore.SecurityError> {
         let keyResult = await retrieveKeyData(identifier: keyIdentifier)
         switch keyResult {
-        case .success(let keyData):
+        case let .success(keyData):
             return .success(SecureBytes(bytes: keyData))
-        case .failure(let error):
+        case let .failure(error):
             return .failure(error)
         }
     }
@@ -616,7 +616,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
             // Generate a random symmetric key and store it
             let keyData = Data.random(count: keySize / 8)
             let result = await storeKeyData([UInt8](keyData), identifier: actualKeyId)
-            if case .failure(let error) = result {
+            if case let .failure(error) = result {
                 return .failure(error)
             }
         } else {
@@ -627,12 +627,12 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
 
             // Store both keys with different prefixes
             let privateResult = await storeKeyData([UInt8](privateKeyData), identifier: "private-\(actualKeyId)")
-            if case .failure(let error) = privateResult {
+            if case let .failure(error) = privateResult {
                 return .failure(error)
             }
 
             let publicResult = await storeKeyData([UInt8](publicKeyData), identifier: "public-\(actualKeyId)")
-            if case .failure(let error) = publicResult {
+            if case let .failure(error) = publicResult {
                 return .failure(error)
             }
         }

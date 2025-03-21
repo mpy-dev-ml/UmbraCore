@@ -6,29 +6,29 @@ final class KeychainXPCConnection: @unchecked Sendable {
     private actor ConnectionState {
         var connection: NSXPCConnection?
         var isInvalidated = false
-        
+
         func setConnection(_ newConnection: NSXPCConnection?) {
             connection = newConnection
         }
-        
+
         func getConnection() -> NSXPCConnection? {
-            return connection
+            connection
         }
-        
+
         func invalidate() {
             isInvalidated = true
             connection?.invalidate()
             connection = nil
         }
-        
+
         func isInvalidatedState() -> Bool {
-            return isInvalidated
+            isInvalidated
         }
-        
+
         // Add a synchronized proxy retrieval method to isolate non-Sendable types
         func getProxyFromConnection() -> (any KeychainXPCProtocol)? {
-            guard let connection = connection else { return nil }
-            
+            guard let connection else { return nil }
+
             return connection.remoteObjectProxyWithErrorHandler { error in
                 print("XPC connection error: \(error)")
                 // Invalidate directly from within the actor
@@ -36,7 +36,7 @@ final class KeychainXPCConnection: @unchecked Sendable {
             } as? any KeychainXPCProtocol
         }
     }
-    
+
     private let state = ConnectionState()
     private let queue = DispatchQueue(
         label: "com.umbracore.keychain.connection",
@@ -50,7 +50,7 @@ final class KeychainXPCConnection: @unchecked Sendable {
 
     func connect() async throws -> any KeychainXPCProtocol {
         // Replace semaphore with Task-based synchronization
-        return try await Task { () -> any KeychainXPCProtocol in
+        try await Task { () -> any KeychainXPCProtocol in
             // Check if connection was invalidated
             if await state.isInvalidatedState() {
                 throw NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
@@ -78,8 +78,8 @@ final class KeychainXPCConnection: @unchecked Sendable {
             newConnection.remoteObjectInterface = NSXPCInterface(with: KeychainXPCProtocol.self)
             newConnection.invalidationHandler = { [weak self] in
                 Task { [weak self] in
-                    if let self = self {
-                        await self.state.invalidate()
+                    if let self {
+                        await state.invalidate()
                     }
                 }
             }
@@ -110,10 +110,10 @@ final class KeychainXPCConnection: @unchecked Sendable {
 
 extension KeychainXPCConnection: KeychainXPCProtocol {
     func addItem(
-        account: String,
-        service: String,
-        accessGroup: String?,
-        data: Data,
+        account _: String,
+        service _: String,
+        accessGroup _: String?,
+        data _: Data,
         reply: @escaping @Sendable (Error?) -> Void
     ) {
         // Implementation
@@ -123,10 +123,10 @@ extension KeychainXPCConnection: KeychainXPCProtocol {
     }
 
     func updateItem(
-        account: String,
-        service: String,
-        accessGroup: String?,
-        data: Data,
+        account _: String,
+        service _: String,
+        accessGroup _: String?,
+        data _: Data,
         reply: @escaping @Sendable (Error?) -> Void
     ) {
         // Implementation
@@ -136,9 +136,9 @@ extension KeychainXPCConnection: KeychainXPCProtocol {
     }
 
     func getItem(
-        account: String,
-        service: String,
-        accessGroup: String?,
+        account _: String,
+        service _: String,
+        accessGroup _: String?,
         reply: @escaping @Sendable (Data?, Error?) -> Void
     ) {
         // Implementation
@@ -148,9 +148,9 @@ extension KeychainXPCConnection: KeychainXPCProtocol {
     }
 
     func deleteItem(
-        account: String,
-        service: String,
-        accessGroup: String?,
+        account _: String,
+        service _: String,
+        accessGroup _: String?,
         reply: @escaping @Sendable (Error?) -> Void
     ) {
         // Implementation

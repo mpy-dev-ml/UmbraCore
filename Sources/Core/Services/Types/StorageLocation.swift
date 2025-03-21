@@ -7,13 +7,13 @@ import KeyManagementTypes
 ///
 /// The canonical implementation is available in the KeyManagementTypes module and provides
 /// a standardised representation used across the UmbraCore framework.
+/// Extension to provide conversion to/from the raw representation
+/// This will be used by KeyManagementTypes module through type extension
 @available(*, deprecated, message: "Please use the canonical KeyManagementTypes.StorageLocation instead")
 // Removed public enum StorageLocation definition in favor of using KeyManagementTypes.StorageLocation directly
 
 // MARK: - Raw Conversion Extension (for KeyManagementTypes)
 
-/// Extension to provide conversion to/from the raw representation
-/// This will be used by KeyManagementTypes module through type extension
 public extension KeyManagementTypes.StorageLocation {
     /// The raw representation that matches the canonical type's raw locations
     enum RawRepresentation: String, Codable, Equatable {

@@ -1,8 +1,8 @@
+import CoreErrors
 import ErrorHandling
-import UmbraCoreTypes
 import ErrorHandlingDomains
 import Foundation
-import CoreErrors
+import UmbraCoreTypes
 
 // Type alias to disambiguate SecurityError types
 typealias SPCSecurityError = UmbraErrors.Security.Protocols
@@ -48,10 +48,10 @@ public enum XPCProtocolMigrationFactory {
         if let securityError = error as? CoreErrors.SecurityError {
             return convertErrorToSecurityProtocolError(securityError)
         }
-        
+
         // Convert to CoreErrors.SecurityError with appropriate mapping
         let nsError = error as NSError
-        
+
         // Try to create a more specific error based on domain and code
         return .internalError(nsError.localizedDescription)
     }
@@ -78,11 +78,11 @@ public enum XPCProtocolMigrationFactory {
         if let securityError = error as? ErrorHandlingDomains.UmbraErrors.Security.Protocols {
             return securityError
         }
-        
+
         // Convert to NSError and extract domain and code
         let nsError = error as NSError
         let domain = nsError.domain
-        
+
         // Map specific error domains
         if domain == NSURLErrorDomain {
             return .internalError("Connection interrupted")
@@ -98,7 +98,7 @@ public enum XPCProtocolMigrationFactory {
         // NSError properties
         let nsError = error as NSError
         let domain = nsError.domain
-        
+
         // Map specific error domains
         if domain == NSURLErrorDomain {
             return .internalError("Connection interrupted")
@@ -115,7 +115,7 @@ public enum XPCProtocolMigrationFactory {
         if let xpcError = error as? CoreErrors.SecurityError {
             return convertErrorToSecurityProtocolError(xpcError)
         }
-        
+
         // Otherwise create a general error with the original error's description
         return .internalError(error.localizedDescription)
     }
@@ -167,7 +167,9 @@ public enum XPCProtocolMigrationFactory {
     ///
     /// - Parameter error: The error to convert
     /// - Returns: Equivalent CoreErrors.SecurityError
-// MARK: - Swift Concurrency Helpers
+
+    // MARK: - Swift Concurrency Helpers
+
     /// Convert an error to a SecurityError
     /// - Parameter error: The error to convert
     /// - Returns: Equivalent ErrorHandlingDomains.UmbraErrors.Security.Protocols
@@ -178,7 +180,7 @@ public enum XPCProtocolMigrationFactory {
         if let securityError = error as? ErrorHandlingDomains.UmbraErrors.Security.Protocols {
             return securityError
         }
-        
+
         // Convert NSError
         let nsError = error as NSError
         // Try to create a more specific error based on domain and code

@@ -8,13 +8,13 @@ public final class KeychainSecureStorage: SecureStorageProtocol {
     // This acts as a simple wrapper around the KeychainService
     private let keychain: KeychainServiceProtocol
     private let serviceName = "UmbraKeychainStorage"
-    
+
     /// Initialize with a keychain service
     /// - Parameter keychainService: The keychain service to use
     public init(keychainService: KeychainServiceProtocol) {
-        self.keychain = keychainService
+        keychain = keychainService
     }
-    
+
     /// Stores data securely with the given identifier
     /// - Parameters:
     ///   - data: The data to store as SecureBytes
@@ -37,7 +37,7 @@ public final class KeychainSecureStorage: SecureStorageProtocol {
             return .failure(.storageFailure)
         }
     }
-    
+
     /// Retrieves data securely by its identifier
     /// - Parameter identifier: The unique identifier for the data
     /// - Returns: The retrieved data or an error
@@ -57,7 +57,7 @@ public final class KeychainSecureStorage: SecureStorageProtocol {
             return .failure(.storageFailure)
         }
     }
-    
+
     /// Deletes data securely by its identifier
     /// - Parameter identifier: The unique identifier for the data to delete
     /// - Returns: Result of the deletion operation
