@@ -1,13 +1,77 @@
 import CryptoTypes
 import CryptoTypesProtocols
+import ErrorHandlingDomains
 import Foundation
+import SecurityProtocolsCore
+import UmbraCoreTypes
 
-public actor MockCryptoService: CryptoServiceProtocol {
+public actor MockCryptoService: SecurityProtocolsCore.CryptoServiceProtocol {
     private var encryptedData: [String: Data] = [:]
     private var decryptedData: [String: Data] = [:]
 
     public init() {}
 
+    // MARK: - CryptoServiceProtocol Methods
+    
+    public func encrypt(data: UmbraCoreTypes.SecureBytes, using key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        return .success(data) // Mock implementation just returns the data
+    }
+    
+    public func decrypt(data: UmbraCoreTypes.SecureBytes, using key: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        return .success(data) // Mock implementation just returns the data
+    }
+    
+    public func generateKey() async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        let bytes = Array(repeating: UInt8(0), count: 32)
+        return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
+    }
+    
+    public func hash(data: UmbraCoreTypes.SecureBytes) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        let bytes = Array(repeating: UInt8(0), count: 32)
+        return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
+    }
+    
+    public func verify(data: UmbraCoreTypes.SecureBytes, against hash: UmbraCoreTypes.SecureBytes) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        return .success(true)
+    }
+    
+    public func encryptSymmetric(data: UmbraCoreTypes.SecureBytes, key: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    public func decryptSymmetric(data: UmbraCoreTypes.SecureBytes, key: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    public func encryptAsymmetric(data: UmbraCoreTypes.SecureBytes, publicKey: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    public func decryptAsymmetric(data: UmbraCoreTypes.SecureBytes, privateKey: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        return .success(data)
+    }
+    
+    public func hash(data: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        let bytes = Array(repeating: UInt8(0), count: 32)
+        return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
+    }
+    
+    public func sign(data: UmbraCoreTypes.SecureBytes, privateKey: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        let bytes = Array(repeating: UInt8(0), count: 64)
+        return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
+    }
+    
+    public func verify(signature: UmbraCoreTypes.SecureBytes, data: UmbraCoreTypes.SecureBytes, publicKey: UmbraCoreTypes.SecureBytes, config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        return .success(true)
+    }
+    
+    public func generateRandomData(length: Int) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        let bytes = Array(repeating: UInt8(0), count: length)
+        return .success(UmbraCoreTypes.SecureBytes(bytes: bytes))
+    }
+    
+    // MARK: - Legacy Methods
+    
     public func encrypt(_ data: Data, using key: Data, iv: Data) async throws -> Data {
         let identifier = "\(key.hashValue):\(iv.hashValue)"
         encryptedData[identifier] = data

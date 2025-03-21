@@ -20,35 +20,35 @@ public actor MockKeychain: SecureStorageProvider {
 
     public func load(forKey key: String) async throws -> Data {
         guard let data = storage[key] else {
-            throw SecurityInterfaces.SecurityError.operationFailed("No data found for key: \(key)")
+            throw ErrorHandlingDomains.UmbraErrors.Security.Protocols.makeStorageOperationFailed(message: "No data found for key: \(key)")
         }
         return data
     }
 
     public func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?) {
         guard let data = storage[key] else {
-            throw SecurityInterfaces.SecurityError.operationFailed("No data found for key: \(key)")
+            throw ErrorHandlingDomains.UmbraErrors.Security.Protocols.makeStorageOperationFailed(message: "No data found for key: \(key)")
         }
         return (data, metadata[key])
     }
 
     public func delete(forKey key: String) async throws {
         guard storage.removeValue(forKey: key) != nil else {
-            throw SecurityInterfaces.SecurityError.operationFailed("No data found for key: \(key)")
+            throw ErrorHandlingDomains.UmbraErrors.Security.Protocols.makeStorageOperationFailed(message: "No data found for key: \(key)")
         }
         metadata.removeValue(forKey: key)
     }
 
     public func getMetadata(forKey key: String) async throws -> [String: String]? {
         guard storage[key] != nil else {
-            throw SecurityInterfaces.SecurityError.operationFailed("No data found for key: \(key)")
+            throw ErrorHandlingDomains.UmbraErrors.Security.Protocols.makeStorageOperationFailed(message: "No data found for key: \(key)")
         }
         return metadata[key]
     }
 
     public func updateMetadata(_ metadata: [String: String], forKey key: String) async throws {
         guard storage[key] != nil else {
-            throw SecurityInterfaces.SecurityError.operationFailed("No data found for key: \(key)")
+            throw ErrorHandlingDomains.UmbraErrors.Security.Protocols.makeStorageOperationFailed(message: "No data found for key: \(key)")
         }
         self.metadata[key] = metadata
     }

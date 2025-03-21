@@ -1,6 +1,7 @@
 import ErrorHandlingDomains
 import Foundation
 import SecurityInterfaces
+import SecurityProtocolsCore
 import SecurityTypes
 
 // Define a protocol for URL-based security access
@@ -12,7 +13,7 @@ public protocol URLSecurityProvider {
     func startAccessing(url: URL) async throws -> Bool
 }
 
-public extension SecurityInterfaces.SecurityProvider {
+public extension SecurityProtocolsCore.SecurityProviderProtocol {
     /// Start accessing a URL security-scoped resource
     /// - Parameter url: URL to access
     /// - Returns: True if access was granted
@@ -20,8 +21,23 @@ public extension SecurityInterfaces.SecurityProvider {
     func startAccessing(url: URL) async throws -> Bool {
         // Access the path directly to avoid recursive call
         guard !url.path.isEmpty else {
-            throw SecurityInterfaces.SecurityError.operationFailed("Empty path")
+            throw ErrorHandlingDomains.UmbraErrors.Security.Protocols
+                .makeInvalidInput(message: "Empty path")
         }
         return true
+    }
+    
+    /// Performs an operation with security-scoped access to a path
+    /// - Parameters:
+    ///   - path: The path to access with security scope
+    ///   - operation: The operation to perform while access is granted
+    /// - Returns: The result of the operation
+    /// - Throws: An error if access could not be granted or if the operation fails
+    func withSecurityScopedAccess<T: Sendable>(
+        to path: String,
+        perform operation: @Sendable () async throws -> T
+    ) async throws -> T {
+        // Mock implementation that always grants access
+        return try await operation()
     }
 }

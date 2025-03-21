@@ -1,7 +1,7 @@
 import ErrorHandlingDomains
 import Foundation
 import RepositoriesTypes
-import SecurityInterfaces
+import SecurityProtocolsCore
 import SecurityTypes
 import SecurityTypesProtocols
 
@@ -11,7 +11,7 @@ public actor MockRepository: RepositoryCore & RepositoryLocking & RepositoryMain
     public let location: URL
     public private(set) var state: RepositoryState
 
-    private let securityProvider: SecurityInterfaces.SecurityProvider
+    private let securityProvider: SecurityProtocolsCore.SecurityProviderProtocol
     private var isLocked: Bool = false
     private var mockStats: RepositoryStatistics
 
@@ -19,7 +19,7 @@ public actor MockRepository: RepositoryCore & RepositoryLocking & RepositoryMain
         identifier: String = UUID().uuidString,
         location: URL = FileManager.default.temporaryDirectory.appendingPathComponent("mock-repo"),
         initialState: RepositoryState = .uninitialized,
-        securityProvider: SecurityInterfaces.SecurityProvider = MockSecurityProvider()
+        securityProvider: SecurityProtocolsCore.SecurityProviderProtocol = MockSecurityProvider()
     ) {
         self.identifier = identifier
         self.location = location
@@ -39,10 +39,15 @@ public actor MockRepository: RepositoryCore & RepositoryLocking & RepositoryMain
     }
 
     public func initialize() async throws {
-        guard try await securityProvider.startAccessing(url: location) else {
-            throw SecurityInterfaces.SecurityError
-                .accessError("Failed to access repository at \(location.path)")
+        // Capture the path outside the closure to avoid actor isolation issues
+        let pathToAccess = location.path
+        
+        // Use withSecurityScopedAccess but don't modify actor state inside the closure
+        try await securityProvider.withSecurityScopedAccess(to: pathToAccess) {
+            // Just return, we'll update state after the closure completes
         }
+        
+        // Update actor state outside the Sendable closure
         state = .ready
     }
 

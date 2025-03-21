@@ -77,10 +77,10 @@ public actor CryptoService: UmbraService {
     public static let serviceIdentifier = "com.umbracore.crypto"
 
     /// The internal state of the service.
-    private var _state: ServiceState = .uninitialized
+    private var _state: CoreServicesTypes.ServiceState = .uninitialized
 
     /// The current state of the service, accessible from any context.
-    public private(set) nonisolated(unsafe) var state: ServiceState = .uninitialized
+    public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = .uninitialized
 
     /// The configuration for cryptographic operations.
     private let config: CryptoTypes.CryptoConfig
