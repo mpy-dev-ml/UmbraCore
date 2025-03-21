@@ -21,8 +21,12 @@ Most errors relate to the ongoing XPC Protocol Consolidation work and fall into 
      - No type aliases required, in line with project coding standards
 
 - **Missing CryptoError Members (30+ occurrences)**
-  - Various members of `CryptoError` are referenced but not found
-  - This includes `asymmetricEncryptionError`, `decryptionError`, `keyGenerationError`, etc.
+  - ✅ **RESOLVED**: Added missing members to `CryptoError` in CoreErrors:
+    - Added `asymmetricDecryptionError(String)`, `hashingError(String)`, `signatureError(reason: String)`
+    - Added `unsupportedAlgorithm(String)`, `invalidLength(Int)`, `invalidParameters(reason: String)`
+  - ✅ **RESOLVED**: Updated `CryptoErrorMapper` to handle new cases
+  - ✅ **RESOLVED**: Fixed SecurityImplementation's CryptoErrorMapper to use fully qualified types
+  - ✅ **COMPLETED**: SecurityImplementation now builds successfully
 
 - **Missing Foundation Adapter Types (40+ occurrences)**
   - Types like `FoundationSecurityResult`, `FoundationCryptoServiceImpl`, etc. are not in scope
@@ -73,8 +77,8 @@ Most errors relate to the ongoing XPC Protocol Consolidation work and fall into 
      - No type aliases required, in line with project coding standards
 
 2. **Second Priority: Address CryptoError Members**
-   - Add missing members to `CryptoError` type or
-   - Update code to use the new error hierarchy (UmbraErrors.Crypto.Core)
+   - ✅ **RESOLVED**: Added missing members to `CryptoError` type or
+   - ✅ **RESOLVED**: Updated code to use the new error hierarchy (UmbraErrors.Crypto.Core)
 
 3. **Third Priority: Foundation Adapters**
    - Implement missing Foundation adapter types or
@@ -82,7 +86,39 @@ Most errors relate to the ongoing XPC Protocol Consolidation work and fall into 
 
 4. **High-Impact Files to Fix First**
    - `Sources/UmbraSecurity/Services/SecurityService.swift`
-   - `Sources/SecurityImplementation/Sources/CryptoServices/Core/CryptoErrorMapper.swift`
+   - ✅ **FIXED**: `Sources/SecurityImplementation/Sources/CryptoServices/Core/CryptoErrorMapper.swift`
    - `Sources/CryptoTypes/Types/CredentialManager.swift`
+   - `Sources/CoreDTOs/Sources/Security/XPCSecurityErrorDTO.swift` 
+   - `Sources/CoreDTOs/Sources/Converters/XPCSecurityDTOConverter.swift`
 
 This analysis aligns with the ongoing XPC Protocol Consolidation and Foundation-independent DTO work referenced in the project memories. The errors reflect a project in transition between legacy and new API designs.
+
+## Recently Completed Fixes
+
+1. **CryptoError Enhancements (21 March 2025)**
+   - Added missing cases to CryptoError type
+   - Updated CryptoErrorMapper to handle all error scenarios
+   - Fixed SecurityImplementation module's error handling
+   - Added proper type qualifications throughout related files
+   - Eliminated typealias usage in favor of concrete types
+
+2. **XPCSecurityError Resolution (20 March 2025)**
+   - Properly re-exported CoreErrors module in XPCProtocolsCore
+   - Updated all references to use fully qualified type
+   - Removed deprecated typealias per project standards
+   - Provided migration guidance in comments
+
+## Remaining Work
+
+1. **Highest Priority: Fix CoreDTOs Module**
+   - Address errors in XPCSecurityErrorDTO.swift and XPCSecurityDTOConverter.swift
+   - Update typealias declarations to match project standards
+   - Fix type references to ErrorHandlingDomains.UmbraErrors.Security.Protocols
+
+2. **Next: Address Foundation Adapters**
+   - Implement missing Foundation adapter types
+   - Update modules that need Foundation-independent versions of security types
+
+3. **Final: UmbraSecurity Services**
+   - Fix remaining issues in SecurityService.swift
+   - Address references to FoundationSecurityProvider and related types
