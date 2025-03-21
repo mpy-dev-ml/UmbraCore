@@ -4,6 +4,7 @@ import SecurityBridge
 import SecurityInterfaces
 import UmbraCoreTypes
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// This example demonstrates how to use the Foundation-independent DTOs with the SecurityBridge module.
 /// It shows how to create and use the XPCServiceDTOAdapter and perform cryptographic operations
@@ -29,13 +30,13 @@ struct SecurityBridgeDTOExample {
 
     /// Check if the service is available
     /// - Returns: A Result indicating whether the service is available
-    func checkServiceAvailability() async -> Result<Bool, XPCSecurityErrorDTO> {
+    func checkServiceAvailability() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         await serviceAdapter.ping()
     }
 
     /// Get service status information
     /// - Returns: A Result containing the service status
-    func getServiceStatus() async -> Result<XPCServiceDTO.ServiceStatusDTO, XPCSecurityErrorDTO> {
+    func getServiceStatus() async -> Result<XPCServiceDTO.ServiceStatusDTO, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         await serviceAdapter.getServiceStatus()
     }
 
@@ -44,10 +45,10 @@ struct SecurityBridgeDTOExample {
     ///   - data: The data to encrypt as a string
     ///   - keyIdentifier: Optional key identifier
     /// - Returns: A Result containing the encrypted data or an error
-    func encryptString(_ data: String, keyIdentifier: String? = nil) async -> Result<String, XPCSecurityErrorDTO> {
+    func encryptString(_ data: String, keyIdentifier: String? = nil) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         // Convert the string to bytes
         guard let dataBytes = data.data(using: .utf8) else {
-            return .failure(XPCSecurityErrorDTO.invalidInput(details: "Invalid UTF-8 string"))
+            return .failure(ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid UTF-8 string"))
         }
 
         // Create SecureBytes from the data
@@ -74,10 +75,10 @@ struct SecurityBridgeDTOExample {
     ///   - base64Data: The Base64-encoded data to decrypt
     ///   - keyIdentifier: Optional key identifier
     /// - Returns: A Result containing the decrypted string or an error
-    func decryptToString(_ base64Data: String, keyIdentifier: String? = nil) async -> Result<String, XPCSecurityErrorDTO> {
+    func decryptToString(_ base64Data: String, keyIdentifier: String? = nil) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         // Convert the Base64 string to data
         guard let data = Data(base64Encoded: base64Data) else {
-            return .failure(XPCSecurityErrorDTO.invalidInput(details: "Invalid Base64 string"))
+            return .failure(ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid Base64 string"))
         }
 
         // Create SecureBytes from the data
@@ -95,7 +96,7 @@ struct SecurityBridgeDTOExample {
             }
 
             guard let resultString = String(data: Data(bytesArray), encoding: .utf8) else {
-                return .failure(XPCSecurityErrorDTO.invalidInput(details: "Invalid UTF-8 data in decryption result"))
+                return .failure(ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid UTF-8 data in decryption result"))
             }
 
             return .success(resultString)
@@ -105,7 +106,7 @@ struct SecurityBridgeDTOExample {
     /// Generate random data
     /// - Parameter length: The length of the random data to generate (in bytes)
     /// - Returns: A Result containing the random data as a Base64 string or an error
-    func generateRandomData(length: Int) async -> Result<String, XPCSecurityErrorDTO> {
+    func generateRandomData(length: Int) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         let result = await serviceAdapter.generateRandomData(length: length)
 
         return result.flatMap { randomBytes in
@@ -125,10 +126,10 @@ struct SecurityBridgeDTOExample {
     ///   - data: The data to sign as a string
     ///   - keyIdentifier: Key identifier
     /// - Returns: A Result containing the signature as a Base64 string or an error
-    func signString(_ data: String, keyIdentifier: String) async -> Result<String, XPCSecurityErrorDTO> {
+    func signString(_ data: String, keyIdentifier: String) async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         // Convert the string to bytes
         guard let dataBytes = data.data(using: .utf8) else {
-            return .failure(XPCSecurityErrorDTO.invalidInput(details: "Invalid UTF-8 string"))
+            return .failure(ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid UTF-8 string"))
         }
 
         // Create SecureBytes from the data
@@ -160,15 +161,15 @@ struct SecurityBridgeDTOExample {
         _ signature: String,
         for data: String,
         keyIdentifier: String
-    ) async -> Result<Bool, XPCSecurityErrorDTO> {
+    ) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         // Convert the signature from Base64
         guard let signatureData = Data(base64Encoded: signature) else {
-            return .failure(XPCSecurityErrorDTO.invalidInput(details: "Invalid Base64 signature"))
+            return .failure(ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid Base64 signature"))
         }
 
         // Convert the data string to bytes
         guard let dataBytes = data.data(using: .utf8) else {
-            return .failure(XPCSecurityErrorDTO.invalidInput(details: "Invalid UTF-8 string"))
+            return .failure(ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.invalidInput(details: "Invalid UTF-8 string"))
         }
 
         // Create SecureBytes from the data

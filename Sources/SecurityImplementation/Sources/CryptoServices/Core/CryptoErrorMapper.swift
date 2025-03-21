@@ -158,10 +158,10 @@ public enum CryptoErrorMapper {
             return .randomDataGenerationError("Insufficient entropy")
 
         case let .internalError(message):
-            return .encryptionError("Internal error: \(message)")
+            return .encryptionFailed(reason: "Internal error: \(message)")
 
         @unknown default:
-            return .encryptionError("Unmapped crypto error: \(error)")
+            return .encryptionFailed(reason: "Unmapped crypto error: \(error)")
         }
     }
 }

@@ -2,6 +2,7 @@
 @testable import UmbraXPC
 import XCTest
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 @available(macOS 14.0, *)
 final class CryptoXPCServiceTests: XCTestCase {
@@ -60,7 +61,7 @@ final class CryptoXPCServiceTests: XCTestCase {
         do {
             _ = try await service.generateKey(bits: 123)
             XCTFail("Should throw error for invalid key size")
-        } catch let error as XPCSecurityError {
+        } catch let error as ErrorHandlingDomains.UmbraErrors.Security.Protocols {
             XCTAssertEqual(error, .invalidParameter, "Error should be invalid parameter type")
         } catch {
             XCTFail("Wrong error type: \(error)")
@@ -74,7 +75,7 @@ final class CryptoXPCServiceTests: XCTestCase {
         do {
             _ = try await service.decrypt(invalidData, key: key)
             XCTFail("Should throw error for invalid encrypted data")
-        } catch let error as XPCSecurityError {
+        } catch let error as ErrorHandlingDomains.UmbraErrors.Security.Protocols {
             XCTAssertEqual(error, .invalidData, "Error should be invalid data type")
         } catch {
             XCTFail("Wrong error type: \(error)")

@@ -110,7 +110,7 @@ public enum XPCProtocolDTOs {
         
         /// Convert a security error DTO to security error
         /// - Parameter dto: The security error DTO to convert
-        /// - Returns: An XPCSecurityError
+        /// - Returns: An ErrorHandlingDomains.UmbraErrors.Security.Protocols
         public static func fromDTO(_ dto: SecurityErrorDTO) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
             // Match error code to a specific error type
             if dto.code == 1001 {

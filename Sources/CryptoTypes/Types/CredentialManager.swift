@@ -2,6 +2,7 @@
 import ErrorHandling
 import ErrorHandlingDomains
 import Foundation
+import SecurityBridgeTypes
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
@@ -101,8 +102,8 @@ public actor CredentialManager {
         }
     }
     
-    /// Maps XPCSecurityError to UmbraErrors.Security.Core
-    private func mapXPCError(_ error: XPCSecurityError) -> Error {
+    /// Maps ErrorHandlingDomains.UmbraErrors.Security.Protocols to UmbraErrors.Security.Core
+    private func mapXPCError(_ error: ErrorHandlingDomains.UmbraErrors.Security.Protocols) -> Error {
         switch error {
         case .serviceUnavailable:
             return UmbraErrors.Security.Core.secureStorageFailed(

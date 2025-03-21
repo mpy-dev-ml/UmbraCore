@@ -5,10 +5,16 @@ umbra_swift_library(
     name = "CryptoTypesTypes",
     srcs = glob(["*.swift"]),
     deps = [
-        "//Sources/SecurityInterfaces",
+        "//Sources/CoreErrors", 
+        "//Sources/ErrorHandling",
+        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+        "//Sources/SecurityBridge",
+        "//Sources/SecurityBridgeTypes",
         "//Sources/SecurityProtocolsCore",
         "//Sources/SecurityTypes",
         "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
+        "//Sources/UmbraCoreTypes",
+        "//Sources/XPCProtocolsCore",
         "@swiftpkg_cryptoswift//:CryptoSwift",
     ],
 )

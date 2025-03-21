@@ -4,6 +4,7 @@ import SecurityInterfacesBase
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// Examples of using the Foundation-independent Security DTOs
 /// These examples demonstrate how to use the various DTO-based interfaces for security operations
@@ -153,7 +154,7 @@ private final class ExampleMockXPCService: XPCServiceProtocolComplete {
 
     // MARK: - XPCServiceProtocolStandard
 
-    func generateRandomData(length: Int) async -> Result<SecureBytes, XPCSecurityError> {
+    func generateRandomData(length: Int) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         var bytes = [UInt8](repeating: 0, count: length)
         for i in 0 ..< length {
             bytes[i] = UInt8.random(in: 0 ... 255)
@@ -161,43 +162,43 @@ private final class ExampleMockXPCService: XPCServiceProtocolComplete {
         return .success(SecureBytes(bytes: bytes))
     }
 
-    func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    func encryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple mock implementation - just return data unchanged for this example
         .success(data)
     }
 
-    func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityError> {
+    func decryptSecureData(_ data: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Simple mock implementation - just return data unchanged for this example
         .success(data)
     }
 
-    func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityError> {
+    func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Mock signature - just use random bytes
         await generateRandomData(length: 32)
     }
 
-    func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityError> {
+    func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Mock verification - always return success for example purposes
         .success(true)
     }
 
-    func pingStandard() async -> Result<Bool, XPCSecurityError> {
+    func pingStandard() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(true)
     }
 
-    func resetSecurity() async -> Result<Void, XPCSecurityError> {
+    func resetSecurity() async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(())
     }
 
-    func getServiceVersion() async -> Result<String, XPCSecurityError> {
+    func getServiceVersion() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success("1.0.0-mock")
     }
 
-    func getHardwareIdentifier() async -> Result<String, XPCSecurityError> {
+    func getHardwareIdentifier() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success("MOCK-HARDWARE-ID")
     }
 
-    func status() async -> Result<[String: Any], XPCSecurityError> {
+    func status() async -> Result<[String: Any], ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         let status: [String: Any] = [
             "status": "active",
             "version": "1.0.0",
@@ -210,19 +211,19 @@ private final class ExampleMockXPCService: XPCServiceProtocolComplete {
 
     // MARK: - XPCServiceProtocolComplete
 
-    func pingAsync() async -> Result<Bool, XPCSecurityError> {
+    func pingAsync() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success(true)
     }
 
-    func getDiagnosticInfo() async -> Result<String, XPCSecurityError> {
+    func getDiagnosticInfo() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success("Mock XPC Service - All systems operational")
     }
 
-    func getVersion() async -> Result<String, XPCSecurityError> {
+    func getVersion() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success("1.0.0-mock")
     }
 
-    func getMetrics() async -> Result<[String: String], XPCSecurityError> {
+    func getMetrics() async -> Result<[String: String], ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         .success([
             "operations": "42",
             "errors": "0",
@@ -231,7 +232,7 @@ private final class ExampleMockXPCService: XPCServiceProtocolComplete {
         ])
     }
 
-    func getSecurityConfigDTO() async -> Result<SecurityProtocolsCore.SecurityConfigDTO, XPCSecurityError> {
+    func getSecurityConfigDTO() async -> Result<SecurityProtocolsCore.SecurityConfigDTO, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Return a mock configuration
         .success(SecurityProtocolsCore.SecurityConfigDTO(
             algorithm: "AES-GCM",
@@ -239,7 +240,7 @@ private final class ExampleMockXPCService: XPCServiceProtocolComplete {
         ))
     }
 
-    func generateKeyDTO(config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, XPCSecurityError> {
+    func generateKeyDTO(config: SecurityProtocolsCore.SecurityConfigDTO) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // Generate a random key of the specified size
         let keyLength = config.keySizeInBits / 8
         return await generateRandomData(length: keyLength)

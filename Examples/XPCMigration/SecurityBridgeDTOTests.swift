@@ -4,6 +4,7 @@ import SecurityInterfaces
 import UmbraCoreTypes
 import XCTest
 import XPCProtocolsCore
+import ErrorHandlingDomains
 
 /// This file demonstrates how the Foundation-independent DTOs make testing easier
 /// and more reliable compared to the old NSObject-based approach.
@@ -19,69 +20,69 @@ class MockXPCServiceDTOAdapter: XPCServiceProtocolStandardDTO {
     var methodCalls: [String: Int] = [:]
 
     // Configurable responses for testing
-    var pingResponse: Result<Bool, XPCSecurityErrorDTO> = .success(true)
-    var randomDataResponse: Result<SecureBytes, XPCSecurityErrorDTO> = .success(SecureBytes(bytes: [1, 2, 3, 4]))
-    var encryptResponse: Result<SecureBytes, XPCSecurityErrorDTO> = .success(SecureBytes(bytes: [5, 6, 7, 8]))
-    var decryptResponse: Result<SecureBytes, XPCSecurityErrorDTO> = .success(SecureBytes(bytes: [9, 10, 11, 12]))
-    var signResponse: Result<SecureBytes, XPCSecurityErrorDTO> = .success(SecureBytes(bytes: [13, 14, 15, 16]))
-    var verifyResponse: Result<Bool, XPCSecurityErrorDTO> = .success(true)
-    var statusResponse: Result<XPCServiceDTO.ServiceStatusDTO, XPCSecurityErrorDTO> = .success(
+    var pingResponse: Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(true)
+    var randomDataResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(SecureBytes(bytes: [1, 2, 3, 4]))
+    var encryptResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(SecureBytes(bytes: [5, 6, 7, 8]))
+    var decryptResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(SecureBytes(bytes: [9, 10, 11, 12]))
+    var signResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(SecureBytes(bytes: [13, 14, 15, 16]))
+    var verifyResponse: Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(true)
+    var statusResponse: Result<XPCServiceDTO.ServiceStatusDTO, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(
         XPCServiceDTO.ServiceStatusDTO(status: "healthy", version: "1.0.0")
     )
-    var versionResponse: Result<String, XPCSecurityErrorDTO> = .success("1.0.0")
-    var hardwareIdentifierResponse: Result<String, XPCSecurityErrorDTO> = .success("test-hardware")
-    var resetSecurityResponse: Result<Void, XPCSecurityErrorDTO> = .success(())
+    var versionResponse: Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success("1.0.0")
+    var hardwareIdentifierResponse: Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success("test-hardware")
+    var resetSecurityResponse: Result<Void, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(())
 
     // Implementation of XPCServiceProtocolDTO methods
 
-    func ping() async -> Result<Bool, XPCSecurityErrorDTO> {
+    func ping() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("ping")
         return pingResponse
     }
 
-    func getServiceStatus() async -> Result<XPCServiceDTO.ServiceStatusDTO, XPCSecurityErrorDTO> {
+    func getServiceStatus() async -> Result<XPCServiceDTO.ServiceStatusDTO, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("getServiceStatus")
         return statusResponse
     }
 
-    func getServiceVersion() async -> Result<String, XPCSecurityErrorDTO> {
+    func getServiceVersion() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("getServiceVersion")
         return versionResponse
     }
 
-    func resetSecurity() async -> Result<Void, XPCSecurityErrorDTO> {
+    func resetSecurity() async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("resetSecurity")
         return resetSecurityResponse
     }
 
     // Implementation of XPCServiceProtocolStandardDTO methods
 
-    func generateRandomData(length _: Int) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
+    func generateRandomData(length _: Int) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("generateRandomData")
         return randomDataResponse
     }
 
-    func encryptData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
+    func encryptData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("encryptData")
         return encryptResponse
     }
 
-    func decryptData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
+    func decryptData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("decryptData")
         return decryptResponse
     }
 
-    func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, XPCSecurityErrorDTO> {
+    func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("sign")
         return signResponse
     }
 
-    func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, XPCSecurityErrorDTO> {
+    func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("verify")
         return verifyResponse
     }
 
-    func getHardwareIdentifier() async -> Result<String, XPCSecurityErrorDTO> {
+    func getHardwareIdentifier() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
         recordMethodCall("getHardwareIdentifier")
         return hardwareIdentifierResponse
     }
@@ -121,7 +122,7 @@ class SecurityService {
         // Check if the service is available
         let pingResult = await adapter.ping()
         guard case .success(true) = pingResult else {
-            return .failure(XPCSecurityErrorDTO.serviceUnavailable())
+            return .failure(ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.serviceUnavailable())
         }
 
         // Convert input data to SecureBytes
@@ -205,8 +206,8 @@ class SecurityServiceTests: XCTestCase {
         case .success:
             XCTFail("Expected failure but got success")
         case let .failure(error):
-            XCTAssertTrue(error is XPCSecurityErrorDTO)
-            if let errorDTO = error as? XPCSecurityErrorDTO {
+            XCTAssertTrue(error is ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO)
+            if let errorDTO = error as? ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO {
                 XCTAssertEqual(errorDTO.code, .serviceUnavailable)
             }
         }
@@ -232,8 +233,8 @@ class SecurityServiceTests: XCTestCase {
         case .success:
             XCTFail("Expected failure but got success")
         case let .failure(error):
-            XCTAssertTrue(error is XPCSecurityErrorDTO)
-            if let errorDTO = error as? XPCSecurityErrorDTO {
+            XCTAssertTrue(error is ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO)
+            if let errorDTO = error as? ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO {
                 XCTAssertEqual(errorDTO.code, .cryptographicError)
                 XCTAssertEqual(errorDTO.details["operation"], "encryption")
             }
