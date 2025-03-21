@@ -1,14 +1,20 @@
-load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
-umbra_swift_library(
-    name = "ErrorHandlingExamples",
-    srcs = glob(["*.swift"]),
-    enable_library_evolution = True,
-    tags = ["manual"],  # Mark as manual so it won't be built by default
-    deps = [
-        "//Sources/ErrorHandling/Common:ErrorHandlingCommon",
-        "//Sources/ErrorHandling/Interfaces:ErrorHandlingInterfaces",
-        "//Sources/ErrorHandling/Logging:ErrorHandlingLogging",
-        "//Sources/LoggingWrapper:LoggingWrapper",
+# This is an example that demonstrates using ErrorHandling
+# It's not intended to be used in production code
+# IMPORTANT: Example is temporarily disabled due to dependency changes
+
+# Disabled example - use filegroup instead of swift_library
+filegroup(
+    name = "ErrorHandlingExample",
+    srcs = [
+        "ErrorHandlingExample.swift",
     ],
+    visibility = ["//visibility:public"],
 )
+
+# Original dependencies that would be needed when re-enabling:
+# deps = [
+#     "//Sources/ErrorHandling",
+#     "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+# ]

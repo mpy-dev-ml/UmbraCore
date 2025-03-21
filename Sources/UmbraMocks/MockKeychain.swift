@@ -4,6 +4,51 @@ import Foundation
 import UmbraCoreTypes
 import XPCProtocolsCore
 
+// MARK: - Temporary type definitions for compilation
+
+/// Temporary protocol definition to allow compilation
+public protocol SecureStorageProtocol {
+    func storeSecurely(data: UmbraCoreTypes.SecureBytes, identifier: String) async -> KeyStorageResult
+    func retrieveSecurely(identifier: String) async -> KeyRetrievalResult
+    func deleteSecurely(identifier: String) async -> KeyDeletionResult
+}
+
+/// Temporary enum definition to allow compilation
+public enum KeyStorageResult {
+    case success
+    case failure(KeyStorageError)
+}
+
+/// Temporary enum definition to allow compilation
+public enum KeyStorageError: Error {
+    case keyAlreadyExists
+    case storageError(message: String)
+}
+
+/// Temporary enum definition to allow compilation
+public enum KeyRetrievalResult {
+    case success(UmbraCoreTypes.SecureBytes)
+    case failure(KeyRetrievalError)
+}
+
+/// Temporary enum definition to allow compilation
+public enum KeyRetrievalError: Error {
+    case keyNotFound
+    case retrievalError(message: String)
+}
+
+/// Temporary enum definition to allow compilation
+public enum KeyDeletionResult {
+    case success
+    case failure(KeyDeletionError)
+}
+
+/// Temporary enum definition to allow compilation
+public enum KeyDeletionError: Error {
+    case keyNotFound
+    case deletionError(message: String)
+}
+
 /// Mock implementation of a secure storage service for testing
 public final class MockKeychain: @unchecked Sendable, SecureStorageProtocol {
     /// Storage for the mock keychain

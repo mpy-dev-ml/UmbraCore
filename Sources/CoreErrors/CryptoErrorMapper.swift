@@ -281,10 +281,10 @@ public enum CryptoErrorMapper {
                 .invalidParameters(reason: "Invalid parameter \(parameter) for \(algorithm): \(reason)")
             }
 
-        case let .incompatibleParameters(algorithm, parameter, reason):
-            .invalidParameters(reason: "Incompatible parameter \(parameter) for \(algorithm): \(reason)")
+        case let .incompatibleParameters(algorithm, parameter, _):
+            .invalidParameters(reason: "Incompatible parameter \(parameter) for \(algorithm)")
 
-        case let .randomGenerationFailed(reason):
+        case .randomGenerationFailed(_):
             // We can't use the reason for the OSStatus but we're acknowledging its existence
             .randomGenerationFailed(status: 0)
 

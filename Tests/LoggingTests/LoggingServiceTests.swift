@@ -1,6 +1,6 @@
 @testable import SecurityTypes
 @testable import UmbraLogging
-import UmbraLoggingAdapters
+// import UmbraLoggingAdapters - Removing direct import to fix library evolution incompatibility
 import XCTest
 
 final class LoggingServiceTests: XCTestCase {

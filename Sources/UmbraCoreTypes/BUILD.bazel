@@ -10,7 +10,7 @@ swift_library(
         "//Sources/UmbraCoreTypes/CoreErrors:UmbraCoreTypesCoreErrors",
     ],
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         # Enabling library evolution for binary compatibility
         "-Xfrontend", "-enable-library-evolution",
     ],
@@ -31,6 +31,6 @@ swift_library(
 #         "//Sources/CoreErrors",
 #     ],
 #     copts = [
-#         "-target", "arm64-apple-macos15.4",
+#         "-target", "arm64-apple-macos14.7.4",
 #     ],
 # )

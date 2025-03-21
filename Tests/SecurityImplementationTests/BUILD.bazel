@@ -5,7 +5,7 @@ swift_test(
     srcs = glob(["*.swift"]),
     copts = [
         "-target",
-        "arm64-apple-macos15.4",
+        "arm64-apple-macos14.7.4",
         "-strict-concurrency=complete",
         "-enable-actor-data-race-checks",
         "-warn-concurrency",

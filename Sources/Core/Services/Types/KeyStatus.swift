@@ -27,7 +27,8 @@ public extension KeyManagementTypes.KeyStatus {
 }
 
 // Extension for Codable support
-extension KeyManagementTypes.KeyStatus: Codable {
+// Removing redundant Codable conformance as it's already declared in KeyManagementTypes
+extension KeyManagementTypes.KeyStatus {
     private enum CodingKeys: String, CodingKey {
         case type
         case deletionDate
@@ -47,13 +48,13 @@ extension KeyManagementTypes.KeyStatus: Codable {
 
         switch self {
         case .active:
-            try container.encode(StatusType.active, forKey: .type)
+            try container.encode(KeyManagementTypes.KeyStatus.StatusType.active, forKey: .type)
         case .compromised:
-            try container.encode(StatusType.compromised, forKey: .type)
+            try container.encode(KeyManagementTypes.KeyStatus.StatusType.compromised, forKey: .type)
         case .retired:
-            try container.encode(StatusType.retired, forKey: .type)
+            try container.encode(KeyManagementTypes.KeyStatus.StatusType.retired, forKey: .type)
         case let .pendingDeletion(date):
-            try container.encode(StatusType.pendingDeletion, forKey: .type)
+            try container.encode(KeyManagementTypes.KeyStatus.StatusType.pendingDeletion, forKey: .type)
             try container.encode(date, forKey: .deletionDate)
         }
     }
@@ -62,7 +63,7 @@ extension KeyManagementTypes.KeyStatus: Codable {
     @available(*, deprecated, message: "Will need to be refactored for Swift 6")
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(StatusType.self, forKey: .type)
+        let type = try container.decode(KeyManagementTypes.KeyStatus.StatusType.self, forKey: .type)
 
         switch type {
         case .active:

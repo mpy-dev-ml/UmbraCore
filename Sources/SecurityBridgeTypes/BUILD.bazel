@@ -9,7 +9,7 @@ umbracore_foundation_free_module(
         "//Sources/CoreErrors",
     ],
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         # Enabling library evolution for binary compatibility
         "-Xfrontend", "-enable-library-evolution",
         "-g",

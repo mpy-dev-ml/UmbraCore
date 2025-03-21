@@ -9,6 +9,7 @@ import KeyManagementTypes
 // public typealias KeyMetadataLegacy = KeyMetadata
 // public typealias KeyStatusLegacy = KeyStatus
 // public typealias StorageLocationLegacy = StorageLocation
+// public typealias ServiceStateLegacy = ServiceState
 
 /// Extension to provide migration helpers for the canonical KeyMetadata type
 extension KeyManagementTypes.KeyMetadata {
@@ -68,6 +69,9 @@ extension KeyManagementTypes.KeyMetadata {
             .requiresBiometric
         case .requiresBoth:
             .requiresBoth
+        @unknown default:
+            // Handle any new case that might be added in the future
+            .none
         }
     }
 

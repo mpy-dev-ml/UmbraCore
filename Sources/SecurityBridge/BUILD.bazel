@@ -10,7 +10,7 @@ swift_library(
     ]),
     module_name = "SecurityBridge",
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         # Library evolution enabled to support binary compatibility in dependent modules
         "-Xfrontend", "-enable-library-evolution",
         "-g",
@@ -45,7 +45,7 @@ swift_test(
     ],
     module_name = "SecurityBridgeTests",
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
     ],
@@ -70,7 +70,7 @@ swift_test(
     ],
     module_name = "RandomDataTests",
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
     ],
@@ -94,7 +94,7 @@ swift_test(
     ],
     module_name = "SecurityBridgeSanityTests",
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
     ],
@@ -117,7 +117,7 @@ swift_test(
     ],
     module_name = "SecurityProviderAdapterTests",
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
     ],
@@ -141,7 +141,7 @@ swift_test(
     ],
     module_name = "CryptoServiceAdapterTests",
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
     ],
@@ -163,7 +163,7 @@ swift_test(
     ],
     module_name = "TemporaryTests",
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
     ],
@@ -186,7 +186,7 @@ swift_test(
     ],
     module_name = "SanityTests",
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
     ],
@@ -208,7 +208,7 @@ swift_test(
     ],
     module_name = "SecurityBridgeMigrationTests",
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
     ],

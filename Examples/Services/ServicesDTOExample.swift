@@ -30,18 +30,18 @@ public struct ServicesDTOExample {
     // MARK: - Example Methods
 
     /// Run all examples
-    public func runAllExamples() {
+    public func runAllExamples() async {
         print("Running ServicesDTOAdapter Examples...")
 
-        runCredentialExamples()
-        runSecurityUtilsExamples()
-        runErrorHandlingExamples()
+        await runCredentialExamples()
+        await runSecurityUtilsExamples()
+        await runErrorHandlingExamples()
 
         print("Examples complete!")
     }
 
     /// Example of using the credential manager adapter
-    public func runCredentialExamples() {
+    public func runCredentialExamples() async {
         print("\n=== Credential Manager Examples ===\n")
 
         // Generate a sample credential
@@ -58,7 +58,7 @@ public struct ServicesDTOExample {
             ]
         )
         
-        let storeResult = credentialAdapter.storeCredential(
+        let storeResult = try? await credentialAdapter.storeCredential(
             sampleCredential,
             config: storeConfig
         )
@@ -77,7 +77,7 @@ public struct ServicesDTOExample {
                 ]
             )
             
-            let retrieveResult = credentialAdapter.retrieveCredential(
+            let retrieveResult = try? await credentialAdapter.retrieveCredential(
                 config: retrieveConfig
             )
 
@@ -95,7 +95,7 @@ public struct ServicesDTOExample {
                     ]
                 )
                 
-                let deleteResult = credentialAdapter.deleteCredential(
+                let deleteResult = try? await credentialAdapter.deleteCredential(
                     config: deleteConfig
                 )
 
@@ -119,7 +119,7 @@ public struct ServicesDTOExample {
     }
 
     /// Example of using the security utils adapter
-    public func runSecurityUtilsExamples() {
+    public func runSecurityUtilsExamples() async {
         print("\n=== Security Utils Examples ===\n")
 
         // Generate a key
@@ -128,7 +128,7 @@ public struct ServicesDTOExample {
             keySizeInBits: 256
         )
 
-        let keyResult = securityAdapter.generateKey(config: keyConfig)
+        let keyResult = try? await securityAdapter.generateKey(config: keyConfig)
 
         switch keyResult {
         case let .success(key):
@@ -138,7 +138,7 @@ public struct ServicesDTOExample {
             let dataToHash = "Hello, world!".data(using: .utf8)!.bytes
             let hashConfig = SecurityConfigDTO.hash(algorithm: "SHA256")
 
-            let hashResult = securityAdapter.hashData(dataToHash, config: hashConfig)
+            let hashResult = try? await securityAdapter.hashData(dataToHash, config: hashConfig)
 
             switch hashResult {
             case let .success(hash):
@@ -155,7 +155,7 @@ public struct ServicesDTOExample {
                     options: ["key": keyBase64]
                 )
 
-                let encryptResult = securityAdapter.encryptData(
+                let encryptResult = try? await securityAdapter.encryptData(
                     dataToEncrypt,
                     config: encryptConfig
                 )
@@ -171,7 +171,7 @@ public struct ServicesDTOExample {
                         options: ["key": keyBase64]
                     )
 
-                    let decryptResult = securityAdapter.decryptData(
+                    let decryptResult = try? await securityAdapter.decryptData(
                         encryptedData,
                         config: decryptConfig
                     )
@@ -209,7 +209,7 @@ public struct ServicesDTOExample {
     }
 
     /// Example of error handling with SecurityErrorDTO
-    public func runErrorHandlingExamples() {
+    public func runErrorHandlingExamples() async {
         print("\n=== Error Handling Examples ===\n")
 
         // Example of credential error handling
@@ -224,21 +224,18 @@ public struct ServicesDTOExample {
                 ]
             )
             
-            let result = credentialAdapter.retrieveCredential(
+            let result = try await credentialAdapter.retrieveCredential(
                 config: nonExistentConfig
             )
 
             switch result {
             case .success:
                 print("⚠️ Unexpected success when retrieving non-existent credential")
-            case let .failure(operationError):
+            case .failure(let errorCode, let errorMessage, _):
                 print("✅ Expected error when retrieving non-existent credential:")
-                print("   - Code: \(operationError.error.code)")
-                print("   - Domain: \(operationError.error.domain)")
-                print("   - Message: \(operationError.error.message)")
-                print("   - Details: \(operationError.error.details)")
+                print("   - Code: \(errorCode)")
+                print("   - Message: \(errorMessage)")
             }
-
         } catch {
             print("❌ Unexpected exception: \(error)")
         }
@@ -247,17 +244,17 @@ public struct ServicesDTOExample {
         print("\n--- SecurityErrorDTO Factory Methods ---\n")
 
         // Create different types of errors
-        let credentialError = SecurityErrorDTO.credentialError(
+        let credentialError = CoreDTOs.SecurityErrorDTO.credentialError(
             message: "Failed to access keychain",
             details: ["reason": "Keychain access denied"]
         )
 
-        let keyError = SecurityErrorDTO.keyError(
+        let keyError = ServicesDTOAdapter.ServicesErrorAdapter.keyError(
             message: "Invalid key size",
             details: ["requiredSize": "256 bits", "providedSize": "128 bits"]
         )
 
-        let encryptionError = SecurityErrorDTO.encryptionError(
+        let encryptionError = ServicesDTOAdapter.ServicesErrorAdapter.encryptionError(
             message: "Encryption failed",
             details: ["algorithm": "AES", "reason": "Invalid padding"]
         )
@@ -305,9 +302,9 @@ extension Data {
 // MARK: - Main Entry Point
 
 /// Run the Services DTO example
-public func runServicesDTOExample() {
+public func runServicesDTOExample() async {
     let example = ServicesDTOExample()
-    example.runAllExamples()
+    await example.runAllExamples()
 }
 
 @main
@@ -315,7 +312,7 @@ struct ServicesDTOExampleRunner {
     static func main() async {
         print("=== Services DTO Example ===\n")
 
-        runServicesDTOExample()
+        await runServicesDTOExample()
 
         print("\n=== Example Complete ===")
     }

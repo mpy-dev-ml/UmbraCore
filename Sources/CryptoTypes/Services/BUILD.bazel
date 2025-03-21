@@ -1,22 +1,16 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//:bazel/macros/swift.bzl", "umbra_swift_library")
 
-umbra_swift_library(
+swift_library(
     name = "CryptoTypesServices",
-    srcs = glob(
-        ["*.swift"],
-        allow_empty = True,
-    ),
+    srcs = glob(["*.swift"]),
+    module_name = "CryptoTypesServices",
     deps = [
-        "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
-        "//Sources/CryptoTypes/Types:CryptoTypesTypes",
+        "//Sources/Core",
         "//Sources/CoreErrors",
+        "//Sources/CryptoTypes",
         "//Sources/ErrorHandling",
-        "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
-        "//Sources/SecurityInterfaces",
-        "//Sources/SecurityTypes",
-        "//Sources/SecurityTypes/Protocols:SecurityTypesProtocols",
-        "//Sources/UmbraLogging",
-        "//Sources/XPC/Core:XPCCore",
+        "//Sources/UmbraCoreTypes",
     ],
+    visibility = ["//visibility:public"],
 )
