@@ -11,7 +11,7 @@ swift_library(
     module_name = "UmbraSecurityCore",
     target_compatible_with = ["@platforms//os:macos"],
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         # Enabling library evolution as this is a foundation-free core module
         "-Xfrontend", "-enable-library-evolution",
         "-g",
@@ -31,7 +31,7 @@ swift_test(
     srcs = glob(["Tests/**/*.swift"]),
     target_compatible_with = ["@platforms//os:macos"],
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
     ],

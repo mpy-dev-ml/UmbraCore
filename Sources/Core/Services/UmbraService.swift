@@ -1,6 +1,6 @@
 import CoreErrors
-import CoreServicesTypes
 import Foundation
+import Core.Services.Types
 
 /// Protocol defining the base requirements for all UmbraCore services
 public protocol UmbraService: Actor {
@@ -8,7 +8,7 @@ public protocol UmbraService: Actor {
     static var serviceIdentifier: String { get }
 
     /// Current state of the service
-    nonisolated var state: CoreServicesTypes.ServiceState { get }
+    nonisolated var state: ServiceState { get }
 
     /// Initialise the service
     /// - Throws: ServiceError if initialisation fails
@@ -25,7 +25,7 @@ public protocol UmbraService: Actor {
 /// Extension providing default implementations for UmbraService
 public extension UmbraService {
     func isUsable() async -> Bool {
-        state == CoreServicesTypes.ServiceState.ready || state == CoreServicesTypes.ServiceState.running
+        state == .ready || state == .running
     }
 }
 
@@ -83,10 +83,15 @@ public extension CoreErrors.ServiceError {
             return .configurationError
         case .dependencyError:
             print("Service dependency error: \(message)")
-            return .dependencyError
+            return CoreErrors.ServiceError.dependencyError
         case .operationFailed:
             print("Operation failed: \(message)")
-            return .operationFailed
+            return CoreErrors.ServiceError.operationFailed
         }
     }
+}
+
+extension CoreErrors.ServiceError {
+    public static var dependencyError: Self { .dependencyError }
+    public static var operationFailed: Self { .operationFailed }
 }

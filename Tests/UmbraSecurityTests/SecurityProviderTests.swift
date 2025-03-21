@@ -1,22 +1,31 @@
 @testable import FoundationBridgeTypes
 @testable import SecurityInterfaces
 @testable import SecurityInterfacesBase
-@testable import SecurityInterfacesFoundationBridge
 @testable import SecurityInterfacesProtocols
 @testable import UmbraSecurity
+@testable import SecurityProtocolsCore
 import XCTest
 
+// NOTE: This test needs to be rewritten to work with the new security architecture
 final class SecurityProviderTests: XCTestCase {
-    private var securityProvider: SecurityProvider!
+    // MARK: Test is disabled due to architecture changes
+    
+    func testSkipAllTests() {
+        // This test class needs to be rewritten to work with the new SecurityProtocolsCore architecture
+        XCTFail("This test needs to be updated to work with the new SecurityProtocolsCore architecture")
+    }
+    
+    /*
+    private var mockSecurityProvider: Any?
 
     override func setUp() {
         super.setUp()
-        // Create a security provider using the factory
-        securityProvider = SecurityProviderFactory.createDefaultProvider()
+        // Mark this test as needing attention due to architectural changes
+        XCTFail("This test needs to be updated to work with the new SecurityProtocolsCore architecture")
     }
 
     override func tearDown() {
-        securityProvider = nil
+        mockSecurityProvider = nil
         super.tearDown()
     }
 
@@ -91,4 +100,5 @@ final class SecurityProviderTests: XCTestCase {
         // Clean up
         try FileManager.default.removeItem(at: fileURL)
     }
+    */
 }

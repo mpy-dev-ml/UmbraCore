@@ -29,8 +29,8 @@ swift_test(
     flaky = True,
     deps = [
         "//Sources/CryptoTypes",
-        "//Sources/CryptoTypes/Services:CryptoTypesServices",
         "//Sources/CryptoTypes/Protocols:CryptoTypesProtocols",
+        "//Sources/CryptoTypes/Services:CryptoTypesServices",
         "//Sources/CryptoTypes/Types:CryptoTypesTypes",
         "//Tests/UmbraTestKit:UmbraTestKit",
     ],

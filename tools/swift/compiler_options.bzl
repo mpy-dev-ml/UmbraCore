@@ -1,5 +1,5 @@
 # Swift compiler options for the project
-# These are centralized here for consistency across all targets
+# These are centralised here for consistency across all targets
 
 # Library evolution options
 LIBRARY_EVOLUTION_OPTIONS = [
@@ -25,7 +25,7 @@ CONCURRENCY_SAFETY_OPTIONS = [
 
 # Target platform options
 PLATFORM_OPTIONS = [
-    "-target", "arm64-apple-macos15.4",
+    "-target", "arm64-apple-macos14.7.4",
 ]
 
 # Performance optimization options for release builds

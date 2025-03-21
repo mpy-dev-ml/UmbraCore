@@ -1,27 +1,29 @@
 import CommonCrypto
+import CoreDTOs
 import CoreErrors
-import CoreServicesTypes
+import Core.Services.Types
 import CryptoTypes
+import CryptoTypesTypes
 import Foundation
+import KeyManagementTypes
+import SecurityTypes
 
-// CryptoKit removed - cryptography will be handled in ResticBar
-
-/// Configuration options for cryptographic operations.
+/// Configuration for cryptographic operations.
 ///
 /// This struct defines the parameters used for key derivation, encryption,
 /// and other cryptographic operations. Default values are chosen to provide
 /// a good balance of security and performance.
-/// @deprecated This will be replaced by CryptoTypes.CryptoConfig in a future version.
-/// New code should use CryptoTypes.CryptoConfig instead.
+/// @deprecated This will be replaced by CryptoTypesTypes.CryptoConfig in a future version.
+/// New code should use CryptoTypesTypes.CryptoConfig instead.
 @available(
     *,
     deprecated,
-    message: "This will be replaced by CryptoTypes.CryptoConfig in a future version. Use CryptoTypes.CryptoConfig instead."
+    message: "This will be replaced by CryptoTypesTypes.CryptoConfig in a future version. Use CryptoTypesTypes.CryptoConfig instead."
 )
-public typealias CryptoConfig = CryptoTypes.CryptoConfig
+public typealias CryptoConfig = CryptoTypesTypes.CryptoConfig
 
 // Keep existing functionality for backward compatibility
-public extension CryptoTypes.CryptoConfig {
+public extension CryptoTypesTypes.CryptoConfig {
     /// The number of iterations for key derivation.
     ///
     /// Higher values increase security but also increase processing time.
@@ -41,8 +43,8 @@ public extension CryptoTypes.CryptoConfig {
         keySize: Int = 256,
         ivSize: Int = 96,
         iterations _: Int = 10000
-    ) -> CryptoTypes.CryptoConfig {
-        CryptoTypes.CryptoConfig(keyLength: keySize, ivLength: ivSize / 8)
+    ) -> CryptoTypesTypes.CryptoConfig {
+        CryptoTypesTypes.CryptoConfig(keyLength: keySize, ivLength: ivSize / 8)
     }
 }
 
@@ -65,31 +67,31 @@ public struct EncryptionResult: Sendable {
 /// `CryptoService` handles encryption, decryption, and key derivation operations
 /// in a thread-safe manner. It uses industry-standard algorithms and practices
 /// to ensure data security.
-/// @deprecated This will be replaced by CryptoTypes.CryptoService in a future version.
-/// New code should use CryptoTypes.CryptoService implementation instead.
+/// @deprecated This will be replaced by CryptoTypesTypes.CryptoService in a future version.
+/// New code should use CryptoTypesTypes.CryptoService implementation instead.
 @available(
     *,
     deprecated,
-    message: "This will be replaced by CryptoTypes.CryptoService in a future version. Use CryptoTypes.CryptoService implementation instead."
+    message: "This will be replaced by CryptoTypesTypes.CryptoService in a future version. Use CryptoTypesTypes.CryptoService implementation instead."
 )
 public actor CryptoService: UmbraService {
     /// The unique identifier for this service.
     public static let serviceIdentifier = "com.umbracore.crypto"
 
     /// The internal state of the service.
-    private var _state: CoreServicesTypes.ServiceState = .uninitialized
+    private var _state: ServiceState = .uninitialized
 
     /// The current state of the service, accessible from any context.
-    public private(set) nonisolated(unsafe) var state: CoreServicesTypes.ServiceState = .uninitialized
+    public private(set) nonisolated(unsafe) var state: ServiceState = .uninitialized
 
     /// The configuration for cryptographic operations.
-    private let config: CryptoTypes.CryptoConfig
+    private let config: CryptoTypesTypes.CryptoConfig
 
     /// Creates a new crypto service with the specified configuration.
     ///
     /// - Parameter config: The configuration to use for cryptographic operations.
     ///                    Defaults to standard secure parameters.
-    public init(config: CryptoTypes.CryptoConfig = CryptoTypes.CryptoConfig.legacyInit()) {
+    public init(config: CryptoTypesTypes.CryptoConfig = CryptoTypesTypes.CryptoConfig.default) {
         self.config = config
     }
 
@@ -112,15 +114,15 @@ public actor CryptoService: UmbraService {
             throw CoreErrors.ServiceError.configurationError
         }
 
-        state = .ready
-        _state = .ready
+        state = .running
+        _state = .running
     }
 
     /// Gracefully shuts down the service.
     ///
     /// - Throws: No errors are thrown by this method.
     public func shutdown() async {
-        if _state == .ready {
+        if _state == .running {
             state = .shuttingDown
             _state = .shuttingDown
             // Perform any cleanup if needed
@@ -134,7 +136,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: Random bytes for use as a key.
     /// - Throws: `CryptoError` if key generation fails.
     public func generateKey() throws -> [UInt8] {
-        guard _state == .ready else {
+        guard _state == .initializing || _state == .running else {
             throw CoreErrors.ServiceError.invalidState
         }
 
@@ -151,7 +153,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: Random bytes for use as an IV.
     /// - Throws: `CryptoError` if IV generation fails.
     public func generateIV() throws -> [UInt8] {
-        guard _state == .ready else {
+        guard _state == .initializing || _state == .running else {
             throw CoreErrors.ServiceError.invalidState
         }
 
@@ -174,7 +176,7 @@ public actor CryptoService: UmbraService {
         _ data: [UInt8],
         using key: [UInt8]
     ) throws -> EncryptionResult {
-        guard _state == .ready else {
+        guard _state == .running else {
             throw CoreErrors.ServiceError.invalidState
         }
 
@@ -209,7 +211,7 @@ public actor CryptoService: UmbraService {
         _ encryptedData: EncryptionResult,
         using key: [UInt8]
     ) throws -> [UInt8] {
-        guard _state == .ready else {
+        guard _state == .running else {
             throw CoreErrors.ServiceError.invalidState
         }
 
@@ -239,7 +241,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: Derived key.
     /// - Throws: `CryptoError` on failure.
     public func deriveKey(from _: String, salt _: [UInt8]) async throws -> [UInt8] {
-        guard _state == .ready else {
+        guard _state == .running else {
             throw CoreErrors.ServiceError.invalidState
         }
 
@@ -253,7 +255,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: Random bytes as Data.
     /// - Throws: `CryptoError` on failure.
     public func generateSecureRandomBytes(length: Int) async throws -> Data {
-        guard _state == .ready else {
+        guard _state == .running else {
             throw CoreErrors.ServiceError.invalidState
         }
 
@@ -273,7 +275,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: Array of random bytes.
     /// - Throws: `CryptoError` if random generation fails.
     public func generateRandomBytes(count: Int) throws -> [UInt8] {
-        guard _state == .ready else {
+        guard state == .running else {
             throw CoreErrors.ServiceError.invalidState
         }
 
@@ -291,7 +293,7 @@ public actor CryptoService: UmbraService {
     /// - Returns: The resulting hash value as a byte array
     /// - Throws: ServiceError if the service is not ready
     public func hash(_ data: [UInt8]) async throws -> [UInt8] {
-        guard _state == .ready else {
+        guard state == .running else {
             throw CoreErrors.ServiceError.invalidState
         }
 
@@ -309,6 +311,23 @@ public actor CryptoService: UmbraService {
 
     /// Check if the service is in a usable state
     public func isUsable() async -> Bool {
-        _state == .ready
+        switch state {
+        case .uninitialized:
+            return false
+        case .initializing:
+            return false
+        case .running:
+            return true
+        case .ready:
+            return true
+        case .shuttingDown:
+            return false
+        case .error:
+            return false
+        case .suspended:
+            return false
+        case .shutdown:
+            return false
+        }
     }
 }

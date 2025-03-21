@@ -1,19 +1,48 @@
 // CryptoKit removed - cryptography will be handled in ResticBar
 import CoreErrors
+import CryptoTypes
 import CryptoTypesProtocols
 import CryptoTypesTypes
-import ErrorHandlingDomains
+import ErrorHandling
 import Foundation
 import SecurityTypes
 import SecurityTypesProtocols
 import UmbraCoreTypes
-import XPCCore
 import XPCProtocolsCore
+
+/// Configuration for cryptographic operations
+public struct CryptoConfig: Sendable {
+    public let algorithm: String
+    public let keySize: Int
+    public let ivLength: Int
+    
+    public init(algorithm: String, keySize: Int, ivLength: Int) {
+        self.algorithm = algorithm
+        self.keySize = keySize
+        self.ivLength = ivLength
+    }
+}
+
+/// Protocol for secure storage providers
+public protocol SecureStorageProvider: Actor, Sendable {
+    func save(_ data: Data, forKey key: String, metadata: [String: String]?) async throws
+    func loadWithMetadata(forKey key: String) async throws -> (Data, [String: String]?)
+    func delete(forKey key: String) async throws
+    func exists(forKey key: String) async -> Bool
+    func allKeys() async throws -> [String]
+    func reset(preserveKeys: Bool) async
+}
+
+/// Data structure for secure storage
+public struct SecureStorageData: Codable {
+    public let encryptedData: Data
+    public let iv: Data
+}
 
 /// Manages secure storage and retrieval of credentials
 public actor CredentialManager {
     private let keychain: any SecureStorageProvider
-    private let xpcService: any (ModernCryptoXPCServiceProtocol & Sendable)
+    private let xpcService: any (XPCServiceProtocolComplete & Sendable)
     private let config: CryptoConfig
 
     /// Initialize a new CredentialManager
@@ -23,7 +52,7 @@ public actor CredentialManager {
     ///   - config: Cryptographic configuration
     public init(
         service: String,
-        xpcService: any(ModernCryptoXPCServiceProtocol & Sendable),
+        xpcService: any(XPCServiceProtocolComplete & Sendable),
         config: CryptoConfig
     ) {
         keychain = KeychainAccess(service: service)
@@ -39,7 +68,7 @@ public actor CredentialManager {
         let key = try await getMasterKey()
 
         // Generate random IV using the XPC service
-        let ivResult = await xpcService.generateSecureRandomData(length: config.ivLength)
+        let ivResult = await xpcService.generateRandomData(length: config.ivLength)
         guard case let .success(iv) = ivResult else {
             if case let .failure(error) = ivResult {
                 throw error
@@ -69,7 +98,13 @@ public actor CredentialManager {
                 encryptedData = Data(buffer)
             }
 
-            let storageData = SecureStorageData(encryptedData: encryptedData, iv: iv)
+            // Convert SecureBytes IV to Data
+            var dataIV = Data()
+            iv.withUnsafeBytes { buffer in
+                dataIV = Data(buffer)
+            }
+
+            let storageData = SecureStorageData(encryptedData: encryptedData, iv: dataIV)
             let encodedData = try JSONEncoder().encode(storageData)
             try await keychain.save(encodedData, forKey: identifier, metadata: nil)
         case let .failure(error):
@@ -149,9 +184,9 @@ public actor CredentialManager {
         }
 
         // Generate a secure random key using the XPC service
-        let keyLength = config.keyLength / 8
+        let keyLength = config.keySize / 8
 
-        let randomDataResult = await xpcService.generateSecureRandomData(length: keyLength)
+        let randomDataResult = await xpcService.generateRandomData(length: keyLength)
         guard case let .success(key) = randomDataResult else {
             if case let .failure(error) = randomDataResult {
                 throw error
@@ -160,36 +195,32 @@ public actor CredentialManager {
                 .randomGenerationFailed(reason: "Failed to generate master key")
         }
 
-        try await keychain.save(key, forKey: "master_key", metadata: nil)
-        return key
+        // Convert SecureBytes to Data first
+        var keyData = Data()
+        key.withUnsafeBytes { buffer in
+            keyData = Data(buffer)
+        }
+        
+        try await keychain.save(keyData, forKey: "master_key", metadata: nil)
+        
+        return keyData
     }
 
     // Helper method to encrypt data using the XPC service
     private func encrypt(
         data: SecureBytes,
         using key: SecureBytes,
-        iv _: SecureBytes,
-        service: any (ModernCryptoXPCServiceProtocol & Sendable)
-    ) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
+        iv: SecureBytes,
+        service: any (XPCServiceProtocolComplete & Sendable)
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         // Convert SecureBytes to Data for XPC interface
-        var dataBytes = Data()
-        var keyBytes = Data()
-
-        data.withUnsafeBytes { buffer in
-            dataBytes = Data(buffer)
-        }
-
-        key.withUnsafeBytes { buffer in
-            keyBytes = Data(buffer)
-        }
+        // No conversion needed since the interface now expects SecureBytes
 
         // Using the provided service reference instead of accessing the actor property
-        let result = await service.encrypt(dataBytes, key: keyBytes)
+        let result = await service.encryptSecureData(data, keyIdentifier: nil)
 
-        // Convert result back to SecureBytes
-        return result.map { encryptedData in
-            SecureBytes(bytes: [UInt8](encryptedData))
-        }
+        // Result is already in the correct type
+        return result
     }
 
     // Helper method to decrypt data using the XPC service
@@ -197,27 +228,13 @@ public actor CredentialManager {
         data: SecureBytes,
         using key: SecureBytes,
         iv _: SecureBytes,
-        service: any (ModernCryptoXPCServiceProtocol & Sendable)
-    ) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
-        // Convert SecureBytes to Data for XPC interface
-        var dataBytes = Data()
-        var keyBytes = Data()
+        service: any (XPCServiceProtocolComplete & Sendable)
+    ) async -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
+        // Using the provided service reference
+        let result = await service.decryptSecureData(data, keyIdentifier: nil)
 
-        data.withUnsafeBytes { buffer in
-            dataBytes = Data(buffer)
-        }
-
-        key.withUnsafeBytes { buffer in
-            keyBytes = Data(buffer)
-        }
-
-        // Using the provided service reference instead of accessing the actor property
-        let result = await service.decrypt(dataBytes, key: keyBytes)
-
-        // Convert result back to SecureBytes
-        return result.map { decryptedData in
-            SecureBytes(bytes: [UInt8](decryptedData))
-        }
+        // No need to convert back as the result is already SecureBytes
+        return result
     }
 }
 

@@ -13,7 +13,7 @@ umbracore_foundation_free_module(
         "//Sources/UmbraCoreTypes",
     ],
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-swift-version", "6",
         "-g",
         "-O", # Enable optimizations
@@ -46,7 +46,7 @@ umbracore_module_test(
         "//Sources/SecureBytes",
     ],
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-swift-version", "6",
         "-g",
     ],

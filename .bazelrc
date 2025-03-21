@@ -1,12 +1,15 @@
 # Platform configuration
 build --apple_platform_type=macos
-build --macos_minimum_os=15.4
+build --macos_minimum_os=14.7.4
 build --cpu=darwin_arm64
 build --host_cpu=darwin_arm64
 build --platforms=//:macos_arm64
 build --apple_crosstool_top=@local_config_apple_cc//:toolchain
 build --crosstool_top=@local_config_apple_cc//:toolchain
 build --host_crosstool_top=@local_config_apple_cc//:toolchain
+
+# Swift compiler flags for target platform consistency
+# Note: We rely on the compiler_options.bzl settings instead of setting Swift flags here
 
 # Import Swift-specific configurations
 # import ./.bazelrc.swift

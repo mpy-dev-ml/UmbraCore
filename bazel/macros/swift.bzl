@@ -93,7 +93,7 @@ def umbra_swift_test(
     
     # Base environment variables for Swift tests
     base_env = {
-        "MACOS_DEPLOYMENT_TARGET": "15.4",
+        "MACOS_DEPLOYMENT_TARGET": "14.7.4",  # Updated from 15.4 to match project minimum
         "SWIFT_DETERMINISTIC_HASHING": "1",
         "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer",
     }

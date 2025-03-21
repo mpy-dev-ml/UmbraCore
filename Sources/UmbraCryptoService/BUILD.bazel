@@ -1,5 +1,13 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
+# NOTE: UmbraCryptoService is temporarily disabled due to dependency issues
+# with CryptoTypesServices which is undergoing significant refactoring
+# filegroup(
+#     name = "UmbraCryptoService",
+#     srcs = glob(["*.swift"]),
+#     visibility = ["//visibility:public"],
+# )
+
 swift_library(
     name = "UmbraCryptoService",
     srcs = glob(["*.swift"]),
@@ -8,7 +16,7 @@ swift_library(
         "//Sources/CoreErrors",
         "//Sources/CryptoSwiftFoundationIndependent",
         "//Sources/CryptoTypes",
-        "//Sources/CryptoTypes/Services:CryptoTypesServices",
+        # "//Sources/CryptoTypes/Services:CryptoTypesServices", # Temporarily disabled until fixed
         "//Sources/ErrorHandling",
         "//Sources/LoggingWrapper",
         "//Sources/SecurityUtils",

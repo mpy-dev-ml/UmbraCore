@@ -7,7 +7,7 @@ swift_library(
     module_name = "SecureBytes",
     visibility = ["//visibility:public"],
     copts = [
-        "-target", "arm64-apple-macos15.4",
+        "-target", "arm64-apple-macos14.7.4",
         "-g",
         "-swift-version", "5",
         "-Xfrontend", "-enable-library-evolution",

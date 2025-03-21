@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "UmbraCore",
     platforms: [
-        .macOS(.v14),
+        .macOS(.v14_7),
     ],
     products: [
         .library(

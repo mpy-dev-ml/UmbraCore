@@ -1,15 +1,19 @@
-load("//:bazel/macros/swift.bzl", "umbra_swift_library")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
-umbra_swift_library(
-    name = "XPCProtocolsCoreExamples",
+# This is an example that demonstrates using XPCProtocolsCore
+# It's not intended to be used in production code
+# IMPORTANT: Example is temporarily disabled due to dependency changes
+
+# Disabled example - use filegroup instead of swift_library
+filegroup(
+    name = "XPCProtocolsCoreExample",
     srcs = glob(["*.swift"]),
-    enable_library_evolution = True,
-    tags = ["manual"],  # Mark as manual so it won't be built by default
-    deps = [
-        "//Sources/CoreDTOs",
-        "//Sources/CoreErrors",
-        "//Sources/ErrorHandling",
-        "//Sources/UmbraCoreTypes",
-        "//Sources/XPCProtocolsCore",
-    ],
+    visibility = ["//visibility:public"],
 )
+
+# Original dependencies that would be needed when re-enabling:
+# deps = [
+#     "//Sources/ErrorHandling",
+#     "//Sources/ErrorHandling/Domains:ErrorHandlingDomains",
+#     "//Sources/XPCProtocolsCore",
+# ]

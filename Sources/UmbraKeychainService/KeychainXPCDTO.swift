@@ -102,18 +102,18 @@ public enum KeychainXPCDTO {
 public extension KeychainXPCDTO.KeychainOperationError {
     /// Convert to XPC security error
     /// - Returns: The XPC security error
-    func toErrorHandlingDomains.UmbraErrors.Security.Protocols() -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
+    func toSecurityProtocolsError() -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
         switch self {
         case .duplicateItem:
-            .internalError("Duplicate item exists")
+            return .internalError("Duplicate item exists")
         case .itemNotFound:
-            .missingProtocolImplementation(protocolName: "unknown")
+            return .missingProtocolImplementation(protocolName: "KeychainOperation")
         case let .internalError(message):
-            .internalError(message)
+            return .internalError(message)
         case .serviceUnavailable:
-            .invalidState(state: "unavailable", expectedState: "available")
+            return .invalidState(state: "unavailable", expectedState: "available")
         case .authenticationFailed:
-            .invalidInput("Authentication failed")
+            return .invalidInput("Authentication failed")
         }
     }
 }
@@ -125,15 +125,15 @@ public extension ErrorHandlingDomains.UmbraErrors.Security.Protocols {
     func toKeychainOperationError() -> KeychainXPCDTO.KeychainOperationError {
         switch self {
         case .missingProtocolImplementation:
-            .itemNotFound
+            return .itemNotFound
         case .invalidInput where description.contains("Authentication"):
-            .authenticationFailed
+            return .authenticationFailed
         case let .invalidState(state, _) where state == "unavailable":
-            .serviceUnavailable
+            return .serviceUnavailable
         case let .internalError(description):
-            .internalError(description)
+            return .internalError(description)
         default:
-            .internalError("Unknown XPC security error: \(self)")
+            return .internalError("Unknown XPC security error: \(self)")
         }
     }
 }

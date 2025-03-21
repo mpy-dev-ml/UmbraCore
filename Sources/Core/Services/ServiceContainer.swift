@@ -68,7 +68,7 @@ public actor ServiceContainer {
         dependencyGraph[identifier] = Set(dependencies)
 
         // Set initial state
-        await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.uninitialized)
+        await updateServiceState(identifier, newState: .uninitialized)
     }
 
     /// Resolve a service by type
@@ -116,18 +116,18 @@ public actor ServiceContainer {
         // Initialise services in order
         for serviceId in serviceIds {
             guard let service = services[serviceId] else { continue }
-            guard service.state == CoreServicesTypes.ServiceState.uninitialized else { continue }
+            guard service.state == .uninitialized else { continue }
 
             let initializer: () async throws -> Void = { [weak self] in
                 do {
                     await self?.updateServiceState(
                         serviceId,
-                        newState: CoreServicesTypes.ServiceState.initializing
+                        newState: .uninitialized
                     )
                     try await service.initialize()
-                    await self?.updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.ready)
+                    await self?.updateServiceState(serviceId, newState: .ready)
                 } catch {
-                    await self?.updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.error)
+                    await self?.updateServiceState(serviceId, newState: .error)
                     throw CoreErrors.ServiceError.initialisationFailed
                 }
             }
@@ -145,7 +145,7 @@ public actor ServiceContainer {
         }
 
         // Don't initialise if already initialised
-        guard service.state == CoreServicesTypes.ServiceState.uninitialized else {
+        guard service.state == .uninitialized else {
             return
         }
 
@@ -155,12 +155,12 @@ public actor ServiceContainer {
         }
 
         // Initialise the service
-        await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.initializing)
+        await updateServiceState(identifier, newState: .uninitialized)
         do {
             try await service.initialize()
-            await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.ready)
+            await updateServiceState(identifier, newState: .ready)
         } catch {
-            await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.error)
+            await updateServiceState(identifier, newState: .error)
             throw CoreErrors.ServiceError.initialisationFailed
         }
     }
@@ -173,9 +173,9 @@ public actor ServiceContainer {
         for serviceId in serviceIds {
             guard let service = services[serviceId] else { continue }
 
-            await updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.shuttingDown)
+            await updateServiceState(serviceId, newState: .shuttingDown)
             await service.shutdown()
-            await updateServiceState(serviceId, newState: CoreServicesTypes.ServiceState.shutdown)
+            await updateServiceState(serviceId, newState: .shutdown)
         }
     }
 
@@ -185,9 +185,9 @@ public actor ServiceContainer {
         guard let service = services[identifier] else { return }
 
         // Shut down service
-        await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.shuttingDown)
+        await updateServiceState(identifier, newState: .shuttingDown)
         await service.shutdown()
-        await updateServiceState(identifier, newState: CoreServicesTypes.ServiceState.shutdown)
+        await updateServiceState(identifier, newState: .shutdown)
     }
 
     /// Update the state of a service and notify any observers
