@@ -41,24 +41,18 @@ public struct SecurityUtilsDTOAdapter {
 
             guard result == errSecSuccess else {
                 return .failure(
-                    .init(
-                        error: SecurityErrorDTO.keyError(
-                            message: "Failed to generate random key",
-                            details: ["osStatus": "\(result)"]
-                        )
-                    )
+                    errorCode: 1001, // Using the key error code from SecurityErrorDTO
+                    errorMessage: "Failed to generate random key",
+                    details: ["osStatus": "\(result)"]
                 )
             }
 
             return .success(keyData)
         } catch {
             return .failure(
-                .init(
-                    error: SecurityErrorDTO.keyError(
-                        message: "Unknown error generating key: \(error.localizedDescription)",
-                        details: ["error": "\(error)"]
-                    )
-                )
+                errorCode: 1001, // Using the key error code from SecurityErrorDTO
+                errorMessage: "Unknown error generating key: \(error.localizedDescription)",
+                details: ["error": "\(error)"]
             )
         }
     }
@@ -88,14 +82,9 @@ public struct SecurityUtilsDTOAdapter {
             return .success(hashBytes)
         } catch {
             return .failure(
-                .init(
-                    error: SecurityErrorDTO(
-                        code: Int32(error._code),
-                        domain: "security.hash",
-                        message: "Failed to hash data: \(error.localizedDescription)",
-                        details: ["algorithm": config.algorithm]
-                    )
-                )
+                errorCode: 1002, // Using the hash error code from SecurityErrorDTO
+                errorMessage: "Failed to hash data: \(error.localizedDescription)",
+                details: ["algorithm": config.algorithm]
             )
         }
     }
@@ -119,24 +108,18 @@ public struct SecurityUtilsDTOAdapter {
             // Check if we have a key in the options
             guard let keyBase64 = config.options["key"] else {
                 return .failure(
-                    .init(
-                        error: SecurityErrorDTO.encryptionError(
-                            message: "Missing encryption key in configuration",
-                            details: ["algorithm": algorithm]
-                        )
-                    )
+                    errorCode: 1003, // Using the encryption error code from SecurityErrorDTO
+                    errorMessage: "Missing encryption key in configuration",
+                    details: ["algorithm": algorithm]
                 )
             }
 
             // Convert key from Base64
             guard let keyData = Data(base64Encoded: keyBase64) else {
                 return .failure(
-                    .init(
-                        error: SecurityErrorDTO.encryptionError(
-                            message: "Invalid encryption key format",
-                            details: ["algorithm": algorithm]
-                        )
-                    )
+                    errorCode: 1003, // Using the encryption error code from SecurityErrorDTO
+                    errorMessage: "Invalid encryption key format",
+                    details: ["algorithm": algorithm]
                 )
             }
 
@@ -149,12 +132,9 @@ public struct SecurityUtilsDTOAdapter {
             return .success(encryptedBytes)
         } catch {
             return .failure(
-                .init(
-                    error: SecurityErrorDTO.encryptionError(
-                        message: "Failed to encrypt data: \(error.localizedDescription)",
-                        details: ["algorithm": config.algorithm]
-                    )
-                )
+                errorCode: 1003, // Using the encryption error code from SecurityErrorDTO
+                errorMessage: "Failed to encrypt data: \(error.localizedDescription)",
+                details: ["algorithm": config.algorithm]
             )
         }
     }
@@ -178,24 +158,18 @@ public struct SecurityUtilsDTOAdapter {
             // Check if we have a key in the options
             guard let keyBase64 = config.options["key"] else {
                 return .failure(
-                    .init(
-                        error: SecurityErrorDTO.decryptionError(
-                            message: "Missing decryption key in configuration",
-                            details: ["algorithm": algorithm]
-                        )
-                    )
+                    errorCode: 1004, // Using the decryption error code from SecurityErrorDTO
+                    errorMessage: "Missing decryption key in configuration",
+                    details: ["algorithm": algorithm]
                 )
             }
 
             // Convert key from Base64
             guard let keyData = Data(base64Encoded: keyBase64) else {
                 return .failure(
-                    .init(
-                        error: SecurityErrorDTO.decryptionError(
-                            message: "Invalid decryption key format",
-                            details: ["algorithm": algorithm]
-                        )
-                    )
+                    errorCode: 1004, // Using the decryption error code from SecurityErrorDTO
+                    errorMessage: "Invalid decryption key format",
+                    details: ["algorithm": algorithm]
                 )
             }
 
@@ -208,12 +182,9 @@ public struct SecurityUtilsDTOAdapter {
             return .success(decryptedBytes)
         } catch {
             return .failure(
-                .init(
-                    error: SecurityErrorDTO.decryptionError(
-                        message: "Failed to decrypt data: \(error.localizedDescription)",
-                        details: ["algorithm": config.algorithm]
-                    )
-                )
+                errorCode: 1004, // Using the decryption error code from SecurityErrorDTO
+                errorMessage: "Failed to decrypt data: \(error.localizedDescription)",
+                details: ["algorithm": config.algorithm]
             )
         }
     }
