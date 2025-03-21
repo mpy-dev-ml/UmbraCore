@@ -3,7 +3,7 @@ import UmbraCoreTypes
 /// FoundationIndependent representation of a notification.
 /// This data transfer object encapsulates notification data
 /// without using any Foundation types.
-public struct NotificationDTO: Sendable, Equatable {
+public struct ProgressNotificationDTO: Sendable, Equatable {
     // MARK: - Types
 
     /// Represents the severity level of the notification
@@ -109,17 +109,17 @@ public struct NotificationDTO: Sendable, Equatable {
     ///   - source: Source of the notification
     ///   - timestamp: When the notification was created (Unix timestamp)
     ///   - id: Unique identifier for the notification (auto-generated if nil)
-    /// - Returns: A NotificationDTO with info level
+    /// - Returns: A ProgressNotificationDTO with info level
     public static func info(
         title: String,
         message: String,
         source: String,
         timestamp: UInt64,
         id: String? = nil
-    ) -> NotificationDTO {
+    ) -> ProgressNotificationDTO {
         let notificationId = id ?? generateId(prefix: "info")
 
-        return NotificationDTO(
+        return ProgressNotificationDTO(
             id: notificationId,
             timestamp: timestamp,
             level: .info,
@@ -136,17 +136,17 @@ public struct NotificationDTO: Sendable, Equatable {
     ///   - source: Source of the notification
     ///   - timestamp: When the notification was created (Unix timestamp)
     ///   - id: Unique identifier for the notification (auto-generated if nil)
-    /// - Returns: A NotificationDTO with warning level
+    /// - Returns: A ProgressNotificationDTO with warning level
     public static func warning(
         title: String,
         message: String,
         source: String,
         timestamp: UInt64,
         id: String? = nil
-    ) -> NotificationDTO {
+    ) -> ProgressNotificationDTO {
         let notificationId = id ?? generateId(prefix: "warn")
 
-        return NotificationDTO(
+        return ProgressNotificationDTO(
             id: notificationId,
             timestamp: timestamp,
             level: .warning,
@@ -163,17 +163,17 @@ public struct NotificationDTO: Sendable, Equatable {
     ///   - source: Source of the notification
     ///   - timestamp: When the notification was created (Unix timestamp)
     ///   - id: Unique identifier for the notification (auto-generated if nil)
-    /// - Returns: A NotificationDTO with error level
+    /// - Returns: A ProgressNotificationDTO with error level
     public static func error(
         title: String,
         message: String,
         source: String,
         timestamp: UInt64,
         id: String? = nil
-    ) -> NotificationDTO {
+    ) -> ProgressNotificationDTO {
         let notificationId = id ?? generateId(prefix: "err")
 
-        return NotificationDTO(
+        return ProgressNotificationDTO(
             id: notificationId,
             timestamp: timestamp,
             level: .error,
@@ -190,17 +190,17 @@ public struct NotificationDTO: Sendable, Equatable {
     ///   - source: Source of the notification
     ///   - timestamp: When the notification was created (Unix timestamp)
     ///   - id: Unique identifier for the notification (auto-generated if nil)
-    /// - Returns: A NotificationDTO with success level
+    /// - Returns: A ProgressNotificationDTO with success level
     public static func success(
         title: String,
         message: String,
         source: String,
         timestamp: UInt64,
         id: String? = nil
-    ) -> NotificationDTO {
+    ) -> ProgressNotificationDTO {
         let notificationId = id ?? generateId(prefix: "succ")
 
-        return NotificationDTO(
+        return ProgressNotificationDTO(
             id: notificationId,
             timestamp: timestamp,
             level: .success,
@@ -219,7 +219,7 @@ public struct NotificationDTO: Sendable, Equatable {
     ///   - actionTitle: Title for the action button
     ///   - timestamp: When the notification was created (Unix timestamp)
     ///   - id: Unique identifier for the notification (auto-generated if nil)
-    /// - Returns: A NotificationDTO with an associated action
+    /// - Returns: A ProgressNotificationDTO with an associated action
     public static func actionable(
         level: Level,
         title: String,
@@ -228,10 +228,10 @@ public struct NotificationDTO: Sendable, Equatable {
         actionTitle: String,
         timestamp: UInt64,
         id: String? = nil
-    ) -> NotificationDTO {
+    ) -> ProgressNotificationDTO {
         let notificationId = id ?? generateId(prefix: "act")
 
-        return NotificationDTO(
+        return ProgressNotificationDTO(
             id: notificationId,
             timestamp: timestamp,
             level: level,
@@ -251,17 +251,17 @@ public struct NotificationDTO: Sendable, Equatable {
     ///   - message: Detailed message
     ///   - timestamp: When the notification was created (Unix timestamp)
     ///   - id: Unique identifier for the notification (auto-generated if nil)
-    /// - Returns: A NotificationDTO for a security-related notification
+    /// - Returns: A ProgressNotificationDTO for a security-related notification
     public static func security(
         level: Level,
         title: String,
         message: String,
         timestamp: UInt64,
         id: String? = nil
-    ) -> NotificationDTO {
+    ) -> ProgressNotificationDTO {
         let notificationId = id ?? generateId(prefix: "sec")
 
-        return NotificationDTO(
+        return ProgressNotificationDTO(
             id: notificationId,
             timestamp: timestamp,
             level: level,
@@ -292,9 +292,9 @@ public struct NotificationDTO: Sendable, Equatable {
     // MARK: - Utility Methods
 
     /// Create a copy of this notification marked as read
-    /// - Returns: A new NotificationDTO marked as read
-    public func markAsRead() -> NotificationDTO {
-        NotificationDTO(
+    /// - Returns: A new ProgressNotificationDTO marked as read
+    public func markAsRead() -> ProgressNotificationDTO {
+        ProgressNotificationDTO(
             id: id,
             timestamp: timestamp,
             level: level,
@@ -310,14 +310,14 @@ public struct NotificationDTO: Sendable, Equatable {
 
     /// Create a copy of this notification with updated metadata
     /// - Parameter additionalMetadata: The metadata to add or update
-    /// - Returns: A new NotificationDTO with updated metadata
-    public func withUpdatedMetadata(_ additionalMetadata: [String: String]) -> NotificationDTO {
+    /// - Returns: A new ProgressNotificationDTO with updated metadata
+    public func withUpdatedMetadata(_ additionalMetadata: [String: String]) -> ProgressNotificationDTO {
         var newMetadata = metadata
         for (key, value) in additionalMetadata {
             newMetadata[key] = value
         }
 
-        return NotificationDTO(
+        return ProgressNotificationDTO(
             id: id,
             timestamp: timestamp,
             level: level,
@@ -333,9 +333,9 @@ public struct NotificationDTO: Sendable, Equatable {
 
     /// Create a copy of this notification with an action
     /// - Parameter actionTitle: Title for the action button
-    /// - Returns: A new NotificationDTO with an action
-    public func withAction(_ actionTitle: String) -> NotificationDTO {
-        NotificationDTO(
+    /// - Returns: A new ProgressNotificationDTO with an action
+    public func withAction(_ actionTitle: String) -> ProgressNotificationDTO {
+        ProgressNotificationDTO(
             id: id,
             timestamp: timestamp,
             level: level,
@@ -351,9 +351,9 @@ public struct NotificationDTO: Sendable, Equatable {
 
     /// Create a copy of this notification with updated message
     /// - Parameter newMessage: The updated message
-    /// - Returns: A new NotificationDTO with updated message
-    public func withMessage(_ newMessage: String) -> NotificationDTO {
-        NotificationDTO(
+    /// - Returns: A new ProgressNotificationDTO with updated message
+    public func withMessage(_ newMessage: String) -> ProgressNotificationDTO {
+        ProgressNotificationDTO(
             id: id,
             timestamp: timestamp,
             level: level,

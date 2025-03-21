@@ -1,4 +1,5 @@
 import UmbraCoreTypes
+import Foundation
 
 /// A Foundation-independent representation of a file path
 public struct FilePathDTO: Sendable, Equatable {

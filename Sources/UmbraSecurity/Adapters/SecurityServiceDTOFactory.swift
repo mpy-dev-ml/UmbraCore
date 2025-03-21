@@ -9,7 +9,7 @@ public enum SecurityServiceDTOFactory {
     /// - Parameter securityService: Optional custom security service to use
     /// - Returns: A security service adapter with Foundation-independent interface
     public static func createSecurityService(
-        securityService: SecurityService = SecurityService.shared
+        securityService: SecurityService = DefaultSecurityService.shared
     ) -> SecurityServiceDTOAdapter {
         SecurityServiceDTOAdapter(securityService: securityService)
     }
@@ -18,7 +18,7 @@ public enum SecurityServiceDTOFactory {
     /// - Parameter bookmarkService: Optional custom bookmark service to use
     /// - Returns: A bookmark service adapter with Foundation-independent interface
     public static func createBookmarkService(
-        bookmarkService: BookmarkServiceType = SecurityService.shared
+        bookmarkService: BookmarkServiceType = DefaultSecurityService.shared as! BookmarkServiceType
     ) -> BookmarkServiceDTOAdapter {
         BookmarkServiceDTOAdapter(bookmarkService: bookmarkService)
     }
@@ -29,10 +29,10 @@ public enum SecurityServiceDTOFactory {
         security: SecurityServiceDTOAdapter,
         bookmarks: BookmarkServiceDTOAdapter
     ) {
-        let securityService = SecurityService.shared
+        let securityService = DefaultSecurityService.shared
         return (
             security: SecurityServiceDTOAdapter(securityService: securityService),
-            bookmarks: BookmarkServiceDTOAdapter(bookmarkService: securityService)
+            bookmarks: BookmarkServiceDTOAdapter(bookmarkService: securityService as! BookmarkServiceType)
         )
     }
 }

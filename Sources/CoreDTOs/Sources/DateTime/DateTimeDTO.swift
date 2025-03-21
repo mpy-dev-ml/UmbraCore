@@ -1,10 +1,44 @@
 import Foundation
 
 /// A Foundation-independent representation of a date and time.
+///
+/// `DateTimeDTO` provides a complete representation of date and time that can be used
+/// across the application without depending on Foundation's `Date` type. This struct
+/// allows for explicit timezone handling, formatting, and various calendar operations.
+///
+/// ## Overview
+/// The `DateTimeDTO` offers several benefits:
+/// - Foundation independence for improved portability
+/// - Explicit timezone handling with clear offset representation
+/// - Comprehensive date and time component access
+/// - Built-in formatting capabilities
+///
+/// ## Example Usage
+/// ```swift
+/// // Create a date for January 1, 2025 at noon UTC
+/// let date = DateTimeDTO(
+///     year: 2025,
+///     month: .january,
+///     day: 1,
+///     hour: 12,
+///     minute: 0,
+///     second: 0,
+///     timeZoneOffset: .utc
+/// )
+///
+/// // Format the date
+/// let formatted = date.formatted(dateStyle: .full, timeStyle: .short)
+///
+/// // Get Unix timestamp
+/// let timestamp = date.timestamp
+/// ```
 public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
     // MARK: - Types
     
-    /// Calendar month representation
+    /// Calendar month representation.
+    ///
+    /// Represents the twelve months of the Gregorian calendar, starting with January (1)
+    /// and ending with December (12).
     public enum Month: Int, Sendable, Equatable, Hashable, Codable {
         case january = 1
         case february = 2
@@ -20,7 +54,10 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         case december = 12
     }
     
-    /// Day of week representation
+    /// Day of week representation.
+    ///
+    /// Represents the seven days of the week in the Gregorian calendar, with Sunday as 1
+    /// and Saturday as 7, matching the ISO-8601 standard.
     public enum Weekday: Int, Sendable, Equatable, Hashable, Codable {
         case sunday = 1
         case monday = 2
@@ -31,7 +68,19 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         case saturday = 7
     }
     
-    /// Time zone offset in hours and minutes from UTC
+    /// Time zone offset in hours and minutes from UTC.
+    ///
+    /// Represents a timezone as an offset from UTC (Coordinated Universal Time).
+    /// The offset includes hours and minutes, along with whether the offset is positive or negative.
+    ///
+    /// ## Example
+    /// ```swift
+    /// // Create a timezone offset for Eastern Standard Time (UTC-5:00)
+    /// let est = TimeZoneOffset(hours: 5, minutes: 0, isPositive: false)
+    ///
+    /// // Create a timezone offset for India Standard Time (UTC+5:30)
+    /// let ist = TimeZoneOffset(hours: 5, minutes: 30, isPositive: true)
+    /// ```
     public struct TimeZoneOffset: Sendable, Equatable, Hashable, Codable {
         /// Hours offset from UTC (-12 to +14)
         public let hours: Int
@@ -75,33 +124,43 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
     
     // MARK: - Properties
     
-    /// Year component (e.g., 2025)
+    /// Year component (e.g., 2025).
     public let year: Int
     
-    /// Month component (1-12)
+    /// Month component (1-12).
     public let month: Month
     
-    /// Day component (1-31)
+    /// Day component (1-31).
     public let day: Int
     
-    /// Hour component (0-23)
+    /// Hour component (0-23).
     public let hour: Int
     
-    /// Minute component (0-59)
+    /// Minute component (0-59).
     public let minute: Int
     
-    /// Second component (0-59)
+    /// Second component (0-59).
     public let second: Int
     
-    /// Nanosecond component (0-999,999,999)
+    /// Nanosecond component (0-999,999,999).
     public let nanosecond: Int
     
-    /// Time zone offset from UTC
+    /// Time zone offset from UTC.
     public let timeZoneOffset: TimeZoneOffset
     
     // MARK: - Initialization
     
-    /// Initialize with components
+    /// Initialize a date and time with individual components.
+    ///
+    /// - Parameters:
+    ///   - year: Year component (e.g., 2025)
+    ///   - month: Month component (January-December)
+    ///   - day: Day component (1-31)
+    ///   - hour: Hour component (0-23), defaults to 0
+    ///   - minute: Minute component (0-59), defaults to 0
+    ///   - second: Second component (0-59), defaults to 0
+    ///   - nanosecond: Nanosecond component (0-999,999,999), defaults to 0
+    ///   - timeZoneOffset: Time zone offset from UTC, defaults to UTC
     public init(
         year: Int,
         month: Month,
@@ -122,9 +181,14 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         self.timeZoneOffset = timeZoneOffset
     }
     
-    /// Initialize with Unix timestamp (seconds since 1970-01-01 00:00:00 UTC)
-    /// - Parameter timestamp: Unix timestamp in seconds
-    /// - Parameter timeZoneOffset: Optional time zone offset (defaults to UTC)
+    /// Initialize with Unix timestamp (seconds since 1970-01-01 00:00:00 UTC).
+    ///
+    /// - Parameters:
+    ///   - timestamp: Unix timestamp in seconds
+    ///   - timeZoneOffset: Optional time zone offset, defaults to UTC
+    /// 
+    /// This initializer creates a `DateTimeDTO` representing the same point in time
+    /// as the given Unix timestamp, but in the specified time zone.
     public init(timestamp: Double, timeZoneOffset: TimeZoneOffset = TimeZoneOffset.utc) {
         // Split into seconds and nanoseconds
         let wholeSeconds = floor(timestamp)
@@ -136,9 +200,12 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         
         // Create calendar in the desired time zone
         let calendar = Calendar(identifier: .gregorian)
-        var timeZone = TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60) ?? TimeZone(secondsFromGMT: 0)!
+        let timeZoneObj = TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60) ?? TimeZone(secondsFromGMT: 0)!
         
-        var components = calendar.dateComponents(
+        var calendarWithTimeZone = calendar
+        calendarWithTimeZone.timeZone = timeZoneObj
+        
+        let components = calendarWithTimeZone.dateComponents(
             [.year, .month, .day, .hour, .minute, .second, .weekday],
             from: date
         )
@@ -156,7 +223,10 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
     
     // MARK: - Computed Properties
     
-    /// Get the weekday for this date
+    /// Get the weekday for this date.
+    ///
+    /// Uses calendar calculations to determine which day of the week
+    /// this date falls on, according to the Gregorian calendar.
     public var weekday: Weekday {
         // Use Foundation's Date for proper calendar calculations
         let calendar = Calendar(identifier: .gregorian)
@@ -176,11 +246,15 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         return .sunday
     }
     
-    /// Unix timestamp (seconds since 1970-01-01 00:00:00 UTC)
+    /// Unix timestamp (seconds since 1970-01-01 00:00:00 UTC).
+    ///
+    /// Calculates the number of seconds between this date and time and
+    /// the Unix epoch (January 1, 1970, 00:00:00 UTC), accounting for
+    /// the time zone offset.
     public var timestamp: Double {
         // Convert to Foundation's Date for timestamp calculation
         let calendar = Calendar(identifier: .gregorian)
-        var components = DateComponents(
+        let components = DateComponents(
             calendar: calendar,
             timeZone: TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60),
             year: year,
@@ -229,7 +303,7 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
     ) -> DateTimeDTO {
         // Use Foundation's Date for calendar calculations
         let calendar = Calendar(identifier: .gregorian)
-        var components = DateComponents(
+        let components = DateComponents(
             calendar: calendar,
             timeZone: TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60),
             year: year,
