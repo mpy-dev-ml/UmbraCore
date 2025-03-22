@@ -35,8 +35,17 @@ jobs:
           fi
           yq --version
           
-          # Set up Xcode using the latest stable version
-          sudo xcode-select -s /Applications/Xcode.app
+          # Check and set up Xcode only if needed
+          DESIRED_XCODE_PATH="/Applications/Xcode.app"
+          CURRENT_XCODE_PATH=$(xcode-select -p)
+          
+          if [ "$CURRENT_XCODE_PATH" != "$DESIRED_XCODE_PATH" ] && [ -d "$DESIRED_XCODE_PATH" ]; then
+            echo "Setting Xcode path to $DESIRED_XCODE_PATH"
+            sudo xcode-select -s "$DESIRED_XCODE_PATH"
+          else
+            echo "Xcode already correctly configured at $CURRENT_XCODE_PATH"
+          fi
+          
           xcodebuild -version
           swift --version  # Use Swift that comes with Xcode
           
