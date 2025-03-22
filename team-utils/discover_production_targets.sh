@@ -4,116 +4,121 @@
 
 set -e
 
-echo "===== DEBUG: Starting production discovery script ====="
-echo "Current directory: $(pwd)"
-echo "Current user: $(whoami)"
+# Use stderr for all debugging output
+debug() {
+    echo "$@" >&2
+}
+
+debug "===== DEBUG: Starting production target discovery script ====="
+debug "Current directory: $(pwd)"
+debug "Current user: $(whoami)"
 
 # Check if yq is installed
 if ! command -v yq &> /dev/null; then
-    echo "Error: yq is not installed. Please install it with 'brew install yq'"
-    echo "Visit https://github.com/mikefarah/yq for more information."
+    debug "Error: yq is not installed. Please install it with 'brew install yq'"
+    debug "Visit https://github.com/mikefarah/yq for more information."
     exit 1
 fi
 
-echo "yq version: $(yq --version)"
+debug "yq version: $(yq --version)"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CONFIG_FILE="${SCRIPT_DIR}/production_config.yml"
 TARGETS_FILE="${SCRIPT_DIR}/production_targets.txt"
 TEMP_CONFIG_FILE="${CONFIG_FILE}.tmp"
 
-echo "===== DEBUG: Script paths ====="
-echo "SCRIPT_DIR: $SCRIPT_DIR"
-echo "CONFIG_FILE: $CONFIG_FILE"
-echo "TARGETS_FILE: $TARGETS_FILE"
+debug "===== DEBUG: Script paths ====="
+debug "SCRIPT_DIR: $SCRIPT_DIR"
+debug "CONFIG_FILE: $CONFIG_FILE"
+debug "TARGETS_FILE: $TARGETS_FILE"
 
-# Define patterns to exclude (test targets, etc.)
-EXCLUDE_PATTERNS=(
-    ".*Tests"
-    ".*TestHelpers"
-    ".*ForTesting"
-    ".*_runner"
+# Define known deprecated patterns
+DEPRECATED_PATTERNS=(
+    "//Sources/SecurityBridge:.*"
+    "//Sources/.*:.*_tests"
 )
 
 # Ensure the config file exists with necessary structure
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Creating new config file: $CONFIG_FILE"
+    debug "Creating new config file: $CONFIG_FILE"
     echo "# Production target configuration for UmbraCore" > "$CONFIG_FILE"
-    echo "# This file contains the targets to be included in production builds" >> "$CONFIG_FILE"
+    echo "# This file contains the targets to be run in production build workflows" >> "$CONFIG_FILE"
     echo "" >> "$CONFIG_FILE"
     echo "# Target configuration" >> "$CONFIG_FILE"
     echo "targets: []" >> "$CONFIG_FILE"
     echo "" >> "$CONFIG_FILE"
-    echo "# Excluded target patterns" >> "$CONFIG_FILE"
-    echo "excluded:" >> "$CONFIG_FILE"
-    for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+    echo "# Deprecated targets to ignore" >> "$CONFIG_FILE"
+    echo "deprecated:" >> "$CONFIG_FILE"
+    for pattern in "${DEPRECATED_PATTERNS[@]}"; do
         echo "  - pattern: \"$pattern\"" >> "$CONFIG_FILE"
     done
 fi
 
-echo "Discovering production targets in the UmbraCore project..."
+debug "Discovering production targets in the UmbraCore project..."
 
-# Use bazelisk query to find all library and binary targets
-echo "Querying production targets with bazelisk..."
-ALL_TARGETS=$(bazelisk query 'kind("(swift|objc|cc)_(library|binary) rule", //Sources/...)' 2>&1 || echo "Error during query: $?")
+# Use bazelisk query to find all library targets
+debug "Querying production targets with bazelisk..."
+ALL_TARGETS=$(bazelisk query 'kind("swift_library rule", //Sources/...)' 2>&1 || echo "Error during query: $?")
 
 if [[ "$ALL_TARGETS" == Error* ]]; then
-  echo "===== DEBUG: Error during bazelisk query ====="
-  echo "$ALL_TARGETS"
-  echo "Creating a minimal production targets file to allow CI to proceed with a subset of targets"
+  debug "===== DEBUG: Error during bazelisk query ====="
+  debug "$ALL_TARGETS"
+  debug "Creating a minimal production targets file to allow CI to proceed with a subset of targets"
+  # Make sure to completely empty the targets file first
+  true > "$TARGETS_FILE"
   echo "//Sources/CoreDTOs:CoreDTOs" > "$TARGETS_FILE"
   echo "//Sources/ErrorHandling:ErrorHandling" >> "$TARGETS_FILE"
-  echo "Generated minimal $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) fallback production targets."
+  debug "Generated minimal $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) fallback production targets."
   exit 0
 fi
 
 # Create a temporary file to store discovered targets
 echo "# Production target configuration for UmbraCore" > "$TEMP_CONFIG_FILE"
-echo "# This file contains the targets to be included in production builds" >> "$TEMP_CONFIG_FILE"
+echo "# This file contains the targets to be run in production build workflows" >> "$TEMP_CONFIG_FILE"
 echo "" >> "$TEMP_CONFIG_FILE"
 echo "# Target configuration" >> "$TEMP_CONFIG_FILE"
 echo "targets:" >> "$TEMP_CONFIG_FILE"
 
-# Read the current excluded patterns
+# Read the current deprecated patterns
 if [ -f "$CONFIG_FILE" ]; then
-    CURRENT_EXCLUDED=$(yq '.excluded[].pattern' "$CONFIG_FILE" 2>/dev/null || echo "")
-    echo "===== DEBUG: Current excluded patterns ====="
-    echo "$CURRENT_EXCLUDED"
+    CURRENT_DEPRECATED=$(yq '.deprecated[].pattern' "$CONFIG_FILE" 2>/dev/null || echo "")
+    debug "===== DEBUG: Current deprecated patterns ====="
+    debug "$CURRENT_DEPRECATED"
 else
-    CURRENT_EXCLUDED=""
-    echo "===== DEBUG: No existing config file found ====="
+    CURRENT_DEPRECATED=""
+    debug "===== DEBUG: No existing config file found ====="
 fi
 
 # Process each target from bazelisk query
 TARGET_COUNT=0
 for TARGET in $ALL_TARGETS; do
-    SHOULD_EXCLUDE=false
+    IS_DEPRECATED=false
     
-    # Check if target matches any excluded pattern
-    for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+    # Check if target matches any deprecated pattern
+    for pattern in "${DEPRECATED_PATTERNS[@]}"; do
         if [[ "$TARGET" =~ $pattern ]]; then
-            SHOULD_EXCLUDE=true
+            IS_DEPRECATED=true
             break
         fi
     done
     
-    # Check against current excluded patterns in config
-    if [ -n "$CURRENT_EXCLUDED" ]; then
-        while IFS= read -r excluded_pattern; do
-            if [[ "$TARGET" =~ $excluded_pattern ]]; then
-                SHOULD_EXCLUDE=true
+    # Check against current deprecated patterns in config
+    if [ -n "$CURRENT_DEPRECATED" ]; then
+        while IFS= read -r deprecated_pattern; do
+            if [[ "$TARGET" =~ $deprecated_pattern ]]; then
+                IS_DEPRECATED=true
                 break
             fi
-        done <<< "$CURRENT_EXCLUDED"
+        done <<< "$CURRENT_DEPRECATED"
     fi
     
-    # Skip excluded targets
-    if [ "$SHOULD_EXCLUDE" = true ]; then
-        echo "Skipping excluded target: $TARGET"
+    # Skip deprecated targets
+    if [ "$IS_DEPRECATED" = true ]; then
+        debug "Skipping deprecated target: $TARGET"
         continue
     fi
     
-    # Extract module and target name
+    # Extract module and target name from target
     MODULE_PATH=${TARGET#//}
     MODULE_PATH=${MODULE_PATH%:*}
     TARGET_NAME=${TARGET##*:}
@@ -124,48 +129,58 @@ for TARGET in $ALL_TARGETS; do
     echo "    name: \"$TARGET_NAME\"" >> "$TEMP_CONFIG_FILE"
     echo "    enabled: true" >> "$TEMP_CONFIG_FILE"
     
-    echo "Found production target: $TARGET"
+    debug "Found production target: $TARGET"
     TARGET_COUNT=$((TARGET_COUNT + 1))
 done
 
-# Add the excluded section
+# Add the deprecated section
 echo "" >> "$TEMP_CONFIG_FILE"
-echo "# Excluded target patterns" >> "$TEMP_CONFIG_FILE"
-echo "excluded:" >> "$TEMP_CONFIG_FILE"
-for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+echo "# Deprecated targets to ignore" >> "$TEMP_CONFIG_FILE"
+echo "deprecated:" >> "$TEMP_CONFIG_FILE"
+for pattern in "${DEPRECATED_PATTERNS[@]}"; do
     echo "  - pattern: \"$pattern\"" >> "$TEMP_CONFIG_FILE"
 done
 
-# Add any additional excluded patterns from existing config
-if [ -f "$CONFIG_FILE" ] && [ -n "$CURRENT_EXCLUDED" ]; then
-    while IFS= read -r excluded_pattern; do
+# Add any additional deprecated patterns from existing config
+if [ -f "$CONFIG_FILE" ] && [ -n "$CURRENT_DEPRECATED" ]; then
+    while IFS= read -r deprecated_pattern; do
         # Check if pattern is already in our list
         ALREADY_ADDED=false
-        for pattern in "${EXCLUDE_PATTERNS[@]}"; do
-            if [[ "$excluded_pattern" == "$pattern" ]]; then
+        for pattern in "${DEPRECATED_PATTERNS[@]}"; do
+            if [[ "$deprecated_pattern" == "$pattern" ]]; then
                 ALREADY_ADDED=true
                 break
             fi
         done
         
         if [ "$ALREADY_ADDED" = false ]; then
-            echo "  - pattern: \"$excluded_pattern\"" >> "$TEMP_CONFIG_FILE"
+            echo "  - pattern: \"$deprecated_pattern\"" >> "$TEMP_CONFIG_FILE"
         fi
-    done <<< "$CURRENT_EXCLUDED"
+    done <<< "$CURRENT_DEPRECATED"
 fi
 
 # Replace the config file with the new one
 mv "$TEMP_CONFIG_FILE" "$CONFIG_FILE"
-echo "Updated $CONFIG_FILE with $TARGET_COUNT discovered targets."
+debug "Updated $CONFIG_FILE with $TARGET_COUNT discovered targets."
 
-# Generate production_targets.txt file
-echo "Generating $TARGETS_FILE..."
+# Generate production_targets.txt file - ensure it's completely empty first
+debug "Generating $TARGETS_FILE..."
 true > "$TARGETS_FILE"
 
 # Extract enabled targets from config and write to targets file
-yq '.targets[] | select(.enabled == true) | .target' "$CONFIG_FILE" > "$TARGETS_FILE"
+# Use -r to get raw output without quotes, which helps with Bazel target parsing
+yq -r '.targets[] | select(.enabled == true) | .target' "$CONFIG_FILE" > "$TARGETS_FILE"
 
-echo "Generated $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) enabled production targets."
-echo "To build production targets: ./build_production.sh"
+# Verify the targets file has proper format
+if [ ! -s "$TARGETS_FILE" ]; then
+    debug "WARNING: Generated targets file is empty! Using fallback targets."
+    echo "//Sources/CoreDTOs:CoreDTOs" > "$TARGETS_FILE"
+    echo "//Sources/ErrorHandling:ErrorHandling" >> "$TARGETS_FILE"
+fi
 
-echo "Discovery complete!"
+debug "Generated $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) enabled production targets."
+debug "Target file content sample (first 3 lines):"
+debug "$(head -n 3 "$TARGETS_FILE")"
+debug "To build targets: bazelisk build --define=build_environment=nonlocal -k --verbose_failures \$(cat ${TARGETS_FILE})"
+
+debug "Discovery complete!"
