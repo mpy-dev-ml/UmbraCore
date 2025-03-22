@@ -81,8 +81,10 @@ jobs:
         fi
         
         # Run tests with standard settings (matching production)
+        # Explicitly set build_environment=nonlocal to prevent DocC documentation from being built
         bazelisk test \
           --config=ci_tests \
+          --define=build_environment=nonlocal \
           $TEST_OUTPUT_FLAG \
           --flaky_test_attempts=1 \
           --test_verbose_timeout_warnings \

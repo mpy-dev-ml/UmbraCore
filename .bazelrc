@@ -113,3 +113,16 @@ build:prod --target_pattern_file=production_targets.txt
 build:prod --compilation_mode=opt
 build:prod --build_tests_only=false
 build:prod --build_tag_filters=-test,-tests
+
+# DocC documentation build configuration
+build:docc --compilation_mode=opt
+build:docc --build_tests_only=false
+build:docc --build_tag_filters=-test,-tests
+build:docc --define=build_environment=ci
+build:docc --output_groups=+docc
+
+# Local build configuration - used to identify local builds for DocC
+build:local_build --define=build_environment=local
+
+# Default environment detection flag - always set to nonlocal by default
+build --define=build_environment=nonlocal

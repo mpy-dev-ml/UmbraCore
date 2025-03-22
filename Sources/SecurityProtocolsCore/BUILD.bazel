@@ -1,4 +1,5 @@
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library", "swift_test")
+load("//tools/swift:docc_rules.bzl", "docc_documentation")
 
 swift_library(
     name = "SecurityProtocolsCore",
@@ -33,8 +34,17 @@ swift_test(
     ],
 )
 
-filegroup(
-    name = "documentation_docc",
-    srcs = glob(["Documentation.docc/**"], allow_empty = True),
+# DocC documentation for SecurityProtocolsCore
+docc_documentation(
+    name = "SecurityProtocolsCoreDocC",
+    module_name = "SecurityProtocolsCore",
+    localonly = True,
+    srcs = glob([
+        "Documentation.docc/**/*.md",
+        "Documentation.docc/**/*.docc",
+        "Documentation.docc/**/*.plist",
+        "Documentation.docc/Resources/**",
+        "Sources/**/*.swift",
+    ], allow_empty = True),
     visibility = ["//visibility:public"],
 )

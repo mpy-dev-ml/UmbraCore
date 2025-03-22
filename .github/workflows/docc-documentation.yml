@@ -53,13 +53,44 @@ jobs:
         run: |
           brew install bazel || true
           
-      - name: Build DocC Tools
+      - name: Build DocC Documentation with Bazel
+        run: |
+          echo "Building DocC documentation for all modules with Bazel..."
+          # Find all modules with DocC documentation
+          modules=$(find Sources -name "Documentation.docc" -type d | awk -F'/' '{print $(NF-2)}')
+          
+          # Create a temporary file to store bazel targets
+          echo "" > docc_targets.txt
+          
+          # Generate bazel targets for each module with DocC documentation
+          for module in $modules; do
+            echo "//Sources/$(echo $module | sed 's/\.//g'):${module}DocC" >> docc_targets.txt
+          done
+          
+          # Build all DocC targets using Bazel
+          bazel build $(cat docc_targets.txt) --config=docc
+          
+          # Create docs directory for the output
+          mkdir -p docs
+          
+          # Copy the generated documentation archives to the docs directory
+          for module in $modules; do
+            target_path="bazel-bin/Sources/$(echo $module | sed 's/\.//g')/${module}DocC.doccarchive"
+            if [ -d "$target_path" ]; then
+              cp -R "$target_path" "docs/${module}DocC.doccarchive"
+              echo "Copied documentation for $module"
+            else
+              echo "Warning: Documentation not found for $module at $target_path"
+            fi
+          done
+          
+      - name: Build DocC Tools (Legacy Path)
         run: |
           cd tools/go
           go build -o bin/docc cmd/docc/main.go
           echo "Built DocC tools successfully"
           
-      - name: Build DocC Documentation for All Modules
+      - name: Build DocC Documentation for All Modules (Legacy Path)
         run: |
           echo "Building DocC documentation for all modules..."
           mkdir -p docs

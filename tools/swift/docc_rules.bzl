@@ -2,8 +2,23 @@
 Rules for generating and serving DocC documentation.
 """
 
+load(":build_settings.bzl", "BuildEnvironmentInfo")
+
 def _docc_documentation_impl(ctx):
     """Implementation of docc_documentation rule."""
+    # Get build environment info from the build_environment target
+    build_env = ctx.attr._build_environment[BuildEnvironmentInfo]
+    is_local_build = build_env.is_local
+    
+    print("DEBUG: Is local build: %s" % is_local_build)
+    
+    if ctx.attr.localonly and not is_local_build:
+        # If localonly is True and we're not in a local development environment, skip generating documentation
+        print("Skipping DocC documentation for %s (non-local build)" % ctx.attr.module_name)
+        return [DefaultInfo(files = depset([]))]
+    
+    print("Building DocC documentation for %s (local build or non-localonly target)" % ctx.attr.module_name)
+    
     # Create output directory for DocC archive
     docc_archive = ctx.actions.declare_directory(ctx.label.name + ".doccarchive")
     
@@ -34,6 +49,15 @@ def _docc_documentation_impl(ctx):
     # Add DocC tool path
     args.add("--docc_tool", docc_tool)
     
+    # Add symbol graph directory argument if provided
+    if ctx.attr.symbol_graph_dir:
+        args.add("--symbol_graph_dir", ctx.file.symbol_graph_dir.path)
+    
+    # Add additional source directories if provided
+    if ctx.attr.additional_source_directories:
+        for dir in ctx.files.additional_source_directories:
+            args.add("--additional_source_dir", dir.path)
+    
     # Add source files
     for src in srcs:
         args.add("--source", src.path)
@@ -42,43 +66,36 @@ def _docc_documentation_impl(ctx):
     if ctx.attr.copy_sources:
         args.add("--copy")
     
-    # Execute docc_gen to generate DocC archive
+    # Run docc_gen tool to generate DocC archive
     ctx.actions.run(
         executable = docc_gen,
         arguments = [args],
-        inputs = srcs,
+        inputs = srcs + (ctx.files.additional_source_directories if ctx.attr.additional_source_directories else []) + ([ctx.file.symbol_graph_dir] if ctx.attr.symbol_graph_dir else []),
         outputs = [temp_dir, docc_archive],
         progress_message = "Generating DocC documentation for %s" % ctx.attr.module_name,
-        mnemonic = "DocC",
     )
     
-    # Return DefaultInfo provider with DocC archive
-    return [DefaultInfo(
-        files = depset([docc_archive]),
-    )]
+    return [DefaultInfo(files = depset([docc_archive]))]
 
 docc_documentation = rule(
     implementation = _docc_documentation_impl,
     attrs = {
-        "srcs": attr.label_list(
-            allow_files = True,
-            doc = "Source files for DocC documentation",
-        ),
-        "module_name": attr.string(
-            mandatory = True,
-            doc = "Name of the Swift module",
-        ),
-        "copy_sources": attr.bool(
-            default = True,
-            doc = "Whether to copy source files to temp directory",
-        ),
+        "srcs": attr.label_list(allow_files = True, doc = "Source files for documentation"),
+        "module_name": attr.string(mandatory = True, doc = "Name of the module to document"),
+        "symbol_graph_dir": attr.label(allow_single_file = True, doc = "Directory containing symbol graph files"),
+        "additional_source_directories": attr.label_list(allow_files = True, doc = "Additional source directories to include"),
+        "localonly": attr.bool(default = False, doc = "If True, documentation will only be built in local development environments"),
+        "copy_sources": attr.bool(default = True, doc = "Whether to copy source files to temp directory"),
         "_docc_gen": attr.label(
             default = Label("//tools/swift:docc_gen"),
             executable = True,
-            cfg = "host",
+            cfg = "exec",
+        ),
+        "_build_environment": attr.label(
+            default = Label("//tools/swift:local_environment"),  
+            providers = [BuildEnvironmentInfo],
         ),
     },
-    doc = "Generate DocC documentation for a Swift module",
 )
 
 def _docc_preview_impl(ctx):

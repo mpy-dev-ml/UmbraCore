@@ -75,6 +75,25 @@ jobs:
             sudo ln -sf /opt/homebrew/bin/gtar /usr/local/bin/gtar
           fi
 
+      - name: Install Bazelisk
+        run: |
+          brew install bazelisk || true
+          bazelisk --version
+
+      - name: Build DocC Documentation
+        run: |
+          echo "Building DocC documentation for core modules..."
+          # Use --define=build_environment=local to ensure DocC documentation is built
+          bazelisk build \
+            --define=build_environment=local \
+            --verbose_failures \
+            //Sources/CoreDTOs:CoreDTOsDocC \
+            //Sources/SecurityInterfaces/Documentation.docc:SecurityInterfacesDocC \
+            //Sources/SecurityProtocolsCore:SecurityProtocolsCoreDocC
+            
+          echo "DocC documentation successfully built"
+          echo "Documentation archives are available in bazel-bin directory"
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
