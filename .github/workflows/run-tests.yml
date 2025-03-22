@@ -23,6 +23,14 @@ jobs:
         run: |
           brew install bazelisk || true
           bazelisk --version
+          brew install yq || true
+          yq --version
+          
+      - name: Discover Test Targets
+        run: |
+          echo "Discovering test targets..."
+          chmod +x team-utils/discover_test_targets.sh
+          ./team-utils/discover_test_targets.sh
           
       - name: Run Tests
         run: |
