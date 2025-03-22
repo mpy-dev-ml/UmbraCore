@@ -5,16 +5,16 @@ on:
     branches:
       - main
     paths:
-      - **.swift
-      - docc_config.yml
-      - .github/workflows/docc-build.yml
+      - '**.swift'
+      - 'docc_config.yml'
+      - '.github/workflows/docc-build.yml'
   pull_request:
     branches:
       - main
     paths:
-      - **.swift
-      - docc_config.yml
-      - .github/workflows/docc-build.yml
+      - '**.swift'
+      - 'docc_config.yml'
+      - '.github/workflows/docc-build.yml'
   workflow_dispatch:
 
 
