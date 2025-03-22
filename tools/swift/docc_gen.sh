@@ -17,6 +17,7 @@ OUTPUT=""
 MODULE_NAME=""
 DOCC_TOOL="/usr/bin/xcrun docc"
 SOURCES=()
+SHOULD_COPY=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -40,6 +41,10 @@ while [[ $# -gt 0 ]]; do
       SOURCES+=("$2")
       shift 2
       ;;
+    --copy)
+      SHOULD_COPY=true
+      shift
+      ;;
     *)
       echo "Unknown option: $1"
       exit 1
@@ -50,7 +55,7 @@ done
 # Ensure we have the necessary parameters
 if [ -z "$MODULE_NAME" ] || [ -z "$OUTPUT" ]; then
   echo "Missing required parameters. Usage:"
-  echo "  $0 --module_name NAME --output PATH [--temp_dir PATH] [--docc_tool PATH] [--source FILE...]"
+  echo "  $0 --module_name NAME --output PATH [--temp_dir PATH] [--docc_tool PATH] [--source FILE...] [--copy]"
   exit 1
 fi
 
@@ -72,6 +77,14 @@ done
 # Run docc command
 echo "Running docc command..."
 $DOCC_TOOL build $SOURCES_LIST --output-path "$OUTPUT" --target-name "$MODULE_NAME"
+
+# Copy if requested
+if [ "$SHOULD_COPY" = true ]; then
+  DOCS_DIR="${PROJECT_ROOT}/docs"
+  mkdir -p "$DOCS_DIR"
+  echo "Copying documentation to ${DOCS_DIR}/${MODULE_NAME}DocC.doccarchive..."
+  cp -R "$OUTPUT" "${DOCS_DIR}/${MODULE_NAME}DocC.doccarchive"
+fi
 
 # Output success message
 echo "Successfully generated DocC documentation for $MODULE_NAME"
