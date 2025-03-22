@@ -68,15 +68,51 @@ if [ -n "$TEMP_DIR" ]; then
   mkdir -p "$TEMP_DIR"
 fi
 
-# Prepare source list for docc
-SOURCES_LIST=""
-for src in "${SOURCES[@]}"; do
-  SOURCES_LIST="$SOURCES_LIST --source-path $src"
-done
+# Create a temporary docc.yml file for this module
+DOCC_YML="${TEMP_DIR}/${MODULE_NAME}.docc.yml"
+cat > "${DOCC_YML}" << EOF
+module:
+  name: ${MODULE_NAME}
+  platform: macos
+EOF
 
 # Run docc command
 echo "Running docc command..."
-$DOCC_TOOL build $SOURCES_LIST --output-path "$OUTPUT" --target-name "$MODULE_NAME"
+SOURCE_PATHS=""
+for src in "${SOURCES[@]}"; do
+  SOURCE_PATHS="${SOURCE_PATHS} ${src}"
+done
+
+# Create a temporary Info.plist file if needed
+INFO_PLIST="${TEMP_DIR}/Info.plist"
+cat > "${INFO_PLIST}" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>${MODULE_NAME}</string>
+    <key>CFBundleName</key>
+    <string>${MODULE_NAME}</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+</dict>
+</plist>
+EOF
+
+# Create temporary symbol graph directory
+SYMBOL_GRAPH_DIR="${TEMP_DIR}/symbol-graphs"
+mkdir -p "${SYMBOL_GRAPH_DIR}"
+
+# Run docc with correct parameters
+$DOCC_TOOL convert "${DOCC_YML}" \
+  --fallback-display-name "${MODULE_NAME}" \
+  --fallback-bundle-identifier "com.umbradevelopment.${MODULE_NAME}" \
+  --fallback-bundle-version "1.0" \
+  --output-path "${OUTPUT}" \
+  --index
 
 # Copy if requested
 if [ "$SHOULD_COPY" = true ]; then
