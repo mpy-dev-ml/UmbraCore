@@ -7,7 +7,7 @@ on:
     paths:
       - docs/**
       - mkdocs.yml
-      - .github/workflows/docs.yml
+      - .github/workflows/deploy-documentation.yml
       - requirements.txt
   workflow_dispatch:
 
@@ -35,7 +35,7 @@ jobs:
           submodules: recursive
       - name: Setup Pages
         uses: actions/configure-pages@v4
-      - name: Set up Python virtual environment
+      - name: Set up Python Virtual Environment
         run: |
           python3 -m venv docs-venv
           source docs-venv/bin/activate
@@ -47,7 +47,7 @@ jobs:
           source docs-venv/bin/activate
           python -m mkdocs build --verbose
           
-      - name: Setup GNU tools
+      - name: Setup GNU Tools
         run: |
           brew install gnu-tar || true
           echo "/opt/homebrew/opt/gnu-tar/libexec/gnubin" >> $GITHUB_PATH
@@ -56,18 +56,16 @@ jobs:
             sudo ln -sf /opt/homebrew/bin/gtar /usr/local/bin/gtar
           fi
           
-      - name: Install Bazelisk
-        run: |
-          brew install bazelisk || true
-          bazelisk --version
-          
       - name: Build DocC Documentation
         run: |
           echo "Building DocC documentation for core modules..."
-          # Run the build_docc.sh script to build all documentation
-          ./build_docc.sh
+          # Build DocC documentation using the new script
+          ./docc_manager.sh build
+          # Copy documentation to the site directory
+          mkdir -p ./site/api
+          cp -R docs/.docc-build/* ./site/api/
           
-      - name: Upload artifact
+      - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
