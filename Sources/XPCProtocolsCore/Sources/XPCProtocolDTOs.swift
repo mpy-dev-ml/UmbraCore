@@ -59,50 +59,50 @@ public enum XPCProtocolDTOs {
             switch error {
             case let .internalError(message):
                 SecurityErrorDTO(
-                    code: 10000,
+                    code: 10_000,
                     message: message
                 )
             case let .invalidInput(message):
                 SecurityErrorDTO(
-                    code: 1001,
+                    code: 1_001,
                     message: message
                 )
             case let .encryptionFailed(message):
                 SecurityErrorDTO(
-                    code: 1003,
+                    code: 1_003,
                     message: message,
                     details: ["operation": "encryption"]
                 )
             case let .decryptionFailed(message):
                 SecurityErrorDTO(
-                    code: 1003,
+                    code: 1_003,
                     message: message,
                     details: ["operation": "decryption"]
                 )
             case let .storageOperationFailed(message):
                 SecurityErrorDTO(
-                    code: 1003,
+                    code: 1_003,
                     message: message,
                     details: ["operation": "storage"]
                 )
             case let .invalidFormat(reason):
                 SecurityErrorDTO(
-                    code: 1001,
+                    code: 1_001,
                     message: reason
                 )
             case let .unsupportedOperation(name):
                 SecurityErrorDTO(
-                    code: 1006,
+                    code: 1_006,
                     message: "Operation not supported: \(name)"
                 )
             case let .notImplemented(message):
                 SecurityErrorDTO(
-                    code: 1006,
+                    code: 1_006,
                     message: "Not implemented: \(message)"
                 )
             default:
                 SecurityErrorDTO(
-                    code: 10000,
+                    code: 10_000,
                     message: "Unknown error"
                 )
             }
@@ -113,11 +113,11 @@ public enum XPCProtocolDTOs {
         /// - Returns: An ErrorHandlingDomains.UmbraErrors.Security.Protocols
         public static func fromDTO(_ dto: SecurityErrorDTO) -> ErrorHandlingDomains.UmbraErrors.Security.Protocols {
             // Match error code to a specific error type
-            if dto.code == 1001 {
+            if dto.code == 1_001 {
                 return .invalidInput(dto.message)
-            } else if dto.code == 1002 {
+            } else if dto.code == 1_002 {
                 return .invalidState(state: "unknown", expectedState: dto.message)
-            } else if dto.code == 1003 {
+            } else if dto.code == 1_003 {
                 let operation = dto.details["operation"] ?? "unknown"
                 if operation == "encryption" {
                     return .encryptionFailed(dto.message)
@@ -126,9 +126,9 @@ public enum XPCProtocolDTOs {
                 } else {
                     return .storageOperationFailed(dto.message)
                 }
-            } else if dto.code == 1004 {
+            } else if dto.code == 1_004 {
                 return .notImplemented(dto.message)
-            } else if dto.code == 1005 {
+            } else if dto.code == 1_005 {
                 return .invalidFormat(reason: dto.message)
             }
 

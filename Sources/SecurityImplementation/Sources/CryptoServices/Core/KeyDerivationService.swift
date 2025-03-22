@@ -80,7 +80,7 @@ final class KeyDerivationService: Sendable {
         switch result {
         case let .success(randomData):
             return randomData
-        case .failure(_):
+        case .failure:
             throw CoreErrors.CryptoError.randomGenerationFailed(status: -1) // Using a dummy OSStatus since we can't convert error to OSStatus
         }
     }
@@ -105,7 +105,7 @@ final class KeyDerivationService: Sendable {
     /// - Returns: The generated key
     private func generateRSAKey(bits: Int) async throws -> SecureBytes {
         // RSA keys should be at least 2048 bits
-        guard bits >= 2048 else {
+        guard bits >= 2_048 else {
             throw CoreErrors.CryptoError.invalidKeySize(reason: "RSA key size must be at least 2048 bits, got \(bits)")
         }
 

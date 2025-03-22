@@ -12,7 +12,7 @@ public extension FilePathDTO {
     /// - Returns: A FilePathDTO representing the URL
     static func from(url: URL, resourceType: ResourceType? = nil) -> FilePathDTO {
         var type = resourceType
-        
+
         // Try to determine resource type if not provided
         if type == nil {
             var isDirectory: ObjCBool = false
@@ -22,7 +22,7 @@ public extension FilePathDTO {
                 type = .unknown
             }
         }
-        
+
         return FilePathDTO(
             path: url.path,
             fileName: url.lastPathComponent,
@@ -31,7 +31,7 @@ public extension FilePathDTO {
             isAbsolute: url.path.hasPrefix("/")
         )
     }
-    
+
     /// Convert this FilePathDTO to a Foundation URL
     /// - Returns: A URL representing this path, or nil if conversion fails
     func toURL() -> URL? {
@@ -53,7 +53,7 @@ public extension BookmarkDTO {
             hasSecurityScope: hasSecurityScope
         )
     }
-    
+
     /// Convert this BookmarkDTO to Foundation Data
     /// - Returns: Data representing the bookmark
     func toData() -> Data {
@@ -70,14 +70,14 @@ public extension FilePathDTO {
         let homePath = NSHomeDirectory()
         return FilePathDTO.fromString(homePath).withResourceType(.directory)
     }
-    
+
     /// Get the temporary directory path
     /// - Returns: A FilePathDTO representing the temporary directory
     static func temporaryDirectory() -> FilePathDTO {
         let tempPath = NSTemporaryDirectory()
         return FilePathDTO.fromString(tempPath).withResourceType(.directory)
     }
-    
+
     /// Get the documents directory path
     /// - Returns: A FilePathDTO representing the documents directory
     static func documentsDirectory() -> FilePathDTO {
@@ -85,7 +85,7 @@ public extension FilePathDTO {
         let documentsPath = paths.first ?? ""
         return FilePathDTO.fromString(documentsPath).withResourceType(.directory)
     }
-    
+
     /// Get the application support directory path
     /// - Returns: A FilePathDTO representing the application support directory
     static func applicationSupportDirectory() -> FilePathDTO {

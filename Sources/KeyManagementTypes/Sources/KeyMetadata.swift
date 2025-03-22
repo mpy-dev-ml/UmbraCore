@@ -227,7 +227,7 @@ public extension KeyMetadata {
             "version": version,
             "exportable": exportable,
             "isSystemKey": isSystemKey,
-            "isProcessIsolated": isProcessIsolated,
+            "isProcessIsolated": isProcessIsolated
         ]
 
         if let expiryTimestamp {

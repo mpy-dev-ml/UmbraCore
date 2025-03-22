@@ -22,7 +22,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
         try await super.setUp()
         TestModeEnvironment.shared.enableTestMode()
         TestModeEnvironment.shared.disableSecurityOperations()
-        
+
         // Set additional environment variables to ensure security operations are disabled
         setenv("UMBRA_DISABLE_SECURITY", "1", 1)
         setenv("UMBRA_DISABLE_ENCRYPTION", "1", 1)
@@ -35,7 +35,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
         // Clean up environment variables
         unsetenv("UMBRA_DISABLE_ENCRYPTION")
         UserDefaults.standard.removeObject(forKey: "UMBRA_DISABLE_ENCRYPTION")
-        
+
         TestModeEnvironment.shared.enableSecurityOperations()
         TestModeEnvironment.shared.disableTestMode()
         try await super.tearDown()
@@ -131,7 +131,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
                     recoveryAction: { @Sendable in
                         // No-op recovery action for testing
                     }
-                ),
+                )
             ]
         }
 
@@ -154,7 +154,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
 
         func recoveryOptions(for _: Error) -> [any ErrorHandlingInterfaces.RecoveryOption] {
             [
-                TestRecoveryOption(title: "Default Recovery", description: "Standard recovery action"),
+                TestRecoveryOption(title: "Default Recovery", description: "Standard recovery action")
             ]
         }
     }
@@ -194,13 +194,13 @@ final class TestErrorHandling_Recovery: XCTestCase {
                     return provider.recoveryOptions(for: error)
                 }
             }
-                
+
             // If not UmbraError, check if it's an NSError
             let nsErrorDomain = (error as NSError).domain
             if let provider = domainProviders[nsErrorDomain] {
                 return provider.recoveryOptions(for: error)
             }
-            
+
             // Get the error type as fallback
             let typeNameDomain = String(describing: type(of: error))
             if let provider = domainProviders[typeNameDomain] {
@@ -227,7 +227,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
         func recoveryOptions(for _: Error) -> [any ErrorHandlingInterfaces.RecoveryOption] {
             // Return recovery options that don't rely on any security or encryption
             [
-                TestRecoveryOption(title: "Safe Recovery Test", description: "Recovery option that doesn't use encryption"),
+                TestRecoveryOption(title: "Safe Recovery Test", description: "Recovery option that doesn't use encryption")
             ]
         }
     }
@@ -283,7 +283,7 @@ final class TestErrorHandling_Recovery: XCTestCase {
                     recoveryAction: { @Sendable in
                         // No-op recovery action for testing
                     }
-                ),
+                )
             ]
         }
 

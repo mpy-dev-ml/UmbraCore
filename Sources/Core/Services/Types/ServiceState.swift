@@ -26,19 +26,19 @@ public enum ServiceState: String, Sendable, Codable {
 public enum LegacyServiceState: Int, Sendable {
     /// Service has not been initialized yet
     case uninitialized = 0
-    
+
     /// Service is in the process of initializing
     case initializing = 1
-    
+
     /// Service is ready for use
     case ready = 2
-    
+
     /// Service is in the process of shutting down
     case shuttingDown = 3
-    
+
     /// Service has been shut down and is no longer available
     case shutdown = 4
-    
+
     /// Service has encountered an error and is in an undefined state
     case error = 5
 }

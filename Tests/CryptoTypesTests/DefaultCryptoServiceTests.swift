@@ -11,7 +11,7 @@ final class DefaultCryptoServiceTests: XCTestCase {
     }
 
     // MARK: - Placeholder Tests
-    
+
     func testPlaceholder() {
         // This test is a placeholder until the deployment target issues are resolved
         XCTAssertTrue(true, "This test is temporarily disabled due to deployment target incompatibility")

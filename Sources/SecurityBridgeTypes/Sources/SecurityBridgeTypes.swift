@@ -12,17 +12,17 @@ public struct SecurityProtocolsErrorDTO: Error, Sendable, Equatable, CustomStrin
         /// Unknown error
         case unknown = 0
         /// Invalid input data or parameters
-        case invalidInput = 1001
+        case invalidInput = 1_001
         /// Cryptographic operation failed
-        case cryptographicError = 1002
+        case cryptographicError = 1_002
         /// Key not found
-        case keyNotFound = 1003
+        case keyNotFound = 1_003
         /// Service is unavailable
-        case serviceUnavailable = 1004
+        case serviceUnavailable = 1_004
         /// Operation not supported
-        case unsupportedOperation = 1005
+        case unsupportedOperation = 1_005
         /// Permission denied
-        case permissionDenied = 1007
+        case permissionDenied = 1_007
 
         /// String description of the error code
         public var description: String {
@@ -115,7 +115,7 @@ public struct SecurityProtocolsErrorDTO: Error, Sendable, Equatable, CustomStrin
             code: .cryptographicError,
             details: [
                 "operation": operation,
-                "message": details,
+                "message": details
             ]
         )
     }
@@ -143,7 +143,7 @@ public struct SecurityProtocolsErrorDTO: Error, Sendable, Equatable, CustomStrin
             code: .serviceUnavailable,
             details: [
                 "service": service,
-                "reason": reason,
+                "reason": reason
             ]
         )
     }

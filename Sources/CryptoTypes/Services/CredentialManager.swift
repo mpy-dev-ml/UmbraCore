@@ -15,7 +15,7 @@ public struct CryptoConfig: Sendable {
     public let algorithm: String
     public let keySize: Int
     public let ivLength: Int
-    
+
     public init(algorithm: String, keySize: Int, ivLength: Int) {
         self.algorithm = algorithm
         self.keySize = keySize
@@ -200,9 +200,9 @@ public actor CredentialManager {
         key.withUnsafeBytes { buffer in
             keyData = Data(buffer)
         }
-        
+
         try await keychain.save(keyData, forKey: "master_key", metadata: nil)
-        
+
         return keyData
     }
 

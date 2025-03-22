@@ -25,8 +25,7 @@ public enum UmbraSecurityCore {
     /// - Parameter service: The service to wrap
     /// - Returns: A type-erased wrapper around the provided service
     public static func createAnyCryptoService(_ service: some CryptoServiceProtocol & Sendable)
-        -> AnyCryptoService
-    {
+        -> AnyCryptoService {
         SecurityCoreAdapters.createAnyCryptoService(service)
     }
 

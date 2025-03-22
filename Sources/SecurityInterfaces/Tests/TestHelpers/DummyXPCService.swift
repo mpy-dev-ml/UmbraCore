@@ -34,12 +34,12 @@ public final class DummyXPCService {
     public func getServiceVersion() async -> String? {
         "1.0.0-test"
     }
-    
+
     /// Validates the connection with the service (for compatibility)
     public func validateConnection(withReply reply: @escaping (Bool, Error?) -> Void) {
         reply(true, nil)
     }
-    
+
     /// Gets the service version (for compatibility)
     public func getServiceVersion(withReply reply: @escaping (String) -> Void) {
         reply("1.0.0-test")
@@ -50,8 +50,8 @@ public final class DummyXPCService {
     public func getServiceStatus() async -> [String: Any]? {
         [
             "status": "running",
-            "uptime": 3600,
-            "memoryUsage": 1024 * 1024,
+            "uptime": 3_600,
+            "memoryUsage": 1_024 * 1_024
         ]
     }
 
@@ -83,7 +83,7 @@ public final class DummyXPCService {
             completion(true, responseData, nil)
         } else {
             let error = NSError(domain: "com.umbracore.test", code: 500, userInfo: [
-                NSLocalizedDescriptionKey: "Mock operation failure",
+                NSLocalizedDescriptionKey: "Mock operation failure"
             ])
             completion(false, nil, error)
         }
@@ -96,7 +96,7 @@ public final class DummyXPCService {
             completion(.success(hostIdentifier))
         } else {
             let error = NSError(domain: "com.umbracore.test", code: 501, userInfo: [
-                NSLocalizedDescriptionKey: "Failed to get host identifier",
+                NSLocalizedDescriptionKey: "Failed to get host identifier"
             ])
             completion(.failure(error))
         }
@@ -114,7 +114,7 @@ public final class DummyXPCService {
             completion(.success(true))
         } else {
             let error = NSError(domain: "com.umbracore.test", code: 502, userInfo: [
-                NSLocalizedDescriptionKey: "Failed to register client",
+                NSLocalizedDescriptionKey: "Failed to register client"
             ])
             completion(.failure(error))
         }

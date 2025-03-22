@@ -2,19 +2,19 @@
 @testable import SecurityInterfaces
 @testable import SecurityInterfacesBase
 @testable import SecurityInterfacesProtocols
-@testable import UmbraSecurity
 @testable import SecurityProtocolsCore
+@testable import UmbraSecurity
 import XCTest
 
 // NOTE: This test needs to be rewritten to work with the new security architecture
 final class SecurityProviderTests: XCTestCase {
     // MARK: Test is disabled due to architecture changes
-    
+
     func testSkipAllTests() {
         // This test class needs to be rewritten to work with the new SecurityProtocolsCore architecture
         XCTFail("This test needs to be updated to work with the new SecurityProtocolsCore architecture")
     }
-    
+
     /*
     private var mockSecurityProvider: Any?
 

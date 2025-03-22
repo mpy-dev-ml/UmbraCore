@@ -7,12 +7,12 @@ import XCTest
 // NOTE: This test needs to be rewritten to work with the new security architecture
 final class SecurityServiceTests: XCTestCase {
     // MARK: Test is disabled due to architecture changes
-    
+
     func testSkipAllTests() {
         // This test class needs to be rewritten to work with the new security architecture
         XCTFail("This test needs to be updated to work with the new security architecture")
     }
-    
+
     /*
     var securityProvider: UmbraSecurity.SecurityService!
     var testFileURL: URL!

@@ -22,13 +22,13 @@ public protocol SecurityService {
     /// - Throws: Error if generation fails
     /// - Returns: Array of random bytes
     func generateRandomBytes(count: Int) throws -> [UInt8]
-    
+
     /// Generate a secure token as a string (base64-encoded or similar)
     /// - Parameter byteCount: Number of bytes to use for the token
     /// - Throws: Error if token generation fails
     /// - Returns: String representation of the token
     func generateSecureToken(byteCount: Int) throws -> String
-    
+
     /// Hash data using the specified algorithm
     /// - Parameters:
     ///   - data: Data to hash
@@ -36,7 +36,7 @@ public protocol SecurityService {
     /// - Throws: Error if hashing fails
     /// - Returns: Hashed data
     func hashData(_ data: Data, algorithm: HashAlgorithm) throws -> Data
-    
+
     /// Encrypt data using the specified key
     /// - Parameters:
     ///   - data: Data to encrypt
@@ -44,7 +44,7 @@ public protocol SecurityService {
     /// - Throws: Error if encryption fails
     /// - Returns: Encrypted data
     func encrypt(_ data: [UInt8], key: [UInt8]) throws -> [UInt8]
-    
+
     /// Decrypt data using the specified key
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -58,29 +58,29 @@ public protocol SecurityService {
 public class DefaultSecurityService: SecurityService {
     /// Shared instance
     public static let shared: DefaultSecurityService = DefaultSecurityService()
-    
+
     public init() {}
-    
+
     public func generateRandomBytes(count: Int) throws -> [UInt8] {
         // Stub implementation
         return Array(repeating: 0, count: count)
     }
-    
+
     public func generateSecureToken(byteCount: Int) throws -> String {
         // Stub implementation
         return "secure_token"
     }
-    
+
     public func hashData(_ data: Data, algorithm: HashAlgorithm) throws -> Data {
         // Stub implementation
         return data
     }
-    
+
     public func encrypt(_ data: [UInt8], key: [UInt8]) throws -> [UInt8] {
         // Stub implementation
         return data
     }
-    
+
     public func decrypt(_ data: [UInt8], key: [UInt8]) throws -> [UInt8] {
         // Stub implementation
         return data
@@ -93,19 +93,19 @@ public protocol SecurityServiceDTOProtocol {
     /// - Parameter count: Number of bytes to generate
     /// - Returns: A result containing the random bytes or an error
     func generateRandomBytes(count: Int) -> OperationResultDTO<[UInt8]>
-    
+
     /// Generate a secure token
     /// - Parameter byteCount: Number of bytes in the token
     /// - Returns: A result containing the token as a hex string or an error
     func generateSecureToken(byteCount: Int) -> OperationResultDTO<String>
-    
+
     /// Hash data using the specified algorithm
     /// - Parameters:
     ///   - data: Data to hash
     ///   - config: Configuration with algorithm and options
     /// - Returns: A result containing the hash or an error
     func hashData(_ data: [UInt8], config: SecurityConfigDTO) -> OperationResultDTO<[UInt8]>
-    
+
     /// Encrypt data using the specified key and algorithm
     /// - Parameters:
     ///   - data: Data to encrypt
@@ -113,7 +113,7 @@ public protocol SecurityServiceDTOProtocol {
     ///   - config: Configuration with algorithm and options
     /// - Returns: A result containing the encrypted data or an error
     func encrypt(_ data: [UInt8], key: [UInt8], config: SecurityConfigDTO) -> OperationResultDTO<[UInt8]>
-    
+
     /// Decrypt data using the specified key and algorithm
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -126,20 +126,20 @@ public protocol SecurityServiceDTOProtocol {
 /// Adapter for SecurityService that provides a Foundation-independent interface
 public final class SecurityServiceDTOAdapter: SecurityServiceDTOProtocol {
     // MARK: - Properties
-    
+
     /// The underlying security service
     private let securityService: SecurityService
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize with a security service
     /// - Parameter securityService: The security service to adapt
     public init(securityService: SecurityService = DefaultSecurityService.shared) {
         self.securityService = securityService
     }
-    
+
     // MARK: - SecurityServiceDTOProtocol Implementation
-    
+
     /// Generate random bytes
     /// - Parameter count: Number of bytes to generate
     /// - Returns: A result containing the random bytes or an error
@@ -154,7 +154,7 @@ public final class SecurityServiceDTOAdapter: SecurityServiceDTOProtocol {
             )
         }
     }
-    
+
     /// Generate a secure token
     /// - Parameter byteCount: Number of bytes in the token
     /// - Returns: A result containing the token as a hex string or an error
@@ -169,7 +169,7 @@ public final class SecurityServiceDTOAdapter: SecurityServiceDTOProtocol {
             )
         }
     }
-    
+
     /// Hash data using the specified algorithm
     /// - Parameters:
     ///   - data: Data to hash
@@ -187,7 +187,7 @@ public final class SecurityServiceDTOAdapter: SecurityServiceDTOProtocol {
             )
         }
     }
-    
+
     /// Encrypt data using the specified key and algorithm
     /// - Parameters:
     ///   - data: Data to encrypt
@@ -205,7 +205,7 @@ public final class SecurityServiceDTOAdapter: SecurityServiceDTOProtocol {
             )
         }
     }
-    
+
     /// Decrypt data using the specified key and algorithm
     /// - Parameters:
     ///   - data: Data to decrypt
@@ -223,9 +223,9 @@ public final class SecurityServiceDTOAdapter: SecurityServiceDTOProtocol {
             )
         }
     }
-    
+
     // MARK: - Helper Methods
-    
+
     /// Map a hash algorithm from configuration
     /// - Parameter config: The security configuration
     /// - Returns: The hash algorithm
@@ -234,7 +234,7 @@ public final class SecurityServiceDTOAdapter: SecurityServiceDTOProtocol {
         guard let algorithmName = config.options["algorithm"] else {
             return .sha256
         }
-        
+
         switch algorithmName.lowercased() {
         case "sha1": return .sha1
         case "sha224": return .sha224
@@ -244,7 +244,7 @@ public final class SecurityServiceDTOAdapter: SecurityServiceDTOProtocol {
         default: return .sha256
         }
     }
-    
+
     /// Map errors to operation failure
     /// - Parameter error: The error to map
     /// - Returns: An operation failure
@@ -260,14 +260,14 @@ public final class SecurityServiceDTOAdapter: SecurityServiceDTOProtocol {
             )
         }
     }
-    
+
     /// Map security errors to DTOs
     /// - Parameter error: The security error to map
     /// - Returns: A security error DTO
     private func mapSecurityError(_ error: UmbraErrors.Security.Core) -> SecurityErrorDTO {
         // Handle all possible security errors with appropriate mappings
         let errorDTO = SecurityErrorDTO(
-            code: 1001,
+            code: 1_001,
             domain: "security.service",
             message: "Security operation failed",
             details: ["error": "\(error)"]

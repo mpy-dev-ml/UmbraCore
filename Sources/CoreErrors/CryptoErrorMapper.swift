@@ -128,82 +128,82 @@ public enum CryptoErrorMapper {
                 parameter: "credentialIdentifier",
                 reason: reason
             )
-            
+
         // New cases
         case let .encryptionError(message):
             .encryptionFailed(
                 algorithm: "unknown",
                 reason: message
             )
-            
+
         case let .decryptionError(message):
             .decryptionFailed(
                 algorithm: "unknown",
                 reason: message
             )
-            
+
         case let .keyGenerationError(reason):
             .keyGenerationFailed(
                 keyType: "unknown",
                 reason: reason
             )
-            
+
         case let .encodingError(message):
             .internalError(
                 "Encoding error: \(message)"
             )
-            
+
         case let .decodingError(message):
             .internalError(
                 "Decoding error: \(message)"
             )
-            
+
         case let .keyStorageError(reason):
             .internalError(
                 "Key storage error: \(reason)"
             )
-            
+
         case let .keyDeletionError(reason):
             .internalError(
                 "Key deletion error: \(reason)"
             )
-            
+
         case let .asymmetricEncryptionError(message):
             .encryptionFailed(
                 algorithm: "asymmetric",
                 reason: message
             )
-            
+
         case let .asymmetricDecryptionError(message):
             .decryptionFailed(
                 algorithm: "asymmetric",
                 reason: message
             )
-            
+
         case let .hashingError(message):
             .hashingFailed(
                 algorithm: "unknown",
                 reason: message
             )
-            
+
         case let .signatureError(reason):
             .signatureFailed(
                 algorithm: "unknown",
                 reason: reason
             )
-            
+
         case let .unsupportedAlgorithm(algorithm):
             .unsupportedAlgorithm(
                 algorithm: algorithm
             )
-            
+
         case let .invalidLength(length):
             .invalidParameters(
                 algorithm: "unknown",
                 parameter: "length",
                 reason: "Invalid data length: \(length)"
             )
-            
+
         case let .invalidParameters(reason):
             .invalidParameters(
                 algorithm: "unknown",
@@ -284,7 +284,7 @@ public enum CryptoErrorMapper {
         case let .incompatibleParameters(algorithm, parameter, _):
             .invalidParameters(reason: "Incompatible parameter \(parameter) for \(algorithm)")
 
-        case .randomGenerationFailed(_):
+        case .randomGenerationFailed:
             // We can't use the reason for the OSStatus but we're acknowledging its existence
             .randomGenerationFailed(status: 0)
 

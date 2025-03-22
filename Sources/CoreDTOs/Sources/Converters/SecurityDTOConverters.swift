@@ -45,7 +45,7 @@ public extension SecurityConfigDTO {
     func toDictionary() -> [String: Any] {
         var result: [String: Any] = [
             "algorithm": algorithm,
-            "keySizeInBits": keySizeInBits,
+            "keySizeInBits": keySizeInBits
         ]
 
         // Add all options
@@ -88,7 +88,7 @@ public extension SecurityErrorDTO {
             domain: domain,
             code: Int(code),
             userInfo: [
-                NSLocalizedDescriptionKey: message,
+                NSLocalizedDescriptionKey: message
             ]
         )
 
@@ -137,7 +137,7 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1000,
+            code: 1_000,
             domain: "com.umbra.security",
             message: message,
             details: details

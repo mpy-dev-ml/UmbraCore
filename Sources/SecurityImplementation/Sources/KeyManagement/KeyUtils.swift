@@ -96,7 +96,7 @@ final class KeyUtils {
             return .failure(.invalidInput("Salt must be at least 16 bytes"))
         }
 
-        guard iterations >= 10000 else {
+        guard iterations >= 10_000 else {
             return .failure(.invalidInput("Iterations must be at least 10,000"))
         }
 

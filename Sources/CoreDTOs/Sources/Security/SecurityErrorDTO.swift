@@ -57,7 +57,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1001,
+            code: 1_001,
             message: message,
             details: details
         )
@@ -73,7 +73,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1002,
+            code: 1_002,
             message: message,
             details: details
         )
@@ -89,7 +89,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1003,
+            code: 1_003,
             message: message,
             details: details
         )
@@ -105,7 +105,7 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1004,
+            code: 1_004,
             message: message,
             details: details
         )
@@ -121,12 +121,12 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1005,
+            code: 1_005,
             message: message,
             details: details
         )
     }
-    
+
     /// Create an internal error
     /// - Parameters:
     ///   - message: Error message
@@ -137,12 +137,12 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1006,
+            code: 1_006,
             message: message,
             details: details
         )
     }
-    
+
     /// Create an unknown error
     /// - Parameters:
     ///   - message: Error message
@@ -153,12 +153,12 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 9999,
+            code: 9_999,
             message: message,
             details: details
         )
     }
-    
+
     /// Create an invalid path error
     /// - Parameters:
     ///   - path: The invalid path
@@ -171,13 +171,13 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         var allDetails = details
         allDetails["path"] = path
         return SecurityErrorDTO(
-            code: 1007,
+            code: 1_007,
             domain: "security.bookmark",
             message: "Invalid path: \(path)",
             details: allDetails
         )
     }
-    
+
     /// Create a bookmark creation failed error
     /// - Parameters:
     ///   - path: The path for which bookmark creation failed
@@ -190,12 +190,12 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         var allDetails = details
         allDetails["path"] = path
         return SecurityErrorDTO(
-            code: 1008,
+            code: 1_008,
             message: "Failed to create bookmark",
             details: allDetails
         )
     }
-    
+
     /// Create a bookmark resolution failed error
     /// - Parameters:
     ///   - details: Error details
@@ -204,12 +204,12 @@ public struct SecurityErrorDTO: Error, Sendable, Equatable, CustomStringConverti
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 1009,
+            code: 1_009,
             message: "Failed to resolve bookmark",
             details: details
         )
     }
-    
+
     /// Default general error code
-    public static let generalErrorCode: Int32 = 9999
+    public static let generalErrorCode: Int32 = 9_999
 }

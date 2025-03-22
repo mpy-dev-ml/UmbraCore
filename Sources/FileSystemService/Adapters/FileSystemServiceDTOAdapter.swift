@@ -1,26 +1,26 @@
 import CoreDTOs
-import Foundation
-import UmbraCoreTypes
 import ErrorHandling
 import ErrorHandlingDomains
+import Foundation
+import UmbraCoreTypes
 
 /// Foundation-independent adapter for file system operations
 public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     // MARK: - Private Properties
-    
+
     private let fileManager: FileManager
     private let errorDomain = ErrorHandlingDomains.UmbraErrors.FileSystem.self
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize with a specific FileManager instance
     /// - Parameter fileManager: FileManager to use for operations
     public init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
     }
-    
+
     // MARK: - FileSystemServiceDTOProtocol Implementation
-    
+
     /// Check if a file exists at the specified path
     /// - Parameter path: File path to check
     /// - Returns: Boolean indicating existence
@@ -28,23 +28,23 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
         let pathString = path.absolutePath
         return fileManager.fileExists(atPath: pathString)
     }
-    
+
     /// Get metadata about a file
     /// - Parameter path: File path to check
     /// - Returns: Metadata or nil if file doesn't exist
     public func getMetadata(at path: FilePathDTO) async -> FileSystemMetadataDTO? {
         let pathString = path.absolutePath
-        
+
         // Check if file exists
         var isDirectory: ObjCBool = false
         guard fileManager.fileExists(atPath: pathString, isDirectory: &isDirectory) else {
             return nil
         }
-        
+
         do {
             // Get file attributes
             let attributes = try fileManager.attributesOfItem(atPath: pathString)
-            
+
             // Determine resource type
             let resourceType: FilePathDTO.ResourceType
             if isDirectory.boolValue {
@@ -58,7 +58,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     resourceType = .file
                 }
             }
-            
+
             // Create and return metadata
             return FileSystemMetadataDTO.from(
                 attributes: attributes,
@@ -69,7 +69,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             return FileSystemMetadataDTO.empty(resourceType: isDirectory.boolValue ? .directory : .file)
         }
     }
-    
+
     /// List contents of a directory
     /// - Parameters:
     ///   - directoryPath: Directory to list
@@ -77,7 +77,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     /// - Returns: Array of file paths or error
     public func listDirectory(at directoryPath: FilePathDTO, includeHidden: Bool) async -> OperationResultDTO<[FilePathDTO]> {
         let pathString = directoryPath.absolutePath
-        
+
         do {
             // Check if directory exists
             var isDirectory: ObjCBool = false
@@ -88,7 +88,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     message: "Directory does not exist at path: \(pathString)"
                 ))
             }
-            
+
             guard isDirectory.boolValue else {
                 return .failure(SecurityErrorDTO(
                     code: errorDomain.notADirectory.code,
@@ -96,23 +96,23 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     message: "Path is not a directory: \(pathString)"
                 ))
             }
-            
+
             // Get contents
             let contents = try fileManager.contentsOfDirectory(atPath: pathString)
-            
+
             // Filter hidden files if needed
             let filteredContents = includeHidden ? contents : contents.filter { !$0.hasPrefix(".") }
-            
+
             // Create FilePathDTOs
             var result = [FilePathDTO]()
             for item in filteredContents {
                 let itemPath = pathString + "/" + item
-                
+
                 // Determine if it's a directory, file, or symbolic link
                 var itemIsDirectory: ObjCBool = false
                 if fileManager.fileExists(atPath: itemPath, isDirectory: &itemIsDirectory) {
                     let resourceType: FilePathDTO.ResourceType
-                    
+
                     if itemIsDirectory.boolValue {
                         resourceType = .directory
                     } else {
@@ -124,7 +124,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                             resourceType = .file
                         }
                     }
-                    
+
                     // Create FilePathDTO
                     let fileDTO = FilePathDTO(
                         absolutePath: itemPath,
@@ -133,7 +133,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     result.append(fileDTO)
                 }
             }
-            
+
             return .success(result)
         } catch {
             return .failure(SecurityErrorDTO(
@@ -143,7 +143,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Create a directory
     /// - Parameters:
     ///   - path: Directory path to create
@@ -151,7 +151,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     /// - Returns: Success or error
     public func createDirectory(at path: FilePathDTO, withIntermediates: Bool) async -> OperationResultDTO<Void> {
         let pathString = path.absolutePath
-        
+
         do {
             try fileManager.createDirectory(
                 atPath: pathString,
@@ -167,7 +167,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Create a file
     /// - Parameters:
     ///   - path: File path to create
@@ -176,7 +176,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     /// - Returns: Success or error
     public func createFile(at path: FilePathDTO, data: [UInt8], overwrite: Bool) async -> OperationResultDTO<Void> {
         let pathString = path.absolutePath
-        
+
         // Check if file exists and we're not overwriting
         if !overwrite && fileManager.fileExists(atPath: pathString) {
             return .failure(SecurityErrorDTO(
@@ -185,11 +185,11 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                 message: "File already exists and overwrite is not enabled"
             ))
         }
-        
+
         do {
             // Create Data from bytes
             let fileData = Data(data)
-            
+
             // Write to file
             try fileData.write(to: URL(fileURLWithPath: pathString))
             return .success(())
@@ -201,13 +201,13 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Read file contents
     /// - Parameter path: File path to read
     /// - Returns: File data or error
     public func readFile(at path: FilePathDTO) async -> OperationResultDTO<[UInt8]> {
         let pathString = path.absolutePath
-        
+
         do {
             // Read file data
             let data = try Data(contentsOf: URL(fileURLWithPath: pathString))
@@ -220,7 +220,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Write data to a file
     /// - Parameters:
     ///   - path: File path to write
@@ -228,11 +228,11 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     /// - Returns: Success or error
     public func writeFile(at path: FilePathDTO, data: [UInt8]) async -> OperationResultDTO<Void> {
         let pathString = path.absolutePath
-        
+
         do {
             // Create Data from bytes
             let fileData = Data(data)
-            
+
             // Write to file
             try fileData.write(to: URL(fileURLWithPath: pathString))
             return .success(())
@@ -244,7 +244,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Append data to a file
     /// - Parameters:
     ///   - path: File path to append to
@@ -252,23 +252,23 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     /// - Returns: Success or error
     public func appendFile(at path: FilePathDTO, data: [UInt8]) async -> OperationResultDTO<Void> {
         let pathString = path.absolutePath
-        
+
         do {
             // Create Data from bytes
             let fileData = Data(data)
-            
+
             // Create file handle
             let fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: pathString))
-            
+
             // Seek to end
             try fileHandle.seekToEnd()
-            
+
             // Write data
             try fileHandle.write(contentsOf: fileData)
-            
+
             // Close file
             try fileHandle.close()
-            
+
             return .success(())
         } catch {
             return .failure(SecurityErrorDTO(
@@ -278,7 +278,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Delete a file or directory
     /// - Parameters:
     ///   - path: Path to delete
@@ -286,14 +286,14 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     /// - Returns: Success or error
     public func delete(at path: FilePathDTO, recursive: Bool) async -> OperationResultDTO<Void> {
         let pathString = path.absolutePath
-        
+
         do {
             // Check if file exists
             var isDirectory: ObjCBool = false
             guard fileManager.fileExists(atPath: pathString, isDirectory: &isDirectory) else {
                 return .success(()) // File doesn't exist, so nothing to delete
             }
-            
+
             // Handle directory case
             if isDirectory.boolValue {
                 // For directories, check if recursive deletion is requested
@@ -309,7 +309,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                             message: "Directory is not empty and recursive deletion was not requested"
                         ))
                     }
-                    
+
                     // Directory is empty, delete it
                     try fileManager.removeItem(atPath: pathString)
                 }
@@ -317,7 +317,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                 // For files, just delete
                 try fileManager.removeItem(atPath: pathString)
             }
-            
+
             return .success(())
         } catch {
             return .failure(SecurityErrorDTO(
@@ -327,7 +327,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Move a file or directory
     /// - Parameters:
     ///   - sourcePath: Source path
@@ -336,7 +336,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     public func move(from sourcePath: FilePathDTO, to destinationPath: FilePathDTO) async -> OperationResultDTO<Void> {
         let sourcePathString = sourcePath.absolutePath
         let destinationPathString = destinationPath.absolutePath
-        
+
         do {
             // Check if source exists
             guard fileManager.fileExists(atPath: sourcePathString) else {
@@ -346,7 +346,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     message: "Source file does not exist: \(sourcePathString)"
                 ))
             }
-            
+
             // Check if destination exists
             if fileManager.fileExists(atPath: destinationPathString) {
                 return .failure(SecurityErrorDTO(
@@ -355,7 +355,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     message: "Destination file already exists: \(destinationPathString)"
                 ))
             }
-            
+
             // Move file
             try fileManager.moveItem(atPath: sourcePathString, toPath: destinationPathString)
             return .success(())
@@ -367,7 +367,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Copy a file or directory
     /// - Parameters:
     ///   - sourcePath: Source path
@@ -377,7 +377,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     public func copy(from sourcePath: FilePathDTO, to destinationPath: FilePathDTO, recursive: Bool) async -> OperationResultDTO<Void> {
         let sourcePathString = sourcePath.absolutePath
         let destinationPathString = destinationPath.absolutePath
-        
+
         do {
             // Check if source exists
             var isDirectory: ObjCBool = false
@@ -388,7 +388,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     message: "Source file does not exist: \(sourcePathString)"
                 ))
             }
-            
+
             // Check if destination exists
             if fileManager.fileExists(atPath: destinationPathString) {
                 return .failure(SecurityErrorDTO(
@@ -397,7 +397,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     message: "Destination file already exists: \(destinationPathString)"
                 ))
             }
-            
+
             // Handle directory case
             if isDirectory.boolValue {
                 if recursive {
@@ -415,7 +415,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                 // Copy file
                 try fileManager.copyItem(atPath: sourcePathString, toPath: destinationPathString)
             }
-            
+
             return .success(())
         } catch {
             return .failure(SecurityErrorDTO(
@@ -425,7 +425,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Set file permissions
     /// - Parameters:
     ///   - path: File path
@@ -435,11 +435,11 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     /// - Returns: Success or error
     public func setPermissions(at path: FilePathDTO, readable: Bool, writable: Bool, executable: Bool) async -> OperationResultDTO<Void> {
         let pathString = path.absolutePath
-        
+
         do {
             // Get current attributes
             let attributes = try fileManager.attributesOfItem(atPath: pathString)
-            
+
             // Get current permissions
             guard let currentPermissions = attributes[.posixPermissions] as? NSNumber else {
                 return .failure(SecurityErrorDTO(
@@ -448,22 +448,22 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     message: "Could not get current permissions"
                 ))
             }
-            
+
             // Calculate new permissions
             var newPermissions = currentPermissions.uint16Value
-            
+
             // Owner permissions (bits 8-6)
             newPermissions = (newPermissions & ~0o700) | // Clear owner bits
                           (readable ? 0o400 : 0) |     // Set read bit
                           (writable ? 0o200 : 0) |     // Set write bit
                           (executable ? 0o100 : 0)     // Set execute bit
-            
+
             // Set new permissions
             try fileManager.setAttributes(
                 [.posixPermissions: NSNumber(value: newPermissions)],
                 ofItemAtPath: pathString
             )
-            
+
             return .success(())
         } catch {
             return .failure(SecurityErrorDTO(
@@ -473,7 +473,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Create a symbolic link
     /// - Parameters:
     ///   - path: Path for the link
@@ -482,7 +482,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
     public func createSymbolicLink(at path: FilePathDTO, targetPath: FilePathDTO) async -> OperationResultDTO<Void> {
         let pathString = path.absolutePath
         let targetPathString = targetPath.absolutePath
-        
+
         do {
             // Create symbolic link
             try fileManager.createSymbolicLink(atPath: pathString, withDestinationPath: targetPathString)
@@ -495,13 +495,13 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Resolve a symbolic link
     /// - Parameter path: Path to resolve
     /// - Returns: Resolved path or error
     public func resolveSymbolicLink(at path: FilePathDTO) async -> OperationResultDTO<FilePathDTO> {
         let pathString = path.absolutePath
-        
+
         do {
             // Check if path is a symbolic link
             let resourceValues = try URL(fileURLWithPath: pathString).resourceValues(forKeys: [.isSymbolicLinkKey])
@@ -512,16 +512,16 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                     message: "Path is not a symbolic link: \(pathString)"
                 ))
             }
-            
+
             // Resolve the link
             let destination = try fileManager.destinationOfSymbolicLink(atPath: pathString)
-            
+
             // Create FilePathDTO from the resolved path
             let resolvedPath = FilePathDTO(
                 absolutePath: destination,
                 resourceType: .unknown // We don't know the type of the target until we check it
             )
-            
+
             return .success(resolvedPath)
         } catch {
             return .failure(SecurityErrorDTO(
@@ -531,7 +531,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Get temporary directory
     /// - Returns: Path to temporary directory
     public func temporaryDirectory() -> FilePathDTO {
@@ -541,7 +541,7 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
             resourceType: .directory
         )
     }
-    
+
     /// Get user's document directory
     /// - Returns: Path to document directory or error
     public func documentDirectory() -> OperationResultDTO<FilePathDTO> {
@@ -552,12 +552,12 @@ public class FileSystemServiceDTOAdapter: FileSystemServiceDTOProtocol {
                 appropriateFor: nil,
                 create: false
             )
-            
+
             let path = FilePathDTO(
                 absolutePath: documentDirectoryURL.path,
                 resourceType: .directory
             )
-            
+
             return .success(path)
         } catch {
             return .failure(SecurityErrorDTO(

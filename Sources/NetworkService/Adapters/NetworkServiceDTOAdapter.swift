@@ -1,24 +1,24 @@
 import CoreDTOs
-import Foundation
-import UmbraCoreTypes
 import ErrorHandling
 import ErrorHandlingDomains
+import Foundation
+import UmbraCoreTypes
 
 /// Foundation-independent adapter for network operations
 public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
     // MARK: - Private Properties
-    
+
     private let session: URLSession
     private let errorDomain = ErrorHandlingDomains.UmbraErrors.Network.self
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize a new NetworkServiceDTOAdapter with a custom URLSession
     /// - Parameter session: The URLSession to use for network operations
     public init(session: URLSession) {
         self.session = session
     }
-    
+
     /// Initialize a new NetworkServiceDTOAdapter with default URLSession configuration
     public init() {
         let config = URLSessionConfiguration.default
@@ -26,9 +26,9 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
         config.timeoutIntervalForResource = 60.0
         self.session = URLSession(configuration: config)
     }
-    
+
     // MARK: - NetworkServiceDTOProtocol Implementation
-    
+
     /// Send a network request asynchronously
     /// - Parameter request: The request to send
     /// - Returns: A result containing either the response or an error
@@ -40,12 +40,12 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                 message: "Could not create URL request from request DTO"
             ))
         }
-        
+
         do {
             let startTime = Date()
             let (data, response) = try await session.data(for: urlRequest)
             let duration = Date().timeIntervalSince(startTime)
-            
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 return .failure(SecurityErrorDTO(
                     code: errorDomain.invalidResponse.code,
@@ -53,7 +53,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                     message: "Response is not an HTTP response"
                 ))
             }
-            
+
             // Create headers dictionary
             var headers = [String: String]()
             for (key, value) in httpResponse.allHeaderFields {
@@ -61,7 +61,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                     headers[keyStr] = valueStr
                 }
             }
-            
+
             // Create the response DTO
             let responseDTO = NetworkResponseDTO(
                 requestId: request.id,
@@ -76,7 +76,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                 timestamp: UInt64(Date().timeIntervalSince1970),
                 metadata: [:]
             )
-            
+
             return .success(responseDTO)
         } catch let urlError as URLError {
             return .failure(convertURLError(urlError, requestId: request.id))
@@ -88,7 +88,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Download data from a URL
     /// - Parameters:
     ///   - urlString: The URL string to download from
@@ -102,10 +102,10 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
             headers: headers ?? [:],
             timeout: 60.0
         )
-        
+
         // Send the request
         let response = await sendRequest(request)
-        
+
         // Process the response
         switch response {
         case .success(let responseDTO):
@@ -123,7 +123,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
             return .failure(error)
         }
     }
-    
+
     /// Download data with progress reporting
     /// - Parameters:
     ///   - urlString: The URL string to download from
@@ -142,21 +142,21 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                 message: "Invalid URL: \(urlString)"
             ))
         }
-        
+
         // Create the request
         var request = URLRequest(url: url)
-        
+
         // Add headers if provided
         if let headers = headers {
             for (key, value) in headers {
                 request.setValue(value, forHTTPHeaderField: key)
             }
         }
-        
+
         // Use a delegate-based approach for progress tracking
         let delegate = ProgressTrackingDelegate(progressHandler: progressHandler)
         let progressSession = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
-        
+
         do {
             let (downloadLocation, _) = try await progressSession.download(for: request)
             let data = try Data(contentsOf: downloadLocation)
@@ -171,7 +171,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Upload data to a URL
     /// - Parameters:
     ///   - data: The data to upload
@@ -198,11 +198,11 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
             authType: .none,
             metadata: [:]
         )
-        
+
         // Send the request
         return await sendRequest(request)
     }
-    
+
     /// Upload data with progress reporting
     /// - Parameters:
     ///   - data: The data to upload
@@ -225,30 +225,30 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                 message: "Invalid URL: \(urlString)"
             ))
         }
-        
+
         // Create the request
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
-        
+
         // Add headers if provided
         if let headers = headers {
             for (key, value) in headers {
                 request.setValue(value, forHTTPHeaderField: key)
             }
         }
-        
+
         // Create Data from bytes
         let uploadData = Data(data)
-        
+
         // Use a delegate-based approach for progress tracking
         let delegate = ProgressTrackingDelegate(progressHandler: progressHandler)
         let progressSession = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
-        
+
         do {
             let requestStartTime = Date()
             let (responseData, response) = try await progressSession.upload(for: request, from: uploadData)
             let duration = Date().timeIntervalSince(requestStartTime)
-            
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 return .failure(SecurityErrorDTO(
                     code: errorDomain.invalidResponse.code,
@@ -256,7 +256,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                     message: "Response is not an HTTP response"
                 ))
             }
-            
+
             // Create headers dictionary
             var responseHeaders = [String: String]()
             for (key, value) in httpResponse.allHeaderFields {
@@ -264,7 +264,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                     responseHeaders[keyStr] = valueStr
                 }
             }
-            
+
             // Create the response DTO
             let responseDTO = NetworkResponseDTO(
                 requestId: UUID().uuidString,
@@ -279,7 +279,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                 timestamp: UInt64(Date().timeIntervalSince1970),
                 metadata: [:]
             )
-            
+
             return .success(responseDTO)
         } catch let urlError as URLError {
             return .failure(convertURLError(urlError, requestId: UUID().uuidString))
@@ -291,7 +291,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
             ))
         }
     }
-    
+
     /// Checks if a URL is reachable
     /// - Parameter urlString: The URL string to check
     /// - Returns: A result containing either a boolean indicating reachability or an error
@@ -302,10 +302,10 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
             urlString: urlString,
             timeout: 10.0
         )
-        
+
         // Send the request
         let response = await sendRequest(request)
-        
+
         switch response {
         case .success(let responseDTO):
             // Any valid HTTP response (even error codes) indicates the URL is reachable
@@ -317,19 +317,19 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
                error.error.code == errorDomain.networkConnectionLost.code {
                 return .success(false)
             }
-            
+
             // For other errors, propagate the failure
             return .failure(error)
         }
     }
-    
+
     // MARK: - Private Helper Methods
-    
+
     private func convertURLError(_ error: URLError, requestId: String) -> SecurityErrorDTO {
         let code: Int
         let domain: String
         let message: String
-        
+
         switch error.code {
         case .badURL:
             code = errorDomain.invalidURL.code
@@ -360,7 +360,7 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
             domain = errorDomain.networkError.domain
             message = "Network error: \(error.localizedDescription)"
         }
-        
+
         return SecurityErrorDTO(
             code: code,
             domain: domain,
@@ -372,12 +372,12 @@ public final class NetworkServiceDTOAdapter: NetworkServiceDTOProtocol {
 /// A delegate for tracking progress of URLSession tasks
 private class ProgressTrackingDelegate: NSObject, URLSessionTaskDelegate, URLSessionDownloadDelegate {
     let progressHandler: (Double) -> Void
-    
+
     init(progressHandler: @escaping (Double) -> Void) {
         self.progressHandler = progressHandler
         super.init()
     }
-    
+
     func urlSession(
         _ session: URLSession,
         task: URLSessionTask,
@@ -390,7 +390,7 @@ private class ProgressTrackingDelegate: NSObject, URLSessionTaskDelegate, URLSes
             progressHandler(progress)
         }
     }
-    
+
     func urlSession(
         _ session: URLSession,
         downloadTask: URLSessionDownloadTask,
@@ -406,7 +406,7 @@ private class ProgressTrackingDelegate: NSObject, URLSessionTaskDelegate, URLSes
             progressHandler(Double(totalBytesWritten))
         }
     }
-    
+
     func urlSession(
         _ session: URLSession,
         downloadTask: URLSessionDownloadTask,

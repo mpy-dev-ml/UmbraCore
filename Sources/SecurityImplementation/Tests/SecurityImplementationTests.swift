@@ -190,7 +190,7 @@ class SecurityImplementationTests: XCTestCase {
             0x1C,
             0x1D,
             0x1E,
-            0x1F,
+            0x1F
         ])
         let testData = SecureBytes(bytes: [0x01, 0x02, 0x03, 0x04, 0x05])
 
@@ -326,7 +326,7 @@ class SecurityImplementationTests: XCTestCase {
 
         // Instantiate the crypto service
         let cryptoService = CryptoService()
-        let config = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2048)
+        let config = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2_048)
 
         // Simple encrypt test with direct keys
         print("Encrypting data")
@@ -373,7 +373,7 @@ class SecurityImplementationTests: XCTestCase {
     func testAsymmetricEncryptionWithLargeData() async {
         // Test encrypting data larger than RSA block size
         let cryptoService = CryptoService()
-        let config = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2048)
+        let config = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2_048)
 
         // Create a manually constructed dummy key pair for our simplified testing
         print("Creating dummy key pair for large data test")
@@ -383,7 +383,7 @@ class SecurityImplementationTests: XCTestCase {
 
         // Create large test data (4 KB)
         var largeData = [UInt8]()
-        for i in 0 ..< 4096 {
+        for i in 0 ..< 4_096 {
             largeData.append(UInt8(i % 256))
         }
         let testData = SecureBytes(bytes: largeData)
@@ -432,7 +432,7 @@ class SecurityImplementationTests: XCTestCase {
         // We're using a simplified implementation for debugging, so we'll adapt this test
 
         let cryptoService = CryptoService()
-        let config = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2048)
+        let config = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2_048)
 
         // Create a dummy key for testing
         let keyBytes = [UInt8](repeating: 0xAA, count: 32)
@@ -530,12 +530,12 @@ class SecurityImplementationTests: XCTestCase {
         let cryptoService = CryptoService()
 
         // Data sizes to test (in KB)
-        let dataSizes = [1, 10, 100, 1000, 4096]
+        let dataSizes = [1, 10, 100, 1_000, 4_096]
 
         // For each data size, measure encryption and decryption time
         for size in dataSizes {
             // Create test data of the specified size (in KB)
-            let sizeInBytes = size * 1024
+            let sizeInBytes = size * 1_024
             var testData = [UInt8]()
             for i in 0 ..< sizeInBytes {
                 testData.append(UInt8(i % 256))
@@ -561,7 +561,7 @@ class SecurityImplementationTests: XCTestCase {
                 switch encryptResult {
                 case let .success(encryptedData):
                     // Record encryption throughput
-                    let encryptThroughput = Double(sizeInBytes) / encryptionTime / 1024.0 / 1024.0
+                    let encryptThroughput = Double(sizeInBytes) / encryptionTime / 1_024.0 / 1_024.0
                     print("Encryption throughput: \(encryptThroughput) MB/s")
 
                     // Measure decryption time
@@ -574,7 +574,7 @@ class SecurityImplementationTests: XCTestCase {
                     switch decryptResult {
                     case let .success(decryptedData):
                         // Record decryption throughput
-                        let decryptThroughput = Double(sizeInBytes) / decryptionTime / 1024.0 / 1024.0
+                        let decryptThroughput = Double(sizeInBytes) / decryptionTime / 1_024.0 / 1_024.0
                         print("Decryption throughput: \(decryptThroughput) MB/s")
 
                         // Verify decrypted data matches original
@@ -592,7 +592,7 @@ class SecurityImplementationTests: XCTestCase {
     func testAsymmetricEncryptionPerformance() async {
         // Test the performance of asymmetric encryption and decryption with different data sizes
         let cryptoService = CryptoService()
-        let config = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2048)
+        let config = SecurityConfigDTO(algorithm: "RSA", keySizeInBits: 2_048)
 
         // Create a key for our simplified implementation
         let keyBytes = [UInt8](repeating: 0xAA, count: 32)
@@ -601,12 +601,12 @@ class SecurityImplementationTests: XCTestCase {
 
         // Data sizes to test (in KB)
         // For asymmetric encryption, we use smaller sizes as it's typically slower
-        let dataSizes = [1, 10, 100, 1000]
+        let dataSizes = [1, 10, 100, 1_000]
 
         // For each data size, measure encryption and decryption time
         for size in dataSizes {
             // Create test data of the specified size (in KB)
-            let sizeInBytes = size * 1024
+            let sizeInBytes = size * 1_024
             var testData = [UInt8]()
             for i in 0 ..< sizeInBytes {
                 testData.append(UInt8(i % 256))
@@ -629,7 +629,7 @@ class SecurityImplementationTests: XCTestCase {
             switch encryptResult {
             case let .success(encryptedData):
                 // Record encryption throughput
-                let encryptThroughput = Double(sizeInBytes) / encryptionTime / 1024.0 / 1024.0
+                let encryptThroughput = Double(sizeInBytes) / encryptionTime / 1_024.0 / 1_024.0
                 print("Asymmetric encryption throughput: \(encryptThroughput) MB/s")
 
                 // Measure decryption time
@@ -646,7 +646,7 @@ class SecurityImplementationTests: XCTestCase {
                 switch decryptResult {
                 case let .success(decryptedData):
                     // Record decryption throughput
-                    let decryptThroughput = Double(sizeInBytes) / decryptionTime / 1024.0 / 1024.0
+                    let decryptThroughput = Double(sizeInBytes) / decryptionTime / 1_024.0 / 1_024.0
                     print("Asymmetric decryption throughput: \(decryptThroughput) MB/s")
 
                     // Verify decrypted data matches original

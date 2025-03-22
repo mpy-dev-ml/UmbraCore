@@ -26,7 +26,7 @@ public extension SecurityProtocolsCore.SecurityProviderProtocol {
         }
         return true
     }
-    
+
     /// Performs an operation with security-scoped access to a path
     /// - Parameters:
     ///   - path: The path to access with security scope

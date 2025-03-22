@@ -54,7 +54,7 @@ final class KeychainXPCConnection: @unchecked Sendable {
             // Check if connection was invalidated
             if await state.isInvalidatedState() {
                 throw NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
-                    NSLocalizedDescriptionKey: "Connection was invalidated",
+                    NSLocalizedDescriptionKey: "Connection was invalidated"
                 ])
             }
 
@@ -68,7 +68,7 @@ final class KeychainXPCConnection: @unchecked Sendable {
             if listener != nil {
                 // No connection for listener mode
                 throw NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
-                    NSLocalizedDescriptionKey: "Cannot connect in listener mode",
+                    NSLocalizedDescriptionKey: "Cannot connect in listener mode"
                 ])
             } else {
                 // Create connection to service
@@ -91,7 +91,7 @@ final class KeychainXPCConnection: @unchecked Sendable {
             // Get proxy using the actor-isolated method
             guard let proxy = await state.getProxyFromConnection() else {
                 throw NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
-                    NSLocalizedDescriptionKey: "Failed to get remote proxy",
+                    NSLocalizedDescriptionKey: "Failed to get remote proxy"
                 ])
             }
 
@@ -118,7 +118,7 @@ extension KeychainXPCConnection: KeychainXPCProtocol {
     ) {
         // Implementation
         reply(NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Not implemented",
+            NSLocalizedDescriptionKey: "Not implemented"
         ]))
     }
 
@@ -131,7 +131,7 @@ extension KeychainXPCConnection: KeychainXPCProtocol {
     ) {
         // Implementation
         reply(NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Not implemented",
+            NSLocalizedDescriptionKey: "Not implemented"
         ]))
     }
 
@@ -143,7 +143,7 @@ extension KeychainXPCConnection: KeychainXPCProtocol {
     ) {
         // Implementation
         reply(nil, NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Not implemented",
+            NSLocalizedDescriptionKey: "Not implemented"
         ]))
     }
 
@@ -155,7 +155,7 @@ extension KeychainXPCConnection: KeychainXPCProtocol {
     ) {
         // Implementation
         reply(NSError(domain: "com.umbracore.keychain", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Not implemented",
+            NSLocalizedDescriptionKey: "Not implemented"
         ]))
     }
 }

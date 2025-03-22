@@ -34,8 +34,7 @@ public extension URL {
     /// - Returns: SecureBytes containing the security-scoped bookmark
     /// - Throws: SecurityError.bookmarkError if bookmark creation fails
     func createSecurityScopedBookmarkData() async
-        -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols>
-    {
+        -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
         let result = await createSecurityScopedBookmark()
         switch result {
         case let .success(data):
@@ -55,8 +54,7 @@ public extension URL {
     ///   - File no longer exists
     ///   - Insufficient permissions
     static func resolveSecurityScopedBookmark(_ bookmarkData: Data) async throws
-        -> (URL, Bool)
-    {
+        -> (URL, Bool) {
         var isStale = false
         let url = try URL(
             resolvingBookmarkData: bookmarkData,

@@ -11,17 +11,17 @@ public protocol BookmarkServiceDTOProtocol {
     /// - Parameter path: The path to create a bookmark for
     /// - Returns: A result containing the bookmark or an error
     func createBookmark(for path: FilePathDTO) -> OperationResultDTO<BookmarkDTO>
-    
+
     /// Resolve a bookmark to a file path
     /// - Parameter bookmark: The bookmark to resolve
     /// - Returns: A result containing the resolved path and whether the bookmark was stale
     func resolveBookmark(_ bookmark: BookmarkDTO) -> OperationResultDTO<FileSystemResolvedBookmarkDTO>
-    
+
     /// Start accessing the resource at the given path
     /// - Parameter path: The path to the resource
     /// - Returns: Result indicating success or failure
     func startAccessing(_ path: FilePathDTO) -> OperationResultDTO<Bool>
-    
+
     /// Stop accessing the resource at the given path
     /// - Parameter path: The path to the resource
     /// - Returns: Result indicating success or failure
@@ -35,19 +35,19 @@ public protocol BookmarkServiceType {
     /// - Throws: An error if the bookmark creation fails
     /// - Returns: Data representation of the bookmark
     func createBookmark(for url: URL) throws -> Data
-    
+
     /// Resolve a bookmark to a URL
     /// - Parameter bookmarkData: The bookmark data to resolve
     /// - Throws: An error if the bookmark resolution fails
     /// - Returns: The resolved URL and whether the bookmark was stale
     func resolveBookmark(_ bookmarkData: Data) throws -> (URL, Bool)
-    
+
     /// Start accessing the security-scoped resource at the given URL
     /// - Parameter url: The security-scoped URL
     /// - Throws: An error if access cannot be started
     /// - Returns: Whether access was successfully started
     func startAccessing(_ url: URL) throws -> Bool
-    
+
     /// Stop accessing the security-scoped resource at the given URL
     /// - Parameter url: The security-scoped URL
     /// - Throws: An error if access cannot be stopped
@@ -58,7 +58,7 @@ public protocol BookmarkServiceType {
 public struct FileSystemResolvedBookmarkDTO: Equatable, Sendable {
     public let path: FilePathDTO
     public let wasStale: Bool
-    
+
     public init(path: FilePathDTO, wasStale: Bool) {
         self.path = path
         self.wasStale = wasStale
@@ -68,20 +68,20 @@ public struct FileSystemResolvedBookmarkDTO: Equatable, Sendable {
 /// Adapter for BookmarkService that provides a Foundation-independent interface
 public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
     // MARK: - Properties
-    
+
     /// The underlying bookmark service
     private let bookmarkService: BookmarkServiceType
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize with a bookmark service
     /// - Parameter bookmarkService: The bookmark service to adapt
     public init(bookmarkService: BookmarkServiceType) {
         self.bookmarkService = bookmarkService
     }
-    
+
     // MARK: - BookmarkServiceDTOProtocol Implementation
-    
+
     /// Create a bookmark for a file path
     /// - Parameter path: The path to create a bookmark for
     /// - Returns: A result containing the bookmark or an error
@@ -98,17 +98,17 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
                     details: errorDTO.details
                 )
             }
-            
+
             // Create the bookmark
             let bookmarkData = try bookmarkService.createBookmark(for: url)
-            
+
             // Create the BookmarkDTO
             let bookmarkDTO = BookmarkDTO(
                 data: [UInt8](bookmarkData),
                 displayPath: path.path,
                 hasSecurityScope: true
             )
-            
+
             return .success(bookmarkDTO)
         } catch let error as UmbraErrors.GeneralSecurity.Core {
             let errorDTO = mapCoreError(error)
@@ -129,7 +129,7 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
             )
         }
     }
-    
+
     /// Resolve a bookmark to a file path
     /// - Parameter bookmark: The bookmark to resolve
     /// - Returns: A result containing the resolved path and whether the bookmark was stale
@@ -137,7 +137,7 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
         do {
             // Resolve the bookmark
             let (url, wasStale) = try bookmarkService.resolveBookmark(Data(bookmark.data))
-            
+
             // Create a FilePathDTO from the resolved URL
             let pathDTO = FilePathDTO(
                 path: url.path,
@@ -146,10 +146,10 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
                 resourceType: determineResourceType(url),
                 isAbsolute: true
             )
-            
+
             // Create a FileSystemResolvedBookmarkDTO
             let resolvedBookmarkDTO = FileSystemResolvedBookmarkDTO(path: pathDTO, wasStale: wasStale)
-            
+
             return .success(resolvedBookmarkDTO)
         } catch let error as UmbraErrors.GeneralSecurity.Core {
             let errorDTO = mapCoreError(error)
@@ -169,7 +169,7 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
             )
         }
     }
-    
+
     /// Start accessing the resource at the given path
     /// - Parameter path: The path to the resource
     /// - Returns: Result indicating success or failure
@@ -186,7 +186,7 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
                     details: errorDTO.details
                 )
             }
-            
+
             // Start accessing the resource
             let success = try bookmarkService.startAccessing(url)
             return .success(success)
@@ -209,7 +209,7 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
             )
         }
     }
-    
+
     /// Stop accessing the resource at the given path
     /// - Parameter path: The path to the resource
     /// - Returns: Result indicating success or failure
@@ -226,7 +226,7 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
                     details: errorDTO.details
                 )
             }
-            
+
             // Stop accessing the resource
             try bookmarkService.stopAccessing(url)
             return .success(true)
@@ -249,9 +249,9 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
             )
         }
     }
-    
+
     // MARK: - Helper Methods
-    
+
     /// Determine the resource type of a URL
     /// - Parameter url: The URL to check
     /// - Returns: The resource type
@@ -275,7 +275,7 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
         }
         return .unknown
     }
-    
+
     /// Maps a core security error to a security error DTO
     /// - Parameter error: The core error to map
     /// - Returns: A security error DTO
@@ -283,63 +283,63 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
         switch error {
         case .encryptionFailed(let reason):
             return SecurityErrorDTO(
-                code: 1001,
+                code: 1_001,
                 domain: "security.encryption",
                 message: "Encryption failed",
                 details: ["reason": reason]
             )
         case .decryptionFailed(let reason):
             return SecurityErrorDTO(
-                code: 1002,
+                code: 1_002,
                 domain: "security.encryption",
                 message: "Decryption failed",
                 details: ["reason": reason]
             )
         case .keyGenerationFailed(let reason):
             return SecurityErrorDTO(
-                code: 1003,
+                code: 1_003,
                 domain: "security.keys",
                 message: "Key generation failed",
                 details: ["reason": reason]
             )
         case .invalidKey(let reason):
             return SecurityErrorDTO(
-                code: 1004,
+                code: 1_004,
                 domain: "security.keys",
                 message: "Invalid key",
                 details: ["reason": reason]
             )
         case .hashVerificationFailed(let reason):
             return SecurityErrorDTO(
-                code: 1005,
+                code: 1_005,
                 domain: "security.hash",
                 message: "Hash verification failed",
                 details: ["reason": reason]
             )
         case .randomGenerationFailed(let reason):
             return SecurityErrorDTO(
-                code: 1006,
+                code: 1_006,
                 domain: "security.random",
                 message: "Random generation failed",
                 details: ["reason": reason]
             )
         case .invalidInput(let reason):
             return SecurityErrorDTO(
-                code: 1007,
+                code: 1_007,
                 domain: "security.input",
                 message: "Invalid input",
                 details: ["reason": reason]
             )
         case .storageOperationFailed(let reason):
             return SecurityErrorDTO(
-                code: 1008,
+                code: 1_008,
                 domain: "security.storage",
                 message: "Storage operation failed",
                 details: ["reason": reason]
             )
         case .timeout(let operation):
             return SecurityErrorDTO(
-                code: 1009,
+                code: 1_009,
                 domain: "security.timeout",
                 message: "Security operation timed out",
                 details: ["operation": operation]
@@ -353,21 +353,21 @@ public final class BookmarkServiceDTOAdapter: BookmarkServiceDTOProtocol {
             )
         case .internalError(let message):
             return SecurityErrorDTO(
-                code: 1010,
+                code: 1_010,
                 domain: "security.internal",
                 message: "Internal security error",
                 details: ["message": message]
             )
         case .notImplemented(let feature):
             return SecurityErrorDTO(
-                code: 1011,
+                code: 1_011,
                 domain: "security.feature",
                 message: "Security feature not implemented",
                 details: ["feature": feature]
             )
         @unknown default:
             return SecurityErrorDTO(
-                code: 9999,
+                code: 9_999,
                 domain: "security.unknown",
                 message: "Unknown security error",
                 details: ["description": error.localizedDescription]
@@ -389,13 +389,13 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 2001,
+            code: 2_001,
             domain: "security.bookmark",
             message: "Invalid path: \(path)",
             details: details
         )
     }
-    
+
     /// Create an error for bookmark creation failure
     /// - Parameters:
     ///   - path: The path that failed
@@ -406,13 +406,13 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 2002,
+            code: 2_002,
             domain: "security.bookmark",
             message: "Failed to create bookmark for path: \(path)",
             details: details
         )
     }
-    
+
     /// Create an error for bookmark resolution failure
     /// - Parameters:
     ///   - details: Additional details
@@ -421,13 +421,13 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 2003,
+            code: 2_003,
             domain: "security.bookmark",
             message: "Failed to resolve bookmark",
             details: details
         )
     }
-    
+
     /// Create an error for access failure
     /// - Parameters:
     ///   - message: The error message
@@ -438,7 +438,7 @@ public extension SecurityErrorDTO {
         details: [String: String] = [:]
     ) -> SecurityErrorDTO {
         SecurityErrorDTO(
-            code: 2004,
+            code: 2_004,
             domain: "security.bookmark",
             message: message,
             details: details

@@ -139,7 +139,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
             kSecAttrAccount as String: account,
-            kSecValueData as String: passwordData,
+            kSecValueData as String: passwordData
         ]
 
         // Check if item already exists
@@ -148,7 +148,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
             kSecAttrAccount as String: account,
-            kSecReturnData as String: false,
+            kSecReturnData as String: false
         ] as CFDictionary, &existingItem)
 
         if checkStatus == errSecSuccess {
@@ -156,9 +156,9 @@ public final class UmbraKeychainService: @unchecked Sendable {
             let updateStatus = SecItemUpdate([
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: identifier,
-                kSecAttrAccount as String: account,
+                kSecAttrAccount as String: account
             ] as CFDictionary, [
-                kSecValueData as String: passwordData,
+                kSecValueData as String: passwordData
             ] as CFDictionary)
 
             guard updateStatus == errSecSuccess else {
@@ -204,7 +204,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
             kSecAttrAccount as String: account,
-            kSecReturnData as String: true,
+            kSecReturnData as String: true
         ]
 
         var item: CFTypeRef?
@@ -236,7 +236,7 @@ public final class UmbraKeychainService: @unchecked Sendable {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: identifier,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: account
         ]
 
         let status = SecItemDelete(query as CFDictionary)

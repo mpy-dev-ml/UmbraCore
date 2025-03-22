@@ -65,28 +65,28 @@ public enum XPCSecurityDTOConverter {
 
         case let .invalidFormat(reason):
             return .invalidContext(reason: reason)
-            
+
         case let .missingProtocolImplementation(protocolName):
             return .missingImplementation(component: protocolName)
-            
+
         case let .incompatibleVersion(version):
             return .operationFailed(operation: "version check", reason: "Incompatible version: \(version)")
-            
+
         case let .invalidState(state, expectedState):
             return .invalidContext(reason: "Invalid state: \(state), expected: \(expectedState)")
-            
+
         case let .internalError(message):
             return .internalError(description: message)
-            
+
         case let .storageOperationFailed(message):
             return .operationFailed(operation: "storage", reason: message)
-            
+
         case let .randomGenerationFailed(message):
             return .operationFailed(operation: "random generation", reason: message)
-            
+
         case let .notImplemented(message):
             return .missingImplementation(component: message)
-            
+
         @unknown default:
             return .internalError(description: "Unknown error")
         }
@@ -104,7 +104,7 @@ public enum XPCSecurityDTOConverter {
 
         case let .encryptionFailed(message):
             return .encryptionFailed(reason: message)
-            
+
         case let .decryptionFailed(message):
             return .decryptionFailed(reason: message)
 
@@ -116,28 +116,28 @@ public enum XPCSecurityDTOConverter {
 
         case let .invalidFormat(reason):
             return .internalError("Invalid format: \(reason)")
-            
+
         case let .missingProtocolImplementation(protocolName):
             return .internalError("Missing protocol: \(protocolName)")
-            
+
         case let .incompatibleVersion(version):
             return .internalError("Incompatible version: \(version)")
-            
+
         case let .invalidState(state, expectedState):
             return .internalError("Invalid state: \(state), expected: \(expectedState)")
-            
+
         case let .internalError(message):
             return .internalError(message)
-            
+
         case let .storageOperationFailed(message):
             return .internalError("Storage operation failed: \(message)")
-            
+
         case let .randomGenerationFailed(message):
             return .internalError("Random generation failed: \(message)")
-            
+
         case let .notImplemented(message):
             return .internalError("Not implemented: \(message)")
-            
+
         @unknown default:
             return .internalError("Unknown error")
         }

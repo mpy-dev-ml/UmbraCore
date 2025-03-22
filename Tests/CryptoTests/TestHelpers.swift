@@ -100,12 +100,12 @@ public actor CredentialManager {
     private let cryptoService: CryptoTypesProtocols.CryptoServiceProtocol
     // Use @unchecked Sendable to ensure thread safety
     private let keychain: SecureStorageProtocolAdapter
-    
+
     public init(cryptoService: CryptoTypesProtocols.CryptoServiceProtocol, keychain: UmbraMocks.SecureStorageProtocol) {
         self.cryptoService = cryptoService
         self.keychain = SecureStorageProtocolAdapter(storage: keychain)
     }
-    
+
     public func store(credential: String, withIdentifier identifier: String) async throws {
         guard let data = credential.data(using: .utf8) else {
             throw CryptoError.encodingError("Failed to encode credential")
@@ -130,7 +130,7 @@ public actor CredentialManager {
             throw CryptoError.keyStorageError(reason: "Failed to store data")
         }
     }
-    
+
     public func exists(withIdentifier identifier: String) async -> Bool {
         let result = await keychain.retrieveData(identifier: identifier)
 
@@ -141,7 +141,7 @@ public actor CredentialManager {
             return false
         }
     }
-    
+
     public func retrieve<T: Decodable>(withIdentifier identifier: String) async throws -> T {
         let result = await keychain.retrieveData(identifier: identifier)
 
@@ -152,20 +152,20 @@ public actor CredentialManager {
             for i in 0..<data.count {
                 dataBytes.append(data[i])
             }
-            
+
             // Extract IV from the beginning of the data
             let dataBuffer = Data(dataBytes)
             let iv = dataBuffer.prefix(12)
             let encryptedData = dataBuffer.dropFirst(12)
-            
+
             let key = try await generateOrRetrieveMasterKey()
             let decryptedData = try await cryptoService.decrypt(encryptedData, using: key, iv: iv)
-            
+
             // For String type, check if it can be converted directly
             if let string = String(data: decryptedData, encoding: .utf8), T.self is String.Type {
                 return string as! T
             }
-            
+
             let decoder = JSONDecoder()
             do {
                 return try decoder.decode(T.self, from: decryptedData)
@@ -178,7 +178,7 @@ public actor CredentialManager {
             throw CryptoError.keyNotFound(identifier: identifier)
         }
     }
-    
+
     public func delete(withIdentifier identifier: String) async throws {
         let result = await keychain.deleteData(identifier: identifier)
 
@@ -187,9 +187,9 @@ public actor CredentialManager {
             throw CryptoError.keyNotFound(identifier: identifier)
         }
     }
-    
+
     // MARK: - Private Methods
-    
+
     private func generateOrRetrieveMasterKey() async throws -> Data {
         let masterKeyID = "master_key"
         let result = await keychain.retrieveData(identifier: masterKeyID)
@@ -205,17 +205,17 @@ public actor CredentialManager {
         case .failure:
             // Generate a new master key
             let newKey = try await cryptoService.generateSecureRandomKey(length: 32)
-            
+
             // Convert to SecureBytes
             var bytes = [UInt8](repeating: 0, count: newKey.count)
             newKey.copyBytes(to: &bytes, count: newKey.count)
             let secureBytes = SecureBytes(bytes: bytes)
-            
+
             let storeResult = await keychain.storeData(secureBytes, identifier: masterKeyID, metadata: [:])
             if case .failure = storeResult {
                 throw CryptoError.keyGenerationError(reason: "Failed to store master key")
             }
-            
+
             return newKey
         }
     }

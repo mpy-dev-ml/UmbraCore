@@ -1,6 +1,6 @@
-import Foundation
 import CoreErrors
 import CoreServicesTypes
+import Foundation
 import UmbraLogging
 
 /// Protocol defining the base requirements for all UmbraCore services
@@ -87,7 +87,7 @@ public extension CoreErrors.ServiceError {
         print("Service initialisation failed: \(message)")
         return .initialisationFailed
     }
-    
+
     /// Add a detailed message to invalid state error
     /// - Parameter message: The detailed error message
     /// - Returns: An invalid state error
@@ -95,7 +95,7 @@ public extension CoreErrors.ServiceError {
         print("Invalid service state: \(message)")
         return .invalidState
     }
-    
+
     /// Add a detailed message to configuration error
     /// - Parameter message: The detailed error message
     /// - Returns: A configuration error
@@ -103,7 +103,7 @@ public extension CoreErrors.ServiceError {
         print("Service configuration error: \(message)")
         return .configurationError
     }
-    
+
     /// Add a detailed message to dependency error
     /// - Parameter message: The detailed error message
     /// - Returns: A dependency error
@@ -111,7 +111,7 @@ public extension CoreErrors.ServiceError {
         print("Service dependency error: \(message)")
         return .dependencyError
     }
-    
+
     /// Add a detailed message to operation failed error
     /// - Parameter message: The detailed error message
     /// - Returns: An operation failed error

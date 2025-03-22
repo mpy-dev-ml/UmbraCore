@@ -34,7 +34,7 @@ import Foundation
 /// ```
 public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
     // MARK: - Types
-    
+
     /// Calendar month representation.
     ///
     /// Represents the twelve months of the Gregorian calendar, starting with January (1)
@@ -53,7 +53,7 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         case november = 11
         case december = 12
     }
-    
+
     /// Day of week representation.
     ///
     /// Represents the seven days of the week in the Gregorian calendar, with Sunday as 1
@@ -67,7 +67,7 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         case friday = 6
         case saturday = 7
     }
-    
+
     /// Time zone offset in hours and minutes from UTC.
     ///
     /// Represents a timezone as an offset from UTC (Coordinated Universal Time).
@@ -84,20 +84,20 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
     public struct TimeZoneOffset: Sendable, Equatable, Hashable, Codable {
         /// Hours offset from UTC (-12 to +14)
         public let hours: Int
-        
+
         /// Minutes offset from UTC (0 to 59)
         public let minutes: Int
-        
+
         /// Whether the offset is positive
         public let isPositive: Bool
-        
+
         /// Initialize with hours, minutes and sign
         public init(hours: Int, minutes: Int, isPositive: Bool) {
             self.hours = hours
             self.minutes = minutes
             self.isPositive = isPositive
         }
-        
+
         /// Initialize with total minutes
         public init(totalMinutes: Int) {
             self.isPositive = totalMinutes >= 0
@@ -105,51 +105,51 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
             self.hours = absoluteMinutes / 60
             self.minutes = absoluteMinutes % 60
         }
-        
+
         /// Get the total number of minutes in this offset
         public var totalMinutes: Int {
             let value = hours * 60 + minutes
             return isPositive ? value : -value
         }
-        
+
         /// Format as a string (e.g., "+08:00", "-05:30")
         public var formatted: String {
             let sign = isPositive ? "+" : "-"
             return String(format: "%@%02d:%02d", sign, hours, minutes)
         }
-        
+
         /// UTC time zone offset (zero)
         public static let utc = TimeZoneOffset(hours: 0, minutes: 0, isPositive: true)
     }
-    
+
     // MARK: - Properties
-    
+
     /// Year component (e.g., 2025).
     public let year: Int
-    
+
     /// Month component (1-12).
     public let month: Month
-    
+
     /// Day component (1-31).
     public let day: Int
-    
+
     /// Hour component (0-23).
     public let hour: Int
-    
+
     /// Minute component (0-59).
     public let minute: Int
-    
+
     /// Second component (0-59).
     public let second: Int
-    
+
     /// Nanosecond component (0-999,999,999).
     public let nanosecond: Int
-    
+
     /// Time zone offset from UTC.
     public let timeZoneOffset: TimeZoneOffset
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize a date and time with individual components.
     ///
     /// - Parameters:
@@ -180,7 +180,7 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         self.nanosecond = nanosecond
         self.timeZoneOffset = timeZoneOffset
     }
-    
+
     /// Initialize with Unix timestamp (seconds since 1970-01-01 00:00:00 UTC).
     ///
     /// - Parameters:
@@ -194,24 +194,24 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         let wholeSeconds = floor(timestamp)
         let fractionalSeconds = timestamp - wholeSeconds
         let nanoseconds = Int(fractionalSeconds * 1_000_000_000)
-        
+
         // Initialize with Foundation's Date for proper calendar calculations
         let date = Date(timeIntervalSince1970: timestamp)
-        
+
         // Create calendar in the desired time zone
         let calendar = Calendar(identifier: .gregorian)
         let timeZoneObj = TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60) ?? TimeZone(secondsFromGMT: 0)!
-        
+
         var calendarWithTimeZone = calendar
         calendarWithTimeZone.timeZone = timeZoneObj
-        
+
         let components = calendarWithTimeZone.dateComponents(
             [.year, .month, .day, .hour, .minute, .second, .weekday],
             from: date
         )
-        
+
         // Extract components
-        self.year = components.year ?? 1970
+        self.year = components.year ?? 1_970
         self.month = Month(rawValue: components.month ?? 1) ?? .january
         self.day = components.day ?? 1
         self.hour = components.hour ?? 0
@@ -220,9 +220,9 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         self.nanosecond = nanoseconds
         self.timeZoneOffset = timeZoneOffset
     }
-    
+
     // MARK: - Computed Properties
-    
+
     /// Get the weekday for this date.
     ///
     /// Uses calendar calculations to determine which day of the week
@@ -236,16 +236,16 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
             month: month.rawValue,
             day: day
         )
-        
+
         if let date = calendar.date(from: components),
            let weekday = calendar.component(.weekday, from: date) as Int? {
             return Weekday(rawValue: weekday) ?? .sunday
         }
-        
+
         // Default to Sunday if calculation fails
         return .sunday
     }
-    
+
     /// Unix timestamp (seconds since 1970-01-01 00:00:00 UTC).
     ///
     /// Calculates the number of seconds between this date and time and
@@ -265,17 +265,17 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
             second: second,
             nanosecond: nanosecond
         )
-        
+
         if let date = calendar.date(from: components) {
             return date.timeIntervalSince1970
         }
-        
+
         // Return a safe default if calculation fails
         return 0
     }
-    
+
     // MARK: - Date Operations
-    
+
     /// Add a duration to this date
     /// - Parameter duration: The duration to add
     /// - Returns: A new date with the duration added
@@ -283,7 +283,7 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
         let newTimestamp = timestamp + Double(seconds)
         return DateTimeDTO(timestamp: newTimestamp, timeZoneOffset: timeZoneOffset)
     }
-    
+
     /// Add components to this date
     /// - Parameters:
     ///   - years: Years to add
@@ -314,7 +314,7 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
             second: second,
             nanosecond: nanosecond
         )
-        
+
         if let date = calendar.date(from: components) {
             var dateComponents = DateComponents()
             dateComponents.year = years
@@ -323,7 +323,7 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
             dateComponents.hour = hours
             dateComponents.minute = minutes
             dateComponents.second = seconds
-            
+
             if let newDate = calendar.date(byAdding: dateComponents, to: date) {
                 return DateTimeDTO(
                     timestamp: newDate.timeIntervalSince1970,
@@ -331,33 +331,33 @@ public struct DateTimeDTO: Sendable, Equatable, Hashable, Codable {
                 )
             }
         }
-        
+
         // Return self if calculation fails
         return self
     }
-    
+
     /// Calculate the difference between two dates in seconds
     /// - Parameter other: The other date
     /// - Returns: Difference in seconds
     public func secondsUntil(_ other: DateTimeDTO) -> Double {
         return other.timestamp - self.timestamp
     }
-    
+
     /// Convert to a different time zone
     /// - Parameter timeZoneOffset: The new time zone offset
     /// - Returns: A new date in the specified time zone
     public func inTimeZone(_ timeZoneOffset: TimeZoneOffset) -> DateTimeDTO {
         return DateTimeDTO(timestamp: timestamp, timeZoneOffset: timeZoneOffset)
     }
-    
+
     // MARK: - Static Factory Methods
-    
+
     /// Create a DateTimeDTO representing the current date and time in UTC
     /// - Returns: Current date and time
     public static func now() -> DateTimeDTO {
         return DateTimeDTO(timestamp: Date().timeIntervalSince1970)
     }
-    
+
     /// Create a DateTimeDTO representing the current date and time in the specified time zone
     /// - Parameter timeZoneOffset: Time zone offset
     /// - Returns: Current date and time in the specified time zone

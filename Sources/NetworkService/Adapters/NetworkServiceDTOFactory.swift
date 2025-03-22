@@ -8,7 +8,7 @@ public enum NetworkServiceDTOFactory {
     public static func createDefault() -> NetworkServiceDTOAdapter {
         return NetworkServiceDTOAdapter()
     }
-    
+
     /// Create a NetworkServiceDTOAdapter with custom configuration
     /// - Parameters:
     ///   - timeout: Timeout interval for requests in seconds
@@ -25,11 +25,11 @@ public enum NetworkServiceDTOFactory {
         config.timeoutIntervalForResource = timeout * 2
         config.requestCachePolicy = cachePolicy
         config.allowsCellularAccess = allowsCellularAccess
-        
+
         let session = URLSession(configuration: config)
         return NetworkServiceDTOAdapter(session: session)
     }
-    
+
     /// Create a NetworkServiceDTOAdapter with authentication
     /// - Parameters:
     ///   - authType: The type of authentication to use
@@ -42,10 +42,10 @@ public enum NetworkServiceDTOFactory {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = timeout
         config.timeoutIntervalForResource = timeout * 2
-        
+
         // Configure auth headers
         var defaultHeaders = [String: String]()
-        
+
         switch authType {
         case .bearer(let token):
             defaultHeaders["Authorization"] = "Bearer \(token)"
@@ -64,11 +64,11 @@ public enum NetworkServiceDTOFactory {
         case .none:
             break
         }
-        
+
         if !defaultHeaders.isEmpty {
             config.httpAdditionalHeaders = defaultHeaders
         }
-        
+
         let session = URLSession(configuration: config)
         return NetworkServiceDTOAdapter(session: session)
     }

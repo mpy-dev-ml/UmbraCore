@@ -8,14 +8,14 @@ public enum UserDefaultsServiceDTOFactory {
     public static func createDefault() -> UserDefaultsServiceDTOAdapter {
         return UserDefaultsServiceDTOAdapter()
     }
-    
+
     /// Create a UserDefaultsServiceDTOAdapter with a specific UserDefaults
     /// - Parameter userDefaults: The UserDefaults to use
     /// - Returns: A configured UserDefaultsServiceDTOAdapter
     public static func create(with userDefaults: UserDefaults) -> UserDefaultsServiceDTOAdapter {
         return UserDefaultsServiceDTOAdapter(userDefaults: userDefaults)
     }
-    
+
     /// Create a UserDefaultsServiceDTOAdapter for testing with an isolated UserDefaults
     /// - Parameter suiteName: Suite name for the UserDefaults
     /// - Returns: A UserDefaultsServiceDTOAdapter with isolated UserDefaults
@@ -23,7 +23,7 @@ public enum UserDefaultsServiceDTOFactory {
         guard let userDefaults = UserDefaults(suiteName: suiteName) else {
             return nil
         }
-        
+
         return UserDefaultsServiceDTOAdapter(userDefaults: userDefaults)
     }
 }

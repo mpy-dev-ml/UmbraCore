@@ -18,7 +18,7 @@ swift_library(
 
 swift_test(
     name = "SecurityProviderTests",
-    srcs = ["SecurityProviderTests.swift"],
+    srcs = ["SecurityProviderBaseTests.swift"],
     deps = [
         "//Sources/SecurityInterfaces:SecurityInterfacesForTesting",
         "//Sources/SecurityInterfacesBase",

@@ -41,12 +41,12 @@ public actor MockRepository: RepositoryCore & RepositoryLocking & RepositoryMain
     public func initialize() async throws {
         // Capture the path outside the closure to avoid actor isolation issues
         let pathToAccess = location.path
-        
+
         // Use withSecurityScopedAccess but don't modify actor state inside the closure
         try await securityProvider.withSecurityScopedAccess(to: pathToAccess) {
             // Just return, we'll update state after the closure completes
         }
-        
+
         // Update actor state outside the Sendable closure
         state = .ready
     }

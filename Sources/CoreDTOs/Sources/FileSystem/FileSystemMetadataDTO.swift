@@ -3,54 +3,54 @@ import Foundation
 /// A Foundation-independent representation of file system metadata.
 public struct FileSystemMetadataDTO: Sendable, Equatable {
     // MARK: - Properties
-    
+
     /// Size of the file in bytes
     public let fileSize: UInt64
-    
+
     /// Creation date as Unix timestamp (seconds since 1970)
     public let creationDate: UInt64
-    
+
     /// Last modification date as Unix timestamp (seconds since 1970)
     public let modificationDate: UInt64
-    
+
     /// Last access date as Unix timestamp (seconds since 1970)
     public let accessDate: UInt64?
-    
+
     /// File or directory owner's numeric ID
     public let ownerID: UInt32?
-    
+
     /// File or directory group's numeric ID
     public let groupID: UInt32?
-    
+
     /// POSIX permissions mask
     public let permissions: UInt16?
-    
+
     /// File extension (without leading dot)
     public let fileExtension: String?
-    
+
     /// MIME type of the file, if known
     public let mimeType: String?
-    
+
     /// Whether the file is hidden
     public let isHidden: Bool
-    
+
     /// Whether the file is readable
     public let isReadable: Bool
-    
+
     /// Whether the file is writable
     public let isWritable: Bool
-    
+
     /// Whether the file is executable
     public let isExecutable: Bool
-    
+
     /// Resource type
     public let resourceType: FilePathDTO.ResourceType
-    
+
     /// Additional file system-specific attributes
     public let attributes: [String: String]
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize a FileSystemMetadataDTO with specified values
     /// - Parameters:
     ///   - fileSize: Size of the file in bytes
@@ -101,7 +101,7 @@ public struct FileSystemMetadataDTO: Sendable, Equatable {
         self.resourceType = resourceType
         self.attributes = attributes
     }
-    
+
     /// Create an empty metadata object for a file that doesn't exist or can't be accessed
     /// - Parameter resourceType: The resource type
     /// - Returns: A metadata object with defaults
@@ -125,22 +125,22 @@ public extension FileSystemMetadataDTO {
     var exists: Bool {
         return creationDate > 0 || modificationDate > 0
     }
-    
+
     /// Check if the file is a directory
     var isDirectory: Bool {
         return resourceType == .directory
     }
-    
+
     /// Check if the file is a regular file
     var isRegularFile: Bool {
         return resourceType == .file
     }
-    
+
     /// Check if the file is a symbolic link
     var isSymbolicLink: Bool {
         return resourceType == .symbolicLink
     }
-    
+
     /// Get a human-readable size string
     var readableSize: String {
         let formatter = ByteCountFormatter()
@@ -148,7 +148,7 @@ public extension FileSystemMetadataDTO {
         formatter.countStyle = .file
         return formatter.string(fromByteCount: Int64(fileSize))
     }
-    
+
     /// Create a copy with updated permission flags
     /// - Parameters:
     ///   - isReadable: New isReadable value

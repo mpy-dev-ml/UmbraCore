@@ -1,5 +1,5 @@
-import Foundation
 import ErrorHandlingDomains
+import Foundation
 import SecurityProtocolsCore
 import UmbraCoreTypes
 import UmbraMocks
@@ -9,11 +9,11 @@ import UmbraMocks
 /// implementations across the codebase.
 public final class SecureStorageProtocolAdapter: @unchecked Sendable {
     private let storage: UmbraMocks.SecureStorageProtocol
-    
+
     public init(storage: UmbraMocks.SecureStorageProtocol) {
         self.storage = storage
     }
-    
+
     /// Store data securely
     /// - Parameters:
     ///   - data: The data to store
@@ -26,7 +26,7 @@ public final class SecureStorageProtocolAdapter: @unchecked Sendable {
         metadata: [String: String]
     ) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         let result = await storage.storeSecurely(data: data, identifier: identifier)
-        
+
         switch result {
         case .success:
             return .success(())
@@ -40,7 +40,7 @@ public final class SecureStorageProtocolAdapter: @unchecked Sendable {
             ))
         }
     }
-    
+
     /// Retrieve data securely
     /// - Parameter identifier: The identifier to retrieve
     /// - Returns: Result of the retrieval operation
@@ -48,7 +48,7 @@ public final class SecureStorageProtocolAdapter: @unchecked Sendable {
         identifier: String
     ) async -> Result<UmbraCoreTypes.SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         let result = await storage.retrieveSecurely(identifier: identifier)
-        
+
         switch result {
         case .success(let data):
             return .success(data)
@@ -68,7 +68,7 @@ public final class SecureStorageProtocolAdapter: @unchecked Sendable {
             ))
         }
     }
-    
+
     /// Delete data securely
     /// - Parameter identifier: The identifier to delete
     /// - Returns: Result of the deletion operation
@@ -76,7 +76,7 @@ public final class SecureStorageProtocolAdapter: @unchecked Sendable {
         identifier: String
     ) async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         let result = await storage.deleteSecurely(identifier: identifier)
-        
+
         switch result {
         case .success:
             return .success(())
@@ -96,7 +96,7 @@ public final class SecureStorageProtocolAdapter: @unchecked Sendable {
             ))
         }
     }
-    
+
     /// Reset the storage
     public func reset() async {
         if let mockKeychain = storage as? MockKeychain {

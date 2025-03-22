@@ -135,11 +135,11 @@ public final class MockResticRepository {
         process.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/restic")
         process.arguments = [
             "init",
-            "--repo", path,
+            "--repo", path
         ]
         process.environment = [
             "RESTIC_PASSWORD": password,
-            "PATH": ProcessInfo.processInfo.environment["PATH"] ?? "",
+            "PATH": ProcessInfo.processInfo.environment["PATH"] ?? ""
         ]
 
         let outputPipe = Pipe()
@@ -173,7 +173,7 @@ public final class MockResticRepository {
                 "setting1": "value1",
                 "setting2": "value2"
             }
-            """,
+            """
         ])
     }
 
@@ -205,7 +205,7 @@ public final class MockResticRepository {
         [
             "RESTIC_REPOSITORY": path,
             "RESTIC_PASSWORD": password,
-            "RESTIC_CACHE_DIR": cachePath,
+            "RESTIC_CACHE_DIR": cachePath
         ]
     }
 

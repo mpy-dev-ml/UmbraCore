@@ -30,7 +30,7 @@ class XPCProtocolsBasicTests: XCTestCase {
         let status1 = XPCProtocolDTOs.ServiceStatusDTO(
             code: 200,
             message: "Service is running",
-            timestamp: Date(timeIntervalSince1970: 1000),
+            timestamp: Date(timeIntervalSince1970: 1_000),
             protocolVersion: "1.0",
             serviceVersion: "1.0.0"
         )
@@ -38,7 +38,7 @@ class XPCProtocolsBasicTests: XCTestCase {
         let status2 = XPCProtocolDTOs.ServiceStatusDTO(
             code: 200,
             message: "Service is running",
-            timestamp: Date(timeIntervalSince1970: 1000),
+            timestamp: Date(timeIntervalSince1970: 1_000),
             protocolVersion: "1.0",
             serviceVersion: "1.0.0"
         )
@@ -46,7 +46,7 @@ class XPCProtocolsBasicTests: XCTestCase {
         let status3 = XPCProtocolDTOs.ServiceStatusDTO(
             code: 500,
             message: "Service error",
-            timestamp: Date(timeIntervalSince1970: 1000),
+            timestamp: Date(timeIntervalSince1970: 1_000),
             protocolVersion: "1.0",
             serviceVersion: "1.0.0"
         )

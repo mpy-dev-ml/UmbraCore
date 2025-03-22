@@ -32,8 +32,7 @@ public extension URL {
     /// - Returns: Tuple containing resolved URL and whether bookmark is stale
     /// - Throws: SecurityError if bookmark resolution fails
     static func us_resolveSecurityScopedBookmark(_ bookmarkData: Data) async throws
-        -> (URL, Bool)
-    {
+        -> (URL, Bool) {
         do {
             var isStale = false
             let url = try URL(

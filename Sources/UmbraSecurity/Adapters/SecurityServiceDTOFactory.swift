@@ -13,7 +13,7 @@ public enum SecurityServiceDTOFactory {
     ) -> SecurityServiceDTOAdapter {
         SecurityServiceDTOAdapter(securityService: securityService)
     }
-    
+
     /// Create a bookmark service DTO adapter
     /// - Parameter bookmarkService: Optional custom bookmark service to use
     /// - Returns: A bookmark service adapter with Foundation-independent interface
@@ -22,7 +22,7 @@ public enum SecurityServiceDTOFactory {
     ) -> BookmarkServiceDTOAdapter {
         BookmarkServiceDTOAdapter(bookmarkService: bookmarkService)
     }
-    
+
     /// Create a complete security service configuration
     /// - Returns: A tuple containing security and bookmark service adapters
     public static func createComplete() -> (

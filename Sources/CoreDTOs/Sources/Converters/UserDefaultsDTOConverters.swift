@@ -9,7 +9,7 @@ public extension UserDefaultsValueDTO {
         guard let object = object else {
             return .null
         }
-        
+
         switch object {
         case let value as String:
             return .string(value)
@@ -58,7 +58,7 @@ public extension UserDefaultsValueDTO {
             return nil
         }
     }
-    
+
     /// Convert to a Foundation object
     /// - Returns: A Foundation object representation
     func toFoundationObject() -> Any? {

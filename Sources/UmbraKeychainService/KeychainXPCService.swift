@@ -360,7 +360,7 @@ public final class KeychainXPCService: NSObject, XPCServiceProtocolStandard, Key
         let statusInfo: [String: Any] = await [
             "available": state.isStartedState(),
             "version": "1.0.0",
-            "protocol": Self.protocolIdentifier,
+            "protocol": Self.protocolIdentifier
         ]
         return .success(statusInfo)
     }

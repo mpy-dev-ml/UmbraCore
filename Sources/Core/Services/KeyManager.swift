@@ -47,13 +47,13 @@ public actor KeyManager: UmbraService {
     private var lastSyncTime: Date?
     /// Service state
     private var _state: CoreServicesTypes.ServiceState = .uninitialized
-    
+
     /// Public access to the service state
     public nonisolated var state: CoreServicesTypes.ServiceState {
         // Return a safe default state as we can't access the isolated property directly
         .uninitialized
     }
-    
+
     /// Get the state in an isolated context
     nonisolated var isolatedState: CoreServicesTypes.ServiceState {
         get async {
@@ -136,7 +136,7 @@ public actor KeyManager: UmbraService {
         // Store key metadata
         let keyMeta = KeyManagementTypes.KeyMetadata(
             status: .active,
-            storageLocation: defaultStorageLocation, 
+            storageLocation: defaultStorageLocation,
             accessControls: .none,
             createdAt: Date(),
             lastModified: Date(),
@@ -189,12 +189,12 @@ public actor KeyManager: UmbraService {
     public func synchroniseKeys() async throws {
         // Since we don't have access to ServiceContainer and SecurityService,
         // we'll provide a placeholder implementation
-        
+
         print("KeyManager.synchroniseKeys: Placeholder implementation")
-        
+
         // Update last sync time
         lastSyncTime = Date()
-        
+
         // Save key metadata to ensure it's up to date
         try await saveKeyMetadata()
     }
@@ -205,9 +205,9 @@ public actor KeyManager: UmbraService {
         if currentState == .running || currentState == .ready {
             // Perform shutdown operations here
             _state = .shuttingDown
-            
+
             // Close any open resources
-            
+
             _state = .shutdown
         }
     }
@@ -221,12 +221,12 @@ public actor KeyManager: UmbraService {
     private func generateRandomData(length: Int) async throws -> SecureBytes {
         // In a real implementation, we would use a cryptographic random number generator
         var bytes = [UInt8](repeating: 0, count: length)
-        
+
         // This is a placeholder - in production we would use a cryptographically secure RNG
         for i in 0..<length {
             bytes[i] = UInt8.random(in: 0...255)
         }
-        
+
         return SecureBytes(bytes: bytes)
     }
 
@@ -237,13 +237,13 @@ public actor KeyManager: UmbraService {
     /// - Throws: KeyManagerError if save fails
     private func saveKey(_ key: SecureBytes, for id: String) async throws {
         let keyURL = keyStorage.appendingPathComponent("\(id).key")
-        
+
         // Convert SecureBytes to Data for storage
         var keyData = Data()
         key.withUnsafeBytes { buffer in
             keyData = Data(buffer)
         }
-        
+
         // In a real implementation, we would encrypt the key data before writing
         try keyData.write(to: keyURL)
     }
@@ -254,24 +254,24 @@ public actor KeyManager: UmbraService {
     private func loadKeyMetadata() async throws -> [String: KeyManagementTypes.KeyMetadata] {
         let fileManager = FileManager.default
         let metadataURL = keyStorage.appendingPathComponent("metadata.\(keyFormat)")
-        
+
         // If metadata file doesn't exist, return empty dictionary
         if !fileManager.fileExists(atPath: metadataURL.path) {
             return [:]
         }
-        
+
         // Load metadata from file - in a real implementation, this would be more robust
         let data = try Data(contentsOf: metadataURL)
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        
+
         // Convert to dictionary
         let metadataArray = try decoder.decode([KeyManagementTypes.KeyMetadata].self, from: data)
         var metadataDict: [String: KeyManagementTypes.KeyMetadata] = [:]
         for meta in metadataArray {
             metadataDict[meta.identifier] = meta
         }
-        
+
         return metadataDict
     }
 
@@ -291,14 +291,14 @@ public actor KeyManager: UmbraService {
 
         // Convert dictionary to array for serialization
         let metadataArray = Array(keyMetadata.values)
-        
+
         // Serialize metadata
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = .prettyPrinted
-        
+
         let data = try encoder.encode(metadataArray)
-        
+
         // Save to file
         let metadataURL = keyStorage.appendingPathComponent("metadata.\(keyFormat)")
         try data.write(to: metadataURL)

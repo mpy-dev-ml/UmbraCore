@@ -107,49 +107,49 @@ public actor CredentialManager {
         switch error {
         case let .serviceError(message):
             return UmbraErrors.Security.Core.internalError(reason: "Service error: \(message)")
-        
+
         case let .invalidInput(message):
             return UmbraErrors.Security.Core.internalError(reason: "Invalid input: \(message)")
-            
+
         case let .encryptionFailed(message):
             return UmbraErrors.Security.Core.secureStorageFailed(
                 operation: "encryption",
                 reason: message
             )
-            
+
         case let .decryptionFailed(message):
             return UmbraErrors.Security.Core.secureStorageFailed(
                 operation: "decryption",
                 reason: message
             )
-            
+
         case let .invalidFormat(reason):
             return UmbraErrors.Security.Core.internalError(reason: "Invalid format: \(reason)")
-            
+
         case let .invalidState(state, expectedState):
             return UmbraErrors.Security.Core.internalError(reason: "Invalid state: \(state), expected: \(expectedState)")
-            
+
         case let .internalError(message):
             return UmbraErrors.Security.Core.internalError(reason: message)
-            
+
         case let .missingProtocolImplementation(protocolName):
             return UmbraErrors.Security.Core.internalError(reason: "Missing protocol: \(protocolName)")
-            
+
         case let .unsupportedOperation(name):
             return UmbraErrors.Security.Core.internalError(reason: "Unsupported operation: \(name)")
-            
+
         case let .incompatibleVersion(version):
             return UmbraErrors.Security.Core.internalError(reason: "Incompatible version: \(version)")
-            
+
         case let .storageOperationFailed(message):
             return UmbraErrors.Security.Core.internalError(reason: "Storage operation failed: \(message)")
-            
+
         case let .randomGenerationFailed(message):
             return UmbraErrors.Security.Core.internalError(reason: "Random generation failed: \(message)")
-            
+
         case let .notImplemented(message):
             return UmbraErrors.Security.Core.internalError(reason: "Not implemented: \(message)")
-            
+
         @unknown default:
             return UmbraErrors.Security.Core.internalError(reason: "Unknown error")
         }

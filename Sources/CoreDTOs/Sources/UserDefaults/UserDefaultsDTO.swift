@@ -39,61 +39,61 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
     ///
     /// Represents a textual value stored in user defaults.
     case string(String)
-    
+
     /// Integer value.
     ///
     /// Represents a whole number value stored in user defaults.
     case integer(Int)
-    
+
     /// Double value.
     ///
     /// Represents a floating-point number stored in user defaults.
     case double(Double)
-    
+
     /// Boolean value.
     ///
     /// Represents a true/false value stored in user defaults.
     case boolean(Bool)
-    
+
     /// Data value as bytes.
     ///
     /// Represents binary data stored in user defaults as an array of bytes.
     case data([UInt8])
-    
+
     /// URL value as string.
     ///
     /// Represents a URL stored in user defaults as its string representation.
     case url(String)
-    
+
     /// Date value as timestamp.
     ///
     /// Represents a date stored in user defaults as a time interval since 1970.
     case date(TimeInterval)
-    
+
     /// String array.
     ///
     /// Represents an array of strings stored in user defaults.
     case stringArray([String])
-    
+
     /// Dictionary with string keys and supported values.
     ///
     /// Represents a dictionary stored in user defaults with string keys
     /// and values that are themselves `UserDefaultsValueDTO` instances.
     case dictionary([String: UserDefaultsValueDTO])
-    
+
     /// Array of supported values.
     ///
     /// Represents an array of mixed value types, where each element
     /// is a `UserDefaultsValueDTO` instance.
     case array([UserDefaultsValueDTO])
-    
+
     /// Null value.
     ///
     /// Represents the absence of a value or a null value in user defaults.
     case null
-    
+
     // MARK: - Conversion Methods
-    
+
     /// Get as string if possible.
     ///
     /// Attempts to convert the value to a string. This succeeds for string,
@@ -116,7 +116,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
             return nil
         }
     }
-    
+
     /// Get as integer if possible.
     ///
     /// Attempts to convert the value to an integer. This succeeds for integer,
@@ -138,7 +138,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
             return nil
         }
     }
-    
+
     /// Get as double if possible.
     ///
     /// Attempts to convert the value to a double. This succeeds for double,
@@ -160,7 +160,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
             return nil
         }
     }
-    
+
     /// Get as boolean if possible.
     ///
     /// Attempts to convert the value to a boolean. This succeeds for boolean,
@@ -182,7 +182,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
             return nil
         }
     }
-    
+
     /// Get as data if possible.
     ///
     /// Retrieves the raw byte data from a data value.
@@ -194,7 +194,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
         }
         return nil
     }
-    
+
     /// Get as URL if possible.
     ///
     /// Attempts to convert the value to a URL. This succeeds for URL and
@@ -211,7 +211,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
             return nil
         }
     }
-    
+
     /// Get as date if possible.
     ///
     /// Retrieves the date from a date value.
@@ -223,7 +223,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
         }
         return nil
     }
-    
+
     /// Get as string array if possible.
     ///
     /// Attempts to retrieve an array of strings. This succeeds for stringArray values
@@ -249,7 +249,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
             return nil
         }
     }
-    
+
     /// Get as dictionary if possible.
     ///
     /// Retrieves the dictionary from a dictionary value.
@@ -261,7 +261,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
         }
         return nil
     }
-    
+
     /// Get as array if possible.
     ///
     /// Attempts to retrieve an array of values. This succeeds for array values
@@ -278,7 +278,7 @@ public enum UserDefaultsValueDTO: Sendable, Equatable, Hashable {
             return nil
         }
     }
-    
+
     /// Check if the value is null.
     ///
     /// Determines whether this value represents null/nil.

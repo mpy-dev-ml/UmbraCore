@@ -4,7 +4,7 @@ import UmbraCoreTypes
 public enum KeyStorageResult: Sendable {
     case success
     case failure(KeyStorageError)
-    
+
     // Swift 6 forward compatibility: handle future enum cases
     @available(*, unavailable, message: "This case exists only for Swift 6+ forward compatibility")
     case _unspecified
@@ -14,7 +14,7 @@ public enum KeyStorageResult: Sendable {
 public enum KeyRetrievalResult: Sendable {
     case success(SecureBytes)
     case failure(KeyStorageError)
-    
+
     // Swift 6 forward compatibility: handle future enum cases
     @available(*, unavailable, message: "This case exists only for Swift 6+ forward compatibility")
     case _unspecified
@@ -24,7 +24,7 @@ public enum KeyRetrievalResult: Sendable {
 public enum KeyDeletionResult: Sendable {
     case success
     case failure(KeyStorageError)
-    
+
     // Swift 6 forward compatibility: handle future enum cases
     @available(*, unavailable, message: "This case exists only for Swift 6+ forward compatibility")
     case _unspecified
@@ -35,7 +35,7 @@ public enum KeyStorageError: Sendable {
     case keyNotFound
     case storageFailure
     case unknown
-    
+
     // Swift 6 forward compatibility: handle future enum cases
     @available(*, unavailable, message: "This case exists only for Swift 6+ forward compatibility")
     case _unspecified
