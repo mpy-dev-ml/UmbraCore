@@ -1,51 +1,132 @@
-name: DocC Build
+name: DocC Documentation Build
 
 on:
   push:
     branches:
       - main
     paths:
-      - '**.swift'
-      - 'docc_config.yml'
+      - 'Sources/**/*.swift'
+      - 'Sources/**/*.docc/**'
+      - 'tools/swift/docc_*.sh'
+      - 'tools/swift/docc_rules.bzl'
       - '.github/workflows/docc-build.yml'
+      - 'docc_config.yml'
   pull_request:
-    branches:
-      - main
     paths:
-      - '**.swift'
-      - 'docc_config.yml'
+      - 'Sources/**/*.swift'
+      - 'Sources/**/*.docc/**'
+      - 'tools/swift/docc_*.sh'
+      - 'tools/swift/docc_rules.bzl'
       - '.github/workflows/docc-build.yml'
-  workflow_dispatch:
+      - 'docc_config.yml'
+  workflow_dispatch:  # Allow manual triggering
 
+env:
+  BAZEL_VERSION: 6.0.0
 
 jobs:
-  build:
-    runs-on: [self-hosted, macos]
+  build-documentation:
+    name: Build DocC Documentation
+    runs-on: macos-latest
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-          submodules: recursive
-      - name: Setup Bazelisk
+          fetch-depth: 0  # Fetch all history for proper versioning
+      
+      - name: Set up Bazel
+        uses: bazelbuild/setup-bazelisk@v2
+        with:
+          bazelisk-version: 'latest'
+      
+      - name: Install Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: '5.7'
+      
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      
+      - name: Set up DocC environment
         run: |
-          brew install bazelisk || true
-          bazelisk --version
-          
-      - name: Install yq
+          echo "Building documentation environment..."
+          mkdir -p docs
+          echo "DOCC_OUTPUT_DIR=$GITHUB_WORKSPACE/docs" >> $GITHUB_ENV
+      
+      - name: Generate documentation targets list
         run: |
-          brew install yq || true
-          yq --version
+          # Discover all targets that have DocC documentation
+          bazelisk query 'kind("swift_library rule", //Sources/...)' | \
+          grep -v "Tests" | \
+          awk -F: '{print $1":"}' | \
+          sed 's/$/DocC/' > docc_targets.txt
           
-      - name: Build DocC Documentation
+          echo "Found $(wc -l < docc_targets.txt) documentation targets"
+          cat docc_targets.txt
+      
+      - name: Build documentation
         run: |
-          echo "Building DocC documentation for all targets..."
-          # Use the docc_manager.sh script to build documentation
-          ./docc_manager.sh build
+          # Use local build environment for documentation generation
+          bazelisk build --define=build_environment=local $(cat docc_targets.txt) || true
           
-      - name: Upload Documentation Artifacts
+          # Create output directory
+          mkdir -p $DOCC_OUTPUT_DIR/archives
+          
+          # Copy documentation archives to output directory
+          find bazel-bin -name "*.doccarchive" -type d -exec cp -R {} $DOCC_OUTPUT_DIR/archives/ \;
+      
+      - name: Create index page
+        run: |
+          cat > $DOCC_OUTPUT_DIR/index.html << EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>UmbraCore Documentation</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+              h1 { color: #333; }
+              ul { list-style-type: none; padding: 0; }
+              li { margin: 10px 0; padding: 10px; background-color: #f5f5f5; border-radius: 5px; }
+              a { color: #0366d6; text-decoration: none; }
+              a:hover { text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            <h1>UmbraCore Documentation</h1>
+            <p>Select a module to view its documentation:</p>
+            <ul>
+          EOF
+          
+          # Add links to each documentation archive
+          for archive in $DOCC_OUTPUT_DIR/archives/*.doccarchive; do
+            module_name=$(basename "$archive" .doccarchive)
+            echo "    <li><a href=\"archives/$module_name.doccarchive/index.html\">$module_name</a></li>" >> $DOCC_OUTPUT_DIR/index.html
+          done
+          
+          cat >> $DOCC_OUTPUT_DIR/index.html << EOF
+            </ul>
+            <p><small>Generated on $(date)</small></p>
+          </body>
+          </html>
+          EOF
+      
+      - name: Upload documentation
         uses: actions/upload-artifact@v3
         with:
           name: docc-documentation
-          path: docs/.docc-build
+          path: ${{ env.DOCC_OUTPUT_DIR }}
           retention-days: 7
+          
+      # Optional: Deploy to GitHub Pages if this is a main branch push
+      - name: Deploy to GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ${{ env.DOCC_OUTPUT_DIR }}
+          branch: gh-pages
+          clean: true
