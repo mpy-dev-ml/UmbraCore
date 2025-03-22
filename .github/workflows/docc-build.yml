@@ -38,9 +38,18 @@ jobs:
       
       - name: Prepare Build Environment
         run: |
-          brew install bazelisk || true
+          # Check if bazelisk is installed, install only if needed
+          if ! command -v bazelisk &> /dev/null; then
+            echo "Installing bazelisk..."
+            brew install bazelisk
+          fi
           bazelisk --version
-          brew install yq || true
+          
+          # Check if yq is installed, install only if needed
+          if ! command -v yq &> /dev/null; then
+            echo "Installing yq..."
+            brew install yq
+          fi
           yq --version
           
           # Set up Xcode using the latest stable version
