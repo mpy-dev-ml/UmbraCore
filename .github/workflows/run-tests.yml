@@ -1,144 +1,33 @@
-name: Core Tests
+name: Run Tests
 
 on:
   push:
+
   pull_request:
-  workflow_dispatch:
-    inputs:
-      debug_enabled:
-        description: 'Run with additional debug logging'
-        required: false
-        default: false
-        type: boolean
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
-  SWIFT_DETERMINISTIC_HASHING: 1
-  BAZEL_TEST_TIMEOUT: "600"  # 10 minute timeout for individual tests
-
-permissions:
-  contents: read
-  checks: write
-  pull-requests: write
 
 jobs:
   test:
-    name: Run Stable Tests
-    runs-on: [self-hosted, macOS, ARM64]
-    timeout-minutes: 60  # Set a job-level timeout
-    
+    runs-on: [self-hosted, macos]
     steps:
-    - uses: actions/checkout@v4
-      with:
-        clean: true
-        fetch-depth: 0
-      
-    - name: Setup Xcode
-      run: |
-        xcode-select --print-path
-        swift --version
-
-    - name: Install Bazelisk
-      run: |
-        brew install bazelisk || true
-        bazelisk --version
-        
-    - name: Prepare Test Targets
-      id: prepare-tests
-      run: |
-        echo "Querying for all test targets..."
-        
-        # Use bazelisk query to find all test targets
-        bazelisk query 'kind(".*test rule", //...)' | sort > all_test_targets.txt
-        
-        # Filter out tests that are known to have build issues
-        # Create a filtered list of stable tests
-        cat all_test_targets.txt | grep -v -E '//Tests/BookmarkTests|//Tests/LoggingTests|//Tests/ResticCLIHelperTests|//Tests/UmbraSecurityTests|//Tests/XPCTests|//Sources/ErrorHandling/Tests:ErrorHandlingTests' > stable_test_targets.txt
-        
-        # Count targets
-        AVAILABLE_COUNT=$(wc -l < all_test_targets.txt | xargs)
-        TARGET_COUNT=$(wc -l < stable_test_targets.txt | xargs)
-        
-        echo "Found $AVAILABLE_COUNT total test targets, $TARGET_COUNT are stable and will be run"
-        
-        # Enable additional debugging if requested
-        if [[ "${{ github.event.inputs.debug_enabled }}" == "true" ]]; then
-          echo "Debug mode enabled - extra test output will be shown"
-          echo "Test targets to be run:"
-          cat stable_test_targets.txt
-          echo "Skipped test targets:"
-          diff --new-line-format="" --unchanged-line-format="" <(cat all_test_targets.txt) <(cat stable_test_targets.txt)
-        fi
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Prepare Test Environment
+        run: |
+          brew install bazelisk || true
+          bazelisk --version
           
-    - name: Run Stable Tests
-      timeout-minutes: 45  # Set a step-level timeout
-      run: |
-        echo "Running stable tests with ci_tests configuration..."
-        TEST_OUTPUT_FLAG="--test_output=errors"
-        
-        if [[ "${{ github.event.inputs.debug_enabled }}" == "true" ]]; then
-          TEST_OUTPUT_FLAG="--test_output=all"
-        fi
-        
-        # Run tests with standard settings (matching production)
-        # Explicitly set build_environment=nonlocal to prevent DocC documentation from being built
-        bazelisk test \
-          --config=ci_tests \
-          --define=build_environment=nonlocal \
-          $TEST_OUTPUT_FLAG \
-          --flaky_test_attempts=1 \
-          --test_verbose_timeout_warnings \
-          --show_progress_rate_limit=5 \
-          --keep_going \
-          $(cat stable_test_targets.txt)
+      - name: Run Tests
+        run: |
+          echo "Running all tests..."
+          bazelisk test --define=build_environment=nonlocal -k --verbose_failures $(cat team-utils/test_targets.txt)
           
-    - name: Generate Coverage Report
-      if: success()
-      run: |
-        echo "Generating code coverage report..."
-        # Generate coverage report for all source files
-        bazelisk coverage \
-          --combined_report=lcov \
-          --instrumentation_filter="^//Sources" \
-          --test_output=errors \
-          --nocache_test_results \
-          $(cat stable_test_targets.txt)
-        
-        # The coverage report will be in bazel-out/_coverage/_coverage_report.dat
-        # Convert LCOV to a format that Codecov can understand
-        mkdir -p coverage_reports
-        cp bazel-out/_coverage/_coverage_report.dat coverage_reports/lcov.info
-        
-        echo "Code coverage report generated successfully"
-        
-    - name: Upload Coverage to Codecov
-      if: success()
-      uses: codecov/codecov-action@v4
-      with:
-        files: coverage_reports/lcov.info
-        name: UmbraCore-Coverage
-        fail_ci_if_error: false
-        verbose: true
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-    - name: Handle Swift Warnings
-      if: always()
-      run: |
-        echo "Note: There are several Swift concurrency warnings in the codebase."
-        echo "These are mainly related to Sendable conformance and will be errors in Swift 6."
-        echo "These warnings do not affect the functionality of the current tests."
-
-    - name: Summarise Test Results
-      if: always()
-      run: |
-        AVAILABLE_COUNT=$(wc -l < all_test_targets.txt | xargs)
-        TARGET_COUNT=$(wc -l < stable_test_targets.txt | xargs)
-        SKIPPED_COUNT=$((AVAILABLE_COUNT - TARGET_COUNT))
-        
-        echo "Completed testing of $TARGET_COUNT stable test targets ($SKIPPED_COUNT were skipped due to known issues)"
-        echo "Test coverage: $TARGET_COUNT/$AVAILABLE_COUNT ($(echo "scale=1; $TARGET_COUNT*100/$AVAILABLE_COUNT" | bc)%)"
-        
-        # List tests that were skipped due to known issues
-        echo "The following tests were excluded due to known build issues:"
-        diff --new-line-format="%L" --unchanged-line-format="" <(cat all_test_targets.txt) <(cat stable_test_targets.txt) || echo "None"
+      - name: Summarise Test Results
+        run: |
+          TEST_COUNT=$(wc -l < team-utils/test_targets.txt | xargs)
+          echo "Completed $TEST_COUNT test targets"
+          
+        if: always()

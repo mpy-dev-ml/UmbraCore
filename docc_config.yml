@@ -1,0 +1,18 @@
+# DocC documentation configuration for UmbraCore
+# This file contains the targets to build for DocC documentation
+
+targets:
+  - target: //Sources/CoreDTOs:CoreDTOsDocC
+    output: Sources/CoreDTOs/CoreDTOsDocC.doccarchive
+    module: CoreDTOs
+  - target: //Sources/SecurityProtocolsCore:SecurityProtocolsCoreDocC
+    output: Sources/SecurityProtocolsCore/SecurityProtocolsCoreDocC.doccarchive
+    module: SecurityProtocolsCore
+  - target: //Sources/SecurityInterfaces/Documentation.docc:SecurityInterfacesDocC
+    output: Sources/SecurityInterfaces/Documentation.docc/SecurityInterfacesDocC.doccarchive
+    module: SecurityInterfaces
+
+# Configuration settings
+settings:
+  output_dir: docs/api
+  build_environment: local
