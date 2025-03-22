@@ -44,11 +44,10 @@ jobs:
           yq --version
           brew install swift || true
           swift --version
-      
-      - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v4
-        with:
-          xcode-version: latest-stable
+          
+          # Set up Xcode using the latest stable version
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
       
       - name: Set up DocC environment
         run: |
