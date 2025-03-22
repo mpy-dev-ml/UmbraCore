@@ -71,13 +71,20 @@ jobs:
           
       - name: Generate documentation targets list
         run: |
-          # Discover all targets that have DocC documentation
+          # First generate a list of potential documentation targets
           bazelisk query 'kind("swift_library rule", //Sources/...)' | \
           grep -v "Tests" | \
-          awk -F: '{print $1":"}' | \
-          sed 's/$/DocC/' > docc_targets.txt
+          awk -F: '{print $1":DocC"}' > potential_docc_targets.txt
           
-          echo "Found $(wc -l < docc_targets.txt) documentation targets"
+          # Now filter to only include targets that actually exist
+          touch docc_targets.txt
+          while IFS= read -r target; do
+            if bazelisk query "$target" &>/dev/null; then
+              echo "$target" >> docc_targets.txt
+            fi
+          done < potential_docc_targets.txt
+          
+          echo "Found $(wc -l < docc_targets.txt) valid documentation targets"
           cat docc_targets.txt
       
       - name: Build documentation
