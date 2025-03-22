@@ -89,6 +89,8 @@
 //Sources/Services/ServicesDTOAdapter:ServicesDTOAdapter
 //Sources/Snapshots:Snapshots
 //Sources/Snapshots/Protocols:SnapshotsProtocols
+//Sources/TestUtils:TestUtils
+//Sources/Testing:Testing
 //Sources/UmbraBookmarkService:UmbraBookmarkService
 //Sources/UmbraCore:UmbraCore
 //Sources/UmbraCoreTypes:UmbraCoreTypes
