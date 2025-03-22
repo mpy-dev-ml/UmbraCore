@@ -7,6 +7,7 @@
 //Sources/Core/Services/TypeAliases:CoreServicesTypeAliases
 //Sources/Core/Services/Types:CoreServicesTypes
 //Sources/Core/UmbraCore:CoreUmbraCore
+//Sources/CoreDTOs:CoreDTOs
 //Sources/CoreErrors:CoreErrors
 //Sources/CoreServicesTypes:CoreServicesTypes
 //Sources/CoreServicesTypesNoFoundation:CoreServicesTypesNoFoundation
@@ -63,6 +64,7 @@
 //Sources/SecurityBridge:SecurityBridge
 //Sources/SecurityBridge/Sources/XPCBridge:XPCBridge
 //Sources/SecurityBridgeProtocolAdapters:SecurityBridgeProtocolAdapters
+//Sources/SecurityBridgeTypes:SecurityBridgeTypes
 //Sources/SecurityCoreAdapters:SecurityCoreAdapters
 //Sources/SecurityImplementation:SecurityImplementation
 //Sources/SecurityInterfaces:SecurityInterfaces
@@ -84,6 +86,7 @@
 //Sources/Services/SecurityUtils:SecurityUtils
 //Sources/Services/SecurityUtils/Protocols:SecurityUtilsProtocols
 //Sources/Services/SecurityUtils/Services:SecurityUtilsServices
+//Sources/Services/ServicesDTOAdapter:ServicesDTOAdapter
 //Sources/Snapshots:Snapshots
 //Sources/Snapshots/Protocols:SnapshotsProtocols
 //Sources/UmbraBookmarkService:UmbraBookmarkService
@@ -97,6 +100,7 @@
 //Sources/UmbraLoggingAdapters:UmbraLoggingAdapters
 //Sources/UmbraMocks:UmbraMocks
 //Sources/UmbraSecurity:UmbraSecurity
+//Sources/UmbraSecurity/Adapters:Adapters
 //Sources/UmbraSecurity/Extensions:UmbraSecurityExtensions
 //Sources/UmbraSecurity/Services:UmbraSecurityServicesCore
 //Sources/UmbraSecurityCore:UmbraSecurityCore

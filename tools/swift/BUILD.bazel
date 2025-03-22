@@ -28,7 +28,7 @@ filegroup(
 # DocC generation executable
 sh_binary(
     name = "docc_gen",
-    srcs = ["docc_gen.sh"],
+    srcs = ["//tools/swift:docc_gen.sh"],
     visibility = ["//visibility:public"],
 )
 
