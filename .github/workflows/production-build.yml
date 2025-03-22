@@ -28,6 +28,14 @@ jobs:
         run: |
           brew install bazelisk || true
           bazelisk --version
+          brew install yq || true
+          yq --version
+          
+      - name: Discover Production Targets
+        run: |
+          echo "Discovering production targets..."
+          chmod +x team-utils/discover_production_targets.sh
+          ./team-utils/discover_production_targets.sh
           
       - name: Process Build Targets
         run: |
