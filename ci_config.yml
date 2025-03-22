@@ -1,0 +1,148 @@
+# UmbraCore CI/CD Configuration
+# This file defines all workflows for the UmbraCore project.
+# Changes to this file will be applied to the GitHub Actions workflow files
+# when running the workflow_manager.sh script.
+
+# Global settings that apply to all workflows
+global:
+  runner: [self-hosted, macos]
+  bazel_version: latest
+  default_branch: main
+  
+# Workflow definitions
+workflows:
+  docs:
+    name: Deploy Documentation
+    description: Builds and deploys documentation to GitHub Pages
+    on:
+      push:
+        branches: [main]
+        paths:
+          - 'docs/**'
+          - 'mkdocs.yml'
+          - '.github/workflows/docs.yml'
+          - 'requirements.txt'
+      workflow_dispatch: {}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    jobs:
+      build:
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+            with:
+              fetch-depth: 0
+              submodules: recursive
+          - name: Setup Pages
+            uses: actions/configure-pages@v4
+          - name: Set up Python virtual environment
+            run: |
+              python3 -m venv docs-venv
+              source docs-venv/bin/activate
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+          - name: Build Documentation
+            run: |
+              source docs-venv/bin/activate
+              python -m mkdocs build --verbose
+          - name: Setup GNU tools
+            run: |
+              brew install gnu-tar || true
+              echo "/opt/homebrew/opt/gnu-tar/libexec/gnubin" >> $GITHUB_PATH
+              which gtar || echo "gtar not found, attempting fallback"
+              if ! which gtar; then
+                sudo ln -sf /opt/homebrew/bin/gtar /usr/local/bin/gtar
+              fi
+          - name: Install Bazelisk
+            run: |
+              brew install bazelisk || true
+              bazelisk --version
+          - name: Build DocC Documentation
+            run: |
+              echo "Building DocC documentation for core modules..."
+              # Run the build_docc.sh script to build all documentation
+              ./build_docc.sh
+          - name: Upload artifact
+            uses: actions/upload-pages-artifact@v3
+            with:
+              path: ./site
+          - name: Deploy to GitHub Pages
+            id: deployment
+            uses: actions/deploy-pages@v4
+            
+  stable-build:
+    name: Production Build
+    description: Builds all production targets with the prodonly configuration
+    on:
+      push: {}
+      pull_request: {}
+      workflow_dispatch:
+        inputs:
+          debug_enabled:
+            description: Enable additional debugging output
+            required: false
+            default: 'false'
+            type: boolean
+    jobs:
+      build:
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+            with:
+              fetch-depth: 0
+              submodules: recursive
+          - name: Prepare Build Environment
+            run: |
+              brew install bazelisk || true
+              bazelisk --version
+          - name: Process Build Targets
+            run: |
+              if [[ "${{ github.event.inputs.debug_enabled }}" == "true" ]]; then
+                echo "Debug mode enabled - listing all production targets:"
+                cat team-utils/production_targets.txt
+              fi
+          - name: Build All Production Targets
+            run: |
+              echo "Building all production targets with prodonly configuration..."
+              bazelisk build --config=prodonly --define=build_environment=nonlocal -k --verbose_failures $(cat team-utils/production_targets.txt)
+          - name: Summarise Build Results
+            if: always()
+            run: |
+              TARGET_COUNT=$(wc -l < team-utils/production_targets.txt | xargs)
+              echo "Completed build of $TARGET_COUNT production targets"
+              
+  run-tests:
+    name: Run Tests
+    description: Runs all tests for the UmbraCore project
+    on:
+      push: {}
+      pull_request: {}
+    jobs:
+      test:
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+            with:
+              fetch-depth: 0
+              submodules: recursive
+          - name: Prepare Test Environment
+            run: |
+              brew install bazelisk || true
+              bazelisk --version
+          - name: Run Tests
+            run: |
+              echo "Running all tests..."
+              bazelisk test --define=build_environment=nonlocal -k --verbose_failures $(cat team-utils/test_targets.txt)
+          - name: Summarise Test Results
+            if: always()
+            run: |
+              TEST_COUNT=$(wc -l < team-utils/test_targets.txt | xargs)
+              echo "Completed $TEST_COUNT test targets"

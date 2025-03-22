@@ -5,21 +5,20 @@ on:
     branches:
       - main
     paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '.github/workflows/docs.yml'
-      - 'requirements.txt'
+      - docs/**
+      - mkdocs.yml
+      - .github/workflows/docs.yml
+      - requirements.txt
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
@@ -34,71 +33,44 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
-
-      - name: Debug - Check Files
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Listing directory contents:"
-          ls -la
-          echo "Looking for mkdocs.yml:"
-          find . -name "mkdocs.yml" -type f
-
       - name: Set up Python virtual environment
         run: |
           python3 -m venv docs-venv
           source docs-venv/bin/activate
-          # Upgrade pip in the virtual environment
           python -m pip install --upgrade pip
-          # Install dependencies within the virtual environment
           pip install -r requirements.txt
-          echo "Virtual environment created and dependencies installed"
-
+          
       - name: Build Documentation
         run: |
           source docs-venv/bin/activate
           python -m mkdocs build --verbose
-
+          
       - name: Setup GNU tools
         run: |
-          echo "Installing necessary GNU tools..."
           brew install gnu-tar || true
-          echo "Adding GNU tools to PATH"
           echo "/opt/homebrew/opt/gnu-tar/libexec/gnubin" >> $GITHUB_PATH
-          echo "Verifying gtar is available"
           which gtar || echo "gtar not found, attempting fallback"
-          # Create a symbolic link if needed
           if ! which gtar; then
-            echo "Creating symbolic link for gtar"
             sudo ln -sf /opt/homebrew/bin/gtar /usr/local/bin/gtar
           fi
-
+          
       - name: Install Bazelisk
         run: |
           brew install bazelisk || true
           bazelisk --version
-
+          
       - name: Build DocC Documentation
         run: |
           echo "Building DocC documentation for core modules..."
-          # Use --define=build_environment=local to ensure DocC documentation is built
-          bazelisk build \
-            --define=build_environment=local \
-            --verbose_failures \
-            //Sources/CoreDTOs:CoreDTOsDocC \
-            //Sources/SecurityInterfaces/Documentation.docc:SecurityInterfacesDocC \
-            //Sources/SecurityProtocolsCore:SecurityProtocolsCoreDocC
-            
-          echo "DocC documentation successfully built"
-          echo "Documentation archives are available in bazel-bin directory"
-
+          # Run the build_docc.sh script to build all documentation
+          ./build_docc.sh
+          
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
-
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
+        id: deployment

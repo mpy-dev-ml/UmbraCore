@@ -99,6 +99,12 @@ user.bazelrc
 # Documentation (keep ROADMAP.md in version control)
 # ROADMAP.md is intentionally not ignored as it contains important project planning information
 
+# DocC documentation build output
+docs/api/
+*.doccarchive
+/docc-build/
+bazel-out/**/DocC
+
 # Symbolic links to team-utils files
 /ROADMAP.md
 /.codecov.yml
@@ -124,7 +130,6 @@ user.bazelrc
 *PRIVATE*
 UmbraCore_archive/
 *.py
-*.sh
 *.dot
 # Exclude markdown files except READMEs and documentation
 *.md
@@ -137,6 +142,12 @@ UmbraCore_archive/
 *.swift_analyzer
 *.protocol_analyzer
 *.bazel_analyzer
+# Exclude .sh files except specific ones
+*.sh
+!workflow_manager.sh
+!docc_manager.sh
+!build_docc.sh
+!discover_docc_targets.sh
 # Exclude txt files except specific ones
 *.txt
 !test_targets.txt
