@@ -1,10 +1,10 @@
 # UmbraCore
 
-[![Stable Production Build](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/stable-build.yml/badge.svg)](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/stable-build.yml) [![UmbraCore Tests](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/run-tests.yml/badge.svg)](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/run-tests.yml) [![Documentation](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/docs.yml/badge.svg)](https://github.com/mpy-dev-ml/UmbraCore/actions/workflows/docs.yml) [![codecov](https://codecov.io/gh/mpy-dev-ml/UmbraCore/branch/main/graph/badge.svg)](https://codecov.io/gh/mpy-dev-ml/UmbraCore)
+[![Production Build](https://github.com/UmbraDevelopment/UmbraCore/actions/workflows/production-build.yml/badge.svg)](https://github.com/UmbraDevelopment/UmbraCore/actions/workflows/production-build.yml) [![UmbraCore Tests](https://github.com/UmbraDevelopment/UmbraCore/actions/workflows/run-tests.yml/badge.svg)](https://github.com/UmbraDevelopment/UmbraCore/actions/workflows/run-tests.yml) [![Documentation](https://github.com/UmbraDevelopment/UmbraCore/actions/workflows/docc-build.yml/badge.svg)](https://github.com/UmbraDevelopment/UmbraCore/actions/workflows/docc-build.yml) [![codecov](https://codecov.io/gh/UmbraDevelopment/UmbraCore/branch/main/graph/badge.svg)](https://codecov.io/gh/UmbraDevelopment/UmbraCore)
 
-[![Platform](https://img.shields.io/badge/Platform-macOS%2014%2B-lightgrey.svg)](https://github.com/mpy-dev-ml/UmbraCore) [![Swift](https://img.shields.io/badge/Swift-5.9.2-orange.svg)](https://swift.org) [![Build](https://img.shields.io/badge/Build-Bazel%208.1.0-43A047.svg)](https://bazel.build) [![Documentation](https://img.shields.io/badge/Documentation-Latest-blue.svg)](https://mpy-dev-ml.github.io/UmbraCore/)
+[![Platform](https://img.shields.io/badge/Platform-macOS%2014%2B-lightgrey.svg)](https://github.com/UmbraDevelopment/UmbraCore) [![Swift](https://img.shields.io/badge/Swift-5.9.2-orange.svg)](https://swift.org) [![Build](https://img.shields.io/badge/Build-Bazel%208.1.0-43A047.svg)](https://bazel.build) [![Documentation](https://img.shields.io/badge/Documentation-Latest-blue.svg)](https://UmbraDevelopment.github.io/UmbraCore/)
 
-[![Known Vulnerabilities](https://snyk.io/test/github/mpy-dev-ml/UmbraCore/badge.svg)](https://snyk.io/test/github/mpy-dev-ml/UmbraCore) [![Made with ❤️ in London](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20in-London-D40000.svg)](https://github.com/mpy-dev-ml/UmbraCore) [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
+[![Known Vulnerabilities](https://snyk.io/test/github/UmbraDevelopment/UmbraCore/badge.svg)](https://snyk.io/test/github/UmbraDevelopment/UmbraCore) [![Made with ❤️ in London](https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20in-London-D40000.svg)](https://github.com/UmbraDevelopment/UmbraCore) [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
 UmbraCore is built to extend the foundation of [Restic](https://restic.net), a remarkable open-source backup programme that has set the standard for secure, efficient, and reliable backups. In particular, we have focussed extensively on enabling [Restic](https://restic.net) to work more fully within Swift sandboxed environments as well as using native macOS security features coupled with Restic for those of us who struggle to remember passwords. 
 
@@ -42,7 +42,7 @@ swift_deps.from_json(
 ```json
 {
   "umbracore": {
-    "url": "https://github.com/mpy-dev-ml/UmbraCore.git",
+    "url": "https://github.com/UmbraDevelopment/UmbraCore.git",
     "version": "0.2.0"
   }
 }
