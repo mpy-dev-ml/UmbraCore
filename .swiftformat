@@ -1,0 +1,105 @@
+# .swiftformat configuration file for UmbraCore
+
+# File options
+--swiftversion 5.9
+
+# Indentation
+--indent 2
+--tabwidth 2
+--xcodeindentation enabled
+--indentcase true
+--indentstrings true
+--linebreaks lf
+
+# Line length
+--maxwidth 100
+
+# Wrapping
+--wraparguments before-first
+--wrapcollections before-first
+--wrapparameters before-first
+--wrapconditions before-first
+--closingparen balanced
+
+# Spacing
+--trimwhitespace always
+--ranges no-space
+--commas inline
+--semicolons inline
+--operatorfunc spaced
+--nospaceoperators =,..<
+--typeattributes prev-line
+--funcattributes prev-line
+--storedvarattrs prev-line
+--computedvarattrs prev-line
+
+# Braces & Control Flow
+--allman false
+--elseposition same-line
+--guardelse next-line
+--patternlet hoist
+--self remove
+
+# Organization
+--header strip
+--importgrouping alphabetized
+--modifierorder public,open,package,internal,private,fileprivate,override,dynamic,mutating,lazy,final,required,convenience,typemethods,static
+--extensionacl on-declarations
+
+# Exclusions (paths to ignore)
+--exclude Pods,**/.build,**/bazel-*,**/.git,**/.swiftpm
+
+# Rules (disable/enable)
+--disable strongOutlets
+--disable initCoderUnavailable
+--disable blankLinesAtStartOfScope
+--disable redundantBackticks
+--disable redundantParens
+--disable andOperator
+
+# Enable standard formatting rules
+--enable blankLinesBetweenScopes
+--enable blankLinesAroundMark
+--enable consecutiveSpaces
+--enable duplicateImports
+--enable emptyBraces
+--enable leadingDelimiters
+--enable linebreakAtEndOfFile
+--enable redundantGet
+--enable redundantLet
+--enable redundantNilInit
+--enable redundantObjc
+--enable redundantRawValues
+--enable redundantReturn
+--enable redundantVoidReturnType
+--enable sortImports
+--enable spaceAroundBraces
+--enable spaceAroundBrackets
+--enable spaceAroundComments
+--enable spaceAroundGenerics
+--enable spaceAroundOperators
+--enable spaceAroundParens
+--enable spaceInsideBraces
+--enable spaceInsideBrackets
+--enable spaceInsideComments
+--enable spaceInsideGenerics
+--enable spaceInsideParens
+--enable trailingClosures
+--enable trailingCommas
+
+# Rules specifically for UmbraCore's needs
+--enable isEmpty
+--enable preferKeyPath
+--enable typeSugar
+--enable consecutiveBlankLines
+--enable blankLineAfterImports
+--enable acronyms
+--enable wrapEnumCases
+--enable duplicateImports
+
+# Rules to help with Swift 6 compatibility and typealias reduction
+--enable strongifiedSelf
+--enable unusedArguments
+--enable todos
+--enable redundantSelf
+--enable anyObjectProtocol
