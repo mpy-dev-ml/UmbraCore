@@ -16,10 +16,11 @@ CONFIG_FILE="${SCRIPT_DIR}/test_config.yml"
 TARGETS_FILE="${SCRIPT_DIR}/test_targets.txt"
 TEMP_CONFIG_FILE="${CONFIG_FILE}.tmp"
 
-# Define known deprecated test patterns
+# Define known deprecated test patterns - use fixed strings for more reliable pattern matching
 DEPRECATED_PATTERNS=(
-    "//Sources/SecurityBridge:.*"
+    "//Sources/SecurityBridge:"
     "//Sources/SecurityInterfaces/Tests:SecurityProviderTests"
+    "SecurityImplementationTests_runner"
 )
 
 # Ensure the config file exists with necessary structure
@@ -67,9 +68,9 @@ TARGET_COUNT=0
 for TARGET in $ALL_TARGETS; do
     IS_DEPRECATED=false
     
-    # Check if target matches any deprecated pattern
+    # Check if target matches any deprecated pattern using substring matching
     for pattern in "${DEPRECATED_PATTERNS[@]}"; do
-        if [[ "$TARGET" =~ $pattern ]]; then
+        if [[ "$TARGET" == *"$pattern"* ]]; then
             IS_DEPRECATED=true
             break
         fi
@@ -78,7 +79,9 @@ for TARGET in $ALL_TARGETS; do
     # Check against current deprecated patterns in config
     if [ -n "$CURRENT_DEPRECATED" ]; then
         while IFS= read -r deprecated_pattern; do
-            if [[ "$TARGET" =~ $deprecated_pattern ]]; then
+            # Remove quotes from pattern if present
+            clean_pattern=$(echo "$deprecated_pattern" | sed 's/^"//;s/"$//')
+            if [[ "$TARGET" == *"$clean_pattern"* ]]; then
                 IS_DEPRECATED=true
                 break
             fi
@@ -120,14 +123,14 @@ if [ -f "$CONFIG_FILE" ] && [ -n "$CURRENT_DEPRECATED" ]; then
         # Check if pattern is already in our list
         ALREADY_ADDED=false
         for pattern in "${DEPRECATED_PATTERNS[@]}"; do
-            if [[ "$deprecated_pattern" == "$pattern" ]]; then
+            if [[ "$deprecated_pattern" == "\"$pattern\"" ]]; then
                 ALREADY_ADDED=true
                 break
             fi
         done
         
         if [ "$ALREADY_ADDED" = false ]; then
-            echo "  - pattern: \"$deprecated_pattern\"" >> "$TEMP_CONFIG_FILE"
+            echo "  - pattern: $deprecated_pattern" >> "$TEMP_CONFIG_FILE"
         fi
     done <<< "$CURRENT_DEPRECATED"
 fi
@@ -141,7 +144,8 @@ echo "Generating $TARGETS_FILE..."
 true > "$TARGETS_FILE"
 
 # Extract enabled targets from config and write to targets file
-yq '.targets[] | select(.enabled == true) | .target' "$CONFIG_FILE" > "$TARGETS_FILE"
+# Add quotes to ensure proper YAML parsing and strip them after extraction
+yq -r '.targets[] | select(.enabled == true) | .target' "$CONFIG_FILE" > "$TARGETS_FILE"
 
 echo "Generated $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) enabled test targets."
 echo "To run tests: bazelisk test --define=build_environment=nonlocal -k --verbose_failures \$(cat ${TARGETS_FILE})"

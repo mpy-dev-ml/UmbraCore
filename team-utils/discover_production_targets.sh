@@ -16,12 +16,12 @@ CONFIG_FILE="${SCRIPT_DIR}/production_config.yml"
 TARGETS_FILE="${SCRIPT_DIR}/production_targets.txt"
 TEMP_CONFIG_FILE="${CONFIG_FILE}.tmp"
 
-# Define patterns to exclude (test targets, etc.)
+# Define patterns to exclude as substring matches (not regular expressions)
 EXCLUDE_PATTERNS=(
-    ".*Tests"
-    ".*TestHelpers"
-    ".*ForTesting"
-    ".*_runner"
+    "Tests"
+    "TestHelpers"
+    "ForTesting"
+    "_runner"
 )
 
 # Ensure the config file exists with necessary structure
@@ -69,9 +69,9 @@ TARGET_COUNT=0
 for TARGET in $ALL_TARGETS; do
     SHOULD_EXCLUDE=false
     
-    # Check if target matches any excluded pattern
+    # Check if target matches any excluded pattern using substring matching
     for pattern in "${EXCLUDE_PATTERNS[@]}"; do
-        if [[ "$TARGET" =~ $pattern ]]; then
+        if [[ "$TARGET" == *"$pattern"* ]]; then
             SHOULD_EXCLUDE=true
             break
         fi
@@ -80,7 +80,9 @@ for TARGET in $ALL_TARGETS; do
     # Check against current excluded patterns in config
     if [ -n "$CURRENT_EXCLUDED" ]; then
         while IFS= read -r excluded_pattern; do
-            if [[ "$TARGET" =~ $excluded_pattern ]]; then
+            # Remove quotes from pattern if present
+            clean_pattern=$(echo "$excluded_pattern" | sed 's/^"//;s/"$//')
+            if [[ "$TARGET" == *"$clean_pattern"* ]]; then
                 SHOULD_EXCLUDE=true
                 break
             fi
@@ -122,14 +124,14 @@ if [ -f "$CONFIG_FILE" ] && [ -n "$CURRENT_EXCLUDED" ]; then
         # Check if pattern is already in our list
         ALREADY_ADDED=false
         for pattern in "${EXCLUDE_PATTERNS[@]}"; do
-            if [[ "$excluded_pattern" == "$pattern" ]]; then
+            if [[ "$excluded_pattern" == "\"$pattern\"" ]]; then
                 ALREADY_ADDED=true
                 break
             fi
         done
         
         if [ "$ALREADY_ADDED" = false ]; then
-            echo "  - pattern: \"$excluded_pattern\"" >> "$TEMP_CONFIG_FILE"
+            echo "  - pattern: $excluded_pattern" >> "$TEMP_CONFIG_FILE"
         fi
     done <<< "$CURRENT_EXCLUDED"
 fi
@@ -143,7 +145,8 @@ echo "Generating $TARGETS_FILE..."
 true > "$TARGETS_FILE"
 
 # Extract enabled targets from config and write to targets file
-yq '.targets[] | select(.enabled == true) | .target' "$CONFIG_FILE" > "$TARGETS_FILE"
+# Add -r flag to strip quotes from output
+yq -r '.targets[] | select(.enabled == true) | .target' "$CONFIG_FILE" > "$TARGETS_FILE"
 
 echo "Generated $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) enabled production targets."
 echo "To build production targets: ./build_production.sh"
