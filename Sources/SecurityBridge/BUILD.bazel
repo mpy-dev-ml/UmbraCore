@@ -33,16 +33,7 @@ swift_library(
 
 swift_test(
     name = "SecurityBridgeTests",
-    srcs = [
-        "Tests/TemporaryTests.swift",
-        "Tests/CryptoServiceAdapterTests.swift",
-        "Tests/SecurityProviderAdapterTests.swift",
-        "Tests/SanityTests.swift",
-        "Tests/RandomDataTests.swift",
-        "Tests/SecurityBridgeMigrationTests.swift",
-        "Tests/Mocks/MockFoundationXPCSecurityService.swift",
-        "Tests/Mocks/MockFoundationSecurityProvider.swift",
-    ],
+    srcs = glob(["Tests/*.swift"], exclude = ["Tests/Mocks/*"]),
     module_name = "SecurityBridgeTests",
     copts = [
         "-target", "arm64-apple-macos14.7.4",
@@ -156,11 +147,7 @@ swift_test(
 
 swift_test(
     name = "TemporaryTests",
-    srcs = [
-        "Tests/TemporaryTests.swift",
-        "Tests/Mocks/MockFoundationSecurityProvider.swift",
-        "Tests/Mocks/MockFoundationXPCSecurityService.swift",
-    ],
+    srcs = ["Tests/TemporaryTests.swift"] + glob(["Tests/Mocks/*.swift"]),
     module_name = "TemporaryTests",
     copts = [
         "-target", "arm64-apple-macos14.7.4",
