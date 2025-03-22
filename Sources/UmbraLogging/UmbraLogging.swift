@@ -85,54 +85,54 @@
 /// - Atomic operations
 /// - Queue isolation
 public enum UmbraLogging {
-    /// Current version of the UmbraLogging module
-    public static let version = "1.0.0"
+  /// Current version of the UmbraLogging module
+  public static let version="1.0.0"
 
-    /// Initialise UmbraLogging with default configuration
-    public static func initialise() {
-        // Configure logging system
-    }
+  /// Initialise UmbraLogging with default configuration
+  public static func initialise() {
+    // Configure logging system
+  }
 
-    /// Create a new instance of the logger
-    /// - Returns: A logger instance conforming to LoggingProtocol
-    public static func createLogger() -> LoggingProtocol {
-        // This will be replaced at build time by the UmbraLoggingAdapters module
-        #if canImport(UmbraLoggingAdapters)
-            return UmbraLoggingAdapters.createLogger()
-        #else
-            // Use a fallback console logger for testing
-            return FallbackConsoleLogger()
-        #endif
-    }
+  /// Create a new instance of the logger
+  /// - Returns: A logger instance conforming to LoggingProtocol
+  public static func createLogger() -> LoggingProtocol {
+    // This will be replaced at build time by the UmbraLoggingAdapters module
+    #if canImport(UmbraLoggingAdapters)
+      return UmbraLoggingAdapters.createLogger()
+    #else
+      // Use a fallback console logger for testing
+      return FallbackConsoleLogger()
+    #endif
+  }
 
-    /// Create a new logger with specific destinations
-    /// - Parameter destinations: Array of log destinations
-    /// - Returns: A logger instance conforming to LoggingProtocol
-    public static func createLoggerWithDestinations(_ destinations: [Any]) -> LoggingProtocol {
-        #if canImport(UmbraLoggingAdapters)
-            return UmbraLoggingAdapters.createLoggerWithDestinations(destinations)
-        #else
-            // Use a fallback console logger for testing
-            return FallbackConsoleLogger()
-        #endif
-    }
+  /// Create a new logger with specific destinations
+  /// - Parameter destinations: Array of log destinations
+  /// - Returns: A logger instance conforming to LoggingProtocol
+  public static func createLoggerWithDestinations(_ destinations: [Any]) -> LoggingProtocol {
+    #if canImport(UmbraLoggingAdapters)
+      return UmbraLoggingAdapters.createLoggerWithDestinations(destinations)
+    #else
+      // Use a fallback console logger for testing
+      return FallbackConsoleLogger()
+    #endif
+  }
 }
 
 /// A simple fallback console logger for use in tests when UmbraLoggingAdapters is not available
 private final class FallbackConsoleLogger: LoggingProtocol {
-    func debug(_ message: String, metadata _: LogMetadata?) async {
-        print("[DEBUG] \(message)")
-    }
+  func debug(_ message: String, metadata _: LogMetadata?) async {
+    print("[DEBUG] \(message)")
+  }
 
-    func info(_ message: String, metadata _: LogMetadata?) async {
-        print("[INFO] \(message)")
-    }
+  func info(_ message: String, metadata _: LogMetadata?) async {
+    print("[INFO] \(message)")
+  }
 
-    func warning(_ message: String, metadata _: LogMetadata?) async {
-        print("[WARNING] \(message)")
-    }
+  func warning(_ message: String, metadata _: LogMetadata?) async {
+    print("[WARNING] \(message)")
+  }
 
-    func error(_ message: String, metadata _: LogMetadata?) async {
-        print("[ERROR] \(message)")
-    }
+  func error(_ message: String, metadata _: LogMetadata?) async {
+    print("[ERROR] \(message)")
+  }
 }

@@ -4,15 +4,15 @@ import Foundation
 /// This file serves as a facade to prevent circular dependencies by breaking
 /// the dependency chain between Foundation and CryptoSwift
 public enum UmbraSecurityServicesModule {
-    /// Version of the UmbraSecurityServices module
-    public static let version = "1.0.0"
+  /// Version of the UmbraSecurityServices module
+  public static let version="1.0.0"
 
-    /// Module identifier for registration and discovery
-    public static let moduleIdentifier = "com.umbracore.security.services"
+  /// Module identifier for registration and discovery
+  public static let moduleIdentifier="com.umbracore.security.services"
 
-    /// Get the shared security service instance
-    @MainActor
-    public static var securityService: SecurityService {
-        SecurityService.shared
-    }
+  /// Get the shared security service instance
+  @MainActor
+  public static var securityService: SecurityService {
+    SecurityService.shared
+  }
 }

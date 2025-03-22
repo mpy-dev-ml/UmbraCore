@@ -29,28 +29,28 @@ import LoggingWrapperInterfaces
 /// let error = SomeError(severity: .error)
 /// error.severity.log("Failed to process request: \(error.localizedDescription)")
 /// ```
-public extension ErrorSeverity {
-    /// Basic logging functionality that forwards to a logger implementation when available
-    ///
-    /// This method provides a convenient way to log messages directly from an error
-    /// severity level without needing to first convert to a LogLevel.
-    ///
-    /// - Parameters:
-    ///   - message: The message to log
-    ///   - file: The file where the log is called from
-    ///   - function: The function where the log is called from
-    ///   - line: The line where the log is called from
-    func log(
-        _ message: @autoclosure () -> Any,
-        file: String = #file,
-        function _: String = #function,
-        line: Int = #line
-    ) {
-        // Forward to a logging implementation that will be provided at runtime
-        // This doesn't directly log, but relies on the app having a configured logging system
-        // The Logger implementation in LoggingWrapper will handle this when imported
+extension ErrorSeverity {
+  /// Basic logging functionality that forwards to a logger implementation when available
+  ///
+  /// This method provides a convenient way to log messages directly from an error
+  /// severity level without needing to first convert to a LogLevel.
+  ///
+  /// - Parameters:
+  ///   - message: The message to log
+  ///   - file: The file where the log is called from
+  ///   - function: The function where the log is called from
+  ///   - line: The line where the log is called from
+  public func log(
+    _ message: @autoclosure () -> Any,
+    file: String=#file,
+    function _: String=#function,
+    line: Int=#line
+  ) {
+    // Forward to a logging implementation that will be provided at runtime
+    // This doesn't directly log, but relies on the app having a configured logging system
+    // The Logger implementation in LoggingWrapper will handle this when imported
 
-        // Simply print to console if no logging system is configured
-        print("[\(rawValue)] \(file):\(line) - \(message())")
-    }
+    // Simply print to console if no logging system is configured
+    print("[\(rawValue)] \(file):\(line) - \(message())")
+  }
 }

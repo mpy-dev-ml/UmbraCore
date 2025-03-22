@@ -7,110 +7,110 @@ import Foundation
 /// rather than nested within multiple levels. This approach simplifies
 /// error handling and promotes a more maintainable codebase.
 public enum NetworkError: Error, Equatable, Sendable {
-    // MARK: - Connection Errors
+  // MARK: - Connection Errors
 
-    /// Connection to service failed
-    case connectionFailed(reason: String)
+  /// Connection to service failed
+  case connectionFailed(reason: String)
 
-    /// Service is unavailable
-    case serviceUnavailable(service: String, reason: String)
+  /// Service is unavailable
+  case serviceUnavailable(service: String, reason: String)
 
-    /// Timeout occurred while waiting for response
-    case timeout(operation: String, durationMs: Int)
+  /// Timeout occurred while waiting for response
+  case timeout(operation: String, durationMs: Int)
 
-    /// Network request was interrupted
-    case interrupted(reason: String)
+  /// Network request was interrupted
+  case interrupted(reason: String)
 
-    // MARK: - Request Errors
+  // MARK: - Request Errors
 
-    /// Request contains invalid parameters or format
-    case invalidRequest(reason: String)
+  /// Request contains invalid parameters or format
+  case invalidRequest(reason: String)
 
-    /// Request was rejected by the server
-    case requestRejected(code: Int, reason: String)
+  /// Request was rejected by the server
+  case requestRejected(code: Int, reason: String)
 
-    /// Request is too large to process
-    case requestTooLarge(sizeByte: Int, maxSizeByte: Int)
+  /// Request is too large to process
+  case requestTooLarge(sizeByte: Int, maxSizeByte: Int)
 
-    /// Rate limit has been exceeded
-    case rateLimitExceeded(limitPerHour: Int, retryAfterMs: Int)
+  /// Rate limit has been exceeded
+  case rateLimitExceeded(limitPerHour: Int, retryAfterMs: Int)
 
-    // MARK: - Response Errors
+  // MARK: - Response Errors
 
-    /// Response format is invalid
-    case invalidResponse(reason: String)
+  /// Response format is invalid
+  case invalidResponse(reason: String)
 
-    /// Response is too large to process
-    case responseTooLarge(sizeByte: Int, maxSizeByte: Int)
+  /// Response is too large to process
+  case responseTooLarge(sizeByte: Int, maxSizeByte: Int)
 
-    /// Response data is corrupted or incomplete
-    case dataCorruption(reason: String)
+  /// Response data is corrupted or incomplete
+  case dataCorruption(reason: String)
 
-    /// Unable to parse response data
-    case parsingFailed(reason: String)
+  /// Unable to parse response data
+  case parsingFailed(reason: String)
 
-    // MARK: - Security Errors
+  // MARK: - Security Errors
 
-    /// SSL/TLS certificate validation failed
-    case certificateError(reason: String)
+  /// SSL/TLS certificate validation failed
+  case certificateError(reason: String)
 
-    /// The host is untrusted
-    case untrustedHost(hostname: String)
+  /// The host is untrusted
+  case untrustedHost(hostname: String)
 
-    // MARK: - General Errors
+  // MARK: - General Errors
 
-    /// Internal error occurred
-    case internalError(reason: String)
+  /// Internal error occurred
+  case internalError(reason: String)
 
-    /// Unknown network error
-    case unknown(reason: String)
+  /// Unknown network error
+  case unknown(reason: String)
 }
 
 // MARK: - CustomStringConvertible
 
 extension NetworkError: CustomStringConvertible {
-    public var description: String {
-        switch self {
-        case let .connectionFailed(reason):
-            "Connection failed: \(reason)"
-        case let .serviceUnavailable(service, reason):
-            "Service '\(service)' unavailable: \(reason)"
-        case let .timeout(operation, durationMs):
-            "Timeout occurred during \(operation) after \(durationMs)ms"
-        case let .interrupted(reason):
-            "Network request interrupted: \(reason)"
-        case let .invalidRequest(reason):
-            "Invalid request: \(reason)"
-        case let .requestRejected(code, reason):
-            "Request rejected (code \(code)): \(reason)"
-        case let .requestTooLarge(sizeByte, maxSizeByte):
-            "Request too large: \(sizeByte) bytes (maximum \(maxSizeByte) bytes)"
-        case let .rateLimitExceeded(limitPerHour, retryAfterMs):
-            "Rate limit exceeded: \(limitPerHour) requests per hour, retry after \(retryAfterMs)ms"
-        case let .invalidResponse(reason):
-            "Invalid response: \(reason)"
-        case let .responseTooLarge(sizeByte, maxSizeByte):
-            "Response too large: \(sizeByte) bytes (maximum \(maxSizeByte) bytes)"
-        case let .dataCorruption(reason):
-            "Data corruption: \(reason)"
-        case let .parsingFailed(reason):
-            "Parsing failed: \(reason)"
-        case let .certificateError(reason):
-            "Certificate error: \(reason)"
-        case let .untrustedHost(hostname):
-            "Untrusted host: \(hostname)"
-        case let .internalError(reason):
-            "Internal error: \(reason)"
-        case let .unknown(reason):
-            "Unknown network error: \(reason)"
-        }
+  public var description: String {
+    switch self {
+      case let .connectionFailed(reason):
+        "Connection failed: \(reason)"
+      case let .serviceUnavailable(service, reason):
+        "Service '\(service)' unavailable: \(reason)"
+      case let .timeout(operation, durationMs):
+        "Timeout occurred during \(operation) after \(durationMs)ms"
+      case let .interrupted(reason):
+        "Network request interrupted: \(reason)"
+      case let .invalidRequest(reason):
+        "Invalid request: \(reason)"
+      case let .requestRejected(code, reason):
+        "Request rejected (code \(code)): \(reason)"
+      case let .requestTooLarge(sizeByte, maxSizeByte):
+        "Request too large: \(sizeByte) bytes (maximum \(maxSizeByte) bytes)"
+      case let .rateLimitExceeded(limitPerHour, retryAfterMs):
+        "Rate limit exceeded: \(limitPerHour) requests per hour, retry after \(retryAfterMs)ms"
+      case let .invalidResponse(reason):
+        "Invalid response: \(reason)"
+      case let .responseTooLarge(sizeByte, maxSizeByte):
+        "Response too large: \(sizeByte) bytes (maximum \(maxSizeByte) bytes)"
+      case let .dataCorruption(reason):
+        "Data corruption: \(reason)"
+      case let .parsingFailed(reason):
+        "Parsing failed: \(reason)"
+      case let .certificateError(reason):
+        "Certificate error: \(reason)"
+      case let .untrustedHost(hostname):
+        "Untrusted host: \(hostname)"
+      case let .internalError(reason):
+        "Internal error: \(reason)"
+      case let .unknown(reason):
+        "Unknown network error: \(reason)"
     }
+  }
 }
 
 // MARK: - LocalizedError
 
 extension NetworkError: LocalizedError {
-    public var errorDescription: String? {
-        description
-    }
+  public var errorDescription: String? {
+    description
+  }
 }

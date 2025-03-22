@@ -16,11 +16,11 @@ import Foundation
 
 /**
  * This file previously contained a typealias for CryptoError.
- * 
+ *
  * Please use CoreErrors.CryptoError directly in your code:
  * ```swift
  * import CoreErrors
- * 
+ *
  * // Example usage:
  * throw CoreErrors.CryptoError.invalidKeySize(reason: "Key too small")
  * ```

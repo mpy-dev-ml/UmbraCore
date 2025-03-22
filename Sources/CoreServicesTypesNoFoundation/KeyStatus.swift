@@ -8,8 +8,8 @@ import KeyManagementTypes
 /// The canonical implementation is available in the KeyManagementTypes module and provides
 /// a standardised representation used across the UmbraCore framework.
 @available(
-    *,
-    deprecated,
-    message: "This will be replaced by KeyManagementTypes.KeyStatus in a future version. Use KeyManagementTypes.KeyStatus directly."
+  *,
+  deprecated,
+  message: "This will be replaced by KeyManagementTypes.KeyStatus in a future version. Use KeyManagementTypes.KeyStatus directly."
 )
-public typealias KeyStatus = KeyManagementTypes.KeyStatus
+public typealias KeyStatus=KeyManagementTypes.KeyStatus

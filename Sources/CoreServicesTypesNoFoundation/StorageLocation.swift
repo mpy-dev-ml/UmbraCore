@@ -9,33 +9,33 @@ import KeyManagementTypes
 @frozen
 @available(*, deprecated, message: "Please use KeyManagementTypes.StorageLocation instead")
 public enum StorageLocation: String, Sendable, Codable {
-    /// Key is stored in the Secure Enclave
-    case secureEnclave
-    /// Key is stored in the keychain
-    case keychain
-    /// Key is stored in memory
-    case memory
+  /// Key is stored in the Secure Enclave
+  case secureEnclave
+  /// Key is stored in the keychain
+  case keychain
+  /// Key is stored in memory
+  case memory
 
-    /// Convert to the canonical StorageLocation type
-    /// - Returns: The equivalent canonical StorageLocation
-    public func toCanonical() -> KeyManagementTypes.StorageLocation {
-        // Use the raw conversion method
-        switch self {
-        case .secureEnclave: KeyManagementTypes.StorageLocation.secureEnclave
-        case .keychain: KeyManagementTypes.StorageLocation.keychain
-        case .memory: KeyManagementTypes.StorageLocation.memory
-        }
+  /// Convert to the canonical StorageLocation type
+  /// - Returns: The equivalent canonical StorageLocation
+  public func toCanonical() -> KeyManagementTypes.StorageLocation {
+    // Use the raw conversion method
+    switch self {
+      case .secureEnclave: KeyManagementTypes.StorageLocation.secureEnclave
+      case .keychain: KeyManagementTypes.StorageLocation.keychain
+      case .memory: KeyManagementTypes.StorageLocation.memory
     }
+  }
 
-    /// Create from the canonical StorageLocation type
-    /// - Parameter canonical: The canonical StorageLocation to convert from
-    /// - Returns: The equivalent legacy StorageLocation
-    public static func from(canonical: KeyManagementTypes.StorageLocation) -> StorageLocation {
-        // Use the raw conversion method
-        switch canonical {
-        case .secureEnclave: .secureEnclave
-        case .keychain: .keychain
-        case .memory: .memory
-        }
+  /// Create from the canonical StorageLocation type
+  /// - Parameter canonical: The canonical StorageLocation to convert from
+  /// - Returns: The equivalent legacy StorageLocation
+  public static func from(canonical: KeyManagementTypes.StorageLocation) -> StorageLocation {
+    // Use the raw conversion method
+    switch canonical {
+      case .secureEnclave: .secureEnclave
+      case .keychain: .keychain
+      case .memory: .memory
     }
+  }
 }

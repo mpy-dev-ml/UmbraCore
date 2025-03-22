@@ -16,296 +16,353 @@ import XPCProtocolsCore
 
 /// A mock implementation of XPCServiceProtocolStandardDTO for testing
 class MockXPCServiceDTOAdapter: XPCServiceProtocolStandardDTO {
-    // Record of method calls for verification
-    var methodCalls: [String: Int] = [:]
+  // Record of method calls for verification
+  var methodCalls: [String: Int]=[:]
 
-    // Configurable responses for testing
-    var pingResponse: Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(true)
-    var randomDataResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(SecureBytes(bytes: [1, 2, 3, 4]))
-    var encryptResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(SecureBytes(bytes: [5, 6, 7, 8]))
-    var decryptResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(SecureBytes(bytes: [9, 10, 11, 12]))
-    var signResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(SecureBytes(bytes: [13, 14, 15, 16]))
-    var verifyResponse: Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(true)
-    var statusResponse: Result<XPCServiceDTO.ServiceStatusDTO, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(
-        XPCServiceDTO.ServiceStatusDTO(status: "healthy", version: "1.0.0")
-    )
-    var versionResponse: Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success("1.0.0")
-    var hardwareIdentifierResponse: Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success("test-hardware")
-    var resetSecurityResponse: Result<Void, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> = .success(())
+  // Configurable responses for testing
+  var pingResponse: Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> =
+    .success(true)
+  var randomDataResponse: Result<
+    SecureBytes,
+    ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
+  > = .success(SecureBytes(bytes: [1, 2, 3, 4]))
+  var encryptResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> =
+    .success(SecureBytes(bytes: [
+      5,
+      6,
+      7,
+      8
+    ]))
+  var decryptResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> =
+    .success(SecureBytes(bytes: [
+      9,
+      10,
+      11,
+      12
+    ]))
+  var signResponse: Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> =
+    .success(SecureBytes(bytes: [
+      13,
+      14,
+      15,
+      16
+    ]))
+  var verifyResponse: Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> =
+    .success(true)
+  var statusResponse: Result<
+    XPCServiceDTO.ServiceStatusDTO,
+    ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
+  > = .success(
+    XPCServiceDTO.ServiceStatusDTO(status: "healthy", version: "1.0.0")
+  )
+  var versionResponse: Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> =
+    .success("1.0.0")
+  var hardwareIdentifierResponse: Result<
+    String,
+    ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
+  > = .success("test-hardware")
+  var resetSecurityResponse: Result<Void, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> =
+    .success(())
 
-    // Implementation of XPCServiceProtocolDTO methods
+  // Implementation of XPCServiceProtocolDTO methods
 
-    func ping() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("ping")
-        return pingResponse
-    }
+  func ping() async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
+    recordMethodCall("ping")
+    return pingResponse
+  }
 
-    func getServiceStatus() async -> Result<XPCServiceDTO.ServiceStatusDTO, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("getServiceStatus")
-        return statusResponse
-    }
+  func getServiceStatus() async
+    -> Result<
+      XPCServiceDTO.ServiceStatusDTO,
+      ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO
+    >
+  {
+    recordMethodCall("getServiceStatus")
+    return statusResponse
+  }
 
-    func getServiceVersion() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("getServiceVersion")
-        return versionResponse
-    }
+  func getServiceVersion() async
+  -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
+    recordMethodCall("getServiceVersion")
+    return versionResponse
+  }
 
-    func resetSecurity() async -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("resetSecurity")
-        return resetSecurityResponse
-    }
+  func resetSecurity() async
+  -> Result<Void, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
+    recordMethodCall("resetSecurity")
+    return resetSecurityResponse
+  }
 
-    // Implementation of XPCServiceProtocolStandardDTO methods
+  // Implementation of XPCServiceProtocolStandardDTO methods
 
-    func generateRandomData(length _: Int) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("generateRandomData")
-        return randomDataResponse
-    }
+  func generateRandomData(length _: Int) async
+  -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
+    recordMethodCall("generateRandomData")
+    return randomDataResponse
+  }
 
-    func encryptData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("encryptData")
-        return encryptResponse
-    }
+  func encryptData(
+    _: SecureBytes,
+    keyIdentifier _: String?
+  ) async
+  -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
+    recordMethodCall("encryptData")
+    return encryptResponse
+  }
 
-    func decryptData(_: SecureBytes, keyIdentifier _: String?) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("decryptData")
-        return decryptResponse
-    }
+  func decryptData(
+    _: SecureBytes,
+    keyIdentifier _: String?
+  ) async
+  -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
+    recordMethodCall("decryptData")
+    return decryptResponse
+  }
 
-    func sign(_: SecureBytes, keyIdentifier _: String) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("sign")
-        return signResponse
-    }
+  func sign(
+    _: SecureBytes,
+    keyIdentifier _: String
+  ) async
+  -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
+    recordMethodCall("sign")
+    return signResponse
+  }
 
-    func verify(signature _: SecureBytes, for _: SecureBytes, keyIdentifier _: String) async -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("verify")
-        return verifyResponse
-    }
+  func verify(
+    signature _: SecureBytes,
+    for _: SecureBytes,
+    keyIdentifier _: String
+  ) async
+  -> Result<Bool, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
+    recordMethodCall("verify")
+    return verifyResponse
+  }
 
-    func getHardwareIdentifier() async -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
-        recordMethodCall("getHardwareIdentifier")
-        return hardwareIdentifierResponse
-    }
+  func getHardwareIdentifier() async
+  -> Result<String, ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO> {
+    recordMethodCall("getHardwareIdentifier")
+    return hardwareIdentifierResponse
+  }
 
-    func synchronizeKeys(_: SecureBytes) async throws {
-        recordMethodCall("synchronizeKeys")
-        // This can be configured to throw an error if needed for testing
-    }
+  func synchronizeKeys(_: SecureBytes) async throws {
+    recordMethodCall("synchronizeKeys")
+    // This can be configured to throw an error if needed for testing
+  }
 
-    // Helper method to record method calls
-    private func recordMethodCall(_ method: String) {
-        methodCalls[method] = (methodCalls[method] ?? 0) + 1
-    }
+  // Helper method to record method calls
+  private func recordMethodCall(_ method: String) {
+    methodCalls[method]=(methodCalls[method] ?? 0) + 1
+  }
 
-    // Helper method to verify method calls
-    func verifyMethodCall(_ method: String, callCount: Int = 1) -> Bool {
-        methodCalls[method] == callCount
-    }
+  // Helper method to verify method calls
+  func verifyMethodCall(_ method: String, callCount: Int=1) -> Bool {
+    methodCalls[method] == callCount
+  }
 }
 
 // MARK: - Service Under Test
 
 /// A service that uses the XPCServiceProtocolStandardDTO interface
 class SecurityService {
-    private let adapter: XPCServiceProtocolStandardDTO
+  private let adapter: XPCServiceProtocolStandardDTO
 
-    init(adapter: XPCServiceProtocolStandardDTO) {
-        self.adapter = adapter
+  init(adapter: XPCServiceProtocolStandardDTO) {
+    self.adapter=adapter
+  }
+
+  /// Encrypt sensitive data
+  /// - Parameters:
+  ///   - data: The data to encrypt
+  ///   - keyId: Optional key identifier
+  /// - Returns: Encrypted data or an error
+  func encryptSensitiveData(_ data: [UInt8], keyID: String?=nil) async -> Result<[UInt8], Error> {
+    // Check if the service is available
+    let pingResult=await adapter.ping()
+    guard case .success(true)=pingResult else {
+      return .failure(ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.serviceUnavailable())
     }
 
-    /// Encrypt sensitive data
-    /// - Parameters:
-    ///   - data: The data to encrypt
-    ///   - keyId: Optional key identifier
-    /// - Returns: Encrypted data or an error
-    func encryptSensitiveData(_ data: [UInt8], keyId: String? = nil) async -> Result<[UInt8], Error> {
-        // Check if the service is available
-        let pingResult = await adapter.ping()
-        guard case .success(true) = pingResult else {
-            return .failure(ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO.serviceUnavailable())
-        }
+    // Convert input data to SecureBytes
+    let secureData=SecureBytes(bytes: data)
 
-        // Convert input data to SecureBytes
-        let secureData = SecureBytes(bytes: data)
+    // Encrypt the data
+    let result=await adapter.encryptData(secureData, keyIdentifier: keyID)
 
-        // Encrypt the data
-        let result = await adapter.encryptData(secureData, keyIdentifier: keyId)
+    // Convert the result back to [UInt8]
+    return result.flatMap { encryptedBytes in
+      var bytesArray=[UInt8]()
+      encryptedBytes.withUnsafeBytes { buffer in
+        bytesArray=Array(buffer)
+      }
+      return .success(bytesArray)
+    }.mapError { $0 as Error }
+  }
 
-        // Convert the result back to [UInt8]
-        return result.flatMap { encryptedBytes in
-            var bytesArray = [UInt8]()
-            encryptedBytes.withUnsafeBytes { buffer in
-                bytesArray = Array(buffer)
-            }
-            return .success(bytesArray)
-        }.mapError { $0 as Error }
+  /// Check if the service is healthy
+  /// - Returns: A boolean indicating if the service is healthy
+  func isServiceHealthy() async -> Bool {
+    let statusResult=await adapter.getServiceStatus()
+
+    guard case let .success(status)=statusResult else {
+      return false
     }
 
-    /// Check if the service is healthy
-    /// - Returns: A boolean indicating if the service is healthy
-    func isServiceHealthy() async -> Bool {
-        let statusResult = await adapter.getServiceStatus()
-
-        guard case let .success(status) = statusResult else {
-            return false
-        }
-
-        return status.status == "healthy"
-    }
+    return status.status == "healthy"
+  }
 }
 
 // MARK: - Tests
 
 /// Tests for the SecurityService using the mock adapter
 class SecurityServiceTests: XCTestCase {
-    var mockAdapter: MockXPCServiceDTOAdapter!
-    var securityService: SecurityService!
+  var mockAdapter: MockXPCServiceDTOAdapter!
+  var securityService: SecurityService!
 
-    override func setUp() {
-        super.setUp()
-        mockAdapter = MockXPCServiceDTOAdapter()
-        securityService = SecurityService(adapter: mockAdapter)
+  override func setUp() {
+    super.setUp()
+    mockAdapter=MockXPCServiceDTOAdapter()
+    securityService=SecurityService(adapter: mockAdapter)
+  }
+
+  override func tearDown() {
+    mockAdapter=nil
+    securityService=nil
+    super.tearDown()
+  }
+
+  func testEncryptSensitiveData_Success() async {
+    // Configure the mock to return success responses
+    mockAdapter.pingResponse = .success(true)
+    mockAdapter.encryptResponse = .success(SecureBytes(bytes: [5, 6, 7, 8]))
+
+    // Call the method under test
+    let result=await securityService.encryptSensitiveData([1, 2, 3, 4])
+
+    // Verify the result
+    switch result {
+      case let .success(data):
+        XCTAssertEqual(data, [5, 6, 7, 8])
+      case .failure:
+        XCTFail("Expected success but got failure")
     }
 
-    override func tearDown() {
-        mockAdapter = nil
-        securityService = nil
-        super.tearDown()
-    }
+    // Verify method calls
+    XCTAssertTrue(mockAdapter.verifyMethodCall("ping"))
+    XCTAssertTrue(mockAdapter.verifyMethodCall("encryptData"))
+  }
 
-    func testEncryptSensitiveData_Success() async {
-        // Configure the mock to return success responses
-        mockAdapter.pingResponse = .success(true)
-        mockAdapter.encryptResponse = .success(SecureBytes(bytes: [5, 6, 7, 8]))
+  func testEncryptSensitiveData_ServiceUnavailable() async {
+    // Configure the mock to return a failure response for ping
+    mockAdapter.pingResponse = .failure(.serviceUnavailable())
 
-        // Call the method under test
-        let result = await securityService.encryptSensitiveData([1, 2, 3, 4])
+    // Call the method under test
+    let result=await securityService.encryptSensitiveData([1, 2, 3, 4])
 
-        // Verify the result
-        switch result {
-        case let .success(data):
-            XCTAssertEqual(data, [5, 6, 7, 8])
-        case .failure:
-            XCTFail("Expected success but got failure")
+    // Verify the result
+    switch result {
+      case .success:
+        XCTFail("Expected failure but got success")
+      case let .failure(error):
+        XCTAssertTrue(error is ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO)
+        if let errorDTO=error as? ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO {
+          XCTAssertEqual(errorDTO.code, .serviceUnavailable)
         }
-
-        // Verify method calls
-        XCTAssertTrue(mockAdapter.verifyMethodCall("ping"))
-        XCTAssertTrue(mockAdapter.verifyMethodCall("encryptData"))
     }
 
-    func testEncryptSensitiveData_ServiceUnavailable() async {
-        // Configure the mock to return a failure response for ping
-        mockAdapter.pingResponse = .failure(.serviceUnavailable())
+    // Verify method calls
+    XCTAssertTrue(mockAdapter.verifyMethodCall("ping"))
+    XCTAssertFalse(mockAdapter.verifyMethodCall("encryptData"))
+  }
 
-        // Call the method under test
-        let result = await securityService.encryptSensitiveData([1, 2, 3, 4])
+  func testEncryptSensitiveData_EncryptionFails() async {
+    // Configure the mock
+    mockAdapter.pingResponse = .success(true)
+    mockAdapter.encryptResponse = .failure(.cryptographicError(
+      operation: "encryption",
+      details: "Failed to encrypt data"
+    ))
 
-        // Verify the result
-        switch result {
-        case .success:
-            XCTFail("Expected failure but got success")
-        case let .failure(error):
-            XCTAssertTrue(error is ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO)
-            if let errorDTO = error as? ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO {
-                XCTAssertEqual(errorDTO.code, .serviceUnavailable)
-            }
+    // Call the method under test
+    let result=await securityService.encryptSensitiveData([1, 2, 3, 4])
+
+    // Verify the result
+    switch result {
+      case .success:
+        XCTFail("Expected failure but got success")
+      case let .failure(error):
+        XCTAssertTrue(error is ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO)
+        if let errorDTO=error as? ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO {
+          XCTAssertEqual(errorDTO.code, .cryptographicError)
+          XCTAssertEqual(errorDTO.details["operation"], "encryption")
         }
-
-        // Verify method calls
-        XCTAssertTrue(mockAdapter.verifyMethodCall("ping"))
-        XCTAssertFalse(mockAdapter.verifyMethodCall("encryptData"))
     }
 
-    func testEncryptSensitiveData_EncryptionFails() async {
-        // Configure the mock
-        mockAdapter.pingResponse = .success(true)
-        mockAdapter.encryptResponse = .failure(.cryptographicError(
-            operation: "encryption",
-            details: "Failed to encrypt data"
-        ))
+    // Verify method calls
+    XCTAssertTrue(mockAdapter.verifyMethodCall("ping"))
+    XCTAssertTrue(mockAdapter.verifyMethodCall("encryptData"))
+  }
 
-        // Call the method under test
-        let result = await securityService.encryptSensitiveData([1, 2, 3, 4])
+  func testIsServiceHealthy_Success() async {
+    // Configure the mock
+    mockAdapter.statusResponse = .success(XPCServiceDTO.ServiceStatusDTO(
+      status: "healthy",
+      version: "1.0.0"
+    ))
 
-        // Verify the result
-        switch result {
-        case .success:
-            XCTFail("Expected failure but got success")
-        case let .failure(error):
-            XCTAssertTrue(error is ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO)
-            if let errorDTO = error as? ErrorHandlingDomains.UmbraErrors.Security.ProtocolsDTO {
-                XCTAssertEqual(errorDTO.code, .cryptographicError)
-                XCTAssertEqual(errorDTO.details["operation"], "encryption")
-            }
-        }
+    // Call the method under test
+    let isHealthy=await securityService.isServiceHealthy()
 
-        // Verify method calls
-        XCTAssertTrue(mockAdapter.verifyMethodCall("ping"))
-        XCTAssertTrue(mockAdapter.verifyMethodCall("encryptData"))
-    }
+    // Verify the result
+    XCTAssertTrue(isHealthy)
 
-    func testIsServiceHealthy_Success() async {
-        // Configure the mock
-        mockAdapter.statusResponse = .success(XPCServiceDTO.ServiceStatusDTO(
-            status: "healthy",
-            version: "1.0.0"
-        ))
+    // Verify method calls
+    XCTAssertTrue(mockAdapter.verifyMethodCall("getServiceStatus"))
+  }
 
-        // Call the method under test
-        let isHealthy = await securityService.isServiceHealthy()
+  func testIsServiceHealthy_NotHealthy() async {
+    // Configure the mock
+    mockAdapter.statusResponse = .success(XPCServiceDTO.ServiceStatusDTO(
+      status: "degraded",
+      version: "1.0.0",
+      stringInfo: ["reason": "High load"]
+    ))
 
-        // Verify the result
-        XCTAssertTrue(isHealthy)
+    // Call the method under test
+    let isHealthy=await securityService.isServiceHealthy()
 
-        // Verify method calls
-        XCTAssertTrue(mockAdapter.verifyMethodCall("getServiceStatus"))
-    }
+    // Verify the result
+    XCTAssertFalse(isHealthy)
 
-    func testIsServiceHealthy_NotHealthy() async {
-        // Configure the mock
-        mockAdapter.statusResponse = .success(XPCServiceDTO.ServiceStatusDTO(
-            status: "degraded",
-            version: "1.0.0",
-            stringInfo: ["reason": "High load"]
-        ))
+    // Verify method calls
+    XCTAssertTrue(mockAdapter.verifyMethodCall("getServiceStatus"))
+  }
 
-        // Call the method under test
-        let isHealthy = await securityService.isServiceHealthy()
+  func testIsServiceHealthy_Error() async {
+    // Configure the mock
+    mockAdapter.statusResponse = .failure(.serviceUnavailable())
 
-        // Verify the result
-        XCTAssertFalse(isHealthy)
+    // Call the method under test
+    let isHealthy=await securityService.isServiceHealthy()
 
-        // Verify method calls
-        XCTAssertTrue(mockAdapter.verifyMethodCall("getServiceStatus"))
-    }
+    // Verify the result
+    XCTAssertFalse(isHealthy)
 
-    func testIsServiceHealthy_Error() async {
-        // Configure the mock
-        mockAdapter.statusResponse = .failure(.serviceUnavailable())
-
-        // Call the method under test
-        let isHealthy = await securityService.isServiceHealthy()
-
-        // Verify the result
-        XCTAssertFalse(isHealthy)
-
-        // Verify method calls
-        XCTAssertTrue(mockAdapter.verifyMethodCall("getServiceStatus"))
-    }
+    // Verify method calls
+    XCTAssertTrue(mockAdapter.verifyMethodCall("getServiceStatus"))
+  }
 }
 
 /// Extension to support mapping errors in Result
 extension Result {
-    /// Map the error of a Result to a different error type
-    /// - Parameter transform: A function that transforms the error to a new type
-    /// - Returns: A Result with the same success type but a different error type
-    func mapError<NewFailure>(_ transform: (Failure) -> NewFailure) -> Result<Success, NewFailure> {
-        switch self {
-        case let .success(value):
-            .success(value)
-        case let .failure(error):
-            .failure(transform(error))
-        }
+  /// Map the error of a Result to a different error type
+  /// - Parameter transform: A function that transforms the error to a new type
+  /// - Returns: A Result with the same success type but a different error type
+  func mapError<NewFailure>(_ transform: (Failure) -> NewFailure) -> Result<Success, NewFailure> {
+    switch self {
+      case let .success(value):
+        .success(value)
+      case let .failure(error):
+        .failure(transform(error))
     }
+  }
 }

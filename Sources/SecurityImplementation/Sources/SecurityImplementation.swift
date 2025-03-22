@@ -65,59 +65,59 @@ import UmbraCoreTypes
 /// This namespace provides factory methods to create security providers that
 /// implement the SecurityProviderProtocol.
 public enum SecurityImplementation {
-    /**
-     Create a default security provider with standard configuration.
+  /**
+   Create a default security provider with standard configuration.
 
-     This provider is configured with:
-     - AES-GCM symmetric encryption
-     - SHA-256 hashing
-     - Secure random key generation
+   This provider is configured with:
+   - AES-GCM symmetric encryption
+   - SHA-256 hashing
+   - Secure random key generation
 
-     - Returns: A security provider implementing SecurityProviderProtocol
+   - Returns: A security provider implementing SecurityProviderProtocol
 
-     ## Example
+   ## Example
 
-     ```swift
-     let provider = SecurityImplementation.createDefaultSecurityProvider()
-     let config = provider.createSecureConfig(options: nil)
-     let result = await provider.performSecureOperation(
-         operation: .symmetricEncryption,
-         config: config
-     )
-     ```
-     */
-    public static func createDefaultSecurityProvider() -> SecurityProviderProtocol {
-        SecurityProvider()
-    }
+   ```swift
+   let provider = SecurityImplementation.createDefaultSecurityProvider()
+   let config = provider.createSecureConfig(options: nil)
+   let result = await provider.performSecureOperation(
+       operation: .symmetricEncryption,
+       config: config
+   )
+   ```
+   */
+  public static func createDefaultSecurityProvider() -> SecurityProviderProtocol {
+    SecurityProvider()
+  }
 
-    /**
-     Create a custom security provider with the specified services.
+  /**
+   Create a custom security provider with the specified services.
 
-     This method allows you to provide custom implementations of the crypto service
-     and key manager, which can be useful for testing or when special functionality
-     is required.
+   This method allows you to provide custom implementations of the crypto service
+   and key manager, which can be useful for testing or when special functionality
+   is required.
 
-     - Parameters:
-       - cryptoService: Custom implementation of the crypto service
-       - keyManager: Custom implementation of the key manager
-     - Returns: A security provider implementing SecurityProviderProtocol
+   - Parameters:
+     - cryptoService: Custom implementation of the crypto service
+     - keyManager: Custom implementation of the key manager
+   - Returns: A security provider implementing SecurityProviderProtocol
 
-     ## Example
+   ## Example
 
-     ```swift
-     let cryptoService = MyCustomCryptoService()
-     let keyManager = MyCustomKeyManager()
+   ```swift
+   let cryptoService = MyCustomCryptoService()
+   let keyManager = MyCustomKeyManager()
 
-     let provider = SecurityImplementation.createSecurityProvider(
-         cryptoService: cryptoService,
-         keyManager: keyManager
-     )
-     ```
-     */
-    public static func createSecurityProvider(
-        cryptoService: CryptoServiceProtocol,
-        keyManager: KeyManagementProtocol
-    ) -> SecurityProviderProtocol {
-        SecurityProvider(cryptoService: cryptoService, keyManager: keyManager)
-    }
+   let provider = SecurityImplementation.createSecurityProvider(
+       cryptoService: cryptoService,
+       keyManager: keyManager
+   )
+   ```
+   */
+  public static func createSecurityProvider(
+    cryptoService: CryptoServiceProtocol,
+    keyManager: KeyManagementProtocol
+  ) -> SecurityProviderProtocol {
+    SecurityProvider(cryptoService: cryptoService, keyManager: keyManager)
+  }
 }

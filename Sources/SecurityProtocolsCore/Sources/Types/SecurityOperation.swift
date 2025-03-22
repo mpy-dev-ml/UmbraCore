@@ -3,51 +3,51 @@ import UmbraCoreTypes
 /// FoundationIndependent representation of security operations.
 /// Defines the possible security operations that can be performed.
 public enum SecurityOperation: String, Sendable, Equatable, CaseIterable {
-    // MARK: - Cryptographic Operations
+  // MARK: - Cryptographic Operations
 
-    /// Symmetric encryption
-    case symmetricEncryption
+  /// Symmetric encryption
+  case symmetricEncryption
 
-    /// Symmetric decryption
-    case symmetricDecryption
+  /// Symmetric decryption
+  case symmetricDecryption
 
-    /// Asymmetric encryption
-    case asymmetricEncryption
+  /// Asymmetric encryption
+  case asymmetricEncryption
 
-    /// Asymmetric decryption
-    case asymmetricDecryption
+  /// Asymmetric decryption
+  case asymmetricDecryption
 
-    /// Hash generation
-    case hashing
+  /// Hash generation
+  case hashing
 
-    /// Message authentication code generation
-    case macGeneration
+  /// Message authentication code generation
+  case macGeneration
 
-    // MARK: - Key Management Operations
+  // MARK: - Key Management Operations
 
-    /// Key generation
-    case keyGeneration
+  /// Key generation
+  case keyGeneration
 
-    /// Key storage
-    case keyStorage
+  /// Key storage
+  case keyStorage
 
-    /// Key retrieval
-    case keyRetrieval
+  /// Key retrieval
+  case keyRetrieval
 
-    /// Key rotation
-    case keyRotation
+  /// Key rotation
+  case keyRotation
 
-    /// Key deletion
-    case keyDeletion
+  /// Key deletion
+  case keyDeletion
 
-    // MARK: - Special Operations
+  // MARK: - Special Operations
 
-    /// Secure random number generation
-    case randomGeneration
+  /// Secure random number generation
+  case randomGeneration
 
-    /// Digital signature generation
-    case signatureGeneration
+  /// Digital signature generation
+  case signatureGeneration
 
-    /// Digital signature verification
-    case signatureVerification
+  /// Digital signature verification
+  case signatureVerification
 }

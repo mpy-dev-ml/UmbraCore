@@ -30,109 +30,109 @@ import UmbraCoreTypes
 /// including rotation, expiration, and retirement. It ensures that keys are
 /// properly managed throughout their lifetime.
 final class KeyLifecycle {
-    // MARK: - Types
+  // MARK: - Types
 
-    /// Configuration for key rotation
-    struct RotationConfig {
-        /// The identifier of the key to rotate
-        let keyIdentifier: String
+  /// Configuration for key rotation
+  struct RotationConfig {
+    /// The identifier of the key to rotate
+    let keyIdentifier: String
 
-        /// The new identifier to use for the rotated key
-        let newIdentifier: String
+    /// The new identifier to use for the rotated key
+    let newIdentifier: String
 
-        /// Whether to preserve the old key (true) or delete it (false)
-        let preserveOldKey: Bool
+    /// Whether to preserve the old key (true) or delete it (false)
+    let preserveOldKey: Bool
 
-        /// Creates a new rotation configuration
-        init(
-            keyIdentifier: String,
-            newIdentifier: String,
-            preserveOldKey: Bool = true
-        ) {
-            self.keyIdentifier = keyIdentifier
-            self.newIdentifier = newIdentifier
-            self.preserveOldKey = preserveOldKey
-        }
+    /// Creates a new rotation configuration
+    init(
+      keyIdentifier: String,
+      newIdentifier: String,
+      preserveOldKey: Bool=true
+    ) {
+      self.keyIdentifier=keyIdentifier
+      self.newIdentifier=newIdentifier
+      self.preserveOldKey=preserveOldKey
     }
+  }
 
-    // MARK: - Properties
+  // MARK: - Properties
 
-    /// The key store for retrieving and storing keys
-    private let keyStore: KeyStore
+  /// The key store for retrieving and storing keys
+  private let keyStore: KeyStore
 
-    /// The key generator for creating new keys
-    private let keyGenerator: KeyGenerator
+  /// The key generator for creating new keys
+  private let keyGenerator: KeyGenerator
 
-    // MARK: - Initialisation
+  // MARK: - Initialisation
 
-    /// Creates a new KeyLifecycle manager
-    /// - Parameters:
-    ///   - keyStore: The key store to use
-    ///   - keyGenerator: The key generator to use
-    init(keyStore: KeyStore, keyGenerator: KeyGenerator) {
-        self.keyStore = keyStore
-        self.keyGenerator = keyGenerator
-    }
+  /// Creates a new KeyLifecycle manager
+  /// - Parameters:
+  ///   - keyStore: The key store to use
+  ///   - keyGenerator: The key generator to use
+  init(keyStore: KeyStore, keyGenerator: KeyGenerator) {
+    self.keyStore=keyStore
+    self.keyGenerator=keyGenerator
+  }
 
-    // MARK: - Key Lifecycle Operations
+  // MARK: - Key Lifecycle Operations
 
-    /// Rotate a key, generating a new one and optionally retiring the old one
-    /// - Parameters:
-    ///   - config: The rotation configuration
-    ///   - keyType: The type of key to generate
-    ///   - bits: The size of the new key in bits
-    ///   - purpose: The purpose of the key
-    /// - Returns: Success if the key was rotated, failure otherwise
-    func rotateKey(
-        config: RotationConfig,
-        keyType: KeyType,
-        bits: Int,
-        purpose: KeyPurpose
-    ) -> Result<Void, UmbraErrors.Security.Protocols> {
-        // First, check if the old key exists
-        let retrieveResult = keyStore.retrieveKey(withIdentifier: config.keyIdentifier)
+  /// Rotate a key, generating a new one and optionally retiring the old one
+  /// - Parameters:
+  ///   - config: The rotation configuration
+  ///   - keyType: The type of key to generate
+  ///   - bits: The size of the new key in bits
+  ///   - purpose: The purpose of the key
+  /// - Returns: Success if the key was rotated, failure otherwise
+  func rotateKey(
+    config: RotationConfig,
+    keyType: KeyType,
+    bits: Int,
+    purpose: KeyPurpose
+  ) -> Result<Void, UmbraErrors.Security.Protocols> {
+    // First, check if the old key exists
+    let retrieveResult=keyStore.retrieveKey(withIdentifier: config.keyIdentifier)
 
-        switch retrieveResult {
-        case .success:
-            // Generate a new key
-            let generateResult = keyGenerator.generateKey(bits: bits, keyType: keyType, purpose: purpose)
+    switch retrieveResult {
+      case .success:
+        // Generate a new key
+        let generateResult=keyGenerator.generateKey(bits: bits, keyType: keyType, purpose: purpose)
 
-            switch generateResult {
-            case let .success(newKey):
-                // Store the new key
-                let storeResult = keyStore.storeKey(
-                    newKey,
-                    withIdentifier: config.newIdentifier
-                )
+        switch generateResult {
+          case let .success(newKey):
+            // Store the new key
+            let storeResult=keyStore.storeKey(
+              newKey,
+              withIdentifier: config.newIdentifier
+            )
 
-                switch storeResult {
-                case .success:
-                    // If we're not preserving the old key, delete it
-                    if !config.preserveOldKey {
-                        _ = keyStore.deleteKey(withIdentifier: config.keyIdentifier)
-                    }
-                    return .success(())
-
-                case let .failure(error):
-                    return .failure(error)
+            switch storeResult {
+              case .success:
+                // If we're not preserving the old key, delete it
+                if !config.preserveOldKey {
+                  _=keyStore.deleteKey(withIdentifier: config.keyIdentifier)
                 }
+                return .success(())
 
-            case let .failure(error):
-                // Convert UmbraErrors.Security.Protocols to UmbraErrors.Security.Protocols
-                return .failure(.serviceError("Failed to generate new key: \(error)"))
+              case let .failure(error):
+                return .failure(error)
             }
 
-        case let .failure(error):
-            return .failure(error)
+          case let .failure(error):
+            // Convert UmbraErrors.Security.Protocols to UmbraErrors.Security.Protocols
+            return .failure(.serviceError("Failed to generate new key: \(error)"))
         }
-    }
 
-    /// Delete a key that is no longer needed
-    /// - Parameter identifier: The identifier of the key to delete
-    /// - Returns: Success if the key was deleted, failure otherwise
-    func retireKey(
-        withIdentifier identifier: String
-    ) -> Result<Void, UmbraErrors.Security.Protocols> {
-        keyStore.deleteKey(withIdentifier: identifier)
+      case let .failure(error):
+        return .failure(error)
     }
+  }
+
+  /// Delete a key that is no longer needed
+  /// - Parameter identifier: The identifier of the key to delete
+  /// - Returns: Success if the key was deleted, failure otherwise
+  func retireKey(
+    withIdentifier identifier: String
+  ) -> Result<Void, UmbraErrors.Security.Protocols> {
+    keyStore.deleteKey(withIdentifier: identifier)
+  }
 }
