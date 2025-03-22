@@ -42,13 +42,12 @@ jobs:
           bazelisk --version
           brew install yq || true
           yq --version
-          brew install swift || true
-          swift --version
           
           # Set up Xcode using the latest stable version
           sudo xcode-select -s /Applications/Xcode.app
           xcodebuild -version
-      
+          swift --version  # Use Swift that comes with Xcode
+          
       - name: Set up DocC environment
         run: |
           echo "Building documentation environment..."
