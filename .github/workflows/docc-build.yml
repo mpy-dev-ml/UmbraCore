@@ -58,13 +58,18 @@ jobs:
           
           if [ "$CURRENT_XCODE_PATH" != "$DESIRED_XCODE_PATH" ] && [ -d "$DESIRED_XCODE_PATH" ]; then
             echo "Setting Xcode path to $DESIRED_XCODE_PATH"
-            sudo xcode-select -s "$DESIRED_XCODE_PATH"
+            # Use sudo -n to make sudo fail immediately instead of hanging for a password
+            if sudo -n xcode-select -s "$DESIRED_XCODE_PATH"; then
+              echo "Successfully set Xcode path"
+            else
+              echo "Warning: Failed to set Xcode path with sudo, continuing with current path: $CURRENT_XCODE_PATH"
+            fi
           else
             echo "Xcode already correctly configured at $CURRENT_XCODE_PATH"
           fi
           
-          xcodebuild -version
-          swift --version  # Use Swift that comes with Xcode
+          xcodebuild -version || echo "Warning: Unable to get Xcode version"
+          swift --version || echo "Warning: Unable to get Swift version"
           
       - name: Set up DocC environment
         run: |
