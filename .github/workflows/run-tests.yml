@@ -46,35 +46,28 @@ jobs:
     - name: Prepare Test Targets
       id: prepare-tests
       run: |
-        # Create a file listing all stable test targets
-        cat > stable_test_targets.txt << EOL
-        //Tests/CoreTests:CoreTests
-        //Tests/CryptoTests:CryptoTests
-        //Tests/CryptoTypesTests:CryptoTypesTests
-        //Tests/ErrorHandlingProtocolsTests:ErrorHandlingProtocolsTests
-        //Tests/KeychainTests:KeychainTests
-        //Tests/ModelsTests:ModelsTests
-        //Tests/ResourcesTests:ResourcesTests
-        //Tests/ResticTypesTests:ResticTypesTests
-        //Tests/SecurityImplementationTests:SecurityImplementationTests
-        //Tests/UmbraTestKit/Tests:UmbraTestKitTests
-        //Tests/UmbraXPCTests:UmbraXPCTests
-        //Sources/CoreErrors/Tests:CoreErrorsTests
-        //Sources/ErrorHandling/Tests:ErrorHandlingTests
-        //Sources/SecurityInterfaces/Tests:SecurityProviderTests
-        //Sources/SecurityInterfaces/Tests:SecurityProviderBaseTests
-        //Sources/SecurityInterfaces/Tests:XPCMigrationTests
-        EOL
+        echo "Querying for all test targets..."
+        
+        # Use bazelisk query to find all test targets
+        bazelisk query 'kind(".*test rule", //...)' | sort > all_test_targets.txt
+        
+        # Filter out tests that are known to have build issues
+        # Create a filtered list of stable tests
+        cat all_test_targets.txt | grep -v -E '//Tests/BookmarkTests|//Tests/LoggingTests|//Tests/ResticCLIHelperTests|//Tests/UmbraSecurityTests|//Tests/XPCTests' > stable_test_targets.txt
         
         # Count targets
+        AVAILABLE_COUNT=$(wc -l < all_test_targets.txt | xargs)
         TARGET_COUNT=$(wc -l < stable_test_targets.txt | xargs)
-        echo "Found $TARGET_COUNT stable test targets"
+        
+        echo "Found $AVAILABLE_COUNT total test targets, $TARGET_COUNT are stable and will be run"
         
         # Enable additional debugging if requested
         if [[ "${{ github.event.inputs.debug_enabled }}" == "true" ]]; then
           echo "Debug mode enabled - extra test output will be shown"
           echo "Test targets to be run:"
           cat stable_test_targets.txt
+          echo "Skipped test targets:"
+          diff --new-line-format="" --unchanged-line-format="" <(cat all_test_targets.txt) <(cat stable_test_targets.txt)
         fi
           
     - name: Run Stable Tests
@@ -137,13 +130,13 @@ jobs:
     - name: Summarise Test Results
       if: always()
       run: |
+        AVAILABLE_COUNT=$(wc -l < all_test_targets.txt | xargs)
         TARGET_COUNT=$(wc -l < stable_test_targets.txt | xargs)
-        echo "Completed testing of $TARGET_COUNT stable test targets"
+        SKIPPED_COUNT=$((AVAILABLE_COUNT - TARGET_COUNT))
         
-        # List any tests with build issues that weren't attempted
-        echo "The following tests currently have build issues and were not included:"
-        echo "- BookmarkTests"
-        echo "- LoggingTests" 
-        echo "- ResticCLIHelperTests"
-        echo "- UmbraSecurityTests" 
-        echo "- XPCTests"
+        echo "Completed testing of $TARGET_COUNT stable test targets ($SKIPPED_COUNT were skipped due to known issues)"
+        echo "Test coverage: $TARGET_COUNT/$AVAILABLE_COUNT ($(echo "scale=1; $TARGET_COUNT*100/$AVAILABLE_COUNT" | bc)%)"
+        
+        # List tests that were skipped due to known issues
+        echo "The following tests were excluded due to known build issues:"
+        diff --new-line-format="%L" --unchanged-line-format="" <(cat all_test_targets.txt) <(cat stable_test_targets.txt) || echo "None"
