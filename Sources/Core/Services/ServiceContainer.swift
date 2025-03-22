@@ -201,8 +201,11 @@ public actor ServiceContainer {
         serviceStates[identifier] = newState
 
         // Notify XPC service if available
-        if let xpcService = xpcService {
-            await xpcService.notifyServiceStateChanged(identifier: identifier, state: newState)
+        if xpcService != nil {
+            // The notifyServiceStateChanged method is not available in XPCServiceProtocol
+            // Just log the state change for now
+            print("Service state changed for \(identifier): \(newState)")
+            // In the future, implement proper notification via XPC protocol extension
         }
     }
 

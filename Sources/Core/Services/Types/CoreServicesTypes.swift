@@ -1,7 +1,5 @@
 import Foundation
 import KeyManagementTypes
-// Import our local ServiceState
-import struct Core.Services.Types.ServiceState
 
 /// Core service types namespace
 /// This file contains common type definitions used in service implementations
@@ -107,7 +105,6 @@ extension CoreServices.LegacyServiceState: Codable {
 @available(*, deprecated, message: "Use ServiceState directly instead")
 public extension CoreServices.LegacyServiceState {
     /// Convert to external service state
-    /// Note: Use explicit enum values instead of the ServiceState type to avoid circular references
     func toStandardServiceState() -> ServiceState {
         switch self {
         case .healthy:

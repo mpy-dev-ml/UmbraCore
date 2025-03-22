@@ -1,6 +1,7 @@
-import CoreErrors
 import Foundation
-import Core.Services.Types
+import CoreErrors
+import CoreServicesTypes
+import UmbraLogging
 
 /// Protocol defining the base requirements for all UmbraCore services
 public protocol UmbraService: Actor {
@@ -70,28 +71,52 @@ public extension CoreErrors.ServiceError {
     /// - Parameter message: The detailed error message
     /// - Returns: A corresponding CoreErrors.ServiceError with the message
     static func withMessage(_ message: String) -> CoreErrors.ServiceError {
-        switch self {
-        case .initialisationFailed:
-            // We can't modify the enum case, but we can provide guidance on how to handle the message
-            print("Service initialisation failed: \(message)")
-            return .initialisationFailed
-        case .invalidState:
-            print("Invalid service state: \(message)")
-            return .invalidState
-        case .configurationError:
-            print("Service configuration error: \(message)")
-            return .configurationError
-        case .dependencyError:
-            print("Service dependency error: \(message)")
-            return CoreErrors.ServiceError.dependencyError
-        case .operationFailed:
-            print("Operation failed: \(message)")
-            return CoreErrors.ServiceError.operationFailed
-        }
+        // Log the error message
+        print("Service error: \(message)")
+        // Return a default error
+        return .operationFailed
     }
 }
 
-extension CoreErrors.ServiceError {
-    public static var dependencyError: Self { .dependencyError }
-    public static var operationFailed: Self { .operationFailed }
+// Specific extensions for each error type
+public extension CoreErrors.ServiceError {
+    /// Add a detailed message to initialisation failed error
+    /// - Parameter message: The detailed error message
+    /// - Returns: An initialisation failed error
+    static func initialisationFailedWithMessage(_ message: String) -> CoreErrors.ServiceError {
+        print("Service initialisation failed: \(message)")
+        return .initialisationFailed
+    }
+    
+    /// Add a detailed message to invalid state error
+    /// - Parameter message: The detailed error message
+    /// - Returns: An invalid state error
+    static func invalidStateWithMessage(_ message: String) -> CoreErrors.ServiceError {
+        print("Invalid service state: \(message)")
+        return .invalidState
+    }
+    
+    /// Add a detailed message to configuration error
+    /// - Parameter message: The detailed error message
+    /// - Returns: A configuration error
+    static func configurationErrorWithMessage(_ message: String) -> CoreErrors.ServiceError {
+        print("Service configuration error: \(message)")
+        return .configurationError
+    }
+    
+    /// Add a detailed message to dependency error
+    /// - Parameter message: The detailed error message
+    /// - Returns: A dependency error
+    static func dependencyErrorWithMessage(_ message: String) -> CoreErrors.ServiceError {
+        print("Service dependency error: \(message)")
+        return .dependencyError
+    }
+    
+    /// Add a detailed message to operation failed error
+    /// - Parameter message: The detailed error message
+    /// - Returns: An operation failed error
+    static func operationFailedWithMessage(_ message: String) -> CoreErrors.ServiceError {
+        print("Operation failed: \(message)")
+        return .operationFailed
+    }
 }

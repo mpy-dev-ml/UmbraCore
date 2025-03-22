@@ -1,7 +1,7 @@
 import CommonCrypto
 import CoreDTOs
 import CoreErrors
-import Core.Services.Types
+import CoreServicesTypes
 import CryptoTypes
 import CryptoTypesTypes
 import Foundation

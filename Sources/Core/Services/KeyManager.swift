@@ -95,7 +95,7 @@ public actor KeyManager: UmbraService {
         )
 
         // Load existing keys
-        try await loadKeyMetadata()
+        self.keyMetadata = try await loadKeyMetadata()
 
         // Now we're running
         _state = .ready
@@ -119,7 +119,7 @@ public actor KeyManager: UmbraService {
         metadata: [String: String]? = nil,
         strength: Int = 256
     ) async throws -> String {
-        let currentState = await _state
+        let currentState = _state
         guard currentState == .ready || currentState == .running else {
             throw KeyManagerError.notInitialized
         }
@@ -130,22 +130,25 @@ public actor KeyManager: UmbraService {
         // Create a new key (simplified placeholder implementation)
         let key = try await generateRandomData(length: size)
 
+        // Use keychain as default storage location
+        let defaultStorageLocation = KeyManagementTypes.StorageLocation.keychain
+
         // Store key metadata
         let keyMeta = KeyManagementTypes.KeyMetadata(
-            identifier: keyId,
-            algorithm: algorithm,
-            keySize: strength,
             status: .active,
-            storageLocation: storageLocation,
+            storageLocation: defaultStorageLocation, 
             accessControls: .none,
             createdAt: Date(),
             lastModified: Date(),
             expiryDate: nil,
+            algorithm: algorithm,
+            keySize: strength,
+            identifier: keyId,
             version: 1,
             exportable: true,
             isSystemKey: false,
             isProcessIsolated: false,
-            customMetadata: nil
+            customMetadata: metadata
         )
         keyMetadata[keyId] = keyMeta
 
@@ -163,19 +166,19 @@ public actor KeyManager: UmbraService {
     /// - Returns: KeyValidationResult
     /// - Throws: KeyManagerError if validation fails
     public func validateKey(id: String) async throws -> KeyValidationResult {
-        let currentState = await _state
+        let currentState = _state
         guard currentState == .ready || currentState == .running else {
             throw KeyManagerError.notInitialized
         }
 
         // Check if key exists
         guard let metadata = keyMetadata[id] else {
-            throw KeyManagerError.keyNotFound
+            throw KeyManagerError.keyNotFound(id)
         }
 
         // In a real implementation we would check key strength, age, etc.
         // This is a simplified version
-        let isValid = metadata.strength >= 128
+        let isValid = metadata.keySize >= 128
         let warnings = isValid ? [] : ["Key strength below recommended minimum"]
 
         return KeyValidationResult(isValid: isValid, warnings: warnings)
@@ -198,11 +201,13 @@ public actor KeyManager: UmbraService {
 
     /// Gracefully shut down the service
     public func shutdown() async {
-        let currentState = await _state
+        let currentState = _state
         if currentState == .running || currentState == .ready {
             // Perform shutdown operations here
             _state = .shuttingDown
-            // Additional cleanup if needed
+            
+            // Close any open resources
+            
             _state = .shutdown
         }
     }
@@ -231,7 +236,6 @@ public actor KeyManager: UmbraService {
     ///   - id: Key identifier
     /// - Throws: KeyManagerError if save fails
     private func saveKey(_ key: SecureBytes, for id: String) async throws {
-        let fileManager = FileManager.default
         let keyURL = keyStorage.appendingPathComponent("\(id).key")
         
         // Convert SecureBytes to Data for storage

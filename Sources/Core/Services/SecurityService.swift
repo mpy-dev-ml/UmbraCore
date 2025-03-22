@@ -1,8 +1,10 @@
 import CoreErrors
 import CoreServicesTypes
+import ErrorHandlingDomains
 import Foundation
 import SecurityProtocolsCore
 import SecurityTypes
+import UmbraCoreTypes
 
 // Remove typealias since it's causing conflicts
 
