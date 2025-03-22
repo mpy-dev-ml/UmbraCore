@@ -6,89 +6,75 @@ set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-OUTPUT_DIR="${PROJECT_ROOT}/docs"
+OUTPUT_DIR="${PROJECT_ROOT}/docs/.docc-build"
 
 # Ensure the output directory exists
 mkdir -p "${OUTPUT_DIR}"
 
-# Function to build documentation for a module
-function build_docc {
-    local MODULE=$1
-    echo "Building documentation for ${MODULE}..."
-    
-    # Clean up any existing documentation archives to avoid conflicts
-    rm -rf "${OUTPUT_DIR}/${MODULE}DocC.doccarchive" || true
-    
-    # Build using bazelisk with verbose failure reporting
-    cd "${PROJECT_ROOT}"
-    bazelisk build --verbose_failures "//Sources/${MODULE}:${MODULE}DocC"
-    
-    # Copy the generated doccarchive to the docs directory
-    DOCC_DIR="$(bazelisk info bazel-bin)/Sources/${MODULE}/doc_output/${MODULE}DocC.doccarchive"
-    if [ -d "${DOCC_DIR}" ]; then
-        cp -R "${DOCC_DIR}" "${OUTPUT_DIR}/"
-        echo "Documentation built for ${MODULE} and copied to ${OUTPUT_DIR}/${MODULE}DocC.doccarchive"
-    else
-        echo "WARNING: DocC archive not found at ${DOCC_DIR}"
-        echo "Checking for other possible locations..."
-        find "$(bazelisk info bazel-bin)/Sources/${MODULE}" -name "*.doccarchive" -type d
-    fi
-}
+# Parse command line arguments
+TEMP_DIR=""
+OUTPUT=""
+MODULE_NAME=""
+DOCC_TOOL="/usr/bin/xcrun docc"
+SOURCES=()
 
-# Function to serve documentation
-function serve_docc {
-    local MODULE=$1
-    local PORT=${2:-8000}
-    
-    DOCC_ARCHIVE="${OUTPUT_DIR}/${MODULE}DocC.doccarchive"
-    
-    if [ ! -d "${DOCC_ARCHIVE}" ]; then
-        echo "Documentation archive not found at ${DOCC_ARCHIVE}"
-        echo "Please build it first using: $0 build ${MODULE}"
-        exit 1
-    fi
-    
-    echo "Serving documentation for ${MODULE} at http://localhost:${PORT}/"
-    cd "${OUTPUT_DIR}"
-    
-    # Serve the documentation using Python's built-in HTTP server
-    python3 -m http.server ${PORT} --directory "${MODULE}DocC.doccarchive"
-}
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --temp_dir)
+      TEMP_DIR="$2"
+      shift 2
+      ;;
+    --output)
+      OUTPUT="$2"
+      shift 2
+      ;;
+    --module_name)
+      MODULE_NAME="$2"
+      shift 2
+      ;;
+    --docc_tool)
+      DOCC_TOOL="$2"
+      shift 2
+      ;;
+    --source)
+      SOURCES+=("$2")
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+  esac
+done
 
-# Main execution
-if [ $# -lt 1 ]; then
-    echo "Usage: $0 [build|serve] [module_name] [port]"
-    echo "  build: Build documentation for the specified module"
-    echo "  serve: Serve documentation for the specified module"
-    echo "  module_name: Name of the module (e.g., SecurityInterfaces)"
-    echo "  port: Port to serve documentation on (default: 8000)"
-    exit 1
+# Ensure we have the necessary parameters
+if [ -z "$MODULE_NAME" ] || [ -z "$OUTPUT" ]; then
+  echo "Missing required parameters. Usage:"
+  echo "  $0 --module_name NAME --output PATH [--temp_dir PATH] [--docc_tool PATH] [--source FILE...]"
+  exit 1
 fi
 
-ACTION=$1
-MODULE=$2
-PORT=${3:-8000}
+echo "Building DocC documentation for $MODULE_NAME..."
+echo "Output will be written to: $OUTPUT"
+echo "Number of source files: ${#SOURCES[@]}"
 
-case ${ACTION} in
-    build)
-        if [ -z "${MODULE}" ]; then
-            echo "Error: Module name is required for build action"
-            exit 1
-        fi
-        build_docc "${MODULE}"
-        ;;
-    serve)
-        if [ -z "${MODULE}" ]; then
-            echo "Error: Module name is required for serve action"
-            exit 1
-        fi
-        serve_docc "${MODULE}" "${PORT}"
-        ;;
-    *)
-        echo "Unknown action: ${ACTION}"
-        echo "Use 'build' or 'serve'"
-        exit 1
-        ;;
-esac
+# Create temporary directory if it doesn't exist
+if [ -n "$TEMP_DIR" ]; then
+  mkdir -p "$TEMP_DIR"
+fi
+
+# Prepare source list for docc
+SOURCES_LIST=""
+for src in "${SOURCES[@]}"; do
+  SOURCES_LIST="$SOURCES_LIST --source-path $src"
+done
+
+# Run docc command
+echo "Running docc command..."
+$DOCC_TOOL build $SOURCES_LIST --output-path "$OUTPUT" --target-name "$MODULE_NAME"
+
+# Output success message
+echo "Successfully generated DocC documentation for $MODULE_NAME"
+echo "Documentation archive: $OUTPUT"
 
 exit 0

@@ -11,12 +11,9 @@ def _docc_documentation_impl(ctx):
     is_local_build = build_env.is_local
     
     # Check for build_environment flag to override is_local determination
-    build_env_flag = ctx.var.get("define", "").split(" ")
-    for flag in build_env_flag:
-        if flag.startswith("build_environment="):
-            env_value = flag.split("=")[1]
-            is_local_build = (env_value != "nonlocal")
-            break
+    build_env_flag = ctx.var.get("define", "")
+    if "build_environment=nonlocal" in build_env_flag:
+        is_local_build = False
     
     print("DEBUG: Is local build: %s" % is_local_build)
     
