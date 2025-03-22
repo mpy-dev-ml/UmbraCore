@@ -1,0 +1,51 @@
+name: DocC Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - **.swift
+      - docc_config.yml
+      - .github/workflows/docc-build.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - **.swift
+      - docc_config.yml
+      - .github/workflows/docc-build.yml
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: [self-hosted, macos]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Setup Bazelisk
+        run: |
+          brew install bazelisk || true
+          bazelisk --version
+          
+      - name: Install yq
+        run: |
+          brew install yq || true
+          yq --version
+          
+      - name: Build DocC Documentation
+        run: |
+          echo "Building DocC documentation for all targets..."
+          # Use the docc_manager.sh script to build documentation
+          ./docc_manager.sh build
+          
+      - name: Upload Documentation Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: docc-documentation
+          path: docs/.docc-build
+          retention-days: 7
