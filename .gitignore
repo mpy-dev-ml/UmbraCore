@@ -148,6 +148,7 @@ UmbraCore_archive/
 !docc_manager.sh
 !build_docc.sh
 !discover_docc_targets.sh
+!tools/swift/docc_gen.sh
 # Exclude txt files except specific ones
 *.txt
 !test_targets.txt
