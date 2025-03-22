@@ -40,10 +40,10 @@ jobs:
           brew install bazelisk
           bazelisk --version
       
-      - name: Install Swift
-        uses: swift-actions/setup-swift@v4
-        with:
-          swift-version: '5.7'
+      - name: Set up Swift
+        run: |
+          brew install swift
+          swift --version
       
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v4
