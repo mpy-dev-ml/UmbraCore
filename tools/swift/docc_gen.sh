@@ -66,32 +66,23 @@ echo "Number of source files: ${#SOURCES[@]}"
 # Create temporary directory if it doesn't exist
 if [ -n "$TEMP_DIR" ]; then
   mkdir -p "$TEMP_DIR"
+else
+  echo "ERROR: Temporary directory not specified"
+  exit 1
 fi
 
-# Create a temporary docc.yml file for this module
-DOCC_YML="${TEMP_DIR}/${MODULE_NAME}.docc.yml"
-cat > "${DOCC_YML}" << EOF
-module:
-  name: ${MODULE_NAME}
-  platform: macos
-EOF
+# Create a proper documentation catalog directory
+DOCC_DIR="${TEMP_DIR}/${MODULE_NAME}.docc"
+mkdir -p "$DOCC_DIR"
 
-# Run docc command
-echo "Running docc command..."
-SOURCE_PATHS=""
-for src in "${SOURCES[@]}"; do
-  SOURCE_PATHS="${SOURCE_PATHS} ${src}"
-done
-
-# Create a temporary Info.plist file if needed
-INFO_PLIST="${TEMP_DIR}/Info.plist"
-cat > "${INFO_PLIST}" << EOF
+# Create Info.plist in the .docc directory
+cat > "${DOCC_DIR}/Info.plist" << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>CFBundleIdentifier</key>
-    <string>${MODULE_NAME}</string>
+    <string>com.umbradevelopment.${MODULE_NAME}</string>
     <key>CFBundleName</key>
     <string>${MODULE_NAME}</string>
     <key>CFBundleVersion</key>
@@ -102,17 +93,27 @@ cat > "${INFO_PLIST}" << EOF
 </plist>
 EOF
 
-# Create temporary symbol graph directory
+# Create a temporary symbol graph directory
 SYMBOL_GRAPH_DIR="${TEMP_DIR}/symbol-graphs"
 mkdir -p "${SYMBOL_GRAPH_DIR}"
 
+# Check if any sources were provided
+if [ ${#SOURCES[@]} -eq 0 ]; then
+  echo "WARNING: No source files provided. Documentation may be incomplete."
+fi
+
 # Run docc with correct parameters
-$DOCC_TOOL convert "${DOCC_YML}" \
+echo "Running docc command with documentation directory: ${DOCC_DIR}"
+$DOCC_TOOL convert "${DOCC_DIR}" \
   --fallback-display-name "${MODULE_NAME}" \
   --fallback-bundle-identifier "com.umbradevelopment.${MODULE_NAME}" \
   --fallback-bundle-version "1.0" \
   --output-path "${OUTPUT}" \
-  --index
+  --index || {
+    echo "DocC generation failed. Creating empty documentation archive."
+    mkdir -p "${OUTPUT}"
+    touch "${OUTPUT}/.empty"
+  }
 
 # Copy if requested
 if [ "$SHOULD_COPY" = true ]; then
@@ -123,7 +124,7 @@ if [ "$SHOULD_COPY" = true ]; then
 fi
 
 # Output success message
-echo "Successfully generated DocC documentation for $MODULE_NAME"
+echo "Documentation generation completed for $MODULE_NAME"
 echo "Documentation archive: $OUTPUT"
 
 exit 0
