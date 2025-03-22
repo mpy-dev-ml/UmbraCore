@@ -27,22 +27,22 @@ env:
 jobs:
   build-documentation:
     name: Build DocC Documentation
-    runs-on: macos-latest
+    runs-on: [self-hosted, macos]
     
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch all history for proper versioning
+          submodules: recursive
       
-      - name: Install Bazelisk
+      - name: Prepare Build Environment
         run: |
-          brew install bazelisk
+          brew install bazelisk || true
           bazelisk --version
-      
-      - name: Set up Swift
-        run: |
-          brew install swift
+          brew install yq || true
+          yq --version
+          brew install swift || true
           swift --version
       
       - name: Set up Xcode
