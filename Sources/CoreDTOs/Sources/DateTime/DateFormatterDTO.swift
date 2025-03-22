@@ -32,7 +32,7 @@ import Foundation
 /// ```
 public struct DateFormatterDTO: Sendable, Equatable, Hashable {
     // MARK: - Types
-    
+
     /// Date format style.
     ///
     /// Defines how the date portion should be formatted, with options ranging
@@ -57,7 +57,7 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
         /// Allows for complete customisation of the date format.
         case custom(String)
     }
-    
+
     /// Time format style.
     ///
     /// Defines how the time portion should be formatted, with options ranging
@@ -82,23 +82,23 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
         /// Allows for complete customisation of the time format.
         case custom(String)
     }
-    
+
     // MARK: - Properties
-    
+
     /// Date format style.
     public let dateStyle: FormatStyle
-    
+
     /// Time format style.
     public let timeStyle: TimeStyle
-    
+
     /// Locale identifier (e.g., "en_US", "fr_FR").
     ///
     /// The locale affects how dates and times are formatted according to
     /// regional preferences and conventions.
     public let localeIdentifier: String?
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize with format styles.
     ///
     /// - Parameters:
@@ -117,9 +117,9 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
         self.timeStyle = timeStyle
         self.localeIdentifier = localeIdentifier
     }
-    
+
     // MARK: - Formatting Methods
-    
+
     /// Format a DateTimeDTO as a string.
     ///
     /// - Parameter date: Date to format
@@ -131,18 +131,18 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
         // Convert to Foundation Date for formatting
         let timestamp = date.timestamp
         let foundationDate = Date(timeIntervalSince1970: timestamp)
-        
+
         // Create DateFormatter
         let formatter = DateFormatter()
-        
+
         // Set locale if provided
         if let localeIdentifier = localeIdentifier {
             formatter.locale = Locale(identifier: localeIdentifier)
         }
-        
+
         // Set time zone
         formatter.timeZone = TimeZone(secondsFromGMT: date.timeZoneOffset.totalMinutes * 60)
-        
+
         // Configure date style
         switch dateStyle {
         case .none:
@@ -159,7 +159,7 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
             // Custom format for date part
             formatter.dateFormat = format
         }
-        
+
         // Configure time style if using predefined styles
         if case .custom = dateStyle {
             // Already handled in date format
@@ -182,12 +182,12 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
                 formatter.dateFormat = "\(dateFormat) \(format)"
             }
         }
-        
+
         return formatter.string(from: foundationDate)
     }
-    
+
     // MARK: - Static Factory Methods
-    
+
     /// Create a date-only formatter.
     ///
     /// - Parameters:
@@ -205,7 +205,7 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
             localeIdentifier: localeIdentifier
         )
     }
-    
+
     /// Create a time-only formatter.
     ///
     /// - Parameters:
@@ -223,7 +223,7 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
             localeIdentifier: localeIdentifier
         )
     }
-    
+
     /// Create a formatter with ISO 8601 format.
     ///
     /// Returns a formatter configured for ISO 8601 format.
@@ -233,7 +233,7 @@ public struct DateFormatterDTO: Sendable, Equatable, Hashable {
             timeStyle: .none
         )
     }
-    
+
     /// Create a formatter with a custom format string.
     ///
     /// - Parameters:

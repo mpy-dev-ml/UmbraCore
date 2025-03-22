@@ -5,32 +5,32 @@ import os.log
 /// Foundation-independent adapter for notification operations
 public class NotificationServiceDTOAdapter: NotificationServiceDTOProtocol {
     // MARK: - Private Properties
-    
+
     private let notificationCenter: NotificationCenter
     private var observers: [NotificationObserverID: NSObjectProtocol] = [:]
     private let observerQueue = DispatchQueue(label: "com.umbra.notificationAdapter.observerQueue", attributes: .concurrent)
     private let logger = Logger(subsystem: "com.umbra.notificationService", category: "NotificationServiceDTOAdapter")
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize with a specific NotificationCenter
     /// - Parameter notificationCenter: The NotificationCenter to use
     public init(notificationCenter: NotificationCenter = .default) {
         self.notificationCenter = notificationCenter
     }
-    
+
     // MARK: - NotificationServiceDTOProtocol Implementation
-    
+
     /// Post a notification
     /// - Parameter notification: The notification to post
     public func post(notification: NotificationDTO) {
         // Convert to Foundation notification
         let foundationNotification = notification.toNotification()
-        
+
         // Post to notification center
         notificationCenter.post(foundationNotification)
     }
-    
+
     /// Post a notification with a name
     /// - Parameters:
     ///   - name: The name of the notification
@@ -43,11 +43,11 @@ public class NotificationServiceDTOAdapter: NotificationServiceDTOProtocol {
             sender: sender,
             userInfo: userInfo ?? [:]
         )
-        
+
         // Post notification
         post(notification: notification)
     }
-    
+
     /// Add an observer for a specific notification
     /// - Parameters:
     ///   - name: The name of the notification to observe
@@ -61,7 +61,7 @@ public class NotificationServiceDTOAdapter: NotificationServiceDTOProtocol {
     ) -> NotificationObserverID {
         // Create notification name
         let notificationName = Notification.Name(name)
-        
+
         // Add observer
         let observer = notificationCenter.addObserver(
             forName: notificationName,
@@ -69,26 +69,26 @@ public class NotificationServiceDTOAdapter: NotificationServiceDTOProtocol {
             queue: .main
         ) { [weak self] notification in
             guard let self = self else { return }
-            
+
             // Convert to DTO
             let notificationDTO = NotificationDTO.from(notification: notification)
-            
+
             // Call handler
             handler(notificationDTO)
         }
-        
+
         // Generate unique ID
         let observerID = UUID().uuidString
-        
+
         // Store observer
         observerQueue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
             self.observers[observerID] = observer
         }
-        
+
         return observerID
     }
-    
+
     /// Add an observer for multiple notifications
     /// - Parameters:
     ///   - names: Array of notification names to observe
@@ -103,7 +103,7 @@ public class NotificationServiceDTOAdapter: NotificationServiceDTOProtocol {
         // Generate a group ID
         let groupObserverID = "group_\(UUID().uuidString)"
         var individualObserverIDs: [NotificationObserverID] = []
-        
+
         // Add observer for each name
         for name in names {
             let observer = notificationCenter.addObserver(
@@ -112,41 +112,41 @@ public class NotificationServiceDTOAdapter: NotificationServiceDTOProtocol {
                 queue: .main
             ) { [weak self] notification in
                 guard let self = self else { return }
-                
+
                 // Convert to DTO
                 let notificationDTO = NotificationDTO.from(notification: notification)
-                
+
                 // Call handler
                 handler(notificationDTO)
             }
-            
+
             // Generate unique ID for this individual observer
             let observerID = "\(groupObserverID)_\(name)_\(UUID().uuidString)"
             individualObserverIDs.append(observerID)
-            
+
             // Store observer
             observerQueue.async(flags: .barrier) { [weak self] in
                 guard let self = self else { return }
                 self.observers[observerID] = observer
             }
         }
-        
+
         // Store the mapping from group ID to individual IDs
         observerQueue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
             let groupInfo = GroupObserverInfo(individualObserverIDs: individualObserverIDs)
             self.observers[groupObserverID] = groupInfo
         }
-        
+
         return groupObserverID
     }
-    
+
     /// Remove an observer
     /// - Parameter observerID: The ID of the observer to remove
     public func removeObserver(withID observerID: NotificationObserverID) {
         observerQueue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
-            
+
             if let observer = self.observers[observerID] {
                 // Handle different types of observers
                 if let notificationObserver = observer as? NSObjectProtocol {
@@ -166,26 +166,26 @@ public class NotificationServiceDTOAdapter: NotificationServiceDTOProtocol {
             }
         }
     }
-    
+
     /// Remove all observers
     public func removeAllObservers() {
         observerQueue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
-            
+
             // Remove all individual observers
             for (_, observer) in self.observers {
                 if let notificationObserver = observer as? NSObjectProtocol {
                     self.notificationCenter.removeObserver(notificationObserver)
                 }
             }
-            
+
             // Clear the dictionary
             self.observers.removeAll()
         }
     }
-    
+
     // MARK: - Deinitializer
-    
+
     deinit {
         removeAllObservers()
     }
@@ -194,7 +194,7 @@ public class NotificationServiceDTOAdapter: NotificationServiceDTOProtocol {
 /// Helper class to store information about a group of observers
 private class GroupObserverInfo: NSObject {
     let individualObserverIDs: [NotificationObserverID]
-    
+
     init(individualObserverIDs: [NotificationObserverID]) {
         self.individualObserverIDs = individualObserverIDs
         super.init()

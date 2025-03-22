@@ -83,13 +83,13 @@ final class OperationResultDTOTests: XCTestCase {
 
         // Act
         let mapped = result.mapError { code, message in
-            (code + 1000, "Error: \(message)")
+            (code + 1_000, "Error: \(message)")
         }
 
         // Assert
         XCTAssertEqual(mapped.status, .failure)
         XCTAssertNil(mapped.value)
-        XCTAssertEqual(mapped.errorCode, 1404)
+        XCTAssertEqual(mapped.errorCode, 1_404)
         XCTAssertEqual(mapped.errorMessage, "Error: Not Found")
     }
 

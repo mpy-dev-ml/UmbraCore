@@ -37,31 +37,31 @@ import Foundation
 // FIXME: In a future update, refactor this type to be properly Sendable-compliant
 public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
     // MARK: - Properties
-    
+
     /// Name of the notification.
     ///
     /// A string identifier that uniquely identifies the purpose or type of this notification.
     public let name: String
-    
+
     /// Object that posted the notification.
     ///
     /// An optional reference to the sender of the notification, which can be used
     /// for filtering notifications by source.
     public let sender: String?
-    
+
     /// User info dictionary.
     ///
     /// A dictionary containing additional data associated with the notification.
     /// Keys are strings and values are strings to maintain Sendable compliance.
     public let userInfo: [String: String]
-    
+
     /// Timestamp when the notification was posted (seconds since 1970).
     ///
     /// Records when the notification was created, using the standard Unix timestamp format.
     public let timestamp: Double
-    
+
     // MARK: - Initialization
-    
+
     /// Initialize a notification with specified values.
     ///
     /// - Parameters:
@@ -83,9 +83,9 @@ public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
         self.userInfo = userInfo
         self.timestamp = timestamp
     }
-    
+
     // MARK: - Accessing User Info
-    
+
     /// Get a value from user info as a string.
     ///
     /// - Parameter key: Key to look up
@@ -93,7 +93,7 @@ public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
     public func stringValue(for key: String) -> String? {
         return userInfo[key]
     }
-    
+
     /// Get an integer value from user info.
     ///
     /// - Parameter key: Key to look up
@@ -102,7 +102,7 @@ public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
         guard let stringValue = userInfo[key] else { return nil }
         return Int(stringValue)
     }
-    
+
     /// Get a double value from user info.
     ///
     /// - Parameter key: Key to look up
@@ -111,7 +111,7 @@ public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
         guard let stringValue = userInfo[key] else { return nil }
         return Double(stringValue)
     }
-    
+
     /// Get a boolean value from user info.
     ///
     /// - Parameter key: Key to look up
@@ -120,7 +120,7 @@ public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
         guard let stringValue = userInfo[key] else { return nil }
         return stringValue.lowercased() == "true"
     }
-    
+
     /// Get a date value from user info by timestamp.
     ///
     /// - Parameter key: Key to look up
@@ -129,7 +129,7 @@ public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
         guard let doubleValue = doubleValue(for: key) else { return nil }
         return Date(timeIntervalSince1970: doubleValue)
     }
-    
+
     /// Get a data value from user info.
     ///
     /// - Parameter key: Key to look up
@@ -141,9 +141,9 @@ public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
         guard let data = Data(base64Encoded: base64String) else { return nil }
         return [UInt8](data)
     }
-    
+
     // MARK: - Creating Modified Notifications
-    
+
     /// Create a copy with additional user info.
     ///
     /// - Parameter additionalInfo: Additional user info to add
@@ -157,7 +157,7 @@ public struct NotificationDTO: @unchecked Sendable, Equatable, Hashable {
         for (key, value) in additionalInfo {
             newUserInfo[key] = value
         }
-        
+
         return NotificationDTO(
             name: name,
             sender: sender,

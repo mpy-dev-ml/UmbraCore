@@ -11,7 +11,7 @@ import XCTest
 final class TestErrorHandling_Security: XCTestCase {
     /// Whether security operations are disabled
     private var isSecurityDisabled = true
-    
+
     /// Set up test environment before each test
     override func setUp() async throws {
         try await super.setUp()
@@ -25,7 +25,7 @@ final class TestErrorHandling_Security: XCTestCase {
         TestModeEnvironment.shared.disableTestMode()
         try await super.tearDown()
     }
-    
+
     // MARK: - Security Protocol Errors Tests
 
     func testSecurityProtocolErrors() {
@@ -106,7 +106,7 @@ final class TestErrorHandling_Security: XCTestCase {
         guard !isSecurityDisabled else {
             throw XCTSkip("Skipping test due to security system limitations in test environment")
         }
-        
+
         // Create context with metadata - explicitly use ErrorHandlingCommon.ErrorContext
         let context = ErrorHandlingCommon.ErrorContext(
             source: "SecurityService",
@@ -117,8 +117,8 @@ final class TestErrorHandling_Security: XCTestCase {
         // Since the ErrorContext doesn't have metadata methods in this version,
         // we'll create a dictionary to simulate what metadata would contain
         let metadata: [String: Any] = [
-            "dataSize": 1024,
-            "algorithm": "AES-256",
+            "dataSize": 1_024,
+            "algorithm": "AES-256"
         ]
 
         // Verify context properties
@@ -126,7 +126,7 @@ final class TestErrorHandling_Security: XCTestCase {
         XCTAssertEqual(context.operation, "encryptData")
 
         // Verify the metadata dictionary values directly
-        XCTAssertEqual(metadata["dataSize"] as? Int, 1024)
+        XCTAssertEqual(metadata["dataSize"] as? Int, 1_024)
         XCTAssertEqual(metadata["algorithm"] as? String, "AES-256")
 
         // Demonstrate how an error would be created with this context if needed

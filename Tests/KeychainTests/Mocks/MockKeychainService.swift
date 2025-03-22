@@ -6,28 +6,28 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
     // Use an actor to make the storage Sendable-compliant
     private actor StorageActor {
         var storage: [String: Data] = [:]
-        
+
         func getValue(for key: String) -> Data? {
             storage[key]
         }
-        
+
         func setValue(_ value: Data, for key: String) {
             storage[key] = value
         }
-        
+
         func removeValue(for key: String) {
             storage.removeValue(forKey: key)
         }
-        
+
         func removeAll() {
             storage.removeAll()
         }
-        
+
         func hasValue(for key: String) -> Bool {
             storage[key] != nil
         }
     }
-    
+
     private let storageActor = StorageActor()
     private let queue = DispatchQueue(label: "com.umbracore.mock-keychain", attributes: .concurrent)
 
@@ -70,7 +70,7 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
             reply(nil)
         }
     }
-    
+
     // Add the missing method from the protocol
     func getItem(
         account: String,
@@ -88,7 +88,7 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
             }
         }
     }
-    
+
     // Add the missing method from the protocol
     func deleteItem(
         account: String,
@@ -145,7 +145,7 @@ final class MockKeychainService: NSObject, KeychainXPCProtocol {
             reply(nil)
         }
     }
-    
+
     // Required by protocol
     func synchroniseKeys(_ data: Data) async throws {
         // No-op implementation for mock

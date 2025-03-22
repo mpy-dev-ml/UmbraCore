@@ -65,7 +65,7 @@ public struct BackupConfigDTO: Sendable, Equatable {
                 "**/Thumbs.db",
                 "**/*.tmp",
                 "**/~*",
-                "**/*.swp",
+                "**/*.swp"
             ],
             tagList: tagList,
             compressionLevel: 6,

@@ -89,7 +89,7 @@ public extension XPCServiceProtocolDTO {
         // Default implementation just returns a failure
         OperationResultDTO(
             status: .failure,
-            errorCode: 1000,
+            errorCode: 1_000,
             errorMessage: "Random bytes generation not implemented",
             details: ["requestedLength": "\(length)"]
         )

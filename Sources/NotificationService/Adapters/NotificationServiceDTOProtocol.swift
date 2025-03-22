@@ -12,14 +12,14 @@ public protocol NotificationServiceDTOProtocol: Sendable {
     /// Post a notification
     /// - Parameter notification: The notification to post
     func post(notification: NotificationDTO)
-    
+
     /// Post a notification with a name
     /// - Parameters:
     ///   - name: The name of the notification
     ///   - sender: The sender of the notification (optional)
     ///   - userInfo: User info dictionary (optional)
     func post(name: String, sender: AnyHashable?, userInfo: [String: AnyHashable]?)
-    
+
     /// Add an observer for a specific notification
     /// - Parameters:
     ///   - name: The name of the notification to observe
@@ -31,7 +31,7 @@ public protocol NotificationServiceDTOProtocol: Sendable {
         sender: AnyHashable?,
         handler: @escaping NotificationHandler
     ) -> NotificationObserverID
-    
+
     /// Add an observer for multiple notifications
     /// - Parameters:
     ///   - names: Array of notification names to observe
@@ -43,11 +43,11 @@ public protocol NotificationServiceDTOProtocol: Sendable {
         sender: AnyHashable?,
         handler: @escaping NotificationHandler
     ) -> NotificationObserverID
-    
+
     /// Remove an observer
     /// - Parameter observerID: The ID of the observer to remove
     func removeObserver(withID observerID: NotificationObserverID)
-    
+
     /// Remove all observers
     func removeAllObservers()
 }

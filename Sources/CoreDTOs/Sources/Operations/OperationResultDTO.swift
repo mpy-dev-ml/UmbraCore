@@ -253,7 +253,7 @@ public struct OperationResultDTO<T>: Sendable, Equatable where T: Sendable, T: E
 public struct VoidEquatable: Sendable, Equatable {
     /// Creates a new VoidEquatable
     public init() {}
-    
+
     /// Equality check for VoidEquatable
     public static func == (lhs: VoidEquatable, rhs: VoidEquatable) -> Bool {
         return true

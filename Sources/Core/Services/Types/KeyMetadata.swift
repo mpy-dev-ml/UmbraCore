@@ -315,8 +315,7 @@ public extension KeyManagementTypes.KeyStatus {
     /// - Parameter rawRepresentation: Raw representation from KeyManagementTypes
     /// - Returns: Canonical KeyStatus
     static func from(rawRepresentation: KeyManagementTypes.KeyStatus) -> KeyManagementTypes
-        .KeyStatus
-    {
+        .KeyStatus {
         rawRepresentation
     }
 }

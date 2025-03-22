@@ -69,7 +69,7 @@ final class TestModeEnvironment {
 
     /// Whether test mode is enabled
     private(set) var testModeEnabled = false
-    
+
     /// Whether security operations are disabled
     private(set) var securityOperationsDisabled = false
 
@@ -108,14 +108,14 @@ final class TestModeEnvironment {
         UserDefaults.standard.removeObject(forKey: "UMBRA_SECURITY_TEST_MODE")
         testModeEnabled = false
     }
-    
+
     /// Disable security operations during tests to avoid encryption errors
     func disableSecurityOperations() {
         setenv("UMBRA_DISABLE_SECURITY", "1", 1)
         UserDefaults.standard.set(true, forKey: "UMBRA_DISABLE_SECURITY")
         securityOperationsDisabled = true
     }
-    
+
     /// Re-enable security operations after tests
     func enableSecurityOperations() {
         unsetenv("UMBRA_DISABLE_SECURITY")

@@ -123,8 +123,7 @@ public extension KeyStatus {
         // Handle tuple representation for pendingDeletion
         if
             let tuple = coreServicesNoFoundation as? (String, Int64),
-            tuple.0 == "pendingDeletion"
-        {
+            tuple.0 == "pendingDeletion" {
             return .pendingDeletionWithTimestamp(tuple.1)
         }
 

@@ -319,7 +319,7 @@ public class ModernXPCService: XPCServiceProtocolComplete, @unchecked Sendable {
                 "uptime": "1h 23m",
                 "connections": "5",
                 "pendingOperations": "0",
-                "isActive": String(describing: isActive),
+                "isActive": String(describing: isActive)
             ]
         )
         return .success(status)

@@ -8,7 +8,7 @@ public enum FileSystemServiceDTOFactory {
     public static func createDefault() -> FileSystemServiceDTOAdapter {
         return FileSystemServiceDTOAdapter()
     }
-    
+
     /// Create a FileSystemServiceDTOAdapter with a specific FileManager
     /// - Parameter fileManager: FileManager to use
     /// - Returns: A configured FileSystemServiceDTOAdapter

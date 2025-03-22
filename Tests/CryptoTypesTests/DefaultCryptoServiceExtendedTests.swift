@@ -15,26 +15,15 @@ final class DefaultCryptoServiceExtendedTests: XCTestCase {
     // private var cryptoService: DefaultCryptoServiceImpl!
     // Salt for key derivation to make tests deterministic
     private let testSalt = "umbrasalt".data(using: .utf8)!
-    private let keyIterations = 10000
+    private let keyIterations = 10_000
 
-    override func setUp() {
-        super.setUp()
-        // Temporarily disabled due to macOS 15.4 deployment target requirement
-        // cryptoService = DefaultCryptoServiceImpl()
-    }
-
-    override func tearDown() {
-        super.tearDown()
-        // cryptoService = nil
-    }
-    
     // MARK: - Tests
-    
+
     func testTemporarilyDisabled() {
         // This test is a placeholder until the deployment target issues are resolved
         XCTAssertTrue(true, "This test is temporarily disabled due to deployment target incompatibility")
     }
-    
+
     // Temporarily disabled due to macOS 15.4 deployment target requirement
     /*
     func testEncryptDecryptRoundTrip() async throws {

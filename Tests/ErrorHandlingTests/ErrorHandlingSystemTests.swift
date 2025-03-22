@@ -52,7 +52,7 @@ final class ErrorHandlingSystemTests: XCTestCase {
         var shouldProvideOptions = true
         var optionsToReturn: [ErrorHandlingProtocols.RecoveryOption] = [
             RecoveryOption.retry,
-            RecoveryOption.cancel,
+            RecoveryOption.cancel
         ]
 
         func recoveryOptions(for _: Error) async -> [ErrorHandlingProtocols.RecoveryOption] {

@@ -23,7 +23,7 @@ public struct ProgressNotificationDTO: Sendable, Equatable {
                 .info: 0,
                 .success: 1,
                 .warning: 2,
-                .error: 3,
+                .error: 3
             ]
 
             return order[lhs, default: 0] < order[rhs, default: 0]

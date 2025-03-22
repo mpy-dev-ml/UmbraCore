@@ -63,7 +63,7 @@ struct TestServiceError: ServiceErrorProtocol {
             "type": String(describing: type(of: self)),
             "error_type": errorType.rawValue,
             "description": message,
-            "context": contextInfo,
+            "context": contextInfo
         ]
     }
 }

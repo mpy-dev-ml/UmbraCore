@@ -104,8 +104,7 @@ final class KeyStore {
     /// - Parameter identifier: The identifier for the key
     /// - Returns: The key if found, or an error if the key doesn't exist
     func retrieveKey(withIdentifier identifier: String)
-        -> Result<SecureBytes, UmbraErrors.Security.Protocols>
-    {
+        -> Result<SecureBytes, UmbraErrors.Security.Protocols> {
         var result: Result<SecureBytes, UmbraErrors.Security.Protocols> = .failure(
             .keyNotFound(identifier: identifier, innerError: nil)
         )
@@ -124,8 +123,7 @@ final class KeyStore {
     /// - Parameter identifier: The identifier for the key
     /// - Returns: Success if the key was deleted, failure otherwise
     func deleteKey(withIdentifier identifier: String)
-        -> Result<Void, UmbraErrors.Security.Protocols>
-    {
+        -> Result<Void, UmbraErrors.Security.Protocols> {
         var result: Result<Void, UmbraErrors.Security.Protocols> = .failure(
             .keyNotFound(identifier: identifier, innerError: nil)
         )

@@ -97,7 +97,7 @@ final class TestErrorHandling_Common: XCTestCase {
                 NSLocalizedFailureReasonErrorKey: expectedFailureReason,
                 NSLocalizedRecoverySuggestionErrorKey: expectedRecoverySuggestion,
                 NSHelpAnchorErrorKey: expectedHelpAnchor,
-                NSUnderlyingErrorKey: NSError(domain: "UnderlyingDomain", code: 789, userInfo: nil),
+                NSUnderlyingErrorKey: NSError(domain: "UnderlyingDomain", code: 789, userInfo: nil)
             ]
         )
 

@@ -197,7 +197,7 @@ final class ErrorLoggingProtocolTests: XCTestCase {
         let options = [
             ErrorHandlingRecovery.RecoveryAction(id: "retry_network", title: "Retry Network", description: "Retry network connection", handler: {}),
             ErrorHandlingRecovery.RecoveryAction(id: "check_disk", title: "Check Disk", description: "Verify disk space", handler: {}),
-            ErrorHandlingRecovery.RecoveryAction(id: "request_permission", title: "Request Permission", description: "Ask for permission", handler: {}),
+            ErrorHandlingRecovery.RecoveryAction(id: "request_permission", title: "Request Permission", description: "Ask for permission", handler: {})
         ]
 
         // When - Register all options

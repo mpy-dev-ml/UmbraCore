@@ -16,10 +16,10 @@ public extension NotificationDTO {
                 }
             }
         }
-        
+
         // Convert sender to string representation
         let senderString: String? = notification.object != nil ? String(describing: notification.object!) : nil
-        
+
         return NotificationDTO(
             name: notification.name.rawValue,
             sender: senderString,
@@ -27,7 +27,7 @@ public extension NotificationDTO {
             timestamp: Date().timeIntervalSince1970
         )
     }
-    
+
     /// Convert to a Foundation Notification
     /// - Returns: A Foundation Notification
     func toNotification() -> Notification {
@@ -39,7 +39,7 @@ public extension NotificationDTO {
             userInfo: userInfo
         )
     }
-    
+
     /// Create an error notification
     /// - Parameters:
     ///   - title: Error title
@@ -64,7 +64,7 @@ public extension NotificationDTO {
             ]
         )
     }
-    
+
     /// Create an info notification
     /// - Parameters:
     ///   - title: Information title

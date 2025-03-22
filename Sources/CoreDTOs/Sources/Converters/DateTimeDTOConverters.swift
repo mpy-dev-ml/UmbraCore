@@ -12,29 +12,29 @@ public extension DateTimeDTO {
         let offsetSeconds = timeZone.secondsFromGMT()
         let isPositive = offsetSeconds >= 0
         let absoluteSeconds = abs(offsetSeconds)
-        let hours = absoluteSeconds / 3600
-        let minutes = (absoluteSeconds % 3600) / 60
+        let hours = absoluteSeconds / 3_600
+        let minutes = (absoluteSeconds % 3_600) / 60
         let offset = TimeZoneOffset(hours: hours, minutes: minutes, isPositive: isPositive)
-        
+
         // Get date components in the specified time zone
         let calendar = Calendar(identifier: .gregorian)
         var calendarTimeZone = calendar
         calendarTimeZone.timeZone = timeZone
-        
+
         let components = calendarTimeZone.dateComponents(
             [.year, .month, .day, .hour, .minute, .second, .nanosecond],
             from: date
         )
-        
+
         // Extract components
-        let year = components.year ?? 1970
+        let year = components.year ?? 1_970
         let month = Month(rawValue: components.month ?? 1) ?? .january
         let day = components.day ?? 1
         let hour = components.hour ?? 0
         let minute = components.minute ?? 0
         let second = components.second ?? 0
         let nanosecond = components.nanosecond ?? 0
-        
+
         return DateTimeDTO(
             year: year,
             month: month,
@@ -46,7 +46,7 @@ public extension DateTimeDTO {
             timeZoneOffset: offset
         )
     }
-    
+
     /// Convert to a Foundation Date
     /// - Returns: A Foundation Date representing the same point in time
     func toDate() -> Date {
@@ -76,7 +76,7 @@ public extension DateFormatterDTO {
         @unknown default:
             dateStyle = .medium
         }
-        
+
         // Convert time style
         let timeStyle: TimeStyle
         switch formatter.timeStyle {
@@ -93,7 +93,7 @@ public extension DateFormatterDTO {
         @unknown default:
             timeStyle = .medium
         }
-        
+
         // If custom format is set, use that instead
         if !formatter.dateFormat.isEmpty {
             return DateFormatterDTO(
@@ -102,24 +102,24 @@ public extension DateFormatterDTO {
                 localeIdentifier: formatter.locale?.identifier
             )
         }
-        
+
         return DateFormatterDTO(
             dateStyle: dateStyle,
             timeStyle: timeStyle,
             localeIdentifier: formatter.locale?.identifier
         )
     }
-    
+
     /// Convert to a Foundation DateFormatter
     /// - Returns: A DateFormatter with equivalent formatting settings
     func toDateFormatter() -> DateFormatter {
         let formatter = DateFormatter()
-        
+
         // Set locale if provided
         if let localeIdentifier = localeIdentifier {
             formatter.locale = Locale(identifier: localeIdentifier)
         }
-        
+
         // Configure date style
         switch dateStyle {
         case .none:
@@ -136,7 +136,7 @@ public extension DateFormatterDTO {
             formatter.dateFormat = format
             return formatter // Return early for custom format
         }
-        
+
         // Configure time style
         switch timeStyle {
         case .none:
@@ -155,7 +155,7 @@ public extension DateFormatterDTO {
             let dateFormat = formatter.dateFormat ?? ""
             formatter.dateFormat = "\(dateFormat) \(format)"
         }
-        
+
         return formatter
     }
 }

@@ -29,7 +29,7 @@ public extension CryptoTypesTypes.CryptoConfig {
     /// Higher values increase security but also increase processing time.
     @available(*, deprecated, message: "Will be removed in a future version")
     var iterations: Int {
-        10000
+        10_000
     }
 
     /// Creates a legacy crypto configuration.
@@ -42,7 +42,7 @@ public extension CryptoTypesTypes.CryptoConfig {
     static func legacyInit(
         keySize: Int = 256,
         ivSize: Int = 96,
-        iterations _: Int = 10000
+        iterations _: Int = 10_000
     ) -> CryptoTypesTypes.CryptoConfig {
         CryptoTypesTypes.CryptoConfig(keyLength: keySize, ivLength: ivSize / 8)
     }

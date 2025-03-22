@@ -333,7 +333,7 @@ public final actor CredentialManager: CredentialManaging {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
-            kSecValueData as String: credential,
+            kSecValueData as String: credential
         ]
 
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -352,7 +352,7 @@ public final actor CredentialManager: CredentialManaging {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
-            kSecReturnData as String: true,
+            kSecReturnData as String: true
         ]
 
         var result: AnyObject?
@@ -377,7 +377,7 @@ public final actor CredentialManager: CredentialManaging {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: account
         ]
 
         let status = SecItemDelete(query as CFDictionary)

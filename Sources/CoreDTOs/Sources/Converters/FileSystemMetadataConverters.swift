@@ -15,29 +15,29 @@ public extension FileSystemMetadataDTO {
     ) -> FileSystemMetadataDTO {
         // Get file size
         let fileSize = (attributes[FileAttributeKey.size] as? NSNumber)?.uint64Value ?? 0
-        
+
         // Get dates
         let creationDate = (attributes[FileAttributeKey.creationDate] as? Date)?.timeIntervalSince1970 ?? 0
         let modificationDate = (attributes[FileAttributeKey.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
-        
+
         // macOS supports access date
         var accessDate: UInt64?
         if let date = attributes[FileAttributeKey(rawValue: "NSFileAccessDate")] as? Date {
             accessDate = UInt64(date.timeIntervalSince1970)
         }
-        
+
         // Get owner and group IDs
         let ownerID = (attributes[FileAttributeKey.ownerAccountID] as? NSNumber)?.uint32Value
         let groupID = (attributes[FileAttributeKey.groupOwnerAccountID] as? NSNumber)?.uint32Value
-        
+
         // Get permissions 
         let permissions = (attributes[FileAttributeKey.posixPermissions] as? NSNumber)?.uint16Value
-        
+
         // Determine if hidden (starts with dot on Unix systems)
         let filename = URL(fileURLWithPath: path).lastPathComponent
         // Use filename-based check only, as isHidden is not a standard FileAttributeKey
         let isHidden = filename.hasPrefix(".")
-        
+
         // Get type from attributes if not provided
         let type: FilePathDTO.ResourceType
         if let providedType = resourceType {
@@ -54,22 +54,22 @@ public extension FileSystemMetadataDTO {
         } else {
             type = .file
         }
-        
+
         // Get extension from path
         let fileExtension = URL(fileURLWithPath: path).pathExtension.isEmpty ? nil : URL(fileURLWithPath: path).pathExtension
-        
+
         // Check permissions
         let fileManager = FileManager.default
         let isReadable = fileManager.isReadableFile(atPath: path)
         let isWritable = fileManager.isWritableFile(atPath: path)
         let isExecutable = fileManager.isExecutableFile(atPath: path)
-        
+
         // Determine MIME type
         let mimeType = getMimeType(for: path)
-        
+
         // Additional attributes
         var additionalAttributes = [String: String]()
-        
+
         // Add creator and type codes if available (macOS)
         if let creator = attributes[FileAttributeKey.hfsCreatorCode] as? NSNumber {
             additionalAttributes["hfsCreatorCode"] = String(format: "%08X", creator.uint32Value)
@@ -77,7 +77,7 @@ public extension FileSystemMetadataDTO {
         if let type = attributes[FileAttributeKey.hfsTypeCode] as? NSNumber {
             additionalAttributes["hfsTypeCode"] = String(format: "%08X", type.uint32Value)
         }
-        
+
         return FileSystemMetadataDTO(
             fileSize: fileSize,
             creationDate: UInt64(creationDate),
@@ -96,12 +96,12 @@ public extension FileSystemMetadataDTO {
             attributes: additionalAttributes
         )
     }
-    
+
     /// Attempt to determine MIME type based on file extension
     private static func getMimeType(for path: String) -> String? {
         let url = URL(fileURLWithPath: path)
         let ext = url.pathExtension.lowercased()
-        
+
         let mimeTypes = [
             "html": "text/html",
             "htm": "text/html",
@@ -143,15 +143,15 @@ public extension FileSystemMetadataDTO {
             "rb": "text/x-ruby",
             "sh": "application/x-sh"
         ]
-        
+
         return mimeTypes[ext]
     }
-    
+
     /// Convert to FileManager attributes dictionary
     /// - Returns: Dictionary of file attributes suitable for FileManager
     func toFileAttributes() -> [FileAttributeKey: Any] {
         var attributes = [FileAttributeKey: Any]()
-        
+
         // Set dates
         if creationDate > 0 {
             attributes[FileAttributeKey.creationDate] = Date(timeIntervalSince1970: TimeInterval(creationDate))
@@ -159,12 +159,12 @@ public extension FileSystemMetadataDTO {
         if modificationDate > 0 {
             attributes[FileAttributeKey.modificationDate] = Date(timeIntervalSince1970: TimeInterval(modificationDate))
         }
-        
+
         // Set permissions if available
         if let permissions = permissions {
             attributes[FileAttributeKey.posixPermissions] = NSNumber(value: permissions)
         }
-        
+
         // Set owner/group if available
         if let ownerID = ownerID {
             attributes[FileAttributeKey.ownerAccountID] = NSNumber(value: ownerID)
@@ -172,18 +172,18 @@ public extension FileSystemMetadataDTO {
         if let groupID = groupID {
             attributes[FileAttributeKey.groupOwnerAccountID] = NSNumber(value: groupID)
         }
-        
+
         // Parse HFS codes if present in additional attributes
-        if let hfsCreator = self.attributes["hfsCreatorCode"], 
+        if let hfsCreator = self.attributes["hfsCreatorCode"],
            let creatorCode = UInt32(hfsCreator, radix: 16) {
             attributes[FileAttributeKey.hfsCreatorCode] = NSNumber(value: creatorCode)
         }
-        
+
         if let hfsType = self.attributes["hfsTypeCode"],
            let typeCode = UInt32(hfsType, radix: 16) {
             attributes[FileAttributeKey.hfsTypeCode] = NSNumber(value: typeCode)
         }
-        
+
         return attributes
     }
 }

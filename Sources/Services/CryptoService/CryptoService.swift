@@ -26,7 +26,7 @@ public actor CryptoService {
     public func generateSymmetricKey(algorithm _: String, keySize _: Int) throws -> Data {
         // Placeholder implementation - will be replaced by ResticBar
         throw NSError(domain: "CryptoService", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar",
+            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar"
         ])
     }
 
@@ -38,7 +38,7 @@ public actor CryptoService {
     public func encrypt(_: Data, using _: Data) throws -> Data {
         // Placeholder implementation - will be replaced by ResticBar
         throw NSError(domain: "CryptoService", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar",
+            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar"
         ])
     }
 
@@ -50,7 +50,7 @@ public actor CryptoService {
     public func decrypt(_: Data, using _: Data) throws -> Data {
         // Placeholder implementation - will be replaced by ResticBar
         throw NSError(domain: "CryptoService", code: -1, userInfo: [
-            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar",
+            NSLocalizedDescriptionKey: "Cryptography functionality has been moved to ResticBar"
         ])
     }
 }

@@ -36,8 +36,7 @@ public extension KeyManagementTypes.StorageLocation {
     /// - Parameter rawRepresentation: The raw representation to convert from
     /// - Returns: The equivalent canonical StorageLocation
     static func from(rawRepresentation: RawRepresentation) -> KeyManagementTypes
-        .StorageLocation
-    {
+        .StorageLocation {
         switch rawRepresentation {
         case .secureEnclave: KeyManagementTypes.StorageLocation.secureEnclave
         case .keychain: KeyManagementTypes.StorageLocation.keychain

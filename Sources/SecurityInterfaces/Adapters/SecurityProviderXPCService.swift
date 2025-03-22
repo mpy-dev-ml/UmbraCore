@@ -45,7 +45,7 @@ public final class SecurityProviderXPCService: XPCServiceProtocolBasic {
             "name": "SecurityProviderXPCService",
             "version": "1.0.0",
             "status": "operational",
-            "uptime": 3600,
+            "uptime": 3_600
         ]
 
         return .success(statusDict)

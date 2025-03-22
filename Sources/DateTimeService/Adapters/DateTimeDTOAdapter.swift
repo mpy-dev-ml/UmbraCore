@@ -1,24 +1,24 @@
 import CoreDTOs
-import Foundation
-import UmbraCoreTypes
 import ErrorHandling
 import ErrorHandlingDomains
+import Foundation
+import UmbraCoreTypes
 
 /// Foundation-independent adapter for date and time operations
 public class DateTimeDTOAdapter: DateTimeDTOProtocol {
     // MARK: - Initialization
-    
+
     /// Initialize a new DateTimeDTOAdapter
     public init() {}
-    
+
     // MARK: - DateTimeDTOProtocol Implementation
-    
+
     /// Get the current date and time
     /// - Parameter timeZoneOffset: Optional time zone offset (defaults to UTC)
     /// - Returns: Current date and time
     public func now(in timeZoneOffset: DateTimeDTO.TimeZoneOffset? = nil) -> DateTimeDTO {
         let currentDate = Date()
-        
+
         if let offset = timeZoneOffset {
             // Convert to specified time zone
             let timeZone = TimeZone(secondsFromGMT: offset.totalMinutes * 60) ?? TimeZone(secondsFromGMT: 0)!
@@ -28,7 +28,7 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
             return DateTimeDTO.from(date: currentDate, timeZone: TimeZone(secondsFromGMT: 0)!)
         }
     }
-    
+
     /// Format a date using the specified formatter
     /// - Parameters:
     ///   - date: The date to format
@@ -37,7 +37,7 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
     public func format(date: DateTimeDTO, using formatter: DateFormatterDTO) -> String {
         return formatter.format(date)
     }
-    
+
     /// Parse a date string using the specified formatter
     /// - Parameters:
     ///   - string: The string to parse
@@ -45,15 +45,15 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
     /// - Returns: Parsed date or nil if parsing failed
     public func parse(string: String, using formatter: DateFormatterDTO) -> DateTimeDTO? {
         let dateFormatter = formatter.toDateFormatter()
-        
+
         if let parsedDate = dateFormatter.date(from: string) {
             let timeZone = dateFormatter.timeZone ?? TimeZone(secondsFromGMT: 0)!
             return DateTimeDTO.from(date: parsedDate, timeZone: timeZone)
         }
-        
+
         return nil
     }
-    
+
     /// Add a time interval to a date
     /// - Parameters:
     ///   - date: The base date
@@ -62,15 +62,15 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
     public func add(to date: DateTimeDTO, seconds: Double) -> DateTimeDTO {
         // Convert to Foundation Date
         let foundationDate = date.toDate()
-        
+
         // Add seconds
         let newDate = foundationDate.addingTimeInterval(seconds)
-        
+
         // Convert back to DateTimeDTO
         let timeZone = TimeZone(secondsFromGMT: date.timeZoneOffset.totalMinutes * 60) ?? TimeZone(secondsFromGMT: 0)!
         return DateTimeDTO.from(date: newDate, timeZone: timeZone)
     }
-    
+
     /// Add calendar components to a date
     /// - Parameters:
     ///   - date: The base date
@@ -92,13 +92,13 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
     ) -> DateTimeDTO {
         // Convert to Foundation Date
         let foundationDate = date.toDate()
-        
+
         // Create calendar in the correct time zone
         let calendar = Calendar(identifier: .gregorian)
         let timeZone = TimeZone(secondsFromGMT: date.timeZoneOffset.totalMinutes * 60) ?? TimeZone(secondsFromGMT: 0)!
         var calendarWithTimeZone = calendar
         calendarWithTimeZone.timeZone = timeZone
-        
+
         // Create date components to add
         var dateComponents = DateComponents()
         dateComponents.year = years
@@ -107,16 +107,16 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
         dateComponents.hour = hours
         dateComponents.minute = minutes
         dateComponents.second = seconds
-        
+
         // Add components
         if let newDate = calendarWithTimeZone.date(byAdding: dateComponents, to: foundationDate) {
             return DateTimeDTO.from(date: newDate, timeZone: timeZone)
         }
-        
+
         // Return original date if calculation fails
         return date
     }
-    
+
     /// Calculate the difference between two dates in seconds
     /// - Parameters:
     ///   - date1: First date
@@ -125,7 +125,7 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
     public func difference(between date1: DateTimeDTO, and date2: DateTimeDTO) -> Double {
         return date2.timestamp - date1.timestamp
     }
-    
+
     /// Convert a date to a different time zone
     /// - Parameters:
     ///   - date: The date to convert
@@ -136,7 +136,7 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
         let timestamp = date.timestamp
         return DateTimeDTO(timestamp: timestamp, timeZoneOffset: timeZoneOffset)
     }
-    
+
     /// Get time zone offset for a specific time zone identifier
     /// - Parameter identifier: Time zone identifier (e.g., "Europe/London", "America/New_York")
     /// - Returns: Time zone offset or UTC if not found
@@ -144,26 +144,26 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
         guard let timeZone = TimeZone(identifier: identifier) else {
             return DateTimeDTO.TimeZoneOffset.utc
         }
-        
+
         let offsetSeconds = timeZone.secondsFromGMT()
         let isPositive = offsetSeconds >= 0
         let absoluteSeconds = abs(offsetSeconds)
-        let hours = absoluteSeconds / 3600
-        let minutes = (absoluteSeconds % 3600) / 60
-        
+        let hours = absoluteSeconds / 3_600
+        let minutes = (absoluteSeconds % 3_600) / 60
+
         return DateTimeDTO.TimeZoneOffset(
             hours: hours,
             minutes: minutes,
             isPositive: isPositive
         )
     }
-    
+
     /// Get available time zone identifiers
     /// - Returns: Array of available time zone identifiers
     public func availableTimeZoneIdentifiers() -> [String] {
         return TimeZone.knownTimeZoneIdentifiers
     }
-    
+
     /// Create a date from components
     /// - Parameters:
     ///   - year: Year component
@@ -194,19 +194,19 @@ public class DateTimeDTOAdapter: DateTimeDTOProtocol {
         components.minute = minute
         components.second = second
         components.nanosecond = nanosecond
-        
+
         // Set time zone
         let timeZone = TimeZone(secondsFromGMT: timeZoneOffset.totalMinutes * 60) ?? TimeZone(secondsFromGMT: 0)!
         components.timeZone = timeZone
-        
+
         // Create calendar
         let calendar = Calendar(identifier: .gregorian)
-        
+
         // Create date
         if let date = calendar.date(from: components) {
             return DateTimeDTO.from(date: date, timeZone: timeZone)
         }
-        
+
         return nil
     }
 }

@@ -51,7 +51,7 @@ public final class MockResticRepository {
         task.environment = [
             "RESTIC_PASSWORD": password,
             "RESTIC_REPOSITORY": path,
-            "RESTIC_CACHE_DIR": cachePath,
+            "RESTIC_CACHE_DIR": cachePath
         ]
 
         try task.run()

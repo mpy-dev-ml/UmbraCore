@@ -49,11 +49,11 @@ extension CoreServices.LegacyServiceState: Codable {
         case type
         case reason
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
-        
+
         switch type {
         case "healthy":
             self = .healthy
@@ -78,10 +78,10 @@ extension CoreServices.LegacyServiceState: Codable {
             )
         }
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
+
         switch self {
         case .healthy:
             try container.encode("healthy", forKey: .type)
@@ -112,7 +112,7 @@ public extension CoreServices.LegacyServiceState {
         case .degraded:
             return .running
         case .unavailable:
-            return .error  
+            return .error
         case .starting:
             return .initializing
         case .shuttingDown:

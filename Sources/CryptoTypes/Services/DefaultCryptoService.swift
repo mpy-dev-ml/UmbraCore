@@ -57,7 +57,7 @@ public actor DefaultCryptoServiceImpl: CryptoServiceProtocol {
         throw ErrorHandlingDomains.UmbraErrors.Crypto.Core
             .randomGenerationFailed(reason: "Key derivation is not implemented in this version")
     }
-    
+
     public func generateHMAC(for data: Data, using key: Data) async throws -> Data {
         // This is a placeholder implementation that will be replaced by ResticBar
         // In a real implementation, we would use CCHmac from CommonCrypto

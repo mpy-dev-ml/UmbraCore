@@ -176,7 +176,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
     public func sign(_ data: SecureBytes, keyIdentifier: String) async -> Result<SecureBytes, ErrorHandlingDomains.UmbraErrors.Security.Protocols> {
         // This is a simple implementation
         // In a real-world scenario, this would use proper signing algorithms
-        
+
         // For demonstration purposes, we'll implement a basic signing mechanism
         let keyResult = await retrieveKeyData(identifier: keyIdentifier)
         switch keyResult {
@@ -200,7 +200,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
         switch keyResult {
         case let .success(keyData):
             let result = verifySignature(signature: signature.bytes(), data: data.bytes(), key: keyData)
-            
+
             return .success(result)
         case let .failure(error):
             return .failure(.serviceError(error.localizedDescription))
@@ -234,7 +234,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
         let statusInfo: [String: Any] = [
             "available": true,
             "version": "1.0.0",
-            "protocol": Self.protocolIdentifier,
+            "protocol": Self.protocolIdentifier
         ]
         return .success(statusInfo)
     }
@@ -272,7 +272,7 @@ public final class CryptoXPCService: NSObject, XPCServiceProtocolComplete, XPCSe
         let metrics: [String: Any] = [
             "operations_count": 0,
             "errors_count": 0,
-            "average_operation_time_ms": 0.0,
+            "average_operation_time_ms": 0.0
         ]
         return .success(metrics)
     }

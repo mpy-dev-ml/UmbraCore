@@ -69,7 +69,7 @@ public actor EncryptedBookmarkService {
         let dataLen = encryptedData.count - ivLen
         let iv = encryptedData.prefix(ivLen)
         let encryptedBookmark = encryptedData.suffix(dataLen)
-        
+
         let bookmarkData = try await cryptoService.decrypt(encryptedBookmark, using: key, iv: iv)
         return try await bookmarkService.resolveBookmark(bookmarkData)
     }

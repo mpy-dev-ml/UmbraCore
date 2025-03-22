@@ -88,7 +88,7 @@ final class NetworkDTOTests: XCTestCase {
             httpMethod: "POST",
             headers: [
                 "Content-Type": "application/json",
-                "Accept": "application/json",
+                "Accept": "application/json"
             ],
             queryParameters: ["param1": "value1", "param2": "value2"],
             bodyData: Array("{\"key\":\"value\"}".utf8),
@@ -308,7 +308,7 @@ final class NetworkDTOTests: XCTestCase {
 
         let updatedResponse = originalResponse.withUpdatedMetadata([
             "new": "value",
-            "original": "updated",
+            "original": "updated"
         ])
 
         XCTAssertEqual(updatedResponse.metadata["original"], "updated")

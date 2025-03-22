@@ -38,7 +38,7 @@ protocol BookmarkServiceType {
 final public class SecurityService {
     /// Shared instance of the security service
     public static let shared = SecurityService()
-    
+
     // Dependencies
     private let securityProvider: DefaultSecurityProviderImpl
     private let bookmarkService: BookmarkServiceType
@@ -202,14 +202,14 @@ private final class DefaultSecurityProviderImpl: NSObject, RandomDataGenerating 
     ) async throws -> [UInt8] {
         // Convert salt to Data
         let saltData = Data(salt)
-        
+
         // Use CommonCrypto for key derivation
         guard let passwordData = password.data(using: .utf8) else {
             throw UmbraErrors.Security.Core.internalError(reason: "Failed to convert password to data")
         }
-        
+
         var derivedKeyData = Data(count: derivedKeyLength)
-        
+
         let derivationStatus = derivedKeyData.withUnsafeMutableBytes { derivedKeyBytes in
             return passwordData.withUnsafeBytes { passwordBytes in
                 return saltData.withUnsafeBytes { saltBytes in
@@ -224,11 +224,11 @@ private final class DefaultSecurityProviderImpl: NSObject, RandomDataGenerating 
                 }
             }
         }
-        
+
         guard derivationStatus == kCCSuccess else {
             throw UmbraErrors.Security.Core.internalError(reason: "PBKDF2 derivation failed with code \(derivationStatus)")
         }
-        
+
         return [UInt8](derivedKeyData)
     }
 
@@ -240,11 +240,11 @@ private final class DefaultSecurityProviderImpl: NSObject, RandomDataGenerating 
     func encrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
         // Implementation using CommonCrypto
         let keyData = Data(key)
-        
+
         // Prepare for encryption
         var encryptedData = Data(count: data.count + kCCBlockSizeAES128)
         var encryptedDataLength = 0
-        
+
         let result = keyData.withUnsafeBytes { keyBytes in
             return encryptedData.withUnsafeMutableBytes { encryptedBytes in
                 return CCCrypt(
@@ -259,14 +259,14 @@ private final class DefaultSecurityProviderImpl: NSObject, RandomDataGenerating 
                 )
             }
         }
-        
+
         guard result == kCCSuccess else {
             throw UmbraErrors.Security.Core.encryptionFailed(reason: "Encryption failed with code \(result)")
         }
-        
+
         // Resize to actual encrypted data length
         encryptedData.count = encryptedDataLength
-        
+
         return [UInt8](encryptedData)
     }
 
@@ -278,11 +278,11 @@ private final class DefaultSecurityProviderImpl: NSObject, RandomDataGenerating 
     func decrypt(_ data: [UInt8], key: [UInt8]) async throws -> [UInt8] {
         // Implementation using CommonCrypto
         let keyData = Data(key)
-        
+
         // Prepare for decryption
         var decryptedData = Data(count: data.count + kCCBlockSizeAES128)
         var decryptedDataLength = 0
-        
+
         let result = keyData.withUnsafeBytes { keyBytes in
             return decryptedData.withUnsafeMutableBytes { decryptedBytes in
                 return CCCrypt(
@@ -297,14 +297,14 @@ private final class DefaultSecurityProviderImpl: NSObject, RandomDataGenerating 
                 )
             }
         }
-        
+
         guard result == kCCSuccess else {
             throw UmbraErrors.Security.Core.decryptionFailed(reason: "Decryption failed with code \(result)")
         }
-        
+
         // Resize to actual decrypted data length
         decryptedData.count = decryptedDataLength
-        
+
         return [UInt8](decryptedData)
     }
 
@@ -315,11 +315,11 @@ private final class DefaultSecurityProviderImpl: NSObject, RandomDataGenerating 
         // Implementation using CommonCrypto
         // Use SHA-256 hash
         var hashData = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
-        
+
         _ = hashData.withUnsafeMutableBytes { hashBytes in
             return CC_SHA256(data, CC_LONG(data.count), hashBytes.baseAddress?.assumingMemoryBound(to: UInt8.self))
         }
-        
+
         return [UInt8](hashData)
     }
 }
@@ -331,7 +331,7 @@ private class RandomDataGenerator {
     func generateRandomDouble() -> Double {
         return Double.random(in: 0...1)
     }
-    
+
     /// Generate random bytes
     /// - Parameter count: Number of bytes to generate
     /// - Returns: Random bytes
@@ -344,7 +344,7 @@ private class RandomDataGenerator {
         }
         return bytes
     }
-    
+
     /// Generate a secure random token as a hexadecimal string
     /// - Parameter byteCount: Number of bytes (before hex encoding)
     /// - Returns: Hexadecimal string

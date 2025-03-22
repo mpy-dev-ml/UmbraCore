@@ -1,11 +1,11 @@
 import CoreTypesInterfaces
 import ErrorHandlingDomains
 import Foundation
+import KeyManagementTypes
 @preconcurrency import SecurityInterfaces
 import SecurityProtocolsCore
 import SecurityTypesProtocols
 import UmbraCoreTypes
-import KeyManagementTypes
 
 /// Mock implementation of security provider for testing
 public actor MockSecurityProvider: SecurityProtocolsCore.SecurityProviderProtocol {
@@ -233,7 +233,7 @@ public actor MockSecurityProvider: SecurityProtocolsCore.SecurityProviderProtoco
             "keyId": keyId as NSString,
             "algorithm": "AES256" as NSString,
             "status": "active" as NSString,
-            "created": Date() as NSDate,
+            "created": Date() as NSDate
         ]
 
         return .success(info)
@@ -298,10 +298,10 @@ public actor MockSecurityProvider: SecurityProtocolsCore.SecurityProviderProtoco
 public struct MockSecurityOperationResult: Sendable {
     /// Whether the operation succeeded
     public let success: Bool
-    
+
     /// Result data, if any
     public let data: [UInt8]?
-    
+
     /// Create a new security operation result
     public init(success: Bool, data: [UInt8]?) {
         self.success = success
@@ -410,47 +410,47 @@ final class MockSecurityCryptoService: CryptoServiceProtocol {
     private var storedKeys: [String: UmbraCoreTypes.SecureBytes] = [:]
 
     // Implementing KeyManagementProtocol
-    
+
     func retrieveKey(withIdentifier identifier: String) async -> Result<UmbraCoreTypes.SecureBytes, UmbraErrors.Security.Protocols> {
         guard let key = storedKeys[identifier] else {
             return .failure(UmbraErrors.Security.Protocols.makeServiceError(message: "Key not found: \(identifier)"))
         }
         return .success(key)
     }
-    
+
     func storeKey(_ key: UmbraCoreTypes.SecureBytes, withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
         storedKeys[identifier] = key
         return .success(())
     }
-    
+
     func deleteKey(withIdentifier identifier: String) async -> Result<Void, UmbraErrors.Security.Protocols> {
         guard storedKeys.removeValue(forKey: identifier) != nil else {
             return .failure(UmbraErrors.Security.Protocols.makeServiceError(message: "Key not found: \(identifier)"))
         }
         return .success(())
     }
-    
+
     func rotateKey(withIdentifier identifier: String, dataToReencrypt: UmbraCoreTypes.SecureBytes?) async -> Result<(newKey: UmbraCoreTypes.SecureBytes, reencryptedData: UmbraCoreTypes.SecureBytes?), UmbraErrors.Security.Protocols> {
         guard storedKeys[identifier] != nil else {
             return .failure(UmbraErrors.Security.Protocols.makeServiceError(message: "Key not found: \(identifier)"))
         }
-        
+
         // Generate a new key
         let newKey = UmbraCoreTypes.SecureBytes(bytes: Array(repeating: UInt8(0), count: 32))
-        
+
         // Store the new key with the same identifier
         storedKeys[identifier] = newKey
-        
+
         // If data was provided, "reencrypt" it (in this mock, we're just returning it as-is)
         let reencryptedData = dataToReencrypt
-        
+
         return .success((newKey: newKey, reencryptedData: reencryptedData))
     }
-    
+
     func listKeyIdentifiers() async -> Result<[String], UmbraErrors.Security.Protocols> {
         return .success(Array(storedKeys.keys))
     }
-    
+
     // These are the old methods which can still be used by other code
 
     func createKey(algorithm _: String, options _: [String: String]?) -> String {
