@@ -4,28 +4,33 @@
 
 set -e
 
-echo "===== DEBUG: Starting test discovery script ====="
-echo "Current directory: $(pwd)"
-echo "Current user: $(whoami)"
+# Use stderr for all debugging output
+debug() {
+    echo "$@" >&2
+}
+
+debug "===== DEBUG: Starting test discovery script ====="
+debug "Current directory: $(pwd)"
+debug "Current user: $(whoami)"
 
 # Check if yq is installed
 if ! command -v yq &> /dev/null; then
-    echo "Error: yq is not installed. Please install it with 'brew install yq'"
-    echo "Visit https://github.com/mikefarah/yq for more information."
+    debug "Error: yq is not installed. Please install it with 'brew install yq'"
+    debug "Visit https://github.com/mikefarah/yq for more information."
     exit 1
 fi
 
-echo "yq version: $(yq --version)"
+debug "yq version: $(yq --version)"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CONFIG_FILE="${SCRIPT_DIR}/test_config.yml"
 TARGETS_FILE="${SCRIPT_DIR}/test_targets.txt"
 TEMP_CONFIG_FILE="${CONFIG_FILE}.tmp"
 
-echo "===== DEBUG: Script paths ====="
-echo "SCRIPT_DIR: $SCRIPT_DIR"
-echo "CONFIG_FILE: $CONFIG_FILE"
-echo "TARGETS_FILE: $TARGETS_FILE"
+debug "===== DEBUG: Script paths ====="
+debug "SCRIPT_DIR: $SCRIPT_DIR"
+debug "CONFIG_FILE: $CONFIG_FILE"
+debug "TARGETS_FILE: $TARGETS_FILE"
 
 # Define known deprecated test patterns
 DEPRECATED_PATTERNS=(
@@ -35,7 +40,7 @@ DEPRECATED_PATTERNS=(
 
 # Ensure the config file exists with necessary structure
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Creating new config file: $CONFIG_FILE"
+    debug "Creating new config file: $CONFIG_FILE"
     echo "# Test configuration for UmbraCore" > "$CONFIG_FILE"
     echo "# This file contains the targets to be run in test workflows" >> "$CONFIG_FILE"
     echo "" >> "$CONFIG_FILE"
@@ -49,19 +54,38 @@ if [ ! -f "$CONFIG_FILE" ]; then
     done
 fi
 
-echo "Discovering test targets in the UmbraCore project..."
+debug "Discovering test targets in the UmbraCore project..."
 
-# Use bazelisk query to find all test targets
-echo "Querying test targets with bazelisk..."
-ALL_TARGETS=$(bazelisk query 'kind("_test rule", //Sources/...)' 2>&1 || echo "Error during query: $?")
+# Create a temporary file for raw bazel output
+BAZEL_OUTPUT_FILE="$(mktemp)"
+trap 'rm -f "$BAZEL_OUTPUT_FILE"' EXIT
 
-if [[ "$ALL_TARGETS" == Error* ]]; then
-  echo "===== DEBUG: Error during bazelisk query ====="
-  echo "$ALL_TARGETS"
-  echo "Creating a minimal test targets file to allow CI to proceed with a subset of tests"
+# Run bazelisk query and capture output to a file
+debug "Querying test targets with bazelisk..."
+bazelisk query 'kind("_test rule", //Sources/...)' > "$BAZEL_OUTPUT_FILE" 2>&1 || {
+  debug "===== DEBUG: Error during bazelisk query ====="
+  cat "$BAZEL_OUTPUT_FILE" >&2
+  debug "Creating a minimal test targets file to allow CI to proceed with a subset of tests"
+  # Make sure to completely empty the targets file first
+  true > "$TARGETS_FILE"
   echo "//Sources/CoreDTOs/Tests:CoreDTOsTests" > "$TARGETS_FILE"
   echo "//Sources/ErrorHandling/Tests:ErrorHandlingTests" >> "$TARGETS_FILE"
-  echo "Generated minimal $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) fallback test targets."
+  debug "Generated minimal $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) fallback test targets."
+  exit 0
+}
+
+# Filter the output to only include valid target patterns (starting with //)
+debug "Filtering bazelisk output to only include valid targets..."
+ALL_TARGETS=$(grep -E "^//Sources/" "$BAZEL_OUTPUT_FILE" || echo "")
+
+# Verify we have targets
+if [ -z "$ALL_TARGETS" ]; then
+  debug "No valid targets found in bazelisk output. Using fallback targets."
+  # Make sure to completely empty the targets file first
+  true > "$TARGETS_FILE"
+  echo "//Sources/CoreDTOs/Tests:CoreDTOsTests" > "$TARGETS_FILE"
+  echo "//Sources/ErrorHandling/Tests:ErrorHandlingTests" >> "$TARGETS_FILE"
+  debug "Generated minimal $TARGETS_FILE with fallback test targets."
   exit 0
 fi
 
@@ -75,16 +99,22 @@ echo "targets:" >> "$TEMP_CONFIG_FILE"
 # Read the current deprecated patterns
 if [ -f "$CONFIG_FILE" ]; then
     CURRENT_DEPRECATED=$(yq '.deprecated[].pattern' "$CONFIG_FILE" 2>/dev/null || echo "")
-    echo "===== DEBUG: Current deprecated patterns ====="
-    echo "$CURRENT_DEPRECATED"
+    debug "===== DEBUG: Current deprecated patterns ====="
+    debug "$CURRENT_DEPRECATED"
 else
     CURRENT_DEPRECATED=""
-    echo "===== DEBUG: No existing config file found ====="
+    debug "===== DEBUG: No existing config file found ====="
 fi
 
 # Process each target from bazelisk query
 TARGET_COUNT=0
 for TARGET in $ALL_TARGETS; do
+    # Only process valid targets (starting with //)
+    if [[ ! "$TARGET" =~ ^//Sources/ ]]; then
+        debug "Skipping invalid target format: $TARGET"
+        continue
+    fi
+    
     IS_DEPRECATED=false
     
     # Check if target matches any deprecated pattern
@@ -107,7 +137,7 @@ for TARGET in $ALL_TARGETS; do
     
     # Skip deprecated targets
     if [ "$IS_DEPRECATED" = true ]; then
-        echo "Skipping deprecated target: $TARGET"
+        debug "Skipping deprecated target: $TARGET"
         continue
     fi
     
@@ -122,7 +152,7 @@ for TARGET in $ALL_TARGETS; do
     echo "    name: \"$TEST_NAME\"" >> "$TEMP_CONFIG_FILE"
     echo "    enabled: true" >> "$TEMP_CONFIG_FILE"
     
-    echo "Found test target: $TARGET"
+    debug "Found test target: $TARGET"
     TARGET_COUNT=$((TARGET_COUNT + 1))
 done
 
@@ -154,16 +184,35 @@ fi
 
 # Replace the config file with the new one
 mv "$TEMP_CONFIG_FILE" "$CONFIG_FILE"
-echo "Updated $CONFIG_FILE with $TARGET_COUNT discovered targets."
+debug "Updated $CONFIG_FILE with $TARGET_COUNT discovered targets."
 
-# Generate test_targets.txt file
-echo "Generating $TARGETS_FILE..."
+# Generate test_targets.txt file - ensure it's completely empty first
+debug "Generating $TARGETS_FILE..."
 true > "$TARGETS_FILE"
 
 # Extract enabled targets from config and write to targets file
-yq '.targets[] | select(.enabled == true) | .target' "$CONFIG_FILE" > "$TARGETS_FILE"
+# Use -r to get raw output without quotes, which helps with Bazel target parsing
+yq -r '.targets[] | select(.enabled == true) | .target' "$CONFIG_FILE" > "$TARGETS_FILE"
 
-echo "Generated $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) enabled test targets."
-echo "To run tests: bazelisk test --define=build_environment=nonlocal -k --verbose_failures \$(cat ${TARGETS_FILE})"
+# Verify the targets file has proper format
+if [ ! -s "$TARGETS_FILE" ]; then
+    debug "WARNING: Generated targets file is empty! Using fallback targets."
+    echo "//Sources/CoreDTOs/Tests:CoreDTOsTests" > "$TARGETS_FILE"
+    echo "//Sources/ErrorHandling/Tests:ErrorHandlingTests" >> "$TARGETS_FILE"
+else
+    # Extra validation - ensure all lines start with //
+    INVALID_LINES=$(grep -v "^//" "$TARGETS_FILE" || echo "")
+    if [ -n "$INVALID_LINES" ]; then
+        debug "WARNING: Found invalid target lines in $TARGETS_FILE! Cleaning up..."
+        debug "Invalid lines: $INVALID_LINES"
+        grep "^//" "$TARGETS_FILE" > "${TARGETS_FILE}.clean"
+        mv "${TARGETS_FILE}.clean" "$TARGETS_FILE"
+    fi
+fi
 
-echo "Discovery complete!"
+debug "Generated $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) enabled test targets."
+debug "Target file content sample (first 3 lines):"
+debug "$(head -n 3 "$TARGETS_FILE")"
+debug "To run tests: bazelisk test --define=build_environment=nonlocal -k --verbose_failures \$(cat ${TARGETS_FILE})"
+
+debug "Discovery complete!"

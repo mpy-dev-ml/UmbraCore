@@ -27,44 +27,64 @@ env:
 jobs:
   build-documentation:
     name: Build DocC Documentation
-    runs-on: macos-latest
+    runs-on: [self-hosted, macos]
     
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch all history for proper versioning
+          submodules: recursive
       
-      - name: Set up Bazel
-        uses: bazelbuild/setup-bazelisk@v4
-        with:
-          bazelisk-version: 'latest'
-      
-      - name: Install Swift
-        uses: swift-actions/setup-swift@v4
-        with:
-          swift-version: '5.7'
-      
-      - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v4
-        with:
-          xcode-version: latest-stable
-      
+      - name: Prepare Build Environment
+        run: |
+          # Check if bazelisk is installed, install only if needed
+          if ! command -v bazelisk &> /dev/null; then
+            echo "Installing bazelisk..."
+            brew install bazelisk
+          fi
+          bazelisk --version
+          
+          # Check if yq is installed, install only if needed
+          if ! command -v yq &> /dev/null; then
+            echo "Installing yq..."
+            brew install yq
+          fi
+          yq --version
+          
+          # Just print Xcode information - don't try to change it
+          echo "Using Xcode at: $(xcode-select -p)"
+          xcodebuild -version || echo "Warning: Unable to get Xcode version"
+          swift --version || echo "Warning: Unable to get Swift version"
+          
       - name: Set up DocC environment
         run: |
           echo "Building documentation environment..."
           mkdir -p docs
           echo "DOCC_OUTPUT_DIR=$GITHUB_WORKSPACE/docs" >> $GITHUB_ENV
       
+      - name: Discover Production Targets
+        run: |
+          echo "Setting up for DocC documentation build..."
+          chmod +x team-utils/discover_production_targets.sh
+          ./team-utils/discover_production_targets.sh
+          
       - name: Generate documentation targets list
         run: |
-          # Discover all targets that have DocC documentation
+          # First generate a list of potential documentation targets
           bazelisk query 'kind("swift_library rule", //Sources/...)' | \
           grep -v "Tests" | \
-          awk -F: '{print $1":"}' | \
-          sed 's/$/DocC/' > docc_targets.txt
+          awk -F: '{print $1":DocC"}' > potential_docc_targets.txt
           
-          echo "Found $(wc -l < docc_targets.txt) documentation targets"
+          # Now filter to only include targets that actually exist
+          touch docc_targets.txt
+          while IFS= read -r target; do
+            if bazelisk query "$target" &>/dev/null; then
+              echo "$target" >> docc_targets.txt
+            fi
+          done < potential_docc_targets.txt
+          
+          echo "Found $(wc -l < docc_targets.txt) valid documentation targets"
           cat docc_targets.txt
       
       - name: Build documentation
