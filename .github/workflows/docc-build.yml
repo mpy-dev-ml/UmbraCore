@@ -35,10 +35,10 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history for proper versioning
       
-      - name: Set up Bazel
-        uses: bazelbuild/setup-bazelisk@v4
-        with:
-          bazelisk-version: 'latest'
+      - name: Install Bazelisk
+        run: |
+          brew install bazelisk
+          bazelisk --version
       
       - name: Install Swift
         uses: swift-actions/setup-swift@v4
