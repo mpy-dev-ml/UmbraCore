@@ -56,19 +56,36 @@ fi
 
 debug "Discovering test targets in the UmbraCore project..."
 
-# Use bazelisk query to find all test targets
-debug "Querying test targets with bazelisk..."
-ALL_TARGETS=$(bazelisk query 'kind("_test rule", //Sources/...)' 2>&1 || echo "Error during query: $?")
+# Create a temporary file for raw bazel output
+BAZEL_OUTPUT_FILE="$(mktemp)"
+trap 'rm -f "$BAZEL_OUTPUT_FILE"' EXIT
 
-if [[ "$ALL_TARGETS" == Error* ]]; then
+# Run bazelisk query and capture output to a file
+debug "Querying test targets with bazelisk..."
+bazelisk query 'kind("_test rule", //Sources/...)' > "$BAZEL_OUTPUT_FILE" 2>&1 || {
   debug "===== DEBUG: Error during bazelisk query ====="
-  debug "$ALL_TARGETS"
+  cat "$BAZEL_OUTPUT_FILE" >&2
   debug "Creating a minimal test targets file to allow CI to proceed with a subset of tests"
   # Make sure to completely empty the targets file first
   true > "$TARGETS_FILE"
   echo "//Sources/CoreDTOs/Tests:CoreDTOsTests" > "$TARGETS_FILE"
   echo "//Sources/ErrorHandling/Tests:ErrorHandlingTests" >> "$TARGETS_FILE"
   debug "Generated minimal $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) fallback test targets."
+  exit 0
+}
+
+# Filter the output to only include valid target patterns (starting with //)
+debug "Filtering bazelisk output to only include valid targets..."
+ALL_TARGETS=$(grep -E "^//Sources/" "$BAZEL_OUTPUT_FILE" || echo "")
+
+# Verify we have targets
+if [ -z "$ALL_TARGETS" ]; then
+  debug "No valid targets found in bazelisk output. Using fallback targets."
+  # Make sure to completely empty the targets file first
+  true > "$TARGETS_FILE"
+  echo "//Sources/CoreDTOs/Tests:CoreDTOsTests" > "$TARGETS_FILE"
+  echo "//Sources/ErrorHandling/Tests:ErrorHandlingTests" >> "$TARGETS_FILE"
+  debug "Generated minimal $TARGETS_FILE with fallback test targets."
   exit 0
 fi
 
@@ -92,6 +109,12 @@ fi
 # Process each target from bazelisk query
 TARGET_COUNT=0
 for TARGET in $ALL_TARGETS; do
+    # Only process valid targets (starting with //)
+    if [[ ! "$TARGET" =~ ^//Sources/ ]]; then
+        debug "Skipping invalid target format: $TARGET"
+        continue
+    fi
+    
     IS_DEPRECATED=false
     
     # Check if target matches any deprecated pattern
@@ -176,6 +199,15 @@ if [ ! -s "$TARGETS_FILE" ]; then
     debug "WARNING: Generated targets file is empty! Using fallback targets."
     echo "//Sources/CoreDTOs/Tests:CoreDTOsTests" > "$TARGETS_FILE"
     echo "//Sources/ErrorHandling/Tests:ErrorHandlingTests" >> "$TARGETS_FILE"
+else
+    # Extra validation - ensure all lines start with //
+    INVALID_LINES=$(grep -v "^//" "$TARGETS_FILE" || echo "")
+    if [ -n "$INVALID_LINES" ]; then
+        debug "WARNING: Found invalid target lines in $TARGETS_FILE! Cleaning up..."
+        debug "Invalid lines: $INVALID_LINES"
+        grep "^//" "$TARGETS_FILE" > "${TARGETS_FILE}.clean"
+        mv "${TARGETS_FILE}.clean" "$TARGETS_FILE"
+    fi
 fi
 
 debug "Generated $TARGETS_FILE with $(wc -l < "$TARGETS_FILE" | xargs) enabled test targets."
