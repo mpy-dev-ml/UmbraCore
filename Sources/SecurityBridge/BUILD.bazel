@@ -145,25 +145,7 @@ swift_test(
     ],
 )
 
-swift_test(
-    name = "TemporaryTests",
-    srcs = ["Tests/TemporaryTests.swift"] + glob(["Tests/Mocks/*.swift"]),
-    module_name = "TemporaryTests",
-    copts = [
-        "-target", "arm64-apple-macos14.7.4",
-        "-g",
-        "-swift-version", "5",
-    ],
-    deps = [
-        ":SecurityBridge",
-        "//Sources/SecureBytes",
-        "//Sources/SecurityProtocolsCore",
-        "//Sources/UmbraCoreTypes",
-        "//Sources/CoreTypesInterfaces",
-        "//Sources/FoundationBridgeTypes",
-        "//Sources/SecurityBridgeProtocolAdapters",
-    ],
-)
+# TemporaryTests target has been removed as it's deprecated
 
 swift_test(
     name = "SanityTests",
