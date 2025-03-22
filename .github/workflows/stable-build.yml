@@ -67,6 +67,8 @@ jobs:
     - name: Build All Production Targets
       run: |
         echo "Building all production targets with prodonly configuration..."
+        # Note: The prodonly configuration ensures DocC documentation isn't built
+        # DocC documentation is only built in local environments or through the docs.yml workflow
         bazelisk build --config=prodonly -k --verbose_failures $(cat team-utils/production_targets.txt)
 
     - name: Summarise Build Results

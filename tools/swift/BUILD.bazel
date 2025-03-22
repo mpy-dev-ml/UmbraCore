@@ -9,6 +9,7 @@ pkg_tar(
         "build_rules.bzl",
         "compiler_options.bzl",
         "docc_rules.bzl",
+        "build_settings.bzl",
     ],
     mode = "0644",
     package_dir = "tools/swift",
@@ -21,8 +22,22 @@ filegroup(
         "build_rules.bzl",
         "compiler_options.bzl",
         "docc_rules.bzl",
+        "build_settings.bzl",
     ],
     visibility = ["//visibility:public"],
+)
+
+# Build environment configuration
+load(":build_settings.bzl", "build_environment")
+
+build_environment(
+    name = "local_environment",
+    is_local = True,
+)
+
+build_environment(
+    name = "ci_environment",
+    is_local = False,
 )
 
 # DocC generation executable

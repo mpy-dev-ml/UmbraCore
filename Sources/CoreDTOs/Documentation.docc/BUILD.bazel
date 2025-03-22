@@ -4,6 +4,7 @@ load("//tools/swift:docc_rules.bzl", "docc_documentation")
 docc_documentation(
     name = "CoreDTOsDocC",
     module_name = "CoreDTOs",
+    localonly = True,
     srcs = glob([
         "*.md",
         "*.plist",

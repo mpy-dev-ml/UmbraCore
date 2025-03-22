@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 docc_documentation(
     name = "CoreDTOsDocC",
     module_name = "CoreDTOs",
+    localonly = True,
     srcs = glob(
         [
             "Documentation.docc/**/*.md",
